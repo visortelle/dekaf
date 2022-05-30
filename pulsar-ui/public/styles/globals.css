@@ -5,7 +5,7 @@
 :root,
 :host {
   font-size: 1px;
-  font-family: "Fira Sans", sans-serif;
+  font-family: "Fira Code", sans-serif;
   color: var(--text-color);
   line-height: 1.4;
   font-variant-ligatures: none;
