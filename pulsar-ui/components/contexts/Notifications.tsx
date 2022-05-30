@@ -10,8 +10,8 @@ export type Value = {
 }
 
 const defaultValue: Value = {
-  notifySuccess: (content) => toast.success(content, { containerId: toastContainerId }),
-  notifyError: (content) => toast.error(content, { containerId: toastContainerId }),
+  notifySuccess: (content) => toast.success(content, { containerId: toastContainerId, toastId: content?.toString() }),
+  notifyError: (content) => toast.error(content, { containerId: toastContainerId, toastId: content?.toString() }),
 };
 
 const Context = React.createContext<Value>(defaultValue);
