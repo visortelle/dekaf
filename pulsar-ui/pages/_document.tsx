@@ -14,7 +14,6 @@ class MyDocument extends Document {
 
           {/* eslint-disable @next/next/no-css-tags */}
           {/* Include stylesheets here is the only way I found to get rid of annoying styles flickering NextJS bug after each page reload. */}
-          <link href="/styles/normalize.css" rel="stylesheet"></link>
           <link href="/styles/globals.css" rel="stylesheet"></link>
 
           <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
