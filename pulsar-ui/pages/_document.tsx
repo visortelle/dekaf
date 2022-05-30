@@ -10,7 +10,7 @@ class MyDocument extends Document {
 
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin='' />
-          <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400&family=Fira+Sans:wght@400;700&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;600&family=Fira+Sans:wght@400;700&display=swap" rel="stylesheet" />
 
           {/* eslint-disable @next/next/no-css-tags */}
           {/* Include stylesheets here is the only way I found to get rid of annoying styles flickering NextJS bug after each page reload. */}

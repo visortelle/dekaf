@@ -18,16 +18,17 @@
 
 .NodeContent {
   position: relative;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 .NodeIcon {
   font-size: 12rem;
-  width: 22rem;
-  height: 22rem;
+  width: 24rem;
+  height: 24rem;
   position: absolute;
   left: -4ch;
-  top: 0;
-  bottom: 0;
   display: flex;
   font-weight: bold;
   align-items: center;
@@ -35,6 +36,37 @@
   background-color: #333;
   color: #fff;
   padding: 2rem;
-  /* transform: translate(0, 50%); */
   border-radius: 4rem;
+  user-select: none;
+  cursor: initial;
+}
+
+.NodeIconExpandable:hover {
+  opacity: 0.75;
+}
+
+.NodeIconExpandable {
+  cursor: pointer;
+  box-shadow: 1rem 1rem 0rem rgba(0, 0, 0, 0.5);
+}
+.NodeIconExpanded {
+  box-shadow: inset 2rem 3rem 4rem rgba(0, 0, 0, 0.5);
+}
+
+.NodeChildrenCount {
+  position: absolute;
+  right: 12rem;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-self: center;
+}
+
+.NodeTextContent {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 0.4ch;
+  padding-right: 12rem;
 }
