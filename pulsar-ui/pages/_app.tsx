@@ -1,10 +1,11 @@
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
-import { DefaultAppContextProvider, useAppContext } from '../components/AppContext/AppContext';
+import * as AsyncTasks from '../components/contexts/AsyncTasks';
+import * as Notifications from '../components/contexts/Notifications';
+import * as PulsarAdminClient from '../components/contexts/PulsarAdminClient';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/router';
 import { useEffect, useCallback } from 'react';
-
 
 const MyApp = (props: AppProps) => {
   return <>
@@ -12,9 +13,13 @@ const MyApp = (props: AppProps) => {
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></meta>
     </Head>
 
-    <DefaultAppContextProvider>
-      <ComponentWithProgressIndicator {...props} />
-    </DefaultAppContextProvider>
+    <AsyncTasks.DefaultProvider>
+      <Notifications.DefaultProvider>
+        <PulsarAdminClient.DefaultProvider>
+          <ComponentWithProgressIndicator {...props} />
+        </PulsarAdminClient.DefaultProvider>
+      </Notifications.DefaultProvider>
+    </AsyncTasks.DefaultProvider>
   </>
 }
 
@@ -22,7 +27,7 @@ const taskName = 'page-loading';
 
 const ComponentWithProgressIndicator = ({ Component, pageProps }: AppProps) => {
   const router = useRouter();
-  const context = useAppContext();
+  const context = AsyncTasks.useContext();
 
   const handleRouteChangeStart = useCallback(() => {
     context.startTask(taskName);

@@ -1,0 +1,40 @@
+.NavigationTree {
+  background-color: #fff;
+  height: 100%;
+  overflow: auto;
+  font-size: 14rem;
+}
+
+.Node {
+  padding: 12rem 18rem;
+  background-color: #fff;
+  position: relative;
+}
+
+.Node:hover {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.NodeContent {
+  position: relative;
+}
+
+.NodeIcon {
+  font-size: 12rem;
+  width: 22rem;
+  height: 22rem;
+  position: absolute;
+  left: -4ch;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  color: #fff;
+  padding: 2rem;
+  /* transform: translate(0, 50%); */
+  border-radius: 4rem;
+}
