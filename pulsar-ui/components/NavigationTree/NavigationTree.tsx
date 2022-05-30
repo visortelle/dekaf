@@ -5,13 +5,13 @@ import TreeView, { Tree } from './TreeView';
 import * as Notifications from '../contexts/Notifications';
 import * as PulsarAdminClient from '../contexts/PulsarAdminClient';
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
+import Link from 'next/link';
 
 export type NavigationTreeProps = {
-  pulsarInstance: string
 };
 
 const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
-  const [tree, setTree] = React.useState<Tree>({ rootLabel: { name: props.pulsarInstance, type: 'instance' }, subForest: [] });
+  const [tree, setTree] = React.useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
   const [filterQuery, setFilterQuery] = React.useState<string>('');
   const [useRegex, setUseRegex] = React.useState<boolean>(false);
   const [expandedPaths, setExpandedPaths] = React.useState<string[]>([]);
@@ -135,15 +135,13 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               } else if (node.type === 'topic') {
                 const tenantName = path[0];
                 const namespaceName = path[1];
-
-                const topicUrlParts = node.name.split('/');
-                const topicName = topicUrlParts[topicUrlParts.length - 1];
+                const topicName = node.name;
 
                 nodeContent = (
                   <PulsarTopic
                     tenant={tenantName}
                     namespace={namespaceName}
-                    name={topicName}
+                    topic={topicName}
                   />
                 );
                 nodeIcon = (
@@ -181,7 +179,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
 export default NavigationTree;
 
-
 type PulsarTenantProps = {
   tenant: string,
   onNamespaces: (namespaces: string[]) => void
@@ -201,7 +198,13 @@ const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
     notifyError(`Unable to fetch namespaces. ${namespacesError.toString()}`);
   }
 
-  return <span>{props.tenant}</span>;
+  return (
+    <Link passHref href={`/tenants/${props.tenant}`}>
+      <a className={s.NodeLink}>
+        <span>{props.tenant}</span>
+      </a>
+    </Link>
+  );
 }
 
 type PulsarNamespaceProps = {
@@ -215,7 +218,10 @@ const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 
   const { data: topics, error: topicsError } = useSWR(
     ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'topics'],
-    async () => await adminClient.namespaces.getTopics(props.tenant, props.namespace, "ALL"),
+    async () => await (await adminClient.namespaces.getTopics(props.tenant, props.namespace, "ALL")).map(tn => {
+      const topicUrlParts = tn.split('/');
+      return topicUrlParts[topicUrlParts.length - 1];
+     }),
   );
 
   useEffect(() => props.onTopics(topics || []), [topics]);
@@ -224,16 +230,28 @@ const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
     notifyError(`Unable to fetch namespace topics. ${topicsError.toString()}`);
   }
 
-  return <span>{props.namespace}</span>;
+  return (
+    <Link passHref href={`/tenants/${props.tenant}/namespaces/${props.namespace}`}>
+      <a className={s.NodeLink}>
+        <span>{props.namespace}</span>
+      </a>
+    </Link>
+  );
 }
 
 type PulsarTopicProps = {
   tenant: string;
   namespace: string;
-  name: string;
+  topic: string;
 }
 const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
-  return <span>{props.name}</span>
+  return (
+    <Link passHref href={`/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topic}`}>
+      <a className={s.NodeLink}>
+        <span>{props.topic}</span>
+      </a>
+    </Link>
+  );
 }
 
 type NodeIconsProps = {

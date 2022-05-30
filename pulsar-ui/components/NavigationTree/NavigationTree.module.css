@@ -70,3 +70,10 @@
   padding-left: 0.4ch;
   padding-right: 12rem;
 }
+
+.NodeLink {
+  color: inherit;
+}
+.NodeLink:hover {
+  opacity: 1;
+}
