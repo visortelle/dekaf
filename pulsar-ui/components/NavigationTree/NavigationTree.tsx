@@ -64,7 +64,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
                     return regex.test(tree.rootLabel.name);
                   }
 
-                  return !tree.rootLabel.name.includes(filterQuery)
+                  return tree.rootLabel.name.includes(filterQuery)
                 }
 
                 return true;
