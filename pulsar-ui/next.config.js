@@ -11,6 +11,10 @@ module.exports = {
         source: "/api/pulsar-broker-web/:path*",
         destination: "http://localhost:8080/:path*",
       },
+      {
+        source: "/:any*",
+        destination: "/",
+      },
     ];
   },
   reactStrictMode: true,
