@@ -4,8 +4,10 @@ import s from './NavigationTree.module.css'
 import TreeView, { Tree } from './TreeView';
 import * as Notifications from '../contexts/Notifications';
 import * as PulsarAdminClient from '../contexts/PulsarAdminClient';
-import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
+import { setTenants, setTenantNamespaces, setNamespaceTopics, expandAll } from './tree-mutations';
 import Link from 'next/link';
+import Input from '../ui/Input/Input';
+import SmallButton from '../ui/SmallButton/SmallButton';
 
 export type NavigationTreeProps = {
 };
@@ -36,10 +38,16 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     return expandedPaths.includes(pathStr);
   }, [expandedPaths]);
 
+  console.log('exp', expandedPaths)
   return (
     <div className={s.NavigationTree}>
-      <input value={filterQuery} onChange={e => setFilterQuery(e.target.value)} />
-      <input type="checkbox" checked={useRegex} onChange={() => setUseRegex(!useRegex)} />
+      <div className={s.FilterQueryInput}>
+        <Input placeholder="Filter" value={filterQuery} onChange={v => setFilterQuery(v)} />
+      </div>
+      <div className={s.TreeControlButtons}>
+        <SmallButton text='Expand' onClick={() => setExpandedPaths(expandAll(tree, [], []))} />
+        <SmallButton text='Collapse' onClick={() => setExpandedPaths([])} />
+      </div>
       <TreeView
         nodeCommons={{}}
         getPathPart={(node) => node.rootLabel.name}
@@ -221,7 +229,7 @@ const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
     async () => await (await adminClient.namespaces.getTopics(props.tenant, props.namespace, "ALL")).map(tn => {
       const topicUrlParts = tn.split('/');
       return topicUrlParts[topicUrlParts.length - 1];
-     }),
+    }),
   );
 
   useEffect(() => props.onTopics(topics || []), [topics]);
