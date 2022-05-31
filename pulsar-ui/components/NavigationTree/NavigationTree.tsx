@@ -9,8 +9,6 @@ import Link from 'next/link';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon } from './Icons';
-import { string } from 'fp-ts';
-import { left } from 'fp-ts/lib/EitherT';
 
 const NavigationTree: React.FC = () => {
   const [tree, setTree] = React.useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
