@@ -5,7 +5,7 @@ import TreeView, { Tree } from './TreeView';
 import * as Notifications from '../contexts/Notifications';
 import * as PulsarAdminClient from '../contexts/PulsarAdminClient';
 import { setTenants, setTenantNamespaces, setNamespaceTopics, expandAll } from './tree-mutations';
-import Link from 'next/link';
+import { NavLink } from 'react-router-dom';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon } from './Icons';
@@ -223,11 +223,14 @@ const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   }
 
   return (
-    <Link passHref href={`/tenants/${props.tenant}`}>
-      <a className={s.NodeLink} style={{ paddingLeft: props.leftIndent }}>
-        <span>{props.tenant}</span>
-      </a>
-    </Link>
+    <NavLink
+      to={`/tenants/${props.tenant}`}
+      end
+      className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
+      style={{ paddingLeft: props.leftIndent }}
+    >
+      <span>{props.tenant}</span>
+    </NavLink>
   );
 }
 
@@ -257,11 +260,14 @@ const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   }
 
   return (
-    <Link passHref href={`/tenants/${props.tenant}/namespaces/${props.namespace}`}>
-      <a className={s.NodeLink} style={{ paddingLeft: props.leftIndent }}>
-        <span>{props.namespace}</span>
-      </a>
-    </Link>
+    <NavLink
+      to={`/tenants/${props.tenant}/namespaces/${props.namespace}`}
+      end
+      className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
+      style={{ paddingLeft: props.leftIndent }}
+    >
+      <span>{props.namespace}</span>
+    </NavLink>
   );
 }
 
@@ -273,10 +279,13 @@ type PulsarTopicProps = {
 }
 const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
   return (
-    <Link passHref href={`/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topic}`}>
-      <a className={s.NodeLink} style={{ paddingLeft: props.leftIndent }}>
-        <span>{props.topic}</span>
-      </a>
-    </Link>
+    <NavLink
+      to={`/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topic}`}
+      end
+      className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
+      style={{ paddingLeft: props.leftIndent }}
+    >
+      <span>{props.topic}</span>
+    </NavLink>
   );
 }
