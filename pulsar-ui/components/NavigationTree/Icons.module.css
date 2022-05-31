@@ -20,9 +20,23 @@
 
 .NodeIconExpandable {
   cursor: pointer;
-  box-shadow: 1rem 1rem 2rem rgb(0 0 0 / 50%);
+  border-bottom: 2rem solid rgba(0, 0, 0, 0.27);
+  position: relative;
+  top: 1rem;
 }
+
+/* .NodeIconExpandable::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24rem;
+  height: 24rem;
+  background-color: #333;
+  transform: translate(100%, 0);
+} */
+
 .NodeIconExpanded {
-  box-shadow: inset 2rem 3rem 4rem rgba(0, 0, 0, 0.5);
+  /* box-shadow: inset 2rem 3rem 4rem rgba(0, 0, 0, 0.5); */
 }
 
