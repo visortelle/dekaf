@@ -52,9 +52,25 @@ const NavigationTree: React.FC = () => {
       <div className={s.TreeControlButtons}>
         <SmallButton text='Expand' onClick={() => setExpandedPaths(expandAll(tree, [], []))} />
         <SmallButton text='Collapse' onClick={() => setExpandedPaths([])} />
-        <TenantIcon isExpanded={nodeTypeFilter.showTenants} onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTenants: !nodeTypeFilter.showTenants }))} className={s.NodeTypeFilterButton} />
-        <NamespaceIcon isExpanded={nodeTypeFilter.showNamespaces} onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showNamespaces: !nodeTypeFilter.showNamespaces }))} className={s.NodeTypeFilterButton} />
-        <TopicIcon isExpandable={true} isExpanded={nodeTypeFilter.showTopics} onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTopics: !nodeTypeFilter.showTopics }))} className={s.NodeTypeFilterButton} />
+        <TenantIcon
+          isExpanded={nodeTypeFilter.showTenants}
+          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTenants: !nodeTypeFilter.showTenants }))}
+          className={s.NodeTypeFilterButton}
+          isGray={!nodeTypeFilter.showTenants}
+        />
+        <NamespaceIcon
+          isExpanded={nodeTypeFilter.showNamespaces}
+          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showNamespaces: !nodeTypeFilter.showNamespaces }))}
+          className={s.NodeTypeFilterButton}
+          isGray={!nodeTypeFilter.showNamespaces}
+        />
+        <TopicIcon
+          isExpandable={true}
+          isExpanded={nodeTypeFilter.showTopics}
+          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTopics: !nodeTypeFilter.showTopics }))}
+          className={s.NodeTypeFilterButton}
+          isGray={!nodeTypeFilter.showTopics}
+        />
       </div>
       <TreeView
         nodeCommons={{}}
