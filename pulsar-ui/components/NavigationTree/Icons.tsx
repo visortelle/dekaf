@@ -8,11 +8,18 @@ export type NodeIconsProps = {
   isExpanded: boolean;
   onClick: () => void
   className?: string
+  isGray?: boolean;
 }
 export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
+  const style = props.isGray ? {
+    color: '#fff',
+    backgroundColor: '#999',
+  } : {
+    color: props.textColor, backgroundColor: props.backgroundColor
+  }
   return (
     <div
-      style={{ color: props.textColor, backgroundColor: props.backgroundColor }}
+      style={style}
       className={`${s.NodeIcon} ${props.isExpanded ? s.NodeIconExpanded : ''} ${props.isExpandable ? s.NodeIconExpandable : ''} ${props.className || ''}`}
       onClick={props.onClick}
     >
@@ -26,6 +33,7 @@ export type TopicIconProps = {
   isExpanded: boolean;
   isExpandable: boolean;
   className?: string;
+  isGray?: boolean;
 }
 export const TopicIcon: React.FC<TopicIconProps> = (props) => {
   return <NodeIcon
@@ -36,6 +44,7 @@ export const TopicIcon: React.FC<TopicIconProps> = (props) => {
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}
     className={props.className}
+    isGray={props.isGray}
   />
 }
 
@@ -43,6 +52,7 @@ export type NamespaceIconProps = {
   onClick: () => void;
   isExpanded: boolean;
   className?: string;
+  isGray?: boolean;
 }
 export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
   return <NodeIcon
@@ -53,6 +63,7 @@ export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
     isExpanded={props.isExpanded}
     isExpandable={true}
     className={props.className}
+    isGray={props.isGray}
   />
 
 }
@@ -61,6 +72,7 @@ export type TenantIconProps = {
   onClick: () => void;
   isExpanded: boolean;
   className?: string;
+  isGray?: boolean;
 }
 export const TenantIcon: React.FC<TenantIconProps> = (props) => {
   return <NodeIcon
@@ -71,5 +83,6 @@ export const TenantIcon: React.FC<TenantIconProps> = (props) => {
     isExpanded={props.isExpanded}
     isExpandable={true}
     className={props.className}
+    isGray={props.isGray}
   />
 }
