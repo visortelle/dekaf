@@ -7,7 +7,7 @@
 }
 
 .Node {
-  padding: 12rem 18rem;
+  padding: 8rem 12rem;
   background-color: #fff;
   position: relative;
 }
@@ -18,7 +18,7 @@
 }
 
 .NodeContent {
-  position: relative;
+  /* position: relative; */
   line-height: 1;
   display: flex;
   align-items: center;
@@ -44,9 +44,24 @@
 
 .NodeLink {
   color: inherit;
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
 }
 .NodeLink:hover {
   opacity: 1;
+}
+
+.NodeIcon {
+  position: relative;
+  z-index: 1;
+  left: -6ch;
 }
 
 .FilterQueryInput {

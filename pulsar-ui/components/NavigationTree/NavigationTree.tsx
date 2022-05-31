@@ -9,6 +9,8 @@ import Link from 'next/link';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon } from './Icons';
+import { string } from 'fp-ts';
+import { left } from 'fp-ts/lib/EitherT';
 
 const NavigationTree: React.FC = () => {
   const [tree, setTree] = React.useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
@@ -109,6 +111,7 @@ const NavigationTree: React.FC = () => {
               let nodeContent: React.ReactNode = null;
               let nodeIcon = null;
               let childrenCount = null;
+              const leftIndent = `${((path.length + 1) * 3 - 1)}ch`;
 
               const pathStr = JSON.stringify(path);
               const nodeIconOnClick = () => setExpandedPaths((expandedPaths) => expandedPaths.includes(pathStr) ? expandedPaths.filter(p => p !== pathStr) : expandedPaths.concat([pathStr]));
@@ -124,6 +127,7 @@ const NavigationTree: React.FC = () => {
                     forceReloadKey={forceReloadKey}
                     tenant={node.name}
                     onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces(tree, tenantName, namespaces))}
+                    leftIndent={leftIndent}
                   />
                 );
                 nodeIcon = <TenantIcon onClick={nodeIconOnClick} isExpanded={isExpanded} />;
@@ -138,6 +142,7 @@ const NavigationTree: React.FC = () => {
                     tenant={tenantName}
                     namespace={namespaceName}
                     onTopics={(topics) => setTree((tree) => setNamespaceTopics(tree, tenantName, namespaceName, topics))}
+                    leftIndent={leftIndent}
                   />
                 );
                 nodeIcon = <NamespaceIcon onClick={nodeIconOnClick} isExpanded={isExpanded} />;
@@ -152,14 +157,16 @@ const NavigationTree: React.FC = () => {
                     tenant={tenantName}
                     namespace={namespaceName}
                     topic={topicName}
+                    leftIndent={leftIndent}
                   />
                 );
                 nodeIcon = <TopicIcon isExpandable={false} isExpanded={false} onClick={() => undefined} />
               }
 
-              return <div className={s.Node} style={{ paddingLeft: `${((path.length + 1) * 3 - 1)}ch` }}>
+              return <div className={s.Node}>
                 <div className={s.NodeContent}>
-                  {nodeIcon}
+                  <span>&nbsp;</span>
+                  <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
                   <span className={s.NodeTextContent}>{nodeContent}</span>
                 </div>
                 {childrenCount !== null && <div className={s.NodeChildrenCount}>{childrenCount}</div>}
@@ -181,9 +188,10 @@ const NavigationTree: React.FC = () => {
 export default NavigationTree;
 
 type PulsarTenantProps = {
-  forceReloadKey: number,
-  tenant: string,
-  onNamespaces: (namespaces: string[]) => void
+  forceReloadKey: number;
+  tenant: string;
+  onNamespaces: (namespaces: string[]) => void;
+  leftIndent: string;
 }
 const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { notifyError } = Notifications.useContext();
@@ -202,7 +210,7 @@ const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
 
   return (
     <Link passHref href={`/tenants/${props.tenant}`}>
-      <a className={s.NodeLink}>
+      <a className={s.NodeLink} style={{ paddingLeft: props.leftIndent }}>
         <span>{props.tenant}</span>
       </a>
     </Link>
@@ -211,9 +219,10 @@ const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
 
 type PulsarNamespaceProps = {
   forceReloadKey: number,
-  tenant: string,
-  namespace: string,
-  onTopics: (topics: string[]) => void
+  tenant: string;
+  namespace: string;
+  onTopics: (topics: string[]) => void;
+  leftIndent: string;
 }
 const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
@@ -235,7 +244,7 @@ const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 
   return (
     <Link passHref href={`/tenants/${props.tenant}/namespaces/${props.namespace}`}>
-      <a className={s.NodeLink}>
+      <a className={s.NodeLink} style={{ paddingLeft: props.leftIndent }}>
         <span>{props.namespace}</span>
       </a>
     </Link>
@@ -246,11 +255,12 @@ type PulsarTopicProps = {
   tenant: string;
   namespace: string;
   topic: string;
+  leftIndent: string;
 }
 const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
   return (
     <Link passHref href={`/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topic}`}>
-      <a className={s.NodeLink}>
+      <a className={s.NodeLink} style={{ paddingLeft: props.leftIndent }}>
         <span>{props.topic}</span>
       </a>
     </Link>
