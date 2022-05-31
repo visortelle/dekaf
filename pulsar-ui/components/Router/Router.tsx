@@ -17,17 +17,9 @@ const Router: React.FC = () => {
       <Routes>
         <Route path="/">
           <Route index element={withLayout(<HomePage />)} />
-          <Route path="tenants">
-            <Route path=":tenant" element={withLayout(<TenantPage />)}>
-              <Route path="namespaces">
-                <Route path=":namespace" element={withLayout(<NamespacePage />)}>
-                  <Route path="topics">
-                    <Route path=":topic" element={withLayout(<TopicPage />)} />
-                  </Route>
-                </Route>
-              </Route>
-            </Route>
-          </Route>
+          <Route path="tenants/:tenant/namespaces/:namespace/topics/:topic" element={withLayout(<TopicPage />)} />
+          <Route path="tenants/:tenant/namespaces/:namespace" element={withLayout(<NamespacePage />)} />
+          <Route path="tenants/:tenant" element={withLayout(<TenantPage />)} />
         </Route>
       </Routes>
     </BrowserRouter>

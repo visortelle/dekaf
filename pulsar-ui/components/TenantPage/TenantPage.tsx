@@ -5,7 +5,9 @@ export type TenantPageProps = {};
 
 const TenantPage: React.FC<TenantPageProps> = (props) => {
   return (
-    <div className={s.TenantPage}>tenant page</div>
+    <div className={s.TenantPage}>
+      tenant page
+    </div>
   );
 }
 
