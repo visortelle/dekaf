@@ -1,0 +1,30 @@
+.NodeIcon {
+  font-size: 12rem;
+  width: 24rem;
+  height: 24rem;
+  position: absolute;
+  left: -4ch;
+  display: flex;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  color: #fff;
+  padding: 2rem;
+  border-radius: 4rem;
+  user-select: none;
+  cursor: initial;
+}
+
+.NodeIconExpandable:hover {
+  opacity: 0.75;
+}
+
+.NodeIconExpandable {
+  cursor: pointer;
+  box-shadow: 1rem 1rem 2rem rgb(0 0 0 / 50%);
+}
+.NodeIconExpanded {
+  box-shadow: inset 2rem 3rem 4rem rgba(0, 0, 0, 0.5);
+}
+
