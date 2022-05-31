@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import HomePage from '../components/HomePage/HomePage'
+import Router from '../components/Router/Router'
 
 const Home: NextPage = () => {
   return (
@@ -10,7 +10,7 @@ const Home: NextPage = () => {
         <meta name="description" content="Pulsar UI" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <HomePage />
+      <Router />
     </>
   )
 }
