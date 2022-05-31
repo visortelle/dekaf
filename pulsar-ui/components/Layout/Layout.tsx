@@ -12,7 +12,9 @@ const Layout: React.FC<LayoutProps> = (props) => {
       <div className={s.NavigationTree}>
         <NavigationTree />
       </div>
-      {props.children}
+      <div className={s.Children}>
+        {props.children}
+      </div>
     </div>
   );
 }
