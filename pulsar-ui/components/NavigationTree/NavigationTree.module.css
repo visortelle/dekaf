@@ -47,7 +47,7 @@
 
 .NodeIconExpandable {
   cursor: pointer;
-  box-shadow: 1rem 1rem 0rem rgba(0, 0, 0, 0.5);
+  box-shadow: 1rem 1rem 2rem rgb(0 0 0 / 50%);
 }
 .NodeIconExpanded {
   box-shadow: inset 2rem 3rem 4rem rgba(0, 0, 0, 0.5);
@@ -76,4 +76,16 @@
 }
 .NodeLink:hover {
   opacity: 1;
+}
+
+.FilterQueryInput {
+  padding: 8rem 12rem;
+}
+
+.TreeControlButtons {
+  padding: 8rem 12rem;
+}
+
+.TreeControlButtons > * {
+  margin-right: 8rem;
 }
