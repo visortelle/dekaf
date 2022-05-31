@@ -8,15 +8,15 @@ import { setTenants, setTenantNamespaces, setNamespaceTopics, expandAll } from '
 import Link from 'next/link';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
+import { TenantIcon, NamespaceIcon, TopicIcon } from './Icons';
 
-export type NavigationTreeProps = {
-};
-
-const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
+const NavigationTree: React.FC = () => {
   const [tree, setTree] = React.useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
   const [filterQuery, setFilterQuery] = React.useState<string>('');
-  const [useRegex, setUseRegex] = React.useState<boolean>(false);
+  const [useRegex, _] = React.useState<boolean>(false);
   const [expandedPaths, setExpandedPaths] = React.useState<string[]>([]);
+  const [nodeTypeFilter, setNodeTypeFilter] = React.useState<{ showTenants: boolean, showNamespaces: boolean, showTopics: boolean }>({ showTenants: true, showNamespaces: true, showTopics: true });
+  const [forceReloadKey, setForceReloadKey] = React.useState<number>(0);
 
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
@@ -34,11 +34,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     setTree((tree) => setTenants(tree, tenants || []));
   }, [tenants]);
 
+  useEffect(() => {
+    setForceReloadKey((key) => key + 1);
+  }, [nodeTypeFilter]);
+
   const expanded = useCallback((pathStr: string) => {
     return expandedPaths.includes(pathStr);
   }, [expandedPaths]);
 
-  console.log('exp', expandedPaths)
   return (
     <div className={s.NavigationTree}>
       <div className={s.FilterQueryInput}>
@@ -47,6 +50,9 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       <div className={s.TreeControlButtons}>
         <SmallButton text='Expand' onClick={() => setExpandedPaths(expandAll(tree, [], []))} />
         <SmallButton text='Collapse' onClick={() => setExpandedPaths([])} />
+        <TenantIcon isExpanded={nodeTypeFilter.showTenants} onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTenants: !nodeTypeFilter.showTenants }))} className={s.NodeTypeFilterButton} />
+        <NamespaceIcon isExpanded={nodeTypeFilter.showNamespaces} onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showNamespaces: !nodeTypeFilter.showNamespaces }))} className={s.NodeTypeFilterButton} />
+        <TopicIcon isExpandable={true} isExpanded={nodeTypeFilter.showTopics} onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTopics: !nodeTypeFilter.showTopics }))} className={s.NodeTypeFilterButton} />
       </div>
       <TreeView
         nodeCommons={{}}
@@ -73,6 +79,18 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
                   }
 
                   return tree.rootLabel.name.includes(filterQuery)
+                }
+
+                if (tree.rootLabel.type === 'tenant' && !nodeTypeFilter.showTenants) {
+                  return false;
+                }
+
+                if (tree.rootLabel.type === 'namespace' && !nodeTypeFilter.showNamespaces) {
+                  return false;
+                }
+
+                if (tree.rootLabel.type === 'topic' && !nodeTypeFilter.showTopics) {
+                  return false;
                 }
 
                 return true;
@@ -103,20 +121,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
                 nodeContent = (
                   <PulsarTenant
+                    forceReloadKey={forceReloadKey}
                     tenant={node.name}
                     onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces(tree, tenantName, namespaces))}
                   />
                 );
-                nodeIcon = (
-                  <NodeIcon
-                    title="te"
-                    textColor='#fff'
-                    backgroundColor='#276ff4'
-                    onClick={nodeIconOnClick}
-                    isExpanded={isExpanded}
-                    isExpandable={true}
-                  />
-                );
+                nodeIcon = <TenantIcon onClick={nodeIconOnClick} isExpanded={isExpanded} />;
                 childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenantName)?.subForest.length;
               } else if (node.type === 'namespace') {
                 const tenantName = path[0];
@@ -124,21 +134,13 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
                 nodeContent = (
                   <PulsarNamespace
+                    forceReloadKey={forceReloadKey}
                     tenant={tenantName}
                     namespace={namespaceName}
                     onTopics={(topics) => setTree((tree) => setNamespaceTopics(tree, tenantName, namespaceName, topics))}
                   />
                 );
-                nodeIcon = (
-                  <NodeIcon
-                    title="ns"
-                    textColor='#fff'
-                    backgroundColor='#fe6e6e'
-                    onClick={nodeIconOnClick}
-                    isExpanded={isExpanded}
-                    isExpandable={true}
-                  />
-                );
+                nodeIcon = <NamespaceIcon onClick={nodeIconOnClick} isExpanded={isExpanded} />;
                 childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenantName)?.subForest.find((ch) => ch.rootLabel.name === namespaceName)?.subForest.length;
               } else if (node.type === 'topic') {
                 const tenantName = path[0];
@@ -152,16 +154,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
                     topic={topicName}
                   />
                 );
-                nodeIcon = (
-                  <NodeIcon
-                    title="to"
-                    textColor='#fff'
-                    backgroundColor='#555'
-                    onClick={() => undefined}
-                    isExpanded={isExpanded}
-                    isExpandable={false}
-                  />
-                );
+                nodeIcon = <TopicIcon isExpandable={false} isExpanded={false} onClick={() => undefined} />
               }
 
               return <div className={s.Node} style={{ paddingLeft: `${((path.length + 1) * 3 - 1)}ch` }}>
@@ -188,6 +181,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 export default NavigationTree;
 
 type PulsarTenantProps = {
+  forceReloadKey: number,
   tenant: string,
   onNamespaces: (namespaces: string[]) => void
 }
@@ -200,7 +194,7 @@ const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
     async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]),
   );
 
-  useEffect(() => props.onNamespaces(namespaces || []), [namespaces]);
+  useEffect(() => props.onNamespaces(namespaces || []), [namespaces, props.forceReloadKey]);
 
   if (namespacesError) {
     notifyError(`Unable to fetch namespaces. ${namespacesError.toString()}`);
@@ -216,6 +210,7 @@ const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
 }
 
 type PulsarNamespaceProps = {
+  forceReloadKey: number,
   tenant: string,
   namespace: string,
   onTopics: (topics: string[]) => void
@@ -232,7 +227,7 @@ const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
     }),
   );
 
-  useEffect(() => props.onTopics(topics || []), [topics]);
+  useEffect(() => props.onTopics(topics || []), [topics, props.forceReloadKey]);
 
   if (topicsError) {
     notifyError(`Unable to fetch namespace topics. ${topicsError.toString()}`);
@@ -259,25 +254,5 @@ const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
         <span>{props.topic}</span>
       </a>
     </Link>
-  );
-}
-
-type NodeIconsProps = {
-  title: string;
-  textColor: string;
-  backgroundColor: string;
-  isExpandable: boolean;
-  isExpanded: boolean;
-  onClick: () => void
-}
-const NodeIcon: React.FC<NodeIconsProps> = (props) => {
-  return (
-    <div
-      style={{ color: props.textColor, backgroundColor: props.backgroundColor }}
-      className={`${s.NodeIcon} ${props.isExpanded ? s.NodeIconExpanded : ''} ${props.isExpandable ? s.NodeIconExpandable : ''}`}
-      onClick={props.onClick}
-    >
-      {props.title}
-    </div>
   );
 }
