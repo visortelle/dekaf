@@ -27,10 +27,10 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           autoClose={3000}
           newestOnTop={true}
           hideProgressBar={true}
-          closeOnClick
-          pauseOnFocusLoss
+          closeOnClick={true}
           draggable={false}
-          pauseOnHover
+          pauseOnHover={true}
+          pauseOnFocusLoss={true}
           className={s.toastContainer}
           toastClassName={s.toast}
           bodyClassName={s.toastBody}
