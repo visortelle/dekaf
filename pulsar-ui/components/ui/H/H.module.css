@@ -1,0 +1,17 @@
+.H1,
+.H2,
+.H3 {
+  margin: 0;
+}
+
+.H1 {
+  font-size: 32rem;
+}
+
+.H2 {
+  font-size: 24rem;
+}
+
+.H3 {
+  font-size: 20rem;
+}

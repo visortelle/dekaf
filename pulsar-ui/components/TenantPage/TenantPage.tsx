@@ -2,12 +2,18 @@ import React from 'react';
 import { BreadCrumbsAtPageTop } from '../BreadCrumbs/BreadCrumbs';
 import s from './TenantPage.module.css'
 import Button from '../ui/Button/Button';
+import Configuration from './Configuration/Configuration';
+import Namespaces from './Namespaces/Namespaces';
+import DeleteTenant from './DeleteTenant/DeleteTenant';
+import CreateNamespace from './CreateNamespace/CreateNamespace';
 
 export type TenantPageProps = {
   tenant: string;
 };
 
 const TenantPage: React.FC<TenantPageProps> = (props) => {
+  const [view, setView] = React.useState<'namespaces' | 'configuration' | 'delete-tenant' | 'create-namespace'>('namespaces');
+
   return (
     <div className={s.Page}>
       <BreadCrumbsAtPageTop
@@ -25,34 +31,37 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
           <div className={s.ToolbarButton}>
             <Button
               title='Namespaces'
-              onClick={() => undefined}
+              onClick={() => setView('namespaces')}
               type={'regular'}
             />
           </div>
           <div className={s.ToolbarButton}>
             <Button
               title='Configuration'
-              onClick={() => undefined}
+              onClick={() => setView('configuration')}
               type={'regular'}
             />
           </div>
           <div className={s.ToolbarButton}>
             <Button
               title='Delete'
-              onClick={() => undefined}
+              onClick={() => setView('delete-tenant')}
               type={'danger'}
             />
           </div>
           <div className={s.ToolbarActionButton}>
             <Button
               title='Create namespace'
-              onClick={() => undefined}
+              onClick={() => setView('create-namespace')}
               type={'primary'}
             />
           </div>
         </div>
       </div>
-      tenant page
+      {view === 'namespaces' && <Namespaces />}
+      {view === 'configuration' && <Configuration />}
+      {view === 'delete-tenant' && <DeleteTenant tenant={props.tenant} />}
+      {view === 'create-namespace' && <CreateNamespace />}
     </div>
   );
 }

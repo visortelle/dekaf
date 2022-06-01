@@ -1,0 +1,40 @@
+.View {
+  padding: 36rem 36rem;
+}
+
+.Header {
+  margin-bottom: 48rem;
+}
+
+.Message {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 12rem;
+  font-size: 24rem;
+}
+
+.SubjectName {
+  display: inline-flex;
+  padding: 6rem 12rem;
+  background-color: #eee;
+  border-radius: 6rem;
+  align-items: center;
+  font-size: 14rem;
+}
+
+.SubjectIcon {
+  margin-right: 1ch;
+}
+
+.Actions {
+  margin-top: 36rem;
+}
+
+.ActionButton {
+  display: inline-flex;
+}
+
+.ActionCheckbox {
+  margin-bottom: 12rem;
+}
