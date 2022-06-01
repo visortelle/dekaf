@@ -1,22 +1,37 @@
 .Button {
   position: relative;
-  margin: 12px auto 0 auto;
-  padding: 8px 18px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  font-size: 16px;
-  background-color: var(--surface-color);
-  box-shadow: 0 4px 6px rgb(0 0 0 / 27%);
-  border: 1px solid var(--surface-color);
-  color: var(--text-color);
+  border-radius: 4px;
+  font-size: 14px;
   user-select: none;
   transition: var(--transition-short);
+  border-bottom: 2rem solid rgba(0, 0, 0, 0.27);
 }
 
 .Button:hover {
   cursor: pointer;
+  opacity: 0.5;
   transition: var(--transition-short);
-  border: 1px solid var(--teal-color);
 }
+
+.Regular {
+  background-color: #fff;
+  color: var(--text-color);
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+}
+
+.Primary {
+  background-color: var(--accent-color-blue);
+  color: #fff;
+}
+
+.Danger {
+  background-color: var(--accent-color-red);
+  color: #fff;
+}
+
+
+

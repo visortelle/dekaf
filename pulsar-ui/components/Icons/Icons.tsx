@@ -40,7 +40,7 @@ export const TopicIcon: React.FC<TopicIconProps> = (props) => {
   return <NodeIcon
     title="to"
     textColor='#fff'
-    backgroundColor='#00ab28'
+    backgroundColor='var(--accent-color-green)'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}
@@ -60,7 +60,7 @@ export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
   return <NodeIcon
     title="ns"
     textColor='#fff'
-    backgroundColor='#fe6e6e'
+    backgroundColor='var(--accent-color-red)'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}
@@ -81,7 +81,7 @@ export const TenantIcon: React.FC<TenantIconProps> = (props) => {
   return <NodeIcon
     title="te"
     textColor='#fff'
-    backgroundColor='#276ff4'
+    backgroundColor='var(--accent-color-blue)'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}
