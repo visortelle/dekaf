@@ -130,7 +130,7 @@ const NavigationTree: React.FC = () => {
               const leftIndent = `${((path.length + 1) * 3 - 1)}ch`;
 
               const pathStr = JSON.stringify(path);
-              const nodeIconOnClick = () => setExpandedPaths((expandedPaths) => expandedPaths.includes(pathStr) ? expandedPaths.filter(p => p !== pathStr) : expandedPaths.concat([pathStr]));
+              const toggleNodeExpanded = () => setExpandedPaths((expandedPaths) => expandedPaths.includes(pathStr) ? expandedPaths.filter(p => p !== pathStr) : expandedPaths.concat([pathStr]));
               const isExpanded = expanded(pathStr);
 
               if (node.type === 'instance') {
@@ -144,9 +144,10 @@ const NavigationTree: React.FC = () => {
                     tenant={node.name}
                     onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces(tree, tenantName, namespaces))}
                     leftIndent={leftIndent}
+                    onDoubleClick={toggleNodeExpanded}
                   />
                 );
-                nodeIcon = <TenantIcon onClick={nodeIconOnClick} isExpandable={true} isExpanded={isExpanded} />;
+                nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
                 childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenantName)?.subForest.length;
               } else if (node.type === 'namespace') {
                 const tenantName = path[0];
@@ -159,9 +160,10 @@ const NavigationTree: React.FC = () => {
                     namespace={namespaceName}
                     onTopics={(topics) => setTree((tree) => setNamespaceTopics(tree, tenantName, namespaceName, topics))}
                     leftIndent={leftIndent}
+                    onDoubleClick={toggleNodeExpanded}
                   />
                 );
-                nodeIcon = <NamespaceIcon onClick={nodeIconOnClick} isExpandable={true} isExpanded={isExpanded} />;
+                nodeIcon = <NamespaceIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
                 childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenantName)?.subForest.find((ch) => ch.rootLabel.name === namespaceName)?.subForest.length;
               } else if (node.type === 'topic') {
                 const tenantName = path[0];
@@ -174,6 +176,7 @@ const NavigationTree: React.FC = () => {
                     namespace={namespaceName}
                     topic={topicName}
                     leftIndent={leftIndent}
+                    onDoubleClick={toggleNodeExpanded}
                   />
                 );
                 nodeIcon = <TopicIcon isExpandable={false} isExpanded={false} onClick={() => undefined} />
@@ -208,6 +211,7 @@ type PulsarTenantProps = {
   tenant: string;
   onNamespaces: (namespaces: string[]) => void;
   leftIndent: string;
+  onDoubleClick: () => void;
 }
 const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { notifyError } = Notifications.useContext();
@@ -230,6 +234,7 @@ const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
       end
       className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
+      onDoubleClick={props.onDoubleClick}
     >
       <span>{props.tenant}</span>
     </NavLink>
@@ -242,6 +247,7 @@ type PulsarNamespaceProps = {
   namespace: string;
   onTopics: (topics: string[]) => void;
   leftIndent: string;
+  onDoubleClick: () => void;
 }
 const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
@@ -267,6 +273,7 @@ const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
       end
       className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
+      onDoubleClick={props.onDoubleClick}
     >
       <span>{props.namespace}</span>
     </NavLink>
@@ -278,6 +285,7 @@ type PulsarTopicProps = {
   namespace: string;
   topic: string;
   leftIndent: string;
+  onDoubleClick: () => void;
 }
 const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
   return (
@@ -286,6 +294,7 @@ const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
       end
       className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
+      onDoubleClick={props.onDoubleClick}
     >
       <span>{props.topic}</span>
     </NavLink>
