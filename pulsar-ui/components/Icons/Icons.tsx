@@ -1,12 +1,13 @@
+import { boolean } from 'fp-ts';
 import s from './Icons.module.css';
 
 export type NodeIconsProps = {
   title: string;
   textColor: string;
   backgroundColor: string;
-  isExpandable: boolean;
-  isExpanded: boolean;
-  onClick: () => void
+  isExpandable?: boolean;
+  isExpanded?: boolean;
+  onClick?: () => void
   className?: string
   isGray?: boolean;
 }
@@ -29,9 +30,9 @@ export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
 }
 
 export type TopicIconProps = {
-  onClick: () => void;
-  isExpanded: boolean;
-  isExpandable: boolean;
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
 }
@@ -49,8 +50,9 @@ export const TopicIcon: React.FC<TopicIconProps> = (props) => {
 }
 
 export type NamespaceIconProps = {
-  onClick: () => void;
-  isExpanded: boolean;
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
 }
@@ -61,7 +63,7 @@ export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
     backgroundColor='#fe6e6e'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
-    isExpandable={true}
+    isExpandable={props.isExpandable}
     className={props.className}
     isGray={props.isGray}
   />
@@ -69,8 +71,9 @@ export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
 }
 
 export type TenantIconProps = {
-  onClick: () => void;
-  isExpanded: boolean;
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
 }
@@ -81,7 +84,7 @@ export const TenantIcon: React.FC<TenantIconProps> = (props) => {
     backgroundColor='#276ff4'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
-    isExpandable={true}
+    isExpandable={props.isExpandable}
     className={props.className}
     isGray={props.isGray}
   />

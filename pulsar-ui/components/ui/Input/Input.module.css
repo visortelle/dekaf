@@ -26,8 +26,8 @@
   position: relative;
   background-color: #fff;
   border-radius: 6px;
-  border: 2px solid #999;
-  padding: 12px 18px 12px 18px;
+  border: 1px solid #999;
+  padding: 8px 12px 8px 12px;
   display: flex;
   flex: 1 0 auto;
   font-size: 14px;
@@ -41,7 +41,7 @@
 }
 
 .InputInput:focus {
-  border: 2px solid var(--accent-color-blue);
+  border-color: var(--accent-color-blue);
   transition: var(--transition-short);
 }
 
