@@ -23,7 +23,7 @@
   --accent-color-blue: #276ff4;
   --accent-color-purple: #9d50ff;
   --max-content-width: 1000px;
-  --toastify-icon-color-success: var(--pulsar-color) !important;
+  --toastify-icon-color-success: var(--accent-color-green) !important;
 }
 
 html,
