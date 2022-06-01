@@ -1,0 +1,42 @@
+.BreadCrumbs {
+  display: flex;
+}
+
+.Crumb {
+  display: flex;
+  padding: 8rem 12rem;
+  align-items: center;
+  color: var(--text-color);
+}
+
+.Crumb:hover {
+  background-color: #eee;
+  cursor: pointer;
+}
+
+.CrumbIcon {
+  margin-right: 8rem;
+}
+
+/* Fix cursor: initial; for non expandable icons. */
+.CrumbIcon:hover > * {
+  cursor: pointer;
+}
+
+.CrumbTitle {
+  font-size: 14rem;
+}
+
+.CrumbArrow {
+  margin-left: 18rem;
+}
+
+.CrumbArrow svg {
+  width: 12rem;
+  height: 12rem;
+  fill: var(--text-color);
+}
+
+.BreadCrumbsAtPageTop {
+  border-bottom: 1rem solid #ddd;
+}

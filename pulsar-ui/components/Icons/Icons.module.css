@@ -15,7 +15,8 @@
 }
 
 .NodeIconExpandable:hover {
-  opacity: 0.75;
+  opacity: 0.5;
+  transition: var(--transition-short);
 }
 
 .NodeIconExpandable {
@@ -23,20 +24,8 @@
   border-bottom: 2rem solid rgba(0, 0, 0, 0.27);
   position: relative;
   top: 1rem;
+  transition: var(--transition-short);
 }
-
-/* .NodeIconExpandable::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 24rem;
-  height: 24rem;
-  background-color: #333;
-  transform: translate(100%, 0);
-} */
 
 .NodeIconExpanded {
-  /* box-shadow: inset 2rem 3rem 4rem rgba(0, 0, 0, 0.5); */
 }
-

@@ -8,7 +8,7 @@ import { setTenants, setTenantNamespaces, setNamespaceTopics, expandAll } from '
 import { NavLink } from 'react-router-dom';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
-import { TenantIcon, NamespaceIcon, TopicIcon } from './Icons';
+import { TenantIcon, NamespaceIcon, TopicIcon } from '../Icons/Icons';
 
 const NavigationTree: React.FC = () => {
   const [tree, setTree] = React.useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
@@ -51,20 +51,22 @@ const NavigationTree: React.FC = () => {
         <SmallButton text='Expand' onClick={() => setExpandedPaths(expandAll(tree, [], []))} />
         <SmallButton text='Collapse' onClick={() => setExpandedPaths([])} />
         <TenantIcon
-          isExpanded={nodeTypeFilter.showTenants}
+          isExpanded={false}
+          isExpandable={true}
           onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTenants: !nodeTypeFilter.showTenants }))}
           className={s.NodeTypeFilterButton}
           isGray={!nodeTypeFilter.showTenants}
         />
         <NamespaceIcon
-          isExpanded={nodeTypeFilter.showNamespaces}
+          isExpanded={false}
+          isExpandable={true}
           onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showNamespaces: !nodeTypeFilter.showNamespaces }))}
           className={s.NodeTypeFilterButton}
           isGray={!nodeTypeFilter.showNamespaces}
         />
         <TopicIcon
+          isExpanded={false}
           isExpandable={true}
-          isExpanded={nodeTypeFilter.showTopics}
           onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTopics: !nodeTypeFilter.showTopics }))}
           className={s.NodeTypeFilterButton}
           isGray={!nodeTypeFilter.showTopics}
@@ -144,7 +146,7 @@ const NavigationTree: React.FC = () => {
                     leftIndent={leftIndent}
                   />
                 );
-                nodeIcon = <TenantIcon onClick={nodeIconOnClick} isExpanded={isExpanded} />;
+                nodeIcon = <TenantIcon onClick={nodeIconOnClick} isExpandable={true} isExpanded={isExpanded} />;
                 childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenantName)?.subForest.length;
               } else if (node.type === 'namespace') {
                 const tenantName = path[0];
@@ -159,7 +161,7 @@ const NavigationTree: React.FC = () => {
                     leftIndent={leftIndent}
                   />
                 );
-                nodeIcon = <NamespaceIcon onClick={nodeIconOnClick} isExpanded={isExpanded} />;
+                nodeIcon = <NamespaceIcon onClick={nodeIconOnClick} isExpandable={true} isExpanded={isExpanded} />;
                 childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenantName)?.subForest.find((ch) => ch.rootLabel.name === namespaceName)?.subForest.length;
               } else if (node.type === 'topic') {
                 const tenantName = path[0];
