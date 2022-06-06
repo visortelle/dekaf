@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import Layout from '../Layout/Layout';
 import HomePage from '../HomePage/HomePage';
-import TenantPage from '../TenantPage/TenantPage';
+import TenantPage, { TenantPageView } from '../TenantPage/TenantPage';
 import NamespacePage from '../NamespacePage/NamespacePage';
 import TopicPage from '../TopicPage/TopicPage';
 
@@ -21,16 +21,19 @@ const Router: React.FC = () => {
           <Route index element={withLayout(<HomePage />)} />
           <Route path="tenants/:tenant/namespaces/:namespace/topics/:topic" element={withLayout(<RoutedTopicPage />)} />
           <Route path="tenants/:tenant/namespaces/:namespace" element={withLayout(<RoutedNamespacePage />)} />
-          <Route path="tenants/:tenant" element={withLayout(<RouteTenantPage />)} />
+          <Route path="tenants/:tenant/namespaces" element={withLayout(<RouteTenantPage view={'namespaces'} />)} />
+          <Route path="tenants/:tenant/configuration" element={withLayout(<RouteTenantPage view={'configuration'} />)} />
+          <Route path="tenants/:tenant/create-namespace" element={withLayout(<RouteTenantPage view={'create-namespace'} />)} />
+          <Route path="tenants/:tenant/delete-tenant" element={withLayout(<RouteTenantPage view={'delete-tenant'} />)} />
         </Route>
       </Routes>
     </BrowserRouter>
   );
 }
 
-const RouteTenantPage = () => {
+const RouteTenantPage = (props: { view: TenantPageView }) => {
   const { tenant } = useParams();
-  return <TenantPage tenant={tenant!} />
+  return <TenantPage tenant={tenant!} view={props.view} />
 }
 const RoutedNamespacePage = () => {
   const { tenant, namespace } = useParams();
