@@ -20,6 +20,8 @@
   align-items: center;
   font-size: 14rem;
   position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ListFieldValue:last-child {
@@ -50,7 +52,7 @@
 }
 
 .Editor {
-  margin-top: 12rem;
+  margin-top: 18rem;
 }
 
 .Editor:first-child {
@@ -61,7 +63,7 @@
   border: 0;
   padding: 0;
   font-size: 14rem;
-  margin-top: 12rem;
+  margin-top: 8rem;
   margin-left: auto;
   height: 32rem;
   padding: 0 12rem;
