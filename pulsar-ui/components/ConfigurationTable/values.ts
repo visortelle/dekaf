@@ -1,4 +1,5 @@
 import * as Either from "fp-ts/Either";
+import React from "react";
 
 export type BooleanValue = {
   type: "boolean";
@@ -29,18 +30,11 @@ export type ListValue<T> = {
   onAdd?: (value: T) => void;
 };
 
-export type OneOfValue = {
-  type: "oneOf";
-  value: Value;
-  options: Value[];
-};
-
 export type Value =
   | BooleanValue
   | StringValue
   | NumberValue
   | ListValue<any>
-  | OneOfValue;
 
 export type ConfigurationField<V extends Value> = {
   id: string;

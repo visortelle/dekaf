@@ -53,6 +53,10 @@
   margin-top: 12rem;
 }
 
+.Editor:first-child {
+  margin-top: 0;
+}
+
 .AddButton {
   border: 0;
   padding: 0;
