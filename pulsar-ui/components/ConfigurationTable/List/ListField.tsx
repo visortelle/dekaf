@@ -7,7 +7,7 @@ import * as Either from 'fp-ts/Either';
 
 export function ListField<V extends Value>(props: ConfigurationField<ListValue<V>>): React.ReactElement {
   const [editorValue, setEditorValue] = useState<V | undefined>(props.value.editor?.initialValue);
-  const renderEditor = typeof props.value.editor?.render !== 'undefined' && typeof props.value.editor.initialValue !== 'undefined';
+  const isRenderEditor = typeof props.value.editor?.render !== 'undefined' && typeof props.value.editor.initialValue !== 'undefined';
 
   const valid: Either.Either<Error, void> = typeof editorValue === 'undefined' ?
     Either.left(new Error('The value is undefined')) :
@@ -39,7 +39,7 @@ export function ListField<V extends Value>(props: ConfigurationField<ListValue<V
           })}
         </div>
       )}
-      {renderEditor && (
+      {isRenderEditor && (
         <div className={s.Editor} onKeyDown={(e) => {
           if (e.key === 'Enter' && Either.isRight(valid)) {
             add();
