@@ -14,7 +14,7 @@
 }
 
 .Node:hover {
-  background-color: #eee;
+  background-color: #f5f5f5;
   cursor: pointer;
 }
 
@@ -60,7 +60,7 @@
 }
 
 .NodeLinkActive {
-  background-color: #eee;
+  background-color: #f5f5f5;
   z-index: 1;
 }
 

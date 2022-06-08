@@ -30,7 +30,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
       <div className={s.PageContent}>
         <div className={s.Toolbar}>
           <div className={s.ToolbarButton}>
-            <Link to={`/tenants/${props.tenant}/namespaces`}>
+            <Link to={`/tenants/${props.tenant}`}>
               <Button
                 title='Namespaces'
                 onClick={() => undefined}
@@ -69,7 +69,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
       </div>
 
       {props.view === 'namespaces' && <Namespaces />}
-      {props.view === 'configuration' && <Configuration />}
+      {props.view === 'configuration' && <Configuration tenant={props.tenant} />}
       {props.view === 'delete-tenant' && <DeleteTenant tenant={props.tenant} />}
       {props.view === 'create-namespace' && <CreateNamespace />}
     </div>

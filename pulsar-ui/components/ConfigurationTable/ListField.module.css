@@ -1,3 +1,52 @@
+.ListFieldInput {
+}
+
+.ListFieldValues {
+  border: 1rem solid #ddd;
+  border-top: none;
+  border-radius: 4rem;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.ListFieldValue {
+  padding: 0 12rem;
+  min-height: 36rem;
+  padding-right: 32rem;
+  border-bottom: 1rem solid #ddd;
+  display: flex;
+  align-items: center;
+  font-size: 14rem;
+  position: relative;
+}
+
+.ListFieldValue:last-child {
+  border-bottom: none;
+}
+
+.ListFieldRemoveValue {
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: 0 8rem;
+  width: 32rem;
+  display: flex;
+  align-items: center;
+}
+.ListFieldRemoveValue:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
+.ListFieldRemoveValue svg {
+  width: 14rem;
+  height: 14rem;
+  fill: var(--text-color);
+}
+
 .Input {
   display: flex;
   position: relative;
@@ -35,6 +84,12 @@
   color: var(--text-color);
   caret-color: var(--text-color);
   transition: var(--transition-short);
+  line-height: 1;
+}
+
+.InputInputWithValues {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .InputInputWithIcon {

@@ -1,34 +1,7 @@
 import React from 'react';
 import s from './ConfigurationTable.module.css'
-import * as Either from 'fp-ts/Either';
-
-export type BooleanValue = {
-  type: 'boolean';
-  value: boolean;
-}
-
-export type StringValue = {
-  type: 'string';
-  value: string;
-}
-
-export type NumberValue = {
-  type: 'number';
-  value: number;
-}
-
-export type ListValue<T> = {
-  type: 'list';
-  value: T[];
-}
-
-export type OneOfValue = {
-  type: 'oneOf';
-  value: Value,
-  options: Value[];
-}
-
-export type Value = BooleanValue | StringValue | NumberValue | ListValue<any> | OneOfValue;
+import { ListField } from './ListField';
+import { BooleanValue, ConfigurationField, ListValue, NumberValue, StringValue, Value } from './values';
 
 function GenericField<V extends Value>(props: ConfigurationField<V>): React.ReactElement {
   let el = <></>;
@@ -38,7 +11,7 @@ function GenericField<V extends Value>(props: ConfigurationField<V>): React.Reac
     case 'number': el = <NumberField {...(props as unknown as ConfigurationField<NumberValue>)} />; break;
     case 'string': el = <StringField {...(props as unknown as ConfigurationField<StringValue>)} />; break;
     case 'list': el = <ListField {...(props as unknown as ConfigurationField<ListValue<any>>)} />; break;
-    default: el = <div style={{ color: 'var(--accent-color-red)'}}>Unsupported value type: {props.value.type}</div>;
+    default: el = <div style={{ color: 'var(--accent-color-red)' }}>Unsupported value type: {props.value.type}</div>;
   }
 
   return el;
@@ -83,28 +56,6 @@ function StringField(props: ConfigurationField<StringValue>): React.ReactElement
   )
 }
 
-function ListField(props: ConfigurationField<ListValue<string>>): React.ReactElement {
-  return (
-    <input
-      type="text"
-      value={props.value.value}
-      onChange={e => {
-        const v: ListValue<string> = { type: 'list', value: []};
-        props.onChange(v);
-      }}
-    />
-  )
-}
-
-export type ConfigurationField<V extends Value> = {
-  id: string,
-  title: string,
-  description: string,
-  isValid: (value: V) => Either.Either<Error, void>;
-  onChange: (value: V) => Promise<void>;
-  value: V;
-}
-
 export type ConfigurationTableProps = {
   fields: ConfigurationField<any>[],
 };
@@ -112,6 +63,11 @@ export type ConfigurationTableProps = {
 const ConfigurationTable: React.FC<ConfigurationTableProps> = (props) => {
   return (
     <div className={s.ConfigurationTable}>
+      <div className={s.ColumnHeaders}>
+        <div className={s.ColumnHeader}>Property</div>
+        <div className={s.ColumnHeader}>Description</div>
+        <div className={s.ColumnHeader}>Value</div>
+      </div>
       {props.fields.map(field => {
         return (
           <div className={s.Field} key={field.id}>
