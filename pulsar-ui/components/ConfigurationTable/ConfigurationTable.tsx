@@ -22,10 +22,6 @@ function BooleanField(props: ConfigurationField<BooleanValue>): React.ReactEleme
     <input
       type="checkbox"
       checked={props.value.value}
-      onChange={e => {
-        const v: BooleanValue = { type: 'boolean', value: e.target.checked };
-        props.onChange(v);
-      }}
     />
   )
 }
@@ -35,10 +31,6 @@ function NumberField(props: ConfigurationField<NumberValue>): React.ReactElement
     <input
       type="number"
       value={props.value.value}
-      onChange={e => {
-        const v: NumberValue = { type: 'number', value: Number(e.target.value) };
-        props.onChange(v);
-      }}
     />
   )
 }
@@ -48,10 +40,6 @@ function StringField(props: ConfigurationField<StringValue>): React.ReactElement
     <input
       type="text"
       value={props.value.value}
-      onChange={e => {
-        const v: StringValue = { type: 'string', value: e.target.value };
-        props.onChange(v);
-      }}
     />
   )
 }

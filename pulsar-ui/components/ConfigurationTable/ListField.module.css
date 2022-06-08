@@ -1,4 +1,5 @@
 .ListFieldInput {
+  position: relative;
 }
 
 .ListFieldValues {
@@ -47,6 +48,49 @@
   fill: var(--text-color);
 }
 
+.ListFieldAdd {
+  border: 0;
+  padding: 0;
+  font-size: 14rem;
+
+  position: absolute;
+  right: 6rem;
+  top: 6rem;
+  bottom: 6rem;
+  background-color: var(--accent-color-blue);
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  border-radius: 3rem;
+  padding: 0 8rem;
+  line-height: 1;
+  color: #fff;
+  user-select: none;
+  border-bottom: 1rem solid rgba(0, 0, 0, 0.27);
+}
+
+.ListFieldAdd svg {
+  fill: #fff;
+  width: 14rem;
+  height: 14rem;
+}
+
+.ListFieldAddValid {
+  opacity: 1;
+}
+
+.ListFieldAddValid:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.ListFieldAddInvalid {
+  opacity: 0.5;
+  border-bottom: none;
+  box-shadow: none;
+}
+
 .Input {
   display: flex;
   position: relative;
@@ -77,6 +121,7 @@
   border-radius: 4rem;
   border: 1rem solid #ddd;
   padding: 0 12rem 0 12rem;
+  padding-right: 48rem;
   height: 36rem;
   display: flex;
   flex: 1 0 auto;
