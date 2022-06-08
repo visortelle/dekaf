@@ -4,7 +4,6 @@ import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import removeIcon from '!!raw-loader!./remove.svg';
 import { useState } from "react";
 import * as Either from 'fp-ts/Either';
-import { either } from "fp-ts";
 
 export function ListField<V extends Value>(props: ConfigurationField<ListValue<V>>): React.ReactElement {
   const [editorValue, setEditorValue] = useState<V | undefined>(props.value.editor?.initialValue);
