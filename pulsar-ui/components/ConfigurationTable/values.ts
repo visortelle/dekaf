@@ -1,4 +1,4 @@
-import * as Either from 'fp-ts/Either';
+import * as Either from "fp-ts/Either";
 
 export type BooleanValue = {
   type: "boolean";
@@ -19,11 +19,14 @@ export type ListValue<T> = {
   type: "list";
   value: T[];
   render: (value: T) => React.ReactElement;
+  editor?: {
+    render: (v: T, onChange: (v: T) => void) => React.ReactElement;
+    initialValue: T;
+  };
   getId: (value: T) => string;
   isValid: (value: T) => Either.Either<Error, void>;
-  onRemove?: (id: ReturnType<ListValue<T>['getId']>) => void;
-  onCreate?: (value: T) => void;
-  options?: T[];
+  onRemove?: (id: ReturnType<ListValue<T>["getId"]>) => void;
+  onAdd?: (value: T) => void;
 };
 
 export type OneOfValue = {
@@ -40,9 +43,8 @@ export type Value =
   | OneOfValue;
 
 export type ConfigurationField<V extends Value> = {
-  id: string,
-  title: string,
-  description: string,
+  id: string;
+  title: string;
+  description: string;
   value: V;
-}
-
+};

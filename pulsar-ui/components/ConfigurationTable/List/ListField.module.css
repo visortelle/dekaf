@@ -1,0 +1,96 @@
+.ListField {
+  position: relative;
+}
+
+.ListFieldInput {
+  position: relative;
+}
+
+.ListFieldValues {
+  border: 1rem solid #ddd;
+  border-radius: 4rem;
+}
+
+.ListFieldValue {
+  padding: 0 12rem;
+  min-height: 36rem;
+  padding-right: 32rem;
+  border-bottom: 1rem solid #ddd;
+  display: flex;
+  align-items: center;
+  font-size: 14rem;
+  position: relative;
+}
+
+.ListFieldValue:last-child {
+  border-bottom: none;
+}
+
+.ListFieldRemoveValue {
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: 0 8rem;
+  width: 32rem;
+  display: flex;
+  align-items: center;
+}
+.ListFieldRemoveValue:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
+.ListFieldRemoveValue svg {
+  width: 14rem;
+  height: 14rem;
+  fill: var(--text-color);
+}
+
+.Editor {
+  margin-top: 12rem;
+}
+
+.AddButton {
+  border: 0;
+  padding: 0;
+  font-size: 14rem;
+  margin-top: 12rem;
+  margin-left: auto;
+  height: 32rem;
+  padding: 0 12rem;
+
+  background-color: var(--accent-color-blue);
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  border-radius: 3rem;
+  line-height: 1;
+  color: #fff;
+  user-select: none;
+  border-bottom: 1rem solid rgba(0, 0, 0, 0.27);
+}
+
+.AddButton svg {
+  fill: #fff;
+  width: 14rem;
+  height: 14rem;
+}
+
+.AddButtonEnabled {
+  opacity: 1;
+}
+
+.AddButtonEnabled:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.AddButtonDisabled {
+  opacity: 0.5;
+  border-bottom: none;
+  box-shadow: none;
+}

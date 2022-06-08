@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './ConfigurationTable.module.css'
-import { ListField } from './ListField';
+import { ListField } from './List/ListField';
 import { BooleanValue, ConfigurationField, ListValue, NumberValue, StringValue, Value } from './values';
 
 function GenericField<V extends Value>(props: ConfigurationField<V>): React.ReactElement {
