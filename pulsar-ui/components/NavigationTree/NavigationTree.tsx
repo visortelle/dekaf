@@ -230,7 +230,7 @@ const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
 
   return (
     <NavLink
-      to={`/tenants/${props.tenant}/namespaces`}
+      to={`/tenants/${props.tenant}`}
       end
       className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}

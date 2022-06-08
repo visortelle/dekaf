@@ -24,7 +24,7 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
       await adminClient.client.tenants.deleteTenant(props.tenant, forceDelete);
       notification.notifySuccess(`Tenant ${props.tenant} has successfully been deleted.`);
       navigate(`/`);
-      mutate(['pulsar', 'tenants']);
+      await mutate(['pulsar', 'tenants']);
     } catch (err) {
       notification.notifyError(`Failed to delete tenant ${props.tenant}. ${err}`)
     }
