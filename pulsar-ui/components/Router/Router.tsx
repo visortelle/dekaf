@@ -18,10 +18,13 @@ const Router: React.FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/">
+          {/* Namespaces */}
           <Route index element={withLayout(<HomePage />)} />
           <Route path="tenants/:tenant/namespaces/:namespace/topics/:topic" element={withLayout(<RoutedTopicPage />)} />
           <Route path="tenants/:tenant/namespaces/:namespace" element={withLayout(<RoutedNamespacePage />)} />
-          <Route path="tenants/:tenant/namespaces" element={withLayout(<RouteTenantPage view={'namespaces'} />)} />
+
+          {/* Tenants */}
+          <Route path="tenants/:tenant" element={withLayout(<RouteTenantPage view={'namespaces'} />)} />
           <Route path="tenants/:tenant/configuration" element={withLayout(<RouteTenantPage view={'configuration'} />)} />
           <Route path="tenants/:tenant/create-namespace" element={withLayout(<RouteTenantPage view={'create-namespace'} />)} />
           <Route path="tenants/:tenant/delete-tenant" element={withLayout(<RouteTenantPage view={'delete-tenant'} />)} />

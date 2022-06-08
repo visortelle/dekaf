@@ -1,0 +1,23 @@
+.Field {
+  display: flex;
+}
+
+.FieldTitle,
+.FieldDescription,
+.FieldValue,
+.ColumnHeader {
+  padding: 12rem;
+  flex: 1 1 33.3333333%;
+  font-size: 14rem;
+}
+
+.ColumnHeaders {
+  display: flex;
+  flex: 1 1 auto;
+  border-bottom: 1rem solid #ddd;
+  margin-bottom: 12rem;
+}
+
+.ColumnHeader {
+  font-weight: bold;
+}
