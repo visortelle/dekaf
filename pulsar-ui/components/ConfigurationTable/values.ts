@@ -20,9 +20,9 @@ export type ListValue<T> = {
   value: T[];
   render: (value: T) => React.ReactElement;
   getId: (value: T) => string;
+  isValid: (value: T) => Either.Either<Error, void>;
   onRemove?: (id: ReturnType<ListValue<T>['getId']>) => void;
   onCreate?: (value: T) => void;
-  isValid?: (value: T) => Either.Either<Error, void>;
   options?: T[];
 };
 

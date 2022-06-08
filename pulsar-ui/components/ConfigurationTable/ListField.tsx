@@ -2,12 +2,20 @@ import { useState } from "react";
 import { ConfigurationField, ListValue } from "./values";
 import s from './ListField.module.css'
 import SvgIcon from '../ui/SvgIcon/SvgIcon';
-import clearIcon from '!!raw-loader!./clear.svg';
+import removeIcon from '!!raw-loader!./remove.svg';
+import addIcon from '!!raw-loader!./add.svg';
 import { useEffect, useRef } from "react";
-import { prependOnceListener } from "process";
+import * as Either from 'fp-ts/Either';
 
 export function ListField(props: ConfigurationField<ListValue<string>>): React.ReactElement {
   const [inputValue, setInputValue] = useState('');
+
+  const onCreate = () => {
+    if (props.value.onCreate) {
+      props.value.onCreate(inputValue);
+      setInputValue('');
+    }
+  }
 
   return (
     <div>
@@ -17,14 +25,19 @@ export function ListField(props: ConfigurationField<ListValue<string>>): React.R
           placeholder=""
           value={inputValue}
           isWithValues={props.value.value.length > 0}
-          onEnter={() => {
-            if (props.value.onCreate) {
-              props.value.onCreate(inputValue);
-              setInputValue('');
-            }
-          }}
+          onEnter={onCreate}
         />
+        {props.value.onCreate && (
+          <button
+            className={`${s.ListFieldAdd} ${Either.isRight(props.value.isValid(inputValue)) ? s.ListFieldAddValid : s.ListFieldAddInvalid}`}
+            type="button"
+            onClick={onCreate}
+          >
+            <SvgIcon svg={addIcon} />
+          </button>
+        )}
       </div>
+
       {props.value.value.length !== 0 && (
         <div className={s.ListFieldValues}>
           {props.value.value.map(v => {
@@ -33,7 +46,7 @@ export function ListField(props: ConfigurationField<ListValue<string>>): React.R
                 {v}
                 {props.value.onRemove && (
                   <button type="button" className={s.ListFieldRemoveValue} onClick={() => props.value.onRemove!(props.value.getId(v))}>
-                    <SvgIcon svg={clearIcon} />
+                    <SvgIcon svg={removeIcon} />
                   </button>
                 )}
               </div>
