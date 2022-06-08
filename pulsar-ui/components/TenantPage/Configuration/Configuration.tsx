@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import s from './Configuration.module.css'
 import useSWR, { useSWRConfig } from 'swr';
 import { ConfigurationField, ListValue, OneOfValue } from '../../ConfigurationTable/values';
@@ -6,6 +6,7 @@ import ConfigurationTable from '../../ConfigurationTable/ConfigurationTable';
 import * as Notifications from '../../contexts/Notifications';
 import * as PulsarAdminClient from '../../contexts/PulsarAdminClient';
 import * as Either from 'fp-ts/lib/Either';
+import StringEditor from '../../ConfigurationTable/String/StringEditor/StringEditor';
 
 export type ConfigurationProps = {
   tenant: string
@@ -33,6 +34,10 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     value: configuration?.adminRoles || [],
     getId: (v) => v,
     render: (v) => <div>{v}</div>,
+    editor: {
+      render: (v, onChange) => <StringEditor value={v} onChange={onChange} placeholder="Add role" />,
+      initialValue: '',
+    },
     onRemove: (id) => {
       if (!configuration) {
         return
@@ -43,7 +48,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
         await mutate(['pulsar', 'tenants', props.tenant, 'configuration']);
       })()
     },
-    onCreate: (v) => {
+    onAdd: (v) => {
       (async () => {
         if (!configuration) {
           return
