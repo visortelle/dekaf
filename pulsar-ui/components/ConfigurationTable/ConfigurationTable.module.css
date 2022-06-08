@@ -9,6 +9,7 @@
   padding: 12rem;
   flex: 1 1 33.3333333%;
   font-size: 14rem;
+  overflow: hidden;
 }
 
 .ColumnHeaders {

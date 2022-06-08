@@ -5,6 +5,7 @@ import { ConfigurationField, ListValue, OneOfValue } from '../../ConfigurationTa
 import ConfigurationTable from '../../ConfigurationTable/ConfigurationTable';
 import * as Notifications from '../../contexts/Notifications';
 import * as PulsarAdminClient from '../../contexts/PulsarAdminClient';
+import * as Either from 'fp-ts/lib/Either';
 
 export type ConfigurationProps = {
   tenant: string
@@ -52,7 +53,8 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
         await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: [...configuration.adminRoles, v] });
         await mutate(['pulsar', 'tenants', props.tenant, 'configuration']);
       })()
-    }
+    },
+    isValid: (v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Admin roles cannot be empty')),
   };
 
   const clusters: ClustersValue = {
@@ -62,6 +64,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
       value: [],
       getId: (v) => v,
       render: (v) => <div>{v}</div>,
+      isValid: (v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Clusters cannot be empty')),
     },
     options: []
   };
@@ -70,7 +73,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     id: "adminRoles",
     title: "Admin roles",
     description: "Roles that can manage the tenant.",
-    value: adminRoles,
+    value: { ...adminRoles, value: adminRoles.value.sort((a, b) => a.localeCompare(b, 'en', { ignorePunctuation: true })) },
   }
 
   const allowedClustersField: ConfigurationField<ClustersValue> = {
