@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './Configuration.module.css'
 import useSWR, { useSWRConfig } from 'swr';
-import { ConfigurationField, ListValue, OneOfValue } from '../../ConfigurationTable/values';
+import { ConfigurationField, ListValue } from '../../ConfigurationTable/values';
 import ConfigurationTable from '../../ConfigurationTable/ConfigurationTable';
 import * as Notifications from '../../contexts/Notifications';
 import * as PulsarAdminClient from '../../contexts/PulsarAdminClient';
@@ -13,12 +13,14 @@ export type ConfigurationProps = {
 };
 
 type AdminRolesValue = ListValue<string>;
-type ClustersValue = OneOfValue;
+type AllowedClustersValue = ListValue<string>;
 
 const Configuration: React.FC<ConfigurationProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
+
+  const onTenantUpdateError = (err: string) => notifyError(`Can't update tenant configuration: ${err}`);
 
   const { data: configuration, error: configurationError } = useSWR(
     ['pulsar', 'tenants', props.tenant, 'configuration'],
@@ -44,7 +46,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
       }
 
       (async () => {
-        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: configuration.adminRoles.filter(r => r !== id) });
+        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: configuration.adminRoles.filter(r => r !== id) }).catch(onTenantUpdateError);
         await mutate(['pulsar', 'tenants', props.tenant, 'configuration']);
       })()
     },
@@ -55,23 +57,44 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
         }
 
         await mutate(['pulsar', 'tenants', props.tenant, 'configuration']);
-        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: [...configuration.adminRoles, v] });
+        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: [...configuration.adminRoles, v] }).catch(onTenantUpdateError);
         await mutate(['pulsar', 'tenants', props.tenant, 'configuration']);
       })()
     },
     isValid: (v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Admin roles cannot be empty')),
   };
 
-  const clusters: ClustersValue = {
-    type: 'oneOf',
-    value: {
-      type: 'list',
-      value: [],
-      getId: (v) => v,
-      render: (v) => <div>{v}</div>,
-      isValid: (v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Clusters cannot be empty')),
+  const allowedClusters: AllowedClustersValue = {
+    type: 'list',
+    value: configuration?.allowedClusters || [],
+    getId: (v) => v,
+    render: (v) => <div>{v}</div>,
+    editor: {
+      render: (v, onChange) => <StringEditor value={v} onChange={onChange} placeholder="Add cluster" />,
+      initialValue: '',
     },
-    options: []
+    onRemove: configuration?.allowedClusters.length === 1 ? undefined : (id) => {
+      if (!configuration) {
+        return
+      }
+
+      (async () => {
+        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: configuration.allowedClusters.filter(r => r !== id) }).catch(onTenantUpdateError);
+        await mutate(['pulsar', 'tenants', props.tenant, 'configuration']);
+      })()
+    },
+    onAdd: (v) => {
+      (async () => {
+        if (!configuration) {
+          return
+        }
+
+        await mutate(['pulsar', 'tenants', props.tenant, 'configuration']);
+        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: [...configuration.allowedClusters, v] }).catch(onTenantUpdateError);
+        await mutate(['pulsar', 'tenants', props.tenant, 'configuration']);
+      })()
+    },
+    isValid: (v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty')),
   };
 
   const adminRolesField: ConfigurationField<AdminRolesValue> = {
@@ -81,11 +104,11 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     value: { ...adminRoles, value: adminRoles.value.sort((a, b) => a.localeCompare(b, 'en', { ignorePunctuation: true })) },
   }
 
-  const allowedClustersField: ConfigurationField<ClustersValue> = {
+  const allowedClustersField: ConfigurationField<AllowedClustersValue> = {
     id: "allowedClusters",
     title: "Allowed clusters",
     description: "Roles that can manage the tenant",
-    value: clusters,
+    value: allowedClusters,
   }
 
   return (

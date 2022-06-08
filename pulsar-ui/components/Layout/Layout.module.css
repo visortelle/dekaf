@@ -1,7 +1,7 @@
 .NavigationTree {
   width: 380rem;
   height: 100vh;
-  position: absolute;
+  position: fixed;
 }
 
 .Children {

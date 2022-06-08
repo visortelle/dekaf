@@ -11,7 +11,7 @@ function GenericField<V extends Value>(props: ConfigurationField<V>): React.Reac
     case 'number': el = <NumberField {...(props as unknown as ConfigurationField<NumberValue>)} />; break;
     case 'string': el = <StringField {...(props as unknown as ConfigurationField<StringValue>)} />; break;
     case 'list': el = <ListField {...(props as unknown as ConfigurationField<ListValue<any>>)} />; break;
-    default: el = <div style={{ color: 'var(--accent-color-red)' }}>Unsupported value type: {props.value.type}</div>;
+    default: el = <div style={{ color: 'var(--accent-color-red)' }}>Unsupported value type: {props.value!.type}</div>;
   }
 
   return el;
