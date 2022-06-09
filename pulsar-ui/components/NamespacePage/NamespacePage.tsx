@@ -1,8 +1,12 @@
 import React from 'react';
 import { BreadCrumbsAtPageTop } from '../BreadCrumbs/BreadCrumbs';
 import s from './NamespacePage.module.css'
+import Toolbar from '../ui/Toolbar/Toolbar';
+import Policies from './Policies/Policies';
 
+export type NamespacePageView = 'overview' | 'policies' | 'delete-namespace' | 'create-topic';
 export type NamespacePageProps = {
+  view: NamespacePageView;
   tenant: string;
   namespace: string;
 };
@@ -24,7 +28,37 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
           }
         ]}
       />
-      namespace page
+      <Toolbar
+        buttons={[
+          {
+            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}`,
+            title: 'Overview',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
+            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/policies`,
+            title: 'Policies',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
+            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/delete-namespace`,
+            title: 'Delete',
+            onClick: () => { },
+            type: 'danger'
+          },
+          {
+            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/create-topic`,
+            title: 'Create topic',
+            onClick: () => { },
+            type: 'primary',
+            position: 'right'
+          }
+        ]}
+      />
+
+      {props.view === 'policies' && <Policies />}
     </div>
   );
 }
