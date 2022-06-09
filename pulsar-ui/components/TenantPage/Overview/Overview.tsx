@@ -1,5 +1,5 @@
 import React from 'react';
-import s from './Namespaces.module.css'
+import s from './Overview.module.css'
 
 export type NamespacesProps = {};
 

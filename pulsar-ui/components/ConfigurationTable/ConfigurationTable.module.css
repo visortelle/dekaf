@@ -16,7 +16,6 @@
   display: flex;
   flex: 1 1 auto;
   border-bottom: 1rem solid #ddd;
-  margin-bottom: 12rem;
 }
 
 .ColumnHeader {

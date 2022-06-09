@@ -28,7 +28,7 @@ export function ListField<V extends Value>(props: ConfigurationField<ListValue<V
           {props.value.value.map(v => {
             return (
               <div key={props.value.getId(v)} className={s.ListFieldValue}>
-                {props.value.render(v)}
+                {props.value.renderItem(v)}
                 {props.value.onRemove && (
                   <button type="button" className={s.ListFieldRemoveValue} onClick={() => props.value.onRemove!(props.value.getId(v))}>
                     <SvgIcon svg={removeIcon} />

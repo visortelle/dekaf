@@ -7,8 +7,7 @@ import * as Notifications from '../../contexts/Notifications';
 import * as PulsarAdminClient from '../../contexts/PulsarAdminClient';
 import * as Either from 'fp-ts/lib/Either';
 import StringEditor from '../../ConfigurationTable/String/StringEditor/StringEditor';
-import SelectInput, { undefinedListItem } from '../../ConfigurationTable/SelectInput/SelectInput';
-import { time } from 'console';
+import SelectInput from '../../ConfigurationTable/SelectInput/SelectInput';
 
 export type ConfigurationProps = {
   tenant: string
@@ -46,7 +45,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     type: 'list',
     value: configuration?.adminRoles || [],
     getId: (v) => v,
-    render: (v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>,
+    renderItem: (v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>,
     editor: {
       render: (v, onChange) => <StringEditor value={v} onChange={onChange} placeholder="Type role" />,
       initialValue: '',
@@ -79,7 +78,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     type: 'list',
     value: configuration?.allowedClusters || [],
     getId: (v) => v,
-    render: (v) => <div>{v}</div>,
+    renderItem: (v) => <div>{v}</div>,
     editor: {
       render: (v, onChange) => (
         <SelectInput
