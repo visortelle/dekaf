@@ -1,37 +1,37 @@
 import React from 'react'
 import s from './SelectInput.module.css';
-import { nanoid } from 'nanoid';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
 
+type Id = string;
+
 export type ListItem = {
-  id: string
+  id: Id,
   title: string
-}
+} | undefined
 
 export type List = ListItem[]
 
-export const undefinedListItem = 'undefined-list-item' + nanoid();
-
 export type InputProps = {
-  onChange: (id: string) => void
-  value: ListItem['id'],
+  onChange: (id: Id | undefined) => void
+  value: undefined | Id,
   list: List,
-  placeholder?: string,
-  prependWithEmptyItem?: boolean
+  placeholder?: string
 }
 
 const Input: React.FC<InputProps> = (props) => {
-
   return (
     <div className={s.Container}>
-      {props.value === undefinedListItem && <div className={s.Placeholder}>{props.placeholder}</div>}
+      {typeof props.value === 'undefined' && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={s.Select}
-        onChange={(e) => props.onChange(e.target.value)} value={props.value}
+        onChange={(e) => props.onChange(e.target.value || undefined)} value={props.value}
       >
-        {props.prependWithEmptyItem && <option key={undefinedListItem} value={undefinedListItem}></option>}
         {props.list.map(item => {
+          if (typeof item ==='undefined') {
+            return <option key={'undefined'} value={undefined}></option>
+          }
+
           return <option key={item.id} value={item.id}>{item.title}</option>
         })}
       </select>
@@ -39,7 +39,6 @@ const Input: React.FC<InputProps> = (props) => {
         <SvgIcon svg={arrowDownIcon} />
       </div>
     </div>
-
   )
 }
 
