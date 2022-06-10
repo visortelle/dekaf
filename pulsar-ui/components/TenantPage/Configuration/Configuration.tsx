@@ -8,7 +8,6 @@ import * as Either from 'fp-ts/lib/Either';
 import StringEditor from '../../ConfigurationTable/String/StringEditor/StringEditor';
 import SelectInput from '../../ConfigurationTable/SelectInput/SelectInput';
 import ListInput from '../../ConfigurationTable/ListInput/ListInput';
-import { nanoid } from 'nanoid';
 
 export type ConfigurationProps = {
   tenant: string
@@ -16,7 +15,7 @@ export type ConfigurationProps = {
 
 const Configuration: React.FC<ConfigurationProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
-  const { notifyError, notifySuccess } = Notifications.useContext();
+  const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update tenant configuration: ${err}`);
@@ -40,7 +39,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     notifyError(`Unable to get tenant admin roles: ${configurationError}`)
   }
 
-  const adminRolesInput = <ListInput
+  const adminRolesInput = <ListInput<string>
     value={configuration?.adminRoles || []}
     getId={(v) => v}
     renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
@@ -71,7 +70,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Admin roles cannot be empty'))}
   />
 
-  const allowedClustersInput = <ListInput
+  const allowedClustersInput = <ListInput<string>
     value={configuration?.allowedClusters || []}
     getId={(v) => v}
     renderItem={(v) => <div>{v}</div>}
@@ -109,30 +108,30 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
   />
 
-const adminRolesField: ConfigurationField = {
-  id: "adminRoles",
-  title: "Admin roles",
-  description: "List of authenticated roles allowed to manage this tenant.",
-  input: adminRolesInput,
-}
+  const adminRolesField: ConfigurationField = {
+    id: "adminRoles",
+    title: "Admin roles",
+    description: "List of authenticated roles allowed to manage this tenant.",
+    input: adminRolesInput,
+  }
 
-const allowedClustersField: ConfigurationField = {
-  id: "allowedClusters",
-  title: "Allowed clusters",
-  description: "List of clusters that this tenant is restricted on.",
-  input: allowedClustersInput,
-}
+  const allowedClustersField: ConfigurationField = {
+    id: "allowedClusters",
+    title: "Allowed clusters",
+    description: "List of clusters that this tenant is restricted on.",
+    input: allowedClustersInput,
+  }
 
-return (
-  <div className={s.Configuration} >
-    <ConfigurationTable
-      fields={[
-        adminRolesField,
-        allowedClustersField
-      ]}
-    />
-  </div >
-);
+  return (
+    <div className={s.Configuration} >
+      <ConfigurationTable
+        fields={[
+          adminRolesField,
+          allowedClustersField
+        ]}
+      />
+    </div >
+  );
 }
 
 export default Configuration;

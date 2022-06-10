@@ -1,13 +1,10 @@
 import React from 'react';
 import s from './Policies.module.css'
 import useSWR, { useSWRConfig } from 'swr';
-import { ConfigurationField, ListValue } from '../../ConfigurationTable/values';
 import ConfigurationTable from '../../ConfigurationTable/ConfigurationTable';
 import * as Notifications from '../../contexts/Notifications';
 import * as PulsarAdminClient from '../../contexts/PulsarAdminClient';
-import * as Either from 'fp-ts/lib/Either';
-import StringEditor from '../../ConfigurationTable/String/StringEditor/StringEditor';
-import SelectInput from '../../ConfigurationTable/SelectInput/SelectInput';
+import { replicationClustersField } from './fields/replication-clusters';
 export type PoliciesProps = {
   tenant: string;
   namespace: string;
@@ -29,7 +26,11 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
   return (
     <div className={s.Policies}>
-      policies
+      <ConfigurationTable
+        fields={[
+          replicationClustersField({ tenant: props.tenant, namespace: props.namespace })
+        ]}
+      />
     </div>
   );
 }
