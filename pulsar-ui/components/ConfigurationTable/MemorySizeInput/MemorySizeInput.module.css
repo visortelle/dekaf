@@ -1,0 +1,11 @@
+.MemorySizeInput {
+  display: flex;
+}
+
+.Size,
+.Unit {
+  flex: 1;
+}
+.Size {
+  margin-right: 12rem;
+}
