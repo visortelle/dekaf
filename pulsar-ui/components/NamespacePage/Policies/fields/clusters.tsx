@@ -6,23 +6,27 @@ import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 
-export type ReplicationClustersInputProps = {
+export type FieldInputProps = {
   tenant: string;
   namespace: string;
 }
 
-export const ReplicationClustersInput: React.FC<ReplicationClustersInputProps> = (props) => {
+export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const onUpdateError = (err: string) => notifyError(`Can't update replication clusters: ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'configuration', 'replicationClusters'];
+  const onUpdateError = (err: string) => notifyError(`Can't update replication clusters. ${err}`);
+  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', 'clusters'];
 
   const { data: clusters, error: clustersError } = useSWR(
     ['pulsar', 'clusters'],
     async () => await adminClient.clusters.getClusters()
   );
+
+  if (clustersError) {
+    notifyError(`Unable to get clusters list: ${clustersError}`)
+  }
 
   const { data: replicationClusters, error: replicationClustersError } = useSWR(
     swrKey,
@@ -39,25 +43,21 @@ export const ReplicationClustersInput: React.FC<ReplicationClustersInputProps> =
     renderItem={(v) => <div>{v}</div>}
     editor={{
       render: (v, onChange) => {
-        if (typeof replicationClusters === 'undefined') {
-          return <></>;
-        }
-
+        const list = (clusters || []).filter(c => !replicationClusters?.some(ac => ac === c)).map(c => ({ id: c, title: c || '' }));
         return (
           <SelectInput
-            list={(clusters || []).filter(c => !replicationClusters.some(ac => ac === c)).map(c => ({ id: c, title: c }))}
+            list={[undefined, ...list]}
             value={v}
-            prependWithEmptyItem={true}
             onChange={onChange}
             placeholder="Select cluster"
           />
         )
       },
-      initialValue: '',
+      initialValue: undefined,
     }}
     onRemove={(id) => {
       if (typeof replicationClusters === 'undefined') {
-        return
+        return <></>;
       }
 
       (async () => {
@@ -75,9 +75,11 @@ export const ReplicationClustersInput: React.FC<ReplicationClustersInputProps> =
   />
 }
 
-export const replicationClustersField = (props: ReplicationClustersInputProps): ConfigurationField => ({
-  id: 'replicationClusters',
-  title: 'Replication clusters',
-  description: 'List of clusters that will be used for replication',
-  input: <ReplicationClustersInput {...props} />
+const field = (props: FieldInputProps): ConfigurationField => ({
+  id: 'clusters',
+  title: 'Clusters',
+  description: 'List of clusters that will be used for replication.',
+  input: <FieldInput {...props} />
 });
+
+export default field;

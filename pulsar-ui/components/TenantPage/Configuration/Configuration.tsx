@@ -18,7 +18,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const onUpdateError = (err: string) => notifyError(`Can't update tenant configuration: ${err}`);
+  const onUpdateError = (err: string) => notifyError(`Can't update tenant configuration. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'configuration'];
 
   const { data: clusters, error: clustersError } = useSWR(
@@ -27,7 +27,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   );
 
   if (clustersError) {
-    notifyError(`Unable to get clusters list: ${clustersError}`)
+    notifyError(`Unable to get clusters list. ${clustersError}`)
   }
 
   const { data: configuration, error: configurationError } = useSWR(
@@ -36,7 +36,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   );
 
   if (configurationError) {
-    notifyError(`Unable to get tenant admin roles: ${configurationError}`)
+    notifyError(`Unable to get tenant admin roles. ${configurationError}`)
   }
 
   const adminRolesInput = <ListInput<string>
