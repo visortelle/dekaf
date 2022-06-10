@@ -48,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <SelectInput
             list={[undefined, ...list]}
             value={v}
-            onChange={onChange}
+            onChange={(v) => onChange(v as string)}
             placeholder="Select cluster"
           />
         )
