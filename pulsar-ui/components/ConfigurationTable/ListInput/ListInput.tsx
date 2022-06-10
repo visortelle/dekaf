@@ -4,24 +4,27 @@ import removeIcon from '!!raw-loader!./remove.svg';
 import { useState } from "react";
 import * as Either from 'fp-ts/Either';
 
+type Id = string;
+type EditorValue<T> = T | undefined;
+
 export type Editor<T> = {
   render: (value: T, onChange: (value: T) => void) => React.ReactElement;
-  initialValue: T;
+  initialValue: EditorValue<T>;
 };
 
 export type ListValue<T> = {
   value: T[];
   renderItem: (value: T) => React.ReactElement;
   editor?: Editor<T>;
-  getId: (value: T) => string;
+  getId: (value: T) => Id;
   isValid: (value: T) => Either.Either<Error, void>;
-  onRemove?: (id: ReturnType<ListValue<T>["getId"]>) => void;
+  onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
 };
 
 function ListInput<T>(props: ListValue<T>): React.ReactElement {
-  const [editorValue, setEditorValue] = useState<T | undefined>(props.editor?.initialValue);
-  const isRenderEditor = typeof props.editor?.render !== 'undefined' && typeof props.editor.initialValue !== 'undefined';
+  const [editorValue, setEditorValue] = useState<EditorValue<T>>(props.editor?.initialValue);
+  const isRenderEditor = typeof props.editor?.render !== 'undefined';
 
   const valid: Either.Either<Error, void> = typeof editorValue === 'undefined' ?
     Either.left(new Error('The value is undefined')) :

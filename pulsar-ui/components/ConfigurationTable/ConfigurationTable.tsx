@@ -16,7 +16,7 @@ const ConfigurationTable: React.FC<ConfigurationTableProps> = (props) => {
   return (
     <div className={s.ConfigurationTable}>
       <div className={s.ColumnHeaders}>
-        <div className={s.ColumnHeader}>Property</div>
+        <div className={s.ColumnHeader}>Name</div>
         <div className={s.ColumnHeader}>Description</div>
         <div className={s.ColumnHeader}>Value</div>
       </div>
