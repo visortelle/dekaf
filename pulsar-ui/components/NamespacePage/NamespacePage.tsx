@@ -58,7 +58,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
         ]}
       />
 
-      {props.view === 'policies' && <Policies />}
+      {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
     </div>
   );
 }
