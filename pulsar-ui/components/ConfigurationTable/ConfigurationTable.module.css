@@ -4,7 +4,7 @@
 
 .FieldTitle,
 .FieldDescription,
-.FieldValue,
+.FieldInput,
 .ColumnHeader {
   padding: 12rem;
   flex: 1 1 33.3333333%;
