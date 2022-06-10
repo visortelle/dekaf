@@ -5,13 +5,13 @@ import s from './Notifications.module.css';
 export const toastContainerId = 'pulsar-ui-toast-container';
 
 export type Value = {
-  notifySuccess: (content: ReactNode) => void,
-  notifyError: (content: ReactNode) => void,
+  notifySuccess: (content: ReactNode, notificationId?: string) => void,
+  notifyError: (content: ReactNode, notificationId?: string) => void,
 }
 
 const defaultValue: Value = {
-  notifySuccess: (content) => toast.success(content, { containerId: toastContainerId, toastId: content?.toString() }),
-  notifyError: (content) => toast.error(content, { containerId: toastContainerId, toastId: content?.toString() }),
+  notifySuccess: (content, notificationId) => toast.success(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
+  notifyError: (content, notificationId) => toast.error(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
 };
 
 const Context = React.createContext<Value>(defaultValue);
