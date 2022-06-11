@@ -31,11 +31,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     notifyError(`Unable to get subscription types enabled. ${subscriptionTypesEnabledError}`);
   }
 
+  const hideAddButton = subscriptionTypesEnabled?.length === subscriptionTypes.length;
+
   return <ListInput<SubscriptionType>
     value={subscriptionTypesEnabled || []}
     getId={(v) => v}
     renderItem={(v) => <div>{v}</div>}
-    editor={{
+    editor={hideAddButton ? undefined : {
       render: (v, onChange) => {
         const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled?.some(ste => ste === t)).map(c => ({ id: c, title: c }));
         return (
@@ -59,7 +61,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         await mutate(swrKey);
       })()
     }}
-    onAdd={(v) => {
+    onAdd={hideAddButton ? undefined : (v) => {
       (async () => {
         await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, [...(subscriptionTypesEnabled || []), v]).catch(onUpdateError);
         await mutate(swrKey);

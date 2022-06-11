@@ -87,7 +87,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     notifyError(`Unable to get backlog quota. ${backlogQuotaError}`);
   }
 
-  const isDisableAdd = Object.keys(backlogQuota || {}).length === backlogTypes.length;
+  const hideAddButton = Object.keys(backlogQuota || {}).length === backlogTypes.length;
 
   return (
     <ListInput<BacklogQuota>
@@ -119,7 +119,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   limitSize,
                   limitTime: quota.limitTime,
                   policy: quota.policy,
-                });
+                }).catch(onUpdateError);
                 await mutate(swrKey);
               }}
             />
@@ -127,10 +127,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         );
       }}
       onRemove={async (type) => {
-        await adminClient.namespaces.removeBacklogQuota(props.tenant, props.namespace, type as BacklogType);
+        await adminClient.namespaces.removeBacklogQuota(props.tenant, props.namespace, type as BacklogType).catch(onUpdateError);
         await mutate(swrKey);
       }}
-      editor={isDisableAdd ? undefined : (() => {
+      editor={hideAddButton ? undefined : (() => {
         const bt = [...backlogTypes.filter(t => !Object.keys(backlogQuota || {}).some(type => type === t))];
         return {
           render: (quota, onChange) => {
@@ -150,14 +150,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
       })()}
-      onAdd={isDisableAdd ? undefined : async (quota) => {
+      onAdd={hideAddButton ? undefined : async (quota) => {
         const limitSize = memoryToBytes(quota.sizeLimit);
         await adminClient.namespaces.setBacklogQuota(props.tenant, props.namespace, quota.type, {
           limit: limitSize,
           limitSize,
           limitTime: quota.limitTime,
           policy: quota.policy,
-        });
+        }).catch(onUpdateError);
         await mutate(swrKey);
       }}
     />
