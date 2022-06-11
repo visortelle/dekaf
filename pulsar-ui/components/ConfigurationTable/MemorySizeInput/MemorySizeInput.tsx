@@ -2,14 +2,7 @@ import React from 'react';
 import s from './MemorySizeInput.module.css'
 import SelectInput from '../SelectInput/SelectInput';
 import Input from '../Input/Input';
-
-const memoryUnits = ['M', 'G'] as const;
-type MemoryUnit = typeof memoryUnits[number];
-
-export type MemorySize = {
-  size: number;
-  unit: MemoryUnit;
-}
+import { MemorySize, MemoryUnit, memoryUnits } from './types';
 
 export type MemorySizeInputProps = {
   value: MemorySize;
@@ -23,14 +16,20 @@ const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
         <Input
           type='number'
           value={props.value.size.toString()}
-          onChange={(size) => props.onChange({ ...props.value, size: Number(size) })}
+          onChange={(size) => {
+            const memorySize = { ...props.value, size: Number(size) };
+            props.onChange(memorySize)
+          }}
         />
       </div>
 
       <div className={s.Unit}>
         <SelectInput
           list={memoryUnits.map(u => ({ id: u, title: u }))}
-          onChange={(unit) => props.onChange({ ...props.value, unit: unit as MemoryUnit })}
+          onChange={(unit) => {
+            const memorySize = { ...props.value, unit: unit as MemoryUnit };
+            props.onChange(memorySize)
+          }}
           value={props.value.unit}
         />
       </div>
