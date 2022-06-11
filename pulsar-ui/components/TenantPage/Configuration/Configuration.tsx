@@ -70,40 +70,38 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Admin roles cannot be empty'))}
   />
 
+  const clustersList = (clusters || []).filter(c => !configuration?.allowedClusters?.some(ac => ac === c)).map(c => ({ id: c, title: c }));
+  const hideAddButton = clustersList.length === 0;
+
   const allowedClustersInput = <ListInput<string>
     value={configuration?.allowedClusters || []}
     getId={(v) => v}
     renderItem={(v) => <div>{v}</div>}
-    editor={{
+    editor={hideAddButton ? undefined : {
       render: (v, onChange) => (
         <SelectInput
-          list={(clusters || []).filter(c => !configuration?.allowedClusters?.some(ac => ac === c)).map(c => ({ id: c, title: c }))}
+          list={[undefined, ...clustersList]}
           value={v}
-          prependWithEmptyItem={true}
-          onChange={onChange}
+          onChange={(v) => onChange(v as string)}
           placeholder="Select cluster"
         />),
       initialValue: '',
     }}
-    onRemove={(id) => {
+    onRemove={clustersList.length <= 1 ? undefined : async (id) => {
       if (!configuration) {
         return
       }
 
-      (async () => {
-        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: configuration.allowedClusters.filter(r => r !== id) }).catch(onUpdateError);
-        await mutate(swrKey);
-      })()
+      await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: configuration.allowedClusters.filter(r => r !== id) }).catch(onUpdateError);
+      await mutate(swrKey);
     }}
-    onAdd={(v) => {
-      (async () => {
-        if (!configuration) {
-          return
-        }
+    onAdd={hideAddButton ? undefined : async (v) => {
+      if (!configuration) {
+        return
+      }
 
-        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: [...configuration.allowedClusters, v] }).catch(onUpdateError);
-        await mutate(swrKey);
-      })()
+      await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: [...configuration.allowedClusters, v] }).catch(onUpdateError);
+      await mutate(swrKey);
     }}
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
   />
