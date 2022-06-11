@@ -37,11 +37,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     notifyError(`Unable to get replication clusters list: ${replicationClustersError}`);
   }
 
+  const hideAddButton = replicationClusters?.length === clusters?.length;
+
   return <ListInput<string>
     value={replicationClusters || []}
     getId={(v) => v}
     renderItem={(v) => <div>{v}</div>}
-    editor={{
+    editor={hideAddButton ? undefined : {
       render: (v, onChange) => {
         const list = (clusters || []).filter(c => !replicationClusters?.some(ac => ac === c)).map(c => ({ id: c, title: c || '' }));
         return (
@@ -55,21 +57,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       },
       initialValue: undefined,
     }}
-    onRemove={(id) => {
+    onRemove={async (id) => {
       if (typeof replicationClusters === 'undefined') {
         return <></>;
       }
 
-      (async () => {
-        await adminClient.namespaces.setNamespaceReplicationClusters(props.tenant, props.namespace, replicationClusters.filter(r => r !== id)).catch(onUpdateError);
-        await mutate(swrKey);
-      })()
+      await adminClient.namespaces.setNamespaceReplicationClusters(props.tenant, props.namespace, replicationClusters.filter(r => r !== id)).catch(onUpdateError);
+      await mutate(swrKey);
     }}
-    onAdd={(v) => {
-      (async () => {
-        await adminClient.namespaces.setNamespaceReplicationClusters(props.tenant, props.namespace, [...replicationClusters || [], v]).catch(onUpdateError);
-        await mutate(swrKey);
-      })()
+    onAdd={hideAddButton ? undefined : async (v) => {
+      await adminClient.namespaces.setNamespaceReplicationClusters(props.tenant, props.namespace, [...replicationClusters || [], v]).catch(onUpdateError);
+      await mutate(swrKey);
     }}
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
   />
