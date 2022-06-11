@@ -14,7 +14,7 @@ export type FieldInputProps = {
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig()
+  const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update replication clusters. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', 'clusters'];
