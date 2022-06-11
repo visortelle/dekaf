@@ -13,10 +13,11 @@ export type ListItem = {
 export type List = ListItem[]
 
 export type InputProps = {
-  onChange: (id: Id | undefined) => void
-  value: undefined | Id,
-  list: List,
-  placeholder?: string
+  value: undefined | Id;
+  list: List;
+  placeholder?: string;
+  onChange?: (id: Id | undefined) => void;
+  disabled?: boolean;
 }
 
 const Input: React.FC<InputProps> = (props) => {
@@ -25,10 +26,12 @@ const Input: React.FC<InputProps> = (props) => {
       {typeof props.value === 'undefined' && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={s.Select}
-        onChange={(e) => props.onChange(e.target.value || undefined)} value={props.value}
+        onChange={(e) => props.onChange!(e.target.value || undefined)}
+        value={props.value}
+        disabled={props.disabled}
       >
         {props.list.map(item => {
-          if (typeof item ==='undefined') {
+          if (typeof item === 'undefined') {
             return <option key={'undefined'} value={undefined}></option>
           }
 

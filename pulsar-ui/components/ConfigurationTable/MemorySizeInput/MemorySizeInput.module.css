@@ -4,8 +4,10 @@
 
 .Size,
 .Unit {
-  flex: 1;
+  display: flex;
+  flex: 1 1 auto;
 }
+
 .Size {
   margin-right: 12rem;
 }

@@ -14,7 +14,6 @@
 .ListFieldValue {
   padding: 0 12rem;
   min-height: 36rem;
-  padding-right: 32rem;
   border-bottom: 1rem solid #ddd;
   display: flex;
   align-items: center;
@@ -28,6 +27,10 @@
   border-bottom: none;
 }
 
+.RemovableListFieldValue {
+  padding-right: 32rem;
+}
+
 .ListFieldRemoveValue {
   border: none;
   padding: 0;
@@ -39,7 +42,8 @@
   padding: 0 8rem;
   width: 32rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 12rem;
 }
 .ListFieldRemoveValue:hover {
   opacity: 0.5;
