@@ -6,6 +6,8 @@ import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 
+const policyId = 'replication-clusters';
+
 export type FieldInputProps = {
   tenant: string;
   namespace: string;
@@ -17,7 +19,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update replication clusters. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', 'clusters'];
+  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
   const { data: clusters, error: clustersError } = useSWR(
     ['pulsar', 'clusters'],
@@ -74,8 +76,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: 'clusters',
-  title: 'Clusters',
+  id: policyId,
+  title: 'Replication clusters',
   description: <span>List of clusters that will be used for replication.</span>,
   input: <FieldInput {...props} />
 });

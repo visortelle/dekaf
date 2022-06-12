@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react';
 import Button from '../../../ui/Button/Button';
 import * as Either from 'fp-ts/Either';
 
+const policyId = 'persistence';
+
 export type Persistence = {
   bookkeeperAckQuorum: number;
   bookkeeperEnsemble: number;
@@ -55,6 +57,8 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
     validatePersistence(persistence);
   }, [persistence]);
 
+  const showUpdateButton = Either.isRight(validationResult) && JSON.stringify(props.value) !== JSON.stringify(persistence);
+
   return (
     <div className={s.PersistenceInput}>
       <div className={sf.FormItem}>
@@ -99,14 +103,15 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
         </div>
       )}
 
-      <div className={`${sf.FormItem} ${s.UpdateButton}`}>
-        <Button
-          onClick={() => props.onChange(persistence)}
-          title="Update"
-          type="primary"
-          disabled={Either.isLeft(validationResult) || JSON.stringify(props.value) === JSON.stringify(persistence)}
-        />
-      </div>
+      {showUpdateButton && (
+        <div className={`${sf.FormItem} ${s.UpdateButton}`}>
+          <Button
+            onClick={() => props.onChange(persistence)}
+            title="Update"
+            type="primary"
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -122,7 +127,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update persistency policies. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', 'persistence'];
+  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
   const { data: persistence, error: persistenceError } = useSWR(
     swrKey,
@@ -158,7 +163,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: 'persistence',
+  id: policyId,
   title: 'Persistence',
   description: <span>List of clusters that will be used for replication.</span>,
   input: <FieldInput {...props} />

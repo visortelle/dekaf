@@ -6,6 +6,8 @@ import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 
+const policyId = 'subscriptionTypesEnabled';
+
 const subscriptionTypes = ["Exclusive", "Shared", "Failover", "Key_Shared"] as const;
 export type SubscriptionType = typeof subscriptionTypes[number];
 
@@ -20,7 +22,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update subscription types enabled. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', 'subscriptionTypesEnabled'];
+  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
   const { data: subscriptionTypesEnabled, error: subscriptionTypesEnabledError } = useSWR(
     swrKey,
@@ -72,7 +74,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: 'subscriptionTypesEnabled',
+  id: policyId,
   title: 'Subscription types enabled',
   description: <span>Subscription types enabled for a namespace.</span>,
   input: <FieldInput {...props} />
