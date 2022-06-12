@@ -4,43 +4,38 @@ import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 
-const policyId = 'deduplication';
+const policyId = 'encryptionRequired';
 
 export type FieldInputProps = {
   tenant: string;
   namespace: string;
 }
 
-type Deduplication = 'enabled' | 'disabled';
+type EncryptionRequired = 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update deduplication. ${err}`);
+  const onUpdateError = (err: string) => notifyError(`Can't update encryption required. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
-  const { data: deduplication, error: deduplicationError } = useSWR(
+  const { data: encryptionRequired, error: encryptionRequiredError } = useSWR(
     swrKey,
-    async () => Boolean(await adminClient.namespaces.getDeduplication(props.tenant, props.namespace)) // XXX - see https://github.com/apache/pulsar/issues/16024
+    async () => await adminClient.namespaces.getEncryptionRequired(props.tenant, props.namespace)
   );
 
-  if (deduplicationError) {
-    notifyError(`Unable to get deduplication: ${deduplicationError}`);
+  if (encryptionRequiredError) {
+    notifyError(`Unable to get encryption required: ${encryptionRequiredError}`);
   }
 
   return (
-    <SelectInput<Deduplication>
+    <SelectInput<EncryptionRequired>
       list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
-      value={deduplication ? 'enabled' : 'disabled'}
+      value={encryptionRequired ? 'enabled' : 'disabled'}
       onChange={async (v) => {
-        if (v === 'enabled') {
-          await adminClient.namespaces.modifyDeduplication(props.tenant, props.namespace, true).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.removeDeduplication(props.tenant, props.namespace).catch(onUpdateError);
-        }
-
+        await adminClient.namespaces.modifyEncryptionRequired(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);
         await mutate(swrKey);
       }}
     />
@@ -49,9 +44,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
-  title: 'Deduplication',
-  description: <span>Enable or disable deduplication for a namespace.</span>,
+  title: 'Encryption required',
+  description: <span>Enable or disable message encryption required for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 
 export default field;
+
