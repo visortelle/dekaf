@@ -37,15 +37,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         if (subscriptionExpirationTime === 0) {
           await adminClient.namespaces.removeSubscriptionExpirationTime(props.tenant, props.namespace).catch(onUpdateError);
-          await mutate(swrKey);
-          return;
+        } else {
+          await adminClient.namespaces.setSubscriptionExpirationTime(
+            props.tenant,
+            props.namespace,
+            subscriptionExpirationTime
+          ).catch(onUpdateError);
         }
-
-        await adminClient.namespaces.setSubscriptionExpirationTime(
-          props.tenant,
-          props.namespace,
-          subscriptionExpirationTime
-        ).catch(onUpdateError);
 
         await mutate(swrKey);
       }}

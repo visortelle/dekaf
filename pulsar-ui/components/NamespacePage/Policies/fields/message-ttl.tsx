@@ -37,15 +37,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         if (messageTtl === 0) {
           await adminClient.namespaces.removeNamespaceMessageTtl(props.tenant, props.namespace).catch(onUpdateError);
-          await mutate(swrKey);
-          return;
+        } else {
+          await adminClient.namespaces.setNamespaceMessageTtl(
+            props.tenant,
+            props.namespace,
+            messageTtl
+          ).catch(onUpdateError);
         }
-
-        await adminClient.namespaces.setNamespaceMessageTtl(
-          props.tenant,
-          props.namespace,
-          messageTtl
-        ).catch(onUpdateError);
 
         await mutate(swrKey);
       }}

@@ -3,31 +3,29 @@ import s from './SelectInput.module.css';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
 
-type Id = string;
-
-export type ListItem = {
-  id: Id,
+export type ListItem<V> = {
+  value: V,
   title: string
 } | undefined
 
-export type List = ListItem[]
+export type List<V> = ListItem<V>[]
 
-export type InputProps = {
-  value: undefined | Id;
-  list: List;
+export type InputProps<V> = {
+  value: undefined | V;
+  onChange: (value: V | undefined) => void;
+  list: List<V>;
   placeholder?: string;
-  onChange?: (id: Id | undefined) => void;
   disabled?: boolean;
 }
 
-const Input: React.FC<InputProps> = (props) => {
+function Input<V extends { toString: () => string }>(props: InputProps<V>): React.ReactElement {
   return (
     <div className={s.Container}>
       {typeof props.value === 'undefined' && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={s.Select}
-        onChange={(e) => props.onChange!(e.target.value || undefined)}
-        value={props.value}
+        onChange={(e) => props.onChange((e.target.value as unknown as V) || undefined)}
+        value={props.value?.toString()}
         disabled={props.disabled}
       >
         {props.list.map(item => {
@@ -35,7 +33,7 @@ const Input: React.FC<InputProps> = (props) => {
             return <option key={'undefined'} value={undefined}></option>
           }
 
-          return <option key={item.id} value={item.id}>{item.title}</option>
+          return <option key={item.value.toString()} value={item.value.toString()}>{item.title}</option>
         })}
       </select>
       <div className={s.Arrow}>

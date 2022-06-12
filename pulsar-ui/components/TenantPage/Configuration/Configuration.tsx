@@ -70,7 +70,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Admin roles cannot be empty'))}
   />
 
-  const clustersList = (clusters || []).filter(c => !configuration?.allowedClusters?.some(ac => ac === c)).map(c => ({ id: c, title: c }));
+  const clustersList = (clusters || []).filter(c => !configuration?.allowedClusters?.some(ac => ac === c)).map(c => ({ value: c, title: c }));
   const hideAddButton = clustersList.length === 0;
 
   const allowedClustersInput = <ListInput<string>
@@ -79,7 +79,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     renderItem={(v) => <div>{v}</div>}
     editor={hideAddButton ? undefined : {
       render: (v, onChange) => (
-        <SelectInput
+        <SelectInput<string>
           list={[undefined, ...clustersList]}
           value={v}
           onChange={(v) => onChange(v as string)}
