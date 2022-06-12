@@ -4,7 +4,7 @@ import s from './ConfigurationTable.module.css'
 export type ConfigurationField = {
   id: string;
   title: string;
-  description: string;
+  description: React.ReactElement;
   input: React.ReactElement;
 };
 

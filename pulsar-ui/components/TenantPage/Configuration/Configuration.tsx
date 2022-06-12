@@ -109,14 +109,14 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   const adminRolesField: ConfigurationField = {
     id: "adminRoles",
     title: "Admin roles",
-    description: "List of authenticated roles allowed to manage this tenant.",
+    description: <span>List of authenticated roles allowed to manage this tenant.</span>,
     input: adminRolesInput,
   }
 
   const allowedClustersField: ConfigurationField = {
     id: "allowedClusters",
     title: "Allowed clusters",
-    description: "List of clusters that this tenant is restricted on.",
+    description: <span>List of clusters that this tenant is restricted on.</span>,
     input: allowedClustersInput,
   }
 

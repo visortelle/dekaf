@@ -6,6 +6,7 @@ import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 import s from './backlog-quota.module.css';
+import sf from '../../../ConfigurationTable/form.module.css';
 import MemorySizeInput from "../../../ConfigurationTable/MemorySizeInput/MemorySizeInput";
 import { memoryToBytes, bytesToMemorySize } from "../../../ConfigurationTable/MemorySizeInput/conversions";
 import { MemorySize } from "../../../ConfigurationTable/MemorySizeInput/types";
@@ -33,8 +34,8 @@ type BacklogQuotaInputProps = {
 const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
   return (
     <div className={s.BacklogQuotaInput}>
-      <div className={s.FormItem}>
-        <strong className={s.FormLabel}>Type</strong>
+      <div className={sf.FormItem}>
+        <strong className={sf.FormLabel}>Type</strong>
         <SelectInput
           list={props.backlogTypes.map(p => ({ id: p, title: p }))}
           onChange={(type) => props.onChange({ ...props.quota, type: type as BacklogType })}
@@ -42,19 +43,19 @@ const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
           disabled={props.disabledInputs?.includes('type')}
         />
       </div>
-      <div className={s.FormItem}>
-        <strong className={s.FormLabel}>Size limit</strong>
+      <div className={sf.FormItem}>
+        <strong className={sf.FormLabel}>Size limit</strong>
         <MemorySizeInput
           value={props.quota.sizeLimit}
           onChange={(sizeLimit) => props.onChange({ ...props.quota, sizeLimit })}
         />
       </div>
-      <div className={s.FormItem}>
-        <strong className={s.FormLabel}>Limit time (sec.)</strong>
+      <div className={sf.FormItem}>
+        <strong className={sf.FormLabel}>Limit time (sec.)</strong>
         <Input type="number" value={props.quota.limitTime.toString()} onChange={(time) => props.onChange({ ...props.quota, limitTime: Number(time) })} />
       </div>
-      <div className={s.FormItem}>
-        <strong className={s.FormLabel}>Policy</strong>
+      <div className={sf.FormItem}>
+        <strong className={sf.FormLabel}>Policy</strong>
         <SelectInput
           list={backlogPolicies.map(p => ({ id: p, title: p }))}
           onChange={(policy) => props.onChange({ ...props.quota, policy: policy as BacklogPolicy })}
@@ -164,10 +165,39 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 }
 
+const Description = () => (
+  <span>
+    <strong>Type</strong>
+    <br />
+    <code>destination_storage</code> limits backlog by size (in bytes).
+    <br />
+    <code>message_age</code> limits backlog by time, that is, message timestamp (broker
+    or publish timestamp).
+    <br />
+    You can set size or time to control the backlog,
+    or combine them together to control the backlog.
+    <br />
+    <br />
+    <strong>Size limit</strong>
+    <br />
+    Size limit.
+    <br />
+    <br />
+    <strong>Limit time</strong>
+    <br />
+    Time limit in second, non-positive number for disabling time limit.
+    <br />
+    <br />
+    <strong>Policy</strong>
+    <br />
+    Retention policy to enforce when the limit is reached.
+  </span>
+);
+
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: 'backlogQuota',
   title: 'Backlog quota',
-  description: 'TODO',
+  description: <Description />,
   input: <FieldInput {...props} />
 });
 

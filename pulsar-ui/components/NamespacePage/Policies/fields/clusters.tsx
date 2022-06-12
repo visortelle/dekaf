@@ -76,7 +76,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: 'clusters',
   title: 'Clusters',
-  description: 'List of clusters that will be used for replication.',
+  description: <span>List of clusters that will be used for replication.</span>,
   input: <FieldInput {...props} />
 });
 

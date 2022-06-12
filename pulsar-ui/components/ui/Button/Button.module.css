@@ -8,6 +8,8 @@
   font-size: 14px;
   user-select: none;
   transition: var(--transition-short);
+  border: none;
+  appearance: none;
   border-bottom: 2rem solid rgba(0, 0, 0, 0.27);
 }
 
@@ -33,5 +35,13 @@
   color: #fff;
 }
 
+.DisabledButton {
+  background-color: #f5f5f5 !important;
+  color: #999 !important;
+}
 
+.DisabledButton:hover {
+  cursor: initial;
+  opacity: 1;
+}
 

@@ -4,6 +4,7 @@ import ConfigurationTable from '../../ConfigurationTable/ConfigurationTable';
 import clustersField from './fields/clusters';
 import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
 import backlogQuotaField from './fields/backlog-quota';
+import persistenceField from './fields/persistence';
 
 export type PoliciesProps = {
   tenant: string;
@@ -18,6 +19,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           clustersField({ tenant: props.tenant, namespace: props.namespace }),
           subscriptionTypesEnabledField({ tenant: props.tenant, namespace: props.namespace }),
           backlogQuotaField({ tenant: props.tenant, namespace: props.namespace }),
+          persistenceField({ tenant: props.tenant, namespace: props.namespace }),
         ]}
       />
     </div>
