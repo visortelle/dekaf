@@ -4,7 +4,7 @@
 
 .Crumb {
   display: flex;
-  padding: 8rem 12rem;
+  padding: 6rem 12rem;
   align-items: center;
   color: var(--text-color);
 }
