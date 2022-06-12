@@ -8,6 +8,7 @@ import Input from "../../../ConfigurationTable/Input/Input";
 import { useEffect, useState } from 'react';
 import Button from '../../../ui/Button/Button';
 import * as Either from 'fp-ts/Either';
+import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 
 const policyId = 'persistence';
 
@@ -57,7 +58,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
     validatePersistence(persistence);
   }, [persistence]);
 
-  const showUpdateButton = Either.isRight(validationResult) && JSON.stringify(props.value) !== JSON.stringify(persistence);
+  const showUpdateConfirmation = Either.isRight(validationResult) && JSON.stringify(props.value) !== JSON.stringify(persistence);
 
   return (
     <div className={s.PersistenceInput}>
@@ -103,14 +104,11 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
         </div>
       )}
 
-      {showUpdateButton && (
-        <div className={`${sf.FormItem} ${s.UpdateButton}`}>
-          <Button
-            onClick={() => props.onChange(persistence)}
-            title="Update"
-            type="primary"
-          />
-        </div>
+      {showUpdateConfirmation && (
+        <UpdateConfirmation
+          onUpdate={() => props.onChange(persistence)}
+          onReset={() => setPersistence(props.value)}
+        />
       )}
     </div>
   );
@@ -126,7 +124,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update persistency policies. ${err}`);
+  const onUpdateError = (err: string) => notifyError(`Can't update persistency policies. ${err} \nNOTE: Probably max limits configured by Pulsar administrator.`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
   const { data: persistence, error: persistenceError } = useSWR(
@@ -135,7 +133,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (persistenceError) {
-    notifyError(`Unable to get replication clusters list: ${persistenceError}`);
+    notifyError(`Unable to get persistence policies. ${persistenceError}`);
   }
 
   return (
