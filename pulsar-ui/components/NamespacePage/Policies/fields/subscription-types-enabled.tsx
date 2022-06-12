@@ -41,9 +41,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     renderItem={(v) => <div>{v}</div>}
     editor={hideAddButton ? undefined : {
       render: (v, onChange) => {
-        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled?.some(ste => ste === t)).map(c => ({ id: c, title: c }));
+        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled?.some(ste => ste === t)).map(c => ({ value: c, title: c }));
         return (
-          <SelectInput
+          <SelectInput<SubscriptionType>
             list={[undefined, ...list]}
             value={v}
             onChange={(id) => onChange(id as SubscriptionType)}

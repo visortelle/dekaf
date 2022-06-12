@@ -2,6 +2,10 @@
   margin-bottom: 12rem;
 }
 
+.FormItem:last-child {
+  margin-bottom: 0;
+}
+
 .FormLabel {
   display: block;
   margin-bottom: 4rem;
