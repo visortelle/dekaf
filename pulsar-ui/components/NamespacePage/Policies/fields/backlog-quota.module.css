@@ -6,4 +6,5 @@
   display: flex;
   flex: 1 1 auto;
   padding: 12rem 0;
+  flex-direction: column;
 }

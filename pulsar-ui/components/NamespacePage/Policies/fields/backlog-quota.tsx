@@ -11,6 +11,8 @@ import MemorySizeInput from "../../../ConfigurationTable/MemorySizeInput/MemoryS
 import { memoryToBytes, bytesToMemorySize } from "../../../ConfigurationTable/MemorySizeInput/conversions";
 import { MemorySize } from "../../../ConfigurationTable/MemorySizeInput/types";
 import Input from "../../../ConfigurationTable/Input/Input";
+import UpdateConfirmation from "../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
+import { useEffect, useState } from "react";
 
 const policyId = 'backlogQuota';
 
@@ -27,8 +29,37 @@ type BacklogQuota = {
   type: BacklogType;
 }
 
+type BacklogQuotaInputWithUpdateConfirmationProps = {
+  onChange: BacklogQuotaInputProps['onChange'];
+  value: BacklogQuotaInputProps['value'];
+}
+const BacklogQuotaInputWithUpdateConfirmation: React.FC<BacklogQuotaInputWithUpdateConfirmationProps> = (props) => {
+  const [value, setValue] = useState(props.value);
+
+  useEffect(() => {
+    setValue(() => props.value);
+  }, [props.value]);
+
+  return (
+    <div className={s.ListItem}>
+      <BacklogQuotaInput
+        disabledInputs={['type']}
+        backlogTypes={[...backlogTypes]}
+        value={value}
+        onChange={(v) => setValue(() => v)}
+      />
+      {props.value !== value && (
+        <UpdateConfirmation
+          onUpdate={() => props.onChange(value)}
+          onReset={() => setValue(props.value)}
+        />
+      )}
+    </div>
+  )
+}
+
 type BacklogQuotaInputProps = {
-  quota: BacklogQuota;
+  value: BacklogQuota;
   onChange: (backlogQuota: BacklogQuota) => void;
   disabledInputs?: ('type')[]
   backlogTypes: BacklogType[];
@@ -40,28 +71,28 @@ const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
         <strong className={sf.FormLabel}>Type</strong>
         <SelectInput
           list={props.backlogTypes.map(p => ({ id: p, title: p }))}
-          onChange={(type) => props.onChange({ ...props.quota, type: type as BacklogType })}
-          value={props.quota.type}
+          onChange={(type) => props.onChange({ ...props.value, type: type as BacklogType })}
+          value={props.value.type}
           disabled={props.disabledInputs?.includes('type')}
         />
       </div>
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Size limit</strong>
         <MemorySizeInput
-          value={props.quota.sizeLimit}
-          onChange={(sizeLimit) => props.onChange({ ...props.quota, sizeLimit })}
+          value={props.value.sizeLimit}
+          onChange={(sizeLimit) => props.onChange({ ...props.value, sizeLimit })}
         />
       </div>
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Limit time (sec.)</strong>
-        <Input type="number" value={props.quota.limitTime.toString()} onChange={(time) => props.onChange({ ...props.quota, limitTime: Number(time) })} />
+        <Input type="number" value={props.value.limitTime.toString()} onChange={(time) => props.onChange({ ...props.value, limitTime: Number(time) })} />
       </div>
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Policy</strong>
         <SelectInput
           list={backlogPolicies.map(p => ({ id: p, title: p }))}
-          onChange={(policy) => props.onChange({ ...props.quota, policy: policy as BacklogPolicy })}
-          value={props.quota.policy}
+          onChange={(policy) => props.onChange({ ...props.value, policy: policy as BacklogPolicy })}
+          value={props.value.policy}
         />
       </div>
     </div>
@@ -111,10 +142,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       renderItem={(quota) => {
         return (
           <div className={s.ListItem}>
-            <BacklogQuotaInput
-              disabledInputs={['type']}
-              backlogTypes={[...backlogTypes]}
-              quota={quota}
+            <BacklogQuotaInputWithUpdateConfirmation
+              value={quota}
               onChange={async (quota) => {
                 const limitSize = memoryToBytes(quota.sizeLimit);
                 await adminClient.namespaces.setBacklogQuota(props.tenant, props.namespace, quota.type, {
@@ -140,7 +169,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             return (
               <BacklogQuotaInput
                 backlogTypes={bt}
-                quota={quota}
+                value={quota}
                 onChange={onChange}
               />
             )
