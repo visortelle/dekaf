@@ -44,28 +44,24 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     getId={(v) => v}
     renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
     editor={{
-      render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="Type role" />,
+      render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="Enter new role" />,
       initialValue: '',
     }}
-    onRemove={(roleId) => {
+    onRemove={async (roleId) => {
       if (!configuration) {
         return
       }
 
-      (async () => {
-        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: configuration.adminRoles.filter(r => r !== roleId) }).catch(onUpdateError);
-        await mutate(swrKey);
-      })()
+      await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: configuration.adminRoles.filter(r => r !== roleId) }).catch(onUpdateError);
+      await mutate(swrKey);
     }}
-    onAdd={(v) => {
-      (async () => {
-        if (!configuration) {
-          return
-        }
+    onAdd={async (v) => {
+      if (!configuration) {
+        return
+      }
 
-        await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: [...configuration.adminRoles, v] }).catch(onUpdateError);
-        await mutate(swrKey);
-      })()
+      await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: [...configuration.adminRoles, v] }).catch(onUpdateError);
+      await mutate(swrKey);
     }}
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Admin roles cannot be empty'))}
   />

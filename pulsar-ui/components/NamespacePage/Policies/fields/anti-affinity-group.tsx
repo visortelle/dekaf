@@ -46,6 +46,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         await mutate(swrKey);
       }}
+      placeholder="Enter group name"
     />
   )
 }
