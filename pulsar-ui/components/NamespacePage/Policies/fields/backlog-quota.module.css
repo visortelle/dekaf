@@ -2,15 +2,6 @@
   flex: 1 1 auto;
 }
 
-.FormItem {
-  margin-bottom: 12rem;
-}
-
-.FormLabel {
-  display: block;
-  margin-bottom: 4rem;
-}
-
 .ListItem {
   display: flex;
   flex: 1 1 auto;
