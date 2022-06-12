@@ -16,6 +16,9 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [client, _] = useState<pulsarAdmin.Client>(new pulsarAdmin.Client({ BASE: "/api/pulsar-broker-web/admin/v2" }));
 
   useEffect(() => {
+    // XXX - By some reason request sometimes (!?) contents "Content-Type: application/x-www-form-urlencoded" header.
+    axios.defaults.headers.post['Content-Type'] = 'application/json';
+
     // XXX - Configure axios instance globally here.
     // TODO - Replace it with a better solution after the following issue will be solved:
     // https://github.com/ferdikoomen/openapi-typescript-codegen/issues/942
