@@ -58,15 +58,6 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
   return (
     <div className={s.PersistenceInput}>
       <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Ack quorum</strong>
-        <Input
-          type='number'
-          onChange={(v) => setPersistence({ ...persistence, bookkeeperAckQuorum: Number(v) })}
-          value={String(persistence.bookkeeperAckQuorum)}
-        />
-      </div>
-
-      <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Ensemble</strong>
         <Input
           type='number'
@@ -81,6 +72,15 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
           type='number'
           onChange={(v) => setPersistence({ ...persistence, bookkeeperWriteQuorum: Number(v) })}
           value={String(persistence.bookkeeperWriteQuorum)}
+        />
+      </div>
+
+      <div className={sf.FormItem}>
+        <strong className={sf.FormLabel}>Ack quorum</strong>
+        <Input
+          type='number'
+          onChange={(v) => setPersistence({ ...persistence, bookkeeperAckQuorum: Number(v) })}
+          value={String(persistence.bookkeeperAckQuorum)}
         />
       </div>
 
@@ -104,7 +104,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
           onClick={() => props.onChange(persistence)}
           title="Update"
           type="primary"
-          disabled={Either.isLeft(validationResult)}
+          disabled={Either.isLeft(validationResult) || JSON.stringify(props.value) === JSON.stringify(persistence)}
         />
       </div>
     </div>
