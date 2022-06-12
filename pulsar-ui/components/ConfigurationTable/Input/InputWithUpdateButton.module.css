@@ -1,0 +1,13 @@
+.Buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8rem;
+}
+
+.Buttons > * {
+  margin-right: 12rem;
+}
+
+.Buttons > *:last-child {
+  margin-right: 0;
+}

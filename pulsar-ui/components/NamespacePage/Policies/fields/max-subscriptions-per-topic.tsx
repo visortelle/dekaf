@@ -4,7 +4,7 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 import Input from '../../../ConfigurationTable/Input/InputWithUpdateButton';
 
-const policyId = 'messageTtl';
+const policyId = 'maxSubscriptionsPerTopic';
 
 export type FieldInputProps = {
   tenant: string;
@@ -16,32 +16,32 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const onUpdateError = (err: string) => notifyError(`Can't update message TTL. ${err}`);
+  const onUpdateError = (err: string) => notifyError(`Can't update max subscriptions per topic. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
-  const { data: messageTtl, error: messageTtlError } = useSWR(
+  const { data: maxSubscriptionsPerTopic, error: maxSubscriptionsPerTopicError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getNamespaceMessageTtl(props.tenant, props.namespace)
+    async () => await adminClient.namespaces.getMaxSubscriptionsPerTopic(props.tenant, props.namespace)
   );
 
-  if (messageTtlError) {
-    notifyError(`Unable to get message TTL. ${messageTtlError}`);
+  if (maxSubscriptionsPerTopicError) {
+    notifyError(`Unable to get maxSubscriptionsPerTopic. ${maxSubscriptionsPerTopicError}`);
   }
 
   return (
     <Input
       type='number'
-      value={String(messageTtl || 0)}
+      value={String(maxSubscriptionsPerTopic || 0)}
       onChange={async (value) => {
         const messageTtl = Number(value);
 
         if (messageTtl === 0) {
-          await adminClient.namespaces.removeNamespaceMessageTtl(props.tenant, props.namespace).catch(onUpdateError);
+          await adminClient.namespaces.removeMaxSubscriptionsPerTopic(props.tenant, props.namespace).catch(onUpdateError);
           await mutate(swrKey);
           return;
         }
 
-        await adminClient.namespaces.setNamespaceMessageTtl(
+        await adminClient.namespaces.setMaxSubscriptionsPerTopic(
           props.tenant,
           props.namespace,
           messageTtl
@@ -55,8 +55,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
-  title: 'Message TTL',
-  description: <span>Message TTL in seconds. When the value is set to `0`, TTL is disabled.</span>,
+  title: 'Max subscriptions per topic',
+  description: <span>Max subscriptions per topic.</span>,
   input: <FieldInput {...props} />
 });
 
