@@ -19,32 +19,32 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const onUpdateError = (err: string) => notifyError(`Can't update message TTL. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
-  const { data: messageTtl, error: messageTtlError } = useSWR(
+  const { data: subscriptionExpirationTime, error: subscriptionExpirationTimeError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getNamespaceMessageTtl(props.tenant, props.namespace)
+    async () => await adminClient.namespaces.getSubscriptionExpirationTime(props.tenant, props.namespace)
   );
 
-  if (messageTtlError) {
-    notifyError(`Unable to get message TTL. ${messageTtlError}`);
+  if (subscriptionExpirationTimeError) {
+    notifyError(`Unable to get subscription expiration time. ${subscriptionExpirationTimeError}`);
   }
 
   return (
     <Input
       type='number'
-      value={String(messageTtl || 0)}
+      value={String(subscriptionExpirationTime || 0)}
       onChange={async (value) => {
-        const messageTtl = Number(value);
+        const subscriptionExpirationTime = Number(value);
 
-        if (messageTtl === 0) {
-          await adminClient.namespaces.removeNamespaceMessageTtl(props.tenant, props.namespace).catch(onUpdateError);
+        if (subscriptionExpirationTime === 0) {
+          await adminClient.namespaces.removeSubscriptionExpirationTime(props.tenant, props.namespace).catch(onUpdateError);
           await mutate(swrKey);
           return;
         }
 
-        await adminClient.namespaces.setNamespaceMessageTtl(
+        await adminClient.namespaces.setSubscriptionExpirationTime(
           props.tenant,
           props.namespace,
-          messageTtl
+          subscriptionExpirationTime
         ).catch(onUpdateError);
 
         await mutate(swrKey);
@@ -55,8 +55,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
-  title: 'Message TTL',
-  description: <span>Message TTL in seconds. When the value is set to `0`, TTL is disabled.</span>,
+  title: 'Subscription expiration time',
+  description: <span>Subscription expiration time in minutes.</span>,
   input: <FieldInput {...props} />
 });
 
