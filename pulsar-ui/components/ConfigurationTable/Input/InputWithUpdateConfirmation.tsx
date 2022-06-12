@@ -12,12 +12,21 @@ const InputWithUpdateConfirmation: React.FC<InputWithUpdateConfirmationProps> = 
     setValue(() => props.value);
   }, [props.value]);
 
+  const handleUpdate = () => props.onChange(value);
+
   return (
-    <div className={s.InputWithUpdateButton}>
+    <div
+      className={s.InputWithUpdateButton}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          handleUpdate();
+        }
+      }}
+    >
       <Input {...props} value={value} onChange={v => setValue(() => v)} />
       {props.value !== value && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(value)}
+          onUpdate={handleUpdate}
           onReset={() => setValue(props.value)}
         />
       )}
