@@ -12,6 +12,7 @@ import antiAffinityGroupField from './fields/anti-affinity-group';
 import deduplicationField from './fields/deduplication';
 import autoSubscriptionCreationField from './fields/auto-subscription-creation';
 import bookieAffinityGroupField from './fields/bookie-affinity-group';
+import autoTopicCreation from './fields/auto-topic-creation';
 
 export type PoliciesProps = {
   tenant: string;
@@ -33,7 +34,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           antiAffinityGroupField,
           deduplicationField,
           autoSubscriptionCreationField,
-          bookieAffinityGroupField
+          bookieAffinityGroupField,
+          autoTopicCreation
         ].map(field => field(props))}
       />
     </div>
