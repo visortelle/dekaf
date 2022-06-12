@@ -12,7 +12,6 @@ export type InputProps = {
 const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, onChange, focusOnMount }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-
   useEffect(() => {
     if (focusOnMount) {
       inputRef?.current?.focus();

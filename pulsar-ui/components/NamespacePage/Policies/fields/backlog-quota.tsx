@@ -12,6 +12,8 @@ import { memoryToBytes, bytesToMemorySize } from "../../../ConfigurationTable/Me
 import { MemorySize } from "../../../ConfigurationTable/MemorySizeInput/types";
 import Input from "../../../ConfigurationTable/Input/Input";
 
+const policyId = 'backlogQuota';
+
 export const backlogTypes = ['destination_storage', 'message_age'] as const;
 export type BacklogType = typeof backlogTypes[number];
 
@@ -77,7 +79,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update backlog quota. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', 'backlogQuota'];
+  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
   const { data: backlogQuota, error: backlogQuotaError } = useSWR(
     swrKey,
@@ -195,7 +197,7 @@ const Description = () => (
 );
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: 'backlogQuota',
+  id: policyId,
   title: 'Backlog quota',
   description: <Description />,
   input: <FieldInput {...props} />
