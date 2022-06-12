@@ -10,6 +10,7 @@ import maxSubscriptionsPerTopicField from './fields/max-subscriptions-per-topic'
 import subscriptionExpirationTimeField from './fields/subscription-expiration-time';
 import antiAffinityGroupField from './fields/anti-affinity-group';
 import deduplicationField from './fields/deduplication';
+import autoSubscriptionCreationField from './fields/auto-subscription-creation';
 
 export type PoliciesProps = {
   tenant: string;
@@ -30,6 +31,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           subscriptionExpirationTimeField({ tenant: props.tenant, namespace: props.namespace }),
           antiAffinityGroupField({ tenant: props.tenant, namespace: props.namespace }),
           deduplicationField({ tenant: props.tenant, namespace: props.namespace }),
+          autoSubscriptionCreationField({ tenant: props.tenant, namespace: props.namespace }),
         ]}
       />
     </div>
