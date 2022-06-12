@@ -12,7 +12,8 @@ import antiAffinityGroupField from './fields/anti-affinity-group';
 import deduplicationField from './fields/deduplication';
 import autoSubscriptionCreationField from './fields/auto-subscription-creation';
 import bookieAffinityGroupField from './fields/bookie-affinity-group';
-import autoTopicCreation from './fields/auto-topic-creation';
+import autoTopicCreationField from './fields/auto-topic-creation';
+import encryptionRequiredField from './fields/encryption-required';
 
 export type PoliciesProps = {
   tenant: string;
@@ -35,7 +36,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           deduplicationField,
           autoSubscriptionCreationField,
           bookieAffinityGroupField,
-          autoTopicCreation
+          autoTopicCreationField,
+          encryptionRequiredField
         ].map(field => field(props))}
       />
     </div>
