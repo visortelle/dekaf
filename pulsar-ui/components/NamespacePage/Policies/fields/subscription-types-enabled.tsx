@@ -53,21 +53,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       },
       initialValue: undefined,
     }}
-    onRemove={(id) => {
+    onRemove={async (id) => {
       if (typeof subscriptionTypesEnabled === 'undefined') {
         return <></>
       }
 
-      (async () => {
-        await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, subscriptionTypesEnabled.filter(r => r !== id)).catch(onUpdateError);
-        await mutate(swrKey);
-      })()
+      await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, subscriptionTypesEnabled.filter(r => r !== id)).catch(onUpdateError);
+      await mutate(swrKey);
     }}
-    onAdd={hideAddButton ? undefined : (v) => {
-      (async () => {
-        await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, [...(subscriptionTypesEnabled || []), v]).catch(onUpdateError);
-        await mutate(swrKey);
-      })()
+    onAdd={hideAddButton ? undefined : async (v) => {
+      await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, [...(subscriptionTypesEnabled || []), v]).catch(onUpdateError);
+      await mutate(swrKey);
     }}
     isValid={(_) => Either.right(undefined)}
   />

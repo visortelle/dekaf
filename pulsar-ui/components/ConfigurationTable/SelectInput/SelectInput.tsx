@@ -6,13 +6,13 @@ import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
 export type ListItem<V> = {
   value: V,
   title: string
-} | undefined
+} | undefined;
 
 export type List<V> = ListItem<V>[]
 
 export type InputProps<V> = {
-  value: undefined | V;
-  onChange: (value: V | undefined) => void;
+  value: V;
+  onChange: (value: V) => void;
   list: List<V>;
   placeholder?: string;
   disabled?: boolean;

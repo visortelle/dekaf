@@ -25,7 +25,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
   const [persistence, setPersistence] = useState<Persistence>(props.value);
   const [validationResult, setValidationResult] = useState<Either.Either<React.ReactElement, void>>(Either.right(undefined));
 
-  const validatePersistence = (p: Persistence): void => {
+  const validate = (p: Persistence): void => {
     // Source: https://github.com/apache/pulsar/blob/6734a3bf77793419898dd1c8421da039dc117f6e/pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/AdminResource.java#L812
     const isValid = (
       (p.bookkeeperEnsemble >= p.bookkeeperWriteQuorum) &&
@@ -53,7 +53,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
   }, [props.value]);
 
   useEffect(() => {
-    validatePersistence(persistence);
+    validate(persistence);
   }, [persistence]);
 
   const showUpdateConfirmation = Either.isRight(validationResult) && JSON.stringify(props.value) !== JSON.stringify(persistence);

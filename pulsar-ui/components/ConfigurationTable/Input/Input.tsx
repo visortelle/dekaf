@@ -1,5 +1,5 @@
 import s from './Input.module.css';
-import { useEffect, useRef } from 'react';
+import { InputHTMLAttributes, useEffect, useRef } from 'react';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 
 export type InputProps = {
@@ -8,7 +8,8 @@ export type InputProps = {
   placeholder?: string,
   type?: 'text' | 'number' | 'password',
   iconSvg?: string,
-  focusOnMount?: boolean
+  focusOnMount?: boolean,
+  inputProps?: InputHTMLAttributes<HTMLInputElement>
 }
 const Input: React.FC<InputProps> = (props) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,6 +29,7 @@ const Input: React.FC<InputProps> = (props) => {
         value={props.value}
         onChange={(e) => props.onChange(e.target.value)}
         placeholder={props.placeholder}
+        {...props.inputProps}
       />
       {props.iconSvg && (<div className={s.InputIcon}>
         <SvgIcon svg={props.iconSvg} />
