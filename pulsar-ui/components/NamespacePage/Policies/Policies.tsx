@@ -7,6 +7,7 @@ import backlogQuotaField from './fields/backlog-quota';
 import persistenceField from './fields/persistence';
 import messageTtlField from './fields/message-ttl';
 import maxSubscriptionsPerTopicField from './fields/max-subscriptions-per-topic';
+import subscriptionExpirationTimeField from './fields/subscription-expiration-time';
 
 export type PoliciesProps = {
   tenant: string;
@@ -24,6 +25,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           persistenceField({ tenant: props.tenant, namespace: props.namespace }),
           messageTtlField({ tenant: props.tenant, namespace: props.namespace }),
           maxSubscriptionsPerTopicField({ tenant: props.tenant, namespace: props.namespace }),
+          subscriptionExpirationTimeField({ tenant: props.tenant, namespace: props.namespace }),
         ]}
       />
     </div>
