@@ -39,6 +39,10 @@ body {
   font-size: 16rem;
 }
 
+strong {
+  font-size: 0.9285714em; /* Ratio like: 14px -> 13px */
+}
+
 a {
   color: var(--pulsar-color);
   text-decoration: none;
