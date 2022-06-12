@@ -2,7 +2,7 @@ import * as Notifications from '../../../contexts/Notifications';
 import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
-import Input from '../../../ConfigurationTable/Input/InputWithUpdateButton';
+import Input from '../../../ConfigurationTable/Input/InputWithUpdateConfirmation';
 
 const policyId = 'maxSubscriptionsPerTopic';
 
