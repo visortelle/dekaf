@@ -40,8 +40,17 @@ const BacklogQuotaInputWithUpdateConfirmation: React.FC<BacklogQuotaInputWithUpd
     setValue(() => props.value);
   }, [props.value]);
 
+  const handleUpdate = () => props.onChange(value);
+
   return (
-    <div className={s.ListItem}>
+    <div
+      className={s.ListItem}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          handleUpdate();
+        }
+      }}
+    >
       <BacklogQuotaInput
         disabledInputs={['type']}
         backlogTypes={[...backlogTypes]}
@@ -50,7 +59,7 @@ const BacklogQuotaInputWithUpdateConfirmation: React.FC<BacklogQuotaInputWithUpd
       />
       {props.value !== value && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(value)}
+          onUpdate={handleUpdate}
           onReset={() => setValue(props.value)}
         />
       )}

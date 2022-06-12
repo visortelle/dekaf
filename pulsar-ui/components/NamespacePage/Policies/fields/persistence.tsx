@@ -2,11 +2,9 @@ import * as Notifications from '../../../contexts/Notifications';
 import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
-import s from './persistence.module.css';
 import sf from '../../../ConfigurationTable/form.module.css';
 import Input from "../../../ConfigurationTable/Input/Input";
 import { useEffect, useState } from 'react';
-import Button from '../../../ui/Button/Button';
 import * as Either from 'fp-ts/Either';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 
@@ -61,7 +59,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
   const showUpdateConfirmation = Either.isRight(validationResult) && JSON.stringify(props.value) !== JSON.stringify(persistence);
 
   return (
-    <div className={s.PersistenceInput}>
+    <div>
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Ensemble</strong>
         <Input
