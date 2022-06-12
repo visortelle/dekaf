@@ -11,6 +11,7 @@ import subscriptionExpirationTimeField from './fields/subscription-expiration-ti
 import antiAffinityGroupField from './fields/anti-affinity-group';
 import deduplicationField from './fields/deduplication';
 import autoSubscriptionCreationField from './fields/auto-subscription-creation';
+import bookieAffinityGroupField from './fields/bookie-affinity-group';
 
 export type PoliciesProps = {
   tenant: string;
@@ -22,17 +23,18 @@ const Policies: React.FC<PoliciesProps> = (props) => {
     <div className={s.Policies}>
       <ConfigurationTable
         fields={[
-          replicationClustersField({ tenant: props.tenant, namespace: props.namespace }),
-          subscriptionTypesEnabledField({ tenant: props.tenant, namespace: props.namespace }),
-          backlogQuotaField({ tenant: props.tenant, namespace: props.namespace }),
-          persistenceField({ tenant: props.tenant, namespace: props.namespace }),
-          messageTtlField({ tenant: props.tenant, namespace: props.namespace }),
-          maxSubscriptionsPerTopicField({ tenant: props.tenant, namespace: props.namespace }),
-          subscriptionExpirationTimeField({ tenant: props.tenant, namespace: props.namespace }),
-          antiAffinityGroupField({ tenant: props.tenant, namespace: props.namespace }),
-          deduplicationField({ tenant: props.tenant, namespace: props.namespace }),
-          autoSubscriptionCreationField({ tenant: props.tenant, namespace: props.namespace }),
-        ]}
+          replicationClustersField,
+          subscriptionTypesEnabledField,
+          backlogQuotaField,
+          persistenceField,
+          messageTtlField,
+          maxSubscriptionsPerTopicField,
+          subscriptionExpirationTimeField,
+          antiAffinityGroupField,
+          deduplicationField,
+          autoSubscriptionCreationField,
+          bookieAffinityGroupField
+        ].map(field => field(props))}
       />
     </div>
   );
