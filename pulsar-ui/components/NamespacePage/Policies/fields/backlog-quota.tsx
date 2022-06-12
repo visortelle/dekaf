@@ -78,8 +78,8 @@ const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
     <div className={s.BacklogQuotaInput}>
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Type</strong>
-        <SelectInput
-          list={props.backlogTypes.map(p => ({ id: p, title: p }))}
+        <SelectInput<BacklogType>
+          list={props.backlogTypes.map(p => ({ value: p, title: p }))}
           onChange={(type) => props.onChange({ ...props.value, type: type as BacklogType })}
           value={props.value.type}
           disabled={props.disabledInputs?.includes('type')}
@@ -98,8 +98,8 @@ const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
       </div>
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Policy</strong>
-        <SelectInput
-          list={backlogPolicies.map(p => ({ id: p, title: p }))}
+        <SelectInput<BacklogPolicy>
+          list={backlogPolicies.map(p => ({ value: p, title: p }))}
           onChange={(policy) => props.onChange({ ...props.value, policy: policy as BacklogPolicy })}
           value={props.value.policy}
         />

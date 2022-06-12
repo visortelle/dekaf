@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import Input, { InputProps } from './Input';
+import Input, { InputProps } from './SelectInput';
 import UpdateConfirmation from '../UpdateConfirmation/UpdateConfirmation';
 
-export type InputWithUpdateConfirmationProps = InputProps;
+export type InputWithUpdateConfirmationProps<V> = InputProps<V>;
 
-const InputWithUpdateConfirmation: React.FC<InputWithUpdateConfirmationProps> = (props) => {
-  const [value, setValue] = useState<string>(props.value);
+function InputWithUpdateConfirmation<V>(props: InputWithUpdateConfirmationProps<V>): React.ReactElement {
+  const [value, setValue] = useState<V | undefined>(props.value);
 
   useEffect(() => {
     setValue(() => props.value);
@@ -33,3 +33,4 @@ const InputWithUpdateConfirmation: React.FC<InputWithUpdateConfirmationProps> = 
 }
 
 export default InputWithUpdateConfirmation;
+
