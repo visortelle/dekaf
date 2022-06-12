@@ -7,8 +7,8 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Pulsar UI</title>
-        <meta name="description" content="Pulsar UI" />
+        <title>Pulsar X-Ray</title>
+        <meta name="description" content="Pulsar X-Ray" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Router />
