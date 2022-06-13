@@ -11,6 +11,7 @@ import subscriptionExpirationTimeField from './fields/subscription-expiration-ti
 import antiAffinityGroupField from './fields/anti-affinity-group';
 import deduplicationField from './fields/deduplication';
 import autoSubscriptionCreationField from './fields/auto-subscription-creation';
+import retentionField from './fields/retention';
 import bookieAffinityGroupField from './fields/bookie-affinity-group';
 import autoTopicCreationField from './fields/auto-topic-creation';
 import encryptionRequiredField from './fields/encryption-required';
@@ -37,6 +38,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           antiAffinityGroupField,
           deduplicationField,
           autoSubscriptionCreationField,
+          retentionField,
           bookieAffinityGroupField,
           autoTopicCreationField,
           encryptionRequiredField,
