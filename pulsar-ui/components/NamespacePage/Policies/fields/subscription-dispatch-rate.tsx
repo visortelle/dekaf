@@ -8,21 +8,21 @@ import { useEffect, useState } from 'react';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import SelectInput from "../../../ConfigurationTable/SelectInput/SelectInput";
 
-const policyId = 'dispatchRate';
+const policyId = 'subscriptionDispatchRate';
 
-export type DispatchRate = 'disabled' | {
+export type SubscriptionDispatchRate = 'disabled' | {
   byteDispatchRate: number;
   dispatchRatePeriod: number;
   msgDispatchRate: number;
   relativeToPublishRate: boolean;
 }
 
-export type DispatchRateInputProps = {
-  value: DispatchRate;
-  onChange: (value: DispatchRate) => void;
+export type SubscriptionDispatchRateInputProps = {
+  value: SubscriptionDispatchRate;
+  onChange: (value: SubscriptionDispatchRate) => void;
 };
-export const DispatchRateInput: React.FC<DispatchRateInputProps> = (props) => {
-  const [dispatchRate, setDispatchRate] = useState<DispatchRate>(props.value);
+export const SubscriptionDispatchRateInput: React.FC<SubscriptionDispatchRateInputProps> = (props) => {
+  const [dispatchRate, setDispatchRate] = useState<SubscriptionDispatchRate>(props.value);
 
   useEffect(() => {
     setDispatchRate(() => props.value);
@@ -112,14 +112,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const { data: dispatchRateData, error: dispatchRateError } = useSWR(
     swrKey,
-    async () => (await adminClient.namespaces.getDispatchRate(props.tenant, props.namespace)) as unknown as DispatchRateData
+    async () => (await adminClient.namespaces.getSubscriptionDispatchRate(props.tenant, props.namespace)) as unknown as DispatchRateData
   );
 
   if (dispatchRateError) {
     notifyError(`Unable to get dispatch rate. ${dispatchRateError}`);
   }
 
-  const dispatchRate: DispatchRate = dispatchRateData === undefined ? 'disabled' : {
+  const dispatchRate: SubscriptionDispatchRate = dispatchRateData === undefined ? 'disabled' : {
     byteDispatchRate: dispatchRateData.dispatchThrottlingRateInByte || -1,
     dispatchRatePeriod: dispatchRateData.ratePeriodInSecond || 1,
     msgDispatchRate: dispatchRateData.dispatchThrottlingRateInMsg || -1,
@@ -127,13 +127,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   return (
-    <DispatchRateInput
+    <SubscriptionDispatchRateInput
       value={dispatchRate}
       onChange={async (value) => {
         if (value === 'disabled') {
-          await adminClient.namespaces.deleteDispatchRate(props.tenant, props.namespace);
+          await adminClient.namespaces.deleteSubscriptionDispatchRate(props.tenant, props.namespace);
         } else {
-          await adminClient.namespaces.setDispatchRate(
+          await adminClient.namespaces.setSubscriptionDispatchRate(
             props.tenant,
             props.namespace,
             {
@@ -152,7 +152,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
-  title: 'Dispatch rate',
+  title: 'Subscription dispatch rate',
   description: <span>Set message-dispatch-rate for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
