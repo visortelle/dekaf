@@ -18,6 +18,7 @@ import encryptionRequiredField from './fields/encryption-required';
 import subscriptionAuthModeField from './fields/subscription-auth-mode';
 import delayedDeliveryField from './fields/delayed-delivery';
 import dispatchRateField from './fields/dispatch-rate';
+import subscriptionDispatchRateField from './fields/subscription-dispatch-rate';
 
 export type PoliciesProps = {
   tenant: string;
@@ -55,7 +56,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             encryptionRequiredField,
             subscriptionAuthModeField,
             delayedDeliveryField,
-            dispatchRateField
+            dispatchRateField,
+            subscriptionDispatchRateField,
           ].map(field => field(props))}
         />
       </div>
