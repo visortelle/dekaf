@@ -14,7 +14,8 @@ import autoSubscriptionCreationField from './fields/auto-subscription-creation';
 import bookieAffinityGroupField from './fields/bookie-affinity-group';
 import autoTopicCreationField from './fields/auto-topic-creation';
 import encryptionRequiredField from './fields/encryption-required';
-import subscriptionAuthMode from './fields/subscription-auth-mode';
+import subscriptionAuthModeField from './fields/subscription-auth-mode';
+import delayedDeliveryField from './fields/delayed-delivery';
 
 export type PoliciesProps = {
   tenant: string;
@@ -39,7 +40,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           bookieAffinityGroupField,
           autoTopicCreationField,
           encryptionRequiredField,
-          subscriptionAuthMode
+          subscriptionAuthModeField,
+          delayedDeliveryField
         ].map(field => field(props))}
       />
     </div>
