@@ -5,13 +5,12 @@ import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTab
 import sf from '../../../ConfigurationTable/form.module.css';
 import Input from "../../../ConfigurationTable/Input/Input";
 import { useEffect, useState } from 'react';
-import * as Either from 'fp-ts/Either';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import SelectInput from "../../../ConfigurationTable/SelectInput/SelectInput";
 
 const policyId = 'dispatchRate';
 
-export type DispatchRate = {
+export type DispatchRate = 'disabled' | {
   byteDispatchRate: number;
   dispatchRatePeriod: number;
   msgDispatchRate: number;
@@ -24,85 +23,62 @@ export type DispatchRateInputProps = {
 };
 export const DispatchRateInput: React.FC<DispatchRateInputProps> = (props) => {
   const [dispatchRate, setDispatchRate] = useState<DispatchRate>(props.value);
-  // const [validationResult, setValidationResult] = useState<Either.Either<React.ReactElement, void>>(Either.right(undefined));
-
-  // const validate = (p: DispatchRate): void => {
-  //   // Source: https://github.com/apache/pulsar/blob/6734a3bf77793419898dd1c8421da039dc117f6e/pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/AdminResource.java#L812
-  //   const isValid = (
-  //     (p.bookkeeperEnsemble >= p.bookkeeperWriteQuorum) &&
-  //     (p.bookkeeperWriteQuorum >= p.bookkeeperAckQuorum)
-  //   );
-
-  //   if (!isValid) {
-  //     setValidationResult(() =>
-  //       Either.left(
-  //         <div style={{ color: `var(--accent-color-red)`, marginBottom: '12rem' }}>
-  //           <span><strong>Ensemble</strong> must be &gt;= <strong>Write quorum</strong>.</span>
-  //           <br />
-  //           <span><strong>Write quorum</strong> must be &gt;= <strong>Ack quorum</strong>.</span>
-  //         </div>
-  //       )
-  //     );
-  //     return;
-  //   }
-
-  //   setValidationResult(() => Either.right(undefined));
-  // }
 
   useEffect(() => {
     setDispatchRate(() => props.value);
   }, [props.value]);
 
-  // useEffect(() => {
-  //   validate(dispatchRate);
-  // }, [dispatchRate]);
-
-  // const showUpdateConfirmation = Either.isRight(validationResult) && JSON.stringify(props.value) !== JSON.stringify(dispatchRate);
   const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(dispatchRate);
 
   return (
     <div>
       <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Byte dispatch rate</strong>
-        <Input
-          type='number'
-          onChange={(v) => setDispatchRate({ ...dispatchRate, byteDispatchRate: Number(v) })}
-          value={String(dispatchRate.byteDispatchRate)}
+        <SelectInput<'enabled' | 'disabled'>
+          list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
+          value={dispatchRate === 'disabled' ? 'disabled' : 'enabled'}
+          onChange={(value) => setDispatchRate(value === 'disabled' ? 'disabled' : { byteDispatchRate: -1, dispatchRatePeriod: 1, msgDispatchRate: -1, relativeToPublishRate: false })}
         />
       </div>
 
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Dispatch rate period</strong>
-        <Input
-          type='number'
-          onChange={(v) => setDispatchRate({ ...dispatchRate, dispatchRatePeriod: Number(v) })}
-          value={String(dispatchRate.dispatchRatePeriod)}
-        />
-      </div>
-
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Message dispatch rate</strong>
-        <Input
-          type='number'
-          onChange={(v) => setDispatchRate({ ...dispatchRate, msgDispatchRate: Number(v) })}
-          value={String(dispatchRate.msgDispatchRate)}
-        />
-      </div>
-
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Relative to publish rate</strong>
-        <SelectInput<DispatchRate['relativeToPublishRate']>
-          list={[{ value: true, title: 'True' }, { value: false, title: 'False' }]}
-          onChange={(v) => setDispatchRate({ ...dispatchRate, relativeToPublishRate: v })}
-          value={dispatchRate.relativeToPublishRate}
-        />
-      </div>
-
-      {/* {Either.isLeft(validationResult) && (
+      {dispatchRate !== 'disabled' && (
         <div>
-          {validationResult.left}
+          <div className={sf.FormItem}>
+            <strong className={sf.FormLabel}>Byte dispatch rate</strong>
+            <Input
+              type='number'
+              onChange={(v) => setDispatchRate({ ...dispatchRate, byteDispatchRate: Number(v) })}
+              value={String(dispatchRate.byteDispatchRate)}
+            />
+          </div>
+
+          <div className={sf.FormItem}>
+            <strong className={sf.FormLabel}>Dispatch rate period</strong>
+            <Input
+              type='number'
+              onChange={(v) => setDispatchRate({ ...dispatchRate, dispatchRatePeriod: Number(v) })}
+              value={String(dispatchRate.dispatchRatePeriod)}
+            />
+          </div>
+
+          <div className={sf.FormItem}>
+            <strong className={sf.FormLabel}>Message dispatch rate</strong>
+            <Input
+              type='number'
+              onChange={(v) => setDispatchRate({ ...dispatchRate, msgDispatchRate: Number(v) })}
+              value={String(dispatchRate.msgDispatchRate)}
+            />
+          </div>
+
+          <div className={sf.FormItem}>
+            <strong className={sf.FormLabel}>Relative to publish rate</strong>
+            <SelectInput<boolean>
+              list={[{ value: true, title: 'True' }, { value: false, title: 'False' }]}
+              onChange={(v) => setDispatchRate({ ...dispatchRate, relativeToPublishRate: v })}
+              value={dispatchRate.relativeToPublishRate}
+            />
+          </div>
         </div>
-      )} */}
+      )}
 
       {showUpdateConfirmation && (
         <UpdateConfirmation
@@ -115,11 +91,11 @@ export const DispatchRateInput: React.FC<DispatchRateInputProps> = (props) => {
 }
 
 type DispatchRateData = {
-    dispatchThrottlingRateInMsg?: number;
-    dispatchThrottlingRateInByte?: number;
-    relativeToPublishRate?: boolean;
-    ratePeriodInSecond?: number;
-};
+  dispatchThrottlingRateInMsg?: number;
+  dispatchThrottlingRateInByte?: number;
+  relativeToPublishRate?: boolean;
+  ratePeriodInSecond?: number;
+} | undefined;
 
 export type FieldInputProps = {
   tenant: string;
@@ -143,26 +119,31 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     notifyError(`Unable to get dispatch rate. ${dispatchRateError}`);
   }
 
-  const dispatchRate: DispatchRate = {
-    byteDispatchRate: dispatchRateData?.dispatchThrottlingRateInByte || -1,
-    dispatchRatePeriod: dispatchRateData?.ratePeriodInSecond || 1,
-    msgDispatchRate: dispatchRateData?.dispatchThrottlingRateInMsg || -1,
-    relativeToPublishRate: dispatchRateData?.relativeToPublishRate || false,
+  const dispatchRate: DispatchRate = dispatchRateData === undefined ? 'disabled' : {
+    byteDispatchRate: dispatchRateData.dispatchThrottlingRateInByte || -1,
+    dispatchRatePeriod: dispatchRateData.ratePeriodInSecond || 1,
+    msgDispatchRate: dispatchRateData.dispatchThrottlingRateInMsg || -1,
+    relativeToPublishRate: dispatchRateData.relativeToPublishRate || false,
   }
 
   return (
     <DispatchRateInput
       value={dispatchRate}
       onChange={async (value) => {
-        await adminClient.namespaces.setDispatchRate(
-          props.tenant,
-          props.namespace,
-          {
-            dispatchThrottlingRateInByte: value.byteDispatchRate,
-            dispatchThrottlingRateInMsg: value.msgDispatchRate,
-            ratePeriodInSecond: value.dispatchRatePeriod,
-            relativeToPublishRate: value.relativeToPublishRate,
-          }).catch(onUpdateError);
+        if (value === 'disabled') {
+          await adminClient.namespaces.setDispatchRate(props.tenant, props.namespace);
+        } else {
+          await adminClient.namespaces.setDispatchRate(
+            props.tenant,
+            props.namespace,
+            {
+              dispatchThrottlingRateInByte: value.byteDispatchRate,
+              dispatchThrottlingRateInMsg: value.msgDispatchRate,
+              ratePeriodInSecond: value.dispatchRatePeriod,
+              relativeToPublishRate: value.relativeToPublishRate,
+            }).catch(onUpdateError);
+        }
+
         await mutate(swrKey);
       }}
     />
