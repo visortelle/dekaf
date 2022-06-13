@@ -4,38 +4,42 @@ import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 
-const policyId = 'encryptionRequired';
+const policyId = 'subscriptionAuthMode';
 
 export type FieldInputProps = {
   tenant: string;
   namespace: string;
 }
 
-type EncryptionRequired = 'enabled' | 'disabled';
+type SubscriptionAuthMode = 'None' | 'Prefix';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update encryption required. ${err}`);
+  const onUpdateError = (err: string) => notifyError(`Can't update subscription auth mode. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
-  const { data: encryptionRequired, error: encryptionRequiredError } = useSWR(
+  const { data: subscriptionAuthMode, error: subscriptionAuthModeError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getEncryptionRequired(props.tenant, props.namespace)
+    async () => await adminClient.namespaces.getSubscriptionAuthMode(props.tenant, props.namespace)
   );
 
-  if (encryptionRequiredError) {
-    notifyError(`Unable to get encryption required: ${encryptionRequiredError}`);
+  if (subscriptionAuthModeError) {
+    notifyError(`Unable to get subscription auth mode: ${subscriptionAuthModeError}`);
+  }
+
+  if (typeof subscriptionAuthMode === 'undefined') {
+    return <></>;
   }
 
   return (
-    <SelectInput<EncryptionRequired>
-      list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
-      value={encryptionRequired ? 'enabled' : 'disabled'}
+    <SelectInput<SubscriptionAuthMode>
+      list={[{ value: 'None', title: 'None' }, { value: 'Prefix', title: 'Prefix' }]}
+      value={subscriptionAuthMode}
       onChange={async (v) => {
-        await adminClient.namespaces.modifyEncryptionRequired(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);
+        await adminClient.namespaces.setSubscriptionAuthMode(props.tenant, props.namespace, v).catch(onUpdateError);
         await mutate(swrKey);
       }}
     />
@@ -44,9 +48,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
-  title: 'Encryption required',
-  description: <span>Enable or disable message encryption required for a namespace.</span>,
+  title: 'Subscription auth mode',
+  description: <span>Set subscription auth mode on a namespace.</span>,
   input: <FieldInput {...props} />
 });
 
 export default field;
+
