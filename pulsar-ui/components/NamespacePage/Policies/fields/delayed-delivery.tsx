@@ -1,0 +1,103 @@
+import SelectInput from "../../../ConfigurationTable/SelectInput/SelectInput";
+import * as Notifications from '../../../contexts/Notifications';
+import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
+import useSWR, { useSWRConfig } from "swr";
+import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
+import DurationInput from "../../../ConfigurationTable/DurationInput/DurationInput";
+import { Duration } from "../../../ConfigurationTable/DurationInput/types";
+import { secondsToDuration, durationToSeconds } from "../../../ConfigurationTable/DurationInput/conversions";
+import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import sf from '../../../ConfigurationTable/form.module.css';
+import { useEffect, useState } from "react";
+
+const policyId = 'delayedDelivery';
+
+export type FieldInputProps = {
+  tenant: string;
+  namespace: string;
+}
+
+type DelayedDelivery = {
+  enabled: 'enabled' | 'disabled';
+  time: Duration
+};
+
+type DelayedDeliveryInputProps = {
+  value: DelayedDelivery;
+  onChange: (value: DelayedDelivery) => void;
+}
+
+const DelayedDeliveryInput: React.FC<DelayedDeliveryInputProps> = (props) => {
+  const [delayedDelivery, setDelayedDelivery] = useState<DelayedDelivery>(props.value);
+
+  useEffect(() => {
+    setDelayedDelivery(() => props.value);
+  }, [props.value]);
+
+  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(delayedDelivery);
+
+  return (
+    <div>
+      <div className={sf.FormItem}>
+        <SelectInput<DelayedDelivery['enabled']>
+          list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
+          value={delayedDelivery.enabled}
+          onChange={(v) => setDelayedDelivery({ ...delayedDelivery, enabled: v })}
+        />
+      </div>
+      {delayedDelivery.enabled === 'enabled' && (
+        <div className={sf.FormItem}>
+          <strong className={sf.FormLabel}>Tick time</strong>
+          <DurationInput
+            value={delayedDelivery.time}
+            onChange={async (v) => setDelayedDelivery({ ...delayedDelivery, time: v })}
+          />
+        </div>
+      )}
+
+      {showUpdateConfirmation && (
+        <UpdateConfirmation
+          onUpdate={() => props.onChange(delayedDelivery)}
+          onReset={() => setDelayedDelivery(props.value)}
+        />
+      )}
+    </div >
+  );
+}
+
+export const FieldInput: React.FC<FieldInputProps> = (props) => {
+  const adminClient = PulsarAdminClient.useContext().client;
+  const { notifyError } = Notifications.useContext();
+  const { mutate } = useSWRConfig();
+
+  const onUpdateError = (err: string) => notifyError(`Can't update delayed delivery. ${err}`);
+  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+
+  const { data: delayedDelivery, error: delayedDeliveryError } = useSWR(
+    swrKey,
+    async () => await adminClient.namespaces.getDelayedDeliveryPolicies(props.tenant, props.namespace)
+  );
+
+  if (delayedDeliveryError) {
+    notifyError(`Unable to get delayed delivery: ${delayedDeliveryError}`);
+  }
+
+  return (
+    <DelayedDeliveryInput
+      value={{ enabled: delayedDelivery?.active ? 'enabled' : 'disabled', time: secondsToDuration(delayedDelivery?.tickTime || 0) }}
+      onChange={async (v) => {
+        await adminClient.namespaces.setDelayedDeliveryPolicies(props.tenant, props.namespace, { active: v.enabled === 'enabled', tickTime: durationToSeconds(v.time) });
+        await mutate(swrKey);
+      }}
+    />
+  );
+}
+
+const field = (props: FieldInputProps): ConfigurationField => ({
+  id: policyId,
+  title: 'Delayed delivery',
+  description: <span>Set the delayed delivery policy on a namespace.</span>,
+  input: <FieldInput {...props} />
+});
+
+export default field;
