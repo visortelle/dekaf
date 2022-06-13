@@ -48,7 +48,7 @@ const RetentionInputWithUpdateConfirmation: React.FC<RetentionInputWithUpdateCon
         value={value}
         onChange={(v) => setValue(() => v)}
       />
-      {props.value !== value && (
+      {JSON.stringify(props.value) !== JSON.stringify(value) && (
         <UpdateConfirmation
           onUpdate={handleUpdate}
           onReset={() => setValue(props.value)}
@@ -96,9 +96,7 @@ const RetentionInput: React.FC<RetentionInputProps> = (props) => {
             <div className={sf.FormItem}>
               <MemorySizeInput
                 value={retention.size}
-                onChange={(v) => {
-                  setRetention({ ...retention, size: v });
-                }}
+                onChange={(v) => setRetention({ ...retention, size: v })}
               />
             </div>
           )}
