@@ -26,26 +26,37 @@ export type PoliciesProps = {
 const Policies: React.FC<PoliciesProps> = (props) => {
   return (
     <div className={s.Policies}>
-      <ConfigurationTable
-        fields={[
-          replicationClustersField,
-          subscriptionTypesEnabledField,
-          backlogQuotaField,
-          persistenceField,
-          messageTtlField,
-          maxSubscriptionsPerTopicField,
-          subscriptionExpirationTimeField,
-          antiAffinityGroupField,
-          deduplicationField,
-          autoSubscriptionCreationField,
-          retentionField,
-          bookieAffinityGroupField,
-          autoTopicCreationField,
-          encryptionRequiredField,
-          subscriptionAuthModeField,
-          delayedDeliveryField
-        ].map(field => field(props))}
-      />
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Message retention and expiry"
+          fields={[
+            retentionField,
+            backlogQuotaField,
+            messageTtlField,
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Various"
+          fields={[
+            replicationClustersField,
+            subscriptionTypesEnabledField,
+            persistenceField,
+            maxSubscriptionsPerTopicField,
+            subscriptionExpirationTimeField,
+            antiAffinityGroupField,
+            deduplicationField,
+            autoSubscriptionCreationField,
+            bookieAffinityGroupField,
+            autoTopicCreationField,
+            encryptionRequiredField,
+            subscriptionAuthModeField,
+            delayedDeliveryField
+          ].map(field => field(props))}
+        />
+      </div>
     </div>
   );
 }
