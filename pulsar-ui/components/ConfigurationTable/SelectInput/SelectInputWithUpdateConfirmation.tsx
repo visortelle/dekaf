@@ -5,7 +5,7 @@ import UpdateConfirmation from '../UpdateConfirmation/UpdateConfirmation';
 export type InputWithUpdateConfirmationProps<V> = InputProps<V>;
 
 function InputWithUpdateConfirmation<V>(props: InputWithUpdateConfirmationProps<V>): React.ReactElement {
-  const [value, setValue] = useState<V | undefined>(props.value);
+  const [value, setValue] = useState<V>(props.value);
 
   useEffect(() => {
     setValue(() => props.value);
