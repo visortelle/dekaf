@@ -174,7 +174,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
   title: 'Retention',
-  description: <span>Retention policy.</span>,
+  description: <span>By default, when a Pulsar message arrives at a broker, the message is stored until it has been acknowledged on all subscriptions, at which point it is marked for deletion.<br />You can override this behavior and retain messages that have already been acknowledged on all subscriptions by setting a retention policy.</span>,
   input: <FieldInput {...props} />
 });
 

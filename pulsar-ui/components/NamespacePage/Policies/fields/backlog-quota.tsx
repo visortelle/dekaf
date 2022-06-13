@@ -228,39 +228,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 }
 
-const Description = () => (
-  <span>
-    <strong>Type</strong>
-    <br />
-    <code>destination_storage</code> limits backlog by size (in bytes).
-    <br />
-    <code>message_age</code> limits backlog by time, that is, message timestamp (broker
-    or publish timestamp).
-    <br />
-    You can set size or time to control the backlog,
-    or combine them together to control the backlog.
-    <br />
-    <br />
-    <strong>Size limit</strong>
-    <br />
-    Size limit.
-    <br />
-    <br />
-    <strong>Limit time</strong>
-    <br />
-    Time limit in second, non-positive number for disabling time limit.
-    <br />
-    <br />
-    <strong>Policy</strong>
-    <br />
-    Retention policy to enforce when the limit is reached.
-  </span>
-);
-
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
   title: 'Backlog quota',
-  description: <Description />,
+  description: <span>Backlogs are sets of unacknowledged messages for a topic that have been stored by bookies. <br />Pulsar stores all unacknowledged messages in backlogs until they are processed and acknowledged.</span>,
   input: <FieldInput {...props} />
 });
 

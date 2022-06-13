@@ -3,6 +3,7 @@ import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 import Input from '../../../ConfigurationTable/Input/InputWithUpdateConfirmation';
+import sf from '../../../ConfigurationTable/form.module.css';
 
 const policyId = 'messageTtl';
 
@@ -29,32 +30,36 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   return (
-    <Input
-      type='number'
-      value={String(messageTtl || 0)}
-      onChange={async (value) => {
-        const messageTtl = Number(value);
+    <div>
+      <strong className={sf.FormLabel}>Message TTL (sec.)</strong>
+      <Input
+        type='number'
+        value={String(messageTtl || 0)}
+        onChange={async (value) => {
+          const messageTtl = Number(value);
 
-        if (messageTtl === 0) {
-          await adminClient.namespaces.removeNamespaceMessageTtl(props.tenant, props.namespace).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setNamespaceMessageTtl(
-            props.tenant,
-            props.namespace,
-            messageTtl
-          ).catch(onUpdateError);
-        }
+          if (messageTtl === 0) {
+            await adminClient.namespaces.removeNamespaceMessageTtl(props.tenant, props.namespace).catch(onUpdateError);
+          } else {
+            await adminClient.namespaces.setNamespaceMessageTtl(
+              props.tenant,
+              props.namespace,
+              messageTtl
+            ).catch(onUpdateError);
+          }
 
-        await mutate(swrKey);
-      }}
-    />
+          await mutate(swrKey);
+        }}
+      />
+    </div>
+
   )
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
   title: 'Message TTL',
-  description: <span>Message TTL in seconds. When the value is set to `0`, TTL is disabled.</span>,
+  description: <span>By default, Pulsar stores all unacknowledged messages forever. This can lead to heavy disk space usage in cases where a lot of messages are going unacknowledged. <br />If disk space is a concern, you can set a time to live (TTL) that determines how long unacknowledged messages will be retained.</span>,
   input: <FieldInput {...props} />
 });
 
