@@ -17,6 +17,7 @@ import autoTopicCreationField from './fields/auto-topic-creation';
 import encryptionRequiredField from './fields/encryption-required';
 import subscriptionAuthModeField from './fields/subscription-auth-mode';
 import delayedDeliveryField from './fields/delayed-delivery';
+import dispatchRateField from './fields/dispatch-rate';
 
 export type PoliciesProps = {
   tenant: string;
@@ -53,7 +54,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             autoTopicCreationField,
             encryptionRequiredField,
             subscriptionAuthModeField,
-            delayedDeliveryField
+            delayedDeliveryField,
+            dispatchRateField
           ].map(field => field(props))}
         />
       </div>
