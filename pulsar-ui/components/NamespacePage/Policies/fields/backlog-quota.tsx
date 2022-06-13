@@ -1,7 +1,6 @@
 import SelectInput from "../../../ConfigurationTable/SelectInput/SelectInput";
 import * as Notifications from '../../../contexts/Notifications';
 import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
-import * as Either from 'fp-ts/lib/Either';
 import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
@@ -10,9 +9,11 @@ import sf from '../../../ConfigurationTable/form.module.css';
 import MemorySizeInput from "../../../ConfigurationTable/MemorySizeInput/MemorySizeInput";
 import { memoryToBytes, bytesToMemorySize } from "../../../ConfigurationTable/MemorySizeInput/conversions";
 import { MemorySize } from "../../../ConfigurationTable/MemorySizeInput/types";
-import Input from "../../../ConfigurationTable/Input/Input";
+import DurationInput from "../../../ConfigurationTable/DurationInput/DurationInput";
+import { secondsToDuration, durationToSeconds } from "../../../ConfigurationTable/DurationInput/conversions";
 import UpdateConfirmation from "../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
 import { useEffect, useState } from "react";
+import * as Either from 'fp-ts/Either';
 
 const policyId = 'backlogQuota';
 
@@ -94,7 +95,29 @@ const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
       </div>
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Limit time (sec.)</strong>
-        <Input type="number" value={props.value.limitTime.toString()} onChange={(time) => props.onChange({ ...props.value, limitTime: Number(time) })} />
+
+        <div className={sf.FormItem}>
+          <SelectInput<'enabled' | 'disabled'>
+            value={props.value.limitTime > 0 ? 'enabled' : 'disabled'}
+            list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
+            onChange={(v) => {
+              switch (v) {
+                case 'enabled':
+                  props.onChange({ ...props.value, limitTime: props.value.limitTime > 0 ? props.value.limitTime : 1 });
+                  break;
+                case 'disabled':
+                  props.onChange({ ...props.value, limitTime: -1 });
+                  break;
+              }
+            }}
+          />
+        </div>
+        {props.value.limitTime > 0 && (
+          <DurationInput
+            value={secondsToDuration(props.value.limitTime)}
+            onChange={(limitTime) => props.onChange({ ...props.value, limitTime: durationToSeconds(limitTime) })}
+          />
+        )}
       </div>
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Policy</strong>
