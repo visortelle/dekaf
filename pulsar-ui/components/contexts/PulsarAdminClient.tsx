@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import * as pulsarAdmin from 'pulsar-admin-client-fetch';
 
 export type Value = {
