@@ -5,7 +5,6 @@ import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTab
 import sf from '../../../ConfigurationTable/form.module.css';
 import Input from "../../../ConfigurationTable/Input/Input";
 import { useEffect, useState } from 'react';
-import * as Either from 'fp-ts/Either';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
 

@@ -1,0 +1,13 @@
+.DurationInput {
+  display: flex;
+}
+
+.Value,
+.Unit {
+  display: flex;
+  flex: 1 1 auto;
+}
+
+.Value {
+  margin-right: 12rem;
+}

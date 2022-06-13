@@ -2,12 +2,12 @@ import { memoryToBytes, bytesToMemorySize } from "./conversions";
 
 describe('memoryToBytes', () => {
   it('should convert memory size to bytes', () => {
-    expect(memoryToBytes({ size: 0, unit: 'M' })).toBe(0);
-    expect(memoryToBytes({ size: 1, unit: 'M' })).toBe(1024 * 1024);
-    expect(memoryToBytes({ size: 2, unit: 'M' })).toBe(1024 * 1024 * 2);
-    expect(memoryToBytes({ size: 2.2, unit: 'M' })).toBe(1024 * 1024 * 2.2);
+    expect(memoryToBytes({ size: 0, unit: 'M' })).toBeCloseTo(0);
+    expect(memoryToBytes({ size: 1, unit: 'M' })).toBeCloseTo(1024 * 1024);
+    expect(memoryToBytes({ size: 2, unit: 'M' })).toBeCloseTo(1024 * 1024 * 2);
+    expect(memoryToBytes({ size: 2.2, unit: 'M' })).toBeCloseTo(1024 * 1024 * 2.2);
 
-    expect(memoryToBytes({ size: 1, unit: 'G' })).toBe(1024 * 1024 * 1024);
+    expect(memoryToBytes({ size: 1, unit: 'G' })).toBeCloseTo(1024 * 1024 * 1024);
   });
 });
 
