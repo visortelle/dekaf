@@ -58,7 +58,7 @@ const BacklogQuotaInputWithUpdateConfirmation: React.FC<BacklogQuotaInputWithUpd
         value={value}
         onChange={(v) => setValue(() => v)}
       />
-      {props.value !== value && (
+      {JSON.stringify(props.value) !== JSON.stringify(value) && (
         <UpdateConfirmation
           onUpdate={handleUpdate}
           onReset={() => setValue(props.value)}
