@@ -122,7 +122,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update persistency policies. ${err} \nNOTE: Probably max limits configured by Pulsar administrator.`);
+  const onUpdateError = (err: string) => notifyError(`Can't update persistency policies. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
   const { data: persistence, error: persistenceError } = useSWR(
