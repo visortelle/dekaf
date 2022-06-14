@@ -31,7 +31,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
     <div className={s.Policies}>
       <div className={s.ConfigurationTable}>
         <ConfigurationTable
-          title="Message retention and expiry"
+          title="Message retention"
           fields={[
             retentionField,
             backlogQuotaField,
