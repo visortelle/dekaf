@@ -77,7 +77,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (maxSubscriptionsPerTopicError) {
-    notifyError(`Unable to get maxSubscriptionsPerTopic. ${maxSubscriptionsPerTopicError}`);
+    notifyError(`Unable to get max subscriptions per topic. ${maxSubscriptionsPerTopicError}`);
   }
 
   return (
