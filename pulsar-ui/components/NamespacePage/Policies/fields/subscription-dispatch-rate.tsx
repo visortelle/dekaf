@@ -17,6 +17,13 @@ export type SubscriptionDispatchRate = 'disabled' | {
   relativeToPublishRate: boolean;
 }
 
+const defaultSubscriptionDispatchRate: SubscriptionDispatchRate = {
+  byteDispatchRate: -1,
+  dispatchRatePeriod: 1,
+  msgDispatchRate: -1,
+  relativeToPublishRate: false
+}
+
 export type SubscriptionDispatchRateInputProps = {
   value: SubscriptionDispatchRate;
   onChange: (value: SubscriptionDispatchRate) => void;
@@ -36,7 +43,7 @@ export const SubscriptionDispatchRateInput: React.FC<SubscriptionDispatchRateInp
         <SelectInput<'enabled' | 'disabled'>
           list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
           value={dispatchRate === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(value) => setDispatchRate(value === 'disabled' ? 'disabled' : { byteDispatchRate: -1, dispatchRatePeriod: 1, msgDispatchRate: -1, relativeToPublishRate: false })}
+          onChange={(value) => setDispatchRate(value === 'disabled' ? 'disabled' : defaultSubscriptionDispatchRate)}
         />
       </div>
 
@@ -113,10 +120,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   const dispatchRate: SubscriptionDispatchRate = dispatchRateData === undefined ? 'disabled' : {
-    byteDispatchRate: dispatchRateData.dispatchThrottlingRateInByte || -1,
-    dispatchRatePeriod: dispatchRateData.ratePeriodInSecond || 1,
-    msgDispatchRate: dispatchRateData.dispatchThrottlingRateInMsg || -1,
-    relativeToPublishRate: dispatchRateData.relativeToPublishRate || false,
+    byteDispatchRate: dispatchRateData.dispatchThrottlingRateInByte === undefined ? defaultSubscriptionDispatchRate.byteDispatchRate : dispatchRateData.dispatchThrottlingRateInByte,
+    dispatchRatePeriod: dispatchRateData.ratePeriodInSecond === undefined ? defaultSubscriptionDispatchRate.dispatchRatePeriod : dispatchRateData.ratePeriodInSecond,
+    msgDispatchRate: dispatchRateData.dispatchThrottlingRateInMsg === undefined ? defaultSubscriptionDispatchRate.msgDispatchRate : dispatchRateData.dispatchThrottlingRateInMsg,
+    relativeToPublishRate: dispatchRateData.relativeToPublishRate === undefined ? defaultSubscriptionDispatchRate.relativeToPublishRate : dispatchRateData.relativeToPublishRate,
   }
 
   return (

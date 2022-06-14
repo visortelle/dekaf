@@ -17,6 +17,13 @@ export type DispatchRate = 'disabled' | {
   relativeToPublishRate: boolean;
 }
 
+const defaultDispatchRate: DispatchRate = {
+  byteDispatchRate: -1,
+  dispatchRatePeriod: 1,
+  msgDispatchRate: -1,
+  relativeToPublishRate: false
+}
+
 export type DispatchRateInputProps = {
   value: DispatchRate;
   onChange: (value: DispatchRate) => void;
@@ -36,7 +43,7 @@ export const DispatchRateInput: React.FC<DispatchRateInputProps> = (props) => {
         <SelectInput<'enabled' | 'disabled'>
           list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
           value={dispatchRate === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(value) => setDispatchRate(value === 'disabled' ? 'disabled' : { byteDispatchRate: -1, dispatchRatePeriod: 1, msgDispatchRate: -1, relativeToPublishRate: false })}
+          onChange={(value) => setDispatchRate(value === 'disabled' ? 'disabled' : defaultDispatchRate)}
         />
       </div>
 
@@ -120,27 +127,27 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   const dispatchRate: DispatchRate = dispatchRateData === undefined ? 'disabled' : {
-    byteDispatchRate: dispatchRateData.dispatchThrottlingRateInByte || -1,
-    dispatchRatePeriod: dispatchRateData.ratePeriodInSecond || 1,
-    msgDispatchRate: dispatchRateData.dispatchThrottlingRateInMsg || -1,
-    relativeToPublishRate: dispatchRateData.relativeToPublishRate || false,
+    byteDispatchRate: dispatchRateData.dispatchThrottlingRateInByte === undefined ? defaultDispatchRate.byteDispatchRate : dispatchRateData.dispatchThrottlingRateInByte,
+    dispatchRatePeriod: dispatchRateData.ratePeriodInSecond === undefined ? defaultDispatchRate.dispatchRatePeriod : dispatchRateData.ratePeriodInSecond,
+    msgDispatchRate: dispatchRateData.dispatchThrottlingRateInMsg === undefined ? defaultDispatchRate.msgDispatchRate : dispatchRateData.dispatchThrottlingRateInMsg,
+    relativeToPublishRate: dispatchRateData.relativeToPublishRate === undefined ? defaultDispatchRate.relativeToPublishRate : dispatchRateData.relativeToPublishRate,
   }
 
   return (
     <DispatchRateInput
       value={dispatchRate}
-      onChange={async (value) => {
-        if (value === 'disabled') {
+      onChange={async (v) => {
+        if (v === 'disabled') {
           await adminClient.namespaces.deleteDispatchRate(props.tenant, props.namespace);
         } else {
           await adminClient.namespaces.setDispatchRate(
             props.tenant,
             props.namespace,
             {
-              dispatchThrottlingRateInByte: value.byteDispatchRate,
-              dispatchThrottlingRateInMsg: value.msgDispatchRate,
-              ratePeriodInSecond: value.dispatchRatePeriod,
-              relativeToPublishRate: value.relativeToPublishRate,
+              dispatchThrottlingRateInByte: v.byteDispatchRate,
+              dispatchThrottlingRateInMsg: v.msgDispatchRate,
+              ratePeriodInSecond: v.dispatchRatePeriod,
+              relativeToPublishRate: v.relativeToPublishRate,
             }).catch(onUpdateError);
         }
 
