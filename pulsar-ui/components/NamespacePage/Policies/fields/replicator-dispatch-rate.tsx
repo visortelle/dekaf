@@ -16,6 +16,12 @@ export type ReplicatorDispatchRate = 'disabled' | {
   msgDispatchRate: number;
 }
 
+const defaultReplicatorDispatchRate: ReplicatorDispatchRate = {
+  byteDispatchRate: -1,
+  dispatchRatePeriod: 1,
+  msgDispatchRate: -1
+}
+
 export type ReplicatorDispatchRateInputProps = {
   value: ReplicatorDispatchRate;
   onChange: (value: ReplicatorDispatchRate) => void;
@@ -35,7 +41,7 @@ export const ReplicatorDispatchRateInput: React.FC<ReplicatorDispatchRateInputPr
         <SelectInput<'enabled' | 'disabled'>
           list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
           value={dispatchRate === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(value) => setDispatchRate(value === 'disabled' ? 'disabled' : { byteDispatchRate: -1, dispatchRatePeriod: 1, msgDispatchRate: -1 })}
+          onChange={(value) => setDispatchRate(value === 'disabled' ? 'disabled' : defaultReplicatorDispatchRate)}
         />
       </div>
 
@@ -103,9 +109,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   const dispatchRate: ReplicatorDispatchRate = dispatchRateData === undefined ? 'disabled' : {
-    byteDispatchRate: dispatchRateData.dispatchThrottlingRateInByte || -1,
-    dispatchRatePeriod: dispatchRateData.ratePeriodInSecond || 1,
-    msgDispatchRate: dispatchRateData.dispatchThrottlingRateInMsg || -1,
+    byteDispatchRate: dispatchRateData.dispatchThrottlingRateInByte === undefined ? defaultReplicatorDispatchRate.byteDispatchRate : dispatchRateData.dispatchThrottlingRateInByte,
+    dispatchRatePeriod: dispatchRateData.ratePeriodInSecond === undefined ? defaultReplicatorDispatchRate.dispatchRatePeriod : dispatchRateData.ratePeriodInSecond,
+    msgDispatchRate: dispatchRateData.dispatchThrottlingRateInMsg === undefined ? defaultReplicatorDispatchRate.msgDispatchRate : dispatchRateData.dispatchThrottlingRateInMsg,
   }
 
   return (
