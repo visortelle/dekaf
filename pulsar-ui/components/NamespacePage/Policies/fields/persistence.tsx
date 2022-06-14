@@ -7,10 +7,11 @@ import Input from "../../../ConfigurationTable/Input/Input";
 import { useEffect, useState } from 'react';
 import * as Either from 'fp-ts/Either';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
 
 const policyId = 'persistence';
 
-export type Persistence = {
+export type Persistence = 'disabled' | {
   bookkeeperAckQuorum: number;
   bookkeeperEnsemble: number;
   bookkeeperWriteQuorum: number;
@@ -25,7 +26,20 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
   const [persistence, setPersistence] = useState<Persistence>(props.value);
   const [validationResult, setValidationResult] = useState<Either.Either<React.ReactElement, void>>(Either.right(undefined));
 
+  useEffect(() => {
+    setPersistence(() => props.value);
+  }, [props.value]);
+
+  useEffect(() => {
+    validate(persistence);
+  }, [persistence]);
+
   const validate = (p: Persistence): void => {
+    if (p === 'disabled') {
+      setValidationResult(() => Either.right(undefined));
+      return;
+    }
+
     // Source: https://github.com/apache/pulsar/blob/6734a3bf77793419898dd1c8421da039dc117f6e/pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/AdminResource.java#L812
     const isValid = (
       (p.bookkeeperEnsemble >= p.bookkeeperWriteQuorum) &&
@@ -48,57 +62,71 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
     setValidationResult(() => Either.right(undefined));
   }
 
-  useEffect(() => {
-    setPersistence(() => props.value);
-  }, [props.value]);
-
-  useEffect(() => {
-    validate(persistence);
-  }, [persistence]);
-
   const showUpdateConfirmation = Either.isRight(validationResult) && JSON.stringify(props.value) !== JSON.stringify(persistence);
 
   return (
     <div>
       <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Ensemble</strong>
-        <Input
-          type='number'
-          onChange={(v) => setPersistence({ ...persistence, bookkeeperEnsemble: Number(v) })}
-          value={String(persistence.bookkeeperEnsemble)}
+        <SelectInput<'enabled' | 'disabled'>
+          list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
+          value={persistence === 'disabled' ? 'disabled' : 'enabled'}
+          onChange={(v) => {
+            if (v === 'disabled') {
+              setPersistence('disabled');
+              return;
+            }
+            setPersistence({
+              bookkeeperAckQuorum: 0,
+              bookkeeperEnsemble: 0,
+              bookkeeperWriteQuorum: 0,
+              mlMarkDeleteMaxRate: 0
+            });
+          }}
         />
       </div>
-
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Write quorum</strong>
-        <Input
-          type='number'
-          onChange={(v) => setPersistence({ ...persistence, bookkeeperWriteQuorum: Number(v) })}
-          value={String(persistence.bookkeeperWriteQuorum)}
-        />
-      </div>
-
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Ack quorum</strong>
-        <Input
-          type='number'
-          onChange={(v) => setPersistence({ ...persistence, bookkeeperAckQuorum: Number(v) })}
-          value={String(persistence.bookkeeperAckQuorum)}
-        />
-      </div>
-
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Mark delete max rate</strong>
-        <Input
-          type='number'
-          onChange={(v) => setPersistence({ ...persistence, mlMarkDeleteMaxRate: Number(v) })}
-          value={String(persistence.mlMarkDeleteMaxRate)}
-        />
-      </div>
-
-      {Either.isLeft(validationResult) && (
+      {persistence !== 'disabled' && (
         <div>
-          {validationResult.left}
+          <div className={sf.FormItem}>
+            <strong className={sf.FormLabel}>Ensemble</strong>
+            <Input
+              type='number'
+              onChange={(v) => setPersistence({ ...persistence, bookkeeperEnsemble: Number(v) })}
+              value={String(persistence.bookkeeperEnsemble)}
+            />
+          </div>
+
+          <div className={sf.FormItem}>
+            <strong className={sf.FormLabel}>Write quorum</strong>
+            <Input
+              type='number'
+              onChange={(v) => setPersistence({ ...persistence, bookkeeperWriteQuorum: Number(v) })}
+              value={String(persistence.bookkeeperWriteQuorum)}
+            />
+          </div>
+
+          <div className={sf.FormItem}>
+            <strong className={sf.FormLabel}>Ack quorum</strong>
+            <Input
+              type='number'
+              onChange={(v) => setPersistence({ ...persistence, bookkeeperAckQuorum: Number(v) })}
+              value={String(persistence.bookkeeperAckQuorum)}
+            />
+          </div>
+
+          <div className={sf.FormItem}>
+            <strong className={sf.FormLabel}>Mark delete max rate</strong>
+            <Input
+              type='number'
+              onChange={(v) => setPersistence({ ...persistence, mlMarkDeleteMaxRate: Number(v) })}
+              value={String(persistence.mlMarkDeleteMaxRate)}
+            />
+          </div>
+
+          {Either.isLeft(validationResult) && (
+            <div>
+              {validationResult.left}
+            </div>
+          )}
         </div>
       )}
 
@@ -109,6 +137,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
         />
       )}
     </div>
+
   );
 }
 
@@ -136,22 +165,27 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <PersistenceInput
-      value={{
-        bookkeeperAckQuorum: persistence?.bookkeeperAckQuorum || 0,
-        bookkeeperEnsemble: persistence?.bookkeeperEnsemble || 0,
-        bookkeeperWriteQuorum: persistence?.bookkeeperWriteQuorum || 0,
-        mlMarkDeleteMaxRate: persistence?.managedLedgerMaxMarkDeleteRate || 0,
+      value={persistence === undefined ? 'disabled' : {
+        bookkeeperAckQuorum: persistence.bookkeeperAckQuorum || 0,
+        bookkeeperEnsemble: persistence.bookkeeperEnsemble || 0,
+        bookkeeperWriteQuorum: persistence.bookkeeperWriteQuorum || 0,
+        mlMarkDeleteMaxRate: persistence.managedLedgerMaxMarkDeleteRate || 0,
       }}
-      onChange={async (value) => {
-        await adminClient.namespaces.setPersistence(
-          props.tenant,
-          props.namespace,
-          {
-            bookkeeperEnsemble: value.bookkeeperEnsemble,
-            bookkeeperWriteQuorum: value.bookkeeperWriteQuorum,
-            bookkeeperAckQuorum: value.bookkeeperAckQuorum,
-            managedLedgerMaxMarkDeleteRate: value.mlMarkDeleteMaxRate
-          }).catch(onUpdateError);
+      onChange={async (v) => {
+        if (v === 'disabled') {
+          await adminClient.namespaces.deletePersistence(props.tenant, props.namespace).catch(onUpdateError);
+        } else {
+          await adminClient.namespaces.setPersistence(
+            props.tenant,
+            props.namespace,
+            {
+              bookkeeperEnsemble: v.bookkeeperEnsemble,
+              bookkeeperWriteQuorum: v.bookkeeperWriteQuorum,
+              bookkeeperAckQuorum: v.bookkeeperAckQuorum,
+              managedLedgerMaxMarkDeleteRate: v.mlMarkDeleteMaxRate
+            }).catch(onUpdateError);
+        }
+
         await mutate(swrKey);
       }}
     />
