@@ -18,6 +18,13 @@ export type Persistence = 'disabled' | {
   mlMarkDeleteMaxRate: number;
 }
 
+const defaultPersistence: Persistence = {
+  bookkeeperAckQuorum: 0,
+  bookkeeperEnsemble: 0,
+  bookkeeperWriteQuorum: 0,
+  mlMarkDeleteMaxRate: 0,
+};
+
 export type PersistenceInputProps = {
   value: Persistence;
   onChange: (value: Persistence) => void;
@@ -70,18 +77,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
         <SelectInput<'enabled' | 'disabled'>
           list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
           value={persistence === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => {
-            if (v === 'disabled') {
-              setPersistence('disabled');
-              return;
-            }
-            setPersistence({
-              bookkeeperAckQuorum: 0,
-              bookkeeperEnsemble: 0,
-              bookkeeperWriteQuorum: 0,
-              mlMarkDeleteMaxRate: 0
-            });
-          }}
+          onChange={(v) => v === 'disabled' ? setPersistence('disabled') : setPersistence(defaultPersistence)}
         />
       </div>
       {persistence !== 'disabled' && (
@@ -166,10 +162,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   return (
     <PersistenceInput
       value={persistence === undefined ? 'disabled' : {
-        bookkeeperAckQuorum: persistence.bookkeeperAckQuorum || 0,
-        bookkeeperEnsemble: persistence.bookkeeperEnsemble || 0,
-        bookkeeperWriteQuorum: persistence.bookkeeperWriteQuorum || 0,
-        mlMarkDeleteMaxRate: persistence.managedLedgerMaxMarkDeleteRate || 0,
+        bookkeeperAckQuorum: persistence.bookkeeperAckQuorum === undefined ? defaultPersistence.bookkeeperAckQuorum : persistence.bookkeeperAckQuorum,
+        bookkeeperEnsemble: persistence.bookkeeperEnsemble === undefined ? defaultPersistence.bookkeeperEnsemble : persistence.bookkeeperEnsemble,
+        bookkeeperWriteQuorum: persistence.bookkeeperWriteQuorum === undefined ? defaultPersistence.bookkeeperWriteQuorum : persistence.bookkeeperWriteQuorum,
+        mlMarkDeleteMaxRate: persistence.managedLedgerMaxMarkDeleteRate === undefined ? defaultPersistence.mlMarkDeleteMaxRate : persistence.managedLedgerMaxMarkDeleteRate,
       }}
       onChange={async (v) => {
         if (v === 'disabled') {
