@@ -33,6 +33,16 @@ const Policies: React.FC<PoliciesProps> = (props) => {
     <div className={s.Policies}>
       <div className={s.ConfigurationTable}>
         <ConfigurationTable
+          title="Namespace"
+          fields={[
+            replicationClustersField,
+            persistenceField,
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
           title="Message retention"
           fields={[
             retentionField,
@@ -44,26 +54,40 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
       <div className={s.ConfigurationTable}>
         <ConfigurationTable
+          title="Topics"
+          fields={[
+            autoTopicCreationField,
+            inactiveTopicPoliciesField,
+            maxSubscriptionsPerTopicField,
+            dispatchRateField,
+            subscribeRateField,
+            replicatorDispatchRateField,
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Subscriptions"
+          fields={[
+            subscriptionTypesEnabledField,
+            subscriptionDispatchRateField,
+            subscriptionExpirationTimeField,
+            subscriptionAuthModeField,
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
           title="Various"
           fields={[
-            replicationClustersField,
-            subscriptionTypesEnabledField,
-            persistenceField,
-            maxSubscriptionsPerTopicField,
-            subscriptionExpirationTimeField,
             antiAffinityGroupField,
             deduplicationField,
             autoSubscriptionCreationField,
             bookieAffinityGroupField,
-            autoTopicCreationField,
             encryptionRequiredField,
-            subscriptionAuthModeField,
             delayedDeliveryField,
-            dispatchRateField,
-            subscribeRateField,
-            subscriptionDispatchRateField,
-            replicatorDispatchRateField,
-            inactiveTopicPoliciesField
           ].map(field => field(props))}
         />
       </div>

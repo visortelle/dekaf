@@ -4,8 +4,6 @@ import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 import sf from '../../../ConfigurationTable/form.module.css';
-import MemorySizeInput from "../../../ConfigurationTable/MemorySizeInput/MemorySizeInput";
-import { memoryToBytes, bytesToMemorySize } from "../../../ConfigurationTable/MemorySizeInput/conversions";
 import DurationInput from "../../../ConfigurationTable/DurationInput/DurationInput";
 import { secondsToDuration, durationToSeconds } from "../../../ConfigurationTable/DurationInput/conversions";
 import UpdateConfirmation from "../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
@@ -13,9 +11,6 @@ import { useEffect, useState } from "react";
 import { Duration } from "../../../ConfigurationTable/DurationInput/types";
 
 const policyId = 'inactiveTopicPolicies';
-
-const bytesInMegabyte = 1024 * 1024;
-const secondsInMinute = 60;
 
 type DeleteMode = 'delete_when_no_subscriptions' | 'delete_when_subscriptions_caught_up';
 type EnableWhileDeleteInactive = boolean;
@@ -178,4 +173,3 @@ const field = (props: FieldInputProps): ConfigurationField => ({
 });
 
 export default field;
-

@@ -1,6 +1,6 @@
 .Title {
   margin: 0;
-  font-size: 32rem;
+  font-size: 24rem;
   font-weight: bold;
   padding: 0 12rem;
   margin-bottom: 8rem;
@@ -13,8 +13,7 @@
 
 .FieldTitle,
 .FieldDescription,
-.FieldInput,
-.ColumnHeader {
+.FieldInput {
   padding: 12rem;
   flex: 1 1 33.3333333%;
   font-size: 14rem;
@@ -23,25 +22,12 @@
 
 .FieldTitle:first-child,
 .FieldDescription:first-child,
-.FieldInput:first-child,
-.ColumnHeader:first-child {
+.FieldInput:first-child {
   flex: 0 1 18%;
 }
 /* XXX - set columns size more explicitly instead of rely on first/last child here. */
 .FieldTitle:last-child,
 .FieldDescription:last-child,
-.FieldInput:last-child,
-.ColumnHeader:last-child {
+.FieldInput:last-child {
   flex: 1 1 18%;
-}
-
-.ColumnHeaders {
-  display: flex;
-  flex: 1 1 auto;
-  border-bottom: 1rem solid #ddd;
-  font-size: 13rem;
-}
-
-.ColumnHeader {
-  font-weight: bold;
 }
