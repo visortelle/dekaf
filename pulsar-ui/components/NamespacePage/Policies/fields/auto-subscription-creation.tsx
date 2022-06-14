@@ -32,7 +32,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <SelectInput<AutoSubscriptionCreation>
-      list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
+      list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
       value={autoSubscriptionCreation ? 'enabled' : 'disabled'}
       onChange={async (v) => {
         if (v === 'enabled') {
