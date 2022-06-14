@@ -23,6 +23,7 @@ import subscriptionDispatchRateField from './fields/subscription-dispatch-rate';
 import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
 import inactiveTopicPoliciesField from './fields/inactive-topic-policies';
 import maxProducersPerTopicField from './fields/max-producers-per-topic';
+import maxConsumersPerTopicField from './fields/max-consumers-per-topic';
 
 export type PoliciesProps = {
   tenant: string;
@@ -59,8 +60,9 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           fields={[
             autoTopicCreationField,
             inactiveTopicPoliciesField,
-            maxSubscriptionsPerTopicField,
             maxProducersPerTopicField,
+            maxConsumersPerTopicField,
+            maxSubscriptionsPerTopicField,
             dispatchRateField,
             subscribeRateField,
             replicatorDispatchRateField,
