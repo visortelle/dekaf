@@ -18,6 +18,7 @@ import encryptionRequiredField from './fields/encryption-required';
 import subscriptionAuthModeField from './fields/subscription-auth-mode';
 import delayedDeliveryField from './fields/delayed-delivery';
 import dispatchRateField from './fields/dispatch-rate';
+import subscribeRateField from './fields/subscribe-rate';
 import subscriptionDispatchRateField from './fields/subscription-dispatch-rate';
 import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
 
@@ -58,6 +59,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             subscriptionAuthModeField,
             delayedDeliveryField,
             dispatchRateField,
+            subscribeRateField,
             subscriptionDispatchRateField,
             replicatorDispatchRateField,
           ].map(field => field(props))}
