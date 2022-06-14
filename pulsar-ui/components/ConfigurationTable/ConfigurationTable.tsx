@@ -17,11 +17,6 @@ const ConfigurationTable: React.FC<ConfigurationTableProps> = (props) => {
   return (
     <div className={s.ConfigurationTable}>
       {props.title && <h2 className={s.Title}>{props.title}</h2>}
-      <div className={s.ColumnHeaders}>
-        <div className={s.ColumnHeader}>Name</div>
-        <div className={s.ColumnHeader}>Description</div>
-        <div className={s.ColumnHeader}>Value</div>
-      </div>
       {props.fields.map(field => {
         return (
           <div className={s.Field} key={field.id}>
