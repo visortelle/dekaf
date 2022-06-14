@@ -2,9 +2,74 @@ import * as Notifications from '../../../contexts/Notifications';
 import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
-import Input from '../../../ConfigurationTable/Input/InputWithUpdateConfirmation';
+import { Duration } from '../../../ConfigurationTable/DurationInput/types';
+import { useEffect, useState } from 'react';
+import sf from '../../../ConfigurationTable/form.module.css';
+import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
+import { durationToSeconds, secondsToDuration } from '../../../ConfigurationTable/DurationInput/conversions';
+import DurationInput from '../../../ConfigurationTable/DurationInput/DurationInput';
+import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 
 const policyId = 'subscriptionExpirationTime';
+
+type SubscriptionExpirationTime = 'disabled' | {
+  duration: Duration;
+};
+
+const defaultSubscriptionExpirationTime: SubscriptionExpirationTime = {
+  duration: {
+    unit: 'm',
+    value: 1,
+  }
+};
+
+type SubscriptionExpirationTimeInputProps = {
+  value: SubscriptionExpirationTime;
+  onChange: (value: SubscriptionExpirationTime) => void;
+}
+
+const SubscriptionExpirationTimeInput: React.FC<SubscriptionExpirationTimeInputProps> = (props) => {
+  const [subscriptionExpirationTime, setSubscriptionExpirationTime] = useState<SubscriptionExpirationTime>(props.value);
+
+  useEffect(() => {
+    setSubscriptionExpirationTime(() => props.value);
+  }, [props.value]);
+
+  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(subscriptionExpirationTime);
+
+  return (
+    <div>
+      <div className={sf.FormItem}>
+        <SelectInput<'enabled' | 'disabled'>
+          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          value={subscriptionExpirationTime === 'disabled' ? 'disabled' : 'enabled'}
+          onChange={(v) => v === 'disabled' ? setSubscriptionExpirationTime('disabled') : setSubscriptionExpirationTime(defaultSubscriptionExpirationTime)}
+        />
+      </div>
+      {subscriptionExpirationTime !== 'disabled' && (
+        <DurationInput
+          value={subscriptionExpirationTime.duration}
+          onChange={(v) => {
+            // Minutes are use as units for the subscription expiration time.
+            if (v.unit === 's') {
+              setSubscriptionExpirationTime({ duration: { value: v.value, unit: 'm' } });
+              return;
+            }
+
+            setSubscriptionExpirationTime({ duration: v });
+          }}
+        />
+      )}
+      {showUpdateConfirmation && (
+        <UpdateConfirmation
+          onUpdate={() => props.onChange(subscriptionExpirationTime)}
+          onReset={() => setSubscriptionExpirationTime(props.value)}
+        />
+      )}
+    </div>
+  );
+
+}
 
 export type FieldInputProps = {
   tenant: string;
@@ -19,7 +84,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const onUpdateError = (err: string) => notifyError(`Can't update message TTL. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
-  const { data: subscriptionExpirationTime, error: subscriptionExpirationTimeError } = useSWR(
+  const { data: subscriptionExpirationTimeInMinutes, error: subscriptionExpirationTimeError } = useSWR(
     swrKey,
     async () => await adminClient.namespaces.getSubscriptionExpirationTime(props.tenant, props.namespace)
   );
@@ -29,19 +94,18 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   return (
-    <Input
-      type='number'
-      value={String(subscriptionExpirationTime || 0)}
-      onChange={async (value) => {
-        const subscriptionExpirationTime = Number(value);
-
-        if (subscriptionExpirationTime === 0) {
+    <SubscriptionExpirationTimeInput
+      value={subscriptionExpirationTimeInMinutes === undefined ? 'disabled' : {
+        duration: secondsToDuration(subscriptionExpirationTimeInMinutes * 60)
+      }}
+      onChange={async (v) => {
+        if (v === 'disabled') {
           await adminClient.namespaces.removeSubscriptionExpirationTime(props.tenant, props.namespace).catch(onUpdateError);
         } else {
           await adminClient.namespaces.setSubscriptionExpirationTime(
             props.tenant,
             props.namespace,
-            subscriptionExpirationTime
+            durationToSeconds(v.duration) / 60
           ).catch(onUpdateError);
         }
 
@@ -54,9 +118,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
   title: 'Subscription expiration time',
-  description: <span>Subscription expiration time in minutes.</span>,
+  description: <span>Subscription expiration time.</span>,
   input: <FieldInput {...props} />
 });
 
 export default field;
-
