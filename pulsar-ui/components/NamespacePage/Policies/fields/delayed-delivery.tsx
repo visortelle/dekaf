@@ -40,7 +40,7 @@ const DelayedDeliveryInput: React.FC<DelayedDeliveryInputProps> = (props) => {
     <div>
       <div className={sf.FormItem}>
         <SelectInput<DelayedDelivery['enabled']>
-          list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
+          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
           value={delayedDelivery.enabled}
           onChange={(v) => setDelayedDelivery({ ...delayedDelivery, enabled: v })}
         />

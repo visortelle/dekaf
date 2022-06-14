@@ -38,7 +38,7 @@ export const AutoTopicCreationInput: React.FC<AutoTopicCreationInputProps> = (pr
         <SelectInput<AutoTopicCreation['enabled']>
           onChange={(v) => setAutoTopicCreation({ ...autoTopicCreation, enabled: v })}
           value={autoTopicCreation.enabled}
-          list={[{ value: 'true', title: 'True' }, { value: 'false', title: 'False' }]}
+          list={[{ value: 'false', title: 'False' }, { value: 'true', title: 'True' }]}
         />
       </div>
 
