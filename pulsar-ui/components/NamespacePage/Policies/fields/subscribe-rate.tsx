@@ -24,7 +24,7 @@ export type SubscribeRateInputProps = {
   value: SubscribeRate;
   onChange: (value: SubscribeRate) => void;
 };
-export const ReplicatorDispatchRateInput: React.FC<SubscribeRateInputProps> = (props) => {
+export const SubscribeRateInput: React.FC<SubscribeRateInputProps> = (props) => {
   const [subscribeRate, setSubscribeRate] = useState<SubscribeRate>(props.value);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   return (
-    <ReplicatorDispatchRateInput
+    <SubscribeRateInput
       value={subscribeRate}
       onChange={async (v) => {
         if (v === 'disabled') {

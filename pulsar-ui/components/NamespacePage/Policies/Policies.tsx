@@ -21,6 +21,7 @@ import dispatchRateField from './fields/dispatch-rate';
 import subscribeRateField from './fields/subscribe-rate';
 import subscriptionDispatchRateField from './fields/subscription-dispatch-rate';
 import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
+import inactiveTopicPoliciesField from './fields/inactive-topic-policies';
 
 export type PoliciesProps = {
   tenant: string;
@@ -62,6 +63,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             subscribeRateField,
             subscriptionDispatchRateField,
             replicatorDispatchRateField,
+            inactiveTopicPoliciesField
           ].map(field => field(props))}
         />
       </div>

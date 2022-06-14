@@ -48,7 +48,7 @@ export const AutoTopicCreationInput: React.FC<AutoTopicCreationInputProps> = (pr
           <SelectInput<AutoTopicCreation['type']>
             onChange={(v) => setAutoTopicCreation({ ...autoTopicCreation, type: v })}
             value={autoTopicCreation.type}
-            list={[{ value: 'partitioned', title: 'Partitioned' }, { value: 'non-partitioned', title: 'Non-partitioned' }]}
+            list={[{ value: 'non-partitioned', title: 'Non-partitioned' }, { value: 'partitioned', title: 'Partitioned' }]}
           />
         </div>
       )}
