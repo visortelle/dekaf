@@ -24,6 +24,7 @@ import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
 import inactiveTopicPoliciesField from './fields/inactive-topic-policies';
 import maxProducersPerTopicField from './fields/max-producers-per-topic';
 import maxConsumersPerTopicField from './fields/max-consumers-per-topic';
+import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscription';
 
 export type PoliciesProps = {
   tenant: string;
@@ -78,6 +79,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             subscriptionDispatchRateField,
             subscriptionExpirationTimeField,
             subscriptionAuthModeField,
+            maxConsumersPerSubscriptionField
           ].map(field => field(props))}
         />
       </div>
