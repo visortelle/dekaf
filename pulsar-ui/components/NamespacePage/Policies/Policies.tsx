@@ -26,7 +26,7 @@ import maxProducersPerTopicField from './fields/max-producers-per-topic';
 import maxConsumersPerTopicField from './fields/max-consumers-per-topic';
 import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscription';
 import maxUnackedMessagesPerSubscriptionField from './fields/max-unacked-messages-per-subscription';
-
+import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-per-consumer';
 
 export type PoliciesProps = {
   tenant: string;
@@ -75,8 +75,18 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
       <div className={s.ConfigurationTable}>
         <ConfigurationTable
+          title="Consumers"
+          fields={[
+            maxUnackedMessagesPerConsumerField
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
           title="Subscriptions"
           fields={[
+            autoSubscriptionCreationField,
             subscriptionTypesEnabledField,
             subscriptionDispatchRateField,
             subscriptionExpirationTimeField,
@@ -93,7 +103,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           fields={[
             antiAffinityGroupField,
             deduplicationField,
-            autoSubscriptionCreationField,
             bookieAffinityGroupField,
             encryptionRequiredField,
             delayedDeliveryField,
