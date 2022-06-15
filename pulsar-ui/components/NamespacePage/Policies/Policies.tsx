@@ -33,6 +33,7 @@ import offloadDeletionLagField from './fields/offload-deletion-lag';
 import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
 import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
 import isALlowAutoUpdateSchemaField from './fields/is-allow-auto-update-schema';
+import schemaValidationEnforceField from './fields/schema-validation-enforce';
 
 export type PoliciesProps = {
   tenant: string;
@@ -81,7 +82,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           title="Schema"
           fields={[
             schemaCompatibilityStrategyField,
-            isALlowAutoUpdateSchemaField
+            isALlowAutoUpdateSchemaField,
+            schemaValidationEnforceField
           ].map(field => field(props))}
         />
       </div>
