@@ -14,7 +14,7 @@ type MaxProducersPerTopic = 'disabled' | {
   amount: number
 };
 
-const defaultMaxProducersPerTopic = {
+const defaultMaxProducersPerTopic: MaxProducersPerTopic = {
   amount: 0
 };
 

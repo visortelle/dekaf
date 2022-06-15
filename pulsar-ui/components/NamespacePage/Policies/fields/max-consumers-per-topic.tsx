@@ -14,7 +14,7 @@ type MaxConsumersPerTopic = 'disabled' | {
   amount: number
 };
 
-const defaultMaxConsumersPerTopic = {
+const defaultMaxConsumersPerTopic: MaxConsumersPerTopic = {
   amount: 0
 };
 
