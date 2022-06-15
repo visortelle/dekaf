@@ -4,14 +4,14 @@ import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 
-const policyId = 'is-allow-auto-update-schema';
+const policyId = 'schemaValidationEnforce';
 
 export type FieldInputProps = {
   tenant: string;
   namespace: string;
 }
 
-type IsAllowAutoUpdateSchema = 'enabled' | 'disabled';
+type SchemaValidationEnforce = 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
@@ -23,7 +23,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const { data: isAllowAutoUpdateSchema, error: isAllowAutoUpdateSchemaError } = useSWR(
     swrKey,
-    async () => Boolean(await adminClient.namespaces.getIsAllowAutoUpdateSchema(props.tenant, props.namespace))
+    async () => Boolean(await adminClient.namespaces.getSchemaValidtionEnforced(props.tenant, props.namespace))
   );
 
   if (isAllowAutoUpdateSchemaError) {
@@ -31,11 +31,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   return (
-    <SelectInput<IsAllowAutoUpdateSchema>
-      list={[{ value: 'disabled', title: 'Not allow' }, { value: 'enabled', title: 'Allow' }]}
+    <SelectInput<SchemaValidationEnforce>
+      list={[{ value: 'disabled', title: 'Not enforced' }, { value: 'enabled', title: 'Enforced' }]}
       value={Boolean(isAllowAutoUpdateSchema) ? 'enabled' : 'disabled'}
       onChange={async (v) => {
-        await adminClient.namespaces.setIsAllowAutoUpdateSchema(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);
+        await adminClient.namespaces.setSchemaValidationEnforced(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);
         await mutate(swrKey);
       }}
     />
@@ -44,8 +44,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
-  title: 'Allow auto update schema',
-  description: <span>Set the namespace whether allow auto update schema.</span>,
+  title: 'Schema validation enforce',
+  description: <span>Set the schema whether open schema validation enforced.</span>,
   input: <FieldInput {...props} />
 });
 
