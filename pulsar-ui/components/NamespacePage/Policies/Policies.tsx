@@ -34,6 +34,7 @@ import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-
 import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
 import isALlowAutoUpdateSchemaField from './fields/is-allow-auto-update-schema';
 import schemaValidationEnforceField from './fields/schema-validation-enforce';
+import offloadPoliciesField from './fields/offload-policies';
 
 export type PoliciesProps = {
   tenant: string;
@@ -50,40 +51,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             replicationClustersField,
             persistenceField,
             compactionThresholdField,
-            offloadThresholdField,
-            offloadDeletionLagField,
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Message retention"
-          fields={[
-            retentionField,
-            backlogQuotaField,
-            messageTtlField,
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Deduplication"
-          fields={[
-            deduplicationField,
-            deduplicationSnapshotIntervalField
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Schema"
-          fields={[
-            schemaCompatibilityStrategyField,
-            isALlowAutoUpdateSchemaField,
-            schemaValidationEnforceField
+            delayedDeliveryField,
           ].map(field => field(props))}
         />
       </div>
@@ -130,15 +98,67 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
       <div className={s.ConfigurationTable}>
         <ConfigurationTable
-          title="Various"
+          title="Retention"
           fields={[
-            antiAffinityGroupField,
-            bookieAffinityGroupField,
-            encryptionRequiredField,
-            delayedDeliveryField,
+            retentionField,
+            backlogQuotaField,
+            messageTtlField,
           ].map(field => field(props))}
         />
       </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Deduplication"
+          fields={[
+            deduplicationField,
+            deduplicationSnapshotIntervalField
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Schema"
+          fields={[
+            schemaCompatibilityStrategyField,
+            isALlowAutoUpdateSchemaField,
+            schemaValidationEnforceField
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Affinity"
+          fields={[
+            antiAffinityGroupField,
+            bookieAffinityGroupField,
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Encryption"
+          fields={[
+            encryptionRequiredField,
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Tiered storage"
+          fields={[
+            offloadThresholdField,
+            offloadDeletionLagField,
+            offloadPoliciesField
+          ].map(field => field(props))}
+        />
+      </div>
+
+
     </div>
   );
 }
