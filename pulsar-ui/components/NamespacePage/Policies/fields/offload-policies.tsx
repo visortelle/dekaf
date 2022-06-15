@@ -5,7 +5,7 @@ import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTab
 import Input from '../../../ConfigurationTable/Input/InputWithUpdateConfirmation';
 import sf from '../../../ConfigurationTable/form.module.css';
 
-const policyId = 'messageTtl';
+const policyId = 'offloadPolicies';
 
 export type FieldInputProps = {
   tenant: string;
@@ -52,14 +52,16 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         }}
       />
     </div>
+
   )
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
-  title: 'Message TTL',
+  title: 'Offload policies',
   description: <span>By default, Pulsar stores all unacknowledged messages forever. This can lead to heavy disk space usage in cases where a lot of messages are going unacknowledged. <br />If disk space is a concern, you can set a time to live (TTL) that determines how long unacknowledged messages will be retained.</span>,
   input: <FieldInput {...props} />
 });
 
 export default field;
+

@@ -1,29 +1,29 @@
 import cloneDeep from "lodash/cloneDeep";
 import { Tree } from "./TreeView";
 
-export function setTenants(tree: Tree, tenants: string[]): Tree {
-  let _tree = cloneDeep(tree);
-  _tree.subForest = tenants.map((tenant) => ({
+export function setTenants(props: { tree: Tree, tenants: string[] }): Tree {
+  let _tree = cloneDeep(props.tree);
+  _tree.subForest = props.tenants.map((tenant) => ({
     rootLabel: { name: tenant, type: "tenant" },
     subForest: [],
   }));
   return _tree;
 }
 
-export function setTenantNamespaces(
+export function setTenantNamespaces(props: {
   tree: Tree,
   tenant: string,
   namespaces: string[]
-): Tree {
-  let _tree = cloneDeep(tree);
+}): Tree {
+  let _tree = cloneDeep(props.tree);
   _tree.subForest = _tree.subForest.map((tenantNode) => {
-    if (tenantNode.rootLabel.name !== tenant) {
+    if (tenantNode.rootLabel.name !== props.tenant) {
       return tenantNode;
     }
 
     return {
       ...tenantNode,
-      subForest: namespaces.map((namespace) => ({
+      subForest: props.namespaces.map((namespace) => ({
         rootLabel: { name: namespace, type: "namespace" },
         subForest: [],
       })),
@@ -32,31 +32,41 @@ export function setTenantNamespaces(
   return _tree;
 }
 
-export function setNamespaceTopics(
-  tree: Tree,
+export function setNamespaceTopics(props: {
+tree: Tree,
   tenant: string,
   namespace: string,
-  topics: string[]
-): Tree {
-  let _tree = cloneDeep(tree);
+  persistentTopics: string[],
+  nonPersistentTopics: string[]
+}): Tree {
+  let _tree = cloneDeep(props.tree);
   _tree.subForest = _tree.subForest.map((tenantNode) => {
-    if (tenantNode.rootLabel.name !== tenant) {
+    if (tenantNode.rootLabel.name !== props.tenant) {
       return tenantNode;
     }
 
     return {
       ...tenantNode,
       subForest: tenantNode.subForest.map((namespaceNode) => {
-        if (namespaceNode.rootLabel.name !== namespace) {
+        if (namespaceNode.rootLabel.name !== props.namespace) {
           return namespaceNode;
         }
 
+        const persistentTopics: Tree[] = props.persistentTopics.map((topic) => ({
+            rootLabel: { name: topic, type: "persistent-topic"},
+            subForest: [],
+          }));
+        const nonPersistentTopics: Tree[] = props.nonPersistentTopics.map((topic) => ({
+            rootLabel: { name: topic, type: "non-persistent-topic" },
+            subForest: [],
+          }));
+
         return {
           ...namespaceNode,
-          subForest: topics.map((topic) => ({
-            rootLabel: { name: topic, type: "topic" },
-            subForest: [],
-          })),
+          subForest: [
+            ...persistentTopics,
+            ...nonPersistentTopics
+          ],
         };
       }),
     };

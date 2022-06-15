@@ -10,6 +10,8 @@ const policyId = 'messageTtl';
 export type FieldInputProps = {
   tenant: string;
   namespace: string;
+  topic: string;
+  topicType: 'persistent' | 'non-persistent';
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
@@ -22,7 +24,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const { data: messageTtl, error: messageTtlError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getNamespaceMessageTtl(props.tenant, props.namespace)
+    async () => {
+      switch (props.topicType) {
+        case 'persistent': await adminClient.persistentTopic.getMessageTtl(props.tenant, props.namespace, props.topic); break;
+        case 'non-persistent': await adminClient.nonPersistentTopic.getMessageTtl(props.tenant, props.namespace, props.topic); break;
+      }
+    }
   );
 
   if (messageTtlError) {
@@ -39,13 +46,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const messageTtl = Number(value);
 
           if (messageTtl === 0) {
-            await adminClient.namespaces.removeNamespaceMessageTtl(props.tenant, props.namespace).catch(onUpdateError);
+            switch (props.topicType) {
+              case 'persistent': await adminClient.persistentTopic.removeMessageTtl(props.tenant, props.namespace, props.topic).catch(onUpdateError); break;
+              case 'non-persistent': await adminClient.nonPersistentTopic.removeMessageTtl(props.tenant, props.namespace, props.topic).catch(onUpdateError); break;
+            }
           } else {
-            await adminClient.namespaces.setNamespaceMessageTtl(
-              props.tenant,
-              props.namespace,
-              messageTtl
-            ).catch(onUpdateError);
+            switch (props.topicType) {
+              case 'persistent': await adminClient.persistentTopic.setMessageTtl(props.tenant, props.namespace, props.topic, messageTtl).catch(onUpdateError); break;
+              case 'non-persistent': await adminClient.nonPersistentTopic.setMessageTtl(props.tenant, props.namespace, props.topic, messageTtl).catch(onUpdateError); break;
+            }
           }
 
           await mutate(swrKey);
