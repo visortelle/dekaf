@@ -5,11 +5,85 @@ import * as Either from 'fp-ts/lib/Either';
 import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
+import sf from '../../../ConfigurationTable/form.module.css';
+import { useEffect, useState } from "react";
+import UpdateConfirmation from "../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
 
 const policyId = 'subscriptionTypesEnabled';
 
 const subscriptionTypes = ["Exclusive", "Shared", "Failover", "Key_Shared"] as const;
 export type SubscriptionType = typeof subscriptionTypes[number];
+
+type SubscriptionTypesEnabled = 'all' | { customList: SubscriptionType[] };
+
+type SubscriptionTypesEnabledProps = {
+  value: SubscriptionTypesEnabled;
+  onChange: (value: SubscriptionTypesEnabled) => void;
+}
+
+const SubscriptionTypesEnabledInput: React.FC<SubscriptionTypesEnabledProps> = (props) => {
+  const [subscriptionTypesEnabled, setSubscriptionTypesEnabled] = useState<SubscriptionTypesEnabled>(props.value);
+
+  useEffect(() => {
+    setSubscriptionTypesEnabled(() => props.value);
+  }, [props.value]);
+
+  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(subscriptionTypesEnabled);
+
+  return (
+    <div>
+      <div className={sf.FormItem}>
+        <SelectInput<'all' | 'customList'>
+          list={[{ value: 'all', title: 'All' }, { value: 'customList', title: 'Custom list' }]}
+          onChange={(v) => v === 'all' ? setSubscriptionTypesEnabled(() => 'all') : setSubscriptionTypesEnabled(() => ({ customList: [...subscriptionTypes] }))}
+          value={subscriptionTypesEnabled === 'all' ? 'all' : 'customList'}
+        />
+      </div>
+      {subscriptionTypesEnabled !== 'all' && (() => {
+        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled.customList.some(ste => ste === t)).map(c => ({ value: c, title: c })).sort((a, b) => a.title.localeCompare(b.title));
+        return (
+          <div className={sf.FormItem}>
+            <ListInput<SubscriptionType>
+              value={subscriptionTypesEnabled.customList.sort((a, b) => a.localeCompare(b))}
+              getId={(v) => v}
+              renderItem={(v) => <div>{v}</div>}
+              editor={(subscriptionTypes.length === subscriptionTypesEnabled.customList.length) ? undefined : {
+                render: (v, onChange) => {
+                  return (
+                    <SelectInput<SubscriptionType>
+                      list={list}
+                      value={v}
+                      onChange={(id) => onChange(id)}
+                    />
+                  )
+                },
+                initialValue: list[0].value,
+              }}
+              onRemove={async (id) => {
+                setSubscriptionTypesEnabled(() => ({
+                  customList: subscriptionTypesEnabled.customList.filter(r => r !== id)
+                }));
+              }}
+              onAdd={(subscriptionTypes.length === subscriptionTypesEnabled.customList.length) ? undefined : async (v) => {
+                setSubscriptionTypesEnabled(() => ({
+                  customList: [...subscriptionTypesEnabled.customList, v]
+                }));
+              }}
+              isValid={(_) => Either.right(undefined)}
+            />
+          </div>
+        );
+      })()}
+
+      {showUpdateConfirmation && (
+        <UpdateConfirmation
+          onUpdate={() => props.onChange(subscriptionTypesEnabled)}
+          onReset={() => setSubscriptionTypesEnabled(() => props.value)}
+        />
+      )}
+    </div >
+  );
+}
 
 export type FieldInputProps = {
   tenant: string;
@@ -33,40 +107,20 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     notifyError(`Unable to get subscription types enabled. ${subscriptionTypesEnabledError}`);
   }
 
-  const hideAddButton = subscriptionTypesEnabled?.length === subscriptionTypes.length;
+  return (
+    <SubscriptionTypesEnabledInput
+      value={(subscriptionTypesEnabled === undefined || subscriptionTypesEnabled.length === 0) ? 'all' : { customList: subscriptionTypesEnabled }}
+      onChange={async (v) => {
+        if (v === 'all') {
+          await adminClient.namespaces.removeSubscriptionTypesEnabled(props.tenant, props.namespace).catch(onUpdateError);
+        } else {
+          await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, v.customList).catch(onUpdateError);
+        }
 
-  return <ListInput<SubscriptionType>
-    value={subscriptionTypesEnabled || []}
-    getId={(v) => v}
-    renderItem={(v) => <div>{v}</div>}
-    editor={hideAddButton ? undefined : {
-      render: (v, onChange) => {
-        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled?.some(ste => ste === t)).map(c => ({ value: c, title: c }));
-        return (
-          <SelectInput<SubscriptionType>
-            list={[undefined, ...list]}
-            value={v}
-            onChange={(id) => onChange(id as SubscriptionType)}
-            placeholder="Select subscription type"
-          />
-        )
-      },
-      initialValue: undefined,
-    }}
-    onRemove={async (id) => {
-      if (typeof subscriptionTypesEnabled === 'undefined') {
-        return <></>
-      }
-
-      await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, subscriptionTypesEnabled.filter(r => r !== id)).catch(onUpdateError);
-      await mutate(swrKey);
-    }}
-    onAdd={hideAddButton ? undefined : async (v) => {
-      await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, [...(subscriptionTypesEnabled || []), v]).catch(onUpdateError);
-      await mutate(swrKey);
-    }}
-    isValid={(_) => Either.right(undefined)}
-  />
+        await mutate(swrKey);
+      }}
+    />
+  );
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
