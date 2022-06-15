@@ -5,7 +5,7 @@ import SvgIcon from '../ui/SvgIcon/SvgIcon';
 import arrowIcon from '!!raw-loader!./arrow.svg';
 import { Link } from 'react-router-dom';
 
-export type CrumbType = 'tenant' | 'namespace' | 'topic';
+export type CrumbType = 'tenant' | 'namespace' | 'persistent-topic' | 'non-persistent-topic';
 export type Crumb = {
   id: string;
   type: CrumbType;
@@ -26,7 +26,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     switch (crumb.type) {
       case 'tenant': icon = <TenantIcon />; break;
       case 'namespace': icon = <NamespaceIcon />; break;
-      case 'topic': icon = <TopicIcon />; break;
+      case 'persistent-topic': icon = <TopicIcon topicType='persistent' />; break;
+      case 'non-persistent-topic': icon = <TopicIcon topicType='non-persistent' />; break;
     }
 
     const isLast = i === total - 1;
@@ -35,7 +36,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     switch (crumb.type) {
       case 'tenant': href = `/tenants/${tenant}`; break;
       case 'namespace': href = `/tenants/${tenant}/namespaces/${namespace}`; break;
-      case 'topic': href = `/tenants/${tenant}/namespaces/${namespace}/topics/${topic}`; break;
+      case 'persistent-topic': href = `/tenants/${tenant}/namespaces/${namespace}/topics/persistent/${topic}`; break;
+      case 'non-persistent-topic': href = `/tenants/${tenant}/namespaces/${namespace}/topics/non-persistent/${topic}`; break;
     }
 
     return (
