@@ -1,0 +1,68 @@
+import SelectInput from "../../../ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
+import * as Notifications from '../../../contexts/Notifications';
+import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
+import useSWR, { useSWRConfig } from "swr";
+import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
+
+const policyId = 'schemaCompatibilityStrategy';
+
+export type FieldInputProps = {
+  tenant: string;
+  namespace: string;
+}
+
+const strategies = [
+  'FULL',
+  'BACKWARD',
+  'FORWARD',
+  'UNDEFINED',
+  'BACKWARD_TRANSITIVE',
+  'FORWARD_TRANSITIVE',
+  'FULL_TRANSITIVE',
+  'ALWAYS_INCOMPATIBLE',
+  'ALWAYS_COMPATIBLE'] as const;
+
+type Strategy = typeof strategies[number];
+
+export const FieldInput: React.FC<FieldInputProps> = (props) => {
+  const adminClient = PulsarAdminClient.useContext().client;
+  const { notifyError } = Notifications.useContext();
+  const { mutate } = useSWRConfig();
+
+  const onUpdateError = (err: string) => notifyError(`Can't update schema compatibility strategy. ${err}`);
+  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+
+  const { data: strategy, error: strategyError } = useSWR(
+    swrKey,
+    async () => await adminClient.namespaces.getSchemaCompatibilityStrategy(props.tenant, props.namespace)
+  );
+
+  if (strategyError) {
+    notifyError(`Unable to schema compatibility strategy: ${strategyError}`);
+  }
+
+  if (typeof strategy === 'undefined') {
+    return <></>;
+  }
+
+  return (
+    <SelectInput<Strategy>
+      list={strategies.map(s => ({ value: s, title: s }))}
+      value={strategy}
+      onChange={async (v) => {
+        await adminClient.namespaces.setSchemaCompatibilityStrategy(props.tenant, props.namespace, v).catch(onUpdateError);
+        await mutate(swrKey);
+      }}
+    />
+  );
+}
+
+const field = (props: FieldInputProps): ConfigurationField => ({
+  id: policyId,
+  title: 'Schema compatibility strategy',
+  description: <span>Compatibility level required for new schemas created via a Producer.</span>,
+  input: <FieldInput {...props} />
+});
+
+export default field;
+
