@@ -107,7 +107,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
   title: 'Offload threshold',
-  description: <span>Set offloadThreshold for a namespace.</span>,
+  description: <span>Maximum number of bytes stored in the pulsar cluster for a topic before data will start being automatically offloaded to long-term storage. 0 triggers offloading as soon as possible.</span>,
   input: <FieldInput {...props} />
 });
 
