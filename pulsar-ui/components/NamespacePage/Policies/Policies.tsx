@@ -31,6 +31,7 @@ import compactionThresholdField from './fields/compaction-threshold';
 import offloadThresholdField from './fields/offload-threshold';
 import offloadDeletionLagField from './fields/offload-deletion-lag';
 import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
+import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
 
 export type PoliciesProps = {
   tenant: string;
@@ -70,6 +71,15 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           fields={[
             deduplicationField,
             deduplicationSnapshotIntervalField
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Schema"
+          fields={[
+            schemaCompatibilityStrategyField
           ].map(field => field(props))}
         />
       </div>
