@@ -30,6 +30,7 @@ import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-pe
 import compactionThresholdField from './fields/compaction-threshold';
 import offloadThresholdField from './fields/offload-threshold';
 import offloadDeletionLagField from './fields/offload-deletion-lag';
+import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
 
 export type PoliciesProps = {
   tenant: string;
@@ -47,7 +48,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             persistenceField,
             compactionThresholdField,
             offloadThresholdField,
-            offloadDeletionLagField
+            offloadDeletionLagField,
           ].map(field => field(props))}
         />
       </div>
@@ -59,6 +60,16 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             retentionField,
             backlogQuotaField,
             messageTtlField,
+          ].map(field => field(props))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Deduplication"
+          fields={[
+            deduplicationField,
+            deduplicationSnapshotIntervalField
           ].map(field => field(props))}
         />
       </div>
@@ -108,7 +119,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           title="Various"
           fields={[
             antiAffinityGroupField,
-            deduplicationField,
             bookieAffinityGroupField,
             encryptionRequiredField,
             delayedDeliveryField,
