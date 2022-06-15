@@ -1,4 +1,3 @@
-import { boolean } from 'fp-ts';
 import s from './Icons.module.css';
 
 export type NodeIconsProps = {
@@ -10,21 +9,25 @@ export type NodeIconsProps = {
   onClick?: () => void
   className?: string
   isGray?: boolean;
+  style?: React.CSSProperties;
+  addon?: string;
 }
 export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
   const style = props.isGray ? {
     color: '#fff',
     backgroundColor: '#999',
   } : {
-    color: props.textColor, backgroundColor: props.backgroundColor
+    color: props.textColor, backgroundColor: props.backgroundColor,
+    ...props.style
   }
   return (
     <div
-      style={style}
+      style={{ ...style }}
       className={`${s.NodeIcon} ${props.isExpanded ? s.NodeIconExpanded : ''} ${props.isExpandable ? s.NodeIconExpandable : ''} ${props.className || ''}`}
       onClick={props.onClick}
     >
       {props.title}
+      {props.addon ? <div className={s.NodeIconAddon}>{props.addon}</div> : null}
     </div>
   );
 }
@@ -35,18 +38,32 @@ export type TopicIconProps = {
   isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
+  topicType?: 'persistent' | 'non-persistent';
 }
 export const TopicIcon: React.FC<TopicIconProps> = (props) => {
-  return <NodeIcon
-    title="to"
-    textColor='#fff'
-    backgroundColor='var(--accent-color-green)'
-    onClick={props.onClick}
-    isExpanded={props.isExpanded}
-    isExpandable={props.isExpandable}
-    className={props.className}
-    isGray={props.isGray}
-  />
+  let backgroundColor = 'initial';
+  let textColor = 'initial';
+  let title = "to";
+  let style = {};
+
+  switch (props.topicType) {
+    case 'persistent': backgroundColor = 'var(--accent-color-green)'; textColor = '#fff'; title = "to"; break;
+    case 'non-persistent': backgroundColor = '#fff'; textColor = 'var(--accent-color-green)'; title="np"; style = { backgroundColor: '#eee'}; break;
+  }
+
+  return (
+    <NodeIcon
+      title={title}
+      textColor={textColor}
+      backgroundColor={backgroundColor}
+      onClick={props.onClick}
+      isExpanded={props.isExpanded}
+      isExpandable={props.isExpandable}
+      className={props.className}
+      isGray={props.isGray}
+      style={style}
+    />
+  );
 }
 
 export type NamespaceIconProps = {

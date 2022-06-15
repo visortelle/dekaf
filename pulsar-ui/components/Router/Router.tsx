@@ -9,7 +9,7 @@ import Layout from '../Layout/Layout';
 import HomePage from '../HomePage/HomePage';
 import TenantPage, { TenantPageView } from '../TenantPage/TenantPage';
 import NamespacePage, { NamespacePageView } from '../NamespacePage/NamespacePage';
-import TopicPage from '../TopicPage/TopicPage';
+import TopicPage, { TopicPageView } from '../TopicPage/TopicPage';
 
 const Router: React.FC = () => {
   const withLayout = (children: React.ReactNode) => <Layout>{children}</Layout>
@@ -18,6 +18,12 @@ const Router: React.FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/">
+          {/* Persistent topics */}
+          <Route index element={withLayout(<HomePage />)} />
+          <Route path="tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic" element={withLayout(<RoutedTopicPage view='overview' />)} />
+          <Route path="tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/policies" element={withLayout(<RoutedTopicPage view='policies' />)} />
+          <Route path="tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/delete-topic" element={withLayout(<RoutedTopicPage view='delete-topic' />)} />
+
           {/* Namespaces */}
           <Route index element={withLayout(<HomePage />)} />
           <Route path="tenants/:tenant/namespaces/:namespace" element={withLayout(<RoutedNamespacePage view='overview' />)} />
@@ -40,14 +46,15 @@ const RouteTenantPage = (props: { view: TenantPageView }) => {
   const { tenant } = useParams();
   return <TenantPage tenant={tenant!} view={props.view} />
 }
+
 const RoutedNamespacePage = (props: { view: NamespacePageView }) => {
   const { tenant, namespace } = useParams();
   return <NamespacePage tenant={tenant!} namespace={namespace!} view={props.view} />
 }
 
-const RoutedTopicPage = () => {
-  const { tenant, namespace, topic } = useParams();
-  return <TopicPage tenant={tenant!} namespace={namespace!} topic={topic!} />
+const RoutedTopicPage = (props: { view: TopicPageView }) => {
+  const { tenant, namespace, topic, topicType } = useParams();
+  return <TopicPage tenant={tenant!} namespace={namespace!} topic={topic!} view={props.view} type={topicType as 'persistent' | 'non-persistent'} />
 }
 
 export default Router;

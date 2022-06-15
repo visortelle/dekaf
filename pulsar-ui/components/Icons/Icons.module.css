@@ -1,4 +1,5 @@
 .NodeIcon {
+  position: relative;
   font-size: 12rem;
   width: 24rem;
   height: 24rem;
@@ -28,4 +29,20 @@
 }
 
 .NodeIconExpanded {
+}
+
+.NodeIconAddon {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  transform: translate(-40%, 35%) rotateZ(45deg);
+  background-color: #fff;
+  color: var(--text-color);
+  box-shadow: 1rem 1rem 2rem rgba(0, 0, 0, 0.27);
+  border-radius: 2rem;
+  padding: 1rem 4rem;
+  font-size: 12rem;
+  font-weight: bold;
+  line-height: 1;
+  white-space: no-wrap;
 }

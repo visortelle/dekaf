@@ -5,11 +5,9 @@ export type Tree = {
   rootLabel: TreeNode;
 }
 
-export type TreeNode =
-  { type: "instance", name: string } |
-  { type: "tenant", name: string } |
-  { type: "namespace", name: string } |
-  { type: "topic", name: string };
+export type TreeNodeType = "instance" | "tenant" | "namespace" | "persistent-topic" | "non-persistent-topic"
+
+export type TreeNode = { type: TreeNodeType, name: string };
 
 export type TreePath = string[];
 
@@ -61,7 +59,7 @@ function TreeView<NC>(props: TreeProps<NC>) {
             const path = props.path.concat([pathPart]);
             return (
               <TreeView
-                key={path.reduce((k, p) => k + p, '')}
+                key={`${tree.rootLabel.type}-${tree.rootLabel.name}`}
                 {...props}
                 tree={tree}
                 path={path}
