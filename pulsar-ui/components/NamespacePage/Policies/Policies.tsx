@@ -32,6 +32,7 @@ import offloadThresholdField from './fields/offload-threshold';
 import offloadDeletionLagField from './fields/offload-deletion-lag';
 import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
 import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
+import isALlowAutoUpdateSchemaField from './fields/is-allow-auto-update-schema';
 
 export type PoliciesProps = {
   tenant: string;
@@ -79,7 +80,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
         <ConfigurationTable
           title="Schema"
           fields={[
-            schemaCompatibilityStrategyField
+            schemaCompatibilityStrategyField,
+            isALlowAutoUpdateSchemaField
           ].map(field => field(props))}
         />
       </div>
