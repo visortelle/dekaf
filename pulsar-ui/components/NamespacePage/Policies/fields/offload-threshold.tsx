@@ -10,52 +10,52 @@ import { MemorySize } from '../../../ConfigurationTable/MemorySizeInput/types';
 import { bytesToMemorySize, memoryToBytes } from '../../../ConfigurationTable/MemorySizeInput/conversions';
 import MemorySizeInput from '../../../ConfigurationTable/MemorySizeInput/MemorySizeInput';
 
-const policyId = 'compactionThreshold';
+const policyId = 'offloadThreshold';
 
-type CompactionThreshold = 'disabled' | {
+type OffloadThreshold = 'disabled' | {
   size: MemorySize;
 };
 
-const defaultCompactionThreshold: CompactionThreshold = {
+const defaultOffloadThreshold: OffloadThreshold = {
   size: {
     size: 0,
     unit: 'M'
   }
 };
 
-type CompactionThresholdInputProps = {
-  value: CompactionThreshold;
-  onChange: (value: CompactionThreshold) => void;
+type OffloadThresholdInputProps = {
+  value: OffloadThreshold;
+  onChange: (value: OffloadThreshold) => void;
 }
 
-const CompactionThresholdInput: React.FC<CompactionThresholdInputProps> = (props) => {
-  const [compactionThreshold, setCompactionThreshold] = useState<CompactionThreshold>(props.value);
+const OffloadThresholdInput: React.FC<OffloadThresholdInputProps> = (props) => {
+  const [offloadThreshold, setOffloadThreshold] = useState<OffloadThreshold>(props.value);
 
   useEffect(() => {
-    setCompactionThreshold(() => props.value);
+    setOffloadThreshold(() => props.value);
   }, [props.value]);
 
-  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(compactionThreshold);
+  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(offloadThreshold);
 
   return (
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
           list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
-          value={compactionThreshold === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => v === 'disabled' ? setCompactionThreshold('disabled') : setCompactionThreshold(defaultCompactionThreshold)}
+          value={offloadThreshold === 'disabled' ? 'disabled' : 'enabled'}
+          onChange={(v) => v === 'disabled' ? setOffloadThreshold('disabled') : setOffloadThreshold(defaultOffloadThreshold)}
         />
       </div>
-      {compactionThreshold !== 'disabled' && (
+      {offloadThreshold !== 'disabled' && (
         <MemorySizeInput
-          value={compactionThreshold.size}
-          onChange={(v) => setCompactionThreshold({ size: v })}
+          value={offloadThreshold.size}
+          onChange={(v) => setOffloadThreshold({ size: v })}
         />
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(compactionThreshold)}
-          onReset={() => setCompactionThreshold(props.value)}
+          onUpdate={() => props.onChange(offloadThreshold)}
+          onReset={() => setOffloadThreshold(props.value)}
         />
       )}
     </div>
@@ -72,26 +72,26 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const onUpdateError = (err: string) => notifyError(`Can't update compaction threshold. ${err}`);
+  const onUpdateError = (err: string) => notifyError(`Can't update offload threshold. ${err}`);
   const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
 
-  const { data: compactionThreshold, error: compactionThresholdError } = useSWR(
+  const { data: offloadThreshold, error: offloadThresholdError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getCompactionThreshold(props.tenant, props.namespace)
+    async () => await adminClient.namespaces.getOffloadThreshold(props.tenant, props.namespace)
   );
 
-  if (compactionThresholdError) {
-    notifyError(`Unable to get compaction threshold. ${compactionThresholdError}`);
+  if (offloadThresholdError) {
+    notifyError(`Unable to get offload threshold. ${offloadThresholdError}`);
   }
 
   return (
-    <CompactionThresholdInput
-      value={compactionThreshold === undefined ? 'disabled' : { size: bytesToMemorySize(compactionThreshold) }}
+    <OffloadThresholdInput
+      value={(offloadThreshold === undefined || offloadThreshold < 0) ? 'disabled' : { size: bytesToMemorySize(offloadThreshold) }}
       onChange={async (v) => {
         if (v === 'disabled') {
-          await adminClient.namespaces.deleteCompactionThreshold(props.tenant, props.namespace).catch(onUpdateError);
+          await adminClient.namespaces.setOffloadThreshold(props.tenant, props.namespace, -1).catch(onUpdateError);
         } else {
-          await adminClient.namespaces.setCompactionThreshold(
+          await adminClient.namespaces.setOffloadThreshold(
             props.tenant,
             props.namespace,
             memoryToBytes(v.size)
@@ -106,8 +106,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policyId,
-  title: 'Compaction threshold',
-  description: <span>Set compactionThreshold for a namespace.</span>,
+  title: 'Offload threshold',
+  description: <span>Set offloadThreshold for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 
