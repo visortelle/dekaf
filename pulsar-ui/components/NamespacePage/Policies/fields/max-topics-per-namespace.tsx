@@ -14,7 +14,7 @@ type MaxTopicsPerNamespace = 'disabled' | {
   amount: number
 };
 
-const defaultMaxSubscriptionPerTopic = {
+const defaultMaxSubscriptionPerTopic: MaxTopicsPerNamespace = {
   amount: 0
 };
 

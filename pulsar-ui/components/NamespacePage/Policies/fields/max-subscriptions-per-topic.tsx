@@ -14,7 +14,7 @@ type MaxSubscriptionsPerTopic = 'disabled' | {
   amount: number
 };
 
-const defaultMaxSubscriptionPerTopic = {
+const defaultMaxSubscriptionPerTopic: MaxSubscriptionsPerTopic = {
   amount: 0
 };
 

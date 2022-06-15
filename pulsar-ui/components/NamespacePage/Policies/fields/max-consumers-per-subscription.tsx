@@ -14,7 +14,7 @@ type MaxConsumersPerSubscription = 'disabled' | {
   amount: number
 };
 
-const defaultMaxConsumersPerSubscription = {
+const defaultMaxConsumersPerSubscription: MaxConsumersPerSubscription = {
   amount: 0
 };
 
