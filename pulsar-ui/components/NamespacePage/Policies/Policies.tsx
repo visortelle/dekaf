@@ -27,6 +27,7 @@ import maxConsumersPerTopicField from './fields/max-consumers-per-topic';
 import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscription';
 import maxUnackedMessagesPerSubscriptionField from './fields/max-unacked-messages-per-subscription';
 import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-per-consumer';
+import compactionThresholdField from './fields/compaction-threshold';
 
 export type PoliciesProps = {
   tenant: string;
@@ -42,6 +43,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           fields={[
             replicationClustersField,
             persistenceField,
+            compactionThresholdField
           ].map(field => field(props))}
         />
       </div>

@@ -14,7 +14,7 @@ type MaxUnackedMessagesPerSubscription = 'disabled' | {
   amount: number
 };
 
-const defaultMaxUnackedMessagesPerSubscription = {
+const defaultMaxUnackedMessagesPerSubscription: MaxUnackedMessagesPerSubscription = {
   amount: 0
 };
 
