@@ -29,6 +29,7 @@ import maxUnackedMessagesPerSubscriptionField from './fields/max-unacked-message
 import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-per-consumer';
 import compactionThresholdField from './fields/compaction-threshold';
 import offloadThresholdField from './fields/offload-threshold';
+import offloadDeletionLagField from './fields/offload-deletion-lag';
 
 export type PoliciesProps = {
   tenant: string;
@@ -45,7 +46,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             replicationClustersField,
             persistenceField,
             compactionThresholdField,
-            offloadThresholdField
+            offloadThresholdField,
+            offloadDeletionLagField
           ].map(field => field(props))}
         />
       </div>
