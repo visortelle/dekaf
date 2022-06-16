@@ -14,39 +14,39 @@ export const swrKeys = {
             "configuration",
           ],
         },
-      },
-      namespaces: {
-        _: (props: { tenant: string }) => [
-          "pulsar",
-          "tenants",
-          props.tenant,
-          "namespaces",
-        ],
-        topics: {
-          _: (props: { tenant: string; namespace: string }) => [
+        namespaces: {
+          _: (props: { tenant: string }) => [
             "pulsar",
             "tenants",
             props.tenant,
             "namespaces",
-            props.namespace,
-            "topics",
           ],
-        },
-        namespace: {
-          policies: {
-            policy: (props: {
-              tenant: string;
-              namespace: string;
-              policy: string;
-            }) => [
-              "pulsar",
-              "tenants",
-              props.tenant,
-              "namespaces",
-              props.namespace,
-              "policies",
-              props.policy,
-            ],
+          namespace: {
+            topics: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "topics",
+              ],
+            },
+            policies: {
+              policy: (props: {
+                tenant: string;
+                namespace: string;
+                policy: string;
+              }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "policies",
+                props.policy,
+              ],
+            },
           },
         },
       },

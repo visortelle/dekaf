@@ -17,8 +17,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
   if (isTopicLevelPoliciesEnabled !== 'true') {
     return (
-      <div style={{ padding: '18rem', maxWidth: '600rem' }}>
-        Topic level policies are not enabled. To enable it, add <code>topicLevelPoliciesEnabled=true</code> to your <code>broker.conf</code> file or contact your administrator.
+      <div style={{ padding: '18rem', maxWidth: '640rem' }}>
+        Topic level policies are not enabled. To enable it, add <code>topicLevelPoliciesEnabled=true</code> to your <code>broker.conf</code> file and restart broker or contact Pulsar instance administrator.
       </div>
     );
   }

@@ -35,7 +35,7 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
       notification.notifySuccess(`${props.topicType === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${props.tenant}/${props.namespace}/${props.topic} has been successfully deleted.`);
       navigate(routes.tenants.tenant.namespaces.namespace._.get({ tenant: props.tenant, namespace: props.namespace }));
 
-      await mutate(swrKeys.pulsar.tenants.namespaces.topics._({ tenant: props.tenant, namespace: props.namespace }));
+      await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: props.tenant, namespace: props.namespace }));
     } catch (err) {
       notification.notifyError(`Failed to delete ${props.topicType === 'persistent' ? 'persistent' : 'non-persistent'} topic ${props.tenant}/${props.namespace}/${props.topic}. ${err}`)
     }

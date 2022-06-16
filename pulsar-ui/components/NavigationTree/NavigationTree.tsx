@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
-import TreeView, { Tree } from './TreeView';
+import TreeView, { Tree, treePath } from './TreeView';
 import * as Notifications from '../contexts/Notifications';
 import * as PulsarAdminClient from '../contexts/PulsarAdminClient';
 import { setTenants, setTenantNamespaces, setNamespaceTopics, expandAll } from './tree-mutations';
@@ -157,10 +157,11 @@ const NavigationTree: React.FC = () => {
               const leftIndent = `${((path.length + 1) * 3 - 1)}ch`;
 
               const pathStr = JSON.stringify(path);
-              const toggleNodeExpanded = () =>
-                setExpandedPaths((expandedPaths) => expandedPaths.includes(pathStr) ?
+              const toggleNodeExpanded = () => setExpandedPaths(
+                (expandedPaths) => expandedPaths.includes(pathStr) ?
                   expandedPaths.filter(p => p !== pathStr) :
-                  expandedPaths.concat([pathStr]));
+                  expandedPaths.concat([pathStr])
+              );
               const isExpanded = expanded(pathStr);
 
               if (node.type === 'instance') {
@@ -221,7 +222,15 @@ const NavigationTree: React.FC = () => {
                 )
               }
 
-              return <div className={s.Node}>
+              const handleNodeClick = () => {
+                switch (node.type) {
+                  case 'instance': () => undefined; break;
+                  case 'tenant': mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path) })); break;
+                  case 'namespace': mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path), namespace: treePath.getNamespace(path) })); break;
+                }
+              }
+
+              return <div className={s.Node} onClick={handleNodeClick}>
                 <div className={s.NodeContent}>
                   <span>&nbsp;</span>
                   <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
