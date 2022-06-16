@@ -1,5 +1,5 @@
 import s from './ListInput.module.css'
-import SvgIcon from '../../ui/SvgIcon/SvgIcon';
+import SvgIcon from '../../SvgIcon/SvgIcon';
 import removeIcon from '!!raw-loader!./remove.svg';
 import { useState } from "react";
 import * as Either from 'fp-ts/Either';

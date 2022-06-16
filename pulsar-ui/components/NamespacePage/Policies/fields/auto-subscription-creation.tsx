@@ -1,8 +1,8 @@
-import SelectInput from "../../../ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
-import * as Notifications from '../../../contexts/Notifications';
-import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
+import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
-import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
 
 const policy = 'autoSubscriptionCreation';

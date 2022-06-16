@@ -1,8 +1,8 @@
 import React from 'react';
 import s from './Policies.module.css'
-import ConfigurationTable from '../../ConfigurationTable/ConfigurationTable';
+import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import messageTtlField from './fields/message-ttl';
-import * as BrokersConfig from '../../contexts/BrokersConfig';
+import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 
 export type PoliciesProps = {
   tenant: string;

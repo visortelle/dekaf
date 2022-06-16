@@ -1,10 +1,10 @@
-import SelectInput from "../../../ConfigurationTable/SelectInput/SelectInput";
-import * as Notifications from '../../../contexts/Notifications';
-import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
+import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import * as Either from 'fp-ts/lib/Either';
 import useSWR, { useSWRConfig } from "swr";
-import ListInput from "../../../ConfigurationTable/ListInput/ListInput";
-import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
+import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
 
 const policy = 'replication-clusters';

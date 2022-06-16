@@ -1,5 +1,5 @@
 import React from 'react';
-import { BreadCrumbsAtPageTop } from '../BreadCrumbs/BreadCrumbs';
+import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import s from './NamespacePage.module.css'
 import Toolbar from '../ui/Toolbar/Toolbar';
 import Policies from './Policies/Policies';

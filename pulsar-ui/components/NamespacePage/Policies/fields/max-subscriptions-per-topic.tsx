@@ -1,12 +1,12 @@
-import * as Notifications from '../../../contexts/Notifications';
-import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
-import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
-import Input from '../../../ConfigurationTable/Input/Input';
-import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
-import sf from '../../../ConfigurationTable/form.module.css';
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
+import Input from '../../../ui/ConfigurationTable/Input/Input';
+import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import { swrKeys } from '../../../swrKeys';
 
 const policy = 'maxSubscriptionsPerTopic';

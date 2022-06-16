@@ -2,12 +2,12 @@ import React, { useCallback, useEffect } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
 import TreeView, { Tree, treePath } from './TreeView';
-import * as Notifications from '../contexts/Notifications';
-import * as PulsarAdminClient from '../contexts/PulsarAdminClient';
+import * as Notifications from '../app/contexts/Notifications';
+import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
 import { setTenants, setTenantNamespaces, setNamespaceTopics, expandAll } from './tree-mutations';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
-import { TenantIcon, NamespaceIcon, TopicIcon } from '../Icons/Icons';
+import { TenantIcon, NamespaceIcon, TopicIcon } from '../ui/Icons/Icons';
 import { PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
 import { swrKeys } from '../swrKeys';
 

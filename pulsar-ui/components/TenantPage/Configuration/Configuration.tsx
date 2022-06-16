@@ -1,13 +1,13 @@
 import React from 'react';
 import s from './Configuration.module.css'
 import useSWR, { useSWRConfig } from 'swr';
-import ConfigurationTable, { ConfigurationField } from '../../ConfigurationTable/ConfigurationTable';
-import * as Notifications from '../../contexts/Notifications';
-import * as PulsarAdminClient from '../../contexts/PulsarAdminClient';
+import ConfigurationTable, { ConfigurationField } from '../../ui/ConfigurationTable/ConfigurationTable';
+import * as Notifications from '../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import * as Either from 'fp-ts/lib/Either';
-import Input from '../../ConfigurationTable/Input/Input';
-import SelectInput from '../../ConfigurationTable/SelectInput/SelectInput';
-import ListInput from '../../ConfigurationTable/ListInput/ListInput';
+import Input from '../../ui/ConfigurationTable/Input/Input';
+import SelectInput from '../../ui/ConfigurationTable/SelectInput/SelectInput';
+import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
 import { swrKeys } from '../../swrKeys';
 
 export type ConfigurationProps = {

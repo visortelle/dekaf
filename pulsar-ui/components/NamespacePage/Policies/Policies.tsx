@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './Policies.module.css'
-import ConfigurationTable from '../../ConfigurationTable/ConfigurationTable';
+import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import replicationClustersField from './fields/replication-clusters';
 import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
 import backlogQuotaField from './fields/backlog-quota';
