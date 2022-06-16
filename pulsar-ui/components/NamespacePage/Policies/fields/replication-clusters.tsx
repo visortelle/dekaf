@@ -5,8 +5,9 @@ import * as Either from 'fp-ts/lib/Either';
 import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
+import { swrKeys } from "../../../swrKeys";
 
-const policyId = 'replication-clusters';
+const policy = 'replication-clusters';
 
 export type FieldInputProps = {
   tenant: string;
@@ -19,7 +20,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update replication clusters. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: clusters, error: clustersError } = useSWR(
     ['pulsar', 'clusters'],
@@ -76,7 +77,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Replication clusters',
   description: <span>List of clusters that will be used for replication.</span>,
   input: <FieldInput {...props} />

@@ -2,7 +2,7 @@ import React from 'react';
 import s from './Policies.module.css'
 import ConfigurationTable from '../../ConfigurationTable/ConfigurationTable';
 import messageTtlField from './fields/message-ttl';
-import maxUnackedMessagesPerConsumer from './fields/max-unacked-messages-per-consumer';
+import * as BrokersConfig from '../../contexts/BrokersConfig';
 
 export type PoliciesProps = {
   tenant: string;
@@ -12,6 +12,17 @@ export type PoliciesProps = {
 };
 
 const Policies: React.FC<PoliciesProps> = (props) => {
+  const brokersConfig = BrokersConfig.useContext();
+  const isTopicLevelPoliciesEnabled = brokersConfig.get('topicLevelPoliciesEnabled')?.value;
+
+  if (isTopicLevelPoliciesEnabled !== 'true') {
+    return (
+      <div style={{ padding: '18rem', maxWidth: '600rem' }}>
+        Topic level policies are not enabled. To enable it, add <code>topicLevelPoliciesEnabled=true</code> to your <code>broker.conf</code> file or contact your administrator.
+      </div>
+    );
+  }
+
   return (
     <div className={s.Policies}>
       <div className={s.ConfigurationTable}>

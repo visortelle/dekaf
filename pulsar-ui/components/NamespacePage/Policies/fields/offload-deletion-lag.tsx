@@ -9,8 +9,9 @@ import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/U
 import { Duration } from '../../../ConfigurationTable/DurationInput/types';
 import { durationToSeconds, secondsToDuration } from '../../../ConfigurationTable/DurationInput/conversions';
 import DurationInput from '../../../ConfigurationTable/DurationInput/DurationInput';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'offloadDeletionLag';
+const policy = 'offloadDeletionLag';
 
 type OffloadDeletionLag = 'disabled' | {
   duration: Duration;
@@ -73,7 +74,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update offload deletion lag. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: offloadDeletionLag, error: offloadDeletionLagError } = useSWR(
     swrKey,
@@ -105,7 +106,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Offload deletion lag',
   description: <span>Duration to wait after offloading a ledger segment, before deleting the copy of that segment from cluster local storage.</span>,
   input: <FieldInput {...props} />

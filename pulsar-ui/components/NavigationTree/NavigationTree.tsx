@@ -9,6 +9,7 @@ import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon } from '../Icons/Icons';
 import { PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
+import { swrKeys } from '../swrKeys';
 
 type NodeTypeFilter = {
   showTenants: boolean;
@@ -35,7 +36,7 @@ const NavigationTree: React.FC = () => {
   const adminClient = PulsarAdminClient.useContext().client;
 
   const { data: tenants, error: tenantsError } = useSWR(
-    ['pulsar', 'tenants'],
+    swrKeys.pulsar.tenants._(),
     async () => await adminClient.tenants.getTenants()
   );
 
@@ -200,7 +201,6 @@ const NavigationTree: React.FC = () => {
                 const topicName = node.name;
                 const topicType = node.type === 'persistent-topic' ? 'persistent' : 'non-persistent';
 
-                console.log('node', node.type);
                 nodeContent = (
                   <PulsarTopic
                     tenant={tenantName}

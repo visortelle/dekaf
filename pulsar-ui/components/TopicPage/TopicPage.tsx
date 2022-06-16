@@ -3,6 +3,8 @@ import { BreadCrumbsAtPageTop } from '../BreadCrumbs/BreadCrumbs';
 import s from './TopicPage.module.css'
 import Toolbar from '../ui/Toolbar/Toolbar';
 import Policies from './Policies/Policies';
+import DeleteTopic from './DeleteTopic/DeleteTopic';
+import { routes } from '../routes';
 
 export type TopicPageView = 'overview' | 'policies' | 'delete-topic';
 export type TopicPageProps = {
@@ -10,7 +12,7 @@ export type TopicPageProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  type: 'persistent' | 'non-persistent';
+  topicType: 'persistent' | 'non-persistent';
 };
 
 const TopicPage: React.FC<TopicPageProps> = (props) => {
@@ -31,26 +33,26 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           {
             id: `topic-${props.topic}`,
             value: props.topic,
-            type: props.type === 'persistent' ? 'persistent-topic' : 'non-persistent-topic',
+            type: props.topicType === 'persistent' ? 'persistent-topic' : 'non-persistent-topic',
           }
         ]}
       />
       <Toolbar
         buttons={[
           {
-            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topic}`,
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
             title: 'Overview',
             onClick: () => { },
             type: 'regular'
           },
           {
-            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topic}/policies`,
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
             title: 'Policies',
             onClick: () => { },
             type: 'regular'
           },
           {
-            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topic}/delete-topic`,
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.deleteTopic._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
             title: 'Delete',
             onClick: () => { },
             type: 'danger'
@@ -58,7 +60,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         ]}
       />
 
-      {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType="persistent" />}
+      {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
+      {props.view === 'delete-topic' && <DeleteTopic tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
     </div>
   );
 }

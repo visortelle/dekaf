@@ -9,8 +9,9 @@ import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/U
 import { Duration } from '../../../ConfigurationTable/DurationInput/types';
 import { durationToSeconds, secondsToDuration } from '../../../ConfigurationTable/DurationInput/conversions';
 import DurationInput from '../../../ConfigurationTable/DurationInput/DurationInput';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'deduplicationSnapshotInterval';
+const policy = 'deduplicationSnapshotInterval';
 
 type DeduplicationSnapshotInterval = 'disabled' | {
   duration: Duration;
@@ -73,7 +74,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update offload deletion lag. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: duplicationSnapshotInterval, error: duplicationSnapshotIntervalError } = useSWR(
     swrKey,
@@ -106,7 +107,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Deduplication snapshot interval',
   description: <span>Deduplication snapshot interval. <code>brokerDeduplicationEnabled</code> must be set to true for this property to take effect.</span>,
   input: <FieldInput {...props} />

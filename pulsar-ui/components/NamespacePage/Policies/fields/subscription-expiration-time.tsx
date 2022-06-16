@@ -9,8 +9,9 @@ import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
 import { durationToSeconds, secondsToDuration } from '../../../ConfigurationTable/DurationInput/conversions';
 import DurationInput from '../../../ConfigurationTable/DurationInput/DurationInput';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'subscriptionExpirationTime';
+const policy = 'subscriptionExpirationTime';
 
 type SubscriptionExpirationTime = 'disabled' | {
   duration: Duration;
@@ -82,7 +83,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update message TTL. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: subscriptionExpirationTimeInMinutes, error: subscriptionExpirationTimeError } = useSWR(
     swrKey,
@@ -116,7 +117,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Subscription expiration time',
   description: <span>Subscription expiration time.</span>,
   input: <FieldInput {...props} />

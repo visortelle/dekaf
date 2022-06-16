@@ -20,7 +20,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update message TTL. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'topics', props.topicType, props.topic, 'policies', policyId];
 
   const { data: messageTtl, error: messageTtlError } = useSWR(
     swrKey,

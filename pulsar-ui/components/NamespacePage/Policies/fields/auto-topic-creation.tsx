@@ -7,8 +7,9 @@ import Input from "../../../ConfigurationTable/Input/Input";
 import { useEffect, useState } from 'react';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'autoTopicCreation';
+const policy = 'autoTopicCreation';
 
 const minNumPartitions = 1;
 
@@ -98,7 +99,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update auto topic creation. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: autoTopicCreationData, error: persistenceError } = useSWR(
     swrKey,
@@ -134,7 +135,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Auto topic creation',
   description: <span>Enable or disable autoTopicCreation for a namespace, overriding broker settings.</span>,
   input: <FieldInput {...props} />

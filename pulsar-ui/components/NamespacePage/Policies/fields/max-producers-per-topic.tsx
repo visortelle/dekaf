@@ -7,8 +7,9 @@ import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
 import sf from '../../../ConfigurationTable/form.module.css';
 import { useEffect, useState } from 'react';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'maxProducersPerTopic';
+const policy = 'maxProducersPerTopic';
 
 type MaxProducersPerTopic = 'disabled' | {
   amount: number
@@ -69,7 +70,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update max producers per topic. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: maxProducersPerTopic, error: maxProducersPerTopicError } = useSWR(
     swrKey,
@@ -101,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Max producers per topic',
   description: <span>Max producers per topic.</span>,
   input: <FieldInput {...props} />

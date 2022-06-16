@@ -4,6 +4,7 @@ import { TenantIcon, NamespaceIcon, TopicIcon } from '../Icons/Icons';
 import SvgIcon from '../ui/SvgIcon/SvgIcon';
 import arrowIcon from '!!raw-loader!./arrow.svg';
 import { Link } from 'react-router-dom';
+import { routes } from '../routes';
 
 export type CrumbType = 'tenant' | 'namespace' | 'persistent-topic' | 'non-persistent-topic';
 export type Crumb = {
@@ -34,10 +35,10 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
 
     let href = '#';
     switch (crumb.type) {
-      case 'tenant': href = `/tenants/${tenant}`; break;
-      case 'namespace': href = `/tenants/${tenant}/namespaces/${namespace}`; break;
-      case 'persistent-topic': href = `/tenants/${tenant}/namespaces/${namespace}/topics/persistent/${topic}`; break;
-      case 'non-persistent-topic': href = `/tenants/${tenant}/namespaces/${namespace}/topics/non-persistent/${topic}`; break;
+      case 'tenant': href = routes.tenants.tenant._.get({ tenant }); break;
+      case 'namespace': href = routes.tenants.tenant.namespaces.namespace._.get({ tenant, namespace }); break;
+      case 'persistent-topic': href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant, namespace, topic, topicType: 'persistent' }); break;
+      case 'non-persistent-topic': href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant, namespace, topic, topicType: 'non-persistent' }); break;
     }
 
     return (
