@@ -1,11 +1,11 @@
-import * as Notifications from '../../../contexts/Notifications';
-import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
-import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
-import Input from '../../../ConfigurationTable/Input/Input';
-import ListInput from '../../../ConfigurationTable/ListInput/ListInput';
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
+import Input from '../../../ui/ConfigurationTable/Input/Input';
+import ListInput from '../../../ui/ConfigurationTable/ListInput/ListInput';
 import * as Either from 'fp-ts/Either';
-import sf from '../../../ConfigurationTable/form.module.css';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { swrKeys } from '../../../swrKeys';
 
 const policy = 'bookieAffinityGroup';

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import useSWR from 'swr';
 import s from './NavigationTree.module.css'
-import * as Notifications from '../contexts/Notifications';
-import * as PulsarAdminClient from '../contexts/PulsarAdminClient';
+import * as Notifications from '../app/contexts/Notifications';
+import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
 import { NavLink } from "react-router-dom";
 import { swrKeys } from '../swrKeys';
 

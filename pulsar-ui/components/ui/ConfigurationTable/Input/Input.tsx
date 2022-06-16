@@ -1,6 +1,6 @@
 import s from './Input.module.css';
 import { InputHTMLAttributes, useEffect, useRef } from 'react';
-import SvgIcon from '../../ui/SvgIcon/SvgIcon';
+import SvgIcon from '../../SvgIcon/SvgIcon';
 
 export type InputProps = {
   value: string,

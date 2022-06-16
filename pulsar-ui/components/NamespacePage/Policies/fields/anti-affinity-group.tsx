@@ -1,8 +1,8 @@
-import * as Notifications from '../../../contexts/Notifications';
-import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
-import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
-import Input from '../../../ConfigurationTable/Input/InputWithUpdateConfirmation';
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
+import Input from '../../../ui/ConfigurationTable/Input/InputWithUpdateConfirmation';
 import { swrKeys } from '../../../swrKeys';
 
 const policy = 'antiAffinityGroup';

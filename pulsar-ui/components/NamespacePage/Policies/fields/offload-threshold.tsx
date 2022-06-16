@@ -1,14 +1,14 @@
-import * as Notifications from '../../../contexts/Notifications';
-import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
-import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
-import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
-import sf from '../../../ConfigurationTable/form.module.css';
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
+import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
-import { MemorySize } from '../../../ConfigurationTable/MemorySizeInput/types';
-import { bytesToMemorySize, memoryToBytes } from '../../../ConfigurationTable/MemorySizeInput/conversions';
-import MemorySizeInput from '../../../ConfigurationTable/MemorySizeInput/MemorySizeInput';
+import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import { MemorySize } from '../../../ui/ConfigurationTable/MemorySizeInput/types';
+import { bytesToMemorySize, memoryToBytes } from '../../../ui/ConfigurationTable/MemorySizeInput/conversions';
+import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import { swrKeys } from '../../../swrKeys';
 
 const policy = 'offloadThreshold';

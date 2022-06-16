@@ -5,12 +5,12 @@ import {
   Route,
   useParams
 } from "react-router-dom";
-import Layout from '../Layout/Layout';
-import HomePage from '../HomePage/HomePage';
-import TenantPage, { TenantPageView } from '../TenantPage/TenantPage';
-import NamespacePage, { NamespacePageView } from '../NamespacePage/NamespacePage';
-import TopicPage, { TopicPageView } from '../TopicPage/TopicPage';
-import { routes } from '../routes';
+import Layout from '../../ui/Layout/Layout';
+import HomePage from '../../HomePage/HomePage';
+import TenantPage, { TenantPageView } from '../../TenantPage/TenantPage';
+import NamespacePage, { NamespacePageView } from '../../NamespacePage/NamespacePage';
+import TopicPage, { TopicPageView } from '../../TopicPage/TopicPage';
+import { routes } from '../../routes';
 
 const Router: React.FC = () => {
   const withLayout = (children: React.ReactNode) => <Layout>{children}</Layout>

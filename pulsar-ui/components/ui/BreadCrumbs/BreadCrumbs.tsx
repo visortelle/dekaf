@@ -1,10 +1,10 @@
 import React from 'react';
 import s from './BreadCrumbs.module.css'
 import { TenantIcon, NamespaceIcon, TopicIcon } from '../Icons/Icons';
-import SvgIcon from '../ui/SvgIcon/SvgIcon';
+import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowIcon from '!!raw-loader!./arrow.svg';
 import { Link } from 'react-router-dom';
-import { routes } from '../routes';
+import { routes } from '../../routes';
 
 export type CrumbType = 'tenant' | 'namespace' | 'persistent-topic' | 'non-persistent-topic';
 export type Crumb = {

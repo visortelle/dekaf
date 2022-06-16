@@ -1,10 +1,10 @@
 import React from 'react';
 import s from './DeleteTopic.module.css'
 import { H1 } from '../../ui/H/H';
-import { NamespaceIcon, TenantIcon, TopicIcon } from '../../Icons/Icons';
+import { NamespaceIcon, TenantIcon, TopicIcon } from '../../ui/Icons/Icons';
 import Button from '../../ui/Button/Button';
-import * as Notifications from '../../contexts/Notifications';
-import * as PulsarAdminClient from '../../contexts/PulsarAdminClient';
+import * as Notifications from '../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 import { swrKeys } from '../../swrKeys';

@@ -1,10 +1,10 @@
 import React from 'react';
 import s from './DeleteTenant.module.css'
 import { H1 } from '../../ui/H/H';
-import { TenantIcon } from '../../Icons/Icons';
+import { TenantIcon } from '../../ui/Icons/Icons';
 import Button from '../../ui/Button/Button';
-import * as Notifications from '../../contexts/Notifications';
-import * as PulsarAdminClient from '../../contexts/PulsarAdminClient';
+import * as Notifications from '../../app/contexts/Notifications';
+import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
