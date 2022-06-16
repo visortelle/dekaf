@@ -1,6 +1,6 @@
 import React from 'react'
 import s from './SelectInput.module.css';
-import SvgIcon from '../../ui/SvgIcon/SvgIcon';
+import SvgIcon from '../../SvgIcon/SvgIcon';
 import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
 
 export type ListItem<V> = {

@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '../../ui/Button/Button';
+import Button from '../../Button/Button';
 import s from './UpdateConfirmation.module.css'
 
 export type UpdateConfirmationProps = {

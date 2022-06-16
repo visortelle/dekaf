@@ -1,10 +1,10 @@
 import type { AppProps } from 'next/app'
-import * as AsyncTasks from '../components/contexts/AsyncTasks';
-import * as Notifications from '../components/contexts/Notifications';
-import * as PulsarAdminClient from '../components/contexts/PulsarAdminClient';
-import * as BrokerConfig from '../components/contexts/BrokersConfig';
+import * as AsyncTasks from '../components/app/contexts/AsyncTasks';
+import * as Notifications from '../components/app/contexts/Notifications';
+import * as PulsarAdminClient from '../components/app/contexts/PulsarAdminClient';
+import * as BrokerConfig from '../components/app/contexts/BrokersConfig';
 import 'react-toastify/dist/ReactToastify.css';
-import NoSsr from '../components/NoSsr/NoSsr';
+import NoSsr from '../components/ui/NoSsr/NoSsr';
 import { SWRConfig } from 'swr';
 
 const MyApp = (props: AppProps) => {

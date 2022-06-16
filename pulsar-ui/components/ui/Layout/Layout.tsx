@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './Layout.module.css'
-import NavigationTree from '../NavigationTree/NavigationTree';
+import NavigationTree from '../../NavigationTree/NavigationTree';
 import TealTools from '../TealTools/TealTools';
 
 export type LayoutProps = {
