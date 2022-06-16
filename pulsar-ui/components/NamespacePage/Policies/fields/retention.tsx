@@ -12,8 +12,9 @@ import { secondsToDuration, durationToSeconds } from "../../../ConfigurationTabl
 import UpdateConfirmation from "../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
 import { useEffect, useState } from "react";
 import { Duration } from "../../../ConfigurationTable/DurationInput/types";
+import { swrKeys } from "../../../swrKeys";
 
-const policyId = 'retention';
+const policy = 'retention';
 
 const bytesInMegabyte = 1024 * 1024;
 const secondsInMinute = 60;
@@ -136,7 +137,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update retention. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: retentionData, error: retentionError } = useSWR(
     swrKey,
@@ -172,7 +173,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Retention',
   description: <span>By default, when a Pulsar message arrives at a broker, the message is stored until it has been acknowledged on all subscriptions, at which point it is marked for deletion.<br />You can override this behavior and retain messages that have already been acknowledged on all subscriptions by setting a retention policy.</span>,
   input: <FieldInput {...props} />

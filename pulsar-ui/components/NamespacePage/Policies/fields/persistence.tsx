@@ -8,8 +8,9 @@ import { useEffect, useState } from 'react';
 import * as Either from 'fp-ts/Either';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import SelectInput from '../../../ConfigurationTable/SelectInput/SelectInput';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'persistence';
+const policy = 'persistence';
 
 export type Persistence = 'disabled' | {
   bookkeeperAckQuorum: number;
@@ -148,7 +149,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update persistency policies. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: persistence, error: persistenceError } = useSWR(
     swrKey,
@@ -189,7 +190,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Persistence',
   description: <span>List of clusters that will be used for replication.</span>,
   input: <FieldInput {...props} />

@@ -6,8 +6,9 @@ import Input from '../../../ConfigurationTable/Input/Input';
 import ListInput from '../../../ConfigurationTable/ListInput/ListInput';
 import * as Either from 'fp-ts/Either';
 import sf from '../../../ConfigurationTable/form.module.css';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'bookieAffinityGroup';
+const policy = 'bookieAffinityGroup';
 
 export type FieldInputProps = {
   tenant: string;
@@ -20,7 +21,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update bookie affinity group. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: bookieAffinityGroupData, error: bookieAffinityGroupError } = useSWR(
     swrKey,
@@ -114,7 +115,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Bookie affinity group',
   description: <span>Bookie affinity group name for a namespace.</span>,
   input: <FieldInput {...props} />

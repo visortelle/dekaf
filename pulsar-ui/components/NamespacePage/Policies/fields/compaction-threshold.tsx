@@ -9,8 +9,9 @@ import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/U
 import { MemorySize } from '../../../ConfigurationTable/MemorySizeInput/types';
 import { bytesToMemorySize, memoryToBytes } from '../../../ConfigurationTable/MemorySizeInput/conversions';
 import MemorySizeInput from '../../../ConfigurationTable/MemorySizeInput/MemorySizeInput';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'compactionThreshold';
+const policy = 'compactionThreshold';
 
 type CompactionThreshold = 'disabled' | {
   size: MemorySize;
@@ -73,7 +74,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update compaction threshold. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: compactionThreshold, error: compactionThresholdError } = useSWR(
     swrKey,
@@ -105,7 +106,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Compaction threshold',
   description: <span>Set compactionThreshold for a namespace.</span>,
   input: <FieldInput {...props} />

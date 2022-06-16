@@ -9,8 +9,9 @@ import { secondsToDuration, durationToSeconds } from "../../../ConfigurationTabl
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import sf from '../../../ConfigurationTable/form.module.css';
 import { useEffect, useState } from "react";
+import { swrKeys } from "../../../swrKeys";
 
-const policyId = 'delayedDelivery';
+const policy = 'delayedDelivery';
 
 export type FieldInputProps = {
   tenant: string;
@@ -71,7 +72,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update delayed delivery. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: delayedDelivery, error: delayedDeliveryError } = useSWR(
     swrKey,
@@ -86,7 +87,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     <DelayedDeliveryInput
       value={{ enabled: delayedDelivery?.active ? 'enabled' : 'disabled', time: secondsToDuration(delayedDelivery?.tickTime || 0) }}
       onChange={async (v) => {
-        await adminClient.namespaces.setDelayedDeliveryPolicies(props.tenant, props.namespace, { active: v.enabled === 'enabled', tickTime: durationToSeconds(v.time) });
+        await adminClient.namespaces.setDelayedDeliveryPolicies(props.tenant, props.namespace, { active: v.enabled === 'enabled', tickTime: durationToSeconds(v.time) }).catch(onUpdateError);
         await mutate(swrKey);
       }}
     />
@@ -94,7 +95,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Delayed delivery',
   description: <span>Set the delayed delivery policy on a namespace.</span>,
   input: <FieldInput {...props} />

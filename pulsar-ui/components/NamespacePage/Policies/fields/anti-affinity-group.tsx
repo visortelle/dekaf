@@ -3,8 +3,9 @@ import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
 import Input from '../../../ConfigurationTable/Input/InputWithUpdateConfirmation';
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'antiAffinityGroup';
+const policy = 'antiAffinityGroup';
 
 export type FieldInputProps = {
   tenant: string;
@@ -17,7 +18,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update anti-affinity group. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy  });
 
   const { data: antiAffinityGroup, error: antiAffinityGroupError } = useSWR(
     swrKey,
@@ -52,7 +53,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Anti-affinity group',
   description: <span>Anti-affinity group name for a namespace.</span>,
   input: <FieldInput {...props} />

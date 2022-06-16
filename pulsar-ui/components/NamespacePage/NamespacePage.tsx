@@ -3,6 +3,7 @@ import { BreadCrumbsAtPageTop } from '../BreadCrumbs/BreadCrumbs';
 import s from './NamespacePage.module.css'
 import Toolbar from '../ui/Toolbar/Toolbar';
 import Policies from './Policies/Policies';
+import { routes } from '../routes';
 
 export type NamespacePageView = 'overview' | 'policies' | 'delete-namespace' | 'create-topic';
 export type NamespacePageProps = {
@@ -31,25 +32,25 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       <Toolbar
         buttons={[
           {
-            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}`,
+            linkTo: routes.tenants.tenant.namespaces.namespace._.get({ tenant: props.tenant, namespace: props.namespace }),
             title: 'Overview',
             onClick: () => { },
             type: 'regular'
           },
           {
-            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/policies`,
+            linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
             title: 'Policies',
             onClick: () => { },
             type: 'regular'
           },
           {
-            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/delete-namespace`,
+            linkTo: routes.tenants.tenant.namespaces.namespace.deleteNamespace._.get({ tenant: props.tenant, namespace: props.namespace }),
             title: 'Delete',
             onClick: () => { },
             type: 'danger'
           },
           {
-            linkTo: `/tenants/${props.tenant}/namespaces/${props.namespace}/create-topic`,
+            linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),
             title: 'Create topic',
             onClick: () => { },
             type: 'primary',

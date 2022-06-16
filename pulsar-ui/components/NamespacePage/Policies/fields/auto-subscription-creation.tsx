@@ -3,8 +3,9 @@ import * as Notifications from '../../../contexts/Notifications';
 import * as PulsarAdminClient from '../../../contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ConfigurationTable/ConfigurationTable";
+import { swrKeys } from "../../../swrKeys";
 
-const policyId = 'autoSubscriptionCreation';
+const policy = 'autoSubscriptionCreation';
 
 export type FieldInputProps = {
   tenant: string;
@@ -19,7 +20,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update auto subscription creation. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: autoSubscriptionCreation, error: autoSubscriptionCreationError } = useSWR(
     swrKey,
@@ -36,9 +37,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       value={autoSubscriptionCreation ? 'enabled' : 'disabled'}
       onChange={async (v) => {
         if (v === 'enabled') {
-          await adminClient.namespaces.setAutoSubscriptionCreation(props.tenant, props.namespace, { allowAutoSubscriptionCreation: true });
+          await adminClient.namespaces.setAutoSubscriptionCreation(props.tenant, props.namespace, { allowAutoSubscriptionCreation: true }).catch(onUpdateError);
         } else {
-          await adminClient.namespaces.removeAutoSubscriptionCreation(props.tenant, props.namespace);
+          await adminClient.namespaces.removeAutoSubscriptionCreation(props.tenant, props.namespace).catch(onUpdateError);
         }
 
         await mutate(swrKey);
@@ -48,7 +49,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Auto subscription creation',
   description: <span>Enable or disable auto subscription creation.</span>,
   input: <FieldInput {...props} />

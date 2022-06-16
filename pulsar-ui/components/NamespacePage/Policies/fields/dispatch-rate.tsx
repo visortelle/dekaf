@@ -7,8 +7,9 @@ import Input from "../../../ConfigurationTable/Input/Input";
 import { useEffect, useState } from 'react';
 import UpdateConfirmation from '../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import SelectInput from "../../../ConfigurationTable/SelectInput/SelectInput";
+import { swrKeys } from '../../../swrKeys';
 
-const policyId = 'dispatchRate';
+const policy = 'dispatchRate';
 
 export type DispatchRate = 'disabled' | {
   byteDispatchRate: number;
@@ -115,7 +116,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const onUpdateError = (err: string) => notifyError(`Can't update dispatch rate. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: dispatchRateData, error: dispatchRateError } = useSWR(
     swrKey,
@@ -158,7 +159,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Dispatch rate',
   description: <span>Set message-dispatch-rate for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
