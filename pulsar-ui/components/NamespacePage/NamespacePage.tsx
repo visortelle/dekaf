@@ -3,6 +3,7 @@ import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import s from './NamespacePage.module.css'
 import Toolbar from '../ui/Toolbar/Toolbar';
 import Policies from './Policies/Policies';
+import DeleteNamespace from './DeleteNamespace/DeleteNamespace';
 import { routes } from '../routes';
 
 export type NamespacePageView = 'overview' | 'policies' | 'delete-namespace' | 'create-topic';
@@ -60,6 +61,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       />
 
       {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'delete-namespace' && <DeleteNamespace tenant={props.tenant} namespace={props.namespace} />}
     </div>
   );
 }

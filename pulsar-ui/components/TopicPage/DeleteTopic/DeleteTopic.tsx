@@ -24,7 +24,7 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
-  const deleteTenant = async () => {
+  const deleteTopic = async () => {
     try {
       if (props.topicType === 'persistent') {
         await adminClient.client.persistentTopic.deleteTopic(props.tenant, props.namespace, props.topic, forceDelete);
@@ -82,7 +82,7 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
           <Button
             type="danger"
             title={`Yes. I know what I'm doing.`}
-            onClick={() => deleteTenant()}
+            onClick={() => deleteTopic()}
           />
         </div>
       </div>
