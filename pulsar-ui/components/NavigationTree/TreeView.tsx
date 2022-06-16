@@ -11,6 +11,12 @@ export type TreeNode = { type: TreeNodeType, name: string };
 
 export type TreePath = string[];
 
+export const treePath = {
+  getTenant: (path: TreePath) => path[0],
+  getNamespace: (path: TreePath) => path[1],
+  getTopic: (path: TreePath) => path[2],
+}
+
 export const pathToUrl = (path: TreePath): string => path.map(encodeURIComponent).join('/');
 export const pathFromUrl = (url: string): TreePath => url.split('/').map(decodeURIComponent);
 
