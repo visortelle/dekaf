@@ -9,8 +9,9 @@ import { secondsToDuration, durationToSeconds } from "../../../ConfigurationTabl
 import UpdateConfirmation from "../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
 import { useEffect, useState } from "react";
 import { Duration } from "../../../ConfigurationTable/DurationInput/types";
+import { swrKeys } from "../../../swrKeys";
 
-const policyId = 'inactiveTopicPolicies';
+const policy = 'inactiveTopicPolicies';
 
 type DeleteMode = 'delete_when_no_subscriptions' | 'delete_when_subscriptions_caught_up';
 type EnableWhileDeleteInactive = boolean;
@@ -130,7 +131,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update inactive topic policies. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: policies, error: retentionError } = useSWR(
     swrKey,
@@ -166,7 +167,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Inactive topic policies',
   description: <span>Set the inactive topic policies on a namespace.</span>,
   input: <FieldInput {...props} />

@@ -2,7 +2,7 @@ import type { AppProps } from 'next/app'
 import * as AsyncTasks from '../components/contexts/AsyncTasks';
 import * as Notifications from '../components/contexts/Notifications';
 import * as PulsarAdminClient from '../components/contexts/PulsarAdminClient';
-import * as BrokerConfig from '../components/contexts/BrokerConfig';
+import * as BrokerConfig from '../components/contexts/BrokersConfig';
 import 'react-toastify/dist/ReactToastify.css';
 import NoSsr from '../components/NoSsr/NoSsr';
 import { SWRConfig } from 'swr';

@@ -1,18 +1,21 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode } from 'react';
 import * as Notifications from './Notifications';
 import * as PulsarAdminClient from './PulsarAdminClient';
-import useSWR, { useSWRConfig } from "swr";
+import useSWR from "swr";
 
+type ConfigValue = undefined | { value: string, source: 'dynamic-config' | 'runtime-config' };
 export type Value = {
-  runtimeConfig: Record<string, string>,
-  internalConfig: Record<string, string>,
-  dynamicConfig: Record<string, string>,
+  runtimeConfig: Record<string, string>;
+  internalConfig: Record<string, string>;
+  dynamicConfig: Record<string, string>;
+  get: (key: string) => ConfigValue;
 }
 
 const defaultValue: Value = {
   runtimeConfig: {},
   internalConfig: {},
-  dynamicConfig: {}
+  dynamicConfig: {},
+  get: (_: string) => undefined,
 };
 
 const swrKeys = {
@@ -64,7 +67,17 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
         value={{
           runtimeConfig: runtimeConfig || {},
           internalConfig: internalConfig || {},
-          dynamicConfig: dynamicConfig || {}
+          dynamicConfig: dynamicConfig || {},
+          get: (key) => {
+            let value: ConfigValue = undefined;
+            if (runtimeConfig !== undefined && runtimeConfig[key] !== undefined) {
+              value = { value: runtimeConfig[key], source: 'runtime-config' };
+            }
+            if (dynamicConfig !== undefined && dynamicConfig[key] !== undefined) {
+              value = { value: dynamicConfig[key], source: 'dynamic-config' };
+            }
+            return value;
+          }
         }}
       >
         {children}

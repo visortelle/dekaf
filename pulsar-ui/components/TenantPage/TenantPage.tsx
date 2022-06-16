@@ -6,6 +6,7 @@ import Namespaces from './Overview/Overview';
 import DeleteTenant from './DeleteTenant/DeleteTenant';
 import CreateNamespace from './CreateNamespace/CreateNamespace';
 import Toolbar from '../ui/Toolbar/Toolbar';
+import { routes } from '../routes';
 
 export type TenantPageView = 'overview' | 'configuration' | 'delete-tenant' | 'create-namespace';
 export type TenantPageProps = {
@@ -30,25 +31,25 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
         <Toolbar
           buttons={[
             {
-              linkTo: `/tenants/${props.tenant}`,
+              linkTo: routes.tenants.tenant._.get({ tenant: props.tenant }),
               title: 'Overview',
               onClick: () => { },
               type: 'regular'
             },
             {
-              linkTo: `/tenants/${props.tenant}/configuration`,
+              linkTo: routes.tenants.tenant.configuration._.get({ tenant: props.tenant }),
               title: 'Configuration',
               onClick: () => { },
               type: 'regular'
             },
             {
-              linkTo: `/tenants/${props.tenant}/delete-tenant`,
+              linkTo: routes.tenants.tenant.deleteTenant._.get({ tenant: props.tenant }),
               title: 'Delete',
               onClick: () => { },
               type: 'danger'
             },
             {
-              linkTo: `/tenants/${props.tenant}/create-namespace`,
+              linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),
               title: 'Create namespace',
               onClick: () => { },
               type: 'primary',

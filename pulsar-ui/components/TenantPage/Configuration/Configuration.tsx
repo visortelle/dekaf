@@ -8,6 +8,7 @@ import * as Either from 'fp-ts/lib/Either';
 import Input from '../../ConfigurationTable/Input/Input';
 import SelectInput from '../../ConfigurationTable/SelectInput/SelectInput';
 import ListInput from '../../ConfigurationTable/ListInput/ListInput';
+import { swrKeys } from '../../swrKeys';
 
 export type ConfigurationProps = {
   tenant: string
@@ -19,10 +20,10 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update tenant configuration. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'configuration'];
+  const swrKey = swrKeys.pulsar.tenants.tenant.configuration._({ tenant: props.tenant });
 
   const { data: clusters, error: clustersError } = useSWR(
-    ['pulsar', 'clusters'],
+    swrKeys.pulsar.clusters._(),
     async () => await adminClient.clusters.getClusters()
   );
 

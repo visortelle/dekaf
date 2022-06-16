@@ -1,0 +1,14 @@
+version: '3.1'
+
+services:
+  pulsar:
+    image: apachepulsar/pulsar:2.10.0
+    command: /entrypoint.sh
+    restart: always
+    ports:
+      - 6650:6650
+      - 8080:8080
+      - 2181:2181 # Zookeeper
+    volumes:
+      - $PWD/cases:/cases
+      - $PWD/entrypoint.sh:/entrypoint.sh

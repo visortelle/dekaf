@@ -14,8 +14,9 @@ import { secondsToDuration, durationToSeconds } from "../../../ConfigurationTabl
 import UpdateConfirmation from "../../../ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
 import { useEffect, useState } from "react";
 import * as Either from 'fp-ts/Either';
+import { swrKeys } from "../../../swrKeys";
 
-const policyId = 'backlogQuota';
+const policy = 'backlogQuota';
 
 export const backlogTypes = ['destination_storage', 'message_age'] as const;
 export type BacklogType = typeof backlogTypes[number];
@@ -142,7 +143,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const onUpdateError = (err: string) => notifyError(`Can't update backlog quota. ${err}`);
-  const swrKey = ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'policies', policyId];
+  const swrKey = swrKeys.pulsar.tenants.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: backlogQuota, error: backlogQuotaError } = useSWR(
     swrKey,
@@ -229,7 +230,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
-  id: policyId,
+  id: policy,
   title: 'Backlog quotas',
   description: <span>Backlogs are sets of unacknowledged messages for a topic that have been stored by bookies. <br />Pulsar stores all unacknowledged messages in backlogs until they are processed and acknowledged.</span>,
   input: <FieldInput {...props} />

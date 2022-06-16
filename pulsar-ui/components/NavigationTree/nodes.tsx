@@ -4,6 +4,7 @@ import s from './NavigationTree.module.css'
 import * as Notifications from '../contexts/Notifications';
 import * as PulsarAdminClient from '../contexts/PulsarAdminClient';
 import { NavLink } from "react-router-dom";
+import { swrKeys } from '../swrKeys';
 
 export type PulsarTenantProps = {
   forceReloadKey: number;
@@ -17,7 +18,7 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
 
   const { data: namespaces, error: namespacesError } = useSWR(
-    ['pulsar', 'tenants', props.tenant, 'namespaces'],
+    swrKeys.pulsar.tenants.namespaces._({ tenant: props.tenant }),
     async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]),
   );
 
@@ -57,7 +58,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const adminClient = PulsarAdminClient.useContext().client;
 
   const { data: topics, error: topicsError } = useSWR(
-    ['pulsar', 'tenants', props.tenant, 'namespaces', props.namespace, 'topics'],
+    swrKeys.pulsar.tenants.namespaces.topics._({ tenant: props.tenant, namespace: props.namespace }),
     async () => {
       const persistentTopics = (await adminClient.persistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName);
       const nonPersistentTopics = (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName);
