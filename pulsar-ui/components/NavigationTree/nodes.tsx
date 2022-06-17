@@ -21,7 +21,7 @@ export const PulsarInstance: React.FC<PulsarInstanceProps> = (props) => {
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span>Pulsar</span>
+      <span>System</span>
     </Link>
   );
 }
