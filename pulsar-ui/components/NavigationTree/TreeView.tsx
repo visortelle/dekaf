@@ -1,3 +1,4 @@
+import { isEqual, uniqWith } from 'lodash';
 import React from 'react';
 
 export type Tree = {
@@ -9,22 +10,32 @@ export type TreeNodeType = "instance" | "tenant" | "namespace" | "persistent-top
 
 export type TreeNode = { type: TreeNodeType, name: string };
 
-export type TreePath = string[];
+export type TreePath = TreeNode[];
 
 export const treePath = {
-  getTenant: (path: TreePath) => path[0],
-  getNamespace: (path: TreePath) => path[1],
-  getTopic: (path: TreePath) => path[2],
+  areNodeEqual: (nodeA: TreeNode, nodeB: TreeNode) => isEqual(nodeA, nodeB),
+  getTenant: (path: TreePath) => path.find(node => node.type === "tenant")!,
+  getNamespace: (path: TreePath) => path.find(node => node.type === "namespace")!,
+  getTopic: (path: TreePath) => path.find(node => node.type === "persistent-topic" || node.type === "non-persistent-topic")!,
+  unique: (paths: TreePath[]) => uniqWith(paths, treePath.areEqual),
+  areEqual: (pathA: TreePath, pathB: TreePath) => isEqual(pathA, pathB),
+  hasPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.areEqual(p, path)),
+  isPathExpanded: (paths: TreePath[], path: TreePath) => paths.some((p) => treePath.areEqual(path, p)),
+  expandAncestors: (path: TreePath): TreePath[] => {
+    // Thank you, Copilot :)
+    const ancestors = [];
+    for (let i = 0; i < path.length; i++) {
+      ancestors.push(path.slice(0, i + 1));
+    }
+    return ancestors;
+  }
 }
-
-export const pathToUrl = (path: TreePath): string => path.map(encodeURIComponent).join('/');
-export const pathFromUrl = (url: string): TreePath => url.split('/').map(decodeURIComponent);
 
 export type TreeProps<NC> = {
   tree: Tree,
   path: TreePath,
   renderNode: RenderNode<NC>,
-  getPathPart: (tree: Tree) => string,
+  getPathPart: (tree: Tree) => TreeNode,
   nodeCommons: NC
 }
 

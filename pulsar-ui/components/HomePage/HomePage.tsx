@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
-import s from './HomePage.module.css'
+import React from 'react';
 
 export type HomePageProps = {};
 
 const HomePage: React.FC<HomePageProps> = (props) => {
   return (
-    <div className={s.HomePage}>
+    <div>
 
     </div>
   );

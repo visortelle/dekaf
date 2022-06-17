@@ -1,46 +1,87 @@
 import React from 'react';
 import {
   BrowserRouter,
-  Routes,
-  Route,
-  useParams
+  useParams,
+  useLocation,
+  useRoutes,
+  RouteObject,
+  matchPath
 } from "react-router-dom";
-import Layout from '../../ui/Layout/Layout';
+import Layout, { LayoutProps } from '../../ui/Layout/Layout';
 import HomePage from '../../HomePage/HomePage';
 import TenantPage, { TenantPageView } from '../../TenantPage/TenantPage';
 import NamespacePage, { NamespacePageView } from '../../NamespacePage/NamespacePage';
 import TopicPage, { TopicPageView } from '../../TopicPage/TopicPage';
 import { routes } from '../../routes';
+import { TreeNode } from '../../NavigationTree/TreeView';
+
+type WithLayoutProps = { layout: Omit<LayoutProps, 'children'> };
+type WithLayout = (children: React.ReactElement, props: WithLayoutProps) => React.ReactElement;
+const defaultWithLayoutProps: WithLayoutProps = { layout: { navigationTree: { expandedPath: [] } } };
 
 const Router: React.FC = () => {
-  const withLayout = (children: React.ReactNode) => <Layout>{children}</Layout>
+  const withLayout: WithLayout = (children, props) => (
+    <Layout {...props.layout}>
+      {children}
+    </Layout>
+  );
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/">
-          {/* Topics */}
-          <Route index element={withLayout(<HomePage />)} />
-          <Route path={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.path} element={withLayout(<RoutedTopicPage view='overview' />)} />
-          <Route path={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.path} element={withLayout(<RoutedTopicPage view='policies' />)} />
-          <Route path={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.deleteTopic._.path} element={withLayout(<RoutedTopicPage view='delete-topic' />)} />
-
-          {/* Namespaces */}
-          <Route index element={withLayout(<HomePage />)} />
-          <Route path={routes.tenants.tenant.namespaces.namespace._.path} element={withLayout(<RoutedNamespacePage view='overview' />)} />
-          <Route path={routes.tenants.tenant.namespaces.namespace.policies._.path} element={withLayout(<RoutedNamespacePage view='policies' />)} />
-          <Route path={routes.tenants.tenant.namespaces.namespace.deleteNamespace._.path} element={withLayout(<RoutedNamespacePage view='delete-namespace' />)} />
-          <Route path={routes.tenants.tenant.namespaces.namespace.createTopic._.path} element={withLayout(<RoutedNamespacePage view='create-topic' />)} />
-
-          {/* Tenants */}
-          <Route path={routes.tenants.tenant.configuration._.path} element={withLayout(<RouteTenantPage view={'configuration'} />)} />
-          <Route path={routes.tenants.tenant.createNamespace._.path} element={withLayout(<RouteTenantPage view={'create-namespace'} />)} />
-          <Route path={routes.tenants.tenant.deleteTenant._.path} element={withLayout(<RouteTenantPage view={'delete-tenant'} />)} />
-          <Route path={routes.tenants.tenant._.path} element={withLayout(<RouteTenantPage view={'overview'} />)} />
-        </Route>
-      </Routes>
+      <Routes withLayout={withLayout} />
     </BrowserRouter>
   );
+}
+
+const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => RouteObject[] } => {
+  const getRoutes = ({ withLayout, withLayoutProps }: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => [
+    { index: true, element: withLayout(<HomePage />, withLayoutProps) },
+
+    /* Topics */
+    { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.path, element: withLayout(<RoutedTopicPage view='overview' />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.path, element: withLayout(<RoutedTopicPage view='policies' />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.deleteTopic._.path, element: withLayout(<RoutedTopicPage view='delete-topic' />, withLayoutProps) },
+
+    /* Namespaces */
+    { path: routes.tenants.tenant.namespaces.namespace._.path, element: withLayout(<RoutedNamespacePage view='overview' />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces.namespace.policies._.path, element: withLayout(<RoutedNamespacePage view='policies' />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces.namespace.deleteNamespace._.path, element: withLayout(<RoutedNamespacePage view='delete-namespace' />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces.namespace.createTopic._.path, element: withLayout(<RoutedNamespacePage view='create-topic' />, withLayoutProps) },
+
+    /* Tenants */
+    { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RouteTenantPage view={'configuration'} />, withLayoutProps) },
+    { path: routes.tenants.tenant.createNamespace._.path, element: withLayout(<RouteTenantPage view={'create-namespace'} />, withLayoutProps) },
+    { path: routes.tenants.tenant.deleteTenant._.path, element: withLayout(<RouteTenantPage view={'delete-tenant'} />, withLayoutProps) },
+    { path: routes.tenants.tenant._.path, element: withLayout(<RouteTenantPage view={'overview'} />, withLayoutProps) }
+  ];
+  const paths = getRoutes({ withLayout: () => <></>, withLayoutProps: defaultWithLayoutProps }).map(ro => ro.path).filter(p => p !== undefined) as string[];
+
+  return {
+    paths,
+    getRoutes
+  }
+}
+
+const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
+  const { paths, getRoutes } = prepareRoutes();
+
+  const location = useLocation();
+  const currentRoute = paths.map(p => matchPath(p || '', location.pathname)).find(m => Boolean(m));
+
+  const tenant: TreeNode | undefined = currentRoute?.params?.tenant === undefined ? undefined : { type: 'tenant', name: currentRoute?.params?.tenant || 'unknown' };
+  const namespace: TreeNode | undefined = currentRoute?.params?.namespace === undefined ? undefined : { type: 'namespace', name: currentRoute?.params?.namespace || 'unknown' };
+  const topicType: 'persistent' | 'non-persistent' = currentRoute?.params?.topicType as 'persistent' | 'non-persistent';
+  const topic: TreeNode | undefined = (topicType === undefined || currentRoute?.params?.topic === undefined) ? undefined : { type: topicType === 'persistent' ? 'persistent-topic' : 'non-persistent-topic', name: currentRoute?.params?.topic || 'unknown' };
+
+  const withLayoutProps: WithLayoutProps = {
+    layout: {
+      navigationTree: {
+        expandedPath: [tenant, namespace, topic].filter(n => n !== undefined) as TreeNode[]
+      }
+    }
+  };
+
+  return useRoutes(getRoutes({ withLayout, withLayoutProps }));
 }
 
 const RouteTenantPage = (props: { view: TenantPageView }) => {

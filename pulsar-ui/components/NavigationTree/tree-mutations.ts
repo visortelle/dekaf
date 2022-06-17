@@ -1,5 +1,5 @@
 import cloneDeep from "lodash/cloneDeep";
-import { Tree } from "./TreeView";
+import { Tree, TreePath } from "./TreeView";
 
 export function setTenants(props: { tree: Tree, tenants: string[] }): Tree {
   let _tree = cloneDeep(props.tree);
@@ -74,20 +74,20 @@ tree: Tree,
   return _tree;
 }
 
-type ExpandedPaths = string[];
+type ExpandedPaths = TreePath[];
 export function expandAll(
   tree: Tree,
-  treePath: string[],
+  treePath: TreePath,
   expandedPaths: ExpandedPaths
 ): ExpandedPaths {
   return [
     ...expandedPaths,
-    JSON.stringify(treePath),
+    treePath,
     ...tree.subForest
       .map((subTree) =>
         expandAll(
           subTree,
-          treePath.concat([subTree.rootLabel.name]),
+          treePath.concat([subTree.rootLabel]),
           expandedPaths
         )
       )

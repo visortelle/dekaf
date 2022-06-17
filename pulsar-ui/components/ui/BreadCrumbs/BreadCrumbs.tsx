@@ -5,6 +5,8 @@ import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowIcon from '!!raw-loader!./arrow.svg';
 import { Link } from 'react-router-dom';
 import { routes } from '../../routes';
+import { mutate } from 'swr';
+import { swrKeys } from '../../swrKeys';
 
 export type CrumbType = 'tenant' | 'namespace' | 'persistent-topic' | 'non-persistent-topic';
 export type Crumb = {
@@ -41,8 +43,15 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       case 'non-persistent-topic': href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant, namespace, topic, topicType: 'non-persistent' }); break;
     }
 
+    const onClick = () => {
+      switch (crumb.type) {
+        case 'tenant': mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant })); break;
+        case 'namespace': mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant, namespace })); break;
+      }
+    }
+
     return (
-      <Link key={crumb.id} className={s.Crumb} to={href}>
+      <Link key={crumb.id} className={s.Crumb} to={href} onClick={onClick}>
         <div className={s.CrumbIcon}>{icon}</div>
         <div className={s.CrumbTitle}>{crumb.value}</div>
         {!isLast && <div className={s.CrumbArrow}><SvgIcon svg={arrowIcon} /></div>}
