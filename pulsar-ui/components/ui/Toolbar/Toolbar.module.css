@@ -8,6 +8,10 @@
   margin-right: 12rem;
 }
 
+.ToolbarButton:last-child {
+  margin-right: 0;
+}
+
 .ToolbarButtonRight {
   margin-left: auto;
 }
