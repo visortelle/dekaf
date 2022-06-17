@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import s from './NavigationTree.module.css'
 import * as Notifications from '../app/contexts/Notifications';
 import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { swrKeys } from '../swrKeys';
 
 export type PulsarTenantProps = {
@@ -12,6 +12,7 @@ export type PulsarTenantProps = {
   onNamespaces: (namespaces: string[]) => void;
   leftIndent: string;
   onDoubleClick: () => void;
+  isActive: boolean;
 }
 export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { notifyError } = Notifications.useContext();
@@ -29,15 +30,14 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   }
 
   return (
-    <NavLink
+    <Link
       to={`/tenants/${props.tenant}`}
-      end
-      className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
+      className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
       <span>{props.tenant}</span>
-    </NavLink>
+    </Link>
   );
 }
 
@@ -52,6 +52,7 @@ type PulsarNamespaceProps = {
   onTopics: (topics: { persistent: string[], nonPersistent: string[] }) => void;
   leftIndent: string;
   onDoubleClick: () => void;
+  isActive: boolean;
 }
 export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
@@ -73,15 +74,14 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   }
 
   return (
-    <NavLink
+    <Link
       to={`/tenants/${props.tenant}/namespaces/${props.namespace}`}
-      end
-      className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
+      className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
       <span>{props.namespace}</span>
-    </NavLink>
+    </Link>
   );
 }
 
@@ -92,17 +92,17 @@ export type PulsarTopicProps = {
   topicType: 'persistent' | 'non-persistent';
   leftIndent: string;
   onDoubleClick: () => void;
+  isActive: boolean;
 }
 export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
   return (
-    <NavLink
+    <Link
       to={`/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}`}
-      end
-      className={({ isActive }) => `${s.NodeLink} ${isActive ? s.NodeLinkActive : ''}`}
+      className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
       <span>{props.topic}</span>
-    </NavLink>
+    </Link>
   );
 }
