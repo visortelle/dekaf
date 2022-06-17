@@ -1,4 +1,10 @@
 export const routes = {
+  instance: {
+    _: {
+      path: "/",
+      get: () => `/`,
+    },
+  },
   tenants: {
     tenant: {
       _: {
