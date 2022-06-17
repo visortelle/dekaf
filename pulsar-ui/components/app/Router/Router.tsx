@@ -8,7 +8,7 @@ import {
   matchPath
 } from "react-router-dom";
 import Layout, { LayoutProps } from '../../ui/Layout/Layout';
-import HomePage from '../../HomePage/HomePage';
+import InstancePage from '../../InstancePage/InstancePage';
 import TenantPage, { TenantPageView } from '../../TenantPage/TenantPage';
 import NamespacePage, { NamespacePageView } from '../../NamespacePage/NamespacePage';
 import TopicPage, { TopicPageView } from '../../TopicPage/TopicPage';
@@ -35,7 +35,8 @@ const Router: React.FC = () => {
 
 const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => RouteObject[] } => {
   const getRoutes = ({ withLayout, withLayoutProps }: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => [
-    { index: true, element: withLayout(<HomePage />, withLayoutProps) },
+    /* Instance */
+    { path: routes.instance._.path, element: withLayout(<InstancePage />, withLayoutProps) },
 
     /* Topics */
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.path, element: withLayout(<RoutedTopicPage view='overview' />, withLayoutProps) },

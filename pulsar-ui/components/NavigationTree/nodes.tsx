@@ -3,8 +3,28 @@ import useSWR from 'swr';
 import s from './NavigationTree.module.css'
 import * as Notifications from '../app/contexts/Notifications';
 import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { swrKeys } from '../swrKeys';
+import { routes } from '../routes';
+
+export type PulsarInstanceProps = {
+  forceReloadKey: number;
+  leftIndent: string;
+  onDoubleClick: () => void;
+  isActive: boolean;
+}
+export const PulsarInstance: React.FC<PulsarInstanceProps> = (props) => {
+  return (
+    <Link
+      to={routes.instance._.get()}
+      className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
+      style={{ paddingLeft: props.leftIndent }}
+      onDoubleClick={props.onDoubleClick}
+    >
+      <span>Pulsar instance</span>
+    </Link>
+  );
+}
 
 export type PulsarTenantProps = {
   forceReloadKey: number;
@@ -31,7 +51,7 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
 
   return (
     <Link
-      to={`/tenants/${props.tenant}`}
+      to={routes.tenants.tenant._.get({ tenant: props.tenant })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
@@ -75,7 +95,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 
   return (
     <Link
-      to={`/tenants/${props.tenant}/namespaces/${props.namespace}`}
+      to={routes.tenants.tenant.namespaces.namespace._.get({ tenant: props.tenant, namespace: props.namespace })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
@@ -97,7 +117,7 @@ export type PulsarTopicProps = {
 export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
   return (
     <Link
-      to={`/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}`}
+      to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
