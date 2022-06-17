@@ -14,9 +14,9 @@ export type TreePath = TreeNode[];
 
 export const treePath = {
   areNodeEqual: (nodeA: TreeNode, nodeB: TreeNode) => isEqual(nodeA, nodeB),
-  getTenant: (path: TreePath) => path.find(node => node.type === "tenant")!,
-  getNamespace: (path: TreePath) => path.find(node => node.type === "namespace")!,
-  getTopic: (path: TreePath) => path.find(node => node.type === "persistent-topic" || node.type === "non-persistent-topic")!,
+  getTenant: (path: TreePath) => path.find(node => node.type === "tenant"),
+  getNamespace: (path: TreePath) => path.find(node => node.type === "namespace"),
+  getTopic: (path: TreePath) => path.find(node => node.type === "persistent-topic" || node.type === "non-persistent-topic"),
   unique: (paths: TreePath[]) => uniqWith(paths, treePath.areEqual),
   areEqual: (pathA: TreePath, pathB: TreePath) => isEqual(pathA, pathB),
   hasPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.areEqual(p, path)),

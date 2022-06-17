@@ -17,7 +17,7 @@ import { TreeNode } from '../../NavigationTree/TreeView';
 
 type WithLayoutProps = { layout: Omit<LayoutProps, 'children'> };
 type WithLayout = (children: React.ReactElement, props: WithLayoutProps) => React.ReactElement;
-const defaultWithLayoutProps: WithLayoutProps = { layout: { navigationTree: { expandedPath: [] } } };
+const defaultWithLayoutProps: WithLayoutProps = { layout: { navigationTree: { selectedNodePath: [] } } };
 
 const Router: React.FC = () => {
   const withLayout: WithLayout = (children, props) => (
@@ -76,7 +76,7 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   const withLayoutProps: WithLayoutProps = {
     layout: {
       navigationTree: {
-        expandedPath: [tenant, namespace, topic].filter(n => n !== undefined) as TreeNode[]
+        selectedNodePath: [tenant, namespace, topic].filter(n => n !== undefined) as TreeNode[]
       }
     }
   };
