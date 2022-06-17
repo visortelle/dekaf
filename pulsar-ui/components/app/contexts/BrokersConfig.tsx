@@ -19,6 +19,7 @@ const defaultValue: Value = {
 };
 
 const swrKeys = {
+  // TODO - use global swrKeys definitions
   runtimeConfig: ['pulsar', 'brokers', 'runtimeConfig'],
   internalConfig: ['pulsar', 'brokers', 'internalConfig'],
   dynamicConfig: ['pulsar', 'brokers', 'dynamicConfig'],
