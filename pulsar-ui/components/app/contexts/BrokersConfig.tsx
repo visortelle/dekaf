@@ -57,7 +57,8 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
     notifyError(`Unable to get broker's dynamic configuration. ${runtimeConfigError}`);
   }
 
-  console.log('Broker config:', { runtimeConfig, internalConfig, dynamicConfig });
+  // Please don't delete this line. Sometime it's useful to uncomment.
+  // console.info('Broker config:', { runtimeConfig, internalConfig, dynamicConfig });
 
   return (
     <>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
-import TreeView, { Tree, treePath } from './TreeView';
+import TreeView, { Tree, TreePath, treePath } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';
 import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
 import { setTenants, setTenantNamespaces, setNamespaceTopics, expandAll } from './tree-mutations';
@@ -24,11 +24,15 @@ const defaultNodeTypeFilter: NodeTypeFilter = {
   showNonPersistentTopics: true
 }
 
-const NavigationTree: React.FC = () => {
+type NavigationTreeProps = {
+  expandedPath: TreePath;
+}
+
+const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [tree, setTree] = React.useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
   const [filterQuery, setFilterQuery] = React.useState<string>('');
   const [useRegex, _] = React.useState<boolean>(false);
-  const [expandedPaths, setExpandedPaths] = React.useState<string[]>([]);
+  const [expandedPaths, setExpandedPaths] = React.useState<TreePath[]>([]);
   const [nodeTypeFilter, setNodeTypeFilter] = React.useState<NodeTypeFilter>(defaultNodeTypeFilter);
   const [forceReloadKey, setForceReloadKey] = React.useState<number>(0);
 
@@ -49,12 +53,12 @@ const NavigationTree: React.FC = () => {
   }, [tenants]);
 
   useEffect(() => {
+    setExpandedPaths((expandedPaths) => treePath.unique([...expandedPaths, ...treePath.expandAncestors(props.expandedPath)]));
+  }, [props.expandedPath])
+
+  useEffect(() => {
     setForceReloadKey((key) => key + 1);
   }, [nodeTypeFilter]);
-
-  const expanded = useCallback((pathStr: string) => {
-    return expandedPaths.includes(pathStr);
-  }, [expandedPaths]);
 
   return (
     <div className={s.NavigationTree}>
@@ -97,11 +101,11 @@ const NavigationTree: React.FC = () => {
       </div>
       <TreeView
         nodeCommons={{}}
-        getPathPart={(node) => node.rootLabel.name}
+        getPathPart={(node) => ({ type: node.rootLabel.type, name: node.rootLabel.name })}
         path={[]}
-        renderNode={(node, path, nodeCommons) => {
+        renderNode={(node, path) => {
           return ({
-            alterTree: (tree, path) => tree,
+            alterTree: (tree) => tree,
             cssClasses: {
               node: '',
               rootLabel: '',
@@ -144,9 +148,8 @@ const NavigationTree: React.FC = () => {
                 if (path.length === 0) {
                   return true;
                 }
-                const pathStr = JSON.stringify(path);
-                const isExpanded = expanded(pathStr);
-                return isExpanded;
+
+                return treePath.isPathExpanded(expandedPaths, path);
               })(),
               tree: true
             }),
@@ -156,56 +159,56 @@ const NavigationTree: React.FC = () => {
               let childrenCount = null;
               const leftIndent = `${((path.length + 1) * 3 - 1)}ch`;
 
-              const pathStr = JSON.stringify(path);
               const toggleNodeExpanded = () => setExpandedPaths(
-                (expandedPaths) => expandedPaths.includes(pathStr) ?
-                  expandedPaths.filter(p => p !== pathStr) :
-                  expandedPaths.concat([pathStr])
+                (expandedPaths) => treePath.hasPath(expandedPaths, path) ?
+                  expandedPaths.filter(p => !treePath.areEqual(p, path)) :
+                  expandedPaths.concat([path])
               );
-              const isExpanded = expanded(pathStr);
+              const isExpanded = treePath.isPathExpanded(expandedPaths, path);
 
               if (node.type === 'instance') {
                 nodeContent = node.name
               } else if (node.type === 'tenant') {
-                const tenant = path[0];
+                const tenant = treePath.getTenant(path);
 
                 nodeContent = (
                   <PulsarTenant
                     forceReloadKey={forceReloadKey}
                     tenant={node.name}
-                    onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant, namespaces }))}
+                    onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant: tenant.name, namespaces }))}
                     leftIndent={leftIndent}
                     onDoubleClick={toggleNodeExpanded}
                   />
                 );
                 nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
-                childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenant)?.subForest.length;
+                childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenant.name)?.subForest.length;
               } else if (node.type === 'namespace') {
-                const tenant = path[0];
-                const namespace = path[1];
+                const tenant = treePath.getTenant(path);
+                const namespace = treePath.getNamespace(path);
 
                 nodeContent = (
                   <PulsarNamespace
                     forceReloadKey={forceReloadKey}
-                    tenant={tenant}
-                    namespace={namespace}
-                    onTopics={(topics) => setTree((tree) => setNamespaceTopics({ tree, tenant, namespace, persistentTopics: topics.persistent, nonPersistentTopics: topics.nonPersistent }))}
+                    tenant={tenant.name}
+                    namespace={namespace.name}
+                    onTopics={(topics) => setTree((tree) => setNamespaceTopics({ tree, tenant: tenant.name, namespace: namespace.name, persistentTopics: topics.persistent, nonPersistentTopics: topics.nonPersistent }))}
                     leftIndent={leftIndent}
                     onDoubleClick={toggleNodeExpanded}
                   />
                 );
                 nodeIcon = <NamespaceIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
-                childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenant)?.subForest.find((ch) => ch.rootLabel.name === namespace)?.subForest.length;
+                childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenant.name)?.subForest.find((ch) => ch.rootLabel.name === namespace.name)?.subForest.length;
               } else if (node.type === 'persistent-topic' || node.type === 'non-persistent-topic') {
-                const tenantName = path[0];
-                const namespaceName = path[1];
+                const tenant = treePath.getTenant(path);
+                const namespace = treePath.getNamespace(path);
+
                 const topicName = node.name;
                 const topicType = node.type === 'persistent-topic' ? 'persistent' : 'non-persistent';
 
                 nodeContent = (
                   <PulsarTopic
-                    tenant={tenantName}
-                    namespace={namespaceName}
+                    tenant={tenant.name}
+                    namespace={namespace.name}
                     topic={topicName}
                     leftIndent={leftIndent}
                     onDoubleClick={toggleNodeExpanded}
@@ -217,7 +220,7 @@ const NavigationTree: React.FC = () => {
                     isExpandable={false}
                     isExpanded={false}
                     onClick={() => undefined}
-                    topicType={node.type === 'persistent-topic' ? 'persistent' : 'non-persistent'}
+                    topicType={topicType}
                   />
                 )
               }
@@ -225,8 +228,8 @@ const NavigationTree: React.FC = () => {
               const handleNodeClick = () => {
                 switch (node.type) {
                   case 'instance': () => undefined; break;
-                  case 'tenant': mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path) })); break;
-                  case 'namespace': mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path), namespace: treePath.getNamespace(path) })); break;
+                  case 'tenant': mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path).name })); break;
+                  case 'namespace': mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path).name, namespace: treePath.getNamespace(path).name })); break;
                 }
               }
 
