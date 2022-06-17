@@ -13,18 +13,20 @@ export type TreeNode = { type: TreeNodeType, name: string };
 export type TreePath = TreeNode[];
 
 export const treePath = {
-  areNodeEqual: (nodeA: TreeNode, nodeB: TreeNode) => isEqual(nodeA, nodeB),
   getTenant: (path: TreePath) => path.find(node => node.type === "tenant"),
   getNamespace: (path: TreePath) => path.find(node => node.type === "namespace"),
   getTopic: (path: TreePath) => path.find(node => node.type === "persistent-topic" || node.type === "non-persistent-topic"),
-  unique: (paths: TreePath[]) => uniqWith(paths, treePath.areEqual),
-  areEqual: (pathA: TreePath, pathB: TreePath) => isEqual(pathA, pathB),
-  hasPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.areEqual(p, path)),
-  isPathExpanded: (paths: TreePath[], path: TreePath) => paths.some((p) => treePath.areEqual(path, p)),
+
+  hasPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.arePathsEqual(p, path)),
+  uniquePaths: (paths: TreePath[]) => uniqWith(paths, treePath.arePathsEqual),
+  arePathsEqual: (pathA: TreePath, pathB: TreePath) => isEqual(pathA, pathB),
+  areNodesEqual: (nodeA: TreeNode, nodeB: TreeNode) => isEqual(nodeA, nodeB),
+
+  isPathExpanded: (paths: TreePath[], path: TreePath) => paths.some((p) => treePath.arePathsEqual(path, p)),
   expandAncestors: (path: TreePath): TreePath[] => {
     // Thank you, Copilot :)
     const ancestors = [];
-    for (let i = 0; i < path.length; i++) {
+    for (let i = 0; i < path.length - 1; i++) {
       ancestors.push(path.slice(0, i + 1));
     }
     return ancestors;

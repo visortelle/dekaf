@@ -106,3 +106,24 @@ export const TenantIcon: React.FC<TenantIconProps> = (props) => {
     isGray={props.isGray}
   />
 }
+
+export type InstanceIconProps = {
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
+  className?: string;
+  isGray?: boolean;
+}
+export const InstanceIcon: React.FC<TenantIconProps> = (props) => {
+  return <NodeIcon
+    title="in"
+    textColor='#fff'
+    backgroundColor='var(--text-color)'
+    onClick={props.onClick}
+    isExpanded={props.isExpanded}
+    isExpandable={props.isExpandable}
+    className={props.className}
+    isGray={props.isGray}
+  />
+}
+

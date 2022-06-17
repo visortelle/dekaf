@@ -11,6 +11,7 @@
   padding: 8rem 12rem;
   background-color: #fff;
   position: relative;
+  animation: var(--animation-fade-in);
 }
 
 .Node:hover {
