@@ -1,5 +1,10 @@
 export const swrKeys = {
   pulsar: {
+    brokerStats: {
+      metrics: {
+        _: () => ["pulsar", "brokerStats", "metrics"],
+      }
+    },
     clusters: {
       _: () => ["pulsar", "clusters"],
     },
