@@ -36,7 +36,9 @@ const Router: React.FC = () => {
 const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => RouteObject[] } => {
   const getRoutes = ({ withLayout, withLayoutProps }: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => [
     /* Instance */
-    { path: routes.instance._.path, element: withLayout(<InstancePage />, withLayoutProps) },
+    { path: routes.instance._.path, element: withLayout(<InstancePage view='overview'/>, withLayoutProps) },
+    { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view='configuration'/>, withLayoutProps) },
+    { path: routes.instance.brokerStats._.path, element: withLayout(<InstancePage view='broker-stats'/>, withLayoutProps) },
 
     /* Topics */
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.path, element: withLayout(<RoutedTopicPage view='overview' />, withLayoutProps) },

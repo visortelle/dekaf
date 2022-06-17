@@ -4,6 +4,18 @@ export const routes = {
       path: "/",
       get: () => `/`,
     },
+    configuration: {
+      _: {
+        path: "/instance/configuration",
+        get: () => `/instance/configuration`,
+      },
+    },
+    brokerStats: {
+      _: {
+        path: "/instance/broker-stats",
+        get: () => `/instance/broker-stats`,
+      },
+    },
   },
   tenants: {
     tenant: {
