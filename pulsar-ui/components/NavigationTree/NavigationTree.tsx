@@ -10,33 +10,7 @@ import SmallButton from '../ui/SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../ui/Icons/Icons';
 import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
 import { swrKeys } from '../swrKeys';
-import { useQueryParam, withDefault, StringParam, ObjectParam } from 'use-query-params';
-
-type BoolAsString = 't' | 'f';
-const boolAsString = {
-  fromBool: (v: boolean): BoolAsString => {
-    return v ? 't' : 'f';
-  },
-  toBool: (v: BoolAsString): boolean => {
-    return v === 't';
-  },
-  not: (v: BoolAsString): BoolAsString => {
-    return v === 't' ? 'f' : 't';
-  }
-}
-
-type NodeTypeFilter = {
-  te: BoolAsString;
-  ns: BoolAsString;
-  to: BoolAsString;
-  np: BoolAsString
-};
-const defaultNodeTypeFilter: NodeTypeFilter = {
-  te: 't',
-  ns: 't',
-  to: 't',
-  np: 't'
-}
+import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -49,13 +23,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
-
-  const [_nodeTypeFilter, _setNodeTypeFilter] = useQueryParam('nt', withDefault(ObjectParam, defaultNodeTypeFilter));
-  const nodeTypeFilter = _nodeTypeFilter as NodeTypeFilter;
-  const setNodeTypeFilter = (setter: (v: NodeTypeFilter) => void) => _setNodeTypeFilter(setter as Parameters<typeof _setNodeTypeFilter>[0]);
-
   const [forceReloadKey, setForceReloadKey] = useState<number>(0);
-
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
 
@@ -88,10 +56,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
   }, [props.selectedNodePath])
 
-  useEffect(() => {
-    setForceReloadKey((key) => key + 1);
-  }, [nodeTypeFilter]);
-
   return (
     <div className={s.NavigationTree}>
       <div className={s.FilterQueryInput}>
@@ -100,36 +64,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       <div className={s.TreeControlButtons}>
         <SmallButton text='Expand' onClick={() => setExpandedPaths(expandAll(tree, [], []))} />
         <SmallButton text='Collapse' onClick={() => setExpandedPaths([])} />
-        <TenantIcon
-          isExpanded={false}
-          isExpandable={true}
-          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, te: boolAsString.not(nodeTypeFilter.te) }))}
-          className={s.NodeTypeFilterButton}
-          isGray={!boolAsString.toBool(nodeTypeFilter.te)}
-        />
-        <NamespaceIcon
-          isExpanded={false}
-          isExpandable={true}
-          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, ns: boolAsString.not(nodeTypeFilter.ns) }))}
-          className={s.NodeTypeFilterButton}
-          isGray={!boolAsString.toBool(nodeTypeFilter.ns)}
-        />
-        <TopicIcon
-          isExpanded={false}
-          isExpandable={true}
-          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, to: boolAsString.not(nodeTypeFilter.to) }))}
-          className={s.NodeTypeFilterButton}
-          isGray={!boolAsString.toBool(nodeTypeFilter.to)}
-          topicType="persistent"
-        />
-        <TopicIcon
-          isExpanded={false}
-          isExpandable={true}
-          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, np: boolAsString.not(nodeTypeFilter.np) }))}
-          className={s.NodeTypeFilterButton}
-          isGray={!boolAsString.toBool(nodeTypeFilter.np)}
-          topicType="non-persistent"
-        />
       </div>
       <TreeView
         nodeCommons={{}}
@@ -160,22 +94,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
                   }
 
                   return tree.rootLabel.name.includes(filterQuery)
-                }
-
-                if (tree.rootLabel.type === 'tenant' && !boolAsString.toBool(nodeTypeFilter.te)) {
-                  return false;
-                }
-
-                if (tree.rootLabel.type === 'namespace' && !boolAsString.toBool(nodeTypeFilter.ns)) {
-                  return false;
-                }
-
-                if (tree.rootLabel.type === 'persistent-topic' && !boolAsString.toBool(nodeTypeFilter.to)) {
-                  return false;
-                }
-
-                if (tree.rootLabel.type === 'non-persistent-topic' && !boolAsString.toBool(nodeTypeFilter.np)) {
-                  return false;
                 }
 
                 return true;
