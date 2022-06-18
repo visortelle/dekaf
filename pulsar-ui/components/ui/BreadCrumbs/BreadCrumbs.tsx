@@ -3,7 +3,7 @@ import s from './BreadCrumbs.module.css'
 import { TenantIcon, NamespaceIcon, TopicIcon } from '../Icons/Icons';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowIcon from '!!raw-loader!./arrow.svg';
-import { Link } from 'react-router-dom';
+import Link from '../../ui/LinkWithQuery/LinkWithQuery';
 import { routes } from '../../routes';
 import { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';

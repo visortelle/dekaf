@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import s from './NavigationTree.module.css'
 import * as Notifications from '../app/contexts/Notifications';
 import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
-import { Link } from "react-router-dom";
+import Link from '../ui/LinkWithQuery/LinkWithQuery';
 import { swrKeys } from '../swrKeys';
 import { routes } from '../routes';
 
