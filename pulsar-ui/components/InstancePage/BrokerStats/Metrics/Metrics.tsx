@@ -9,14 +9,15 @@ import { swrKeys } from '../../../swrKeys';
 import Input from '../../../ui/Input/Input';
 import Highlighter from "react-highlight-words";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
+import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 
-const filterAndOp = "&&";
+const filterKvsAndOp = "&&";
 const filterKvSep = "=";
 
 const InternalConfig: React.FC = () => {
   const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
-  const [dimensionsFilterValue, setDimensionsFilterValue] = React.useState('');
+  const [dimensionsFilter, setDimensionsFilter] = useQueryParam('dimensionsFilter', withDefault(StringParam, ''));
   const [dimensionsFilterKvs, setDimensionsFilterKvs] = React.useState<{ key: string, value: string }[]>([]);
 
   const { data: metricsData, error: metricsError } = useSWR(
@@ -30,21 +31,21 @@ const InternalConfig: React.FC = () => {
   }
 
   useEffect(() => {
-    const kvs = dimensionsFilterValue
-      .split(filterAndOp)
+    const kvs = dimensionsFilter
+      .split(filterKvsAndOp)
       .map((d) => d.includes(filterKvSep) ? d.trim() : undefined)
       .filter(kv => kv !== undefined).map(kv => kv || '')
       .map((d) => d.split(filterKvSep))
       .map(([k, v]) => ({ key: k, value: v }));
 
     setDimensionsFilterKvs(() => kvs);
-  }, [dimensionsFilterValue]);
+  }, [dimensionsFilter]);
 
-  let filteredMetrics = dimensionsFilterValue.length === 0 ? metricsData : [];
+  let filteredMetrics = dimensionsFilter.length === 0 ? metricsData : [];
 
   if (dimensionsFilterKvs.length === 0) {
     filteredMetrics = metricsData?.filter(m => Object.entries(m.dimensions || {}).some(([k, v]) => {
-      if (k.includes(dimensionsFilterValue) || v.includes(dimensionsFilterValue)) {
+      if (k.includes(dimensionsFilter) || v.includes(dimensionsFilter)) {
         return true;
       }
     }));
@@ -66,10 +67,11 @@ const InternalConfig: React.FC = () => {
           Filter by metric dimensions:
         </strong>
         <Input
-          value={dimensionsFilterValue}
-          onChange={v => setDimensionsFilterValue(v)}
-          placeholder={`cluster=standalone ${filterAndOp} broker=localhost`}
+          value={dimensionsFilter}
+          onChange={v => setDimensionsFilter(v)}
+          placeholder={`cluster=standalone ${filterKvsAndOp} broker=localhost`}
           focusOnMount={true}
+          clearable={true}
         />
       </div>
 
@@ -80,7 +82,7 @@ const InternalConfig: React.FC = () => {
             title={key}
             metrics={value}
             highlightDimensions={[
-              dimensionsFilterValue,
+              dimensionsFilter,
               ...dimensionsFilterKvs.map(({ key, value }) => [`"${key}":"${value}`, `"${key}":"${value}"`]).flat(),
             ]}
           />

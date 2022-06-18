@@ -11,12 +11,16 @@ import Input from '../../ui/Input/Input';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Button from '../../ui/Button/Button';
 import { swrKeys } from '../../swrKeys';
+import Highlighter from "react-highlight-words";
+import sf from '../../ui/ConfigurationTable/form.module.css';
+import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
 
 const Configuration: React.FC = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
-  const [isShowDynamicOnly, setIsShowDynamicOnly] = React.useState(false);
+  const [isShowDynamicOnly, setIsShowDynamicOnly] = useQueryParam('showDynamicOnly', withDefault(BooleanParam, false));
+  const [paramFilter, setParamFilter] = useQueryParam('paramFilter', withDefault(StringParam, ''));
 
   const { data: availableDynamicConfigKeys, error: availableDynamicConfigKeysError } = useSWR(
     swrKeys.pulsar.brokers.availableDynamicConfigKeys._(),
@@ -28,6 +32,9 @@ const Configuration: React.FC = () => {
   }
 
   let allKeys = Array.from(new Set([...Object.keys(dynamicConfig), ...Object.keys(runtimeConfig)])).sort((a, b) => a.localeCompare(b));
+  if (paramFilter !== '') {
+    allKeys = allKeys.filter(key => key.toLowerCase().includes(paramFilter.toLowerCase()));
+  }
   if (isShowDynamicOnly) {
     allKeys = allKeys.filter((key) => availableDynamicConfigKeys?.includes(key));
   }
@@ -35,9 +42,13 @@ const Configuration: React.FC = () => {
   return (
     <div className={s.Configuration}>
       <div className={s.Toolbar}>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ width: '480rem' }}>
+          <strong className={sf.FormLabel}>Filter by param</strong>
+          <Input value={paramFilter} onChange={v => setParamFilter(v)} placeholder="managedLedger" focusOnMount={true} clearable={true}/>
+        </div>
+        <div style={{ marginLeft: 'auto', marginTop: 'auto' }}>
           <SmallButton
-            text={isShowDynamicOnly ? 'Show all' : 'Show dynamically configurable'}
+            text={isShowDynamicOnly ? 'Show all' : 'Show dynamic only'}
             onClick={() => setIsShowDynamicOnly(!isShowDynamicOnly)}
           />
         </div>
@@ -47,7 +58,7 @@ const Configuration: React.FC = () => {
         <table className={s.Table}>
           <thead>
             <tr className={s.Row}>
-              <th className={s.Cell}>Key</th>
+              <th className={s.Cell}>Param</th>
               <th className={s.Cell}>Runtime config</th>
               <th className={s.Cell}>Dynamic config</th>
             </tr>
@@ -56,7 +67,14 @@ const Configuration: React.FC = () => {
             {allKeys.map((key) => {
               return (
                 <tr key={key} className={s.Row}>
-                  <td className={`${s.Cell} ${s.ConfigParamKeyCell}`}>{key}</td>
+                  <td className={`${s.Cell} ${s.ConfigParamKeyCell}`}>
+                    <Highlighter
+                      highlightClassName={s.Highlight}
+                      searchWords={[paramFilter]}
+                      autoEscape={true}
+                      textToHighlight={key}
+                    />
+                  </td>
                   <td className={`${s.Cell} ${s.RuntimeConfigCell}`}>{runtimeConfig[key]}</td>
                   <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                     {availableDynamicConfigKeys?.includes(key) ? (
