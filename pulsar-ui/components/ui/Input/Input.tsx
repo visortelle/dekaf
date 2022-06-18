@@ -16,7 +16,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, onChange, fo
     if (focusOnMount) {
       inputRef?.current?.focus();
     }
-  }, []);
+  }, [inputRef.current]);
 
   return (
     <div className={s.Input}>

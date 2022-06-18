@@ -34,7 +34,6 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           className={s.toastContainer}
           toastClassName={s.toast}
           bodyClassName={s.toastBody}
-          limit={3}
         />
         {children}
       </Context.Provider>

@@ -7,6 +7,18 @@ export const swrKeys = {
       backlogQuotaHealthCheck: {
         _: () => ["pulsar", "brokers", "backlogQuotaHealthCheck"],
       },
+      availableDynamicConfigKeys: {
+        _: () => ["pulsar", "brokers", "availableDynamicConfigKeys"],
+      },
+      runtimeConfig: {
+        _: () => ["pulsar", "brokers", "runtimeConfig"],
+      },
+      dynamicConfig: {
+        _: () => ["pulsar", "brokers", "dynamicConfig"],
+      },
+      internalConfig: {
+        _: () => ["pulsar", "brokers", "internalConfig"],
+      },
     },
     brokerStats: {
       metrics: {
