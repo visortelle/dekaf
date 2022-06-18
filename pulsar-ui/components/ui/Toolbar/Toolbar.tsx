@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from '../../ui/LinkWithQuery/LinkWithQuery';
 import s from './Toolbar.module.css'
 import Button, { ButtonProps } from '../Button/Button';
 
