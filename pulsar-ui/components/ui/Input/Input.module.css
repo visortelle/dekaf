@@ -54,3 +54,22 @@
   opacity: 0.5;
   color: var(--text-color);
 }
+
+.InputInputClearable {
+  padding-right: 32rem;
+}
+
+.Clear {
+  position: absolute;
+  right: 8rem;
+  opacity: 0.5;
+}
+.Clear:hover {
+  opacity: 1;
+  cursor: pointer;
+}
+.Clear svg {
+  width: 18rem;
+  height: 18rem;
+  fill: var(--text-color);
+}

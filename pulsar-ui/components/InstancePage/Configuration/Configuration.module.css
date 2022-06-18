@@ -122,3 +122,7 @@
 .DynamicConfigValueEditorHeader {
   margin-bottom: 12rem;
 }
+
+.Highlight {
+  background-color: var(--accent-color-yellow);
+}

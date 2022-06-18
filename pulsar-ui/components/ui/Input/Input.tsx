@@ -1,6 +1,7 @@
 import s from './Input.module.css';
 import { useEffect, useRef } from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
+import clearIcon from '!!raw-loader!./clear.svg';
 
 export type InputProps = {
   placeholder: string,
@@ -8,8 +9,9 @@ export type InputProps = {
   onChange: (v: string) => void,
   iconSvg?: string,
   focusOnMount?: boolean
+  clearable?: boolean,
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, onChange, focusOnMount }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -22,7 +24,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, onChange, fo
     <div className={s.Input}>
       <input
         ref={inputRef}
-        className={`${s.InputInput} ${iconSvg ? s.InputInputWithIcon : ''}`}
+        className={`${s.InputInput} ${iconSvg ? s.InputInputWithIcon : ''} ${clearable ? s.InputInputClearable : ''}`}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -31,6 +33,11 @@ const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, onChange, fo
       {iconSvg && (<div className={s.InputIcon}>
         <SvgIcon svg={iconSvg} />
       </div>
+      )}
+      {clearable && (
+        <div className={s.Clear} onClick={() => onChange('')}>
+          <SvgIcon svg={clearIcon} />
+        </div>
       )}
     </div>
   );
