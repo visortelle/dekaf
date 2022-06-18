@@ -117,8 +117,8 @@ export type InstanceIconProps = {
 export const InstanceIcon: React.FC<TenantIconProps> = (props) => {
   return <NodeIcon
     title="in"
-    textColor='#fff'
-    backgroundColor='var(--text-color)'
+    textColor='var(--accent-color-blue)'
+    backgroundColor='#f5f5f5'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}
