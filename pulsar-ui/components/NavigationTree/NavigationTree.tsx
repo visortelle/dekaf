@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
 import TreeView, { Tree, TreePath, treePath } from './TreeView';
@@ -10,6 +10,7 @@ import SmallButton from '../ui/SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../ui/Icons/Icons';
 import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
 import { swrKeys } from '../swrKeys';
+import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 
 type NodeTypeFilter = {
   showTenants: boolean;
@@ -28,13 +29,15 @@ type NavigationTreeProps = {
   selectedNodePath: TreePath;
 }
 
+const filterQuerySep = '/';
+
 const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
-  const [tree, setTree] = React.useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
-  const [filterQuery, setFilterQuery] = React.useState<string>('');
-  const [useRegex, _] = React.useState<boolean>(false);
-  const [expandedPaths, setExpandedPaths] = React.useState<TreePath[]>([]);
-  const [nodeTypeFilter, setNodeTypeFilter] = React.useState<NodeTypeFilter>(defaultNodeTypeFilter);
-  const [forceReloadKey, setForceReloadKey] = React.useState<number>(0);
+  const [tree, setTree] = useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
+  const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
+  const [filterPath, setFilterPath] = useState<TreePath>([]);
+  const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
+  const [nodeTypeFilter, setNodeTypeFilter] = useState<NodeTypeFilter>(defaultNodeTypeFilter);
+  const [forceReloadKey, setForceReloadKey] = useState<number>(0);
 
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
@@ -53,6 +56,18 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }, [tenants]);
 
   useEffect(() => {
+    const fp = filterQuery.split(filterQuerySep).map((part, i) => {
+      switch (i) {
+        case 0: return { type: 'tenant', name: part };
+        case 1: return { type: 'namespace', name: part };
+        case 2: return { type: 'topic', name: part };
+      }
+    }) as TreePath;
+
+    setFilterPath(() => fp);
+  }, [filterQuery]);
+
+  useEffect(() => {
     setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
   }, [props.selectedNodePath])
 
@@ -63,7 +78,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   return (
     <div className={s.NavigationTree}>
       <div className={s.FilterQueryInput}>
-        <Input placeholder="Filter" value={filterQuery} onChange={v => setFilterQuery(v)} />
+        <Input placeholder="public/functions/metadata" value={filterQuery} onChange={v => setFilterQuery(v)} clearable={true} focusOnMount={true} />
       </div>
       <div className={s.TreeControlButtons}>
         <SmallButton text='Expand' onClick={() => setExpandedPaths(expandAll(tree, [], []))} />
@@ -114,9 +129,17 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             getVisibility: (tree, path) => ({
               rootLabel: (() => {
                 if (filterQuery.length !== 0) {
-                  if (useRegex) {
-                    const regex = new RegExp(filterQuery, 'g');
-                    return regex.test(tree.rootLabel.name);
+                  if (tree.rootLabel.type === 'instance') {
+                    return false;
+                  }
+
+                  if (filterQuery.includes(filterQuerySep)) {
+                    const a = path.every((part, i) => {
+                      return i === filterPath.length - 1 ? part.name.includes(filterPath[filterPath.length - 1].name) : part.name === filterPath[i]?.name;
+                    });
+
+                    const b = path.length === filterPath.length && filterPath[filterPath.length - 1]?.name === '' && filterPath[filterPath.length - 2]?.name === path[path.length - 2]?.name;
+                    return a || b;
                   }
 
                   return tree.rootLabel.name.includes(filterQuery)
@@ -142,6 +165,10 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               })(),
               subForest: (() => {
                 if (path.length === 0) {
+                  return true;
+                }
+
+                if (filterPath.length > 0 && filterPath[path.length - 1]?.name === path[path.length - 1].name) {
                   return true;
                 }
 
@@ -249,7 +276,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
               const handleNodeClick = () => {
                 switch (node.type) {
-                  case 'instance': () => undefined; break;
+                  case 'instance': () => mutate(swrKeys.pulsar.tenants._()); break;
                   case 'tenant': mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
                   case 'namespace': mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name })); break;
                 }
