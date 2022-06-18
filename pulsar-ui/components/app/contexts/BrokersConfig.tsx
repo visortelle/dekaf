@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import * as Notifications from './Notifications';
 import * as PulsarAdminClient from './PulsarAdminClient';
 import useSWR from "swr";
+import { swrKeys } from '../../swrKeys';
 
 type ConfigValue = undefined | { value: string, source: 'dynamic-config' | 'runtime-config' };
 export type Value = {
@@ -18,13 +19,6 @@ const defaultValue: Value = {
   get: (_: string) => undefined,
 };
 
-const swrKeys = {
-  // TODO - use global swrKeys definitions
-  runtimeConfig: ['pulsar', 'brokers', 'runtimeConfig'],
-  internalConfig: ['pulsar', 'brokers', 'internalConfig'],
-  dynamicConfig: ['pulsar', 'brokers', 'dynamicConfig'],
-}
-
 const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
@@ -32,7 +26,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const { notifyError } = Notifications.useContext();
 
   const { data: runtimeConfig, error: runtimeConfigError } = useSWR(
-    swrKeys.runtimeConfig,
+    swrKeys.pulsar.brokers.runtimeConfig._(),
     async () => await adminClient.brokers.getRuntimeConfiguration()
   );
 
@@ -41,7 +35,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const { data: internalConfig, error: internalConfigError } = useSWR(
-    swrKeys.internalConfig,
+    swrKeys.pulsar.brokers.internalConfig._(),
     async () => await adminClient.brokers.getInternalConfigurationData()
   );
 
@@ -50,16 +44,13 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const { data: dynamicConfig, error: dynamicConfigError } = useSWR(
-    swrKeys.dynamicConfig,
+    swrKeys.pulsar.brokers.dynamicConfig._(),
     async () => await adminClient.brokers.getAllDynamicConfigurations()
   );
 
   if (dynamicConfigError) {
     notifyError(`Unable to get broker's dynamic configuration. ${runtimeConfigError}`);
   }
-
-  // Please don't delete this line. Sometime it's useful to uncomment.
-  // console.info('Broker config:', { runtimeConfig, internalConfig, dynamicConfig });
 
   return (
     <>
