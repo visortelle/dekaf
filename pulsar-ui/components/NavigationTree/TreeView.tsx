@@ -68,11 +68,13 @@ function TreeView<NC>(props: TreeProps<NC>) {
 
   return !visibility.tree ? <></> : (
     <div className={cssClasses.node} style={styles.node}>
-      <div className={cssClasses.rootLabel} style={{ ...styles.rootLabel, ...(visibility.rootLabel ? {} : { display: 'none' }) }}>
-        {rootLabel}
-      </div>
-      {tree.subForest.length > 0 && (
-        <div className={cssClasses.subForest} style={{ ...styles.subForest, ...(visibility.subForest ? {} : { display: 'none' }) }}>
+      {visibility.rootLabel && (
+        <div className={cssClasses.rootLabel} style={{ ...styles.rootLabel }}>
+          {rootLabel}
+        </div>
+      )}
+      {visibility.subForest && tree.subForest.length > 0 && (
+        <div className={cssClasses.subForest} style={{ ...styles.subForest }}>
           {tree.subForest.map(tree => {
             const pathPart = props.getPathPart(tree);
             const path = props.path.concat([pathPart]);
