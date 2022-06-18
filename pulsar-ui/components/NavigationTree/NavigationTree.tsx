@@ -10,19 +10,32 @@ import SmallButton from '../ui/SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../ui/Icons/Icons';
 import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
 import { swrKeys } from '../swrKeys';
-import { useQueryParam, withDefault, StringParam } from 'use-query-params';
+import { useQueryParam, withDefault, StringParam, ObjectParam } from 'use-query-params';
+
+type BoolAsString = 'true' | 'false';
+const boolAsString = {
+  fromBool: (v: boolean): BoolAsString => {
+    return v ? 'true' : 'false';
+  },
+  toBool: (v: BoolAsString): boolean => {
+    return v === 'true';
+  },
+  not: (v: BoolAsString): BoolAsString => {
+    return v === 'true' ? 'false' : 'true';
+  }
+}
 
 type NodeTypeFilter = {
-  showTenants: boolean;
-  showNamespaces: boolean;
-  showPersistentTopics: boolean;
-  showNonPersistentTopics: boolean
+  te: BoolAsString;
+  ns: BoolAsString;
+  to: BoolAsString;
+  np: BoolAsString
 };
 const defaultNodeTypeFilter: NodeTypeFilter = {
-  showTenants: true,
-  showNamespaces: true,
-  showPersistentTopics: true,
-  showNonPersistentTopics: true
+  te: 'true',
+  ns: 'true',
+  to: 'true',
+  np: 'true'
 }
 
 type NavigationTreeProps = {
@@ -36,7 +49,11 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
-  const [nodeTypeFilter, setNodeTypeFilter] = useState<NodeTypeFilter>(defaultNodeTypeFilter);
+
+  const [_nodeTypeFilter, _setNodeTypeFilter] = useQueryParam('nt', withDefault(ObjectParam, defaultNodeTypeFilter));
+  const nodeTypeFilter = _nodeTypeFilter as NodeTypeFilter;
+  const setNodeTypeFilter = (setter: (v: NodeTypeFilter) => void) => _setNodeTypeFilter(setter as Parameters<typeof _setNodeTypeFilter>[0]);
+
   const [forceReloadKey, setForceReloadKey] = useState<number>(0);
 
   const { notifyError } = Notifications.useContext();
@@ -86,31 +103,31 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         <TenantIcon
           isExpanded={false}
           isExpandable={true}
-          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showTenants: !nodeTypeFilter.showTenants }))}
+          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, te: boolAsString.not(nodeTypeFilter.te) }))}
           className={s.NodeTypeFilterButton}
-          isGray={!nodeTypeFilter.showTenants}
+          isGray={!boolAsString.toBool(nodeTypeFilter.te)}
         />
         <NamespaceIcon
           isExpanded={false}
           isExpandable={true}
-          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showNamespaces: !nodeTypeFilter.showNamespaces }))}
+          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, ns: boolAsString.not(nodeTypeFilter.ns) }))}
           className={s.NodeTypeFilterButton}
-          isGray={!nodeTypeFilter.showNamespaces}
+          isGray={!boolAsString.toBool(nodeTypeFilter.ns)}
         />
         <TopicIcon
           isExpanded={false}
           isExpandable={true}
-          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showPersistentTopics: !nodeTypeFilter.showPersistentTopics }))}
+          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, to: boolAsString.not(nodeTypeFilter.to) }))}
           className={s.NodeTypeFilterButton}
-          isGray={!nodeTypeFilter.showPersistentTopics}
+          isGray={!boolAsString.toBool(nodeTypeFilter.to)}
           topicType="persistent"
         />
         <TopicIcon
           isExpanded={false}
           isExpandable={true}
-          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, showNonPersistentTopics: !nodeTypeFilter.showNonPersistentTopics }))}
+          onClick={() => setNodeTypeFilter((nodeTypeFilter) => ({ ...nodeTypeFilter, np: boolAsString.not(nodeTypeFilter.np) }))}
           className={s.NodeTypeFilterButton}
-          isGray={!nodeTypeFilter.showNonPersistentTopics}
+          isGray={!boolAsString.toBool(nodeTypeFilter.np)}
           topicType="non-persistent"
         />
       </div>
@@ -145,19 +162,19 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
                   return tree.rootLabel.name.includes(filterQuery)
                 }
 
-                if (tree.rootLabel.type === 'tenant' && !nodeTypeFilter.showTenants) {
+                if (tree.rootLabel.type === 'tenant' && !boolAsString.toBool(nodeTypeFilter.te)) {
                   return false;
                 }
 
-                if (tree.rootLabel.type === 'namespace' && !nodeTypeFilter.showNamespaces) {
+                if (tree.rootLabel.type === 'namespace' && !boolAsString.toBool(nodeTypeFilter.ns)) {
                   return false;
                 }
 
-                if (tree.rootLabel.type === 'persistent-topic' && !nodeTypeFilter.showPersistentTopics) {
+                if (tree.rootLabel.type === 'persistent-topic' && !boolAsString.toBool(nodeTypeFilter.to)) {
                   return false;
                 }
 
-                if (tree.rootLabel.type === 'non-persistent-topic' && !nodeTypeFilter.showNonPersistentTopics) {
+                if (tree.rootLabel.type === 'non-persistent-topic' && !boolAsString.toBool(nodeTypeFilter.np)) {
                   return false;
                 }
 
