@@ -12,16 +12,16 @@ import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './no
 import { swrKeys } from '../swrKeys';
 import { useQueryParam, withDefault, StringParam, ObjectParam } from 'use-query-params';
 
-type BoolAsString = 'true' | 'false';
+type BoolAsString = 't' | 'f';
 const boolAsString = {
   fromBool: (v: boolean): BoolAsString => {
-    return v ? 'true' : 'false';
+    return v ? 't' : 'f';
   },
   toBool: (v: BoolAsString): boolean => {
-    return v === 'true';
+    return v === 't';
   },
   not: (v: BoolAsString): BoolAsString => {
-    return v === 'true' ? 'false' : 'true';
+    return v === 't' ? 'f' : 't';
   }
 }
 
@@ -32,10 +32,10 @@ type NodeTypeFilter = {
   np: BoolAsString
 };
 const defaultNodeTypeFilter: NodeTypeFilter = {
-  te: 'true',
-  ns: 'true',
-  to: 'true',
-  np: 'true'
+  te: 't',
+  ns: 't',
+  to: 't',
+  np: 't'
 }
 
 type NavigationTreeProps = {
@@ -291,11 +291,11 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
                 )
               }
 
-              const handleNodeClick = () => {
+              const handleNodeClick = async () => {
                 switch (node.type) {
-                  case 'instance': () => mutate(swrKeys.pulsar.tenants._()); break;
-                  case 'tenant': mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
-                  case 'namespace': mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name })); break;
+                  case 'instance': await mutate(swrKeys.pulsar.tenants._()); break;
+                  case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
+                  case 'namespace': await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name })); break;
                 }
               }
 

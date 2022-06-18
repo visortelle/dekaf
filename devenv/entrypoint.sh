@@ -15,5 +15,17 @@ if test -f "${case_broker_conf_path}"; then
   cat "${case_broker_conf_path}" >>"${broker_conf_path}"
 fi
 
+case_entrypoint_path="${cases_dir}/${case_name}/entrypoint.sh"
+if test -f "${case_entrypoint_path}"; then
+  echo "Running entrypoint.sh for ${case_name}"
+  $case_entrypoint_path
+fi
+
+case_populate_path="${cases_dir}/${case_name}/populate.sh"
+if test -f "${case_populate_path}"; then
+  echo "Running populate.sh for ${case_name} in background"
+  (sleep 30 && $case_populate_path) &
+fi
+
 echo "Starting Pulsar..."
 bin/pulsar standalone
