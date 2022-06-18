@@ -84,7 +84,3 @@
 .TreeControlButtons > * {
   margin-right: 8rem;
 }
-
-.NodeTypeFilterButton {
-  position: static !important;
-}
