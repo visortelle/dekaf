@@ -4,7 +4,7 @@ import s from './NavigationTree.module.css'
 import TreeView, { Tree, TreePath, treePath } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';
 import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
-import { setTenants, setTenantNamespaces, setNamespaceTopics, expandAll } from './tree-mutations';
+import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../ui/Icons/Icons';
@@ -62,8 +62,9 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         <Input placeholder="public/functions/metadata" value={filterQuery} onChange={v => setFilterQuery(v)} clearable={true} focusOnMount={true} />
       </div>
       <div className={s.TreeControlButtons}>
-        <SmallButton text='Expand' onClick={() => setExpandedPaths(expandAll(tree, [], []))} />
-        <SmallButton text='Collapse' onClick={() => setExpandedPaths([])} />
+        <div>
+          <SmallButton text='Collapse all' onClick={() => setExpandedPaths([])} type='primary' />
+        </div>
       </div>
       <TreeView
         nodeCommons={{}}

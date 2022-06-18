@@ -1,7 +1,7 @@
 import cloneDeep from "lodash/cloneDeep";
 import { Tree, TreePath } from "./TreeView";
 
-export function setTenants(props: { tree: Tree, tenants: string[] }): Tree {
+export function setTenants(props: { tree: Tree; tenants: string[] }): Tree {
   let _tree = cloneDeep(props.tree);
   _tree.subForest = props.tenants.map((tenant) => ({
     rootLabel: { name: tenant, type: "tenant" },
@@ -11,9 +11,9 @@ export function setTenants(props: { tree: Tree, tenants: string[] }): Tree {
 }
 
 export function setTenantNamespaces(props: {
-  tree: Tree,
-  tenant: string,
-  namespaces: string[]
+  tree: Tree;
+  tenant: string;
+  namespaces: string[];
 }): Tree {
   let _tree = cloneDeep(props.tree);
   _tree.subForest = _tree.subForest.map((tenantNode) => {
@@ -33,11 +33,11 @@ export function setTenantNamespaces(props: {
 }
 
 export function setNamespaceTopics(props: {
-tree: Tree,
-  tenant: string,
-  namespace: string,
-  persistentTopics: string[],
-  nonPersistentTopics: string[]
+  tree: Tree;
+  tenant: string;
+  namespace: string;
+  persistentTopics: string[];
+  nonPersistentTopics: string[];
 }): Tree {
   let _tree = cloneDeep(props.tree);
   _tree.subForest = _tree.subForest.map((tenantNode) => {
@@ -52,21 +52,22 @@ tree: Tree,
           return namespaceNode;
         }
 
-        const persistentTopics: Tree[] = props.persistentTopics.map((topic) => ({
-            rootLabel: { name: topic, type: "persistent-topic"},
+        const persistentTopics: Tree[] = props.persistentTopics.map(
+          (topic) => ({
+            rootLabel: { name: topic, type: "persistent-topic" },
             subForest: [],
-          }));
-        const nonPersistentTopics: Tree[] = props.nonPersistentTopics.map((topic) => ({
+          })
+        );
+        const nonPersistentTopics: Tree[] = props.nonPersistentTopics.map(
+          (topic) => ({
             rootLabel: { name: topic, type: "non-persistent-topic" },
             subForest: [],
-          }));
+          })
+        );
 
         return {
           ...namespaceNode,
-          subForest: [
-            ...persistentTopics,
-            ...nonPersistentTopics
-          ],
+          subForest: [...persistentTopics, ...nonPersistentTopics],
         };
       }),
     };
@@ -75,7 +76,7 @@ tree: Tree,
 }
 
 type ExpandedPaths = TreePath[];
-export function expandAll(
+export function expandDeep(
   tree: Tree,
   treePath: TreePath,
   expandedPaths: ExpandedPaths
@@ -85,11 +86,7 @@ export function expandAll(
     treePath,
     ...tree.subForest
       .map((subTree) =>
-        expandAll(
-          subTree,
-          treePath.concat([subTree.rootLabel]),
-          expandedPaths
-        )
+        expandDeep(subTree, treePath.concat([subTree.rootLabel]), expandedPaths)
       )
       .flat(),
   ];
