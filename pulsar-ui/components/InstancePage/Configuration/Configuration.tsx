@@ -50,6 +50,7 @@ const Configuration: React.FC = () => {
           <SmallButton
             text={isShowDynamicOnly ? 'Show all' : 'Show dynamic only'}
             onClick={() => setIsShowDynamicOnly(!isShowDynamicOnly)}
+            type="primary"
           />
         </div>
       </div>
