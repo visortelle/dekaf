@@ -11,8 +11,6 @@
     "test:jest": "jest"
   },
   "dependencies": {
-    "@types/lodash": "^4.14.182",
-    "@types/uuid": "^8.3.4",
     "axios": "^0.27.2",
     "fetch-intercept": "^2.4.0",
     "fp-ts": "^2.12.1",
@@ -23,6 +21,7 @@
     "raw-loader": "^4.0.2",
     "react": "18.1.0",
     "react-dom": "18.1.0",
+    "react-highlight-words": "^0.18.0",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
     "react-toastify": "^8.1.0",
@@ -31,6 +30,9 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.182",
+    "@types/react-highlight-words": "^0.16.4",
+    "@types/uuid": "^8.3.4",
     "@testing-library/jest-dom": "^5.16.4",
     "@types/node": "17.0.36",
     "@types/react": "18.0.9",
