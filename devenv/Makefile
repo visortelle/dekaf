@@ -4,7 +4,7 @@
 dev: ## Start development.
 	docker ps -a -q | xargs -I {} docker container rm -f {}
 	docker volume ls -q | xargs -I {} docker volume rm {}
-	docker-compose up
+	docker-compose up -d
 
 .PHONY: help
 help:

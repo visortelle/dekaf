@@ -1,5 +1,8 @@
 .Button {
-  color: #fff;
+  border: none;
+  appearance: none;
+  padding: 0;
+
   display: inline-flex;
   flex: 0 1 auto;
   align-items: center;
