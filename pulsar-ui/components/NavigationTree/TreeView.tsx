@@ -66,7 +66,7 @@ function TreeView<NC>(props: TreeProps<NC>) {
   const tree = alterTree(props.tree, props.path);
   const visibility = getVisibility(tree, props.path);
 
-  return !visibility.tree ? null : (
+  return !visibility.tree ? <></> : (
     <div className={cssClasses.node} style={styles.node}>
       <div className={cssClasses.rootLabel} style={{ ...styles.rootLabel, ...(visibility.rootLabel ? {} : { display: 'none' }) }}>
         {rootLabel}
