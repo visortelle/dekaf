@@ -3,7 +3,7 @@ version: '3.1'
 services:
   pulsar:
     image: apachepulsar/pulsar:2.10.0
-    command: /entrypoint.sh
+    command: /entrypoint.sh big-tree
     restart: always
     ports:
       - 6650:6650

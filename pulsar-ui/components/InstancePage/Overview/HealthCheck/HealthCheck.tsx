@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './HealthCheck.module.css'
 import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR from 'swr';
