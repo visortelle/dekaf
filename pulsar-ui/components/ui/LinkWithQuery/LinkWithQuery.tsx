@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 
-const paramsToPreserve = ['q', 'nt'];
+const paramsToPreserve = ['q'];
 
 // Link preserving global search query and other global query params.
 const LinkWithQuery = (props: Parameters<typeof Link>[0]) => {
