@@ -5,8 +5,10 @@ import {
   useLocation,
   useRoutes,
   RouteObject,
-  matchPath
+  matchPath,
+  useNavigate
 } from "react-router-dom";
+import { Location } from 'react-router-dom';
 import Layout, { LayoutProps } from '../../ui/Layout/Layout';
 import InstancePage from '../../InstancePage/InstancePage';
 import TenantPage, { TenantPageView } from '../../TenantPage/TenantPage';
@@ -14,6 +16,7 @@ import NamespacePage, { NamespacePageView } from '../../NamespacePage/NamespaceP
 import TopicPage, { TopicPageView } from '../../TopicPage/TopicPage';
 import { routes } from '../../routes';
 import { TreeNode } from '../../NavigationTree/TreeView';
+import { QueryParamProvider } from 'use-query-params';
 
 type WithLayoutProps = { layout: Omit<LayoutProps, 'children'> };
 type WithLayout = (children: React.ReactElement, props: WithLayoutProps) => React.ReactElement;
@@ -28,7 +31,9 @@ const Router: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <Routes withLayout={withLayout} />
+      <QueryParamProvider ReactRouterRoute={RouteAdapter}>
+        <Routes withLayout={withLayout} />
+      </QueryParamProvider>
     </BrowserRouter>
   );
 }
@@ -36,9 +41,9 @@ const Router: React.FC = () => {
 const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => RouteObject[] } => {
   const getRoutes = ({ withLayout, withLayoutProps }: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => [
     /* Instance */
-    { path: routes.instance._.path, element: withLayout(<InstancePage view='overview'/>, withLayoutProps) },
-    { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view='configuration'/>, withLayoutProps) },
-    { path: routes.instance.brokerStats._.path, element: withLayout(<InstancePage view='broker-stats'/>, withLayoutProps) },
+    { path: routes.instance._.path, element: withLayout(<InstancePage view='overview' />, withLayoutProps) },
+    { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view='configuration' />, withLayoutProps) },
+    { path: routes.instance.brokerStats._.path, element: withLayout(<InstancePage view='broker-stats' />, withLayoutProps) },
 
     /* Topics */
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.path, element: withLayout(<RoutedTopicPage view='overview' />, withLayoutProps) },
@@ -101,5 +106,31 @@ const RoutedTopicPage = (props: { view: TopicPageView }) => {
   const { tenant, namespace, topic, topicType } = useParams();
   return <TopicPage tenant={tenant!} namespace={namespace!} topic={topic!} view={props.view} topicType={topicType as 'persistent' | 'non-persistent'} />
 }
+
+/**
+ * XXX - Fix for use-query-params
+ * https://github.com/pbeshai/use-query-params/issues/108#issuecomment-785209454
+ * This is the main thing you need to use to adapt the react-router v6
+ * API to what use-query-params expects.
+ *
+ * Pass this as the `ReactRouterRoute` prop to QueryParamProvider.
+ */
+const RouteAdapter = ({ children }: any) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const adaptedHistory = React.useMemo(
+    () => ({
+      replace(location: Location) {
+        navigate(location, { replace: true, state: location.state });
+      },
+      push(location: Location) {
+        navigate(location, { replace: false, state: location.state });
+      },
+    }),
+    [navigate]
+  );
+  return children({ history: adaptedHistory, location });
+};
 
 export default Router;

@@ -12,8 +12,8 @@ export const routes = {
     },
     brokerStats: {
       _: {
-        path: "/instance/broker-stats",
-        get: () => `/instance/broker-stats`,
+        path: "/instance/metrics",
+        get: () => `/instance/metrics`,
       },
     },
   },
