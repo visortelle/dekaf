@@ -3,9 +3,7 @@ import InternalConfig from './InternalConfig/InternalConfig';
 import HealthCheck from './HealthCheck/HealthCheck';
 import s from './Overview.module.css'
 
-export type OverviewProps = {};
-
-const Overview: React.FC<OverviewProps> = (props) => {
+const Overview: React.FC = () => {
   return (
     <div className={s.Overview}>
       <div className={s.Section}>
