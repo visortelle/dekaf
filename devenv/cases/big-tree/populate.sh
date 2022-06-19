@@ -3,7 +3,7 @@
 api_url="http://localhost:8080/admin/v2"
 
 tenants_count=100
-namespaces_count=10
+namespaces_count=100
 topics_count=50
 
 for te in $(seq $tenants_count); do

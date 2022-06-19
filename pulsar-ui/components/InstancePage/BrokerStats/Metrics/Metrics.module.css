@@ -45,18 +45,18 @@
   border-right: none;
 }
 
-.Row:first-child .Cell {
+.Table tr:first-child .Cell {
   border-top: none;
 }
 
-.Row:last-child .Cell {
+.Table tr:last-child .Cell {
   border-bottom: none;
 }
 
-.Row .Cell:first-child {
+.Table tr .Cell:first-child {
   border-left: none;
 }
 
-.Row .Cell:last-child {
+.Table tr .Cell:last-child {
   border-right: none;
 }

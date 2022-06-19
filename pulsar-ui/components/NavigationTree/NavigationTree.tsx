@@ -26,6 +26,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
+  const [isSelectedNodePathHasBeenExpanded, setIsSelectedNodePathHasBeenExpanded] = useState(false); // expand it once.
   const [forceReloadKey, setForceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
@@ -59,7 +60,10 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }, [filterQuery]);
 
   useEffect(() => {
-    setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
+    if (!isSelectedNodePathHasBeenExpanded) {
+      setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
+      setIsSelectedNodePathHasBeenExpanded(true);
+    }
   }, [props.selectedNodePath]);
 
   const treeToPlainTreeProps: TreeToPlainTreeProps = {
@@ -118,6 +122,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         expandedPaths.filter(p => !treePath.arePathsEqual(p, path)) :
         expandedPaths.concat([path])
     );
+
     const isExpanded = treePath.isPathExpanded(expandedPaths, path);
 
     if (node.type === 'instance') {
