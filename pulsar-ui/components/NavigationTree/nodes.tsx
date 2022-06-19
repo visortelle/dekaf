@@ -35,14 +35,15 @@ export type PulsarTenantProps = {
   leftIndent: string;
   onDoubleClick: () => void;
   isActive: boolean;
+  isFetchData: boolean;
 }
 export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
 
   const { data: namespaces, error: namespacesError } = useSWR(
-    swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }),
-    async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]),
+    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }) : null,
+    props.isFetchData ? async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]) : null,
     swrConfiguration
   );
 
@@ -76,18 +77,19 @@ type PulsarNamespaceProps = {
   leftIndent: string;
   onDoubleClick: () => void;
   isActive: boolean;
+  isFetchData: boolean;
 }
 export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
 
   const { data: topics, error: topicsError } = useSWR(
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: props.tenant, namespace: props.namespace }),
-    async () => {
+    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: props.tenant, namespace: props.namespace }) : null,
+    props.isFetchData ? async () => {
       const persistentTopics = (await adminClient.persistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName);
       const nonPersistentTopics = (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName);
       return { persistent: persistentTopics, nonPersistent: nonPersistentTopics };
-    },
+    } : null,
     swrConfiguration
   );
 
@@ -117,6 +119,7 @@ export type PulsarTopicProps = {
   leftIndent: string;
   onDoubleClick: () => void;
   isActive: boolean;
+  isFetchData: boolean;
 }
 export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
   return (
