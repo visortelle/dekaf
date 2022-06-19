@@ -31,7 +31,7 @@ const Configuration: React.FC = () => {
     notifyError(`Unable to get dynamic configuration parameters list. ${availableDynamicConfigKeysError}`);
   }
 
-  let allKeys = Array.from(new Set([...Object.keys(dynamicConfig), ...Object.keys(runtimeConfig)])).sort((a, b) => a.localeCompare(b));
+  let allKeys = Array.from(new Set([...Object.keys(dynamicConfig), ...Object.keys(runtimeConfig)])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
   if (paramFilter !== '') {
     allKeys = allKeys.filter(key => key.toLowerCase().includes(paramFilter.toLowerCase()));
   }
@@ -44,7 +44,7 @@ const Configuration: React.FC = () => {
       <div className={s.Toolbar}>
         <div style={{ width: '480rem' }}>
           <strong className={sf.FormLabel}>Filter by param</strong>
-          <Input value={paramFilter} onChange={v => setParamFilter(v)} placeholder="managedLedger" focusOnMount={true} clearable={true}/>
+          <Input value={paramFilter} onChange={v => setParamFilter(v)} placeholder="managedLedger" focusOnMount={true} clearable={true} />
         </div>
         <div style={{ marginLeft: 'auto', marginTop: 'auto' }}>
           <SmallButton

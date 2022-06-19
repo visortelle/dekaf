@@ -40,7 +40,10 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }
 
   useEffect(() => {
-    setTree((tree) => setTenants({ tree, tenants: tenants || [] }));
+    setTree((tree) => setTenants({
+      tree,
+      tenants: tenants ? tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) : []
+    }));
   }, [tenants]);
 
   useEffect(() => {
@@ -221,7 +224,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   return (
     <div className={s.NavigationTree} ref={scrollParentRef}>
       <div className={s.FilterQueryInput}>
-        <Input placeholder="public/functions/metadata" value={filterQuery} onChange={v => setFilterQuery(v)} clearable={true} focusOnMount={true} />
+        <Input placeholder="tenant/namespace/topic" value={filterQuery} onChange={v => setFilterQuery(v)} clearable={true} focusOnMount={true} />
       </div>
       <div className={s.TreeControlButtons}>
         <div>
