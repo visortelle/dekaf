@@ -40,14 +40,20 @@ export type PulsarTenantProps = {
 export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
+  // if (props.isFetchData) {
+  //   console.log('PulsarTenant', props.tenant, props.isFetchData);
+  // }
 
-  const { data: namespaces, error: namespacesError } = useSWR(
+  const { data: namespaces, error: namespacesError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }) : null,
-    props.isFetchData ? async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]) : null,
+    async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]),
     swrConfiguration
   );
 
-  useEffect(() => props.onNamespaces(namespaces || []), [namespaces, props.forceReloadKey]);
+  useEffect(
+    () => props.onNamespaces(namespaces ? namespaces.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) : []),
+    [namespaces, props.forceReloadKey]
+  );
 
   if (namespacesError) {
     notifyError(`Unable to fetch namespaces. ${namespacesError.toString()}`);
@@ -83,17 +89,23 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
 
-  const { data: topics, error: topicsError } = useSWR(
+  const { data: topics, error: topicsError } = useSWR<{ persistent: string[], nonPersistent: string[] }>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: props.tenant, namespace: props.namespace }) : null,
-    props.isFetchData ? async () => {
+    async () => {
       const persistentTopics = (await adminClient.persistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName);
       const nonPersistentTopics = (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName);
       return { persistent: persistentTopics, nonPersistent: nonPersistentTopics };
-    } : null,
+    },
     swrConfiguration
   );
 
-  useEffect(() => props.onTopics(topics || { persistent: [], nonPersistent: [] }), [topics, props.forceReloadKey]);
+  useEffect(
+    () => props.onTopics(topics ? {
+      persistent: topics.persistent.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
+      nonPersistent: topics.nonPersistent.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+    } : { persistent: [], nonPersistent: [] }),
+    [topics, props.forceReloadKey]
+  );
 
   if (topicsError) {
     notifyError(`Unable to fetch namespace topics. ${topicsError.toString()}`);

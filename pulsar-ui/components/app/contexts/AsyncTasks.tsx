@@ -17,19 +17,19 @@ const Context = React.createContext<Value>(defaultValue);
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [value, setValue] = useState<Value>(defaultValue);
 
-  const startTask = useCallback((id: string, comment?: string) => {
-    setValue({
+  const startTask = (id: string, comment?: string) => {
+    setValue((value) => ({
       ...value,
       tasks: { ...value.tasks, [id]: comment }
-    });
-  }, [value]);
+    }));
+  };
 
-  const finishTask = useCallback((id: string) => {
+  const finishTask = (id: string) => {
     let tasks = { ...value.tasks };
     delete tasks[id];
 
-    setValue({ ...value, tasks });
-  }, [value]);
+    setValue((value) => ({ ...value, tasks }));
+  };
 
   return (
     <>

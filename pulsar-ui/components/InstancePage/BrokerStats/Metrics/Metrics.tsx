@@ -10,6 +10,7 @@ import Input from '../../../ui/Input/Input';
 import Highlighter from "react-highlight-words";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
+import { TableVirtuoso } from 'react-virtuoso';
 
 const filterKvsAndOp = "&&";
 const filterKvSep = "=";
