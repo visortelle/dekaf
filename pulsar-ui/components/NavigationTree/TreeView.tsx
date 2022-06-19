@@ -33,64 +33,55 @@ export const treePath = {
   }
 }
 
-export type TreeProps<NC> = {
-  tree: Tree,
-  path: TreePath,
-  renderNode: RenderNode<NC>,
-  getPathPart: (tree: Tree) => TreeNode,
-  nodeCommons: NC
+type PlainTreeNode = {
+  type: TreeNodeType;
+  name: string;
+  path: TreePath;
 }
 
-export type RenderNode<NC> = (node: TreeNode, path: TreePath, ctx: NC) => ({
+export type TreeToPlainTreeProps = {
+  tree: Tree;
+  path: TreePath;
+  getPathPart: (tree: Tree) => TreeNode;
+  plainTree: PlainTreeNode[];
+  rootLabel: TreeNode;
   getVisibility: (tree: Tree, path: TreePath) => {
     tree: boolean,
     rootLabel: boolean,
     subForest: boolean
   },
   alterTree: (tree: Tree, path: TreePath) => Tree,
-  rootLabel: React.ReactNode,
-  cssClasses: {
-    node: string,
-    rootLabel: string,
-    subForest: string
-  },
-  styles: {
-    node: React.CSSProperties,
-    rootLabel: React.CSSProperties,
-    subForest: React.CSSProperties
-  }
-});
-
-function TreeView<NC>(props: TreeProps<NC>) {
-  const { alterTree, getVisibility, rootLabel, cssClasses, styles } = props.renderNode(props.tree.rootLabel, props.path, props.nodeCommons);
+}
+function treeToPlainTree(props: TreeToPlainTreeProps): PlainTreeNode[] {
+  const { alterTree, getVisibility } = props;
   const tree = alterTree(props.tree, props.path);
   const visibility = getVisibility(tree, props.path);
 
-  return !visibility.tree ? <></> : (
-    <div className={cssClasses.node} style={styles.node}>
-      {visibility.rootLabel && (
-        <div className={cssClasses.rootLabel} style={{ ...styles.rootLabel }}>
-          {rootLabel}
-        </div>
-      )}
-      {visibility.subForest && tree.subForest.length > 0 && (
-        <div className={cssClasses.subForest} style={{ ...styles.subForest }}>
-          {tree.subForest.map(tree => {
-            const pathPart = props.getPathPart(tree);
-            const path = props.path.concat([pathPart]);
-            return (
-              <TreeView
-                key={`${tree.rootLabel.type}-${tree.rootLabel.name}`}
-                {...props}
-                tree={tree}
-                path={path}
-              />
-            )
-          })}
-        </div>
-      )}
-    </div>
-  );
+  if (!visibility.tree) {
+    return props.plainTree;
+  }
+
+  const rootLabelNode: PlainTreeNode | undefined = visibility.rootLabel ? {
+    type: props.rootLabel.type,
+    name: props.rootLabel.name,
+    path: props.path
+  } : undefined;
+
+  const subForestNodes: PlainTreeNode[] = tree.subForest.map<PlainTreeNode[]>((tree) => {
+    const pathPart = props.getPathPart(tree);
+    const path = props.path.concat([pathPart]);
+
+    const t = treeToPlainTree({
+      ...props,
+      tree,
+      path,
+      rootLabel: tree.rootLabel
+    });
+
+    return t;
+  }).flat();
+
+  return [rootLabelNode].concat(subForestNodes).filter(node => node !== undefined) as PlainTreeNode[];
 }
 
-export default TreeView;
+export default treeToPlainTree;
