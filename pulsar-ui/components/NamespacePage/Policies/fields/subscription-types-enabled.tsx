@@ -41,11 +41,11 @@ const SubscriptionTypesEnabledInput: React.FC<SubscriptionTypesEnabledProps> = (
         />
       </div>
       {subscriptionTypesEnabled !== 'all' && (() => {
-        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled.customList.some(ste => ste === t)).map(c => ({ value: c, title: c })).sort((a, b) => a.title.localeCompare(b.title));
+        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled.customList.some(ste => ste === t)).map(c => ({ value: c, title: c })).sort((a, b) => a.title.localeCompare(b.title, 'en', { numeric: true }));
         return (
           <div className={sf.FormItem}>
             <ListInput<SubscriptionType>
-              value={subscriptionTypesEnabled.customList.sort((a, b) => a.localeCompare(b))}
+              value={subscriptionTypesEnabled.customList.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))}
               getId={(v) => v}
               renderItem={(v) => <div>{v}</div>}
               editor={(subscriptionTypes.length === subscriptionTypesEnabled.customList.length) ? undefined : {
