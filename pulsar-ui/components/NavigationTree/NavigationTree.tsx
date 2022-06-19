@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
-import treeToPlainTree, { Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
+import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';
 import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
@@ -12,6 +12,7 @@ import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './no
 import { swrKeys } from '../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import stringify from 'safe-stable-stringify';
+import { Virtuoso } from 'react-virtuoso';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -102,6 +103,121 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }
 
   const plainTree = treeToPlainTree(treeToPlainTreeProps);
+
+  const renderTreeItem = (node: PlainTreeNode) => {
+    const { path } = node;
+    let nodeContent: React.ReactNode = null;
+    let nodeIcon = null;
+    const leftIndent = node.type === 'instance' ? '5ch' : `${((path.length + 1) * 3 - 1)}ch`;
+
+    const toggleNodeExpanded = () => setExpandedPaths(
+      (expandedPaths) => treePath.hasPath(expandedPaths, path) ?
+        expandedPaths.filter(p => !treePath.arePathsEqual(p, path)) :
+        expandedPaths.concat([path])
+    );
+    const isExpanded = treePath.isPathExpanded(expandedPaths, path);
+
+    if (node.type === 'instance') {
+      const isActive = props.selectedNodePath.length === 0;
+      nodeContent = (
+        <PulsarInstance
+          forceReloadKey={forceReloadKey}
+          leftIndent={leftIndent}
+          onDoubleClick={toggleNodeExpanded}
+          isActive={isActive}
+        />
+      );
+      nodeIcon = <InstanceIcon onClick={toggleNodeExpanded} isExpandable={false} isExpanded={isExpanded} />;
+    } else if (node.type === 'tenant') {
+      const tenant = treePath.getTenant(path)!;
+
+      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) && treePath.getNamespace(props.selectedNodePath) === undefined;
+
+      nodeContent = (
+        <PulsarTenant
+          forceReloadKey={forceReloadKey}
+          tenant={node.name}
+          onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant: tenant.name, namespaces }))}
+          leftIndent={leftIndent}
+          onDoubleClick={toggleNodeExpanded}
+          isActive={isActive}
+          isFetchData={isExpanded || treePath.getTenant(filterPath)?.name === node.name}
+        />
+      );
+      nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
+
+    } else if (node.type === 'namespace') {
+      const tenant = treePath.getTenant(path)!;
+      const namespace = treePath.getNamespace(path)!;
+
+      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
+        treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) && treePath.getTopic(props.selectedNodePath) === undefined;
+
+      nodeContent = (
+        <PulsarNamespace
+          forceReloadKey={forceReloadKey}
+          tenant={tenant.name}
+          namespace={namespace.name}
+          onTopics={(topics) => setTree((tree) => setNamespaceTopics({ tree, tenant: tenant.name, namespace: namespace.name, persistentTopics: topics.persistent, nonPersistentTopics: topics.nonPersistent }))}
+          leftIndent={leftIndent}
+          onDoubleClick={toggleNodeExpanded}
+          isActive={isActive}
+          isFetchData={isExpanded || treePath.getNamespace(filterPath)?.name === node.name}
+        />
+      );
+      nodeIcon = <NamespaceIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
+    } else if (node.type === 'persistent-topic' || node.type === 'non-persistent-topic') {
+      const tenant = treePath.getTenant(path)!;
+      const namespace = treePath.getNamespace(path)!;
+
+      const topicName = node.name;
+      const topicType = node.type === 'persistent-topic' ? 'persistent' : 'non-persistent';
+
+      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
+        treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) &&
+        treePath.areNodesEqual(
+          treePath.getTopic(props.selectedNodePath)!, { name: topicName, type: topicType === 'persistent' ? 'persistent-topic' : 'non-persistent-topic' }
+        );
+
+      nodeContent = (
+        <PulsarTopic
+          tenant={tenant.name}
+          namespace={namespace.name}
+          topic={topicName}
+          leftIndent={leftIndent}
+          onDoubleClick={toggleNodeExpanded}
+          topicType={topicType}
+          isActive={isActive}
+          isFetchData={isExpanded || treePath.getTopic(filterPath)?.name === node.name}
+        />
+      );
+      nodeIcon = (
+        <TopicIcon
+          isExpandable={false}
+          isExpanded={false}
+          onClick={() => undefined}
+          topicType={topicType}
+        />
+      )
+    }
+
+    const handleNodeClick = async () => {
+      switch (node.type) {
+        case 'instance': await mutate(swrKeys.pulsar.tenants._()); break;
+        case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
+        case 'namespace': await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name })); break;
+      }
+    }
+
+    return <div key={stringify(node)} className={s.Node} onClick={handleNodeClick}>
+      <div className={s.NodeContent}>
+        <span>&nbsp;</span>
+        <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
+        <span className={s.NodeTextContent}>{nodeContent}</span>
+      </div>
+    </div>
+  }
+
   return (
     <div className={s.NavigationTree} ref={scrollParentRef}>
       <div className={s.FilterQueryInput}>
@@ -113,122 +229,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         </div>
       </div>
 
-      {plainTree.map((node) => {
-        const { path } = node;
-        let nodeContent: React.ReactNode = null;
-        let nodeIcon = null;
-        let childrenCount = null;
-        const leftIndent = node.type === 'instance' ? '5ch' : `${((path.length + 1) * 3 - 1)}ch`;
-
-        const toggleNodeExpanded = () => setExpandedPaths(
-          (expandedPaths) => treePath.hasPath(expandedPaths, path) ?
-            expandedPaths.filter(p => !treePath.arePathsEqual(p, path)) :
-            expandedPaths.concat([path])
-        );
-        const isExpanded = treePath.isPathExpanded(expandedPaths, path);
-
-        if (node.type === 'instance') {
-          const isActive = props.selectedNodePath.length === 0;
-          nodeContent = (
-            <PulsarInstance
-              forceReloadKey={forceReloadKey}
-              leftIndent={leftIndent}
-              onDoubleClick={toggleNodeExpanded}
-              isActive={isActive}
-            />
-          );
-          nodeIcon = <InstanceIcon onClick={toggleNodeExpanded} isExpandable={false} isExpanded={isExpanded} />;
-          childrenCount = tenants?.length;
-
-        } else if (node.type === 'tenant') {
-          const tenant = treePath.getTenant(path)!;
-
-          const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) && treePath.getNamespace(props.selectedNodePath) === undefined;
-
-          nodeContent = (
-            <PulsarTenant
-              forceReloadKey={forceReloadKey}
-              tenant={node.name}
-              onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant: tenant.name, namespaces }))}
-              leftIndent={leftIndent}
-              onDoubleClick={toggleNodeExpanded}
-              isActive={isActive}
-            />
-          );
-          nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
-          childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenant.name)?.subForest.length;
-
-        } else if (node.type === 'namespace') {
-          const tenant = treePath.getTenant(path)!;
-          const namespace = treePath.getNamespace(path)!;
-
-          const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
-            treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) && treePath.getTopic(props.selectedNodePath) === undefined;
-
-          nodeContent = (
-            <PulsarNamespace
-              forceReloadKey={forceReloadKey}
-              tenant={tenant.name}
-              namespace={namespace.name}
-              onTopics={(topics) => setTree((tree) => setNamespaceTopics({ tree, tenant: tenant.name, namespace: namespace.name, persistentTopics: topics.persistent, nonPersistentTopics: topics.nonPersistent }))}
-              leftIndent={leftIndent}
-              onDoubleClick={toggleNodeExpanded}
-              isActive={isActive}
-            />
-          );
-          nodeIcon = <NamespaceIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
-          childrenCount = tree.subForest.find((ch) => ch.rootLabel.name === tenant.name)?.subForest.find((ch) => ch.rootLabel.name === namespace.name)?.subForest.length;
-        } else if (node.type === 'persistent-topic' || node.type === 'non-persistent-topic') {
-          const tenant = treePath.getTenant(path)!;
-          const namespace = treePath.getNamespace(path)!;
-
-          const topicName = node.name;
-          const topicType = node.type === 'persistent-topic' ? 'persistent' : 'non-persistent';
-
-          const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
-            treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) &&
-            treePath.areNodesEqual(
-              treePath.getTopic(props.selectedNodePath)!, { name: topicName, type: topicType === 'persistent' ? 'persistent-topic' : 'non-persistent-topic' }
-            );
-
-          nodeContent = (
-            <PulsarTopic
-              tenant={tenant.name}
-              namespace={namespace.name}
-              topic={topicName}
-              leftIndent={leftIndent}
-              onDoubleClick={toggleNodeExpanded}
-              topicType={topicType}
-              isActive={isActive}
-            />
-          );
-          nodeIcon = (
-            <TopicIcon
-              isExpandable={false}
-              isExpanded={false}
-              onClick={() => undefined}
-              topicType={topicType}
-            />
-          )
-        }
-
-        const handleNodeClick = async () => {
-          switch (node.type) {
-            case 'instance': await mutate(swrKeys.pulsar.tenants._()); break;
-            case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
-            case 'namespace': await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name })); break;
-          }
-        }
-
-        return <div key={stringify(node)} className={s.Node} onClick={handleNodeClick}>
-          <div className={s.NodeContent}>
-            <span>&nbsp;</span>
-            <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
-            <span className={s.NodeTextContent}>{nodeContent}</span>
-          </div>
-          {childrenCount !== null && <div className={s.NodeChildrenCount}>{childrenCount}</div>}
-        </div>
-      })}
+      <Virtuoso<PlainTreeNode>
+        itemContent={(_, item) => renderTreeItem(item)}
+        data={plainTree}
+        customScrollParent={scrollParentRef.current || undefined}
+        defaultItemHeight={40}
+        fixedItemHeight={40}
+        overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
+      />
     </div>
   );
 }

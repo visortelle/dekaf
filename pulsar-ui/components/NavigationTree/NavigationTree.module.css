@@ -25,17 +25,6 @@
   align-items: center;
 }
 
-.NodeChildrenCount {
-  position: absolute;
-  right: 12rem;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-self: center;
-  z-index: 10;
-}
-
 .NodeTextContent {
   white-space: nowrap;
   overflow: hidden;

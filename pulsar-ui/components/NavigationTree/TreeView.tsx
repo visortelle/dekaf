@@ -1,5 +1,4 @@
 import { isEqual, uniqWith } from 'lodash';
-import React from 'react';
 
 export type Tree = {
   subForest: Tree[];
@@ -33,7 +32,7 @@ export const treePath = {
   }
 }
 
-type PlainTreeNode = {
+export type PlainTreeNode = {
   type: TreeNodeType;
   name: string;
   path: TreePath;
