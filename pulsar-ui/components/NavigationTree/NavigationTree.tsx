@@ -69,6 +69,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     if (!isBeenScrolledToSelectedNodePath) {
       setScrollToPath({ path: props.selectedNodePath, cursor: 0 });
       setExpandedPaths(treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
+      setFilterQuery(props.selectedNodePath.map(p => p.name).join(filterQuerySep) + (props.selectedNodePath.length > 0 ? '/' : ''));
     }
   }, [props.selectedNodePath])
 
@@ -264,33 +265,42 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const isLoading = scrollToPath.path.length !== 0 && scrollToPath.cursor <= scrollToPath.path.length;
 
   return (
-    <>
-      {isLoading && <div>Loading ...</div>}
-      <div
-        ref={scrollParentRef}
-        className={s.NavigationTree}
-        style={{ opacity: isLoading ? 0 : 1 }}
-      >
-        <div className={s.FilterQueryInput}>
-          <Input placeholder="tenant/namespace/topic" value={filterQuery} onChange={v => setFilterQuery(v)} clearable={true} focusOnMount={true} />
-        </div>
-        <div className={s.TreeControlButtons}>
-          <div>
-            <SmallButton text='Collapse all' onClick={() => setExpandedPaths([])} type='primary' />
-          </div>
-        </div>
-
-        <Virtuoso<PlainTreeNode>
-          ref={virtuosoRef}
-          itemContent={(_, item) => renderTreeItem(item)}
-          data={plainTree}
-          customScrollParent={scrollParentRef.current || undefined}
-          defaultItemHeight={40}
-          fixedItemHeight={40}
-          overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
+    <div className={s.NavigationTree}>
+      <div className={s.FilterQueryInput}>
+        <Input
+          placeholder="tenant/namespace/topic"
+          value={filterQuery}
+          onChange={v => setFilterQuery(v)}
+          clearable={true}
+          focusOnMount={true}
         />
       </div>
-    </>
+      <div className={s.TreeControlButtons}>
+        <div>
+          <SmallButton text='Collapse all' onClick={() => setExpandedPaths([])} type='primary' />
+        </div>
+      </div>
+
+      <div className={s.TreeContainer}>
+        {isLoading && <div className={s.Loading}>Loading ...</div>}
+        <div
+          ref={scrollParentRef}
+          className={s.TreeScrollParent}
+          style={{ opacity: isLoading ? 0 : 1 }}
+        >
+          <Virtuoso<PlainTreeNode>
+            ref={virtuosoRef}
+            itemContent={(_, item) => renderTreeItem(item)}
+            data={plainTree}
+            customScrollParent={scrollParentRef.current || undefined}
+            defaultItemHeight={40}
+            fixedItemHeight={40}
+            overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
+          />
+        </div>
+      </div>
+
+    </div>
   );
 }
 
