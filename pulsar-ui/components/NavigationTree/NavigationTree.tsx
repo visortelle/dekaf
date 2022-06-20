@@ -296,12 +296,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       </div>
 
       <div className={s.TreeContainer}>
-        {isLoading && <div className={s.Loading}>Loading ...</div>}
+        {isLoading && <div className={s.Loading}>Loading available resources... </div>}
         {isTreeInStuckState && (
           <div className={s.TreeInStuckState}>
             <span>Tree stuck. Please decide:</span>
             <SmallButton
-              text="Scroll to the selected node"
+              text="Scroll to the selected resource"
               onClick={() => setFilterQuery('')}
               type='primary'
             />
