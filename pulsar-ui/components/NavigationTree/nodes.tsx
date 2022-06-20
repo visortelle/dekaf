@@ -40,9 +40,6 @@ export type PulsarTenantProps = {
 export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
-  // if (props.isFetchData) {
-  //   console.log('PulsarTenant', props.tenant, props.isFetchData);
-  // }
 
   const { data: namespaces, error: namespacesError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }) : null,
