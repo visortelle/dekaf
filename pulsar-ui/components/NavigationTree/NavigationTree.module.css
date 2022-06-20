@@ -2,7 +2,6 @@
   background-color: #fff;
   height: 100%;
   font-size: 14rem;
-  padding-bottom: 24rem;
   border-right: 1rem solid #ddd;
   display: flex;
   flex-direction: column;
@@ -12,7 +11,7 @@
   padding: 8rem 12rem;
   background-color: #fff;
   position: relative;
-  animation: fade-in 0.4s ease-in-out;
+  animation: fade-in 0.25s ease-in-out;
 }
 
 .Node:hover {
@@ -35,7 +34,7 @@
   align-items: center;
   justify-self: center;
   z-index: 10;
-  animation: fade-in 0.4s ease-in-out;
+  animation: fade-in 0.25s ease-in-out;
 }
 
 .NodeTextContent {
@@ -97,14 +96,36 @@
 .TreeScrollParent {
   flex: 1;
   overflow: auto;
+  padding-bottom: 24rem;
 }
 
-.Loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 8rem 12rem;
-  animation: fade-in 0.4s ease-in-out;
+.TreeInStuckState {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  width: 100%;
+  border-radius: 8rem;
+  flex: 0 1 auto;
+  margin: 12rem;
+  margin-bottom: auto;
+  padding: 12rem;
+}
+
+.TreeInStuckState > * {
+  margin-bottom: 12rem;
+}
+
+.Loading,
+.NothingToShow {
+  margin: 12rem;
+  padding: 12rem;
+  background-color: #f5f5f5;
+  border-radius: 8rem;
+  width: 100%;
+  margin-bottom: auto;
+  flex: 0 1 auto;
 }
 
 @keyframes fade-in {

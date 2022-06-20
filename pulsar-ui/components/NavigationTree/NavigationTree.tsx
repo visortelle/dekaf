@@ -275,7 +275,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     </div>
   }
 
-  const isLoading = scrollToPath.path.length !== 0 && scrollToPath.cursor <= scrollToPath.path.length;
+  const isTreeInStuckState = !isBeenScrolledToSelectedNodePath && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
+  const isLoading = !isTreeInStuckState && scrollToPath.path.length !== 0 && scrollToPath.cursor <= scrollToPath.path.length;
 
   return (
     <div className={s.NavigationTree}>
@@ -296,21 +297,43 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
       <div className={s.TreeContainer}>
         {isLoading && <div className={s.Loading}>Loading ...</div>}
-        <div
-          ref={scrollParentRef}
-          className={s.TreeScrollParent}
-          style={{ opacity: isLoading ? 0 : 1 }}
-        >
-          <Virtuoso<PlainTreeNode>
-            ref={virtuosoRef}
-            itemContent={(_, item) => renderTreeItem(item)}
-            data={plainTree}
-            customScrollParent={scrollParentRef.current || undefined}
-            defaultItemHeight={40}
-            fixedItemHeight={40}
-            overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
-          />
-        </div>
+        {isTreeInStuckState && (
+          <div className={s.TreeInStuckState}>
+            <span>Tree stuck. Please decide:</span>
+            <SmallButton
+              text="Scroll to the selected node"
+              onClick={() => setFilterQuery('')}
+              type='primary'
+            />
+            <SmallButton
+              text="Apply filter"
+              onClick={() => setScrollToPath({ path: [], cursor: 0 })}
+              type='primary'
+            />
+          </div>
+        )}
+        {!isTreeInStuckState && plainTree.length === 0 && (
+          <div className={s.NothingToShow}>
+            <span>No items found. <br />Try another filter query.</span>
+          </div>
+        )}
+        {!isTreeInStuckState && plainTree.length !== 0 && (
+          <div
+            ref={scrollParentRef}
+            className={s.TreeScrollParent}
+            style={{ opacity: isLoading ? 0 : 1 }}
+          >
+            <Virtuoso<PlainTreeNode>
+              ref={virtuosoRef}
+              itemContent={(_, item) => renderTreeItem(item)}
+              data={plainTree}
+              customScrollParent={scrollParentRef.current || undefined}
+              defaultItemHeight={40}
+              fixedItemHeight={40}
+              overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
+            />
+          </div>
+        )}
       </div>
 
     </div>
