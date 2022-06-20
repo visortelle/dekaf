@@ -12,7 +12,7 @@ import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './no
 import { swrKeys } from '../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import stringify from 'safe-stable-stringify';
-import { Virtuoso } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -22,11 +22,14 @@ const filterQuerySep = '/';
 
 const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const scrollParentRef = useRef(null);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
   const [tree, setTree] = useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
+  const [plainTree, setPlainTree] = useState<PlainTreeNode[]>([]);
   const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
-  const [isSelectedNodePathHasBeenExpanded, setIsSelectedNodePathHasBeenExpanded] = useState(false); // expand it once.
+  const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number }>({ path: [], cursor: 0 });
+  const [isBeenScrolledToSelectedNodePath, setIsBeenScrolledToSelectedNodePath] = useState(false);
   const [forceReloadKey, setForceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
@@ -59,57 +62,87 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     setFilterPath(() => fp);
   }, [filterQuery]);
 
+  // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
-    if (!isSelectedNodePathHasBeenExpanded) {
-      setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
-      setIsSelectedNodePathHasBeenExpanded(true);
+    if (!isBeenScrolledToSelectedNodePath) {
+      setScrollToPath({ path: props.selectedNodePath, cursor: 0 });
+      setExpandedPaths(treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
     }
-  }, [props.selectedNodePath]);
+  }, [props.selectedNodePath])
 
-  const treeToPlainTreeProps: TreeToPlainTreeProps = {
-    tree: tree,
-    plainTree: [],
-    path: [],
-    getPathPart: (node) => ({ type: node.rootLabel.type, name: node.rootLabel.name }),
-    rootLabel: { name: 'Pulsar Instance', type: 'instance' },
-    alterTree: (tree) => tree,
-    getVisibility: (tree, path) => ({
-      tree: true,
-      rootLabel: (() => {
-        if (tree.rootLabel.type === 'instance') {
-          return filterQuery.length === 0;
+  // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
+  useEffect(() => {
+    if (isBeenScrolledToSelectedNodePath) {
+      return;
+    }
+
+    if (scrollToPath.path.length === 0) {
+      return;
+    }
+
+    if (scrollToPath.cursor < scrollToPath.path.length) {
+      const pathToFind = scrollToPath.path.slice(0, scrollToPath.cursor + 1);
+      const nodeIndex = plainTree.findIndex(p => treePath.arePathsEqual(p.path, pathToFind));
+      if (nodeIndex !== -1) {
+        setTimeout(() => virtuosoRef.current?.scrollToIndex(nodeIndex));
+
+        const nextCursor = scrollToPath.cursor + 1;
+        if (nextCursor === scrollToPath.path.length) {
+          setScrollToPath({ path: [], cursor: 0 });
+          setIsBeenScrolledToSelectedNodePath(true);
+          return
         }
 
-        if (filterQuery.length !== 0) {
-          if (filterQuery.includes(filterQuerySep)) {
-            const a = path.every((part, i) => {
-              return i === filterPath.length - 1 ? part.name.includes(filterPath[filterPath.length - 1].name) : part.name === filterPath[i]?.name;
-            });
+        setScrollToPath((scrollToPath) => ({ ...scrollToPath, cursor: nextCursor }));
+      }
+    }
+  }, [plainTree, scrollToPath, isBeenScrolledToSelectedNodePath]);
 
-            const b = path.length === filterPath.length && filterPath[filterPath.length - 1]?.name === '' && filterPath[filterPath.length - 2]?.name === path[path.length - 2]?.name;
-            return a || b;
+  useEffect(() => {
+    const treeToPlainTreeProps: TreeToPlainTreeProps = {
+      tree,
+      plainTree: [],
+      path: [],
+      getPathPart: (node) => ({ type: node.rootLabel.type, name: node.rootLabel.name }),
+      rootLabel: { name: 'Pulsar Instance', type: 'instance' },
+      alterTree: (tree) => tree,
+      getVisibility: (tree, path) => ({
+        tree: true,
+        rootLabel: (() => {
+          if (tree.rootLabel.type === 'instance') {
+            return filterQuery.length === 0;
           }
 
-          return tree.rootLabel.name.includes(filterQuery)
-        }
+          if (filterQuery.length !== 0) {
+            if (filterQuery.includes(filterQuerySep)) {
+              const a = path.every((part, i) => {
+                return i === filterPath.length - 1 ? part.name.includes(filterPath[filterPath.length - 1].name) : part.name === filterPath[i]?.name;
+              });
 
-        return path.length === 1 ? true : treePath.hasPath(expandedPaths, path.slice(0, path.length - 1));
-      })(),
-      subForest: (() => {
-        if (path.length === 0) {
-          return true;
-        }
+              const b = path.length === filterPath.length && filterPath[filterPath.length - 1]?.name === '' && filterPath[filterPath.length - 2]?.name === path[path.length - 2]?.name;
+              return a || b;
+            }
 
-        if (filterPath.length > 0 && filterPath[path.length - 1]?.name === path[path.length - 1].name) {
-          return true;
-        }
+            return tree.rootLabel.name.includes(filterQuery)
+          }
 
-        return treePath.isPathExpanded(expandedPaths, path);
-      })(),
-    }),
-  }
+          return path.length === 1 ? true : treePath.hasPath(expandedPaths, path.slice(0, path.length - 1));
+        })(),
+        subForest: (() => {
+          if (path.length === 0) {
+            return true;
+          }
 
-  const plainTree = treeToPlainTree(treeToPlainTreeProps);
+          if (filterPath.length > 0 && filterPath[path.length - 1]?.name === path[path.length - 1].name) {
+            return true;
+          }
+
+          return treePath.isPathExpanded(expandedPaths, path);
+        })(),
+      }),
+    }
+    setPlainTree(treeToPlainTree(treeToPlainTreeProps));
+  }, [expandedPaths, filterPath, filterQuery, tree]);
 
   const renderTreeItem = (node: PlainTreeNode) => {
     const { path } = node;
@@ -226,26 +259,36 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     </div>
   }
 
-  return (
-    <div className={s.NavigationTree} ref={scrollParentRef}>
-      <div className={s.FilterQueryInput}>
-        <Input placeholder="tenant/namespace/topic" value={filterQuery} onChange={v => setFilterQuery(v)} clearable={true} focusOnMount={true} />
-      </div>
-      <div className={s.TreeControlButtons}>
-        <div>
-          <SmallButton text='Collapse all' onClick={() => setExpandedPaths([])} type='primary' />
-        </div>
-      </div>
+  const isLoading = scrollToPath.path.length !== 0 && scrollToPath.cursor <= scrollToPath.path.length;
 
-      <Virtuoso<PlainTreeNode>
-        itemContent={(_, item) => renderTreeItem(item)}
-        data={plainTree}
-        customScrollParent={scrollParentRef.current || undefined}
-        defaultItemHeight={40}
-        fixedItemHeight={40}
-        overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
-      />
-    </div>
+  return (
+    <>
+      {isLoading && <div>Loading ...</div>}
+      <div
+        ref={scrollParentRef}
+        className={s.NavigationTree}
+        style={{ opacity: isLoading ? 0 : 1 }}
+      >
+        <div className={s.FilterQueryInput}>
+          <Input placeholder="tenant/namespace/topic" value={filterQuery} onChange={v => setFilterQuery(v)} clearable={true} focusOnMount={true} />
+        </div>
+        <div className={s.TreeControlButtons}>
+          <div>
+            <SmallButton text='Collapse all' onClick={() => setExpandedPaths([])} type='primary' />
+          </div>
+        </div>
+
+        <Virtuoso<PlainTreeNode>
+          ref={virtuosoRef}
+          itemContent={(_, item) => renderTreeItem(item)}
+          data={plainTree}
+          customScrollParent={scrollParentRef.current || undefined}
+          defaultItemHeight={40}
+          fixedItemHeight={40}
+          overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
+        />
+      </div>
+    </>
   );
 }
 
