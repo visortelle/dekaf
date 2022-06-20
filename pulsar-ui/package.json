@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "axios": "^0.27.2",
+    "batchelorjs": "^2.0.0",
     "fetch-intercept": "^2.4.0",
     "fp-ts": "^2.12.1",
     "lodash": "^4.17.21",

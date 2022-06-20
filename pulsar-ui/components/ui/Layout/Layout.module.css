@@ -2,6 +2,7 @@
   width: 380rem;
   height: 100vh;
   position: fixed;
+  z-index: 100;
 }
 
 .Children {
