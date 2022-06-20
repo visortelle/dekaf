@@ -12,3 +12,17 @@ services:
     volumes:
       - $PWD/cases:/cases
       - $PWD/entrypoint.sh:/entrypoint.sh
+
+  # Pulsar Manager here is to compare it's behavior with our solution on same data.
+  pulsar-manager:
+    image: apachepulsar/pulsar-manager:v0.3.0
+    restart: always
+    ports:
+      - 9527:9527
+      - 7750:7750
+    environment:
+      SPRING_CONFIGURATION_FILE: /pulsar-manager/pulsar-manager/application.properties
+      USERNAME: pulsar
+      PASSWORD: pulsar
+    volumes:
+      - $PWD/pulsar-manager/application.properties:/pulsar-manager/pulsar-manager/application.properties
