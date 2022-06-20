@@ -11,8 +11,9 @@ import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../ui/Icons/
 import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
 import { swrKeys } from '../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
+import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
-import { Virtuoso, VirtuosoHandle, ListItem } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -26,6 +27,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [tree, setTree] = useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
   const [plainTree, setPlainTree] = useState<PlainTreeNode[]>([]);
   const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
+  const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number }>({ path: [], cursor: 0 });
@@ -60,7 +62,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     }) as TreePath;
 
     setFilterPath(() => fp);
-  }, [filterQuery]);
+  }, [filterQueryDebounced]);
 
   // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
@@ -142,7 +144,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }),
     }
     setPlainTree(treeToPlainTree(treeToPlainTreeProps));
-  }, [expandedPaths, filterPath, filterQuery, tree]);
+  }, [expandedPaths, filterPath, filterQueryDebounced, tree]);
 
   const renderTreeItem = (node: PlainTreeNode) => {
     const { path } = node;
