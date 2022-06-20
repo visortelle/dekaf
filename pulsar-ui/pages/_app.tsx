@@ -12,29 +12,6 @@ import { useEffect } from 'react';
 import stringify from 'safe-stable-stringify';
 
 const MyApp = (props: AppProps) => {
-  const { startTask, finishTask } = AsyncTasks.useContext();
-
-  useEffect(() => {
-    // Consider all GET requests as async tasks to display global progress indicator.
-    const unregister = fetchIntercept.register({
-      request: function (url, config) {
-        if (config.method === 'GET') {
-          startTask(stringify({ url }));
-        }
-
-        return [url, config];
-      },
-      response: function (response) {
-        if (response.request.method === 'GET') {
-          finishTask(stringify(response.request.url));
-        }
-        return response;
-      }
-    });
-
-    return () => unregister();
-  }, []);
-
   return (
     <AsyncTasks.DefaultProvider>
       <_MyApp {...props} />
@@ -43,15 +20,34 @@ const MyApp = (props: AppProps) => {
 }
 
 const _MyApp = (props: AppProps) => {
+  const { startTask, finishTask, tasks } = AsyncTasks.useContext();
+
+  useEffect(() => {
+    // Consider all GET requests as async tasks to display global progress indicator.
+    const unregister = fetchIntercept.register({
+      request: function (url, config) {
+        startTask(stringify({ url }));
+
+        return [url, config];
+      },
+      response: function (response) {
+        finishTask(stringify(response.request.url));
+        return response;
+      }
+    });
+
+    return () => unregister();
+  }, []);
+
   return (
     <SWRConfig value={{ shouldRetryOnError: false, focusThrottleInterval: 120 }}>
       <NoSsr>
         <Notifications.DefaultProvider>
           <PulsarAdminClient.DefaultProvider>
-          <PulsarAdminBatchClient.DefaultProvider>
-            <BrokerConfig.DefaultProvider>
-              {typeof window === 'undefined' ? null : <props.Component />}
-            </BrokerConfig.DefaultProvider>
+            <PulsarAdminBatchClient.DefaultProvider>
+              <BrokerConfig.DefaultProvider>
+                {typeof window === 'undefined' ? null : <props.Component />}
+              </BrokerConfig.DefaultProvider>
             </PulsarAdminBatchClient.DefaultProvider>
           </PulsarAdminClient.DefaultProvider>
         </Notifications.DefaultProvider>
