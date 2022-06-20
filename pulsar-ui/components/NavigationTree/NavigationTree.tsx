@@ -4,6 +4,7 @@ import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';
 import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
+import * as PulsarAdminBatchClient from '../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
@@ -35,6 +36,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [forceReloadKey, setForceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
+  const adminBatchClient = PulsarAdminBatchClient.useContext().client;
 
   const { data: tenants, error: tenantsError } = useSWR(
     swrKeys.pulsar.tenants._(),
@@ -42,7 +44,15 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   );
 
   if (tenantsError) {
-    notifyError(`Unable to fetch tenants. ${tenantsError.toString()}`);
+    notifyError(`Unable to fetch tenants. ${tenantsError}`);
+  }
+
+  const { data: tenantsNamespaces, error: tenantsNamespacesError } = useSWR(
+    tenants === undefined ? null : swrKeys.pulsar.batch.tenantsNamespaces._(),
+    async () => await adminBatchClient?.getTenantsNamespaces(tenants || [])
+  );
+  if (tenantsNamespacesError) {
+    notifyError(`Unable to fetch tenants namespaces. ${tenantsNamespacesError}`);
   }
 
   useEffect(() => {
@@ -53,7 +63,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }, [tenants]);
 
   useEffect(() => {
-    const fp = filterQuery.split(filterQuerySep).map((part, i) => {
+    const fp = filterQueryDebounced.split(filterQuerySep).map((part, i) => {
       switch (i) {
         case 0: return { type: 'tenant', name: part };
         case 1: return { type: 'namespace', name: part };
@@ -69,7 +79,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     if (!isBeenScrolledToSelectedNodePath) {
       setScrollToPath({ path: props.selectedNodePath, cursor: 0 });
       setExpandedPaths(treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
-      setFilterQuery(props.selectedNodePath.map(p => p.name).join(filterQuerySep) + (props.selectedNodePath.length > 0 ? '/' : ''));
     }
   }, [props.selectedNodePath])
 
@@ -113,11 +122,11 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         tree: true,
         rootLabel: (() => {
           if (tree.rootLabel.type === 'instance') {
-            return filterQuery.length === 0;
+            return filterQueryDebounced.length === 0;
           }
 
-          if (filterQuery.length !== 0) {
-            if (filterQuery.includes(filterQuerySep)) {
+          if (filterQueryDebounced.length !== 0) {
+            if (filterQueryDebounced.includes(filterQuerySep)) {
               const a = path.every((part, i) => {
                 return i === filterPath.length - 1 ? part.name.includes(filterPath[filterPath.length - 1].name) : part.name === filterPath[i]?.name;
               });
@@ -126,7 +135,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               return a || b;
             }
 
-            return tree.rootLabel.name.includes(filterQuery)
+            return tree.rootLabel.name.includes(filterQueryDebounced)
           }
 
           return path.length === 1 ? true : treePath.hasPath(expandedPaths, path.slice(0, path.length - 1));
@@ -145,12 +154,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }),
     }
     setPlainTree(treeToPlainTree(treeToPlainTreeProps));
-  }, [expandedPaths, filterPath, filterQueryDebounced, tree]);
+  }, [expandedPaths, filterPath, filterQueryDebounced, tree, tenantsNamespaces]);
 
   const renderTreeItem = (node: PlainTreeNode) => {
     const { path } = node;
     let nodeContent: React.ReactNode = null;
     let nodeIcon = null;
+    let childrenCount = null;
+
     const leftIndent = node.type === 'instance' ? '5ch' : `${((path.length + 1) * 3 - 1)}ch`;
 
     const toggleNodeExpanded = () => setExpandedPaths(
@@ -188,6 +199,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           isFetchData={isExpanded || treePath.getTenant(filterPath)?.name === node.name}
         />
       );
+      childrenCount = tenantsNamespaces === undefined ? null : tenantsNamespaces[tenant.name]?.length;
       nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
 
     } else if (node.type === 'namespace') {
@@ -259,6 +271,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
         <span className={s.NodeTextContent}>{nodeContent}</span>
       </div>
+      {childrenCount !== null && <div className={s.NodeChildrenCount}>{childrenCount}</div>}
     </div>
   }
 
