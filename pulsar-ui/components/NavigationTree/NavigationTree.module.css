@@ -1,10 +1,11 @@
 .NavigationTree {
   background-color: #fff;
   height: 100%;
-  overflow: auto;
   font-size: 14rem;
   padding-bottom: 24rem;
   border-right: 1rem solid #ddd;
+  display: flex;
+  flex-direction: column;
 }
 
 .Node {
@@ -72,4 +73,22 @@
 
 .TreeControlButtons > * {
   margin-right: 8rem;
+}
+
+.TreeContainer {
+  display: flex;
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+.TreeScrollParent {
+  flex: 1;
+  overflow: auto;
+}
+
+.Loading {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
