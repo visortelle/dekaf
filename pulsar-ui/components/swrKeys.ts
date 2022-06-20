@@ -1,5 +1,10 @@
 export const swrKeys = {
   pulsar: {
+    batch: {
+      tenantsNamespaces: {
+        _: () => ['pulsar', "batch", "tenantsNamespaces"],
+      }
+    },
     brokers: {
       healthCheck: {
         _: () => ["pulsar", "brokers", "healthCheck"],
