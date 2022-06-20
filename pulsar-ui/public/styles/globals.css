@@ -39,7 +39,9 @@ body {
   font-size: 16rem;
 }
 
-input, textarea, button {
+input,
+textarea,
+button {
   font-family: inherit;
 }
 
@@ -122,4 +124,13 @@ code {
   animation-timing-function: ease;
   animation-iteration-count: infinite;
   animation-direction: normal;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

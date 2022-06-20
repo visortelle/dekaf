@@ -30,6 +30,7 @@ const DeleteTopic: React.FC<DeleteTopicProps> = (props) => {
       navigate(routes.tenants.tenant._.get({ tenant: props.tenant }));
 
       await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }));
+      await mutate(swrKeys.pulsar.batch.tenantsNamespaces._());
     } catch (err) {
       notification.notifyError(`Failed to delete namespace ${props.tenant}/${props.namespace}. ${err}`)
     }

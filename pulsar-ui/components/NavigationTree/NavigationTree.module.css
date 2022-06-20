@@ -12,7 +12,7 @@
   padding: 8rem 12rem;
   background-color: #fff;
   position: relative;
-  animation: var(--animation-fade-in);
+  animation: fade-in 0.4s ease-in-out;
 }
 
 .Node:hover {
@@ -24,6 +24,18 @@
   line-height: 1;
   display: flex;
   align-items: center;
+}
+
+.NodeChildrenCount {
+  position: absolute;
+  right: 12rem;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  z-index: 10;
+  animation: fade-in 0.4s ease-in-out;
 }
 
 .NodeTextContent {
@@ -92,4 +104,15 @@
   top: 0;
   left: 0;
   padding: 8rem 12rem;
+  animation: fade-in 0.4s ease-in-out;
 }
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
