@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
 import { swrKeys } from '../../../swrKeys';
+import { isEqual } from 'lodash';
 
 const policy = 'subscriptionDispatchRate';
 
@@ -36,7 +37,7 @@ export const SubscriptionDispatchRateInput: React.FC<SubscriptionDispatchRateInp
     setDispatchRate(() => props.value);
   }, [props.value]);
 
-  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(dispatchRate);
+  const showUpdateConfirmation = !isEqual(props.value, dispatchRate);
 
   return (
     <div>

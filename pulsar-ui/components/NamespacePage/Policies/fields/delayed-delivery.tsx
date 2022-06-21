@@ -10,6 +10,7 @@ import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmatio
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useEffect, useState } from "react";
 import { swrKeys } from "../../../swrKeys";
+import { isEqual } from "lodash";
 
 const policy = 'delayedDelivery';
 
@@ -35,7 +36,7 @@ const DelayedDeliveryInput: React.FC<DelayedDeliveryInputProps> = (props) => {
     setDelayedDelivery(() => props.value);
   }, [props.value]);
 
-  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(delayedDelivery);
+  const showUpdateConfirmation = !isEqual(props.value, delayedDelivery);
 
   return (
     <div>

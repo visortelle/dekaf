@@ -121,7 +121,7 @@ export const getTreeNodesChildrenCount: GetTreeNodesChildrenCount = async (
       if (!Array.isArray(data.body)) {
         return result;
       }
-      const key = JSON.stringify(path);
+      const key = stringify(path);
       return {
         ...result,
         [key]:
