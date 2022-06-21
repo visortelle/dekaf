@@ -8,7 +8,6 @@ import * as PulsarAdminBatchClient from '../app/contexts/PulsarAdminBatchClient/
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
-import usePrevious from './use-previous';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../ui/Icons/Icons';
 import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
 import { swrKeys } from '../swrKeys';
@@ -36,8 +35,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
   const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
-  const prevItemsRenderedDebounced = usePrevious(itemsRenderedDebounced);
-  const [forceReloadKey, setForceReloadKey] = useState<number>(0);
+  const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
   const adminBatchClient = PulsarAdminBatchClient.useContext().client;
