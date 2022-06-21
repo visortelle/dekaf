@@ -325,12 +325,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             />
           </div>
         )}
-        {!isTreeInStuckState && plainTree.length === 0 && (
-          <div className={s.NothingToShow}>
-            <span>No items found. <br />Try another filter query.</span>
-          </div>
-        )}
-        {!isTreeInStuckState && plainTree.length !== 0 && (
+        {!isTreeInStuckState && (
           <div
             ref={scrollParentRef}
             className={s.TreeScrollParent}
@@ -343,6 +338,11 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               customScrollParent={scrollParentRef.current || undefined}
               defaultItemHeight={40}
               fixedItemHeight={40}
+              components={{
+                EmptyPlaceholder: () => <div className={s.NothingToShow}>
+                  <span>No items found. <br />Try another filter query.</span>
+                </div>
+              }}
               overscan={{ main: window.innerHeight / 2, reverse: window.innerHeight / 2 }}
               totalCount={plainTree.length}
               itemsRendered={(items) => {
