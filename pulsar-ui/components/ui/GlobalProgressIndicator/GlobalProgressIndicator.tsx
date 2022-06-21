@@ -7,13 +7,11 @@ const GlobalProgressIndicator: React.FC = () => {
 
   const isRunning = Object.keys(tasks).length > 0;
 
-  if (!isRunning) {
-    return null;
-  }
-
-  return (
-    <div className={`${s.GlobalProgressIndicator} ${isRunning ? s.Running : ''}`}></div>
-  );
+  return isRunning ? (
+    <div className={`${s.GlobalProgressIndicator}`}>
+      <div className={s.Animation}></div>
+    </div>
+  ) : <></>;
 }
 
 export default GlobalProgressIndicator;
