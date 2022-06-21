@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useSWR, { mutate } from 'swr';
-import useSWRInfinite from 'swr/infinite'
 import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';
@@ -33,11 +32,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
-  const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number }>({ path: [], cursor: 0 });
-  const [isStartedScrollToSelectedNodePath, setIsStartedScrollToSelectedNodePath] = useState(false);
-  const [isFinishedScrollToSelectedNodePath, setIsFinishedScrollToSelectedNodePath] = useState(false);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const isScrollingPrevious = usePrevious<boolean>(isScrolling);;
+  const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
   const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const prevItemsRenderedDebounced = usePrevious(itemsRenderedDebounced);
@@ -57,7 +52,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
   const { data: childrenCount, error: childrenCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTreeNodesChildrenCount._(itemsRenderedDebounced.map(item => item.data!)),
-    async () => await adminBatchClient?.getTreeNodesChildrenCount(itemsRenderedDebounced.map(item => item?.data?.path || []))
+    async () => await adminBatchClient?.getTreeNodesChildrenCount(itemsRenderedDebounced.map(item => item?.data?.path || [])),
   );
 
   if (childrenCountError) {
@@ -83,54 +78,43 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     setFilterPath(() => fp);
   }, [filterQueryDebounced]);
 
-  // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
+  // // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
     if (props.selectedNodePath.length === 0) {
-      setIsStartedScrollToSelectedNodePath(true);
-      setIsFinishedScrollToSelectedNodePath(true);
+      // Immediately finish scrolling workflow (!?) if no selected node specified.
+      setScrollToPath({ ...scrollToPath, state: 'finished' });
       return;
     }
 
-    if (!isStartedScrollToSelectedNodePath) {
-      setScrollToPath({ path: props.selectedNodePath, cursor: 0 });
+    if (scrollToPath.cursor === 0) {
+      setScrollToPath({ path: props.selectedNodePath, cursor: 0, state: 'in-progress' });
       setExpandedPaths(treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
     }
   }, [props.selectedNodePath])
 
-  // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
+  // XXX - Handle scroll to selected node. It can be quite buggy. Re-test it carefully.
   useEffect(() => {
-    if (isStartedScrollToSelectedNodePath) {
+    if (scrollToPath.state === 'finished') {
       return;
     }
 
-    if (scrollToPath.path.length === 0) {
-      return;
-    }
-
-    if (scrollToPath.cursor < scrollToPath.path.length) {
+    if (scrollToPath.state === 'in-progress') {
       const pathToFind = scrollToPath.path.slice(0, scrollToPath.cursor + 1);
       const nodeIndex = plainTree.findIndex(p => treePath.arePathsEqual(p.path, pathToFind));
+
       if (nodeIndex !== -1) {
+        const nextCursor = scrollToPath.cursor + 1;
         setTimeout(() => virtuosoRef.current?.scrollToIndex(nodeIndex));
 
-        const nextCursor = scrollToPath.cursor + 1;
         if (nextCursor === scrollToPath.path.length) {
-          setScrollToPath({ path: [], cursor: 0 });
-          setIsStartedScrollToSelectedNodePath(true);
+          setScrollToPath({ ...scrollToPath, state: 'finished' });
           return;
         }
 
         setScrollToPath((scrollToPath) => ({ ...scrollToPath, cursor: nextCursor }));
       }
     }
-  }, [plainTree, scrollToPath, isStartedScrollToSelectedNodePath]);
-
-  // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
-  useEffect(() => {
-    if (isStartedScrollToSelectedNodePath && isScrollingPrevious && !isScrolling) {
-      setIsFinishedScrollToSelectedNodePath(true);
-    }
-  }, [isScrolling, isScrollingPrevious, isStartedScrollToSelectedNodePath]);
+  }, [plainTree, scrollToPath]);
 
   useEffect(() => {
     const treeToPlainTreeProps: TreeToPlainTreeProps = {
@@ -176,7 +160,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }),
     }
     setPlainTree(treeToPlainTree(treeToPlainTreeProps));
-  }, [expandedPaths, filterPath, filterQueryDebounced, tree, /* childrenCount */]);
+  }, [expandedPaths, filterPath, filterQueryDebounced, tree]);
 
   const renderTreeItem = (node: PlainTreeNode) => {
     const { path } = node;
@@ -285,20 +269,26 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }
     }
 
-    const nodeChildrenCount = childrenCount === undefined ? undefined : childrenCount[stringify(path)] || undefined;
+    const pathStr = stringify(path);
+    let nodeChildrenCount;
+    if (node.type === 'instance') {
+      nodeChildrenCount = tenants?.length;
+    } else {
+      nodeChildrenCount = childrenCount === undefined ? undefined : childrenCount[pathStr] || undefined;
+    }
 
-    return <div key={stringify(node)} className={s.Node} onClick={handleNodeClick}>
+    return <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick}>
       <div className={s.NodeContent}>
         <span>&nbsp;</span>
         <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
         <span className={s.NodeTextContent}>{nodeContent}</span>
       </div>
-      {nodeChildrenCount !== null && <div className={s.NodeChildrenCount}>{nodeChildrenCount}</div>}
+      {nodeChildrenCount !== undefined && <div className={s.NodeChildrenCount}>{nodeChildrenCount}</div>}
     </div>
   }
 
-  const isTreeInStuckState = !isStartedScrollToSelectedNodePath && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
-  const isLoading = !isTreeInStuckState && scrollToPath.path.length !== 0 && scrollToPath.cursor <= scrollToPath.path.length;
+  const isTreeInStuckState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
+  const isLoading = !isTreeInStuckState && scrollToPath.state !== 'finished';
 
   return (
     <div className={s.NavigationTree}>
@@ -329,7 +319,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             />
             <SmallButton
               text="Apply filter"
-              onClick={() => setScrollToPath({ path: [], cursor: 0 })}
+              onClick={() => setScrollToPath({ path: [], cursor: 0, state: 'finished' })}
               type='primary'
             />
           </div>
@@ -353,9 +343,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               defaultItemHeight={40}
               fixedItemHeight={40}
               totalCount={plainTree.length}
-              isScrolling={setIsScrolling}
               itemsRendered={(items) => {
-                const isShouldUpdate = isFinishedScrollToSelectedNodePath && (stringify(itemsRendered) !== stringify(items));
+                const isShouldUpdate = scrollToPath.state === 'finished' && (stringify(itemsRendered) !== stringify(items));
                 if (isShouldUpdate) {
                   setItemsRendered(() => items);
                 }
