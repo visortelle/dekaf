@@ -9,6 +9,7 @@ import * as Either from 'fp-ts/Either';
 import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
 import { swrKeys } from '../../../swrKeys';
+import { isEqual } from 'lodash';
 
 const policy = 'persistence';
 
@@ -70,7 +71,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
     setValidationResult(() => Either.right(undefined));
   }
 
-  const showUpdateConfirmation = Either.isRight(validationResult) && JSON.stringify(props.value) !== JSON.stringify(persistence);
+  const showUpdateConfirmation = Either.isRight(validationResult) && !isEqual(props.value, persistence);
 
   return (
     <div>

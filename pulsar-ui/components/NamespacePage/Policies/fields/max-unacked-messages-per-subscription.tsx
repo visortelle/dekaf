@@ -8,6 +8,7 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useEffect, useState } from 'react';
 import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import { swrKeys } from '../../../swrKeys';
+import { isEqual } from 'lodash';
 
 const policy = 'maxUnackedMessagesPerSubscription';
 
@@ -31,7 +32,7 @@ const MaxUnackedMessagesPerSubscriptionInput: React.FC<MaxUnackedMessagesPerSubs
     setMaxUnackedMessagesPerSubscription(() => props.value);
   }, [props.value]);
 
-  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(maxUnackedMessagesPerSubscription);
+  const showUpdateConfirmation = !isEqual(props.value, maxUnackedMessagesPerSubscription);
 
   return (
     <div>

@@ -8,6 +8,7 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useEffect, useState } from 'react';
 import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import { swrKeys } from '../../../swrKeys';
+import { isEqual } from 'lodash';
 
 const policy = 'maxProducersPerTopic';
 
@@ -31,7 +32,7 @@ const MaxProducersPerTopicInput: React.FC<MaxProducersPerTopicInputProps> = (pro
     setMaxProducersPerTopic(() => props.value);
   }, [props.value]);
 
-  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(maxProducersPerTopic);
+  const showUpdateConfirmation = !isEqual(props.value, maxProducersPerTopic);
 
   return (
     <div>

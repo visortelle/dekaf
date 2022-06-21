@@ -10,6 +10,7 @@ import { MemorySize } from '../../../ui/ConfigurationTable/MemorySizeInput/types
 import { bytesToMemorySize, memoryToBytes } from '../../../ui/ConfigurationTable/MemorySizeInput/conversions';
 import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import { swrKeys } from '../../../swrKeys';
+import { isEqual } from 'lodash';
 
 const policy = 'compactionThreshold';
 
@@ -36,7 +37,7 @@ const CompactionThresholdInput: React.FC<CompactionThresholdInputProps> = (props
     setCompactionThreshold(() => props.value);
   }, [props.value]);
 
-  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(compactionThreshold);
+  const showUpdateConfirmation = !isEqual(props.value, compactionThreshold);
 
   return (
     <div>

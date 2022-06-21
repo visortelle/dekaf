@@ -10,6 +10,7 @@ import { Duration } from '../../../ui/ConfigurationTable/DurationInput/types';
 import { durationToSeconds, secondsToDuration } from '../../../ui/ConfigurationTable/DurationInput/conversions';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import { swrKeys } from '../../../swrKeys';
+import { isEqual } from 'lodash';
 
 const policy = 'offloadDeletionLag';
 
@@ -36,7 +37,7 @@ const OffloadDeletionLagInput: React.FC<OffloadDeletionLagInputProps> = (props) 
     setOffloadDeletionLag(() => props.value);
   }, [props.value]);
 
-  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(offloadDeletionLag);
+  const showUpdateConfirmation = !isEqual(props.value, offloadDeletionLag);
 
   return (
     <div>
