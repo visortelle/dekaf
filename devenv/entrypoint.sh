@@ -24,7 +24,7 @@ fi
 case_populate_path="${cases_dir}/${case_name}/populate.sh"
 if test -f "${case_populate_path}"; then
   echo "Running populate.sh for ${case_name} in background"
-  (sleep 30 && $case_populate_path) &
+  (sleep 60 && $case_populate_path) &
 fi
 
 echo "Starting Pulsar..."
