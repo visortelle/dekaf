@@ -16,6 +16,18 @@ export const treePath = {
   getNamespace: (path: TreePath) => path.find(node => node.type === "namespace"),
   getTopic: (path: TreePath) => path.find(node => node.type === "persistent-topic" || node.type === "non-persistent-topic"),
 
+  isTenant: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "tenant",
+  isNamespace: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "namespace",
+  isPersistentTopic: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "persistent-topic",
+  isNonPersistentTopic: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "non-persistent-topic",
+
+  getType: (path: TreePath): TreeNodeType | undefined => {
+    if (treePath.isTenant(path)) return "tenant";
+    if (treePath.isNamespace(path)) return "namespace";
+    if (treePath.isPersistentTopic(path)) return "persistent-topic";
+    if (treePath.isNonPersistentTopic(path)) return "non-persistent-topic";
+  },
+
   hasPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.arePathsEqual(p, path)),
   uniquePaths: (paths: TreePath[]) => uniqWith(paths, treePath.arePathsEqual),
   arePathsEqual: (pathA: TreePath, pathB: TreePath) => isEqual(pathA, pathB),
