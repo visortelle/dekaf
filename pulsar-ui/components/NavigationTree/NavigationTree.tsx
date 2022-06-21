@@ -40,6 +40,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const isScrollingPrevious = usePrevious<boolean>(isScrolling);;
   const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
+  const prevItemsRenderedDebounced = usePrevious(itemsRenderedDebounced);
   const [forceReloadKey, setForceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
@@ -54,23 +55,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     notifyError(`Unable to fetch tenants. ${tenantsError}`);
   }
 
-  const { data: childrenCount, mutate: mutateChildrenCount, error: childrenCountError } = useSWRInfinite(
-    (pageIndex, previousPageData) => {
-      if (previousPageData && !previousPageData.length) return null;
-      return itemsRenderedDebounced.length === 0 ? null : stringify({ pageIndex, previousPageData })
-    },
-    async () => await adminBatchClient?.getTenantsNamespaces(itemsRenderedDebounced.filter(item => item.data?.type === 'tenant').map(item => item.data?.name!) || [])
+  const { data: childrenCount, error: childrenCountError } = useSWR(
+    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTreeNodesChildrenCount._(itemsRenderedDebounced.map(item => item.data!)),
+    async () => await adminBatchClient?.getTreeNodesChildrenCount(itemsRenderedDebounced.map(item => item?.data?.path || []))
   );
 
   if (childrenCountError) {
-    notifyError(`Unable to fetch tenants namespaces. ${childrenCountError}`);
+    notifyError(`Unable to get children count. ${childrenCountError}`);
   }
-
-  useEffect(() => {
-    if (childrenCount !== undefined && itemsRendered?.length !== 0) {
-      mutateChildrenCount();
-    }
-  }, [itemsRenderedDebounced]);
 
   useEffect(() => {
     setTree((tree) => setTenants({
@@ -93,6 +85,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
   // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
+    if (props.selectedNodePath.length === 0) {
+      setIsStartedScrollToSelectedNodePath(true);
+      setIsFinishedScrollToSelectedNodePath(true);
+      return;
+    }
+
     if (!isStartedScrollToSelectedNodePath) {
       setScrollToPath({ path: props.selectedNodePath, cursor: 0 });
       setExpandedPaths(treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
@@ -184,7 +182,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     const { path } = node;
     let nodeContent: React.ReactNode = null;
     let nodeIcon = null;
-    let childrenCount = null;
 
     const leftIndent = node.type === 'instance' ? '5ch' : `${((path.length + 1) * 3 - 1)}ch`;
 
@@ -223,7 +220,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           isFetchData={isExpanded || treePath.getTenant(filterPath)?.name === node.name}
         />
       );
-      // childrenCount = childrenCount === undefined ? null : childrenCount[tenant.name]?.length;
       nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
 
     } else if (node.type === 'namespace') {
@@ -289,13 +285,15 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }
     }
 
+    const nodeChildrenCount = childrenCount === undefined ? undefined : childrenCount[stringify(path)] || undefined;
+
     return <div key={stringify(node)} className={s.Node} onClick={handleNodeClick}>
       <div className={s.NodeContent}>
         <span>&nbsp;</span>
         <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
         <span className={s.NodeTextContent}>{nodeContent}</span>
       </div>
-      {childrenCount !== null && <div className={s.NodeChildrenCount}>{childrenCount}</div>}
+      {nodeChildrenCount !== null && <div className={s.NodeChildrenCount}>{nodeChildrenCount}</div>}
     </div>
   }
 

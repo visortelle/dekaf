@@ -1,54 +1,32 @@
 import React, { ReactNode } from 'react';
-import * as PulsarAdminClient from '../PulsarAdminClient';
-import _ from 'lodash';
+import { TreePath } from '../../../NavigationTree/TreeView';
+import { getTreeNodesChildrenCount } from './get-tree-nodes-children-count';
+import { TreePathStr } from './types';
 
 const batchApiUrl = `http://localhost:3000/api/batch`;
-const uiServerUrl = 'http://localhost:3000';
+const brokerWebApiUrl = 'http://localhost:3000/api/pulsar-broker-web';
 
 export type Value = {
-  client?: {
-    getTenantsNamespaces: (tenants: string[]) => Promise<Record<string, string[]>>;
+  client: {
+    getTreeNodesChildrenCount: (paths: TreePath[]) => Promise<Record<TreePathStr, number>>;
   }
 }
 
 const defaultValue: Value = {
   client: {
-    getTenantsNamespaces: async () => ({})
+    getTreeNodesChildrenCount: async () => ({})
   }
 };
-
-type BatchRequest = {
-  name: string;
-  url: string;
-  method: string;
-  headers: Record<string, string>;
-}
 
 const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
-  const getTenantsNamespaces = async (tenants: string[]): Promise<Record<string, string[]>> => {
-    const batchRequests: BatchRequest[] = tenants.map(tenant => ({
-      name: `${tenant}`,
-      url: `${uiServerUrl}/api/pulsar-broker-web/admin/v2/namespaces/${tenant}`,
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    }));
-
-    const res = await fetch(batchApiUrl, { method: 'POST', body: JSON.stringify(batchRequests) }).catch(() => undefined);
-    if (res === undefined) {
-      return {};
-    }
-    const result = _(await res.json()).toPairs().map(([name, data]) => [name, Array.isArray(data.body) ? data.body : []]).fromPairs().value();
-    return result;
-  }
-
   return (
     <>
       <Context.Provider
         value={{
           client: {
-            getTenantsNamespaces
+            getTreeNodesChildrenCount: (paths: TreePath[]) => getTreeNodesChildrenCount(paths, batchApiUrl, brokerWebApiUrl)
           }
         }}
       >
