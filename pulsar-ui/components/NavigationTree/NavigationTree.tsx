@@ -277,7 +277,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       nodeChildrenCount = childrenCount === undefined ? undefined : childrenCount[pathStr] || undefined;
     }
 
-    return <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick}>
+    return <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick} title={node.path.map(p => p.name).join('/')}>
       <div className={s.NodeContent}>
         <span>&nbsp;</span>
         <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
@@ -342,6 +342,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               customScrollParent={scrollParentRef.current || undefined}
               defaultItemHeight={40}
               fixedItemHeight={40}
+              overscan={{ main: window.innerHeight / 2, reverse: window.innerHeight / 2 }}
               totalCount={plainTree.length}
               itemsRendered={(items) => {
                 const isShouldUpdate = scrollToPath.state === 'finished' && (stringify(itemsRendered) !== stringify(items));
