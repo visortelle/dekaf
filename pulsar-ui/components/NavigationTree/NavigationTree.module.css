@@ -34,7 +34,7 @@
   align-items: center;
   justify-self: center;
   z-index: 10;
-  animation: fade-in 0.25s ease-in-out;
+  animation: fade-in 0.1s ease-in-out;
 }
 
 .NodeTextContent {
