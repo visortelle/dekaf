@@ -19,13 +19,19 @@ const MyApp = (props: AppProps) => {
   );
 }
 
+export const hideShowProgressIndicatorHeader = 'x-hide-show-progress-indicator';
+
 const _MyApp = (props: AppProps) => {
-  const { startTask, finishTask, tasks } = AsyncTasks.useContext();
+  const { startTask, finishTask } = AsyncTasks.useContext();
 
   useEffect(() => {
     // Consider all GET requests as async tasks to display global progress indicator.
     const unregister = fetchIntercept.register({
       request: function (url, config) {
+        if (config.headers[hideShowProgressIndicatorHeader] !== undefined) {
+          return [url, config]
+        }
+
         startTask(stringify({ url }));
 
         return [url, config];

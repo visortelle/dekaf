@@ -1,8 +1,11 @@
+import stringify from "safe-stable-stringify";
+import { TreeNode } from "./NavigationTree/TreeView";
+
 export const swrKeys = {
   pulsar: {
     batch: {
-      tenantsNamespaces: {
-        _: () => ['pulsar', "batch", "tenantsNamespaces"],
+      getTreeNodesChildrenCount: {
+        _: (nodes: TreeNode[]) => ['pulsar', "batch", "getTreeNodesChildrenCount", stringify(nodes)],
       }
     },
     brokers: {
