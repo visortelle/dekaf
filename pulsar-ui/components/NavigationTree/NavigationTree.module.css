@@ -11,7 +11,7 @@
   padding: 8rem 12rem;
   background-color: #fff;
   position: relative;
-  animation: fade-in 0.25s ease-in-out;
+  animation: fade-in 0.1s ease-in-out;
 }
 
 .Node:hover {
