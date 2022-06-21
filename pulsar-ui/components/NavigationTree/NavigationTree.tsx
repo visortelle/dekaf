@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useSWR, { mutate } from 'swr';
+import useSWRInfinite from 'swr/infinite'
 import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';
@@ -8,13 +9,14 @@ import * as PulsarAdminBatchClient from '../app/contexts/PulsarAdminBatchClient/
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
+import usePrevious from './use-previous';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../ui/Icons/Icons';
 import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
 import { swrKeys } from '../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -32,7 +34,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number }>({ path: [], cursor: 0 });
-  const [isBeenScrolledToSelectedNodePath, setIsBeenScrolledToSelectedNodePath] = useState(false);
+  const [isStartedScrollToSelectedNodePath, setIsStartedScrollToSelectedNodePath] = useState(false);
+  const [isFinishedScrollToSelectedNodePath, setIsFinishedScrollToSelectedNodePath] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const isScrollingPrevious = usePrevious<boolean>(isScrolling);;
+  const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
+  const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [forceReloadKey, setForceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
@@ -47,13 +54,23 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     notifyError(`Unable to fetch tenants. ${tenantsError}`);
   }
 
-  const { data: tenantsNamespaces, error: tenantsNamespacesError } = useSWR(
-    tenants === undefined ? null : swrKeys.pulsar.batch.tenantsNamespaces._(),
-    async () => await adminBatchClient?.getTenantsNamespaces(tenants || [])
+  const { data: childrenCount, mutate: mutateChildrenCount, error: childrenCountError } = useSWRInfinite(
+    (pageIndex, previousPageData) => {
+      if (previousPageData && !previousPageData.length) return null;
+      return itemsRenderedDebounced.length === 0 ? null : stringify({ pageIndex, previousPageData })
+    },
+    async () => await adminBatchClient?.getTenantsNamespaces(itemsRenderedDebounced.filter(item => item.data?.type === 'tenant').map(item => item.data?.name!) || [])
   );
-  if (tenantsNamespacesError) {
-    notifyError(`Unable to fetch tenants namespaces. ${tenantsNamespacesError}`);
+
+  if (childrenCountError) {
+    notifyError(`Unable to fetch tenants namespaces. ${childrenCountError}`);
   }
+
+  useEffect(() => {
+    if (childrenCount !== undefined && itemsRendered?.length !== 0) {
+      mutateChildrenCount();
+    }
+  }, [itemsRenderedDebounced]);
 
   useEffect(() => {
     setTree((tree) => setTenants({
@@ -76,7 +93,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
   // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
-    if (!isBeenScrolledToSelectedNodePath) {
+    if (!isStartedScrollToSelectedNodePath) {
       setScrollToPath({ path: props.selectedNodePath, cursor: 0 });
       setExpandedPaths(treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
     }
@@ -84,7 +101,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
   // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
-    if (isBeenScrolledToSelectedNodePath) {
+    if (isStartedScrollToSelectedNodePath) {
       return;
     }
 
@@ -101,14 +118,21 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         const nextCursor = scrollToPath.cursor + 1;
         if (nextCursor === scrollToPath.path.length) {
           setScrollToPath({ path: [], cursor: 0 });
-          setIsBeenScrolledToSelectedNodePath(true);
-          return
+          setIsStartedScrollToSelectedNodePath(true);
+          return;
         }
 
         setScrollToPath((scrollToPath) => ({ ...scrollToPath, cursor: nextCursor }));
       }
     }
-  }, [plainTree, scrollToPath, isBeenScrolledToSelectedNodePath]);
+  }, [plainTree, scrollToPath, isStartedScrollToSelectedNodePath]);
+
+  // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
+  useEffect(() => {
+    if (isStartedScrollToSelectedNodePath && isScrollingPrevious && !isScrolling) {
+      setIsFinishedScrollToSelectedNodePath(true);
+    }
+  }, [isScrolling, isScrollingPrevious, isStartedScrollToSelectedNodePath]);
 
   useEffect(() => {
     const treeToPlainTreeProps: TreeToPlainTreeProps = {
@@ -154,7 +178,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }),
     }
     setPlainTree(treeToPlainTree(treeToPlainTreeProps));
-  }, [expandedPaths, filterPath, filterQueryDebounced, tree, tenantsNamespaces]);
+  }, [expandedPaths, filterPath, filterQueryDebounced, tree, /* childrenCount */]);
 
   const renderTreeItem = (node: PlainTreeNode) => {
     const { path } = node;
@@ -199,7 +223,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           isFetchData={isExpanded || treePath.getTenant(filterPath)?.name === node.name}
         />
       );
-      childrenCount = tenantsNamespaces === undefined ? null : tenantsNamespaces[tenant.name]?.length;
+      // childrenCount = childrenCount === undefined ? null : childrenCount[tenant.name]?.length;
       nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
 
     } else if (node.type === 'namespace') {
@@ -275,7 +299,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     </div>
   }
 
-  const isTreeInStuckState = !isBeenScrolledToSelectedNodePath && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
+  const isTreeInStuckState = !isStartedScrollToSelectedNodePath && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
   const isLoading = !isTreeInStuckState && scrollToPath.path.length !== 0 && scrollToPath.cursor <= scrollToPath.path.length;
 
   return (
@@ -330,7 +354,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               customScrollParent={scrollParentRef.current || undefined}
               defaultItemHeight={40}
               fixedItemHeight={40}
-              overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
+              totalCount={plainTree.length}
+              isScrolling={setIsScrolling}
+              itemsRendered={(items) => {
+                const isShouldUpdate = isFinishedScrollToSelectedNodePath && (stringify(itemsRendered) !== stringify(items));
+                if (isShouldUpdate) {
+                  setItemsRendered(() => items);
+                }
+              }}
             />
           </div>
         )}
