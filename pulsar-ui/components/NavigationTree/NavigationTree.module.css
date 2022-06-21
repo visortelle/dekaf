@@ -99,7 +99,7 @@
   padding-bottom: 24rem;
 }
 
-.TreeInStuckState {
+.Loading {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -113,11 +113,14 @@
   padding: 12rem;
 }
 
-.TreeInStuckState > * {
+.Loading > * {
   margin-bottom: 12rem;
 }
 
-.Loading,
+.Loading > *:last-child {
+  margin-bottom: 0;
+}
+
 .NothingToShow {
   padding: 12rem;
   width: 100%;

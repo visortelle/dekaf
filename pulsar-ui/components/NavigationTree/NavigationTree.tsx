@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import useSWR, { mutate } from 'swr';
+import useSWR, { mutate, useSWRConfig } from 'swr';
 import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';
@@ -16,6 +16,8 @@ import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
 import { isEqual } from 'lodash';
 import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { useNavigate } from 'react-router';
+import { useTimeout } from '@react-hook/timeout';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -33,6 +35,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
+  const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(5000);
   const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [childrenCountCache, setChildrenCountCache] = useState<{ [key: string]: number }>({});
@@ -40,6 +43,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
   const adminBatchClient = PulsarAdminBatchClient.useContext().client;
+  const navigate = useNavigate();
 
   const { data: tenants, error: tenantsError } = useSWR(
     swrKeys.pulsar.tenants._(),
@@ -85,17 +89,21 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
   // // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
+    if (scrollToPath.state === 'finished') {
+      return;
+    }
+
     if (props.selectedNodePath.length === 0) {
       // Immediately finish scrolling workflow (!?) if no selected node specified.
-      setScrollToPath({ ...scrollToPath, state: 'finished' });
+      setScrollToPath((scrollToPath) => ({ ...scrollToPath, state: 'finished' }));
       return;
     }
 
     if (scrollToPath.cursor === 0) {
-      setScrollToPath({ path: props.selectedNodePath, cursor: 0, state: 'in-progress' });
-      setExpandedPaths(treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
+      setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: props.selectedNodePath, cursor: 0, state: 'in-progress' }));
+      setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
     }
-  }, [props.selectedNodePath])
+  }, [props.selectedNodePath]);
 
   // XXX - Handle scroll to selected node. It can be quite buggy. Re-test it carefully.
   useEffect(() => {
@@ -107,6 +115,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       const pathToFind = scrollToPath.path.slice(0, scrollToPath.cursor + 1);
       const nodeIndex = plainTree.findIndex(p => treePath.arePathsEqual(p.path, pathToFind));
 
+      const isNotFound = nodeIndex === -1 && scrollToPath.cursor === scrollToPath.path.length - 1;
+      if (isNotFound) {
+        resetScrollToPathTimeout();
+        startScrollToPathTimeout();
+      }
+
       if (nodeIndex !== -1) {
         const nextCursor = scrollToPath.cursor + 1;
 
@@ -114,7 +128,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         setTimeout(() => virtuosoRef.current?.scrollToIndex(nodeIndex));
 
         if (nextCursor === scrollToPath.path.length) {
-          setScrollToPath({ ...scrollToPath, state: 'finished' });
+          setScrollToPath((scrollToPath) => ({ ...scrollToPath, state: 'finished' }));
           return;
         }
 
@@ -122,6 +136,23 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }
     }
   }, [plainTree, scrollToPath]);
+
+  // XXX - Handle scroll to selected node. It can be quite buggy. Re-test it carefully.
+  useEffect(() => {
+    if (!isTimedOutScrollToPathTimeout) {
+      return;
+    }
+
+    if (scrollToPath.state === 'finished') {
+      resetScrollToPathTimeout();
+      return;
+    }
+
+    navigate('/');
+    setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished' }));
+    setExpandedPaths([]);
+    virtuosoRef.current?.scrollToIndex(0);
+  }, [isTimedOutScrollToPathTimeout]);
 
   useEffect(() => {
     const treeToPlainTreeProps: TreeToPlainTreeProps = {
@@ -166,7 +197,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         })(),
       }),
     }
-    setPlainTree(treeToPlainTree(treeToPlainTreeProps));
+    setPlainTree(() => treeToPlainTree(treeToPlainTreeProps));
   }, [expandedPaths, filterPath, filterQueryDebounced, tree]);
 
   const renderTreeItem = (node: PlainTreeNode) => {
@@ -295,7 +326,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }
 
   const isTreeInStuckState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
-  const isLoading = !isTreeInStuckState && scrollToPath.state !== 'finished';
 
   return (
     <div className={s.NavigationTree}>
@@ -315,9 +345,13 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       </div>
 
       <div className={s.TreeContainer}>
-        {isLoading && <div className={s.Loading}>Loading available resources... </div>}
+        {!isTreeInStuckState && scrollToPath.state !== 'finished' && (
+          <div className={s.Loading}>
+            <span>Navigating to the selected resource...</span>
+          </div>
+        )}
         {isTreeInStuckState && (
-          <div className={s.TreeInStuckState}>
+          <div className={s.Loading}>
             <span>Tree stuck. Please decide:</span>
             <SmallButton
               text="Scroll to the selected resource"
@@ -326,7 +360,9 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             />
             <SmallButton
               text="Apply filter"
-              onClick={() => setScrollToPath({ path: [], cursor: 0, state: 'finished' })}
+              onClick={() => {
+                setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished' }));
+              }}
               type='primary'
             />
           </div>
@@ -335,7 +371,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           <div
             ref={scrollParentRef}
             className={s.TreeScrollParent}
-            style={{ opacity: isLoading ? 0 : 1 }}
+            style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
           >
             <Virtuoso<PlainTreeNode>
               ref={virtuosoRef}
