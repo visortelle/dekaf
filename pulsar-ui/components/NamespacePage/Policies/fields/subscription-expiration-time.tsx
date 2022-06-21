@@ -10,6 +10,7 @@ import { durationToSeconds, secondsToDuration } from '../../../ui/ConfigurationT
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import { swrKeys } from '../../../swrKeys';
+import { isEqual } from 'lodash';
 
 const policy = 'subscriptionExpirationTime';
 
@@ -36,7 +37,7 @@ const SubscriptionExpirationTimeInput: React.FC<SubscriptionExpirationTimeInputP
     setSubscriptionExpirationTime(() => props.value);
   }, [props.value]);
 
-  const showUpdateConfirmation = JSON.stringify(props.value) !== JSON.stringify(subscriptionExpirationTime);
+  const showUpdateConfirmation = !isEqual(props.value, subscriptionExpirationTime);
 
   return (
     <div>

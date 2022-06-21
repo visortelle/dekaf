@@ -67,7 +67,7 @@ const InternalConfig: React.FC = () => {
   const renderMetric = useCallback(([key, value]: [string, Metric[]]) => {
     return (
       <MetricsTable
-        key={stringify(key)}
+        key={key}
         title={key}
         metrics={value}
         highlightDimensions={[

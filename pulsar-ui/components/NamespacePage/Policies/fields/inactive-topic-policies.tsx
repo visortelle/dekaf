@@ -10,6 +10,7 @@ import UpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmatio
 import { useEffect, useState } from "react";
 import { Duration } from "../../../ui/ConfigurationTable/DurationInput/types";
 import { swrKeys } from "../../../swrKeys";
+import { isEqual } from "lodash";
 
 const policy = 'inactiveTopicPolicies';
 
@@ -53,7 +54,7 @@ const InputWithUpdateConfirmation: React.FC<InputWithUpdateConfirmationProps> = 
         value={value}
         onChange={(v) => setValue(() => v)}
       />
-      {JSON.stringify(props.value) !== JSON.stringify(value) && (
+      {!isEqual(props.value, value) && (
         <UpdateConfirmation
           onUpdate={handleUpdate}
           onReset={() => setValue(props.value)}

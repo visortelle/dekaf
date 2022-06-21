@@ -15,6 +15,7 @@ import { swrKeys } from '../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
+import { isEqual } from 'lodash';
 import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
 type NavigationTreeProps = {
@@ -104,6 +105,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
       if (nodeIndex !== -1) {
         const nextCursor = scrollToPath.cursor + 1;
+
+        // XXX - fix it somehow if you can.
         setTimeout(() => virtuosoRef.current?.scrollToIndex(nodeIndex));
 
         if (nextCursor === scrollToPath.path.length) {
@@ -345,7 +348,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               overscan={{ main: window.innerHeight / 2, reverse: window.innerHeight / 2 }}
               totalCount={plainTree.length}
               itemsRendered={(items) => {
-                const isShouldUpdate = scrollToPath.state === 'finished' && (stringify(itemsRendered) !== stringify(items));
+                const isShouldUpdate = scrollToPath.state === 'finished' && !isEqual(itemsRendered, items)
                 if (isShouldUpdate) {
                   setItemsRendered(() => items);
                 }
