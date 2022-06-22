@@ -20,8 +20,6 @@ export default function handler(req, res) {
   const body = JSON.parse(req.body);
 
   batchelor.execute(body, function (err, results) {
-    console.debug("Batch request received", body);
-
     if (err) {
       console.error(err);
     } else {
