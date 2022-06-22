@@ -312,7 +312,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     if (node.type === 'instance') {
       nodeChildrenCount = tenants?.length;
     } else {
-      nodeChildrenCount = childrenCountCache[pathStr] || undefined;
+      nodeChildrenCount = childrenCountCache[pathStr] === undefined ? undefined : childrenCountCache[pathStr];
     }
 
     return <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick} title={node.path.map(p => p.name).join('/')}>
