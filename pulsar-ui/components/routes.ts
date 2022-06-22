@@ -16,6 +16,18 @@ export const routes = {
         get: () => `/instance/metrics`,
       },
     },
+    tenants: {
+      _: {
+        path: "/instance/tenants",
+        get: () => `/instance/tenants`,
+      },
+    },
+    createTenant: {
+      _: {
+        path: "/instance/create-tenant",
+        get: () => `/instance/create-tenant`,
+      },
+    },
   },
   tenants: {
     tenant: {

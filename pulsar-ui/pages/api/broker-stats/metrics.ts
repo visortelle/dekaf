@@ -1,5 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { isPlainObject } from "lodash";
+import { cloneDeep, isPlainObject, mergeWith } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next";
 import * as Either from "fp-ts/Either";
 import * as pulsarAdmin from "pulsar-admin-client-fetch";
@@ -8,21 +8,25 @@ import { AbortController } from "node-abort-controller";
 // Fix AbortController is not defined error
 (global as any).AbortController = AbortController;
 
-type DimensionKey = string;
-type DimensionValue = string;
-type Filter = Record<DimensionKey, DimensionValue>;
-type Filters = Record<string, Filter>;
+export type DimensionKey = string;
+export type DimensionValue = string;
+export type ByDimensionFilter = Record<DimensionKey, DimensionValue>;
+export type ByDimensionsFilter = Record<string, ByDimensionFilter>;
+export type Filter =
+  | { type: "by-dimensions"; filter: ByDimensionsFilter }
+  | { type: "by-tenant"; tenant: string }
+  | { type: "all-tenants" };
 
-type Metric = {
+export type Metric = {
   metrics?: Record<string, any>;
   dimensions?: Record<string, any>;
 };
 
-type Metrics = Metric[];
+export type Metrics = Metric[];
 
-type MetricsMap = Record<string, Metrics>;
+export type MetricsMap = Record<string, Metrics>;
 
-type ApiError = { error: string };
+export type ApiError = { error: string };
 
 const metricsUpdateInterval = 3 * 1000;
 
@@ -66,31 +70,89 @@ export default async function handler(
     scheduleMetricsUpdate();
   }
 
-  let filters: Filters = {};
+  let filter: Filter = { type: "all-tenants" };
+
   try {
-    filters = JSON.parse(req.query.filters as string);
+    filter = JSON.parse(req.query.filter as string);
   } catch (err) {
     console.log(err);
   }
 
-  const validationResult = validateFilters(filters);
-  if (Either.isLeft(validationResult)) {
-    return res.status(400).json({ error: validationResult.left.message });
+  let filteredMetrics: MetricsMap = {};
+  if (filter.type === "by-dimensions") {
+    const validationResult = validateByDimensionsFilter(filter.filter);
+    if (Either.isLeft(validationResult)) {
+      return res.status(400).json({ error: validationResult.left.message });
+    }
+    filteredMetrics = applyByDimensionsFilter(
+      state.metrics || [],
+      filter.filter
+    );
+  } else if (filter.type === "all-tenants") {
+    filteredMetrics = applyAllTenantsFilter(state.metrics || []);
   }
 
-  const filteredMetrics = applyFilters(state.metrics || [], filters);
   return res.status(200).json(filteredMetrics);
 }
 
-function applyFilters(metrics: Metrics, filters: Filters): MetricsMap {
+function applyAllTenantsFilter(metrics: Metrics): MetricsMap {
+  const getMetricsSumByTenant = (tenant: string): Record<string, number> => {
+    return metrics.reduce<Record<string, number>>((result, metric) => {
+      const [te, ns, to] = (metric?.dimensions?.namespace || "").split("/");
+
+      if (ns === undefined || to === undefined || te !== tenant) {
+        return result;
+      }
+
+      const mergeDest = cloneDeep(result);
+      const mergeSrc = metric.metrics;
+      mergeWith(mergeDest, mergeSrc, (destValue, srcValue) => {
+        if (destValue === undefined && typeof srcValue === 'number') {
+          return srcValue;
+        }
+        if (typeof destValue === 'number' && typeof srcValue === 'number') {
+          return destValue + srcValue;
+        }
+
+        return destValue;
+      });
+
+      return mergeDest;
+    }, {});
+  };
+
+  const getTenants = (): string[] => {
+    return metrics.reduce<string[]>((result, metric) => {
+      const [te, ns, to] = (metric?.dimensions?.namespace || "").split("/");
+      if (ns === undefined || to === undefined) {
+        return result.concat([te]);
+      }
+      return result;
+    }, []);
+  }
+
+  const tenants = getTenants();
+  return tenants.reduce((result, tenant) => {
+    const metricsSum = getMetricsSumByTenant(tenant);
+    return { ...result, [tenant]: metricsSum };
+  }, {});
+}
+
+function applyByDimensionsFilter(
+  metrics: Metrics,
+  filters: ByDimensionsFilter
+): MetricsMap {
   return Object.keys(filters).reduce((result, key) => {
-    const filter: Filter = filters[key];
-    const filteredMetrics = applyFilter(metrics, filter);
+    const filter: ByDimensionFilter = filters[key];
+    const filteredMetrics = applyByDimensionFilter(metrics, filter);
     return { ...result, [key]: filteredMetrics };
   }, {});
 }
 
-function applyFilter(metrics: Metrics, filter: Filter): Metrics {
+function applyByDimensionFilter(
+  metrics: Metrics,
+  filter: ByDimensionFilter
+): Metrics {
   return metrics.filter((metric) => {
     const metricDimensions = metric.dimensions || {};
     return Object.keys(filter).every((dimensionKey) => {
@@ -99,11 +161,13 @@ function applyFilter(metrics: Metrics, filter: Filter): Metrics {
   });
 }
 
-function validateFilters(filters: Filters): Either.Either<Error, void> {
+function validateByDimensionsFilter(
+  filters: ByDimensionsFilter
+): Either.Either<Error, void> {
   if (!isPlainObject(filters)) {
     return Either.left(
       Error(
-        `?filters= should be in form { \"key\": { \"dimensionKey\": \"dimensionValue\" }[] }. Got: ${JSON.stringify(
+        `?filter= should be in form { \"key\": { \"dimensionKey\": \"dimensionValue\" }[] }. Got: ${JSON.stringify(
           filters
         )}`
       )
@@ -115,7 +179,7 @@ function validateFilters(filters: Filters): Either.Either<Error, void> {
       if (Either.isLeft(result)) {
         return result;
       }
-      const filter: Filter = filters[key];
+      const filter: ByDimensionFilter = filters[key];
       return validateFilter(filter);
     },
     Either.right(undefined)
@@ -128,7 +192,7 @@ function validateFilters(filters: Filters): Either.Either<Error, void> {
   return Either.right(undefined);
 }
 
-function validateFilter(filter: Filter): Either.Either<Error, void> {
+function validateFilter(filter: ByDimensionFilter): Either.Either<Error, void> {
   if (
     !isPlainObject(filter) ||
     !Object.keys(filter).every((dimensionKey) => {
