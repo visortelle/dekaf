@@ -5,8 +5,10 @@ import Configuration from './Configuration/Configuration';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import { routes } from '../routes';
 import BrokerStats from './BrokerStats/BrokerStats';
+import Tenants from './Tenants/Tenants';
+import CreateTenant from './CreateTenant/CreateTenant';
 
-export type InstancePageView = 'overview' | 'configuration' | 'broker-stats';
+export type InstancePageView = 'overview' | 'configuration' | 'broker-stats' | 'tenants' | 'create-tenant';
 export type InstancePageProps = {
   view: InstancePageView;
 };
@@ -24,6 +26,12 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               type: 'regular'
             },
             {
+              linkTo: routes.instance.tenants._.get(),
+              title: 'Tenants',
+              onClick: () => { },
+              type: 'regular'
+            },
+            {
               linkTo: routes.instance.configuration._.get(),
               title: 'Configuration',
               onClick: () => { },
@@ -35,6 +43,13 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               onClick: () => { },
               type: 'regular'
             },
+            {
+              linkTo: routes.instance.createTenant._.get(),
+              title: 'Create tenant',
+              onClick: () => { },
+              type: 'primary',
+              position: 'right'
+            },
           ]}
         />
       </div>
@@ -42,9 +57,10 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
       {props.view === 'overview' && <Overview />}
       {props.view === 'configuration' && <Configuration />}
       {props.view === 'broker-stats' && <BrokerStats />}
+      {props.view === 'tenants' && <Tenants />}
+      {props.view === 'create-tenant' && <CreateTenant />}
     </div>
   );
 }
 
 export default InstancePage;
-
