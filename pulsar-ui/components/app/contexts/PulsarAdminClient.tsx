@@ -12,7 +12,7 @@ const defaultValue: Value = {
 const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
-  const [client, _] = useState<pulsarAdmin.Client>(new pulsarAdmin.Client({ BASE: "/api/pulsar-broker-web/admin/v2", HEADERS: { "Content-Type": "application/json" } }));
+  const [client, _] = useState<pulsarAdmin.Client>(new pulsarAdmin.Client({ BASE: "http://localhost:3001/pulsar-broker-web/admin/v2", HEADERS: { "Content-Type": "application/json" } }));
 
   return (
     <>

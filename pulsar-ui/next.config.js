@@ -2,17 +2,10 @@ const path = require("path");
 
 /** @type {import('next').NextConfig} */
 module.exports = {
-  images: {
-    domains: ["www.haskell.org"],
-  },
   async rewrites() {
     return [
       {
-        source: "/api/pulsar-broker-web/:path*",
-        destination: "http://localhost:8080/:path*",
-      },
-      {
-        source: "/:any*",
+        source: "/:any*", // Handle requests to any paths in browser (make react-router work).
         destination: "/",
       },
     ];

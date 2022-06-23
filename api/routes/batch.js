@@ -17,9 +17,7 @@ var config = {
 batchelor.configure(config);
 
 export default function handler(req, res) {
-  const body = JSON.parse(req.body);
-
-  batchelor.execute(body, function (err, results) {
+  batchelor.execute(req.body, function (err, results) {
     if (err) {
       console.error(err);
     } else {
