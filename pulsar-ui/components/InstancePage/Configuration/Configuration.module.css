@@ -96,6 +96,7 @@
   background-color: #fff;
   border-radius: 4rem;
   width: 480rem;
+  animation: fade-in 0.2s ease-in-out;
 }
 
 .DynamicConfigValueEditor:focus {
@@ -125,4 +126,13 @@
 
 .Highlight {
   background-color: var(--accent-color-yellow);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

@@ -1,6 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { cloneDeep, isPlainObject, mergeWith } from "lodash";
-import { NextApiRequest, NextApiResponse } from "next";
 import * as Either from "fp-ts/Either";
 import * as pulsarAdmin from "pulsar-admin-client-fetch";
 import { AbortController } from "node-abort-controller";
@@ -17,22 +16,24 @@ export type Filter =
   | { type: "by-tenant"; tenant: string }
   | { type: "all-tenants" };
 
-export type Metric = {
-  metrics?: Record<string, any>;
+export type Metric<MS> = {
+  metrics?: MS;
   dimensions?: Record<string, any>;
 };
 
-export type Metrics = Metric[];
+export type Metrics<MS> = Metric<MS>[];
 
-export type MetricsMap = Record<string, Metrics>;
+export type MetricsMap<MS> = Record<string, Metrics<MS>>;
 
 export type ApiError = { error: string };
 
-const metricsUpdateInterval = 3 * 1000;
+type AnyMetricSchema = Record<string, any>;
+
+const metricsUpdateInterval = 15 * 1000;
 
 type State = {
   metricsUpdateTimeout: NodeJS.Timeout | undefined;
-  metrics: Metrics | undefined;
+  metrics: Metrics<AnyMetricSchema> | undefined;
 };
 const state: State = {
   metrics: undefined,
@@ -40,7 +41,7 @@ const state: State = {
 };
 
 const pulsarAdminClient = new pulsarAdmin.Client({
-  BASE: "http://localhost:3000/api/pulsar-broker-web/admin/v2",
+  BASE: "http://localhost:3001/pulsar-broker-web/admin/v2",
   HEADERS: { "Content-Type": "application/json" },
 });
 
@@ -63,7 +64,7 @@ function scheduleMetricsUpdate() {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<MetricsMap | ApiError>
+  res: NextApiResponse<MetricsMap<AnyMetricSchema> | ApiError>
 ) {
   if (state.metrics === undefined) {
     await updateMetrics();
@@ -78,7 +79,7 @@ export default async function handler(
     console.log(err);
   }
 
-  let filteredMetrics: MetricsMap = {};
+  let filteredMetrics: MetricsMap<AnyMetricSchema> = {};
   if (filter.type === "by-dimensions") {
     const validationResult = validateByDimensionsFilter(filter.filter);
     if (Either.isLeft(validationResult)) {
@@ -95,7 +96,9 @@ export default async function handler(
   return res.status(200).json(filteredMetrics);
 }
 
-function applyAllTenantsFilter(metrics: Metrics): MetricsMap {
+function applyAllTenantsFilter(
+  metrics: Metrics<AnyMetricSchema>
+): MetricsMap<AnyMetricSchema> {
   const getMetricsSumByTenant = (tenant: string): Record<string, number> => {
     return metrics.reduce<Record<string, number>>((result, metric) => {
       const [te, ns, to] = (metric?.dimensions?.namespace || "").split("/");
@@ -107,10 +110,10 @@ function applyAllTenantsFilter(metrics: Metrics): MetricsMap {
       const mergeDest = cloneDeep(result);
       const mergeSrc = metric.metrics;
       mergeWith(mergeDest, mergeSrc, (destValue, srcValue) => {
-        if (destValue === undefined && typeof srcValue === 'number') {
+        if (destValue === undefined && typeof srcValue === "number") {
           return srcValue;
         }
-        if (typeof destValue === 'number' && typeof srcValue === 'number') {
+        if (typeof destValue === "number" && typeof srcValue === "number") {
           return destValue + srcValue;
         }
 
@@ -129,7 +132,7 @@ function applyAllTenantsFilter(metrics: Metrics): MetricsMap {
       }
       return result;
     }, []);
-  }
+  };
 
   const tenants = getTenants();
   return tenants.reduce((result, tenant) => {
@@ -139,9 +142,9 @@ function applyAllTenantsFilter(metrics: Metrics): MetricsMap {
 }
 
 function applyByDimensionsFilter(
-  metrics: Metrics,
+  metrics: Metrics<AnyMetricSchema>,
   filters: ByDimensionsFilter
-): MetricsMap {
+): MetricsMap<AnyMetricSchema> {
   return Object.keys(filters).reduce((result, key) => {
     const filter: ByDimensionFilter = filters[key];
     const filteredMetrics = applyByDimensionFilter(metrics, filter);
@@ -150,9 +153,9 @@ function applyByDimensionsFilter(
 }
 
 function applyByDimensionFilter(
-  metrics: Metrics,
+  metrics: Metrics<AnyMetricSchema>,
   filter: ByDimensionFilter
-): Metrics {
+): Metrics<AnyMetricSchema> {
   return metrics.filter((metric) => {
     const metricDimensions = metric.dimensions || {};
     return Object.keys(filter).every((dimensionKey) => {

@@ -108,7 +108,10 @@ export const getTreeNodesChildrenCount: GetTreeNodesChildrenCount = async (
   const res = await fetch(batchApiUrl, {
     method: "POST",
     body: JSON.stringify(requests),
-    headers: { [hideShowProgressIndicatorHeader]: "" },
+    headers: {
+      [hideShowProgressIndicatorHeader]: "",
+      "Content-Type": "application/json",
+    },
   }).catch(() => undefined);
   if (res === undefined) {
     return {};
