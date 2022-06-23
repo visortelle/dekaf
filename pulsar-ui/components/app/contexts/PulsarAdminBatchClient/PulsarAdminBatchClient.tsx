@@ -3,8 +3,8 @@ import { TreePath } from '../../../NavigationTree/TreeView';
 import { getTreeNodesChildrenCount } from './get-tree-nodes-children-count';
 import { TreePathStr } from './types';
 
-const batchApiUrl = `http://localhost:3000/api/batch`;
-const brokerWebApiUrl = 'http://localhost:3000/api/pulsar-broker-web';
+const batchApiUrl = `http://localhost:3001/batch`;
+const brokerWebApiUrl = 'http://localhost:3001/pulsar-broker-web';
 
 export type Value = {
   client: {

@@ -2,7 +2,7 @@
 
 api_url="http://localhost:8080/admin/v2"
 
-tenants_count=100
+tenants_count=50
 namespaces_count=10
 topics_count=2
 
