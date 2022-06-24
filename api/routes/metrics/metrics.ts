@@ -1,9 +1,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { cloneDeep, isPlainObject, mergeWith } from "lodash";
-import { NextApiRequest, NextApiResponse } from "next";
 import * as Either from "fp-ts/Either";
 import * as pulsarAdmin from "pulsar-admin-client-fetch";
 import { AbortController } from "node-abort-controller";
+import { Response } from "express";
 
 // Fix AbortController is not defined error
 (global as any).AbortController = AbortController;
@@ -63,10 +63,7 @@ function scheduleMetricsUpdate() {
   state.metricsUpdateTimeout = setTimeout(updateMetrics, metricsUpdateInterval);
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<MetricsMap<AnyMetricSchema> | ApiError>
-) {
+export default async function handler(req: Request, res: Response) {
   if (state.metrics === undefined) {
     await updateMetrics();
     scheduleMetricsUpdate();
@@ -97,7 +94,9 @@ export default async function handler(
   return res.status(200).json(filteredMetrics);
 }
 
-function applyAllTenantsFilter(metrics: Metrics<AnyMetricSchema>): MetricsMap<AnyMetricSchema> {
+function applyAllTenantsFilter(
+  metrics: Metrics<AnyMetricSchema>
+): MetricsMap<AnyMetricSchema> {
   const getMetricsSumByTenant = (tenant: string): Record<string, number> => {
     return metrics.reduce<Record<string, number>>((result, metric) => {
       const [te, ns, to] = (metric?.dimensions?.namespace || "").split("/");
@@ -109,10 +108,10 @@ function applyAllTenantsFilter(metrics: Metrics<AnyMetricSchema>): MetricsMap<An
       const mergeDest = cloneDeep(result);
       const mergeSrc = metric.metrics;
       mergeWith(mergeDest, mergeSrc, (destValue, srcValue) => {
-        if (destValue === undefined && typeof srcValue === 'number') {
+        if (destValue === undefined && typeof srcValue === "number") {
           return srcValue;
         }
-        if (typeof destValue === 'number' && typeof srcValue === 'number') {
+        if (typeof destValue === "number" && typeof srcValue === "number") {
           return destValue + srcValue;
         }
 
@@ -131,7 +130,7 @@ function applyAllTenantsFilter(metrics: Metrics<AnyMetricSchema>): MetricsMap<An
       }
       return result;
     }, []);
-  }
+  };
 
   const tenants = getTenants();
   return tenants.reduce((result, tenant) => {
