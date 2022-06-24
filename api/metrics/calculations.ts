@@ -21,6 +21,7 @@ export function getNamespaceMetrics(
   )
     .toPairs()
     .map(([__, b]) => {
+      console.log('b', b);
       return _(b)
         .toPairs()
         .map(([__, c]) => {
@@ -90,18 +91,21 @@ export function getNamespaceMetrics(
 
 type NamespaceName = string;
 export function getNamespacesMetrics(
+  tenant: string,
   namespaces: string[],
   metrics: TopicsMetrics
 ): Record<NamespaceName, NamespaceMetrics> {
-  return namespaces.reduce<Record<NamespaceName, NamespaceMetrics>>(
+  const result = namespaces.reduce<Record<NamespaceName, NamespaceMetrics>>(
     (namespacesMetrics, namespace) => {
       return {
         ...namespacesMetrics,
-        [namespace]: getNamespaceMetrics(namespace, namespace, metrics),
+        [namespace]: getNamespaceMetrics(tenant, namespace, metrics),
       };
     },
     {}
   );
+
+  return result;
 }
 
 export function getTenantMetrics(
@@ -110,8 +114,9 @@ export function getTenantMetrics(
 ): TenantMetrics {
   const tenantNamespaces = Object.keys(metrics).filter(
     (key: Addr_Tenant_Namespace) => key.startsWith(`${tenant}/`)
-  );
-  const namespacesMetrics = getNamespacesMetrics(tenantNamespaces, metrics);
+  ).map((key: Addr_Tenant_Namespace) => key.split("/")[1]);
+
+  const namespacesMetrics = getNamespacesMetrics(tenant, tenantNamespaces, metrics);
   return _(namespacesMetrics)
     .toPairs()
     .map(([_, n]) => n)
