@@ -11,7 +11,7 @@ import Highlighter from "react-highlight-words";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce'
-import { Virtuoso, TableVirtuoso } from 'react-virtuoso';
+import { TableVirtuoso } from 'react-virtuoso';
 
 const filterKvsAndOp = "&&";
 const filterKvSep = "=";
@@ -125,7 +125,7 @@ const MetricsTable: React.FC<MetricsTableProps> = (props) => {
         <div key={stringify(m.dimensions)} className={s.Dimension}>
           <div className={s.Dimensions}>
             <Highlighter
-              highlightClassName={s.Highlight}
+              highlightClassName="highlight-substring"
               searchWords={props.highlightDimensions}
               autoEscape={true}
               textToHighlight={stringify(m.dimensions)}

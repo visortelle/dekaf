@@ -136,3 +136,49 @@ export const getTreeNodesChildrenCount: GetTreeNodesChildrenCount = async (
 
   return result;
 };
+
+type GetTenantsNamespacesCount = (
+  tenants: string[],
+  batchApiUrl: string,
+  brokerWebApiUrl: string
+) => Promise<Record<TreePathStr, number>>;
+export const getTenantsNamespacesCount: GetTenantsNamespacesCount = async (
+  tenants,
+  batchApiUrl,
+  brokerWebApiUrl
+) => {
+  const requests: BatchRequest[] = tenants.map((tenant) =>
+    getTenantNamespaces([{ type: "tenant", name: tenant }], brokerWebApiUrl)
+  );
+
+  const res = await fetch(batchApiUrl, {
+    method: "POST",
+    body: JSON.stringify(requests),
+    headers: {
+      [hideShowProgressIndicatorHeader]: "",
+      "Content-Type": "application/json",
+    },
+  }).catch(() => undefined);
+  if (res === undefined) {
+    return {};
+  }
+  const json = await res.json();
+  const result = _(json)
+    .toPairs()
+    .reduce<Record<string, number>>((result, [requestName, data]) => {
+      const path = requestNameToPath(requestName);
+      if (!Array.isArray(data.body)) {
+        return result;
+      }
+      const key = path[0]?.name;
+      return {
+        ...result,
+        [key]:
+          result[key] === undefined
+            ? data.body.length
+            : result[key] + data.body.length,
+      };
+    }, {});
+
+  return result;
+};
