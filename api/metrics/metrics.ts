@@ -43,7 +43,7 @@ async function refreshState() {
 
 function scheduleRefreshState() {
   clearTimeout(state.metricsUpdateTimeout);
-  state.metricsUpdateTimeout = setTimeout(refreshState, 5 * 1000);
+  state.metricsUpdateTimeout = setTimeout(refreshState, 10 * 1000);
 }
 
 refreshState();

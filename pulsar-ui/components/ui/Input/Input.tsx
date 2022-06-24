@@ -29,6 +29,11 @@ const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, o
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            inputRef?.current?.blur();
+          }
+        }}
       />
       {iconSvg && (<div className={s.InputIcon}>
         <SvgIcon svg={iconSvg} />

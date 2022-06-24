@@ -43,7 +43,7 @@ const Tenants: React.FC = () => {
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [itemsRendered, setItemsRendered] = useState<ListItem<string>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
-  const [tenantsNamespacesCache, setTenantsNamespacesCache] = useState<{ [key: string]: number }>({});
+  const [tenantsNamespacesCountCache, setTenantsNamespacesCountCache] = useState<{ [key: string]: number }>({});
   const [sort, setSort] = useState<{ key: SortKeys, direction: 'asc' | 'desc' }>({ key: 'tenant', direction: 'asc' });
 
   const { data: tenants, error: tenantsError } = useSWR(
@@ -73,7 +73,7 @@ const Tenants: React.FC = () => {
 
   useEffect(() => {
     // Avoid visual blinking after each tenants namespaces count update request.
-    setTenantsNamespacesCache(tenantsNamespacesCountCache => ({ ...tenantsNamespacesCountCache, ...tenantsNamespacesCount }));
+    setTenantsNamespacesCountCache(tenantsNamespacesCountCache => ({ ...tenantsNamespacesCountCache, ...tenantsNamespacesCount }));
   }, [tenantsNamespacesCount]);
 
   const filteredTenants = tenants?.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).filter((t) => t.includes(filterQueryDebounced));
@@ -81,7 +81,9 @@ const Tenants: React.FC = () => {
   return (
     <div className={s.Tenants}>
       <div className={s.Toolbar}>
-        <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="tenant-name" focusOnMount={true} />
+        <div className={s.FilterInput}>
+          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="tenant-name" focusOnMount={true} />
+        </div>
       </div>
 
       {(filteredTenants || []).length === 0 && (
@@ -121,7 +123,7 @@ const Tenants: React.FC = () => {
                 <Tenant
                   tenant={tenant}
                   metrics={tenantMetrics}
-                  namespacesCount={tenantsNamespacesCount === undefined ? undefined : tenantsNamespacesCount[tenant]}
+                  namespacesCount={tenantsNamespacesCountCache[tenant]}
                   highlight={{ tenant: [filterQueryDebounced] }}
                 />
               );

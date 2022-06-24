@@ -21,7 +21,6 @@ export function getNamespaceMetrics(
   )
     .toPairs()
     .map(([__, b]) => {
-      console.log('b', b);
       return _(b)
         .toPairs()
         .map(([__, c]) => {
