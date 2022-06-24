@@ -36,7 +36,7 @@ body {
 }
 
 body {
-  font-size: 16rem;
+  font-size: 14rem;
 }
 
 input,
@@ -50,7 +50,7 @@ strong {
 }
 
 a {
-  color: var(--pulsar-color);
+  color: var(--accent-color-blue);
   text-decoration: none;
 }
 
@@ -133,4 +133,9 @@ code {
   to {
     opacity: 1;
   }
+}
+
+.highlight-substring {
+  background-color: var(--accent-color-yellow);
+  border-radius: 2rem;
 }

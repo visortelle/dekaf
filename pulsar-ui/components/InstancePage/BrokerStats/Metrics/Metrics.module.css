@@ -26,10 +26,6 @@
   max-width: 480rem;
 }
 
-.Highlight {
-  background-color: var(--accent-color-yellow);
-}
-
 .Table {
   font-size: 14rem;
   border-spacing: 0;

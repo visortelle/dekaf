@@ -70,7 +70,7 @@ const Configuration: React.FC = () => {
                 <tr key={key} className={s.Row}>
                   <td className={`${s.Cell} ${s.ConfigParamKeyCell}`}>
                     <Highlighter
-                      highlightClassName={s.Highlight}
+                      highlightClassName="highlight-substring"
                       searchWords={[paramFilter]}
                       autoEscape={true}
                       textToHighlight={key}

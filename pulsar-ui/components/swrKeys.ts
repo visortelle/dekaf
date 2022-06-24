@@ -3,9 +3,44 @@ import { TreeNode } from "./NavigationTree/TreeView";
 
 export const swrKeys = {
   pulsar: {
+    customApi: {
+      metrics: {
+        allTenants: {
+          _: () => ["customApi", "metrics", "allTenants"],
+        },
+        tenant: {
+          _: (tenant: string) => ["customApi", "metrics", "tenants", tenant],
+        },
+        allTenantNamespaces: {
+          _: (tenant: string) => [
+            "customApi",
+            "metrics",
+            "allTenantNamespaces",
+            tenant,
+          ],
+        },
+        namespace: {
+          _: (tenant: string, namespace: string) => [
+            "customApi",
+            "metrics",
+            "namespaces",
+            tenant,
+            namespace
+          ],
+        },
+      },
+    },
     batch: {
       getTreeNodesChildrenCount: {
-        _: (nodes: TreeNode[]) => ['pulsar', "batch", "getTreeNodesChildrenCount", stringify(nodes)],
+        _: (nodes: TreeNode[]) => [
+          "pulsar",
+          "batch",
+          "getTreeNodesChildrenCount",
+          stringify(nodes),
+        ],
+      },
+      getTenantsNamespacesCount: {
+        _: (tenants: string[]) => ["pulsar", "batch", "getTenantsNamespacesCount", stringify(tenants)],
       }
     },
     brokers: {

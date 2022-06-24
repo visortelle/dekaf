@@ -5,6 +5,17 @@
   z-index: 100;
 }
 
-.Children {
+.Content {
   margin-left: 380rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.Children {
+
+}
+
+.Footer {
+  margin-top: auto;
 }
