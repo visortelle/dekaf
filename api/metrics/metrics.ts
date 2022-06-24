@@ -1,0 +1,74 @@
+import { Request, Response, Router } from "express";
+import { TenantMetrics, TopicsMetrics } from "./types";
+import { getTenantMetrics } from "./calculations";
+import * as pulsarAdmin from "pulsar-admin-client-fetch";
+import { fromPairs } from "lodash";
+
+type State = {
+  metrics: TopicsMetrics;
+  metricsUpdateTimeout: NodeJS.Timeout | undefined;
+  tenants: string[];
+};
+
+const state: State = {
+  metrics: {},
+  metricsUpdateTimeout: undefined,
+  tenants: [],
+};
+
+const pulsarAdminClient = new pulsarAdmin.Client({
+  BASE: "http://localhost:3001/pulsar-broker-web/admin/v2",
+  HEADERS: { "Content-Type": "application/json" },
+});
+
+async function refreshState() {
+  const metrics = await pulsarAdminClient.brokerStats
+    .getTopics2()
+    .catch((err) => console.log(err));
+
+  if (metrics !== undefined) {
+    state.metrics = metrics;
+  }
+
+  const tenants = await pulsarAdminClient.tenants
+    .getTenants()
+    .catch((err) => console.log(err));
+
+  if (tenants !== undefined) {
+    state.tenants = tenants;
+  }
+
+  scheduleRefreshState();
+}
+
+function scheduleRefreshState() {
+  clearTimeout(state.metricsUpdateTimeout);
+  state.metricsUpdateTimeout = setTimeout(refreshState, 5 * 1000);
+}
+
+refreshState();
+scheduleRefreshState();
+
+export const router = Router();
+
+router.get(
+  "/allTenants",
+  async (_, res: Response<Record<string, TenantMetrics>>) => {
+    const tenantsMetrics = fromPairs(
+      state.tenants.map((tenant) => [
+        tenant,
+        getTenantMetrics(tenant, state.metrics),
+      ])
+    );
+    res.status(200).json(tenantsMetrics);
+  }
+);
+
+router.get(
+  "/tenants/:tenant",
+  async (req: Request, res: Response<TenantMetrics>) => {
+    const tenant = req.params.tenant;
+    const tenantMetrics = getTenantMetrics(tenant, state.metrics);
+    res.status(200).json(tenantMetrics);
+  }
+);

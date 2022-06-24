@@ -3,9 +3,7 @@ import { cloneDeep, isPlainObject, mergeWith } from "lodash";
 import * as Either from "fp-ts/Either";
 import * as pulsarAdmin from "pulsar-admin-client-fetch";
 import { AbortController } from "node-abort-controller";
-
-// Fix AbortController is not defined error
-(global as any).AbortController = AbortController;
+import { Request, Response } from "express";
 
 export type DimensionKey = string;
 export type DimensionValue = string;
@@ -29,11 +27,9 @@ export type ApiError = { error: string };
 
 type AnyMetricSchema = Record<string, any>;
 
-const metricsUpdateInterval = 15 * 1000;
-
 type State = {
-  metricsUpdateTimeout: NodeJS.Timeout | undefined;
   metrics: Metrics<AnyMetricSchema> | undefined;
+  metricsUpdateTimeout: NodeJS.Timeout | undefined;
 };
 const state: State = {
   metrics: undefined,
@@ -45,7 +41,7 @@ const pulsarAdminClient = new pulsarAdmin.Client({
   HEADERS: { "Content-Type": "application/json" },
 });
 
-async function updateMetrics() {
+async function refreshState() {
   const res = await pulsarAdminClient.brokerStats
     .getMetrics()
     .catch((err) => console.log(err));
@@ -54,21 +50,18 @@ async function updateMetrics() {
     state.metrics = res;
   }
 
-  scheduleMetricsUpdate();
+  scheduleRefreshState();
 }
 
-function scheduleMetricsUpdate() {
+function scheduleRefreshState() {
   clearTimeout(state.metricsUpdateTimeout);
-  state.metricsUpdateTimeout = setTimeout(updateMetrics, metricsUpdateInterval);
+  state.metricsUpdateTimeout = setTimeout(refreshState, 5 * 1000);
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<MetricsMap<AnyMetricSchema> | ApiError>
-) {
+export default async function handler(req: Request, res: Response) {
   if (state.metrics === undefined) {
-    await updateMetrics();
-    scheduleMetricsUpdate();
+    await refreshState();
+    scheduleRefreshState();
   }
 
   let filter: Filter = { type: "all-tenants" };

@@ -3,7 +3,7 @@ import * as AsyncTasks from '../components/app/contexts/AsyncTasks';
 import * as Notifications from '../components/app/contexts/Notifications';
 import * as PulsarAdminClient from '../components/app/contexts/PulsarAdminClient';
 import * as PulsarAdminBatchClient from '../components/app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
-import * as PulsarBrokerStatsClient from '../components/app/contexts/PulsarBrokerStatsClient/PulsarBrokerStatsClient';
+import * as PulsarCustomApiClient from '../components/app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
 import * as BrokerConfig from '../components/app/contexts/BrokersConfig';
 import 'react-toastify/dist/ReactToastify.css';
 import NoSsr from '../components/ui/NoSsr/NoSsr';
@@ -52,11 +52,11 @@ const _MyApp = (props: AppProps) => {
         <Notifications.DefaultProvider>
           <PulsarAdminClient.DefaultProvider>
             <PulsarAdminBatchClient.DefaultProvider>
-              <PulsarBrokerStatsClient.DefaultProvider>
+              <PulsarCustomApiClient.DefaultProvider>
                 <BrokerConfig.DefaultProvider>
                   {typeof window === 'undefined' ? null : <props.Component />}
                 </BrokerConfig.DefaultProvider>
-              </PulsarBrokerStatsClient.DefaultProvider>
+              </PulsarCustomApiClient.DefaultProvider>
             </PulsarAdminBatchClient.DefaultProvider>
           </PulsarAdminClient.DefaultProvider>
         </Notifications.DefaultProvider>
