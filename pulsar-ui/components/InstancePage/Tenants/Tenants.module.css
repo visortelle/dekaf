@@ -7,6 +7,10 @@
   margin-bottom: 12rem;
 }
 
+.FilterInput {
+  max-width: 480rem;
+}
+
 .Table {
   font-size: 14rem;
   border-spacing: 0;
