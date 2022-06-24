@@ -2,9 +2,9 @@
 
 api_url="http://localhost:8080/admin/v2"
 
-tenants_count=50
-namespaces_count=10
-topics_count=2
+tenants_count=2
+namespaces_count=2
+topics_count=1000
 
 for te in $(seq $tenants_count); do
   curl -X PUT \
