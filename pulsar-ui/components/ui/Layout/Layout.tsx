@@ -3,6 +3,7 @@ import s from './Layout.module.css'
 import NavigationTree from '../../NavigationTree/NavigationTree';
 import { TreePath } from '../../NavigationTree/TreeView';
 import GlobalProgressIndicator from '../GlobalProgressIndicator/GlobalProgressIndicator';
+import Footer from './Footer';
 
 export type LayoutProps = {
   children: React.ReactNode;
@@ -18,8 +19,13 @@ const Layout: React.FC<LayoutProps> = (props) => {
       <div className={s.NavigationTree}>
         <NavigationTree selectedNodePath={props.navigationTree.selectedNodePath} />
       </div>
-      <div className={s.Children}>
-        {props.children}
+      <div className={s.Content}>
+        <div className={s.Children}>
+          {props.children}
+        </div>
+        <div className={s.Footer}>
+          <Footer />
+        </div>
       </div>
     </div>
   );

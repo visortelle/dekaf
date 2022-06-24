@@ -1,0 +1,29 @@
+.TealTools {
+  position: relative;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 12rem;
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+.Text {
+  margin-right: 12rem;
+}
+
+.Logo {
+  background-color: #333;
+  color: #fff;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 4rem 12rem 3rem 24rem;
+  border-top-left-radius: 24rem 24rem;
+}

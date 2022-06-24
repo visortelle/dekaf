@@ -7,7 +7,12 @@ export type TealToolsProps = {};
 const TealTools: React.FC<TealToolsProps> = (props) => {
   return (
     <div className={s.TealTools}>
-      With love by&nbsp;<a href="https://teal.tools"><Logo fontSize='14rem' isDark/></a>
+      <div className={s.Text}>
+        Pulsar X-Ray v0.1.0
+      </div>
+      <a href="https://teal.tools" target="__blank" className={s.Logo}>
+        <Logo fontSize='18rem' isDark />
+      </a>
     </div>
   );
 }

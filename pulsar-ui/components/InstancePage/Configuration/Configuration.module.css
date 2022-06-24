@@ -124,10 +124,6 @@
   margin-bottom: 12rem;
 }
 
-.Highlight {
-  background-color: var(--accent-color-yellow);
-}
-
 @keyframes fade-in {
   from {
     opacity: 0;
