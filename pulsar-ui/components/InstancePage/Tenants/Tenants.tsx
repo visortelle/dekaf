@@ -100,7 +100,7 @@ const Tenants: React.FC = () => {
     <div className={s.Tenants}>
       <div className={s.Toolbar}>
         <div className={s.FilterInput}>
-          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="tenant-name" focusOnMount={true} />
+          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="tenant-name" focusOnMount={true} clearable={true} />
         </div>
       </div>
 
@@ -114,7 +114,7 @@ const Tenants: React.FC = () => {
           <TableVirtuoso
             className={s.TableVirtuoso}
             data={filteredTenants}
-            overscan={{ main: (tableRef?.current?.clientHeight || 0) / 2, reverse: (tableRef?.current?.clientHeight || 0) / 2 }}
+            overscan={{ main: (tableRef?.current?.clientHeight || 0), reverse: (tableRef?.current?.clientHeight || 0)}}
             fixedHeaderContent={() => (
               <tr>
                 <th className={s.Th} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Tenant</th>

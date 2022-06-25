@@ -9,19 +9,22 @@ export type LayoutProps = {
   children: React.ReactNode;
   navigationTree: {
     selectedNodePath: TreePath;
-  }
-};
+  };
+  scrollMode?: 'window' | 'page-own'
+} & React.HTMLAttributes<HTMLDivElement>;
 
 const Layout: React.FC<LayoutProps> = (props) => {
+  const { children, navigationTree, scrollMode, ...restProps } = props;
+
   return (
-    <div className={s.Layout}>
+    <div className={s.Layout} {...restProps}>
       <GlobalProgressIndicator />
       <div className={s.NavigationTree}>
-        <NavigationTree selectedNodePath={props.navigationTree.selectedNodePath} />
+        <NavigationTree selectedNodePath={navigationTree.selectedNodePath} />
       </div>
       <div className={s.Content}>
-        <div className={s.Children}>
-          {props.children}
+        <div className={s.Children} style={{ overflow: props?.scrollMode === 'page-own' ? "hidden" : 'initial' }}>
+          {children}
         </div>
         <div className={s.Footer}>
           <Footer />
