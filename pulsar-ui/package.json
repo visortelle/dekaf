@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@react-hook/timeout": "^2.1.1",
+    "@types/numeral": "^2.0.2",
     "axios": "^0.27.2",
     "batchelorjs": "^2.0.0",
     "fetch-intercept": "^2.4.0",
@@ -21,6 +22,7 @@
     "lodash": "^4.17.21",
     "nanoid": "^4.0.0",
     "next": "12.1.6",
+    "numeral": "^2.0.6",
     "pulsar-admin-client-fetch": "^1.0.15",
     "query-string": "^7.1.1",
     "raw-loader": "^4.0.2",
