@@ -1,0 +1,30 @@
+.Table {
+  font-size: 14rem;
+  border-spacing: 0;
+  border-radius: 4rem;
+  overflow: hidden;
+  border: 1rem solid #ddd;
+}
+
+.Cell {
+  padding: 4rem 12rem;
+  border: 1rem solid #ddd;
+  border-bottom: none;
+  border-right: none;
+}
+
+.Row:first-child .Cell {
+  border-top: none;
+}
+
+.Row:last-child .Cell {
+  border-bottom: none;
+}
+
+.Row .Cell:first-child {
+  border-left: none;
+}
+
+.Row .Cell:last-child {
+  border-right: none;
+}
