@@ -41,7 +41,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   }
 
   const adminRolesInput = <ListInput<string>
-    value={configuration?.adminRoles || []}
+    value={configuration?.adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
     editor={{
@@ -71,7 +71,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   const hideAddButton = clustersList.length === 0;
 
   const allowedClustersInput = <ListInput<string>
-    value={configuration?.allowedClusters || []}
+    value={configuration?.allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <div>{v}</div>}
     editor={hideAddButton ? undefined : {

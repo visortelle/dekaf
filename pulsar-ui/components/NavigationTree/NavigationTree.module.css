@@ -56,6 +56,7 @@
   bottom: 0;
   display: flex;
   align-items: center;
+  padding-right: 5ch;
 }
 .NodeLink:hover {
   opacity: 1;
@@ -64,6 +65,11 @@
 .NodeLinkActive {
   background-color: #f5f5f5;
   z-index: 1;
+}
+
+.NodeLinkText {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .NodeIcon {
