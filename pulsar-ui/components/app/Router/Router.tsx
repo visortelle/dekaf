@@ -44,7 +44,7 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     { path: routes.instance._.path, element: withLayout(<InstancePage view='overview' />, withLayoutProps) },
     { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view='configuration' />, withLayoutProps) },
     { path: routes.instance.brokerStats._.path, element: withLayout(<InstancePage view='broker-stats' />, withLayoutProps) },
-    { path: routes.instance.tenants._.path, element: withLayout(<InstancePage view='tenants' />, withLayoutProps) },
+    { path: routes.instance.tenants._.path, element: withLayout(<InstancePage view='tenants' />, setScrollMode(withLayoutProps, 'page-own')) },
     { path: routes.instance.createTenant._.path, element: withLayout(<InstancePage view='create-tenant' />, withLayoutProps) },
 
     /* Topics */
@@ -134,5 +134,9 @@ const RouteAdapter = ({ children }: any) => {
   );
   return children({ history: adaptedHistory, location });
 };
+
+const setScrollMode = (withLayoutProps: WithLayoutProps, scrollMode: WithLayoutProps['layout']['scrollMode']) => {
+  return { ...withLayoutProps, layout: { ...withLayoutProps.layout, scrollMode } };
+}
 
 export default Router;
