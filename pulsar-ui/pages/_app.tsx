@@ -48,7 +48,7 @@ const _MyApp = (props: AppProps) => {
   }, []);
 
   return (
-    <SWRConfig value={{ shouldRetryOnError: false, focusThrottleInterval: 120 }}>
+    <SWRConfig value={{ shouldRetryOnError: false, focusThrottleInterval: 120, refreshInterval: 15 * 1000,  }}>
       <NoSsr>
         <I18n.DefaultProvider>
           <Notifications.DefaultProvider>

@@ -27,7 +27,6 @@ const InternalConfig: React.FC = () => {
   const { data: metricsData, error: metricsError } = useSWR(
     swrKeys.pulsar.brokerStats.metrics,
     async () => await adminClient.brokerStats.getMetrics(),
-    { refreshInterval: 5000 }
   );
 
   if (metricsError) {

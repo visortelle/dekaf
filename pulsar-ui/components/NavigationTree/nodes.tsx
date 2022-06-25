@@ -23,7 +23,7 @@ export const PulsarInstance: React.FC<PulsarInstanceProps> = (props) => {
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span>Pulsar Instance</span>
+      <span className={s.NodeLinkText}>Pulsar Instance</span>
     </Link>
   );
 }
@@ -63,7 +63,7 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span>{props.tenant}</span>
+      <span className={s.NodeLinkText}>{props.tenant}</span>
     </Link>
   );
 }
@@ -115,7 +115,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span>{props.namespace}</span>
+      <span className={s.NodeLinkText}>{props.namespace}</span>
     </Link>
   );
 }
@@ -138,7 +138,7 @@ export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span>{props.topic}</span>
+      <span className={s.NodeLinkText}>{props.topic}</span>
     </Link>
   );
 }

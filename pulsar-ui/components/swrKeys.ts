@@ -25,7 +25,7 @@ export const swrKeys = {
             "metrics",
             "namespaces",
             tenant,
-            namespace
+            namespace,
           ],
         },
       },
@@ -40,8 +40,21 @@ export const swrKeys = {
         ],
       },
       getTenantsNamespacesCount: {
-        _: (tenants: string[]) => ["pulsar", "batch", "getTenantsNamespacesCount", stringify(tenants)],
-      }
+        _: (tenants: string[]) => [
+          "pulsar",
+          "batch",
+          "getTenantsNamespacesCount",
+          stringify(tenants),
+        ],
+      },
+      getTenantsInfo: {
+        _: (tenants: string[]) => [
+          "pulsar",
+          "batch",
+          "getTenantsInfo",
+          stringify(tenants),
+        ],
+      },
     },
     brokers: {
       healthCheck: {

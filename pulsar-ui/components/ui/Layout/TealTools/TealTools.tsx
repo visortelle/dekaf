@@ -10,6 +10,17 @@ const TealTools: React.FC<TealToolsProps> = (props) => {
       <div className={s.Text}>
         Pulsar X-Ray v0.1.0
       </div>
+      <div className={s.Links}>
+        <a href="#" target="__blank" className={s.Link}>
+          Report a problem
+        </a>
+        <a href="#" target="__blank" className={s.Link}>
+          Register license
+        </a>
+        <a href="#" target="__blank" className={s.Link}>
+          Get help
+        </a>
+      </div>
       <a href="https://teal.tools" target="__blank" className={s.Logo}>
         <Logo fontSize='18rem' isDark />
       </a>
