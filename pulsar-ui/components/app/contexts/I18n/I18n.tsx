@@ -11,8 +11,8 @@ export type Value = {
 const defaultValue: Value = {
   formatBytes: (bytes: number) => bytes === 0 ? String(0) : numeral(bytes).format('0.00b'),
   formatBytesRate: (bytesPerSecond: number) => bytesPerSecond === 0 ? String(0) : numeral(bytesPerSecond).format('0.00b') + '/s',
-  formatCount: (count: number) => count === 0 ? String(0) : numeral(count).format('0.00a'),
-  formatCountRate: (countPerSecond: number) => countPerSecond === 0 ? String(0) : numeral(countPerSecond).format('0.00a') + '/s'
+  formatCount: (count: number) => count === 0 ? String(0) : numeral(count).format(count < 1000 ? '0a' : '0.00a'),
+  formatCountRate: (countPerSecond: number) => countPerSecond === 0 ? String(0) : numeral(countPerSecond).format(countPerSecond < 1000 ? '0a' : '0.00a') + '/s'
 };
 
 const Context = React.createContext<Value>(defaultValue);
