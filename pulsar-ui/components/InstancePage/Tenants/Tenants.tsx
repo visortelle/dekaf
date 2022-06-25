@@ -55,7 +55,7 @@ const Tenants: React.FC = () => {
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [tenantsNamespacesCountCache, setTenantsNamespacesCountCache] = useState<Record<string, number>>({});
   const [tenantsInfoCache, setTenantsInfoCache] = useState<Record<string, TenantInfo>>({});
-  const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
+  const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'desc' });
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
     const handleColumnHeaderClick = () => {
@@ -66,7 +66,7 @@ const Tenants: React.FC = () => {
       if (sort.key === props.sortKey) {
         setSort({ key: props.sortKey, direction: sort.direction === 'asc' ? 'desc' : 'asc' });
       } else {
-        setSort({ key: props.sortKey, direction: 'asc' });
+        setSort({ key: props.sortKey, direction: 'desc' });
       }
     }
 
@@ -79,7 +79,7 @@ const Tenants: React.FC = () => {
 
           {sort.key === props.sortKey && (
             <div className={s.SortableThIcon}>
-              <SvgIcon svg={sort.direction === 'asc' ? arrowDownIcon : arrowUpIcon} />
+              <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
             </div>
           )}
         </div>
@@ -175,18 +175,18 @@ const Tenants: React.FC = () => {
                 <Th title={<NamespaceIcon />} sortKey="namespaces" />
                 <Th title="Allowed clusters" />
                 <Th title="Admin roles" />
-                <Th title="Avg. msg. size" sortKey="averageMsgSize" />
-                <Th title="Backlog size" sortKey="backlogSize" />
-                <Th title="Bytes in" sortKey="bytesInCount" />
-                <Th title="Bytes out" sortKey="bytesOutCount" />
-                <Th title="Msg. in" sortKey="msgInCount" />
-                <Th title="Msg. out" sortKey="msgOutCount" />
                 <Th title="Msg. rate in" sortKey="msgRateIn" />
                 <Th title="Msg. rate out" sortKey="msgRateOut" />
                 <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
                 <Th title="Msg. throughput out" sortKey="msgThroughputOut" />
-                <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
+                <Th title="Msg. in" sortKey="msgInCount" />
+                <Th title="Msg. out" sortKey="msgOutCount" />
+                <Th title="Avg. msg. size" sortKey="averageMsgSize" />
+                <Th title="Bytes in" sortKey="bytesInCount" />
+                <Th title="Bytes out" sortKey="bytesOutCount" />
                 <Th title="Producers" sortKey="producerCount" />
+                <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
+                <Th title="Backlog size" sortKey="backlogSize" />
                 <Th title="Storage size" sortKey="storageSize" />
               </tr>
             )}
@@ -273,18 +273,18 @@ const Tenant: React.FC<TenantProps> = (props) => {
           </div>
         )}
       </Td>
-      <Td width="6ch">{props.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.averageMsgSize)}</Td>
-      <Td width="6ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.metrics.backlogSize)}</Td>
-      <Td width="6ch">{props.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesInCount)}</Td>
-      <Td width="6ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesOutCount)}</Td>
-      <Td width="6ch">{props.metrics?.msgInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgInCount)}</Td>
-      <Td width="6ch">{props.metrics?.msgOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgOutCount)}</Td>
       <Td width="6ch">{props.metrics?.msgRateIn === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgRateIn)}</Td>
       <Td width="6ch">{props.metrics?.msgRateOut === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgRateOut)}</Td>
       <Td width="6ch">{props.metrics?.msgThroughputIn === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgThroughputIn)}</Td>
       <Td width="6ch">{props.metrics?.msgThroughputOut === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgThroughputOut)}</Td>
-      <Td width="6ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
+      <Td width="6ch">{props.metrics?.msgInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgInCount)}</Td>
+      <Td width="6ch">{props.metrics?.msgOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgOutCount)}</Td>
+      <Td width="6ch">{props.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.averageMsgSize)}</Td>
+      <Td width="6ch">{props.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesInCount)}</Td>
+      <Td width="6ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesOutCount)}</Td>
       <Td width="6ch">{props.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.producerCount)}</Td>
+      <Td width="6ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
+      <Td width="6ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.metrics.backlogSize)}</Td>
       <Td width="6ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
     </>
   );
