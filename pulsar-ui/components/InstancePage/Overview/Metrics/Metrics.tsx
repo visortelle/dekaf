@@ -28,19 +28,19 @@ const Metrics: React.FC = () => {
       <table className={sts.Table}>
         <tr className={sts.Row}>
           <td className={sts.Cell}><strong>Msg. rate in</strong></td>
-          <td className={sts.Cell}>{i18n.formatRate(sum(allTenantsMetrics || {}, 'msgRateIn'))}</td>
+          <td className={sts.Cell}>{i18n.formatCountRate(sum(allTenantsMetrics || {}, 'msgRateIn'))}</td>
         </tr>
         <tr className={sts.Row}>
           <td className={sts.Cell}><strong>Msg. rate out</strong></td>
-          <td className={sts.Cell}>{i18n.formatRate(sum(allTenantsMetrics || {}, 'msgRateOut'))}</td>
+          <td className={sts.Cell}>{i18n.formatCountRate(sum(allTenantsMetrics || {}, 'msgRateOut'))}</td>
         </tr>
         <tr className={sts.Row}>
           <td className={sts.Cell}><strong>Msg. throughput in</strong></td>
-          <td className={sts.Cell}>{i18n.formatRate(sum(allTenantsMetrics || {}, 'msgThroughputIn'))}</td>
+          <td className={sts.Cell}>{i18n.formatCountRate(sum(allTenantsMetrics || {}, 'msgThroughputIn'))}</td>
         </tr>
         <tr className={sts.Row}>
           <td className={sts.Cell}><strong>Msg. throughput out</strong></td>
-          <td className={sts.Cell}>{i18n.formatRate(sum(allTenantsMetrics || {}, 'msgThroughputOut'))}</td>
+          <td className={sts.Cell}>{i18n.formatCountRate(sum(allTenantsMetrics || {}, 'msgThroughputOut'))}</td>
         </tr>
         <tr className={sts.Row}>
           <td className={sts.Cell}><strong>Msg. in</strong></td>
@@ -51,7 +51,7 @@ const Metrics: React.FC = () => {
           <td className={sts.Cell}>{i18n.formatCount(sum(allTenantsMetrics || {}, 'msgOutCount'))}</td>
         </tr>
         <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Avg msg. size</strong></td>
+          <td className={sts.Cell}><strong>Avg. msg. size</strong></td>
           <td className={sts.Cell}>{i18n.formatBytes(Object.keys(allTenantsMetrics || {}).length > 0 ? sum(allTenantsMetrics || {}, 'averageMsgSize') / Object.keys(allTenantsMetrics || {}).length : 0)}</td>
         </tr>
         <tr className={sts.Row}>

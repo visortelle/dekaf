@@ -1,15 +1,18 @@
 import React, { ReactNode } from 'react';
+import numeral from 'numeral';
 
 export type Value = {
   formatBytes: (bytes: number) => string;
+  formatBytesRate: (bytesPerSecond: number) => string;
   formatCount: (count: number) => string;
-  formatRate: (countPerSecond: number) => string;
+  formatCountRate: (countPerSecond: number) => string;
 }
 
 const defaultValue: Value = {
-  formatBytes: (bytes: number) => String(bytes),
-  formatCount: (count: number) => String(count),
-  formatRate: (countPerSecond: number) => String(countPerSecond),
+  formatBytes: (bytes: number) => bytes === 0 ? String(0) : numeral(bytes).format('0.00b'),
+  formatBytesRate: (bytesPerSecond: number) => bytesPerSecond === 0 ? String(0) : numeral(bytesPerSecond).format('0.00b') + '/s',
+  formatCount: (count: number) => count === 0 ? String(0) : numeral(count).format('0.00a'),
+  formatCountRate: (countPerSecond: number) => countPerSecond === 0 ? String(0) : numeral(countPerSecond).format('0.00a') + '/s'
 };
 
 const Context = React.createContext<Value>(defaultValue);
