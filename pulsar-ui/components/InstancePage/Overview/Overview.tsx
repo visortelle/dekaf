@@ -7,11 +7,13 @@ import s from './Overview.module.css'
 const Overview: React.FC = () => {
   return (
     <div className={s.Overview}>
-      <div className={s.Section}>
-        <HealthCheck />
-      </div>
-      <div className={s.Section}>
-        <InternalConfig />
+      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+        <div className={s.Section} style={{ marginRight: '48rem' }}>
+          <InternalConfig />
+        </div>
+        <div className={s.Section}>
+          <HealthCheck />
+        </div>
       </div>
       <div className={s.Section}>
         <Metrics />

@@ -269,19 +269,19 @@ const Tenant: React.FC<TenantProps> = (props) => {
           </div>
         )}
       </Td>
-      <Td width="6ch">{props.metrics?.msgRateIn === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgRateIn)}</Td>
-      <Td width="6ch">{props.metrics?.msgRateOut === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgRateOut)}</Td>
-      <Td width="6ch">{props.metrics?.msgThroughputIn === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgThroughputIn)}</Td>
-      <Td width="6ch">{props.metrics?.msgThroughputOut === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgThroughputOut)}</Td>
-      <Td width="6ch">{props.metrics?.msgInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgInCount)}</Td>
-      <Td width="6ch">{props.metrics?.msgOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgOutCount)}</Td>
-      <Td width="6ch">{props.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.averageMsgSize)}</Td>
-      <Td width="6ch">{props.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesInCount)}</Td>
-      <Td width="6ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesOutCount)}</Td>
-      <Td width="6ch">{props.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.producerCount)}</Td>
-      <Td width="6ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
-      <Td width="6ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.metrics.backlogSize)}</Td>
-      <Td width="6ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
+      <Td width="12ch">{props.metrics?.msgRateIn === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgRateIn)}</Td>
+      <Td width="12ch">{props.metrics?.msgRateOut === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgRateOut)}</Td>
+      <Td width="18ch">{props.metrics?.msgThroughputIn === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgThroughputIn)}</Td>
+      <Td width="18ch">{props.metrics?.msgThroughputOut === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgThroughputOut)}</Td>
+      <Td width="12ch">{props.metrics?.msgInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgInCount)}</Td>
+      <Td width="12ch">{props.metrics?.msgOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgOutCount)}</Td>
+      <Td width="12ch">{props.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.averageMsgSize)}</Td>
+      <Td width="12ch">{props.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesInCount)}</Td>
+      <Td width="12ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesOutCount)}</Td>
+      <Td width="12ch">{props.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.producerCount)}</Td>
+      <Td width="12ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
+      <Td width="12ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.metrics.backlogSize)}</Td>
+      <Td width="12ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
     </>
   );
 }
