@@ -34,7 +34,6 @@ const InternalConfig: React.FC = () => {
   }
 
   useEffect(() => {
-    console.log('wtf');
     const kvs = dimensionsFilterDebounced
       .split(filterKvsAndOp)
       .map((d) => d.includes(filterKvSep) ? d.trim() : undefined)
@@ -44,7 +43,7 @@ const InternalConfig: React.FC = () => {
 
     let filteredMetrics = dimensionsFilterDebounced.length === 0 ? metricsData : [];
     if (kvs.length === 0) {
-      filteredMetrics = metricsData?.filter(m => Object.entries(m.dimensions || {}).some(([k, v]) => {
+      filteredMetrics = metricsData?.filter(m => m.dimensions?.metric !== undefined && Object.entries(m.dimensions || {}).some(([k, v]) => {
         if (k.includes(dimensionsFilterDebounced) || v.includes(dimensionsFilterDebounced)) {
           return true;
         }
@@ -130,7 +129,7 @@ const MetricsTable: React.FC<MetricsTableProps> = (props) => {
               textToHighlight={stringify(m.dimensions)}
             />
           </div>
-          {false && <table className={s.Table}>
+          <table className={s.Table}>
             <tbody>
               {Object.entries(m?.metrics || {}).map(([key, value]) => (
                 <tr className={s.Row} key={key}>
@@ -139,7 +138,7 @@ const MetricsTable: React.FC<MetricsTableProps> = (props) => {
                 </tr>
               ))}
             </tbody>
-          </table>}
+          </table>
         </div>
       ))}
     </div>
