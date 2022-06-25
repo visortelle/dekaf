@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import s from './Tenants.module.css'
+import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import * as PulsarAdminBatchClient from '../../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
 import * as PulsarCustomApiClient from '../../app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
@@ -73,12 +74,12 @@ const Tenants: React.FC = () => {
     const style: React.CSSProperties = props.isSticky ? { position: 'sticky', left: 0, zIndex: 10 } : {};
 
     return (
-      <th className={s.Th} style={style} onClick={handleColumnHeaderClick}>
+      <th className={cts.Th} style={style} onClick={handleColumnHeaderClick}>
         <div className={props.sortKey === undefined ? '' : s.SortableTh}>
           {props.title}
 
           {sort.key === props.sortKey && (
-            <div className={s.SortableThIcon}>
+            <div className={cts.SortableThIcon}>
               <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
             </div>
           )}
@@ -155,23 +156,18 @@ const Tenants: React.FC = () => {
       </div>
 
       {(tenantsToShow || []).length === 0 && (
-        <div className={s.NothingToShow}>
+        <div className={cts.NothingToShow}>
           Nothing to show.
         </div>
       )}
       {(tenantsToShow || []).length > 0 && (
-        <div className={s.Table} ref={tableRef}>
+        <div className={cts.Table} ref={tableRef}>
           <TableVirtuoso
-            className={s.TableVirtuoso}
             data={tenantsToShow}
             overscan={{ main: (tableRef?.current?.clientHeight || 0), reverse: (tableRef?.current?.clientHeight || 0) }}
             fixedHeaderContent={() => (
               <tr>
-                <Th title={(
-                  <div>
-                    <span>Tenants</span>
-                  </div>
-                )} sortKey="tenant" isSticky={true} />
+                <Th title="Tenants" sortKey="tenant" isSticky={true} />
                 <Th title={<NamespaceIcon />} sortKey="namespaces" />
                 <Th title="Allowed clusters" />
                 <Th title="Admin roles" />
@@ -231,7 +227,7 @@ const Tenant: React.FC<TenantProps> = (props) => {
 
   const Td = useCallback((props: { children: React.ReactNode, width: string } & React.TdHTMLAttributes<HTMLTableCellElement>) => {
     const { children, ...restProps } = props;
-    return <td className={s.Td} {...restProps}>
+    return <td className={cts.Td} {...restProps}>
       <div style={{ width: props.width, overflow: 'hidden', textOverflow: 'ellipsis' }} >
         {children}
       </div>
@@ -251,24 +247,24 @@ const Tenant: React.FC<TenantProps> = (props) => {
         </LinkWithQuery>
       </Td>
       <Td width="4ch" title={`${props.namespacesCount?.toString()} namespaces`}>
-        {props.namespacesCount !== undefined && <span className={s.LazyContent}>{props.namespacesCount}</span>}
+        {props.namespacesCount !== undefined && <span className={cts.LazyContent}>{props.namespacesCount}</span>}
       </Td>
       <Td width="12ch">
         {props.tenantInfo !== undefined && (
-          <div className={s.LazyContent}>
+          <div className={cts.LazyContent}>
             {props.tenantInfo.allowedClusters.length === 0 ?
               <NoData /> :
-              props.tenantInfo.allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map((c) => <div key={c} className={s.Badge} title={c}>{c}</div>)
+              props.tenantInfo.allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map((c) => <div key={c} className={cts.Badge} title={c}>{c}</div>)
             }
           </div>
         )}
       </Td>
       <Td width="12ch">
         {props.tenantInfo !== undefined && (
-          <div className={s.LazyContent}>
+          <div className={cts.LazyContent}>
             {props.tenantInfo.adminRoles.length === 0 ?
               <NoData /> :
-              props.tenantInfo?.adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map((r) => <div key={r} className={s.Badge} title={r}>{r}</div>)
+              props.tenantInfo?.adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map((r) => <div key={r} className={cts.Badge} title={r}>{r}</div>)
             }
           </div>
         )}
@@ -386,7 +382,7 @@ const sortTenants = (tenants: string[], sort: Sort, data: {
 }
 
 const NoData = () => {
-  return <div className={s.NoData}>-</div>
+  return <div className={cts.NoData}>-</div>
 }
 
 export default Tenants;
