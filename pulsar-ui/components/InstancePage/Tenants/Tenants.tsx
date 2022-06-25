@@ -9,7 +9,7 @@ import useSWR from 'swr';
 import { swrKeys } from '../../swrKeys';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
 import { TenantMetrics } from 'tealtools-pulsar-ui-api/metrics/types';
-import { isEqual } from 'lodash';
+import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
 import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
 import { routes } from '../../routes';
@@ -294,6 +294,16 @@ const sortTenants = (tenants: string[], sort: Sort, data: {
   tenantsNamespacesCount: Record<string, number>,
   allTenantsMetrics: Record<string, TenantMetrics>
 }): string[] => {
+  function s(defs: string[], undefs: string[], getM: (m: TenantMetrics) => number): string[] {
+    let result = defs.sort((a, b) => {
+      const aMetrics = data.allTenantsMetrics[a];
+      const bMetrics = data.allTenantsMetrics[b];
+      return getM(aMetrics) - getM(bMetrics);
+    });
+    result = sort.direction === 'asc' ? result : result.reverse();
+    return result.concat(undefs);
+  }
+
   if (sort.key === 'tenant') {
     const t = tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
     return sort.direction === 'asc' ? t : t.reverse();
@@ -308,31 +318,68 @@ const sortTenants = (tenants: string[], sort: Sort, data: {
   }
 
   if (sort.key === 'averageMsgSize') {
-    return tenants.sort((a, b) => {
-      const aMetrics = data.allTenantsMetrics[a];
-      const bMetrics = data.allTenantsMetrics[b];
-      const aSize = aMetrics?.averageMsgSize;
-      const bSize = bMetrics?.averageMsgSize;
-      return sort.direction === 'asc' ? aSize! - bSize! : bSize! - aSize!;
-    });
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.averageMsgSize !== undefined);
+    return s(defs, undefs, (m) => m.averageMsgSize!);
   }
+
   if (sort.key === 'backlogSize') {
-    return tenants.sort((a, b) => {
-      const aMetrics = data.allTenantsMetrics[a];
-      const bMetrics = data.allTenantsMetrics[b];
-      const aSize = aMetrics?.backlogSize;
-      const bSize = bMetrics?.backlogSize;
-      return sort.direction === 'asc' ? aSize! - bSize! : bSize! - aSize!;
-    });
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.backlogSize !== undefined);
+    return s(defs, undefs, (m) => m.backlogSize!);
   }
+
   if (sort.key === 'bytesInCount') {
-    return tenants.sort((a, b) => {
-      const aMetrics = data.allTenantsMetrics[a];
-      const bMetrics = data.allTenantsMetrics[b];
-      const aSize = aMetrics?.bytesInCount;
-      const bSize = bMetrics?.bytesInCount;
-      return sort.direction === 'asc' ? aSize! - bSize! : bSize! - aSize!;
-    });
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.bytesInCount !== undefined);
+    return s(defs, undefs, (m) => m.bytesInCount!);
+  }
+
+  if (sort.key === 'bytesOutCount') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.bytesOutCount !== undefined);
+    return s(defs, undefs, (m) => m.bytesOutCount!);
+  }
+
+  if (sort.key === 'msgInCount') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgInCount !== undefined);
+    return s(defs, undefs, (m) => m.msgInCount!);
+  }
+
+  if (sort.key === 'msgOutCount') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgOutCount !== undefined);
+    return s(defs, undefs, (m) => m.msgOutCount!);
+  }
+
+  if (sort.key === 'msgRateIn') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgRateIn !== undefined);
+    return s(defs, undefs, (m) => m.msgRateIn!);
+  }
+
+  if (sort.key === 'msgRateOut') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgRateOut !== undefined);
+    return s(defs, undefs, (m) => m.msgRateOut!);
+  }
+
+  if (sort.key === 'msgThroughputIn') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgThroughputIn !== undefined);
+    return s(defs, undefs, (m) => m.msgThroughputIn!);
+  }
+
+  if (sort.key === 'msgThroughputOut') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgThroughputOut !== undefined);
+    return s(defs, undefs, (m) => m.msgThroughputOut!);
+  }
+
+  if (sort.key === 'pendingAddEntriesCount') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.pendingAddEntriesCount !== undefined);
+    return s(defs, undefs, (m) => m.pendingAddEntriesCount!);
+  }
+
+  if (sort.key === 'producerCount') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.producerCount !== undefined);
+    return s(defs, undefs, (m) => m.producerCount!);
+  }
+
+  if (sort.key === 'storageSize') {
+    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.storageSize !== undefined);
+    return s(defs, undefs, (m) => m.storageSize!);
   }
 
   return tenants;
