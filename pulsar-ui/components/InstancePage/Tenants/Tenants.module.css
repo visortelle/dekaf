@@ -8,13 +8,18 @@
 
 .Toolbar {
   margin-bottom: 12rem;
+  display: flex;
+  align-items: center;
 }
 
 .FilterInput {
   max-width: 480rem;
+  flex: 1;
+  margin-right: 12rem;
 }
 
 .Table {
+  position: relative;
   font-size: 14rem;
   border-spacing: 0;
   border-radius: 4rem;
@@ -27,17 +32,49 @@
 }
 
 .Th {
+  font-size: 13rem;
+  font-weight: bold;
   padding: 4rem 12rem;
   border: 1rem solid #ddd;
   border-left: none;
   border-top: none;
   background-color: #fff;
-  z-index: 10;
   left: 0;
+  position: relative;
+  white-space: nowrap;
+  text-align: left;
 }
 
 .Th:last-child {
   border-right: none;
+}
+
+.SortableTh {
+  padding-right: 12rem;
+}
+
+.SortableTh:hover {
+  cursor: pointer;
+  opacity: 0.5;
+  user-select: none;
+}
+
+.SortableTh:hover > * {  /* Fix normal cursor instead of pointer on hover un-expandable node icon. */
+  pointer-events: none;
+}
+
+.SortableThIcon {
+  position: absolute;
+  right: 2rem;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.SortableThIcon svg {
+  width: 24rem;
+  height: 24rem;
 }
 
 .Td {
@@ -85,6 +122,7 @@
   max-width: 14ch;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: inline-flex;
 }
 
 .Badge:last-child {

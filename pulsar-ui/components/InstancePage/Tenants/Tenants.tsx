@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import s from './Tenants.module.css'
 import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import * as PulsarAdminBatchClient from '../../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
@@ -18,8 +18,11 @@ import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { TenantInfo } from '../../app/contexts/PulsarAdminBatchClient/get-xs';
 import { useRef } from 'react';
+import SvgIcon from '../../ui/SvgIcon/SvgIcon';
+import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
+import arrowUpIcon from '!!raw-loader!./arrow-up.svg';
 
-type SortKeys =
+type SortKey =
   'tenant' |
   'namespaces' |
   'averageMsgSize' |
@@ -36,6 +39,10 @@ type SortKeys =
   'producerCount' |
   'storageSize';
 
+type Sort = { key: SortKey, direction: 'asc' | 'desc' };
+
+const firstColumnWidth = '15ch';
+
 const Tenants: React.FC = () => {
   const tableRef = useRef<HTMLDivElement>(null);
   const adminClient = PulsarAdminClient.useContext().client;
@@ -48,7 +55,37 @@ const Tenants: React.FC = () => {
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [tenantsNamespacesCountCache, setTenantsNamespacesCountCache] = useState<Record<string, number>>({});
   const [tenantsInfoCache, setTenantsInfoCache] = useState<Record<string, TenantInfo>>({});
-  const [sort, setSort] = useState<{ key: SortKeys, direction: 'asc' | 'desc' }>({ key: 'tenant', direction: 'asc' });
+  const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
+
+  const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
+    const handleColumnHeaderClick = () => {
+      if (props.sortKey === undefined) {
+        return;
+      }
+
+      if (sort.key === props.sortKey) {
+        setSort({ key: props.sortKey, direction: sort.direction === 'asc' ? 'desc' : 'asc' });
+      } else {
+        setSort({ key: props.sortKey, direction: 'asc' });
+      }
+    }
+
+    const style: React.CSSProperties = props.isSticky ? { position: 'sticky', left: 0, zIndex: 10 } : {};
+
+    return (
+      <th className={s.Th} style={style} onClick={handleColumnHeaderClick}>
+        <div className={props.sortKey === undefined ? '' : s.SortableTh}>
+          {props.title}
+
+          {sort.key === props.sortKey && (
+            <div className={s.SortableThIcon}>
+              <SvgIcon svg={sort.direction === 'asc' ? arrowDownIcon : arrowUpIcon} />
+            </div>
+          )}
+        </div>
+      </th>
+    );
+  }, [sort.direction, sort.key])
 
   const { data: tenants, error: tenantsError } = useSWR(
     swrKeys.pulsar.tenants._(),
@@ -94,7 +131,17 @@ const Tenants: React.FC = () => {
     setTenantsInfoCache(tenantsInfoCache => ({ ...tenantsInfoCache, ...tenantsInfo }));
   }, [tenantsInfo]);
 
-  const filteredTenants = tenants?.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).filter((t) => t.includes(filterQueryDebounced));
+
+  const sortedTenants = useMemo(() => sortTenants(
+    tenants || [],
+    sort, {
+    tenantsNamespacesCount: tenantsNamespacesCount || {},
+    allTenantsMetrics: allTenantsMetrics || {},
+  }),
+    [tenants, sort, tenantsNamespacesCount, allTenantsMetrics]
+  );
+
+  const tenantsToShow = sortedTenants?.filter((t) => t.includes(filterQueryDebounced));
 
   return (
     <div className={s.Tenants}>
@@ -102,38 +149,45 @@ const Tenants: React.FC = () => {
         <div className={s.FilterInput}>
           <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="tenant-name" focusOnMount={true} clearable={true} />
         </div>
+        <div>
+          <strong>{tenantsToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{tenants?.length}</strong> tenants found.
+        </div>
       </div>
 
-      {(filteredTenants || []).length === 0 && (
+      {(tenantsToShow || []).length === 0 && (
         <div className={s.NothingToShow}>
           Nothing to show.
         </div>
       )}
-      {(filteredTenants || []).length > 0 && (
+      {(tenantsToShow || []).length > 0 && (
         <div className={s.Table} ref={tableRef}>
           <TableVirtuoso
             className={s.TableVirtuoso}
-            data={filteredTenants}
-            overscan={{ main: (tableRef?.current?.clientHeight || 0), reverse: (tableRef?.current?.clientHeight || 0)}}
+            data={tenantsToShow}
+            overscan={{ main: (tableRef?.current?.clientHeight || 0), reverse: (tableRef?.current?.clientHeight || 0) }}
             fixedHeaderContent={() => (
               <tr>
-                <th className={s.Th} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Tenant</th>
-                <th className={s.Th}><NamespaceIcon /></th>
-                <th className={s.Th}>Allowed clusters</th>
-                <th className={s.Th}>Admin roles</th>
-                <th className={s.Th}>Avg. message size</th>
-                <th className={s.Th}>Avg. backlog size</th>
-                <th className={s.Th}>Bytes in</th>
-                <th className={s.Th}>Bytes out</th>
-                <th className={s.Th}>Msg. in</th>
-                <th className={s.Th}>Msg. out</th>
-                <th className={s.Th}>Msg. rate in</th>
-                <th className={s.Th}>Msg. rate out</th>
-                <th className={s.Th}>Msg. throughput in</th>
-                <th className={s.Th}>Msg. throughput out</th>
-                <th className={s.Th}>Pending entries</th>
-                <th className={s.Th}>Producers</th>
-                <th className={s.Th}>Storage size</th>
+                <Th title={(
+                  <div>
+                    <span>Tenants</span>
+                  </div>
+                )} sortKey="tenant" isSticky={true} />
+                <Th title={<NamespaceIcon />} sortKey="namespaces" />
+                <Th title="Allowed clusters" />
+                <Th title="Admin roles" />
+                <Th title="Avg. msg. size" sortKey="averageMsgSize" />
+                <Th title="Backlog size" sortKey="backlogSize" />
+                <Th title="Bytes in" sortKey="bytesInCount" />
+                <Th title="Bytes out" sortKey="bytesOutCount" />
+                <Th title="Msg. in" sortKey="msgInCount" />
+                <Th title="Msg. out" sortKey="msgOutCount" />
+                <Th title="Msg. rate in" sortKey="msgRateIn" />
+                <Th title="Msg. rate out" sortKey="msgRateOut" />
+                <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
+                <Th title="Msg. throughput out" sortKey="msgThroughputOut" />
+                <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
+                <Th title="Producers" sortKey="producerCount" />
+                <Th title="Storage size" sortKey="storageSize" />
               </tr>
             )}
             itemContent={(_, tenant) => {
@@ -149,7 +203,7 @@ const Tenants: React.FC = () => {
               );
             }}
             customScrollParent={tableRef.current || undefined}
-            totalCount={filteredTenants?.length}
+            totalCount={tenantsToShow?.length}
             itemsRendered={(items) => {
               const isShouldUpdate = !isEqual(itemsRendered, items)
               if (isShouldUpdate) {
@@ -186,7 +240,7 @@ const Tenant: React.FC<TenantProps> = (props) => {
 
   return (
     <>
-      <Td width="15ch" title={props.tenant} style={{ position: 'sticky', left: 0 }}>
+      <Td width={firstColumnWidth} title={props.tenant} style={{ position: 'sticky', left: 0 }}>
         <LinkWithQuery to={routes.tenants.tenant._.get({ tenant: props.tenant })}>
           <Highlighter
             highlightClassName="highlight-substring"
@@ -234,6 +288,54 @@ const Tenant: React.FC<TenantProps> = (props) => {
       <Td width="6ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
     </>
   );
+}
+
+const sortTenants = (tenants: string[], sort: Sort, data: {
+  tenantsNamespacesCount: Record<string, number>,
+  allTenantsMetrics: Record<string, TenantMetrics>
+}): string[] => {
+  if (sort.key === 'tenant') {
+    const t = tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+    return sort.direction === 'asc' ? t : t.reverse();
+  }
+
+  if (sort.key === 'namespaces') {
+    return tenants.sort((a, b) => {
+      const aCount = data.tenantsNamespacesCount[a];
+      const bCount = data.tenantsNamespacesCount[b];
+      return sort.direction === 'asc' ? aCount - bCount : bCount - aCount;
+    });
+  }
+
+  if (sort.key === 'averageMsgSize') {
+    return tenants.sort((a, b) => {
+      const aMetrics = data.allTenantsMetrics[a];
+      const bMetrics = data.allTenantsMetrics[b];
+      const aSize = aMetrics?.averageMsgSize;
+      const bSize = bMetrics?.averageMsgSize;
+      return sort.direction === 'asc' ? aSize! - bSize! : bSize! - aSize!;
+    });
+  }
+  if (sort.key === 'backlogSize') {
+    return tenants.sort((a, b) => {
+      const aMetrics = data.allTenantsMetrics[a];
+      const bMetrics = data.allTenantsMetrics[b];
+      const aSize = aMetrics?.backlogSize;
+      const bSize = bMetrics?.backlogSize;
+      return sort.direction === 'asc' ? aSize! - bSize! : bSize! - aSize!;
+    });
+  }
+  if (sort.key === 'bytesInCount') {
+    return tenants.sort((a, b) => {
+      const aMetrics = data.allTenantsMetrics[a];
+      const bMetrics = data.allTenantsMetrics[b];
+      const aSize = aMetrics?.bytesInCount;
+      const bSize = bMetrics?.bytesInCount;
+      return sort.direction === 'asc' ? aSize! - bSize! : bSize! - aSize!;
+    });
+  }
+
+  return tenants;
 }
 
 const NoData = () => {
