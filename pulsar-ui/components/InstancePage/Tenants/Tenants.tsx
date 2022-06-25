@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import s from './Tenants.module.css'
 import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import * as PulsarAdminBatchClient from '../../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
@@ -16,6 +16,8 @@ import { routes } from '../../routes';
 import { NamespaceIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
+import { TenantInfo } from '../../app/contexts/PulsarAdminBatchClient/get-xs';
+import { useRef } from 'react';
 
 type SortKeys =
   'tenant' |
@@ -35,6 +37,7 @@ type SortKeys =
   'storageSize';
 
 const Tenants: React.FC = () => {
+  const tableRef = useRef<HTMLDivElement>(null);
   const adminClient = PulsarAdminClient.useContext().client;
   const adminBatchClient = PulsarAdminBatchClient.useContext().client;
   const customApiClient = PulsarCustomApiClient.useContext().client;
@@ -43,7 +46,8 @@ const Tenants: React.FC = () => {
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [itemsRendered, setItemsRendered] = useState<ListItem<string>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
-  const [tenantsNamespacesCountCache, setTenantsNamespacesCountCache] = useState<{ [key: string]: number }>({});
+  const [tenantsNamespacesCountCache, setTenantsNamespacesCountCache] = useState<Record<string, number>>({});
+  const [tenantsInfoCache, setTenantsInfoCache] = useState<Record<string, TenantInfo>>({});
   const [sort, setSort] = useState<{ key: SortKeys, direction: 'asc' | 'desc' }>({ key: 'tenant', direction: 'asc' });
 
   const { data: tenants, error: tenantsError } = useSWR(
@@ -56,7 +60,7 @@ const Tenants: React.FC = () => {
 
   const { data: allTenantsMetrics, error: allTenantsMetricsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allTenants._(),
-    async () => await customApiClient.getAllTenantsMetrics()
+    async () => await customApiClient.getAllTenantsMetrics(),
   );
   if (allTenantsMetricsError) {
     notifyError(`Unable to get metrics. ${allTenantsMetricsError}`);
@@ -76,6 +80,20 @@ const Tenants: React.FC = () => {
     setTenantsNamespacesCountCache(tenantsNamespacesCountCache => ({ ...tenantsNamespacesCountCache, ...tenantsNamespacesCount }));
   }, [tenantsNamespacesCount]);
 
+  const { data: tenantsInfo, error: tenantsInfoError } = useSWR(
+    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantsInfo._(itemsRenderedDebounced.map(item => item.data!)),
+    async () => await adminBatchClient?.getTenantsInfo(itemsRenderedDebounced.map(item => item?.data || '')),
+  );
+
+  if (tenantsInfoError) {
+    notifyError(`Unable to get tenants info. ${tenantsInfoError}`);
+  }
+
+  useEffect(() => {
+    // Avoid visual blinking after each tenants info update request.
+    setTenantsInfoCache(tenantsInfoCache => ({ ...tenantsInfoCache, ...tenantsInfo }));
+  }, [tenantsInfo]);
+
   const filteredTenants = tenants?.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).filter((t) => t.includes(filterQueryDebounced));
 
   return (
@@ -92,13 +110,14 @@ const Tenants: React.FC = () => {
         </div>
       )}
       {(filteredTenants || []).length > 0 && (
-        <div className={s.Table}>
+        <div className={s.Table} ref={tableRef}>
           <TableVirtuoso
+            className={s.TableVirtuoso}
             data={filteredTenants}
-            overscan={{ main: window.innerHeight / 2, reverse: window.innerHeight / 2 }}
+            overscan={{ main: (tableRef?.current?.clientHeight || 0) / 2, reverse: (tableRef?.current?.clientHeight || 0) / 2 }}
             fixedHeaderContent={() => (
               <tr>
-                <th className={s.Th}>Tenant</th>
+                <th className={s.Th} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Tenant</th>
                 <th className={s.Th}><NamespaceIcon /></th>
                 <th className={s.Th}>Allowed clusters</th>
                 <th className={s.Th}>Admin roles</th>
@@ -124,11 +143,12 @@ const Tenants: React.FC = () => {
                   tenant={tenant}
                   metrics={tenantMetrics}
                   namespacesCount={tenantsNamespacesCountCache[tenant]}
+                  tenantInfo={tenantsInfoCache[tenant]}
                   highlight={{ tenant: [filterQueryDebounced] }}
                 />
               );
             }}
-            useWindowScroll={true}
+            customScrollParent={tableRef.current || undefined}
             totalCount={filteredTenants?.length}
             itemsRendered={(items) => {
               const isShouldUpdate = !isEqual(itemsRendered, items)
@@ -147,6 +167,7 @@ type TenantProps = {
   tenant: string;
   metrics: TenantMetrics;
   namespacesCount: number | undefined;
+  tenantInfo: TenantInfo | undefined;
   highlight: {
     tenant: string[];
   }
@@ -154,9 +175,18 @@ type TenantProps = {
 const Tenant: React.FC<TenantProps> = (props) => {
   const i18n = I18n.useContext();
 
+  const Td = useCallback((props: { children: React.ReactNode, width: string } & React.TdHTMLAttributes<HTMLTableCellElement>) => {
+    const { children, ...restProps } = props;
+    return <td className={s.Td} {...restProps}>
+      <div style={{ width: props.width, overflow: 'hidden', textOverflow: 'ellipsis' }} >
+        {children}
+      </div>
+    </td>;
+  }, []);
+
   return (
     <>
-      <td className={s.Td} style={{ whiteSpace: 'nowrap' }}>
+      <Td width="15ch" title={props.tenant} style={{ position: 'sticky', left: 0 }}>
         <LinkWithQuery to={routes.tenants.tenant._.get({ tenant: props.tenant })}>
           <Highlighter
             highlightClassName="highlight-substring"
@@ -165,29 +195,49 @@ const Tenant: React.FC<TenantProps> = (props) => {
             textToHighlight={props.tenant}
           />
         </LinkWithQuery>
-      </td>
-      <td className={s.Td}>
-        <LinkWithQuery to={routes.tenants.tenant._.get({ tenant: props.tenant })}>
-          {props.namespacesCount !== undefined && <span className={s.NamespacesCount}>{props.namespacesCount}</span>}
-        </LinkWithQuery>
-      </td>
-      <td className={s.Td}></td>
-      <td className={s.Td}></td>
-      <td className={s.Td}>{props.metrics?.averageMsgSize === undefined ? '' : i18n.formatBytes(props.metrics.averageMsgSize)}</td>
-      <td className={s.Td}>{props.metrics?.backlogSize === undefined ? '' : i18n.formatCount(props.metrics.backlogSize)}</td>
-      <td className={s.Td}>{props.metrics?.bytesInCount === undefined ? '' : i18n.formatCount(props.metrics.bytesInCount)}</td>
-      <td className={s.Td}>{props.metrics?.bytesOutCount === undefined ? '' : i18n.formatCount(props.metrics.bytesOutCount)}</td>
-      <td className={s.Td}>{props.metrics?.msgInCount === undefined ? '' : i18n.formatCount(props.metrics.msgInCount)}</td>
-      <td className={s.Td}>{props.metrics?.msgOutCount === undefined ? '' : i18n.formatCount(props.metrics.msgOutCount)}</td>
-      <td className={s.Td}>{props.metrics?.msgRateIn === undefined ? '' : i18n.formatRate(props.metrics.msgRateIn)}</td>
-      <td className={s.Td}>{props.metrics?.msgRateOut === undefined ? '' : i18n.formatRate(props.metrics.msgRateOut)}</td>
-      <td className={s.Td}>{props.metrics?.msgThroughputIn === undefined ? '' : i18n.formatRate(props.metrics.msgThroughputIn)}</td>
-      <td className={s.Td}>{props.metrics?.msgThroughputOut === undefined ? '' : i18n.formatRate(props.metrics.msgThroughputOut)}</td>
-      <td className={s.Td}>{props.metrics?.pendingAddEntriesCount === undefined ? '' : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</td>
-      <td className={s.Td}>{props.metrics?.producerCount === undefined ? '' : i18n.formatCount(props.metrics.producerCount)}</td>
-      <td className={s.Td}>{props.metrics?.storageSize === undefined ? '' : i18n.formatBytes(props.metrics.storageSize)}</td>
+      </Td>
+      <Td width="4ch" title={`${props.namespacesCount?.toString()} namespaces`}>
+        {props.namespacesCount !== undefined && <span className={s.LazyContent}>{props.namespacesCount}</span>}
+      </Td>
+      <Td width="12ch">
+        {props.tenantInfo !== undefined && (
+          <div className={s.LazyContent}>
+            {props.tenantInfo.allowedClusters.length === 0 ?
+              <NoData /> :
+              props.tenantInfo.allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map((c) => <div key={c} className={s.Badge} title={c}>{c}</div>)
+            }
+          </div>
+        )}
+      </Td>
+      <Td width="12ch">
+        {props.tenantInfo !== undefined && (
+          <div className={s.LazyContent}>
+            {props.tenantInfo.adminRoles.length === 0 ?
+              <NoData /> :
+              props.tenantInfo?.adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map((r) => <div key={r} className={s.Badge} title={r}>{r}</div>)
+            }
+          </div>
+        )}
+      </Td>
+      <Td width="6ch">{props.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.averageMsgSize)}</Td>
+      <Td width="6ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.metrics.backlogSize)}</Td>
+      <Td width="6ch">{props.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesInCount)}</Td>
+      <Td width="6ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.bytesOutCount)}</Td>
+      <Td width="6ch">{props.metrics?.msgInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgInCount)}</Td>
+      <Td width="6ch">{props.metrics?.msgOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgOutCount)}</Td>
+      <Td width="6ch">{props.metrics?.msgRateIn === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgRateIn)}</Td>
+      <Td width="6ch">{props.metrics?.msgRateOut === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgRateOut)}</Td>
+      <Td width="6ch">{props.metrics?.msgThroughputIn === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgThroughputIn)}</Td>
+      <Td width="6ch">{props.metrics?.msgThroughputOut === undefined ? <NoData /> : i18n.formatRate(props.metrics.msgThroughputOut)}</Td>
+      <Td width="6ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
+      <Td width="6ch">{props.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.producerCount)}</Td>
+      <Td width="6ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
     </>
   );
+}
+
+const NoData = () => {
+  return <div className={s.NoData}>-</div>
 }
 
 export default Tenants;

@@ -2,14 +2,14 @@
 
 api_url="http://localhost:8080/admin/v2"
 
-tenants_count=1000
+tenants_count=200
 namespaces_count=2
 topics_count=1
 
 for te in $(seq $tenants_count); do
   curl -X PUT \
     -H 'Content-Type: application/json' \
-    -d '{"allowedClusters": ["standalone"], "adminRoles": [""]}' \
+    -d '{"allowedClusters": ["standalone"], "adminRoles": []}' \
     "${api_url}/tenants/tenant-${te}"
 done
 

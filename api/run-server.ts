@@ -1,5 +1,5 @@
 import express from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
+import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import batchHandler from "./batch";
 import morgan from 'morgan';
 import cors from 'cors';
@@ -33,12 +33,14 @@ app.use(
   "/pulsar-broker-web",
   createProxyMiddleware({
     target: defaultConfig.pulsarBrokerWebUrl,
-    // changeOrigin: true,
-    // secure: false,
-    logLevel: 'debug',
+    changeOrigin: true,
+    logLevel: "debug",
     pathRewrite: {
       "^/pulsar-broker-web": "/",
-    }
+    },
+    followRedirects: true,
+    proxyTimeout: 15 * 1000,
+    onProxyReq: fixRequestBody, // fix proxied POST requests when bodyParser is applied before this middleware.
   })
 );
 app.get("/", (_, res) => res.send(`Hello! I'm Pulsar UI server.`));

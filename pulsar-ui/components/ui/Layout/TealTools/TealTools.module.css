@@ -12,8 +12,22 @@
   overflow: hidden;
 }
 
+.Links {
+  padding-left: 12rem;
+  padding-bottom: 6rem;
+}
+
+.Link {
+  margin-right: 18rem;
+  color: var(--text-color);
+  text-decoration: underline;
+}
+
 .Text {
   margin-right: 12rem;
+  padding-left: 12rem;
+  padding-bottom: 6rem;
+  margin-right: auto;
 }
 
 .Logo {
