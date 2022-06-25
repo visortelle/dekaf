@@ -56,7 +56,7 @@ const Tenants: React.FC = () => {
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [tenantsNamespacesCountCache, setTenantsNamespacesCountCache] = useState<Record<string, number>>({});
   const [tenantsInfoCache, setTenantsInfoCache] = useState<Record<string, TenantInfo>>({});
-  const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'desc' });
+  const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
     const handleColumnHeaderClick = () => {
@@ -67,7 +67,7 @@ const Tenants: React.FC = () => {
       if (sort.key === props.sortKey) {
         setSort({ key: props.sortKey, direction: sort.direction === 'asc' ? 'desc' : 'asc' });
       } else {
-        setSort({ key: props.sortKey, direction: 'desc' });
+        setSort({ key: props.sortKey, direction: 'asc' });
       }
     }
 
@@ -75,7 +75,7 @@ const Tenants: React.FC = () => {
 
     return (
       <th className={cts.Th} style={style} onClick={handleColumnHeaderClick}>
-        <div className={props.sortKey === undefined ? '' : s.SortableTh}>
+        <div className={props.sortKey === undefined ? '' : cts.SortableTh}>
           {props.title}
 
           {sort.key === props.sortKey && (
@@ -101,7 +101,7 @@ const Tenants: React.FC = () => {
     async () => await customApiClient.getAllTenantsMetrics(),
   );
   if (allTenantsMetricsError) {
-    notifyError(`Unable to get metrics. ${allTenantsMetricsError}`);
+    notifyError(`Unable to get all tenants metrics. ${allTenantsMetricsError}`);
   }
 
   const { data: tenantsNamespacesCount, error: tenantsNamespacesCountError } = useSWR(
