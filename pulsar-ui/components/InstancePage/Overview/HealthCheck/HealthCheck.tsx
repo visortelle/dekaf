@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import s from './HealthCheck.module.css'
+import sts from '../../../ui/SimpleTable/SimpleTable.module.css';
 import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR from 'swr';
 import { swrKeys } from '../../../swrKeys';
@@ -22,20 +23,20 @@ const HealthCheck: React.FC = () => {
   return (
     <div className={s.InternalConfig}>
       <div className={s.Title}>Status</div>
-      <table className={s.Table}>
+      <table className={sts.Table}>
         <tbody>
-          <tr className={s.Row}>
-            <td className={s.Cell}>Connection</td>
-            <td className={s.Cell}>{
+          <tr className={sts.Row}>
+            <td className={sts.Cell}>Connection</td>
+            <td className={sts.Cell}>{
               healthCheckError === undefined ?
                 <strong style={{ color: 'var(--accent-color-green)' }}>OK</strong> :
                 <strong style={{ color: 'var(--accent-color-red)' }}>Fail</strong>
             }
             </td>
           </tr>
-          <tr className={s.Row}>
-            <td className={s.Cell}>Backlog quota</td>
-            <td className={s.Cell}>{
+          <tr className={sts.Row}>
+            <td className={sts.Cell}>Backlog quota</td>
+            <td className={sts.Cell}>{
               backlogQuotaCheckError === undefined ?
                 <strong style={{ color: 'var(--accent-color-green)' }}>OK</strong> :
                 <strong style={{ color: 'var(--accent-color-red)' }}>Fail</strong>

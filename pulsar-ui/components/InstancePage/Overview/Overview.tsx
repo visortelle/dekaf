@@ -1,6 +1,7 @@
 import React from 'react';
 import InternalConfig from './InternalConfig/InternalConfig';
 import HealthCheck from './HealthCheck/HealthCheck';
+import Metrics from './Metrics/Metrics';
 import s from './Overview.module.css'
 
 const Overview: React.FC = () => {
@@ -11,6 +12,9 @@ const Overview: React.FC = () => {
       </div>
       <div className={s.Section}>
         <InternalConfig />
+      </div>
+      <div className={s.Section}>
+        <Metrics />
       </div>
     </div>
   );

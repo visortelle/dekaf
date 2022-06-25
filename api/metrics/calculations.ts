@@ -36,7 +36,7 @@ export function getNamespaceMetrics(
     .value()
     .flat();
 
-  return namespaceTopicsMetrics.reduce<NamespaceMetrics>(
+  const result = namespaceTopicsMetrics.reduce<NamespaceMetrics>(
     (namespaceMetrics, topicMetrics) => {
       return {
         averageMsgSize: sum(
@@ -86,6 +86,13 @@ export function getNamespaceMetrics(
     },
     {}
   );
+
+  result.averageMsgSize =
+    result.averageMsgSize === undefined || namespaceTopicsMetrics.length === 0
+      ? 0
+      : result.averageMsgSize / namespaceTopicsMetrics.length;
+
+  return result;
 }
 
 type NamespaceName = string;
@@ -111,12 +118,16 @@ export function getTenantMetrics(
   tenant: string,
   metrics: TopicsMetrics
 ): TenantMetrics {
-  const tenantNamespaces = Object.keys(metrics).filter(
-    (key: Addr_Tenant_Namespace) => key.startsWith(`${tenant}/`)
-  ).map((key: Addr_Tenant_Namespace) => key.split("/")[1]);
+  const tenantNamespaces = Object.keys(metrics)
+    .filter((key: Addr_Tenant_Namespace) => key.startsWith(`${tenant}/`))
+    .map((key: Addr_Tenant_Namespace) => key.split("/")[1]);
 
-  const namespacesMetrics = getNamespacesMetrics(tenant, tenantNamespaces, metrics);
-  return _(namespacesMetrics)
+  const namespacesMetrics = getNamespacesMetrics(
+    tenant,
+    tenantNamespaces,
+    metrics
+  );
+  const result = _(namespacesMetrics)
     .toPairs()
     .map(([_, n]) => n)
     .reduce<NamespaceMetrics>((namespaceMetrics, topicMetrics) => {
@@ -166,4 +177,12 @@ export function getTenantMetrics(
         ),
       };
     }, {});
+
+  const namespacesCount = Object.keys(namespacesMetrics).length;
+  result.averageMsgSize =
+    result.averageMsgSize === undefined || namespacesCount === 0
+      ? 0
+      : result.averageMsgSize / namespacesCount;
+
+  return result;
 }
