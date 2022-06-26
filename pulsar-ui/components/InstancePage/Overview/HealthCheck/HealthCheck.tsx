@@ -22,7 +22,7 @@ const HealthCheck: React.FC = () => {
 
   return (
     <div className={s.InternalConfig}>
-      <div className={s.Title}>Status</div>
+      <div className={s.Title}>Health check</div>
       <table className={sts.Table}>
         <tbody>
           <tr className={sts.Row}>

@@ -57,6 +57,11 @@ export const routes = {
         },
       },
       namespaces: {
+        _: {
+          path: "tenants/:tenant/namespaces",
+          get: (props: { tenant: string }) =>
+            `/tenants/${props.tenant}/namespaces`,
+        },
         namespace: {
           _: {
             path: "/tenants/:tenant/namespaces/:namespace",

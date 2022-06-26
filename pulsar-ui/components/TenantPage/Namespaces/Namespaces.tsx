@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import s from './Tenants.module.css'
+import s from './Namespaces.module.css'
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
@@ -17,15 +17,15 @@ import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
 import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
 import { routes } from '../../routes';
-import { NamespaceIcon } from '../../ui/Icons/Icons';
+import { TopicIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
-import { TenantInfo } from '../../app/contexts/PulsarAdminBatchClient/get-xs';
 import { useRef } from 'react';
 
 type SortKey =
   'tenant' |
-  'namespaces' |
+  'persistent-topics-count' |
+  'non-persistent-topics-count' |
   'averageMsgSize' |
   'backlogSize' |
   'bytesInCount' |
@@ -44,7 +44,11 @@ type Sort = { key: SortKey, direction: 'asc' | 'desc' };
 
 const firstColumnWidth = '15ch';
 
-const Tenants: React.FC = () => {
+type NamespacesProps = {
+  tenant: string;
+}
+
+const Namespaces: React.FC<NamespacesProps> = (props) => {
   const tableRef = useRef<HTMLDivElement>(null);
   const adminClient = PulsarAdminClient.useContext().client;
   const adminBatchClient = PulsarAdminBatchClient.useContext().client;
@@ -54,8 +58,7 @@ const Tenants: React.FC = () => {
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [itemsRendered, setItemsRendered] = useState<ListItem<string>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
-  const [tenantsNamespacesCountCache, setTenantsNamespacesCountCache] = useState<Record<string, number>>({});
-  const [tenantsInfoCache, setTenantsInfoCache] = useState<Record<string, TenantInfo>>({});
+  const [namespaceTopicsCountCache, setNamespaceTopicsCountCache] = useState<Record<string, number>>({});
   const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
@@ -88,89 +91,76 @@ const Tenants: React.FC = () => {
     );
   }, [sort.direction, sort.key])
 
-  const { data: tenants, error: tenantsError } = useSWR(
-    swrKeys.pulsar.tenants._(),
-    async () => await adminClient.tenants.getTenants()
+  const { data: namespacesData, error: namespacesError } = useSWR(
+    swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }),
+    async () => await adminClient.namespaces.getTenantNamespaces(props.tenant),
   );
-  if (tenantsError) {
-    notifyError(`Unable to get tenants list. ${tenantsError}`);
+  if (namespacesError) {
+    notifyError(`Unable to get namespaces list. ${namespacesError}`);
   }
 
-  const { data: allTenantsMetrics, error: allTenantsMetricsError } = useSWR(
+  const namespaces = useMemo(() => namespacesData?.map(tns => tns.split('/')[1]), [namespacesData]);
+
+  const { data: allNamespacesMetrics, error: allNamespacesMetricsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allTenants._(),
-    async () => await customApiClient.getAllTenantsMetrics(),
+    async () => await customApiClient.getAllTenantNamespacesMetrics(props.tenant),
   );
-  if (allTenantsMetricsError) {
-    notifyError(`Unable to get all tenants metrics. ${allTenantsMetricsError}`);
+  if (allNamespacesMetricsError) {
+    notifyError(`Unable to get all namespaces metrics. ${allNamespacesMetricsError}`);
   }
 
-  const { data: tenantsNamespacesCount, error: tenantsNamespacesCountError } = useSWR(
+  const { data: namespacesTopicsCount, error: namespacesTopicsCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantsNamespacesCount._(itemsRenderedDebounced.map(item => item.data!)),
     async () => await adminBatchClient?.getTenantsNamespacesCount(itemsRenderedDebounced.map(item => item?.data || '')),
   );
 
-  if (tenantsNamespacesCountError) {
-    notifyError(`Unable to get tenants namespaces count. ${tenantsNamespacesCountError}`);
+  if (namespacesTopicsCountError) {
+    notifyError(`Unable to get namespaces topics count. ${namespacesTopicsCountError}`);
   }
 
   useEffect(() => {
-    // Avoid visual blinking after each tenants namespaces count update request.
-    setTenantsNamespacesCountCache(tenantsNamespacesCountCache => ({ ...tenantsNamespacesCountCache, ...tenantsNamespacesCount }));
-  }, [tenantsNamespacesCount]);
+    // Avoid visual blinking after each namespace topics count update request.
+    setNamespaceTopicsCountCache(namespacesTopicsCountCache => ({ ...namespacesTopicsCountCache, ...namespacesTopicsCount }));
+  }, [namespacesTopicsCount]);
 
-  const { data: tenantsInfo, error: tenantsInfoError } = useSWR(
-    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantsInfo._(itemsRenderedDebounced.map(item => item.data!)),
-    async () => await adminBatchClient?.getTenantsInfo(itemsRenderedDebounced.map(item => item?.data || '')),
-  );
-
-  if (tenantsInfoError) {
-    notifyError(`Unable to get tenants info. ${tenantsInfoError}`);
-  }
-
-  useEffect(() => {
-    // Avoid visual blinking after each tenants info update request.
-    setTenantsInfoCache(tenantsInfoCache => ({ ...tenantsInfoCache, ...tenantsInfo }));
-  }, [tenantsInfo]);
-
-
-  const sortedTenants = useMemo(() => sortTenants(
-    tenants || [],
+  const sortedNamespaces = useMemo(() => sortNamespaces(
+    namespaces || [],
     sort, {
-    tenantsNamespacesCount: tenantsNamespacesCount || {},
-    allTenantsMetrics: allTenantsMetrics || {},
+    persistentTopicsCount: namespacesTopicsCount || {},
+    nonPersistentTopicsCount: namespacesTopicsCount || {},
+    allTopicsMetrics: allNamespacesMetrics || {},
   }),
-    [tenants, sort, tenantsNamespacesCount, allTenantsMetrics]
+    [namespaces, sort, namespacesTopicsCount, allNamespacesMetrics]
   );
 
-  const tenantsToShow = sortedTenants?.filter((t) => t.includes(filterQueryDebounced));
+  const namespacesToShow = sortedNamespaces?.filter((t) => t.includes(filterQueryDebounced));
 
   return (
-    <div className={s.Tenants}>
+    <div className={s.Namespaces}>
       <div className={s.Toolbar}>
         <div className={s.FilterInput}>
-          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="tenant-name" focusOnMount={true} clearable={true} />
+          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="namespace-name" focusOnMount={true} clearable={true} />
         </div>
         <div>
-          <strong>{tenantsToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{tenants?.length}</strong> tenants.
+          <strong>{namespacesToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{namespaces?.length}</strong> namespaces.
         </div>
       </div>
 
-      {(tenantsToShow || []).length === 0 && (
+      {(namespacesToShow || []).length === 0 && (
         <div className={cts.NothingToShow}>
           Nothing to show.
         </div>
       )}
-      {(tenantsToShow || []).length > 0 && (
+      {(namespacesToShow || []).length > 0 && (
         <div className={cts.Table} ref={tableRef}>
           <TableVirtuoso
-            data={tenantsToShow}
+            data={namespacesToShow}
             overscan={{ main: (tableRef?.current?.clientHeight || 0), reverse: (tableRef?.current?.clientHeight || 0) }}
             fixedHeaderContent={() => (
               <tr>
-                <Th title="Tenants" sortKey="tenant" isSticky={true} />
-                <Th title={<NamespaceIcon />} sortKey="namespaces" />
-                <Th title="Allowed clusters" />
-                <Th title="Admin roles" />
+                <Th title="Namespaces" sortKey="tenant" isSticky={true} />
+                <Th title={<TopicIcon topicType='persistent' />} sortKey="persistent-topics-count" />
+                <Th title={<TopicIcon topicType='non-persistent' />} sortKey="non-persistent-topics-count" />
                 <Th title="Msg. rate in" sortKey="msgRateIn" />
                 <Th title="Msg. rate out" sortKey="msgRateOut" />
                 <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
@@ -187,19 +177,18 @@ const Tenants: React.FC = () => {
               </tr>
             )}
             itemContent={(_, tenant) => {
-              const tenantMetrics = (allTenantsMetrics || {})[tenant];
+              const tenantMetrics = (allNamespacesMetrics || {})[tenant];
               return (
                 <Tenant
-                  tenant={tenant}
+                  namespace={tenant}
                   metrics={tenantMetrics}
-                  namespacesCount={tenantsNamespacesCountCache[tenant]}
-                  tenantInfo={tenantsInfoCache[tenant]}
-                  highlight={{ tenant: [filterQueryDebounced] }}
+                  persistentTopicsCount={namespaceTopicsCountCache[tenant]}
+                  highlight={{ namespace: [filterQueryDebounced] }}
                 />
               );
             }}
             customScrollParent={tableRef.current || undefined}
-            totalCount={tenantsToShow?.length}
+            totalCount={namespacesToShow?.length}
             itemsRendered={(items) => {
               const isShouldUpdate = !isEqual(itemsRendered, items)
               if (isShouldUpdate) {
@@ -213,16 +202,16 @@ const Tenants: React.FC = () => {
   );
 }
 
-type TenantProps = {
-  tenant: string;
+type NamespaceProps = {
+  namespace: string;
   metrics: TenantMetrics;
-  namespacesCount: number | undefined;
-  tenantInfo: TenantInfo | undefined;
+  persistentTopicsCount: number | undefined;
+  nonPersistentTopicsCount: number | undefined;
   highlight: {
-    tenant: string[];
+    namespace: string[];
   }
 }
-const Tenant: React.FC<TenantProps> = (props) => {
+const Tenant: React.FC<NamespaceProps> = (props) => {
   const i18n = I18n.useContext();
 
   const Td = useCallback((props: { children: React.ReactNode, width: string } & React.TdHTMLAttributes<HTMLTableCellElement>) => {
@@ -236,38 +225,21 @@ const Tenant: React.FC<TenantProps> = (props) => {
 
   return (
     <>
-      <Td width={firstColumnWidth} title={props.tenant} style={{ position: 'sticky', left: 0 }}>
-        <LinkWithQuery to={routes.tenants.tenant._.get({ tenant: props.tenant })}>
+      <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0 }}>
+        <LinkWithQuery to={routes.tenants.tenant._.get({ tenant: props.namespace })}>
           <Highlighter
             highlightClassName="highlight-substring"
-            searchWords={props.highlight.tenant}
+            searchWords={props.highlight.namespace}
             autoEscape={true}
-            textToHighlight={props.tenant}
+            textToHighlight={props.namespace}
           />
         </LinkWithQuery>
       </Td>
-      <Td width="4ch" title={`${props.namespacesCount?.toString()} namespaces`}>
-        {props.namespacesCount !== undefined && <span className={cts.LazyContent}>{props.namespacesCount}</span>}
+      <Td width="4ch" title={`${props.persistentTopicsCount?.toString()} persistent topics`}>
+        {props.persistentTopicsCount !== undefined && <span className={cts.LazyContent}>{props.persistentTopicsCount}</span>}
       </Td>
-      <Td width="12ch">
-        {props.tenantInfo !== undefined && (
-          <div className={cts.LazyContent}>
-            {props.tenantInfo.allowedClusters.length === 0 ?
-              <NoData /> :
-              props.tenantInfo.allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map((c) => <div key={c} className={cts.Badge} title={c}>{c}</div>)
-            }
-          </div>
-        )}
-      </Td>
-      <Td width="12ch">
-        {props.tenantInfo !== undefined && (
-          <div className={cts.LazyContent}>
-            {props.tenantInfo.adminRoles.length === 0 ?
-              <NoData /> :
-              props.tenantInfo?.adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).map((r) => <div key={r} className={cts.Badge} title={r}>{r}</div>)
-            }
-          </div>
-        )}
+      <Td width="4ch" title={`${props.nonPersistentTopicsCount?.toString()} non-persistent topics`}>
+        {props.nonPersistentTopicsCount !== undefined && <span className={cts.LazyContent}>{props.nonPersistentTopicsCount}</span>}
       </Td>
       <Td width="12ch">{props.metrics?.msgRateIn === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgRateIn)}</Td>
       <Td width="12ch">{props.metrics?.msgRateOut === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgRateOut)}</Td>
@@ -286,14 +258,15 @@ const Tenant: React.FC<TenantProps> = (props) => {
   );
 }
 
-const sortTenants = (tenants: string[], sort: Sort, data: {
-  tenantsNamespacesCount: Record<string, number>,
-  allTenantsMetrics: Record<string, TenantMetrics>
+const sortNamespaces = (tenants: string[], sort: Sort, data: {
+  persistentTopicsCount: Record<string, number>,
+  nonPersistentTopicsCount: Record<string, number>,
+  allTopicsMetrics: Record<string, TenantMetrics>
 }): string[] => {
   function s(defs: string[], undefs: string[], getM: (m: TenantMetrics) => number): string[] {
     let result = defs.sort((a, b) => {
-      const aMetrics = data.allTenantsMetrics[a];
-      const bMetrics = data.allTenantsMetrics[b];
+      const aMetrics = data.allTopicsMetrics[a];
+      const bMetrics = data.allTopicsMetrics[b];
       return getM(aMetrics) - getM(bMetrics);
     });
     result = sort.direction === 'asc' ? result : result.reverse();
@@ -305,76 +278,84 @@ const sortTenants = (tenants: string[], sort: Sort, data: {
     return sort.direction === 'asc' ? t : t.reverse();
   }
 
-  if (sort.key === 'namespaces') {
+  if (sort.key === 'persistent-topics-count') {
     return tenants.sort((a, b) => {
-      const aCount = data.tenantsNamespacesCount[a];
-      const bCount = data.tenantsNamespacesCount[b];
+      const aCount = data.persistentTopicsCount[a];
+      const bCount = data.persistentTopicsCount[b];
+      return sort.direction === 'asc' ? aCount - bCount : bCount - aCount;
+    });
+  }
+
+  if (sort.key === 'non-persistent-topics-count') {
+    return tenants.sort((a, b) => {
+      const aCount = data.persistentTopicsCount[a];
+      const bCount = data.persistentTopicsCount[b];
       return sort.direction === 'asc' ? aCount - bCount : bCount - aCount;
     });
   }
 
   if (sort.key === 'averageMsgSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.averageMsgSize !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.averageMsgSize !== undefined);
     return s(defs, undefs, (m) => m.averageMsgSize!);
   }
 
   if (sort.key === 'backlogSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.backlogSize !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.backlogSize !== undefined);
     return s(defs, undefs, (m) => m.backlogSize!);
   }
 
   if (sort.key === 'bytesInCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.bytesInCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.bytesInCount !== undefined);
     return s(defs, undefs, (m) => m.bytesInCount!);
   }
 
   if (sort.key === 'bytesOutCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.bytesOutCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.bytesOutCount !== undefined);
     return s(defs, undefs, (m) => m.bytesOutCount!);
   }
 
   if (sort.key === 'msgInCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgInCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgInCount !== undefined);
     return s(defs, undefs, (m) => m.msgInCount!);
   }
 
   if (sort.key === 'msgOutCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgOutCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgOutCount !== undefined);
     return s(defs, undefs, (m) => m.msgOutCount!);
   }
 
   if (sort.key === 'msgRateIn') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgRateIn !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgRateIn !== undefined);
     return s(defs, undefs, (m) => m.msgRateIn!);
   }
 
   if (sort.key === 'msgRateOut') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgRateOut !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgRateOut !== undefined);
     return s(defs, undefs, (m) => m.msgRateOut!);
   }
 
   if (sort.key === 'msgThroughputIn') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgThroughputIn !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgThroughputIn !== undefined);
     return s(defs, undefs, (m) => m.msgThroughputIn!);
   }
 
   if (sort.key === 'msgThroughputOut') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.msgThroughputOut !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgThroughputOut !== undefined);
     return s(defs, undefs, (m) => m.msgThroughputOut!);
   }
 
   if (sort.key === 'pendingAddEntriesCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.pendingAddEntriesCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.pendingAddEntriesCount !== undefined);
     return s(defs, undefs, (m) => m.pendingAddEntriesCount!);
   }
 
   if (sort.key === 'producerCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.producerCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.producerCount !== undefined);
     return s(defs, undefs, (m) => m.producerCount!);
   }
 
   if (sort.key === 'storageSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.storageSize !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.storageSize !== undefined);
     return s(defs, undefs, (m) => m.storageSize!);
   }
 
@@ -385,4 +366,4 @@ const NoData = () => {
   return <div className={cts.NoData}>-</div>
 }
 
-export default Tenants;
+export default Namespaces;
