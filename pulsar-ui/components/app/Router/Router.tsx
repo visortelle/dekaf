@@ -62,6 +62,7 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RouteTenantPage view={'configuration'} />, withLayoutProps) },
     { path: routes.tenants.tenant.createNamespace._.path, element: withLayout(<RouteTenantPage view={'create-namespace'} />, withLayoutProps) },
     { path: routes.tenants.tenant.deleteTenant._.path, element: withLayout(<RouteTenantPage view={'delete-tenant'} />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces._.path, element: withLayout(<RouteTenantPage view={'namespaces'} />, setScrollMode(withLayoutProps, 'page-own')) },
     { path: routes.tenants.tenant._.path, element: withLayout(<RouteTenantPage view={'overview'} />, withLayoutProps) }
   ];
   const paths = getRoutes({ withLayout: () => <></>, withLayoutProps: defaultWithLayoutProps }).map(ro => ro.path).filter(p => p !== undefined) as string[];
