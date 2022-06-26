@@ -12,7 +12,7 @@ import * as I18n from '../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
 import { swrKeys } from '../../swrKeys';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
-import { TenantMetrics } from 'tealtools-pulsar-ui-api/metrics/types';
+import { NamespaceMetrics } from 'tealtools-pulsar-ui-api/metrics/types';
 import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
 import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
@@ -21,6 +21,7 @@ import { TopicIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { useRef } from 'react';
+import _ from 'lodash';
 
 type SortKey =
   'tenant' |
@@ -58,6 +59,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [namespaceTopicsCountCache, setNamespaceTopicsCountCache] = useState<Record<string, { persistent: number, nonPersistent: number }>>({});
   const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
+  const i18n = I18n.useContext();
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
     const handleColumnHeaderClick = () => {
@@ -123,12 +125,13 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
     namespaces || [],
     sort, {
     namespacesTopicsCount: namespacesTopicsCount || {},
-    allTopicsMetrics: allNamespacesMetrics || {},
+    allNamespacesMetrics: allNamespacesMetrics || {},
   }),
     [namespaces, sort, namespacesTopicsCount, allNamespacesMetrics]
   );
 
   const namespacesToShow = sortedNamespaces?.filter((t) => t.includes(filterQueryDebounced));
+  const namespacesToShowMetrics = useMemo(() => _(allNamespacesMetrics).toPairs().filter(([k]) => namespacesToShow.includes(k)).fromPairs().value(), [allNamespacesMetrics, namespacesToShow]);
 
   return (
     <div className={s.Namespaces}>
@@ -152,24 +155,44 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             data={namespacesToShow}
             overscan={{ main: (tableRef?.current?.clientHeight || 0), reverse: (tableRef?.current?.clientHeight || 0) }}
             fixedHeaderContent={() => (
-              <tr>
-                <Th title="Namespaces" sortKey="tenant" isSticky={true} />
-                <Th title={<TopicIcon topicType='persistent' />} />
-                <Th title={<TopicIcon topicType='non-persistent' />} />
-                <Th title="Msg. rate in" sortKey="msgRateIn" />
-                <Th title="Msg. rate out" sortKey="msgRateOut" />
-                <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
-                <Th title="Msg. throughput out" sortKey="msgThroughputOut" />
-                <Th title="Msg. in" sortKey="msgInCount" />
-                <Th title="Msg. out" sortKey="msgOutCount" />
-                <Th title="Avg. msg. size" sortKey="averageMsgSize" />
-                <Th title="Bytes in" sortKey="bytesInCount" />
-                <Th title="Bytes out" sortKey="bytesOutCount" />
-                <Th title="Producers" sortKey="producerCount" />
-                <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
-                <Th title="Backlog size" sortKey="backlogSize" />
-                <Th title="Storage size" sortKey="storageSize" />
-              </tr>
+              <>
+                <tr>
+                  <Th title="Namespaces" sortKey="tenant" isSticky={true} />
+                  <Th title={<TopicIcon topicType='persistent' />} />
+                  <Th title={<TopicIcon topicType='non-persistent' />} />
+                  <Th title="Msg. rate in" sortKey="msgRateIn" />
+                  <Th title="Msg. rate out" sortKey="msgRateOut" />
+                  <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
+                  <Th title="Msg. throughput out" sortKey="msgThroughputOut" />
+                  <Th title="Msg. in" sortKey="msgInCount" />
+                  <Th title="Msg. out" sortKey="msgOutCount" />
+                  <Th title="Avg. msg. size" sortKey="averageMsgSize" />
+                  <Th title="Bytes in" sortKey="bytesInCount" />
+                  <Th title="Bytes out" sortKey="bytesOutCount" />
+                  <Th title="Producers" sortKey="producerCount" />
+                  <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
+                  <Th title="Backlog size" sortKey="backlogSize" />
+                  <Th title="Storage size" sortKey="storageSize" />
+                </tr>
+                <tr>
+                  <th className={cts.SummaryTh} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Summary</th>
+                  <th className={cts.SummaryTh}><NoData /></th>
+                  <th className={cts.SummaryTh}><NoData /></th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics || {}, 'msgRateIn'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics || {}, 'msgRateOut'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics || {}, 'msgThroughputIn'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics || {}, 'msgThroughputOut'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics || {}, 'msgInCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics || {}, 'msgOutCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(namespacesToShowMetrics || {}).length > 0 ? sum(namespacesToShowMetrics || {}, 'averageMsgSize') / Object.keys(namespacesToShowMetrics || {}).length : 0)}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics || {}, 'bytesInCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics || {}, 'bytesOutCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics || {}, 'producerCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics || {}, 'pendingAddEntriesCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics || {}, 'backlogSize'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics || {}, 'storageSize'))}</th>
+                </tr>
+              </>
             )}
             itemContent={(_, namespace) => {
               const namespaceMetrics = allNamespacesMetrics === undefined ? {} : allNamespacesMetrics[namespace] || {};
@@ -199,10 +222,20 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   );
 }
 
+type TdProps = { children: React.ReactNode, width?: string } & React.ThHTMLAttributes<HTMLTableCellElement>;
+const Td: React.FC<TdProps> = (props) => {
+  const { children, ...restProps } = props;
+  return <td className={cts.Td} {...restProps}>
+    <div style={{ width: props.width, overflow: 'hidden', textOverflow: 'ellipsis' }} >
+      {children}
+    </div>
+  </td>;
+};
+
 type NamespaceProps = {
   tenant: string;
   namespace: string;
-  metrics: TenantMetrics;
+  metrics: NamespaceMetrics;
   persistentTopicsCount: number | undefined;
   nonPersistentTopicsCount: number | undefined;
   highlight: {
@@ -212,18 +245,9 @@ type NamespaceProps = {
 const Namespace: React.FC<NamespaceProps> = (props) => {
   const i18n = I18n.useContext();
 
-  const Td = useCallback((props: { children: React.ReactNode, width: string } & React.TdHTMLAttributes<HTMLTableCellElement>) => {
-    const { children, ...restProps } = props;
-    return <td className={cts.Td} {...restProps}>
-      <div style={{ width: props.width, overflow: 'hidden', textOverflow: 'ellipsis' }} >
-        {children}
-      </div>
-    </td>;
-  }, []);
-
   return (
     <>
-      <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0 }}>
+      <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
         <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace._.get({ tenant: props.tenant, namespace: props.namespace })}>
           <Highlighter
             highlightClassName="highlight-substring"
@@ -258,12 +282,12 @@ const Namespace: React.FC<NamespaceProps> = (props) => {
 
 const sortNamespaces = (tenants: string[], sort: Sort, data: {
   namespacesTopicsCount: Record<string, { persistent: number, nonPersistent: number }>
-  allTopicsMetrics: Record<string, TenantMetrics>
+  allNamespacesMetrics: Record<string, NamespaceMetrics>
 }): string[] => {
-  function s(defs: string[], undefs: string[], getM: (m: TenantMetrics) => number): string[] {
+  function s(defs: string[], undefs: string[], getM: (m: NamespaceMetrics) => number): string[] {
     let result = defs.sort((a, b) => {
-      const aMetrics = data.allTopicsMetrics[a];
-      const bMetrics = data.allTopicsMetrics[b];
+      const aMetrics = data.allNamespacesMetrics[a];
+      const bMetrics = data.allNamespacesMetrics[b];
       return getM(aMetrics) - getM(bMetrics);
     });
     result = sort.direction === 'asc' ? result : result.reverse();
@@ -276,67 +300,67 @@ const sortNamespaces = (tenants: string[], sort: Sort, data: {
   }
 
   if (sort.key === 'averageMsgSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.averageMsgSize !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.averageMsgSize !== undefined);
     return s(defs, undefs, (m) => m.averageMsgSize!);
   }
 
   if (sort.key === 'backlogSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.backlogSize !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.backlogSize !== undefined);
     return s(defs, undefs, (m) => m.backlogSize!);
   }
 
   if (sort.key === 'bytesInCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.bytesInCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.bytesInCount !== undefined);
     return s(defs, undefs, (m) => m.bytesInCount!);
   }
 
   if (sort.key === 'bytesOutCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.bytesOutCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.bytesOutCount !== undefined);
     return s(defs, undefs, (m) => m.bytesOutCount!);
   }
 
   if (sort.key === 'msgInCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgInCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgInCount !== undefined);
     return s(defs, undefs, (m) => m.msgInCount!);
   }
 
   if (sort.key === 'msgOutCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgOutCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgOutCount !== undefined);
     return s(defs, undefs, (m) => m.msgOutCount!);
   }
 
   if (sort.key === 'msgRateIn') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgRateIn !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgRateIn !== undefined);
     return s(defs, undefs, (m) => m.msgRateIn!);
   }
 
   if (sort.key === 'msgRateOut') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgRateOut !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgRateOut !== undefined);
     return s(defs, undefs, (m) => m.msgRateOut!);
   }
 
   if (sort.key === 'msgThroughputIn') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgThroughputIn !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgThroughputIn !== undefined);
     return s(defs, undefs, (m) => m.msgThroughputIn!);
   }
 
   if (sort.key === 'msgThroughputOut') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.msgThroughputOut !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgThroughputOut !== undefined);
     return s(defs, undefs, (m) => m.msgThroughputOut!);
   }
 
   if (sort.key === 'pendingAddEntriesCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.pendingAddEntriesCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.pendingAddEntriesCount !== undefined);
     return s(defs, undefs, (m) => m.pendingAddEntriesCount!);
   }
 
   if (sort.key === 'producerCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.producerCount !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.producerCount !== undefined);
     return s(defs, undefs, (m) => m.producerCount!);
   }
 
   if (sort.key === 'storageSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTopicsMetrics[t]?.storageSize !== undefined);
+    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.storageSize !== undefined);
     return s(defs, undefs, (m) => m.storageSize!);
   }
 
@@ -345,6 +369,10 @@ const sortNamespaces = (tenants: string[], sort: Sort, data: {
 
 const NoData = () => {
   return <div className={cts.NoData}>-</div>
+}
+
+function sum(metrics: Record<string, NamespaceMetrics>, key: keyof NamespaceMetrics): number {
+  return Object.values(metrics).reduce((acc, cur) => acc + (cur[key] || 0), 0);
 }
 
 export default Namespaces;
