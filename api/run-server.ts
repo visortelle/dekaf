@@ -1,11 +1,11 @@
 import express from "express";
 import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import batchHandler from "./batch";
-import morgan from 'morgan';
-import cors from 'cors';
-import compression from 'compression';
-import brokerMetricsHandler from './broker-metrics/broker-metrics';
-import { router as metricsRouter } from './metrics/metrics';
+import morgan from "morgan";
+import cors from "cors";
+import compression from "compression";
+import brokerMetricsHandler from "./broker-metrics/broker-metrics";
+import { router as metricsRouter } from "./metrics/metrics";
 import { polyfill } from "./polyfill";
 
 polyfill();
@@ -21,9 +21,21 @@ const defaultConfig: Config = {
   pulsarBrokerWebUrl: "http://localhost:8080",
 };
 
+app.use(function nocache(_, res, next) {
+  res.setHeader("Surrogate-Control", "no-store");
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.removeHeader("x-powered-by")
+
+  next();
+});
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 app.use(compression());
 
 app.use("/batch", batchHandler);

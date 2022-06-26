@@ -182,3 +182,74 @@ export const getTenantsNamespacesCount: GetTenantsNamespacesCount = async (
 
   return result;
 };
+
+type GetTenantNamespacesTopicsCount = (
+  tenant: string,
+  namespaces: string[],
+  batchApiUrl: string,
+  brokerWebApiUrl: string
+) => Promise<Record<string, { persistent: number; nonPersistent: number }>>;
+export const getTenantNamespacesTopicsCount: GetTenantNamespacesTopicsCount =
+  async (tenant, namespaces, batchApiUrl, brokerWebApiUrl) => {
+    const requests: BatchRequest[] = namespaces
+      .map((namespace) => {
+        return [
+          getNamespacePersistentTopics(
+            [
+              { type: "tenant", name: tenant },
+              { type: "namespace", name: namespace },
+            ],
+            brokerWebApiUrl
+          ),
+          getNamespaceNonPersistentTopics(
+            [
+              { type: "tenant", name: tenant },
+              { type: "namespace", name: namespace },
+            ],
+            brokerWebApiUrl
+          ),
+        ];
+      })
+      .flat();
+
+    const res = await fetch(batchApiUrl, {
+      method: "POST",
+      body: JSON.stringify(requests),
+      headers: {
+        [hideShowProgressIndicatorHeader]: "",
+        "Content-Type": "application/json",
+      },
+    }).catch(() => undefined);
+    if (res === undefined) {
+      return {};
+    }
+    const json = await res.json();
+    const result = _(json)
+      .toPairs()
+      .reduce<Record<string, { persistent: number; nonPersistent: number }>>(
+        (result, [requestName, data]) => {
+          if (!Array.isArray(data.body)) {
+            return result;
+          }
+
+          const topicType: "persistent" | "non-persistent" =
+            requestName.startsWith("persistent-")
+              ? "persistent"
+              : "non-persistent";
+
+          const namespace = treePath.getNamespace(requestNameToPath(requestName))?.name || "";
+          const count = data.body.length;
+
+          return {
+            ...result,
+            [namespace]: {
+              persistent: topicType === "persistent" ? count : (result[namespace] === undefined ? 0 : result[namespace].persistent),
+              nonPersistent: topicType === "non-persistent" ? count : (result[namespace] === undefined ? 0 : result[namespace].nonPersistent),
+            }
+          };
+        },
+        {}
+      );
+
+    return result;
+  };

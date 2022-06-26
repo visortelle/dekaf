@@ -47,6 +47,15 @@ export const swrKeys = {
           stringify(tenants),
         ],
       },
+      getTenantNamespacesTopicsCount: {
+        _: (tenant: string, namespaces: string[]) => [
+          "pulsar",
+          "batch",
+          "getTenantNamespacesTopicsCount",
+          tenant,
+          stringify(namespaces)
+        ],
+      },
       getTenantsInfo: {
         _: (tenants: string[]) => [
           "pulsar",
