@@ -24,8 +24,6 @@ import { useRef } from 'react';
 
 type SortKey =
   'tenant' |
-  'persistent-topics-count' |
-  'non-persistent-topics-count' |
   'averageMsgSize' |
   'backlogSize' |
   'bytesInCount' |
@@ -58,7 +56,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [itemsRendered, setItemsRendered] = useState<ListItem<string>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
-  const [namespaceTopicsCountCache, setNamespaceTopicsCountCache] = useState<Record<string, number>>({});
+  const [namespaceTopicsCountCache, setNamespaceTopicsCountCache] = useState<Record<string, { persistent: number, nonPersistent: number }>>({});
   const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
@@ -91,18 +89,16 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
     );
   }, [sort.direction, sort.key])
 
-  const { data: namespacesData, error: namespacesError } = useSWR(
+  const { data: namespaces, error: namespacesError } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }),
-    async () => await adminClient.namespaces.getTenantNamespaces(props.tenant),
+    async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]),
   );
   if (namespacesError) {
     notifyError(`Unable to get namespaces list. ${namespacesError}`);
   }
 
-  const namespaces = useMemo(() => namespacesData?.map(tns => tns.split('/')[1]), [namespacesData]);
-
   const { data: allNamespacesMetrics, error: allNamespacesMetricsError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.allTenants._(),
+    swrKeys.pulsar.customApi.metrics.allTenantNamespaces._(props.tenant),
     async () => await customApiClient.getAllTenantNamespacesMetrics(props.tenant),
   );
   if (allNamespacesMetricsError) {
@@ -110,8 +106,8 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   }
 
   const { data: namespacesTopicsCount, error: namespacesTopicsCountError } = useSWR(
-    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantsNamespacesCount._(itemsRenderedDebounced.map(item => item.data!)),
-    async () => await adminBatchClient?.getTenantsNamespacesCount(itemsRenderedDebounced.map(item => item?.data || '')),
+    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantNamespacesTopicsCount._(props.tenant, itemsRendered.map(item => item.data!)),
+    async () => await adminBatchClient?.getTenantNamespacesTopicsCount(props.tenant, itemsRendered.map(item => item.data!)),
   );
 
   if (namespacesTopicsCountError) {
@@ -126,8 +122,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const sortedNamespaces = useMemo(() => sortNamespaces(
     namespaces || [],
     sort, {
-    persistentTopicsCount: namespacesTopicsCount || {},
-    nonPersistentTopicsCount: namespacesTopicsCount || {},
+    namespacesTopicsCount: namespacesTopicsCount || {},
     allTopicsMetrics: allNamespacesMetrics || {},
   }),
     [namespaces, sort, namespacesTopicsCount, allNamespacesMetrics]
@@ -159,8 +154,8 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             fixedHeaderContent={() => (
               <tr>
                 <Th title="Namespaces" sortKey="tenant" isSticky={true} />
-                <Th title={<TopicIcon topicType='persistent' />} sortKey="persistent-topics-count" />
-                <Th title={<TopicIcon topicType='non-persistent' />} sortKey="non-persistent-topics-count" />
+                <Th title={<TopicIcon topicType='persistent' />} />
+                <Th title={<TopicIcon topicType='non-persistent' />} />
                 <Th title="Msg. rate in" sortKey="msgRateIn" />
                 <Th title="Msg. rate out" sortKey="msgRateOut" />
                 <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
@@ -176,13 +171,15 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
                 <Th title="Storage size" sortKey="storageSize" />
               </tr>
             )}
-            itemContent={(_, tenant) => {
-              const tenantMetrics = (allNamespacesMetrics || {})[tenant];
+            itemContent={(_, namespace) => {
+              const namespaceMetrics = allNamespacesMetrics === undefined ? {} : allNamespacesMetrics[namespace] || {};
               return (
-                <Tenant
-                  namespace={tenant}
-                  metrics={tenantMetrics}
-                  persistentTopicsCount={namespaceTopicsCountCache[tenant]}
+                <Namespace
+                  tenant={props.tenant}
+                  namespace={namespace}
+                  metrics={namespaceMetrics}
+                  persistentTopicsCount={namespaceTopicsCountCache[namespace]?.persistent}
+                  nonPersistentTopicsCount={namespaceTopicsCountCache[namespace]?.nonPersistent}
                   highlight={{ namespace: [filterQueryDebounced] }}
                 />
               );
@@ -203,6 +200,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
 }
 
 type NamespaceProps = {
+  tenant: string;
   namespace: string;
   metrics: TenantMetrics;
   persistentTopicsCount: number | undefined;
@@ -211,7 +209,7 @@ type NamespaceProps = {
     namespace: string[];
   }
 }
-const Tenant: React.FC<NamespaceProps> = (props) => {
+const Namespace: React.FC<NamespaceProps> = (props) => {
   const i18n = I18n.useContext();
 
   const Td = useCallback((props: { children: React.ReactNode, width: string } & React.TdHTMLAttributes<HTMLTableCellElement>) => {
@@ -226,7 +224,7 @@ const Tenant: React.FC<NamespaceProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0 }}>
-        <LinkWithQuery to={routes.tenants.tenant._.get({ tenant: props.namespace })}>
+        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace._.get({ tenant: props.tenant, namespace: props.namespace })}>
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.namespace}
@@ -259,8 +257,7 @@ const Tenant: React.FC<NamespaceProps> = (props) => {
 }
 
 const sortNamespaces = (tenants: string[], sort: Sort, data: {
-  persistentTopicsCount: Record<string, number>,
-  nonPersistentTopicsCount: Record<string, number>,
+  namespacesTopicsCount: Record<string, { persistent: number, nonPersistent: number }>
   allTopicsMetrics: Record<string, TenantMetrics>
 }): string[] => {
   function s(defs: string[], undefs: string[], getM: (m: TenantMetrics) => number): string[] {
@@ -276,22 +273,6 @@ const sortNamespaces = (tenants: string[], sort: Sort, data: {
   if (sort.key === 'tenant') {
     const t = tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
     return sort.direction === 'asc' ? t : t.reverse();
-  }
-
-  if (sort.key === 'persistent-topics-count') {
-    return tenants.sort((a, b) => {
-      const aCount = data.persistentTopicsCount[a];
-      const bCount = data.persistentTopicsCount[b];
-      return sort.direction === 'asc' ? aCount - bCount : bCount - aCount;
-    });
-  }
-
-  if (sort.key === 'non-persistent-topics-count') {
-    return tenants.sort((a, b) => {
-      const aCount = data.persistentTopicsCount[a];
-      const bCount = data.persistentTopicsCount[b];
-      return sort.direction === 'asc' ? aCount - bCount : bCount - aCount;
-    });
   }
 
   if (sort.key === 'averageMsgSize') {

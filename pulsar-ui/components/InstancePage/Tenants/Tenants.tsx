@@ -25,7 +25,6 @@ import { useRef } from 'react';
 
 type SortKey =
   'tenant' |
-  'namespaces' |
   'averageMsgSize' |
   'backlogSize' |
   'bytesInCount' |
@@ -106,7 +105,7 @@ const Tenants: React.FC = () => {
 
   const { data: tenantsNamespacesCount, error: tenantsNamespacesCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantsNamespacesCount._(itemsRenderedDebounced.map(item => item.data!)),
-    async () => await adminBatchClient?.getTenantsNamespacesCount(itemsRenderedDebounced.map(item => item?.data || '')),
+    async () => await adminBatchClient?.getTenantsNamespacesCount(itemsRenderedDebounced.map(item => item.data!)),
   );
 
   if (tenantsNamespacesCountError) {
@@ -120,7 +119,7 @@ const Tenants: React.FC = () => {
 
   const { data: tenantsInfo, error: tenantsInfoError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantsInfo._(itemsRenderedDebounced.map(item => item.data!)),
-    async () => await adminBatchClient?.getTenantsInfo(itemsRenderedDebounced.map(item => item?.data || '')),
+    async () => await adminBatchClient?.getTenantsInfo(itemsRenderedDebounced.map(item => item.data!)),
   );
 
   if (tenantsInfoError) {
@@ -168,7 +167,7 @@ const Tenants: React.FC = () => {
             fixedHeaderContent={() => (
               <tr>
                 <Th title="Tenants" sortKey="tenant" isSticky={true} />
-                <Th title={<NamespaceIcon />} sortKey="namespaces" />
+                <Th title={<NamespaceIcon />} />
                 <Th title="Allowed clusters" />
                 <Th title="Admin roles" />
                 <Th title="Msg. rate in" sortKey="msgRateIn" />
@@ -303,14 +302,6 @@ const sortTenants = (tenants: string[], sort: Sort, data: {
   if (sort.key === 'tenant') {
     const t = tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
     return sort.direction === 'asc' ? t : t.reverse();
-  }
-
-  if (sort.key === 'namespaces') {
-    return tenants.sort((a, b) => {
-      const aCount = data.tenantsNamespacesCount[a];
-      const bCount = data.tenantsNamespacesCount[b];
-      return sort.direction === 'asc' ? aCount - bCount : bCount - aCount;
-    });
   }
 
   if (sort.key === 'averageMsgSize') {

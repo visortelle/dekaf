@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { TreePath } from '../../../NavigationTree/TreeView';
-import { getTreeNodesChildrenCount, getTenantsNamespacesCount } from './get-xs-children-count';
+import { getTreeNodesChildrenCount, getTenantsNamespacesCount, getTenantNamespacesTopicsCount } from './get-xs-children-count';
 import { TenantInfo, getTenantsInfo } from './get-xs';
 import { TreePathStr } from './types';
 
@@ -11,6 +11,7 @@ export type Value = {
   client: {
     getTreeNodesChildrenCount: (paths: TreePath[]) => Promise<Record<TreePathStr, number>>;
     getTenantsNamespacesCount: (tenants: string[]) => Promise<Record<string, number>>;
+    getTenantNamespacesTopicsCount: (tenant: string, namespaces: string[]) => Promise<Record<string, { persistent: number, nonPersistent: number }>>;
     getTenantsInfo: (tenants: string[]) => Promise<Record<string, TenantInfo>>;
   }
 }
@@ -19,6 +20,7 @@ const defaultValue: Value = {
   client: {
     getTreeNodesChildrenCount: async () => ({}),
     getTenantsNamespacesCount: async () => ({}),
+    getTenantNamespacesTopicsCount: async () => ({}),
     getTenantsInfo: async () => ({}),
   }
 };
@@ -33,6 +35,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           client: {
             getTreeNodesChildrenCount: (paths: TreePath[]) => getTreeNodesChildrenCount(paths, batchApiUrl, brokerWebApiUrl),
             getTenantsNamespacesCount: (tenants: string[]) => getTenantsNamespacesCount(tenants, batchApiUrl, brokerWebApiUrl),
+            getTenantNamespacesTopicsCount: (tenant: string, namespaces: string[]) => getTenantNamespacesTopicsCount(tenant, namespaces, batchApiUrl, brokerWebApiUrl),
             getTenantsInfo: (tenants: string[]) => getTenantsInfo(tenants, batchApiUrl, brokerWebApiUrl),
           }
         }}
