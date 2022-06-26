@@ -2,9 +2,9 @@
 
 api_url="http://localhost:8080/admin/v2"
 
-tenants_count=200
-namespaces_count=2
-topics_count=1
+tenants_count=2
+namespaces_count=100
+topics_count=100
 
 for te in $(seq $tenants_count); do
   curl -X PUT \
@@ -27,6 +27,16 @@ for te in $(seq $tenants_count); do
       curl -X PUT \
         -H 'Content-Type: application/json' \
         "${api_url}/persistent/tenant-${te}/namespace-${ns}/topic-${to}"
+    done
+  done
+done
+
+for te in $(seq $tenants_count); do
+  for ns in $(seq $namespaces_count); do
+    for to in $(seq $topics_count); do
+      curl -X PUT \
+        -H 'Content-Type: application/json' \
+        "${api_url}/non-persistent/tenant-${te}/namespace-${ns}/topic-${to}"
     done
   done
 done
