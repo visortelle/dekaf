@@ -10,19 +10,27 @@ export type ClientConfig = {
 export type Client = {
   getTenantMetrics: (tenant: string) => Promise<metrics.TenantMetrics>;
   getAllTenantsMetrics: () => Promise<Record<string, metrics.TenantMetrics>>;
-  getMetrics: (filters: brokerMetrics.Filter) => Promise<brokerMetrics.MetricsMap<any>>;
+  getAllTenantNamespacesMetrics: (
+    tenant: string
+  ) => Promise<Record<string, metrics.NamespaceMetrics>>;
+  getMetrics: (
+    filters: brokerMetrics.Filter
+  ) => Promise<brokerMetrics.MetricsMap<any>>;
 };
 
 export const dummyClient: Client = {
   getAllTenantsMetrics: async () => ({}),
   getMetrics: async () => ({}),
   getTenantMetrics: async () => ({}),
-}
+  getAllTenantNamespacesMetrics: async () => ({}),
+};
 
 export function createClient(config: ClientConfig): Client {
   return {
     getTenantMetrics: (tenant) => getTenantMetrics(config, tenant),
     getAllTenantsMetrics: () => getAllTenantsMetrics(config),
+    getAllTenantNamespacesMetrics: (tenant) =>
+      getAllTenantNamespacesMetrics(config, tenant),
     getMetrics: (filter) => getMetrics(config, filter),
   };
 }
@@ -42,7 +50,20 @@ async function getAllTenantsMetrics(
   return res.json();
 }
 
-async function getMetrics(config: ClientConfig, filter: brokerMetrics.Filter): Promise<brokerMetrics.MetricsMap<any>> {
+async function getAllTenantNamespacesMetrics(
+  config: ClientConfig,
+  tenant: string
+): Promise<Record<string, metrics.NamespaceMetrics>> {
+  const res = await fetch(
+    `${config.apiUrl}/metrics/tenants/${tenant}/allNamespaces`
+  );
+  return res.json();
+}
+
+async function getMetrics(
+  config: ClientConfig,
+  filter: brokerMetrics.Filter
+): Promise<brokerMetrics.MetricsMap<any>> {
   const response = await fetch(
     `${config.apiUrl}/broker-stats/metrics?filter=${stringify(filter)}`,
     {}
@@ -59,4 +80,4 @@ async function getMetrics(config: ClientConfig, filter: brokerMetrics.Filter): P
   }
 
   return json as brokerMetrics.MetricsMap<any>;
-};
+}

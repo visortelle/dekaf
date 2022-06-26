@@ -1,14 +1,14 @@
 import React from 'react';
 import s from './Overview.module.css'
 
-export type NamespacesProps = {};
+export type OverviewProps = {};
 
-const Namespaces: React.FC<NamespacesProps> = (props) => {
+const Overview: React.FC<OverviewProps> = (props) => {
   return (
     <div className={s.Namespaces}>
-      Namespaces
+      Overview
     </div>
   );
 }
 
-export default Namespaces;
+export default Overview;

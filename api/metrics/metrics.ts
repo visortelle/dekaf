@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
-import { TenantMetrics, TopicsMetrics } from "./types";
-import { getTenantMetrics } from "./calculations";
+import { TenantMetrics, NamespaceMetrics, TopicsMetrics } from "./types";
+import { getNamespacesMetrics, getTenantMetrics } from "./calculations";
 import * as pulsarAdmin from "pulsar-admin-client-fetch";
 import { fromPairs } from "lodash";
 
@@ -70,5 +70,23 @@ router.get(
     const tenant = req.params.tenant;
     const tenantMetrics = getTenantMetrics(tenant, state.metrics);
     res.status(200).json(tenantMetrics);
+  }
+);
+
+router.get(
+  "/tenants/:tenant/allNamespaces",
+  async (req, res: Response<Record<string, NamespaceMetrics>>) => {
+    const tenant = req.params.tenant;
+
+    const namespacesData = await pulsarAdminClient.namespaces.getTenantNamespaces(tenant).catch((err) => console.log(err));
+    if (namespacesData === undefined) {
+      res.status(500).end();
+      return;
+    }
+
+    const namespaces = namespacesData.map(tns => tns.split("/")[1]);
+
+    const namespacesMetrics = getNamespacesMetrics(tenant, namespaces, state.metrics);
+    res.status(200).json(namespacesMetrics);
   }
 );
