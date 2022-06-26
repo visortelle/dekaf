@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import useSWR, { mutate, useSWRConfig } from 'swr';
+import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';

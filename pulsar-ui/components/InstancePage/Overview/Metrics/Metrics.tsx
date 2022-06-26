@@ -72,7 +72,7 @@ const Metrics: React.FC = () => {
         </tr>
         <tr className={sts.Row}>
           <td className={sts.Cell}><strong>Backlog size</strong></td>
-          <td className={sts.Cell}>{i18n.formatCount(sum(allTenantsMetrics || {}, 'pendingAddEntriesCount'))}</td>
+          <td className={sts.Cell}>{i18n.formatCount(sum(allTenantsMetrics || {}, 'backlogSize'))}</td>
         </tr>
         <tr className={sts.Row}>
           <td className={sts.Cell}><strong>Storage size</strong></td>
@@ -83,8 +83,9 @@ const Metrics: React.FC = () => {
   );
 }
 
-export default Metrics;
 function sum(metrics: Record<string, TenantMetrics>, key: keyof TenantMetrics): number {
   return Object.values(metrics).reduce((acc, cur) => acc + (cur[key] || 0), 0);
 }
+
+export default Metrics;
 
