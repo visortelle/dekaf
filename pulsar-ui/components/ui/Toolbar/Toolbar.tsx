@@ -20,6 +20,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 export type ToolbarButtonProps = ButtonProps & {
   linkTo: string;
   position?: 'left' | 'right';
+  disabled?: boolean;
 }
 
 export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
@@ -29,6 +30,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
         title={props.title}
         onClick={props.onClick}
         type={props.type}
+        disabled={props.disabled}
       />
     </Link>
   </div>
