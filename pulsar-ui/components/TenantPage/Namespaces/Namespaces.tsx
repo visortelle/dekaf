@@ -24,7 +24,7 @@ import { useRef } from 'react';
 import _ from 'lodash';
 
 type SortKey =
-  'tenant' |
+  'namespace' |
   'averageMsgSize' |
   'backlogSize' |
   'bytesInCount' |
@@ -58,7 +58,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const [itemsRendered, setItemsRendered] = useState<ListItem<string>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [namespaceTopicsCountCache, setNamespaceTopicsCountCache] = useState<Record<string, { persistent: number, nonPersistent: number }>>({});
-  const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
+  const [sort, setSort] = useState<Sort>({ key: 'namespace', direction: 'asc' });
   const i18n = I18n.useContext();
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
@@ -157,7 +157,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             fixedHeaderContent={() => (
               <>
                 <tr>
-                  <Th title="Namespaces" sortKey="tenant" isSticky={true} />
+                  <Th title="Namespaces" sortKey="namespace" isSticky={true} />
                   <Th title={<TopicIcon topicType='persistent' />} />
                   <Th title={<TopicIcon topicType='non-persistent' />} />
                   <Th title="Msg. rate in" sortKey="msgRateIn" />
@@ -248,7 +248,7 @@ const Namespace: React.FC<NamespaceProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
-        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })}>
+        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })} className="A">
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.namespace}
@@ -274,7 +274,7 @@ const Namespace: React.FC<NamespaceProps> = (props) => {
       <Td width="12ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatBytes(props.metrics.bytesOutCount)}</Td>
       <Td width="12ch">{props.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.producerCount)}</Td>
       <Td width="12ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
-      <Td width="12ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.metrics.backlogSize)}</Td>
+      <Td width="12ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.backlogSize)}</Td>
       <Td width="12ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
     </>
   );
@@ -294,7 +294,7 @@ const sortNamespaces = (tenants: string[], sort: Sort, data: {
     return result.concat(undefs);
   }
 
-  if (sort.key === 'tenant') {
+  if (sort.key === 'namespace') {
     const t = tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
     return sort.direction === 'asc' ? t : t.reverse();
   }

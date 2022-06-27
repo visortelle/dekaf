@@ -16,6 +16,7 @@
 .Button:hover {
   cursor: pointer;
   opacity: 0.5;
+  user-select: none;
   transition: var(--transition-short);
 }
 
@@ -36,12 +37,12 @@
 }
 
 .DisabledButton {
+  opacity: 1;
   background-color: #f5f5f5 !important;
   color: #999 !important;
 }
 
 .DisabledButton:hover {
-  cursor: initial;
+  cursor: default;
   opacity: 1;
 }
-

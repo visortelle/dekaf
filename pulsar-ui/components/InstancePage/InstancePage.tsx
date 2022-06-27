@@ -32,7 +32,7 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               linkTo: routes.instance.tenants._.get(),
               title: 'Tenants',
               onClick: () => { },
-              type: 'regular'
+              type: 'regular',
             },
             {
               linkTo: routes.instance.overview._.get(),

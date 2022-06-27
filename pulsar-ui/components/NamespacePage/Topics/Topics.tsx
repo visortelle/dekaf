@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import s from './Namespaces.module.css'
+import s from './Topics.module.css'
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
@@ -24,7 +24,10 @@ import { useRef } from 'react';
 import _ from 'lodash';
 
 type SortKey =
-  'tenant' |
+  'topic' |
+  'publishers' |
+  'replication' |
+  'subscriptions' |
   'averageMsgSize' |
   'backlogSize' |
   'bytesInCount' |
@@ -45,6 +48,7 @@ const firstColumnWidth = '15ch';
 
 type TopicsProps = {
   tenant: string;
+  namespace: string;
 }
 
 const Topics: React.FC<TopicsProps> = (props) => {
@@ -58,7 +62,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
   const [itemsRendered, setItemsRendered] = useState<ListItem<string>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [namespaceTopicsCountCache, setNamespaceTopicsCountCache] = useState<Record<string, { persistent: number, nonPersistent: number }>>({});
-  const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
+  const [sort, setSort] = useState<Sort>({ key: 'topic', direction: 'asc' });
   const i18n = I18n.useContext();
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
@@ -157,7 +161,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
             fixedHeaderContent={() => (
               <>
                 <tr>
-                  <Th title="Namespaces" sortKey="tenant" isSticky={true} />
+                  <Th title="Namespaces" sortKey="topic" isSticky={true} />
                   <Th title={<TopicIcon topicType='persistent' />} />
                   <Th title={<TopicIcon topicType='non-persistent' />} />
                   <Th title="Msg. rate in" sortKey="msgRateIn" />
@@ -248,7 +252,7 @@ const Namespace: React.FC<NamespaceProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
-        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })}>
+        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })} className="A">
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.namespace}
@@ -294,7 +298,7 @@ const sortNamespaces = (tenants: string[], sort: Sort, data: {
     return result.concat(undefs);
   }
 
-  if (sort.key === 'tenant') {
+  if (sort.key === 'topic') {
     const t = tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
     return sort.direction === 'asc' ? t : t.reverse();
   }
@@ -372,7 +376,13 @@ const NoData = () => {
 }
 
 function sum(metrics: Record<string, TopicMetrics>, key: keyof TopicMetrics): number {
-  return Object.values(metrics).reduce((acc, cur) => acc + (cur[key] || 0), 0);
+  return Object.values(metrics).reduce((acc, cur) => {
+    const v = cur[key];
+    if (typeof v !== 'number') {
+      return acc;
+    }
+    return acc + (v || 0);
+  }, 0);
 }
 
 export default Topics;
