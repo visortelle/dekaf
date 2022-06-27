@@ -178,19 +178,19 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
                   <th className={cts.SummaryTh} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Summary</th>
                   <th className={cts.SummaryTh}><NoData /></th>
                   <th className={cts.SummaryTh}><NoData /></th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics || {}, 'msgRateIn'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics || {}, 'msgRateOut'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics || {}, 'msgThroughputIn'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics || {}, 'msgThroughputOut'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics || {}, 'msgInCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics || {}, 'msgOutCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(namespacesToShowMetrics || {}).length > 0 ? sum(namespacesToShowMetrics || {}, 'averageMsgSize') / Object.keys(namespacesToShowMetrics || {}).length : 0)}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics || {}, 'bytesInCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics || {}, 'bytesOutCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics || {}, 'producerCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics || {}, 'pendingAddEntriesCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics || {}, 'backlogSize'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics || {}, 'storageSize'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgRateIn'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgRateOut'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgThroughputIn'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgThroughputOut'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'msgInCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'msgOutCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(namespacesToShowMetrics).length > 0 ? sum(namespacesToShowMetrics, 'averageMsgSize') / Object.keys(namespacesToShowMetrics).length : 0)}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'bytesInCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'bytesOutCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'producerCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'pendingAddEntriesCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'backlogSize'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'storageSize'))}</th>
                 </tr>
               </>
             )}

@@ -22,6 +22,7 @@ import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { TenantInfo } from '../../app/contexts/PulsarAdminBatchClient/get-xs';
 import { useRef } from 'react';
+import _ from 'lodash';
 
 type SortKey =
   'tenant' |
@@ -56,6 +57,7 @@ const Tenants: React.FC = () => {
   const [tenantsNamespacesCountCache, setTenantsNamespacesCountCache] = useState<Record<string, number>>({});
   const [tenantsInfoCache, setTenantsInfoCache] = useState<Record<string, TenantInfo>>({});
   const [sort, setSort] = useState<Sort>({ key: 'tenant', direction: 'asc' });
+  const i18n = I18n.useContext();
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
     const handleColumnHeaderClick = () => {
@@ -142,6 +144,7 @@ const Tenants: React.FC = () => {
   );
 
   const tenantsToShow = sortedTenants?.filter((t) => t.includes(filterQueryDebounced));
+  const tenantsToShowMetrics = useMemo(() => _(allTenantsMetrics).toPairs().filter(([k]) => tenantsToShow.includes(k)).fromPairs().value(), [allTenantsMetrics, tenantsToShow]);
 
   return (
     <div className={s.Tenants}>
@@ -165,25 +168,46 @@ const Tenants: React.FC = () => {
             data={tenantsToShow}
             overscan={{ main: (tableRef?.current?.clientHeight || 0), reverse: (tableRef?.current?.clientHeight || 0) }}
             fixedHeaderContent={() => (
-              <tr>
-                <Th title="Tenants" sortKey="tenant" isSticky={true} />
-                <Th title={<NamespaceIcon />} />
-                <Th title="Allowed clusters" />
-                <Th title="Admin roles" />
-                <Th title="Msg. rate in" sortKey="msgRateIn" />
-                <Th title="Msg. rate out" sortKey="msgRateOut" />
-                <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
-                <Th title="Msg. throughput out" sortKey="msgThroughputOut" />
-                <Th title="Msg. in" sortKey="msgInCount" />
-                <Th title="Msg. out" sortKey="msgOutCount" />
-                <Th title="Avg. msg. size" sortKey="averageMsgSize" />
-                <Th title="Bytes in" sortKey="bytesInCount" />
-                <Th title="Bytes out" sortKey="bytesOutCount" />
-                <Th title="Producers" sortKey="producerCount" />
-                <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
-                <Th title="Backlog size" sortKey="backlogSize" />
-                <Th title="Storage size" sortKey="storageSize" />
-              </tr>
+              <>
+                <tr>
+                  <Th title="Tenants" sortKey="tenant" isSticky={true} />
+                  <Th title={<NamespaceIcon />} />
+                  <Th title="Allowed clusters" />
+                  <Th title="Admin roles" />
+                  <Th title="Msg. rate in" sortKey="msgRateIn" />
+                  <Th title="Msg. rate out" sortKey="msgRateOut" />
+                  <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
+                  <Th title="Msg. throughput out" sortKey="msgThroughputOut" />
+                  <Th title="Msg. in" sortKey="msgInCount" />
+                  <Th title="Msg. out" sortKey="msgOutCount" />
+                  <Th title="Avg. msg. size" sortKey="averageMsgSize" />
+                  <Th title="Bytes in" sortKey="bytesInCount" />
+                  <Th title="Bytes out" sortKey="bytesOutCount" />
+                  <Th title="Producers" sortKey="producerCount" />
+                  <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
+                  <Th title="Backlog size" sortKey="backlogSize" />
+                  <Th title="Storage size" sortKey="storageSize" />
+                </tr>
+                <tr>
+                  <th className={cts.SummaryTh} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Summary</th>
+                  <th className={cts.SummaryTh}><NoData /></th>
+                  <th className={cts.SummaryTh}><NoData /></th>
+                  <th className={cts.SummaryTh}><NoData /></th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(tenantsToShowMetrics, 'msgRateIn'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(tenantsToShowMetrics, 'msgRateOut'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(tenantsToShowMetrics, 'msgThroughputIn'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(tenantsToShowMetrics, 'msgThroughputOut'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(tenantsToShowMetrics, 'msgInCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(tenantsToShowMetrics, 'msgOutCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(tenantsToShowMetrics).length > 0 ? sum(tenantsToShowMetrics, 'averageMsgSize') / Object.keys(tenantsToShowMetrics).length : 0)}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(tenantsToShowMetrics, 'bytesInCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(tenantsToShowMetrics, 'bytesOutCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(tenantsToShowMetrics, 'producerCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(tenantsToShowMetrics, 'pendingAddEntriesCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(tenantsToShowMetrics, 'backlogSize'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(tenantsToShowMetrics, 'storageSize'))}</th>
+                </tr>
+              </>
             )}
             itemContent={(_, tenant) => {
               const tenantMetrics = (allTenantsMetrics || {})[tenant];
@@ -374,6 +398,10 @@ const sortTenants = (tenants: string[], sort: Sort, data: {
 
 const NoData = () => {
   return <div className={cts.NoData}>-</div>
+}
+
+function sum(metrics: Record<string, TenantMetrics>, key: keyof TenantMetrics): number {
+  return Object.values(metrics).reduce((acc, cur) => acc + (cur[key] || 0), 0);
 }
 
 export default Tenants;
