@@ -110,7 +110,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 
   return (
     <Link
-      to={routes.tenants.tenant.namespaces.namespace._.get({ tenant: props.tenant, namespace: props.namespace })}
+      to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}

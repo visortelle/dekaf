@@ -55,11 +55,6 @@ export const routes = {
             `/tenants/${props.tenant}/namespaces`,
         },
         namespace: {
-          _: {
-            path: "/tenants/:tenant/namespaces/:namespace",
-            get: (props: { tenant: string; namespace: string }) =>
-              `/tenants/${props.tenant}/namespaces/${props.namespace}`,
-          },
           policies: {
             _: {
               path: "/tenants/:tenant/namespaces/:namespace/policies",
@@ -82,6 +77,11 @@ export const routes = {
             },
           },
           topics: {
+            _: {
+              path: "/tenants/:tenant/namespaces/:namespace/topics",
+              get: (props: { tenant: string; namespace: string }) =>
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/topics`,
+            },
             anyTopicType: {
               topic: {
                 _: {

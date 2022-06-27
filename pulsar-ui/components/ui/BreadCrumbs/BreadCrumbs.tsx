@@ -40,7 +40,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     switch (crumb.type) {
       case 'instance': href = routes.instance.tenants._.get(); break;
       case 'tenant': href = routes.tenants.tenant.namespaces._.get({ tenant }); break;
-      case 'namespace': href = routes.tenants.tenant.namespaces.namespace._.get({ tenant, namespace }); break;
+      case 'namespace': href = routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant, namespace }); break;
       case 'persistent-topic': href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant, namespace, topic, topicType: 'persistent' }); break;
       case 'non-persistent-topic': href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant, namespace, topic, topicType: 'non-persistent' }); break;
     }

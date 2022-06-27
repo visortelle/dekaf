@@ -248,7 +248,7 @@ const Namespace: React.FC<NamespaceProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
-        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace._.get({ tenant: props.tenant, namespace: props.namespace })}>
+        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })}>
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.namespace}
