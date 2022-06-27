@@ -11,13 +11,13 @@ const TealTools: React.FC<TealToolsProps> = (props) => {
         Pulsar X-Ray v0.1.0
       </div>
       <div className={s.Links}>
-        <a href="#" target="__blank" className={s.Link}>
+        <a href="#" target="__blank" className={`A ${s.Link}`}>
           Report a problem
         </a>
-        <a href="#" target="__blank" className={s.Link}>
+        <a href="#" target="__blank" className={`A ${s.Link}`}>
           Register license
         </a>
-        <a href="#" target="__blank" className={s.Link}>
+        <a href="#" target="__blank" className={`A ${s.Link}`}>
           Get help
         </a>
       </div>

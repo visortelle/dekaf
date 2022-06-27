@@ -260,7 +260,7 @@ const Tenant: React.FC<TenantProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.tenant} style={{ position: 'sticky', left: 0 }}>
-        <LinkWithQuery to={routes.tenants.tenant.namespaces._.get({ tenant: props.tenant })}>
+        <LinkWithQuery to={routes.tenants.tenant.namespaces._.get({ tenant: props.tenant })} className="A">
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.tenant}
@@ -303,7 +303,7 @@ const Tenant: React.FC<TenantProps> = (props) => {
       <Td width="12ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatBytes(props.metrics.bytesOutCount)}</Td>
       <Td width="12ch">{props.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.producerCount)}</Td>
       <Td width="12ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
-      <Td width="12ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.metrics.backlogSize)}</Td>
+      <Td width="12ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.backlogSize)}</Td>
       <Td width="12ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
     </>
   );
