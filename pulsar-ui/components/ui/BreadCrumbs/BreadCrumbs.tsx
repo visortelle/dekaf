@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './BreadCrumbs.module.css'
-import { TenantIcon, NamespaceIcon, TopicIcon } from '../Icons/Icons';
+import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../Icons/Icons';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowIcon from '!!raw-loader!./arrow.svg';
 import Link from '../../ui/LinkWithQuery/LinkWithQuery';
@@ -8,7 +8,7 @@ import { routes } from '../../routes';
 import { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';
 
-export type CrumbType = 'tenant' | 'namespace' | 'persistent-topic' | 'non-persistent-topic';
+export type CrumbType = 'instance' | 'tenant' | 'namespace' | 'persistent-topic' | 'non-persistent-topic';
 export type Crumb = {
   id: string;
   type: CrumbType;
@@ -27,6 +27,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
   const renderCrumb = (crumb: Crumb, i: number, total: number) => {
     let icon = null;
     switch (crumb.type) {
+      case 'instance': icon = <InstanceIcon />; break;
       case 'tenant': icon = <TenantIcon />; break;
       case 'namespace': icon = <NamespaceIcon />; break;
       case 'persistent-topic': icon = <TopicIcon topicType='persistent' />; break;
@@ -37,6 +38,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
 
     let href = '#';
     switch (crumb.type) {
+      case 'instance': href = routes.instance.tenants._.get(); break;
       case 'tenant': href = routes.tenants.tenant.namespaces._.get({ tenant }); break;
       case 'namespace': href = routes.tenants.tenant.namespaces.namespace._.get({ tenant, namespace }); break;
       case 'persistent-topic': href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant, namespace, topic, topicType: 'persistent' }); break;
@@ -45,6 +47,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
 
     const onClick = () => {
       switch (crumb.type) {
+        case 'instance': mutate(swrKeys.pulsar.tenants._()); break;
         case 'tenant': mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant })); break;
         case 'namespace': mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant, namespace })); break;
       }

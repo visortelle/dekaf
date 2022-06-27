@@ -21,6 +21,11 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       <BreadCrumbsAtPageTop
         crumbs={[
           {
+            id: `instance`,
+            value: 'Pulsar Instance',
+            type: 'instance',
+          },
+          {
             id: `tenant-${props.tenant}`,
             value: props.tenant,
             type: 'tenant',
