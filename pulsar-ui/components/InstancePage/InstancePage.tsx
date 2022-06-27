@@ -6,6 +6,7 @@ import Toolbar from '../ui/Toolbar/Toolbar';
 import { routes } from '../routes';
 import Tenants from './Tenants/Tenants';
 import CreateTenant from './CreateTenant/CreateTenant';
+import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 
 export type InstancePageView = 'overview' | 'configuration' | 'tenants' | 'create-tenant';
 export type InstancePageProps = {
@@ -16,6 +17,15 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
   return (
     <div className={s.Page}>
       <div className={s.PageContent}>
+        <BreadCrumbsAtPageTop
+          crumbs={[
+            {
+              id: `instance`,
+              value: 'Pulsar Instance',
+              type: 'instance',
+            }
+          ]}
+        />
         <Toolbar
           buttons={[
             {
