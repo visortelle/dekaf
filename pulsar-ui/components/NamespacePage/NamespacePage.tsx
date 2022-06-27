@@ -6,7 +6,7 @@ import Policies from './Policies/Policies';
 import DeleteNamespace from './DeleteNamespace/DeleteNamespace';
 import { routes } from '../routes';
 
-export type NamespacePageView = 'overview' | 'policies' | 'delete-namespace' | 'create-topic';
+export type NamespacePageView = 'topics' | 'policies' | 'delete-namespace' | 'create-topic';
 export type NamespacePageProps = {
   view: NamespacePageView;
   tenant: string;
@@ -38,8 +38,8 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       <Toolbar
         buttons={[
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace._.get({ tenant: props.tenant, namespace: props.namespace }),
-            title: 'Overview',
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
+            title: 'Topics',
             onClick: () => { },
             type: 'regular'
           },
