@@ -20,9 +20,9 @@ export type BreadCrumbsProps = {
 };
 
 const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
-  const tenant = props.crumbs[0]?.value;
-  const namespace = props.crumbs[1]?.value;
-  const topic = props.crumbs[2]?.value;
+  const tenant = props.crumbs[1]?.value;
+  const namespace = props.crumbs[2]?.value;
+  const topic = props.crumbs[3]?.value;
 
   const renderCrumb = (crumb: Crumb, i: number, total: number) => {
     let icon = null;
