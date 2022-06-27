@@ -32,12 +32,6 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
         <Toolbar
           buttons={[
             {
-              linkTo: routes.tenants.tenant._.get({ tenant: props.tenant }),
-              title: 'Overview',
-              onClick: () => { },
-              type: 'regular'
-            },
-            {
               linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
               title: 'Namespaces',
               onClick: () => { },

@@ -18,7 +18,7 @@ export type PulsarInstanceProps = {
 export const PulsarInstance: React.FC<PulsarInstanceProps> = (props) => {
   return (
     <Link
-      to={routes.instance._.get()}
+      to={routes.instance.tenants._.get()}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
@@ -58,7 +58,7 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
 
   return (
     <Link
-      to={routes.tenants.tenant._.get({ tenant: props.tenant })}
+      to={routes.tenants.tenant.namespaces._.get({ tenant: props.tenant })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}

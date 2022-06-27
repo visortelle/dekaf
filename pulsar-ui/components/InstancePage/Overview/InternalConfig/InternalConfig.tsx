@@ -11,7 +11,6 @@ const InternalConfig: React.FC<InternalConfigProps> = () => {
 
   return (
     <div className={s.InternalConfig}>
-      <div className={s.Title}>Config</div>
       <table className={sts.Table}>
         <tbody>
           {_(internalConfig).toPairs().sortBy().value().map(([key, value]) => (
