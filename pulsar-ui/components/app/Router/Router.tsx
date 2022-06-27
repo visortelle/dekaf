@@ -41,11 +41,10 @@ const Router: React.FC = () => {
 const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => RouteObject[] } => {
   const getRoutes = ({ withLayout, withLayoutProps }: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => [
     /* Instance */
-    { path: routes.instance._.path, element: withLayout(<InstancePage view='overview' />, withLayoutProps) },
+    { path: routes.instance.overview._.path, element: withLayout(<InstancePage view='overview' />, withLayoutProps) },
     { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view='configuration' />, withLayoutProps) },
-    { path: routes.instance.brokerStats._.path, element: withLayout(<InstancePage view='broker-stats' />, withLayoutProps) },
-    { path: routes.instance.tenants._.path, element: withLayout(<InstancePage view='tenants' />, setScrollMode(withLayoutProps, 'page-own')) },
     { path: routes.instance.createTenant._.path, element: withLayout(<InstancePage view='create-tenant' />, withLayoutProps) },
+    { path: routes.instance.tenants._.path, element: withLayout(<InstancePage view='tenants' />, setScrollMode(withLayoutProps, 'page-own')) },
 
     /* Topics */
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.path, element: withLayout(<RoutedTopicPage view='overview' />, withLayoutProps) },
@@ -63,7 +62,6 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     { path: routes.tenants.tenant.createNamespace._.path, element: withLayout(<RouteTenantPage view={'create-namespace'} />, withLayoutProps) },
     { path: routes.tenants.tenant.deleteTenant._.path, element: withLayout(<RouteTenantPage view={'delete-tenant'} />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces._.path, element: withLayout(<RouteTenantPage view={'namespaces'} />, setScrollMode(withLayoutProps, 'page-own')) },
-    { path: routes.tenants.tenant._.path, element: withLayout(<RouteTenantPage view={'overview'} />, withLayoutProps) }
   ];
   const paths = getRoutes({ withLayout: () => <></>, withLayoutProps: defaultWithLayoutProps }).map(ro => ro.path).filter(p => p !== undefined) as string[];
 

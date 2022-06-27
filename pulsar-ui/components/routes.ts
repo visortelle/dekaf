@@ -1,25 +1,21 @@
 export const routes = {
   instance: {
-    _: {
-      path: "/",
-      get: () => `/`,
+    tenants: {
+      _: {
+        path: "/",
+        get: () => `/`,
+      },
+    },
+    overview: {
+      _: {
+        path: "/instance/overview",
+        get: () => `/instance/overview`,
+      },
     },
     configuration: {
       _: {
         path: "/instance/configuration",
         get: () => `/instance/configuration`,
-      },
-    },
-    brokerStats: {
-      _: {
-        path: "/instance/metrics",
-        get: () => `/instance/metrics`,
-      },
-    },
-    tenants: {
-      _: {
-        path: "/instance/tenants",
-        get: () => `/instance/tenants`,
       },
     },
     createTenant: {
@@ -31,10 +27,6 @@ export const routes = {
   },
   tenants: {
     tenant: {
-      _: {
-        path: "/tenants/:tenant",
-        get: (props: { tenant: string }) => `/tenants/${props.tenant}`,
-      },
       deleteTenant: {
         _: {
           path: "tenants/:tenant/delete-tenant",

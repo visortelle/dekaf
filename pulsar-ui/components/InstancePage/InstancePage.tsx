@@ -4,11 +4,10 @@ import Overview from './Overview/Overview';
 import Configuration from './Configuration/Configuration';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import { routes } from '../routes';
-import BrokerStats from './BrokerStats/BrokerStats';
 import Tenants from './Tenants/Tenants';
 import CreateTenant from './CreateTenant/CreateTenant';
 
-export type InstancePageView = 'overview' | 'configuration' | 'broker-stats' | 'tenants' | 'create-tenant';
+export type InstancePageView = 'overview' | 'configuration' | 'tenants' | 'create-tenant';
 export type InstancePageProps = {
   view: InstancePageView;
 };
@@ -20,26 +19,20 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
         <Toolbar
           buttons={[
             {
-              linkTo: routes.instance._.get(),
-              title: 'Overview',
-              onClick: () => { },
-              type: 'regular'
-            },
-            {
               linkTo: routes.instance.tenants._.get(),
               title: 'Tenants',
               onClick: () => { },
               type: 'regular'
             },
             {
-              linkTo: routes.instance.configuration._.get(),
-              title: 'Configuration',
+              linkTo: routes.instance.overview._.get(),
+              title: 'Overview',
               onClick: () => { },
               type: 'regular'
             },
             {
-              linkTo: routes.instance.brokerStats._.get(),
-              title: 'Metrics',
+              linkTo: routes.instance.configuration._.get(),
+              title: 'Configuration',
               onClick: () => { },
               type: 'regular'
             },
@@ -56,7 +49,6 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
 
       {props.view === 'overview' && <Overview />}
       {props.view === 'configuration' && <Configuration />}
-      {props.view === 'broker-stats' && <BrokerStats />}
       {props.view === 'tenants' && <Tenants />}
       {props.view === 'create-tenant' && <CreateTenant />}
     </div>
