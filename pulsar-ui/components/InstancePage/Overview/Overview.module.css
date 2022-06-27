@@ -3,5 +3,11 @@
 }
 
 .Section {
-  margin-bottom: 36rem;
+  margin-bottom: 48rem;
+}
+
+.SectionTitle {
+  font-size: 28rem;
+  font-weight: bold;
+  margin-bottom: 12rem;
 }

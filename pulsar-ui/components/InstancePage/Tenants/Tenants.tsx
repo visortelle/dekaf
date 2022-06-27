@@ -260,7 +260,7 @@ const Tenant: React.FC<TenantProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.tenant} style={{ position: 'sticky', left: 0 }}>
-        <LinkWithQuery to={routes.tenants.tenant._.get({ tenant: props.tenant })}>
+        <LinkWithQuery to={routes.tenants.tenant.namespaces._.get({ tenant: props.tenant })}>
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.tenant}

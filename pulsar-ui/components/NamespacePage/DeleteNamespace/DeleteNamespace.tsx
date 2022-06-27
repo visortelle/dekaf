@@ -27,7 +27,7 @@ const DeleteTopic: React.FC<DeleteTopicProps> = (props) => {
       await adminClient.client.namespaces.deleteNamespace(props.tenant, props.namespace, forceDelete);
 
       notification.notifySuccess(`Namespace ${props.tenant}/${props.namespace} has been successfully deleted.`);
-      navigate(routes.tenants.tenant._.get({ tenant: props.tenant }));
+      navigate(routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }));
 
       await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }));
     } catch (err) {

@@ -1,91 +1,164 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import s from './Metrics.module.css'
-import sts from '../../../ui/SimpleTable/SimpleTable.module.css';
-import useSWR from 'swr';
+import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarCustomApiClient from '../../../app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
-import { swrKeys } from '../../../swrKeys';
-import { TenantMetrics } from 'tealtools-pulsar-ui-api/metrics/types';
 import * as I18n from '../../../app/contexts/I18n/I18n';
+import useSWR from 'swr';
+import stringify from 'safe-stable-stringify';
+import _ from 'lodash';
+import { swrKeys } from '../../../swrKeys';
+import Input from '../../../ui/Input/Input';
+import Highlighter from "react-highlight-words";
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import { useQueryParam, withDefault, StringParam } from 'use-query-params';
+import { useDebounce } from 'use-debounce'
+import { TableVirtuoso } from 'react-virtuoso';
 
-const Metrics: React.FC = () => {
-  const customApiClient = PulsarCustomApiClient.useContext().client;
+const filterKvsAndOp = "&&";
+const filterKvSep = "=";
+
+const InternalConfig: React.FC = () => {
+  const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
-  const i18n = I18n.useContext();
+  const [dimensionsFilter, setDimensionsFilter] = useQueryParam('dimensionsFilter', withDefault(StringParam, ''));
+  const [dimensionsFilterDebounced] = useDebounce(dimensionsFilter, 400)
+  const [dimensionsFilterKvs, setDimensionsFilterKvs] = React.useState<{ key: string, value: string }[]>([]);
+  const [metrics, setMetrics] = React.useState<[string, Metric[]][]>([]);
 
-  const { data: allTenantsMetrics, error: allTenantsMetricsError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.allTenants._(),
-    async () => await customApiClient.getAllTenantsMetrics(),
+  const { data: metricsData, error: metricsError } = useSWR(
+    swrKeys.pulsar.brokerStats.metrics,
+    async () => await adminClient.brokerStats.getMetrics(),
   );
 
-  if (allTenantsMetricsError) {
-    notifyError(`Unable to get all tenants metrics. ${allTenantsMetricsError}`);
+  if (metricsError) {
+    notifyError(`Unable to fetch metrics: ${metricsError}`);
   }
+
+  useEffect(() => {
+    const kvs = dimensionsFilterDebounced
+      .split(filterKvsAndOp)
+      .map((d) => d.includes(filterKvSep) ? d.trim() : undefined)
+      .filter(kv => kv !== undefined).map(kv => kv || '')
+      .map((d) => d.split(filterKvSep))
+      .map(([k, v]) => ({ key: k, value: v }));
+
+    let filteredMetrics = dimensionsFilterDebounced.length === 0 ? metricsData : [];
+    if (kvs.length === 0) {
+      filteredMetrics = metricsData?.filter(m => m.dimensions?.metric !== undefined && Object.entries(m.dimensions || {}).some(([k, v]) => {
+        if (k.includes(dimensionsFilterDebounced) || v.includes(dimensionsFilterDebounced)) {
+          return true;
+        }
+      }));
+    } else {
+      filteredMetrics = metricsData?.filter(m => {
+        return kvs.every((kv) => Object.entries(m.dimensions || {}).some(([k, v]) => {
+          return k === kv.key && v.includes(kv.value);
+        }));
+      });
+    }
+
+    const metrics = _(filteredMetrics).groupBy('dimensions.metric').toPairs().sortBy(0).value();
+
+    setDimensionsFilterKvs(() => kvs);
+    setMetrics(() => metrics);
+  }, [metricsData, dimensionsFilterDebounced]);
+
+  const renderMetric = useCallback(([key, value]: [string, Metric[]]) => {
+    return (
+      <MetricsTable
+        key={key}
+        title={key}
+        metrics={value}
+        highlightDimensions={[
+          dimensionsFilterDebounced,
+          ...dimensionsFilterKvs.map(({ key, value }) => [`"${key}":"${value}`, `"${key}":"${value}"`]).flat(),
+        ]}
+      />
+    );
+  }, [dimensionsFilterDebounced, dimensionsFilterKvs]);
 
   return (
     <div className={s.Metrics}>
-      <div className={s.Title}>Metrics</div>
-      <table className={sts.Table}>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Msg. rate in</strong></td>
-          <td className={sts.Cell}>{i18n.formatCountRate(sum(allTenantsMetrics || {}, 'msgRateIn'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Msg. rate out</strong></td>
-          <td className={sts.Cell}>{i18n.formatCountRate(sum(allTenantsMetrics || {}, 'msgRateOut'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Msg. throughput in</strong></td>
-          <td className={sts.Cell}>{i18n.formatCountRate(sum(allTenantsMetrics || {}, 'msgThroughputIn'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Msg. throughput out</strong></td>
-          <td className={sts.Cell}>{i18n.formatCountRate(sum(allTenantsMetrics || {}, 'msgThroughputOut'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Msg. in</strong></td>
-          <td className={sts.Cell}>{i18n.formatCount(sum(allTenantsMetrics || {}, 'msgInCount'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Msg. out</strong></td>
-          <td className={sts.Cell}>{i18n.formatCount(sum(allTenantsMetrics || {}, 'msgOutCount'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Avg. msg. size</strong></td>
-          <td className={sts.Cell}>{i18n.formatBytes(Object.keys(allTenantsMetrics || {}).length > 0 ? sum(allTenantsMetrics || {}, 'averageMsgSize') / Object.keys(allTenantsMetrics || {}).length : 0)}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Bytes in</strong></td>
-          <td className={sts.Cell}>{i18n.formatBytes(sum(allTenantsMetrics || {}, 'bytesInCount'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Bytes out</strong></td>
-          <td className={sts.Cell}>{i18n.formatBytes(sum(allTenantsMetrics || {}, 'bytesOutCount'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Producers</strong></td>
-          <td className={sts.Cell}>{i18n.formatCount(sum(allTenantsMetrics || {}, 'producerCount'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Pending entries</strong></td>
-          <td className={sts.Cell}>{i18n.formatCount(sum(allTenantsMetrics || {}, 'pendingAddEntriesCount'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Backlog size</strong></td>
-          <td className={sts.Cell}>{i18n.formatCount(sum(allTenantsMetrics || {}, 'backlogSize'))}</td>
-        </tr>
-        <tr className={sts.Row}>
-          <td className={sts.Cell}><strong>Storage size</strong></td>
-          <td className={sts.Cell}>{i18n.formatBytes(sum(allTenantsMetrics || {}, 'storageSize'))}</td>
-        </tr>
-      </table>
+      <div className={s.Filters}>
+        <strong className={sf.FormLabel}>
+          Filter by metric dimensions
+        </strong>
+        <Input
+          value={dimensionsFilter}
+          onChange={v => setDimensionsFilter(() => v)}
+          placeholder={`cluster=standalone ${filterKvsAndOp} broker=localhost`}
+          focusOnMount={true}
+          clearable={true}
+        />
+      </div>
+
+      <TableVirtuoso
+        data={metrics}
+        itemContent={(_, ms) => <><td>{renderMetric(ms)}</td></>}
+        useWindowScroll={true}
+        overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
+        totalCount={metrics.length}
+      />
     </div>
   );
 }
 
-function sum(metrics: Record<string, TenantMetrics>, key: keyof TenantMetrics): number {
-  return Object.values(metrics).reduce((acc, cur) => acc + (cur[key] || 0), 0);
+type Metric = {
+  metrics?: Record<string, string>,
+  dimensions?: Record<string, string>,
+}
+type MetricsTableProps = {
+  title: string,
+  highlightDimensions: string[],
+  metrics: Metric[],
+}
+const MetricsTable: React.FC<MetricsTableProps> = (props) => {
+  const i18n = I18n.useContext();
+
+  if (props.metrics === undefined) {
+    return <></>
+  }
+
+  return (
+    <div className={s.Section}>
+      <div className={s.Title}>{props.title}</div>
+      {props.metrics.map(m => (
+        <div key={stringify(m.dimensions)} className={s.Dimension}>
+          <div className={s.Dimensions}>
+            <Highlighter
+              highlightClassName="highlight-substring"
+              searchWords={props.highlightDimensions}
+              autoEscape={true}
+              textToHighlight={stringify(m.dimensions)}
+            />
+          </div>
+          <table className={s.Table}>
+            <tbody>
+              {Object.entries(m?.metrics || {}).map(([key, value]) => {
+                let v = value;
+                switch (key) {
+                  case 'brk_default_pool_allocated': v = i18n.formatBytes(Number(value)); break;
+                  case 'brk_default_pool_used': v = i18n.formatBytes(Number(value)); break;
+                  case 'jvm_direct_memory_used': v = i18n.formatBytes(Number(value)); break;
+                  case 'jvm_heap_used': v = i18n.formatBytes(Number(value)); break;
+                  case 'jvm_max_direct_memory': v = i18n.formatBytes(Number(value)); break;
+                  case 'jvm_max_memory': v = i18n.formatBytes(Number(value)); break;
+                  case 'jvm_total_memory': v = i18n.formatBytes(Number(value)); break;
+                }
+
+                return (
+                  <tr className={s.Row} key={key}>
+                    <td className={s.Cell}>{key}</td>
+                    <td className={s.Cell}>{v}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
+  );
 }
 
-export default Metrics;
-
+export default InternalConfig;
