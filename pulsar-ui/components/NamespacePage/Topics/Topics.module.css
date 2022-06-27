@@ -1,0 +1,20 @@
+.Namespaces {
+  padding: 24rem 12rem 8rem 12rem;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.Toolbar {
+  margin-bottom: 12rem;
+  display: flex;
+  align-items: center;
+}
+
+.FilterInput {
+  max-width: 480rem;
+  flex: 1;
+  margin-right: 12rem;
+}
+
