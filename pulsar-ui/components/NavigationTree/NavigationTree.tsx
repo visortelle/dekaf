@@ -303,7 +303,10 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       switch (node.type) {
         case 'instance': await mutate(swrKeys.pulsar.tenants._()); break;
         case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
-        case 'namespace': await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name })); break;
+        case 'namespace': {
+          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name }));
+          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name }));
+        }; break;
       }
     }
 

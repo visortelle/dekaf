@@ -49,7 +49,10 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       switch (crumb.type) {
         case 'instance': mutate(swrKeys.pulsar.tenants._()); break;
         case 'tenant': mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant })); break;
-        case 'namespace': mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant, namespace })); break;
+        case 'namespace': {
+          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant, namespace }));
+          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant, namespace }));
+        }; break;
       }
     }
 
