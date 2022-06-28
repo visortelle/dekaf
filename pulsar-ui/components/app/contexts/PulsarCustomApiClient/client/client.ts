@@ -13,6 +13,13 @@ export type Client = {
   getAllTenantNamespacesMetrics: (
     tenant: string
   ) => Promise<Record<string, metrics.NamespaceMetrics>>;
+  getAllTopicsMetrics: (
+    tenant: string,
+    namespace: string
+  ) => Promise<{
+    persistent: Record<string, metrics.TopicMetrics>;
+    nonPersistent: Record<string, metrics.TopicMetrics>;
+  }>;
   getMetrics: (
     filters: brokerMetrics.Filter
   ) => Promise<brokerMetrics.MetricsMap<any>>;
@@ -22,6 +29,7 @@ export const dummyClient: Client = {
   getAllTenantsMetrics: async () => ({}),
   getMetrics: async () => ({}),
   getTenantMetrics: async () => ({}),
+  getAllTopicsMetrics: async () => ({ persistent: {}, nonPersistent: {} }),
   getAllTenantNamespacesMetrics: async () => ({}),
 };
 
@@ -31,6 +39,8 @@ export function createClient(config: ClientConfig): Client {
     getAllTenantsMetrics: () => getAllTenantsMetrics(config),
     getAllTenantNamespacesMetrics: (tenant) =>
       getAllTenantNamespacesMetrics(config, tenant),
+    getAllTopicsMetrics: (tenant, namespace) =>
+      getAllTopicsMetrics(config, tenant, namespace),
     getMetrics: (filter) => getMetrics(config, filter),
   };
 }
@@ -60,12 +70,26 @@ async function getAllTenantNamespacesMetrics(
   return res.json();
 }
 
+async function getAllTopicsMetrics(
+  config: ClientConfig,
+  tenant: string,
+  namespace: string
+): Promise<{
+  persistent: Record<string, metrics.TopicMetrics>;
+  nonPersistent: Record<string, metrics.TopicMetrics>;
+}> {
+  const res = await fetch(
+    `${config.apiUrl}/metrics/tenants/${tenant}/namespaces/${namespace}/allTopics`
+  );
+  return res.json();
+}
+
 async function getMetrics(
   config: ClientConfig,
   filter: brokerMetrics.Filter
 ): Promise<brokerMetrics.MetricsMap<any>> {
   const response = await fetch(
-    `${config.apiUrl}/broker-stats/metrics?filter=${stringify(filter)}`,
+    `${config.apiUrl}/broker-metrics/metrics?filter=${stringify(filter)}`,
     {}
   ).catch((error) => console.error(error));
   if (response === undefined) {

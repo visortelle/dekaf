@@ -53,7 +53,7 @@ export const swrKeys = {
           "batch",
           "getTenantNamespacesTopicsCount",
           tenant,
-          stringify(namespaces)
+          stringify(namespaces),
         ],
       },
       getTenantsInfo: {
@@ -112,14 +112,24 @@ export const swrKeys = {
             "namespaces",
           ],
           namespace: {
-            topics: {
+            persistentTopics: {
               _: (props: { tenant: string; namespace: string }) => [
                 "pulsar",
                 "tenants",
                 props.tenant,
                 "namespaces",
                 props.namespace,
-                "topics",
+                "persistentTopics",
+              ],
+            },
+            nonPersistentTopics: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "nonPersistentTopics",
               ],
             },
             policies: {

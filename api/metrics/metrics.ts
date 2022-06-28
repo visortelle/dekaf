@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { TenantMetrics, NamespaceMetrics, TopicsMetrics } from "./types";
-import { getNamespacesMetrics, getTenantMetrics } from "./calculations";
+import { getNamespacesMetrics, getTenantMetrics, getNamespaceTopicsMetrics } from "./calculations";
 import * as pulsarAdmin from "pulsar-admin-client-fetch";
 import { fromPairs } from "lodash";
 
@@ -88,5 +88,17 @@ router.get(
 
     const namespacesMetrics = getNamespacesMetrics(tenant, namespaces, state.metrics);
     res.status(200).json(namespacesMetrics);
+  }
+);
+
+router.get(
+  "/tenants/:tenant/namespaces/:namespace/topics",
+  async (req, res: Response<Record<string, NamespaceMetrics>>) => {
+    const tenant = req.params.tenant;
+    const namespace = req.params.namespace;
+
+    const topicMetrics = getNamespaceTopicsMetrics(tenant, namespace, state.metrics);
+    console.log(topicMetrics);
+    res.status(200).json(topicMetrics);
   }
 );
