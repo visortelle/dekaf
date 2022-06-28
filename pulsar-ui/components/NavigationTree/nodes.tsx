@@ -86,27 +86,33 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
 
-  const { data: topics, error: topicsError } = useSWR<{ persistent: string[], nonPersistent: string[] }>(
-    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.topics._({ tenant: props.tenant, namespace: props.namespace }) : null,
-    async () => {
-      const persistentTopics = (await adminClient.persistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName);
-      const nonPersistentTopics = (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName);
-      return { persistent: persistentTopics, nonPersistent: nonPersistentTopics };
-    },
+  const { data: persistentTopics, error: persistentTopicsError } = useSWR<string[]>(
+    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
+    async () => (await adminClient.persistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName),
     swrConfiguration
   );
 
-  useEffect(
-    () => props.onTopics(topics ? {
-      persistent: topics.persistent.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
-      nonPersistent: topics.nonPersistent.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
-    } : { persistent: [], nonPersistent: [] }),
-    [topics, props.forceReloadKey]
+  if (persistentTopicsError) {
+    notifyError(`Unable to fetch persistent topics topics. ${persistentTopicsError.toString()}`);
+  }
+
+  const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR<string[]>(
+    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
+    async () => (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName),
+    swrConfiguration
   );
 
-  if (topicsError) {
-    notifyError(`Unable to fetch namespace topics. ${topicsError.toString()}`);
+  if (nonPersistentTopicsError) {
+    notifyError(`Unable to fetch non-persistent topics. ${persistentTopicsError.toString()}`);
   }
+
+  useEffect(
+    () => props.onTopics({
+      persistent: (persistentTopics || []).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
+      nonPersistent: (nonPersistentTopics || []).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+    }),
+    [persistentTopics, nonPersistentTopics, props.forceReloadKey]
+  );
 
   return (
     <Link

@@ -95,21 +95,31 @@ const Topics: React.FC<TopicsProps> = (props) => {
     );
   }, [sort.direction, sort.key])
 
-  const { data: namespaces, error: namespacesError } = useSWR(
-    swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }),
-    async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]),
+  const { data: persistentTopics, error: persistentTopicsError } = useSWR(
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
+    async () => (await adminClient.persistentTopic.getList(props.tenant, props.namespace)).map(tn => { const p = tn.split('/'); return p[p.length - 1] }),
   );
-  if (namespacesError) {
-    notifyError(`Unable to get namespaces list. ${namespacesError}`);
+  if (persistentTopicsError) {
+    notifyError(`Unable to get persistent topics list. ${persistentTopicsError}`);
   }
 
-  const { data: allNamespacesMetrics, error: allNamespacesMetricsError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.allTenantNamespaces._(props.tenant),
-    async () => await customApiClient.getAllTenantNamespacesMetrics(props.tenant),
+  const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR(
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
+    async () => (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace)).map(tn => { const p = tn.split('/'); return p[p.length - 1] }),
   );
-  if (allNamespacesMetricsError) {
-    notifyError(`Unable to get all namespaces metrics. ${allNamespacesMetricsError}`);
+  if (nonPersistentTopicsError) {
+    notifyError(`Unable to get non-persistent topics list. ${nonPersistentTopicsError}`);
   }
+
+  const { data: allTopicsMetrics, error: allTopicsMetricsError } = useSWR(
+    swrKeys.pulsar.customApi.metrics.allTenantNamespaces._(props.tenant),
+    async () => await customApiClient.getAllTopicsMetrics(props.tenant, props.namespace),
+  );
+  if (allTopicsMetricsError) {
+    notifyError(`Unable to get all namespaces metrics. ${allTopicsMetricsError}`);
+  }
+
+  console.log('atm', allTopicsMetrics);
 
   const { data: namespacesTopicsCount, error: namespacesTopicsCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantNamespacesTopicsCount._(props.tenant, itemsRendered.map(item => item.data!)),
@@ -126,16 +136,16 @@ const Topics: React.FC<TopicsProps> = (props) => {
   }, [namespacesTopicsCount]);
 
   const sortedNamespaces = useMemo(() => sortNamespaces(
-    namespaces || [],
+    persistentTopics || [],
     sort, {
     namespacesTopicsCount: namespacesTopicsCount || {},
-    allNamespacesMetrics: allNamespacesMetrics || {},
+    allNamespacesMetrics: allTopicsMetrics || {},
   }),
-    [namespaces, sort, namespacesTopicsCount, allNamespacesMetrics]
+    [persistentTopics, sort, namespacesTopicsCount, allTopicsMetrics]
   );
 
   const namespacesToShow = sortedNamespaces?.filter((t) => t.includes(filterQueryDebounced));
-  const namespacesToShowMetrics = useMemo(() => _(allNamespacesMetrics).toPairs().filter(([k]) => namespacesToShow.includes(k)).fromPairs().value(), [allNamespacesMetrics, namespacesToShow]);
+  const namespacesToShowMetrics = useMemo(() => _(allTopicsMetrics).toPairs().filter(([k]) => namespacesToShow.includes(k)).fromPairs().value(), [allTopicsMetrics, namespacesToShow]);
 
   return (
     <div className={s.Namespaces}>
@@ -144,7 +154,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
           <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="namespace-name" focusOnMount={true} clearable={true} />
         </div>
         <div>
-          <strong>{namespacesToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{namespaces?.length}</strong> namespaces.
+          <strong>{namespacesToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{persistentTopics?.length}</strong> namespaces.
         </div>
       </div>
 
@@ -199,7 +209,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
               </>
             )}
             itemContent={(_, namespace) => {
-              const namespaceMetrics = allNamespacesMetrics === undefined ? {} : allNamespacesMetrics[namespace] || {};
+              const namespaceMetrics = allTopicsMetrics === undefined ? {} : allTopicsMetrics[namespace] || {};
               return (
                 <Namespace
                   tenant={props.tenant}

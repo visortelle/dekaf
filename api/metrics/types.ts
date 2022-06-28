@@ -16,7 +16,7 @@ export type TopicsMetrics = Record<
   Record<
     PulsarBundleId,
     Record<
-      "persistent" | "nonPersistent",
+      "persistent" | "non-persistent",
       Record<Addr_TopicType_Tenant_Namespace_Topic, TopicMetrics>
     >
   >
