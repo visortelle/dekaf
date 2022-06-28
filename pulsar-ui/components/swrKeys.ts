@@ -19,6 +19,15 @@ export const swrKeys = {
             tenant,
           ],
         },
+        allNamespaceTopics: {
+          _: (tenant: string, namespace: string) => [
+            "customApi",
+            "metrics",
+            "allNamespaceTopics",
+            tenant,
+            namespace
+          ],
+        },
         namespace: {
           _: (tenant: string, namespace: string) => [
             "customApi",

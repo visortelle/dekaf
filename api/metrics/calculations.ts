@@ -45,13 +45,13 @@ export function getTopicMetrics(
   topic: string,
   metrics: TopicsMetrics
 ): TopicMetrics {
-  const m = _(
-    getTopicMetricsPerBundle(tenant, namespace, topicType, topic, metrics)
-  )
+  const topicMetricsPerBundle = getTopicMetricsPerBundle(tenant, namespace, topicType, topic, metrics);
+  const result = _(topicMetricsPerBundle)
     .toPairs()
     .value()
     .reduce<TopicMetrics>((acc, [k, v]) => {
       return {
+        topicType,
         averageMsgSize: sum(acc.averageMsgSize, v.averageMsgSize),
         backlogSize: sum(acc.backlogSize, v.backlogSize),
         bytesInCount: sum(acc.bytesInCount, v.bytesInCount),
@@ -72,9 +72,13 @@ export function getTopicMetrics(
         storageSize: sum(acc.storageSize, v.storageSize),
         subscriptions: { ...acc.subscriptions, ...v.subscriptions },
       };
-    }, {});
+    }, { topicType });
 
-  return m;
+    if (result.averageMsgSize !== undefined) {
+      result.averageMsgSize = result.averageMsgSize / (result.producerCount || 1);
+    }
+
+  return result;
 }
 
 export function getNamespaceTopicsMetrics(

@@ -13,7 +13,7 @@ export type Client = {
   getAllTenantNamespacesMetrics: (
     tenant: string
   ) => Promise<Record<string, metrics.NamespaceMetrics>>;
-  getAllTopicsMetrics: (
+  getAllNamespaceTopicsMetrics: (
     tenant: string,
     namespace: string
   ) => Promise<{
@@ -29,7 +29,10 @@ export const dummyClient: Client = {
   getAllTenantsMetrics: async () => ({}),
   getMetrics: async () => ({}),
   getTenantMetrics: async () => ({}),
-  getAllTopicsMetrics: async () => ({ persistent: {}, nonPersistent: {} }),
+  getAllNamespaceTopicsMetrics: async () => ({
+    persistent: {},
+    nonPersistent: {},
+  }),
   getAllTenantNamespacesMetrics: async () => ({}),
 };
 
@@ -39,7 +42,7 @@ export function createClient(config: ClientConfig): Client {
     getAllTenantsMetrics: () => getAllTenantsMetrics(config),
     getAllTenantNamespacesMetrics: (tenant) =>
       getAllTenantNamespacesMetrics(config, tenant),
-    getAllTopicsMetrics: (tenant, namespace) =>
+    getAllNamespaceTopicsMetrics: (tenant, namespace) =>
       getAllTopicsMetrics(config, tenant, namespace),
     getMetrics: (filter) => getMetrics(config, filter),
   };
@@ -79,7 +82,7 @@ async function getAllTopicsMetrics(
   nonPersistent: Record<string, metrics.TopicMetrics>;
 }> {
   const res = await fetch(
-    `${config.apiUrl}/metrics/tenants/${tenant}/namespaces/${namespace}/allTopics`
+    `${config.apiUrl}/metrics/tenants/${tenant}/namespaces/${namespace}/topics`
   );
   return res.json();
 }
