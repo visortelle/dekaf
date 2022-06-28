@@ -74,6 +74,7 @@ export type TopicSubscription = {
 
 // Reference: https://github.com/apache/pulsar/blob/877795ead640039a0bcb5ef0b9aa190c3536ca1e/pulsar-client-admin-api/src/main/java/org/apache/pulsar/common/policies/data/TopicStats.java
 export type TopicMetrics = {
+  topicType: 'persistent' | 'non-persistent';
   publishers?: TopicPublisher[];
   replication?: Record<string, TopicReplication>;
   subscriptions?: Record<string, TopicSubscription>;

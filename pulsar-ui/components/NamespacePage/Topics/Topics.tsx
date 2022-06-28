@@ -46,6 +46,8 @@ type Sort = { key: SortKey, direction: 'asc' | 'desc' };
 
 const firstColumnWidth = '15ch';
 
+type Topic = { topicType: 'persistent' | 'non-persistent', topic: string, metrics: TopicMetrics };
+
 type TopicsProps = {
   tenant: string;
   namespace: string;
@@ -59,7 +61,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
-  const [itemsRendered, setItemsRendered] = useState<ListItem<string>[]>([]);
+  const [itemsRendered, setItemsRendered] = useState<ListItem<Topic>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [namespaceTopicsCountCache, setNamespaceTopicsCountCache] = useState<Record<string, { persistent: number, nonPersistent: number }>>({});
   const [sort, setSort] = useState<Sort>({ key: 'topic', direction: 'asc' });
@@ -95,78 +97,46 @@ const Topics: React.FC<TopicsProps> = (props) => {
     );
   }, [sort.direction, sort.key])
 
-  const { data: persistentTopics, error: persistentTopicsError } = useSWR(
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
-    async () => (await adminClient.persistentTopic.getList(props.tenant, props.namespace)).map(tn => { const p = tn.split('/'); return p[p.length - 1] }),
+  const { data: allTopicsMetricsData, error: allTopicsMetricsDataError } = useSWR(
+    swrKeys.pulsar.customApi.metrics.allNamespaceTopics._(props.tenant, props.namespace),
+    async () => await customApiClient.getAllNamespaceTopicsMetrics(props.tenant, props.namespace),
   );
-  if (persistentTopicsError) {
-    notifyError(`Unable to get persistent topics list. ${persistentTopicsError}`);
+  if (allTopicsMetricsDataError) {
+    notifyError(`Unable to get all topics metrics. ${allTopicsMetricsDataError}`);
   }
 
-  const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR(
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
-    async () => (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace)).map(tn => { const p = tn.split('/'); return p[p.length - 1] }),
-  );
-  if (nonPersistentTopicsError) {
-    notifyError(`Unable to get non-persistent topics list. ${nonPersistentTopicsError}`);
-  }
+  const allTopicsMetrics = allTopicsMetricsData || { persistent: {}, nonPersistent: {} };
 
-  const { data: allTopicsMetrics, error: allTopicsMetricsError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.allTenantNamespaces._(props.tenant),
-    async () => await customApiClient.getAllTopicsMetrics(props.tenant, props.namespace),
-  );
-  if (allTopicsMetricsError) {
-    notifyError(`Unable to get all namespaces metrics. ${allTopicsMetricsError}`);
-  }
+  const persistentTopicsMetrics: Topic[] = _(allTopicsMetrics.persistent).toPairs().map<Topic>(([topic, v]) => ({ topicType: 'persistent', topic, metrics: v })).value();
+  const nonPersistentTopicsMetrics: Topic[] = _(allTopicsMetrics.nonPersistent).toPairs().map<Topic>(([topic, v]) => ({ topicType: 'non-persistent', topic, metrics: v })).value();
+  const topics: Topic[] = persistentTopicsMetrics.concat(nonPersistentTopicsMetrics);
 
-  console.log('atm', allTopicsMetrics);
 
-  const { data: namespacesTopicsCount, error: namespacesTopicsCountError } = useSWR(
-    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantNamespacesTopicsCount._(props.tenant, itemsRendered.map(item => item.data!)),
-    async () => await adminBatchClient?.getTenantNamespacesTopicsCount(props.tenant, itemsRendered.map(item => item.data!)),
-  );
+  const sortedTopics = useMemo(() => sortTopics(topics, sort), [topics, sort]);
 
-  if (namespacesTopicsCountError) {
-    notifyError(`Unable to get namespaces topics count. ${namespacesTopicsCountError}`);
-  }
-
-  useEffect(() => {
-    // Avoid visual blinking after each namespace topics count update request.
-    setNamespaceTopicsCountCache(namespacesTopicsCountCache => ({ ...namespacesTopicsCountCache, ...namespacesTopicsCount }));
-  }, [namespacesTopicsCount]);
-
-  const sortedNamespaces = useMemo(() => sortNamespaces(
-    persistentTopics || [],
-    sort, {
-    namespacesTopicsCount: namespacesTopicsCount || {},
-    allNamespacesMetrics: allTopicsMetrics || {},
-  }),
-    [persistentTopics, sort, namespacesTopicsCount, allTopicsMetrics]
-  );
-
-  const namespacesToShow = sortedNamespaces?.filter((t) => t.includes(filterQueryDebounced));
-  const namespacesToShowMetrics = useMemo(() => _(allTopicsMetrics).toPairs().filter(([k]) => namespacesToShow.includes(k)).fromPairs().value(), [allTopicsMetrics, namespacesToShow]);
+  const topicsToShow = sortedTopics;
+  // const topicsToShow = sortedTopics?.filter((t) => t.topic.includes(filterQueryDebounced));
 
   return (
     <div className={s.Namespaces}>
       <div className={s.Toolbar}>
         <div className={s.FilterInput}>
-          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="namespace-name" focusOnMount={true} clearable={true} />
+          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="topic-name" focusOnMount={true} clearable={true} />
         </div>
         <div>
-          <strong>{namespacesToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{persistentTopics?.length}</strong> namespaces.
+          <strong>{topicsToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{topicsToShow.length}</strong> namespaces.
         </div>
       </div>
 
-      {(namespacesToShow || []).length === 0 && (
+      {(topicsToShow || []).length === 0 && (
         <div className={cts.NothingToShow}>
           Nothing to show.
         </div>
       )}
-      {(namespacesToShow || []).length > 0 && (
+      {(topicsToShow || []).length > 0 && (
         <div className={cts.Table} ref={tableRef}>
           <TableVirtuoso
-            data={namespacesToShow}
+            data={topicsToShow}
             overscan={{ main: (tableRef?.current?.clientHeight || 0), reverse: (tableRef?.current?.clientHeight || 0) }}
             fixedHeaderContent={() => (
               <>
@@ -192,37 +162,34 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   <th className={cts.SummaryTh} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Summary</th>
                   <th className={cts.SummaryTh}><NoData /></th>
                   <th className={cts.SummaryTh}><NoData /></th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgRateIn'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgRateOut'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgThroughputIn'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgThroughputOut'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'msgInCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'msgOutCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(namespacesToShowMetrics).length > 0 ? sum(namespacesToShowMetrics, 'averageMsgSize') / Object.keys(namespacesToShowMetrics).length : 0)}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'bytesInCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'bytesOutCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'producerCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'pendingAddEntriesCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'backlogSize'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'storageSize'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(topics, 'msgRateIn'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(topics, 'msgRateOut'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(topics, 'msgThroughputIn'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(topics, 'msgThroughputOut'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(topics, 'msgInCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(topics, 'msgOutCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(topics).length > 0 ? sum(topics, 'averageMsgSize') / topics.length : 0)}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(topics, 'bytesInCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(topics, 'bytesOutCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(topics, 'producerCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(topics, 'pendingAddEntriesCount'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(topics, 'backlogSize'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(topics, 'storageSize'))}</th>
                 </tr>
               </>
             )}
-            itemContent={(_, namespace) => {
-              const namespaceMetrics = allTopicsMetrics === undefined ? {} : allTopicsMetrics[namespace] || {};
+            itemContent={(_, topic) => {
               return (
-                <Namespace
+                <TopicComponent
                   tenant={props.tenant}
-                  namespace={namespace}
-                  metrics={namespaceMetrics}
-                  persistentTopicsCount={namespaceTopicsCountCache[namespace]?.persistent}
-                  nonPersistentTopicsCount={namespaceTopicsCountCache[namespace]?.nonPersistent}
-                  highlight={{ namespace: [filterQueryDebounced] }}
+                  namespace={props.namespace}
+                  topic={topic}
+                  highlight={{ topic: [filterQueryDebounced] }}
                 />
               );
             }}
             customScrollParent={tableRef.current || undefined}
-            totalCount={namespacesToShow?.length}
+            totalCount={topicsToShow?.length}
             itemsRendered={(items) => {
               const isShouldUpdate = !isEqual(itemsRendered, items)
               if (isShouldUpdate) {
@@ -246,148 +213,142 @@ const Td: React.FC<TdProps> = (props) => {
   </td>;
 };
 
-type NamespaceProps = {
+type TopicComponentProps = {
   tenant: string;
   namespace: string;
-  metrics: TopicMetrics;
-  persistentTopicsCount: number | undefined;
-  nonPersistentTopicsCount: number | undefined;
+  topic: Topic;
   highlight: {
-    namespace: string[];
+    topic: string[];
   }
 }
-const Namespace: React.FC<NamespaceProps> = (props) => {
+const TopicComponent: React.FC<TopicComponentProps> = (props) => {
   const i18n = I18n.useContext();
+
+  const subscriptionsCount = props.topic.metrics.subscriptions === undefined ? undefined : Object.keys(props.topic.metrics.subscriptions).length;
 
   return (
     <>
-      <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
+      <Td width={firstColumnWidth} title={props.topic.topic} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
         <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })} className="A">
           <Highlighter
             highlightClassName="highlight-substring"
-            searchWords={props.highlight.namespace}
+            searchWords={props.highlight.topic}
             autoEscape={true}
-            textToHighlight={props.namespace}
+            textToHighlight={props.topic.topic}
           />
         </LinkWithQuery>
       </Td>
-      <Td width="4ch" title={`${props.persistentTopicsCount?.toString()} persistent topics`}>
-        {props.persistentTopicsCount !== undefined && <span className={cts.LazyContent}>{props.persistentTopicsCount}</span>}
+      <Td width="4ch" title={`${props.topic.metrics.publishers?.length?.toString()} publishers`}>
+        {props.topic.metrics.publishers !== undefined && <span className={cts.LazyContent}>{props.topic.metrics.publishers.length}</span>}
       </Td>
-      <Td width="4ch" title={`${props.nonPersistentTopicsCount?.toString()} non-persistent topics`}>
-        {props.nonPersistentTopicsCount !== undefined && <span className={cts.LazyContent}>{props.nonPersistentTopicsCount}</span>}
+      <Td width="4ch" title={`${subscriptionsCount === undefined ? '-' : subscriptionsCount.toString()} subscriptions`}>
+        {subscriptionsCount !== undefined && <span className={cts.LazyContent}>{subscriptionsCount}</span>}
       </Td>
-      <Td width="12ch">{props.metrics?.msgRateIn === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgRateIn)}</Td>
-      <Td width="12ch">{props.metrics?.msgRateOut === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgRateOut)}</Td>
-      <Td width="18ch">{props.metrics?.msgThroughputIn === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgThroughputIn)}</Td>
-      <Td width="18ch">{props.metrics?.msgThroughputOut === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgThroughputOut)}</Td>
-      <Td width="12ch">{props.metrics?.msgInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgInCount)}</Td>
-      <Td width="12ch">{props.metrics?.msgOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgOutCount)}</Td>
-      <Td width="12ch">{props.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.averageMsgSize)}</Td>
-      <Td width="12ch">{props.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatBytes(props.metrics.bytesInCount)}</Td>
-      <Td width="12ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatBytes(props.metrics.bytesOutCount)}</Td>
-      <Td width="12ch">{props.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.producerCount)}</Td>
-      <Td width="12ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
-      <Td width="12ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.metrics.backlogSize)}</Td>
-      <Td width="12ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
+      <Td width="12ch">{props.topic.metrics?.msgRateIn === undefined ? <NoData /> : i18n.formatCountRate(props.topic.metrics.msgRateIn)}</Td>
+      <Td width="12ch">{props.topic.metrics?.msgRateOut === undefined ? <NoData /> : i18n.formatCountRate(props.topic.metrics.msgRateOut)}</Td>
+      <Td width="18ch">{props.topic.metrics?.msgThroughputIn === undefined ? <NoData /> : i18n.formatCountRate(props.topic.metrics.msgThroughputIn)}</Td>
+      <Td width="18ch">{props.topic.metrics?.msgThroughputOut === undefined ? <NoData /> : i18n.formatCountRate(props.topic.metrics.msgThroughputOut)}</Td>
+      <Td width="12ch">{props.topic.metrics?.msgInCount === undefined ? <NoData /> : i18n.formatCount(props.topic.metrics.msgInCount)}</Td>
+      <Td width="12ch">{props.topic.metrics?.msgOutCount === undefined ? <NoData /> : i18n.formatCount(props.topic.metrics.msgOutCount)}</Td>
+      <Td width="12ch">{props.topic.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.topic.metrics.averageMsgSize)}</Td>
+      <Td width="12ch">{props.topic.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatBytes(props.topic.metrics.bytesInCount)}</Td>
+      <Td width="12ch">{props.topic.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatBytes(props.topic.metrics.bytesOutCount)}</Td>
+      <Td width="12ch">{props.topic.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.topic.metrics.producerCount)}</Td>
+      <Td width="12ch">{props.topic.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.topic.metrics.pendingAddEntriesCount)}</Td>
+      <Td width="12ch">{props.topic.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.topic.metrics.backlogSize)}</Td>
+      <Td width="12ch">{props.topic.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.topic.metrics.storageSize)}</Td>
     </>
   );
 }
 
-const sortNamespaces = (tenants: string[], sort: Sort, data: {
-  namespacesTopicsCount: Record<string, { persistent: number, nonPersistent: number }>
-  allNamespacesMetrics: Record<string, TopicMetrics>
-}): string[] => {
-  function s(defs: string[], undefs: string[], getM: (m: TopicMetrics) => number): string[] {
+const sortTopics = (topics: Topic[], sort: Sort): Topic[] => {
+  function s(defs: Topic[], undefs: Topic[], getM: (m: TopicMetrics) => number): Topic[] {
     let result = defs.sort((a, b) => {
-      const aMetrics = data.allNamespacesMetrics[a];
-      const bMetrics = data.allNamespacesMetrics[b];
-      return getM(aMetrics) - getM(bMetrics);
+      return getM(a.metrics) - getM(b.metrics);
     });
     result = sort.direction === 'asc' ? result : result.reverse();
     return result.concat(undefs);
   }
 
   if (sort.key === 'topic') {
-    const t = tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+    const t = topics.sort((a, b) => a.topic.localeCompare(b.topic, 'en', { numeric: true }));
     return sort.direction === 'asc' ? t : t.reverse();
   }
 
   if (sort.key === 'averageMsgSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.averageMsgSize !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics.averageMsgSize !== undefined);
     return s(defs, undefs, (m) => m.averageMsgSize!);
   }
 
   if (sort.key === 'backlogSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.backlogSize !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.backlogSize !== undefined);
     return s(defs, undefs, (m) => m.backlogSize!);
   }
 
   if (sort.key === 'bytesInCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.bytesInCount !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.bytesInCount !== undefined);
     return s(defs, undefs, (m) => m.bytesInCount!);
   }
 
   if (sort.key === 'bytesOutCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.bytesOutCount !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.bytesOutCount !== undefined);
     return s(defs, undefs, (m) => m.bytesOutCount!);
   }
 
   if (sort.key === 'msgInCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgInCount !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.msgInCount !== undefined);
     return s(defs, undefs, (m) => m.msgInCount!);
   }
 
   if (sort.key === 'msgOutCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgOutCount !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.msgOutCount !== undefined);
     return s(defs, undefs, (m) => m.msgOutCount!);
   }
 
   if (sort.key === 'msgRateIn') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgRateIn !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.msgRateIn !== undefined);
     return s(defs, undefs, (m) => m.msgRateIn!);
   }
 
   if (sort.key === 'msgRateOut') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgRateOut !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.msgRateOut !== undefined);
     return s(defs, undefs, (m) => m.msgRateOut!);
   }
 
   if (sort.key === 'msgThroughputIn') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgThroughputIn !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.msgThroughputIn !== undefined);
     return s(defs, undefs, (m) => m.msgThroughputIn!);
   }
 
   if (sort.key === 'msgThroughputOut') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgThroughputOut !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.msgThroughputOut !== undefined);
     return s(defs, undefs, (m) => m.msgThroughputOut!);
   }
 
   if (sort.key === 'pendingAddEntriesCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.pendingAddEntriesCount !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.pendingAddEntriesCount !== undefined);
     return s(defs, undefs, (m) => m.pendingAddEntriesCount!);
   }
 
   if (sort.key === 'producerCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.producerCount !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.producerCount !== undefined);
     return s(defs, undefs, (m) => m.producerCount!);
   }
 
   if (sort.key === 'storageSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.storageSize !== undefined);
+    const [defs, undefs] = partition(topics, (t) => t.metrics?.storageSize !== undefined);
     return s(defs, undefs, (m) => m.storageSize!);
   }
 
-  return tenants;
+  return topics;
 }
 
 const NoData = () => {
   return <div className={cts.NoData}>-</div>
 }
 
-function sum(metrics: Record<string, TopicMetrics>, key: keyof TopicMetrics): number {
-  return Object.values(metrics).reduce((acc, cur) => {
-    const v = cur[key];
+function sum(topics: Topic[], key: keyof TopicMetrics): number {
+  return topics.reduce((acc, v) => {
     if (typeof v !== 'number') {
       return acc;
     }
