@@ -20,6 +20,7 @@ export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
     color: props.textColor, backgroundColor: props.backgroundColor,
     ...props.style
   }
+
   return (
     <div
       style={{ ...style }}
@@ -84,7 +85,6 @@ export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
     className={props.className}
     isGray={props.isGray}
   />
-
 }
 
 export type TenantIconProps = {
@@ -114,7 +114,7 @@ export type InstanceIconProps = {
   className?: string;
   isGray?: boolean;
 }
-export const InstanceIcon: React.FC<TenantIconProps> = (props) => {
+export const InstanceIcon: React.FC<InstanceIconProps> = (props) => {
   return <NodeIcon
     title="in"
     textColor='var(--accent-color-blue)'
@@ -126,4 +126,45 @@ export const InstanceIcon: React.FC<TenantIconProps> = (props) => {
     isGray={props.isGray}
   />
 }
+
+export type SubscriptionIconProps = {
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
+  className?: string;
+  isGray?: boolean;
+}
+export const SubscriptionIcon: React.FC<SubscriptionIconProps> = (props) => {
+  return <NodeIcon
+    title="su"
+    textColor='var(--text-color)'
+    backgroundColor='var(--accent-color-yellow)'
+    onClick={props.onClick}
+    isExpanded={props.isExpanded}
+    isExpandable={props.isExpandable}
+    className={props.className}
+    isGray={props.isGray}
+  />
+}
+
+export type ProducerIconProps = {
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
+  className?: string;
+  isGray?: boolean;
+}
+export const ProducerIcon: React.FC<ProducerIconProps> = (props) => {
+  return <NodeIcon
+    title="pr"
+    textColor='var(--accent-color-yellow)'
+    backgroundColor='var(--text-color)'
+    onClick={props.onClick}
+    isExpanded={props.isExpanded}
+    isExpandable={props.isExpandable}
+    className={props.className}
+    isGray={props.isGray}
+  />
+}
+
 

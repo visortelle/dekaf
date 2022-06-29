@@ -1,11 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import s from './Topics.module.css'
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
-import * as PulsarAdminBatchClient from '../../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
 import * as PulsarCustomApiClient from '../../app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
@@ -17,7 +15,7 @@ import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
 import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
 import { routes } from '../../routes';
-import { TopicIcon } from '../../ui/Icons/Icons';
+import { TopicIcon, SubscriptionIcon, ProducerIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { useRef } from 'react';
@@ -25,9 +23,10 @@ import _ from 'lodash';
 
 type SortKey =
   'topic' |
-  'publishers' |
+  'topicType' |
+  'producersCount' |
+  'subscriptionsCount' |
   'replication' |
-  'subscriptions' |
   'averageMsgSize' |
   'backlogSize' |
   'bytesInCount' |
@@ -55,19 +54,15 @@ type TopicsProps = {
 
 const Topics: React.FC<TopicsProps> = (props) => {
   const tableRef = useRef<HTMLDivElement>(null);
-  const adminClient = PulsarAdminClient.useContext().client;
-  const adminBatchClient = PulsarAdminBatchClient.useContext().client;
   const customApiClient = PulsarCustomApiClient.useContext().client;
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [itemsRendered, setItemsRendered] = useState<ListItem<Topic>[]>([]);
-  const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
-  const [namespaceTopicsCountCache, setNamespaceTopicsCountCache] = useState<Record<string, { persistent: number, nonPersistent: number }>>({});
   const [sort, setSort] = useState<Sort>({ key: 'topic', direction: 'asc' });
   const i18n = I18n.useContext();
 
-  const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
+  const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, style?: React.CSSProperties }) => {
     const handleColumnHeaderClick = () => {
       if (props.sortKey === undefined) {
         return;
@@ -80,10 +75,8 @@ const Topics: React.FC<TopicsProps> = (props) => {
       }
     }
 
-    const style: React.CSSProperties = props.isSticky ? { position: 'sticky', left: 0, zIndex: 10 } : {};
-
     return (
-      <th className={cts.Th} style={style} onClick={handleColumnHeaderClick}>
+      <th className={cts.Th} style={props.style} onClick={handleColumnHeaderClick}>
         <div className={props.sortKey === undefined ? '' : cts.SortableTh}>
           {props.title}
 
@@ -100,6 +93,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
   const { data: allTopicsMetricsData, error: allTopicsMetricsDataError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allNamespaceTopics._(props.tenant, props.namespace),
     async () => await customApiClient.getAllNamespaceTopicsMetrics(props.tenant, props.namespace),
+    { refreshInterval: 3 * 1000 }
   );
   if (allTopicsMetricsDataError) {
     notifyError(`Unable to get all topics metrics. ${allTopicsMetricsDataError}`);
@@ -114,8 +108,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
   const sortedTopics = useMemo(() => sortTopics(topics, sort), [topics, sort]);
 
-  const topicsToShow = sortedTopics;
-  // const topicsToShow = sortedTopics?.filter((t) => t.topic.includes(filterQueryDebounced));
+  const topicsToShow = sortedTopics?.filter((t) => t.topic.includes(filterQueryDebounced));
 
   return (
     <div className={s.Namespaces}>
@@ -141,9 +134,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
             fixedHeaderContent={() => (
               <>
                 <tr>
-                  <Th title="Namespaces" sortKey="topic" isSticky={true} />
-                  <Th title={<TopicIcon topicType='persistent' />} />
-                  <Th title={<TopicIcon topicType='non-persistent' />} />
+                  <Th title="Namespaces" sortKey="topic" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
+                  <Th title="-" sortKey="topicType" style={{ position: 'sticky', left: `calc(${firstColumnWidth} + 34rem)`, zIndex: 10 }} />
+                  <Th title={<ProducerIcon />} sortKey="producerCount" />
+                  <Th title={<SubscriptionIcon />} sortKey="subscriptionsCount" />
                   <Th title="Msg. rate in" sortKey="msgRateIn" />
                   <Th title="Msg. rate out" sortKey="msgRateOut" />
                   <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
@@ -153,13 +147,13 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   <Th title="Avg. msg. size" sortKey="averageMsgSize" />
                   <Th title="Bytes in" sortKey="bytesInCount" />
                   <Th title="Bytes out" sortKey="bytesOutCount" />
-                  <Th title="Producers" sortKey="producerCount" />
                   <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
                   <Th title="Backlog size" sortKey="backlogSize" />
                   <Th title="Storage size" sortKey="storageSize" />
                 </tr>
                 <tr>
                   <th className={cts.SummaryTh} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Summary</th>
+                  <th className={cts.SummaryTh} style={{ position: 'sticky', left: `calc(${firstColumnWidth} + 34rem)`, zIndex: 10 }}><NoData /></th>
                   <th className={cts.SummaryTh}><NoData /></th>
                   <th className={cts.SummaryTh}><NoData /></th>
                   <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(topics, 'msgRateIn'))}</th>
@@ -171,7 +165,6 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(topics).length > 0 ? sum(topics, 'averageMsgSize') / topics.length : 0)}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(topics, 'bytesInCount'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(topics, 'bytesOutCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(topics, 'producerCount'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatCount(sum(topics, 'pendingAddEntriesCount'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(topics, 'backlogSize'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(topics, 'storageSize'))}</th>
@@ -207,7 +200,7 @@ type TdProps = { children: React.ReactNode, width?: string } & React.ThHTMLAttri
 const Td: React.FC<TdProps> = (props) => {
   const { children, ...restProps } = props;
   return <td className={cts.Td} {...restProps}>
-    <div style={{ width: props.width, overflow: 'hidden', textOverflow: 'ellipsis' }} >
+    <div style={{ width: props.width, textOverflow: 'ellipsis', display: 'flex' }} >
       {children}
     </div>
   </td>;
@@ -229,7 +222,11 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.topic.topic} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
-        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })} className="A">
+        <LinkWithQuery
+          to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })}
+          className="A"
+          style={{ position: 'relative' }}
+        >
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.topic}
@@ -237,6 +234,11 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
             textToHighlight={props.topic.topic}
           />
         </LinkWithQuery>
+      </Td>
+      <Td width="20rem" style={{ position: 'sticky', left: `calc(${firstColumnWidth} + 25rem)`, zIndex: 1 }}>
+        <div style={{ transform: 'scale(0.8) translate(-20%, 0)' }}>
+          <TopicIcon topicType={props.topic.topicType} />
+        </div>
       </Td>
       <Td width="4ch" title={`${props.topic.metrics.publishers?.length?.toString()} publishers`}>
         {props.topic.metrics.publishers !== undefined && <span className={cts.LazyContent}>{props.topic.metrics.publishers.length}</span>}
@@ -253,7 +255,6 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
       <Td width="12ch">{props.topic.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.topic.metrics.averageMsgSize)}</Td>
       <Td width="12ch">{props.topic.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatBytes(props.topic.metrics.bytesInCount)}</Td>
       <Td width="12ch">{props.topic.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatBytes(props.topic.metrics.bytesOutCount)}</Td>
-      <Td width="12ch">{props.topic.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.topic.metrics.producerCount)}</Td>
       <Td width="12ch">{props.topic.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.topic.metrics.pendingAddEntriesCount)}</Td>
       <Td width="12ch">{props.topic.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatCount(props.topic.metrics.backlogSize)}</Td>
       <Td width="12ch">{props.topic.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.topic.metrics.storageSize)}</Td>
@@ -273,6 +274,26 @@ const sortTopics = (topics: Topic[], sort: Sort): Topic[] => {
   if (sort.key === 'topic') {
     const t = topics.sort((a, b) => a.topic.localeCompare(b.topic, 'en', { numeric: true }));
     return sort.direction === 'asc' ? t : t.reverse();
+  }
+
+  if (sort.key === 'topicType') {
+    const t = topics.sort((a, b) => {
+      if (a.topicType === b.topicType) {
+        return a.topic.localeCompare(b.topic, 'en', { numeric: true });
+      }
+      return a.topicType.localeCompare(b.topicType, 'en', { numeric: true })
+    });
+    return sort.direction === 'asc' ? t : t.reverse();
+  }
+
+  if (sort.key === 'producersCount') {
+    const [defs, undefs] = partition(topics, (t) => t.metrics.publishers?.length !== undefined);
+    return s(defs, undefs, (m) => m.publishers?.length!);
+  }
+
+  if (sort.key === 'subscriptionsCount') {
+    const [defs, undefs] = partition(topics, (t) => Object.keys(t.metrics.subscriptions || {}).length !== undefined);
+    return s(defs, undefs, (m) => Object.keys(m.subscriptions || {}).length!);
   }
 
   if (sort.key === 'averageMsgSize') {

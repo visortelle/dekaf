@@ -74,23 +74,23 @@ export type TopicSubscription = {
 
 // Reference: https://github.com/apache/pulsar/blob/877795ead640039a0bcb5ef0b9aa190c3536ca1e/pulsar-client-admin-api/src/main/java/org/apache/pulsar/common/policies/data/TopicStats.java
 export type TopicMetrics = {
-  topicType: 'persistent' | 'non-persistent';
-  publishers?: TopicPublisher[];
+  topicType: 'persistent' | 'non-persistent'; // +
+  publishers?: TopicPublisher[]; // count +
   replication?: Record<string, TopicReplication>;
-  subscriptions?: Record<string, TopicSubscription>;
+  subscriptions?: Record<string, TopicSubscription>; // count +
   producerCount?: number;
-  averageMsgSize?: number;
-  msgRateIn?: number;
-  msgRateOut?: number;
-  msgInCount?: number;
-  bytesInCount?: number;
-  msgOutCount?: number;
-  bytesOutCount?: number;
-  msgThroughputIn?: number;
-  msgThroughputOut?: number;
-  storageSize?: number;
-  backlogSize?: number;
-  pendingAddEntriesCount?: number;
+  averageMsgSize?: number; // +
+  msgRateIn?: number; // +
+  msgRateOut?: number; // +
+  msgInCount?: number;  // +
+  bytesInCount?: number; // +
+  msgOutCount?: number; // +
+  bytesOutCount?: number; // +
+  msgThroughputIn?: number; // +
+  msgThroughputOut?: number; // +
+  storageSize?: number; // +
+  backlogSize?: number; // +
+  pendingAddEntriesCount?: number; // +
 };
 
 export type NamespaceMetrics = {
