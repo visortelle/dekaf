@@ -3,6 +3,7 @@ import stringify from "safe-stable-stringify";
 import { TreePath, treePath } from "../../../NavigationTree/TreeView";
 import { BatchRequest, TreePathStr } from "./types";
 import { hideShowProgressIndicatorHeader } from "../../../../pages/_app";
+import { tree } from "fp-ts";
 
 const getTenantNamespaces = (
   path: TreePath,
@@ -124,6 +125,11 @@ export const getTreeNodesChildrenCount: GetTreeNodesChildrenCount = async (
       if (!Array.isArray(data.body)) {
         return result;
       }
+
+      if (treePath.isNamespace(path)) {
+        data.body = squashPartitionedTopics(data.body);
+      }
+
       const key = stringify(path);
       return {
         ...result,
@@ -237,15 +243,29 @@ export const getTenantNamespacesTopicsCount: GetTenantNamespacesTopicsCount =
               ? "persistent"
               : "non-persistent";
 
-          const namespace = treePath.getNamespace(requestNameToPath(requestName))?.name || "";
-          const count = data.body.length;
+          const namespace =
+            treePath.getNamespace(requestNameToPath(requestName))?.name || "";
+          const withSquashedPartitionedTopics = squashPartitionedTopics(
+            data.body
+          );
+          const count = withSquashedPartitionedTopics.length;
 
           return {
             ...result,
             [namespace]: {
-              persistent: topicType === "persistent" ? count : (result[namespace] === undefined ? 0 : result[namespace].persistent),
-              nonPersistent: topicType === "non-persistent" ? count : (result[namespace] === undefined ? 0 : result[namespace].nonPersistent),
-            }
+              persistent:
+                topicType === "persistent"
+                  ? count
+                  : result[namespace] === undefined
+                  ? 0
+                  : result[namespace].persistent,
+              nonPersistent:
+                topicType === "non-persistent"
+                  ? count
+                  : result[namespace] === undefined
+                  ? 0
+                  : result[namespace].nonPersistent,
+            },
           };
         },
         {}
@@ -253,3 +273,9 @@ export const getTenantNamespacesTopicsCount: GetTenantNamespacesTopicsCount =
 
     return result;
   };
+
+function squashPartitionedTopics(topics: string[]): string[] {
+  return Array.from(
+    new Set(topics.map((topic: string) => topic.replace(/-partition-\d+$/, "")))
+  ) as string[];
+}
