@@ -100,6 +100,7 @@ const Tenants: React.FC = () => {
   const { data: allTenantsMetrics, error: allTenantsMetricsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allTenants._(),
     async () => await customApiClient.getAllTenantsMetrics(),
+    { refreshInterval: 3 * 1000 }
   );
   if (allTenantsMetricsError) {
     notifyError(`Unable to get all tenants metrics. ${allTenantsMetricsError}`);
