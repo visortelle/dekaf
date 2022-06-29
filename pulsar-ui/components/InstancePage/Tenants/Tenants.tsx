@@ -37,7 +37,6 @@ type SortKey =
   'msgThroughputIn' |
   'msgThroughputOut' |
   'pendingAddEntriesCount' |
-  'producerCount' |
   'storageSize';
 
 type Sort = { key: SortKey, direction: 'asc' | 'desc' };
@@ -184,7 +183,6 @@ const Tenants: React.FC = () => {
                   <Th title="Avg. msg. size" sortKey="averageMsgSize" />
                   <Th title="Bytes in" sortKey="bytesInCount" />
                   <Th title="Bytes out" sortKey="bytesOutCount" />
-                  <Th title="Producers" sortKey="producerCount" />
                   <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
                   <Th title="Backlog size" sortKey="backlogSize" />
                   <Th title="Storage size" sortKey="storageSize" />
@@ -203,7 +201,6 @@ const Tenants: React.FC = () => {
                   <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(tenantsToShowMetrics).length > 0 ? sum(tenantsToShowMetrics, 'averageMsgSize') / Object.keys(tenantsToShowMetrics).length : 0)}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(tenantsToShowMetrics, 'bytesInCount'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(tenantsToShowMetrics, 'bytesOutCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(tenantsToShowMetrics, 'producerCount'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatCount(sum(tenantsToShowMetrics, 'pendingAddEntriesCount'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(tenantsToShowMetrics, 'backlogSize'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(tenantsToShowMetrics, 'storageSize'))}</th>
@@ -302,7 +299,6 @@ const Tenant: React.FC<TenantProps> = (props) => {
       <Td width="12ch">{props.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.averageMsgSize)}</Td>
       <Td width="12ch">{props.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatBytes(props.metrics.bytesInCount)}</Td>
       <Td width="12ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatBytes(props.metrics.bytesOutCount)}</Td>
-      <Td width="12ch">{props.metrics?.producerCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.producerCount)}</Td>
       <Td width="12ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
       <Td width="12ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.backlogSize)}</Td>
       <Td width="12ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
@@ -382,11 +378,6 @@ const sortTenants = (tenants: string[], sort: Sort, data: {
   if (sort.key === 'pendingAddEntriesCount') {
     const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.pendingAddEntriesCount !== undefined);
     return s(defs, undefs, (m) => m.pendingAddEntriesCount!);
-  }
-
-  if (sort.key === 'producerCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allTenantsMetrics[t]?.producerCount !== undefined);
-    return s(defs, undefs, (m) => m.producerCount!);
   }
 
   if (sort.key === 'storageSize') {
