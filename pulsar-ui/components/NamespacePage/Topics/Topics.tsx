@@ -225,7 +225,12 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
     <>
       <Td width={firstColumnWidth} title={props.topic.topic} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
         <LinkWithQuery
-          to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })}
+          to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
+            tenant: props.tenant,
+            namespace: props.namespace,
+            topicType: props.topic.topicType,
+            topic: props.topic.topic
+          })}
           className="A"
           style={{ position: 'relative' }}
         >
@@ -243,7 +248,7 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
         </div>
       </Td>
       <Td width="4ch">{props.partitionsCount === undefined ? <NoData /> : props.partitionsCount}</Td>
-      <Td width="4ch" title={`${props.topic.metrics.publishers?.length?.toString()} publishers`}>
+      <Td width="4ch" title={`${props.topic.metrics.publishers?.length?.toString()} producers`}>
         {props.topic.metrics.publishers !== undefined && <span className={cts.LazyContent}>{props.topic.metrics.publishers.length}</span>}
       </Td>
       <Td width="4ch" title={`${subscriptionsCount === undefined ? '-' : subscriptionsCount.toString()} subscriptions`}>
@@ -378,11 +383,12 @@ const NoData = () => {
 }
 
 function sum(topics: Topic[], key: keyof TopicMetrics): number {
-  return topics.reduce((acc, v) => {
+  return topics.reduce((summaryValue, t) => {
+    const v = t.metrics[key];
     if (typeof v !== 'number') {
-      return acc;
+      return summaryValue;
     }
-    return acc + (v || 0);
+    return summaryValue + (v || 0);
   }, 0);
 }
 

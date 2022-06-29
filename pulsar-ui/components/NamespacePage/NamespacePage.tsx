@@ -21,7 +21,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
         crumbs={[
           {
             id: `instance`,
-            value: 'Pulsar Instance',
+            value: 'Pulsar',
             type: 'instance',
           },
           {

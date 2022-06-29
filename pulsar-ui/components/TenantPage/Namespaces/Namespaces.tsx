@@ -364,7 +364,7 @@ const NoData = () => {
 }
 
 function sum(metrics: Record<string, NamespaceMetrics>, key: keyof NamespaceMetrics): number {
-  return Object.values(metrics).reduce((acc, cur) => acc + (cur[key] || 0), 0);
+  return Object.values(metrics).reduce((summaryValue, nsMetric) => summaryValue + (nsMetric[key] || 0), 0);
 }
 
 export default Namespaces;
