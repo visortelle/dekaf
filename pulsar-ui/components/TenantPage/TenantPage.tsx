@@ -22,7 +22,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
         crumbs={[
           {
             id: `instance`,
-            value: 'Pulsar Instance',
+            value: 'Pulsar',
             type: 'instance',
           },
           {

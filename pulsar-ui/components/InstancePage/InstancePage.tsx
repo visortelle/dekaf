@@ -21,7 +21,7 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
           crumbs={[
             {
               id: `instance`,
-              value: 'Pulsar Instance',
+              value: 'Pulsar',
               type: 'instance',
             }
           ]}

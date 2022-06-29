@@ -84,15 +84,29 @@ export const routes = {
             },
             anyTopicType: {
               topic: {
-                _: {
-                  path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic",
-                  get: (props: {
-                    tenant: string;
-                    namespace: string;
-                    topicType: "persistent" | "non-persistent";
-                    topic: string;
-                  }) =>
-                    `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}`,
+                messages: {
+                  _: {
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/messages",
+                    get: (props: {
+                      tenant: string;
+                      namespace: string;
+                      topicType: "persistent" | "non-persistent";
+                      topic: string;
+                    }) =>
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/messages`,
+                  },
+                },
+                overview: {
+                  _: {
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/overview",
+                    get: (props: {
+                      tenant: string;
+                      namespace: string;
+                      topicType: "persistent" | "non-persistent";
+                      topic: string;
+                    }) =>
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/overview`,
+                  },
                 },
                 policies: {
                   _: {

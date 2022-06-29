@@ -160,7 +160,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       plainTree: [],
       path: [],
       getPathPart: (node) => ({ type: node.rootLabel.type, name: node.rootLabel.name }),
-      rootLabel: { name: 'Pulsar Instance', type: 'instance' },
+      rootLabel: { name: 'Pulsar', type: 'instance' },
       alterTree: (tree) => tree,
       getVisibility: (tree, path) => ({
         tree: true,
