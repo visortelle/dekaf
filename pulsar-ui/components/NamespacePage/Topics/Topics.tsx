@@ -26,7 +26,7 @@ type SortKey =
   'topicType' |
   'producersCount' |
   'subscriptionsCount' |
-  'replication' |
+  'partitionsCount' |
   'averageMsgSize' |
   'backlogSize' |
   'bytesInCount' |
@@ -88,7 +88,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
         </div>
       </th>
     );
-  }, [sort.direction, sort.key])
+  }, [sort])
 
   const { data: allTopicsMetricsData, error: allTopicsMetricsDataError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allNamespaceTopics._(props.tenant, props.namespace),
@@ -99,25 +99,23 @@ const Topics: React.FC<TopicsProps> = (props) => {
     notifyError(`Unable to get all topics metrics. ${allTopicsMetricsDataError}`);
   }
 
-  const allTopicsMetrics = allTopicsMetricsData || { persistent: {}, nonPersistent: {} };
+  const allTopicsMetrics = useMemo(() => allTopicsMetricsData || { persistent: {}, nonPersistent: {} }, [allTopicsMetricsData]);
 
-  const persistentTopicsMetrics: Topic[] = _(allTopicsMetrics.persistent).toPairs().map<Topic>(([topic, v]) => ({ topicType: 'persistent', topic, metrics: v })).value();
-  const nonPersistentTopicsMetrics: Topic[] = _(allTopicsMetrics.nonPersistent).toPairs().map<Topic>(([topic, v]) => ({ topicType: 'non-persistent', topic, metrics: v })).value();
-  const topics: Topic[] = persistentTopicsMetrics.concat(nonPersistentTopicsMetrics);
+  const persistentTopicsMetrics: Topic[] = useMemo(() => _(allTopicsMetrics.persistent).toPairs().map<Topic>(([topic, v]) => ({ topicType: 'persistent', topic, metrics: v })).value(), [allTopicsMetrics]);
+  const nonPersistentTopicsMetrics: Topic[] = useMemo(() => _(allTopicsMetrics.nonPersistent).toPairs().map<Topic>(([topic, v]) => ({ topicType: 'non-persistent', topic, metrics: v })).value(), [allTopicsMetrics]);
 
-
-  const sortedTopics = useMemo(() => sortTopics(topics, sort), [topics, sort]);
-
-  const topicsToShow = sortedTopics?.filter((t) => t.topic.includes(filterQueryDebounced));
+  const { topics, partitionsCount } = useMemo(() => squashPartitionedTopics(persistentTopicsMetrics.concat(nonPersistentTopicsMetrics)), [persistentTopicsMetrics, nonPersistentTopicsMetrics]);
+  const sortedTopics = useMemo(() => sortTopics(topics, partitionsCount, sort), [partitionsCount, sort, topics]);
+  const topicsToShow = sortedTopics?.filter((t) => t.topic.includes(filterQueryDebounced)); // XXX - if useMemo here, ensure that all sorting by every column works
 
   return (
-    <div className={s.Namespaces}>
+    <div className={s.Topics}>
       <div className={s.Toolbar}>
         <div className={s.FilterInput}>
           <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="topic-name" focusOnMount={true} clearable={true} />
         </div>
         <div>
-          <strong>{topicsToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{topicsToShow.length}</strong> namespaces.
+          <strong>{topicsToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{topicsToShow.length}</strong> topics.
         </div>
       </div>
 
@@ -136,6 +134,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 <tr>
                   <Th title="Namespaces" sortKey="topic" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
                   <Th title="-" sortKey="topicType" style={{ position: 'sticky', left: `calc(${firstColumnWidth} + 34rem)`, zIndex: 10 }} />
+                  <Th title="Pts." sortKey="partitionsCount" />
                   <Th title={<ProducerIcon />} sortKey="producerCount" />
                   <Th title={<SubscriptionIcon />} sortKey="subscriptionsCount" />
                   <Th title="Msg. rate in" sortKey="msgRateIn" />
@@ -154,6 +153,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 <tr>
                   <th className={cts.SummaryTh} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Summary</th>
                   <th className={cts.SummaryTh} style={{ position: 'sticky', left: `calc(${firstColumnWidth} + 34rem)`, zIndex: 10 }}><NoData /></th>
+                  <th className={cts.SummaryTh}></th>
                   <th className={cts.SummaryTh}><NoData /></th>
                   <th className={cts.SummaryTh}><NoData /></th>
                   <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(topics, 'msgRateIn'))}</th>
@@ -177,6 +177,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   tenant={props.tenant}
                   namespace={props.namespace}
                   topic={topic}
+                  partitionsCount={partitionsCount[topic.topic]}
                   highlight={{ topic: [filterQueryDebounced] }}
                 />
               );
@@ -210,6 +211,7 @@ type TopicComponentProps = {
   tenant: string;
   namespace: string;
   topic: Topic;
+  partitionsCount: number | undefined;
   highlight: {
     topic: string[];
   }
@@ -240,6 +242,7 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
           <TopicIcon topicType={props.topic.topicType} />
         </div>
       </Td>
+      <Td width="4ch">{props.partitionsCount === undefined ? <NoData /> : props.partitionsCount}</Td>
       <Td width="4ch" title={`${props.topic.metrics.publishers?.length?.toString()} publishers`}>
         {props.topic.metrics.publishers !== undefined && <span className={cts.LazyContent}>{props.topic.metrics.publishers.length}</span>}
       </Td>
@@ -262,7 +265,7 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
   );
 }
 
-const sortTopics = (topics: Topic[], sort: Sort): Topic[] => {
+const sortTopics = (topics: Topic[], partitionsCount: Record<string, number>, sort: Sort): Topic[] => {
   function s(defs: Topic[], undefs: Topic[], getM: (m: TopicMetrics) => number): Topic[] {
     let result = defs.sort((a, b) => {
       return getM(a.metrics) - getM(b.metrics);
@@ -284,6 +287,12 @@ const sortTopics = (topics: Topic[], sort: Sort): Topic[] => {
       return a.topicType.localeCompare(b.topicType, 'en', { numeric: true })
     });
     return sort.direction === 'asc' ? t : t.reverse();
+  }
+
+  if (sort.key === 'partitionsCount') {
+    const [defs, undefs] = partition(topics, (t) => partitionsCount[t.topic] !== undefined);
+    const result = defs.sort((a, b) => partitionsCount[a.topic] - partitionsCount[b.topic]);
+    return (sort.direction === 'asc' ? result : result.reverse()).concat(undefs);
   }
 
   if (sort.key === 'producersCount') {
@@ -375,6 +384,28 @@ function sum(topics: Topic[], key: keyof TopicMetrics): number {
     }
     return acc + (v || 0);
   }, 0);
+}
+
+type DetectPartitionedTopicsResult = { topics: Topic[], partitionsCount: Record<string, number> };
+
+function squashPartitionedTopics(topics: Topic[]): DetectPartitionedTopicsResult {
+  return topics.reduce<DetectPartitionedTopicsResult>((result, topic) => {
+    const [__, topicName, ___, partitionNumber, ____] = topic.topic.split(/^(.*)(-partition-)(\d+)$/);
+    if (partitionNumber === undefined) {
+      return { ...result, topics: [...result.topics, topic] };
+    }
+
+    return {
+      ...result,
+      topics: result.partitionsCount[topicName] === undefined ? [...result.topics, { ...topic, topic: topicName }] : result.topics,
+      partitionsCount: {
+        ...result.partitionsCount, [topicName]: (result.partitionsCount[topicName] || 0) + 1
+      }
+    };
+  }, {
+    topics: [],
+    partitionsCount: {}
+  });
 }
 
 export default Topics;
