@@ -82,6 +82,11 @@ type PulsarNamespaceProps = {
   isActive: boolean;
   isFetchData: boolean;
 }
+function squashPartitionedTopics(topics: string[]): string[] {
+  return Array.from(
+    new Set(topics.map((topic: string) => topic.replace(/-partition-\d+$/, "")))
+  );
+}
 export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const adminClient = PulsarAdminClient.useContext().client;
@@ -108,8 +113,8 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 
   useEffect(
     () => props.onTopics({
-      persistent: (persistentTopics || []).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
-      nonPersistent: (nonPersistentTopics || []).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+      persistent: squashPartitionedTopics((persistentTopics || [])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
+      nonPersistent: squashPartitionedTopics((nonPersistentTopics || [])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
     }),
     [persistentTopics, nonPersistentTopics, props.forceReloadKey]
   );

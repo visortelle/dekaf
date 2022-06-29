@@ -277,5 +277,5 @@ export const getTenantNamespacesTopicsCount: GetTenantNamespacesTopicsCount =
 function squashPartitionedTopics(topics: string[]): string[] {
   return Array.from(
     new Set(topics.map((topic: string) => topic.replace(/-partition-\d+$/, "")))
-  ) as string[];
+  );
 }
