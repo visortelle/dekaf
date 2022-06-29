@@ -393,7 +393,7 @@ const NoData = () => {
 }
 
 function sum(metrics: Record<string, TenantMetrics>, key: keyof TenantMetrics): number {
-  return Object.values(metrics).reduce((acc, cur) => acc + (cur[key] || 0), 0);
+  return Object.values(metrics).reduce((summaryValue, tnMetric) => summaryValue + (tnMetric[key] || 0), 0);
 }
 
 export default Tenants;

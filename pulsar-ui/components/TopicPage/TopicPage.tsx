@@ -2,11 +2,12 @@ import React from 'react';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import s from './TopicPage.module.css'
 import Toolbar from '../ui/Toolbar/Toolbar';
+import Messages from './Messages/Messages';
 import Policies from './Policies/Policies';
 import DeleteTopic from './DeleteTopic/DeleteTopic';
 import { routes } from '../routes';
 
-export type TopicPageView = 'overview' | 'policies' | 'delete-topic';
+export type TopicPageView = 'messages' | 'overview' | 'policies' | 'delete-topic';
 export type TopicPageProps = {
   view: TopicPageView;
   tenant: string;
@@ -22,7 +23,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         crumbs={[
           {
             id: `instance`,
-            value: 'Pulsar Instance',
+            value: 'Pulsar',
             type: 'instance',
           },
           {
@@ -45,7 +46,13 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       <Toolbar
         buttons={[
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+            title: 'Messages',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
             title: 'Overview',
             onClick: () => { },
             type: 'regular'
@@ -65,6 +72,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         ]}
       />
 
+      {props.view === 'messages' && <Messages tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
       {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
       {props.view === 'delete-topic' && <DeleteTopic tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
     </div>
