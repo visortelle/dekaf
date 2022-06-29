@@ -102,6 +102,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const { data: allNamespacesMetrics, error: allNamespacesMetricsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allTenantNamespaces._(props.tenant),
     async () => await customApiClient.getAllTenantNamespacesMetrics(props.tenant),
+    { refreshInterval: 3 * 1000 }
   );
   if (allNamespacesMetricsError) {
     notifyError(`Unable to get all namespaces metrics. ${allNamespacesMetricsError}`);

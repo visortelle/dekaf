@@ -43,7 +43,7 @@ async function refreshState() {
 
 function scheduleRefreshState() {
   clearTimeout(state.metricsUpdateTimeout);
-  state.metricsUpdateTimeout = setTimeout(refreshState, 10 * 1000);
+  state.metricsUpdateTimeout = setTimeout(refreshState, 5 * 1000);
 }
 
 refreshState();
@@ -98,7 +98,6 @@ router.get(
     const namespace = req.params.namespace;
 
     const topicMetrics = getNamespaceTopicsMetrics(tenant, namespace, state.metrics);
-    console.log(topicMetrics);
     res.status(200).json(topicMetrics);
   }
 );
