@@ -2,7 +2,6 @@
 import { cloneDeep, isPlainObject, mergeWith } from "lodash";
 import * as Either from "fp-ts/Either";
 import * as pulsarAdmin from "pulsar-admin-client-fetch";
-import { AbortController } from "node-abort-controller";
 import { Request, Response } from "express";
 
 export type DimensionKey = string;
