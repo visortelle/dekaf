@@ -4,6 +4,7 @@ import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
+import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import * as PulsarCustomApiClient from '../../app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
@@ -54,6 +55,7 @@ type TopicsProps = {
 
 const Topics: React.FC<TopicsProps> = (props) => {
   const tableRef = useRef<HTMLDivElement>(null);
+  const adminClient = PulsarAdminClient.useContext().client;
   const customApiClient = PulsarCustomApiClient.useContext().client;
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
@@ -90,6 +92,22 @@ const Topics: React.FC<TopicsProps> = (props) => {
     );
   }, [sort])
 
+  const { data: persistentTopics, error: persistentTopicsError } = useSWR(
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
+    async () => (await adminClient.persistentTopic.getList(props.tenant, props.namespace)).map(t => t.split('/')[4]),
+  );
+  if (persistentTopicsError) {
+    notifyError(`Unable to get persistent topics list. ${persistentTopicsError}`);
+  }
+
+  const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR(
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
+    async () => (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace)).map(t => t.split('/')[4]),
+  );
+  if (persistentTopicsError) {
+    notifyError(`Unable to get persistent topics list. ${nonPersistentTopicsError}`);
+  }
+
   const { data: allTopicsMetricsData, error: allTopicsMetricsDataError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allNamespaceTopics._(props.tenant, props.namespace),
     async () => await customApiClient.getAllNamespaceTopicsMetrics(props.tenant, props.namespace),
@@ -101,10 +119,17 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
   const allTopicsMetrics = useMemo(() => allTopicsMetricsData || { persistent: {}, nonPersistent: {} }, [allTopicsMetricsData]);
 
-  const persistentTopicsMetrics: Topic[] = useMemo(() => _(allTopicsMetrics.persistent).toPairs().map<Topic>(([topic, v]) => ({ topicType: 'persistent', topic, metrics: v })).value(), [allTopicsMetrics]);
-  const nonPersistentTopicsMetrics: Topic[] = useMemo(() => _(allTopicsMetrics.nonPersistent).toPairs().map<Topic>(([topic, v]) => ({ topicType: 'non-persistent', topic, metrics: v })).value(), [allTopicsMetrics]);
+  const { topics, partitionsCount } = useMemo(() => {
+    // According to https://github.com/apache/pulsar/issues/16284#issuecomment-1171890077,
+    // persistent topics won't appear in metrics until not loaded to any broker, therefore we can't get topic names just from metrics.
+    // We need to get topic names by making additional requests.
+    const pts: Topic[] = persistentTopics?.map(t => ({ topicType: 'persistent', topic: t, metrics: allTopicsMetrics.persistent[t] || {} })) || [];
+    const npts: Topic[] = nonPersistentTopics?.map(t => ({ topicType: 'non-persistent', topic: t, metrics: allTopicsMetrics.nonPersistent[t] || {} })) || [];
+    return squashPartitionedTopics([...pts, ...npts]);
+  },
+    [persistentTopics, nonPersistentTopics, allTopicsMetrics]
+  );
 
-  const { topics, partitionsCount } = useMemo(() => squashPartitionedTopics(persistentTopicsMetrics.concat(nonPersistentTopicsMetrics)), [persistentTopicsMetrics, nonPersistentTopicsMetrics]);
   const sortedTopics = useMemo(() => sortTopics(topics, partitionsCount, sort), [partitionsCount, sort, topics]);
   const topicsToShow = sortedTopics?.filter((t) => t.topic.includes(filterQueryDebounced)); // XXX - if useMemo here, ensure that all sorting by every column works
 
@@ -177,7 +202,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   tenant={props.tenant}
                   namespace={props.namespace}
                   topic={topic}
-                  partitionsCount={partitionsCount[topic.topic]}
+                  partitionsCount={topic.topicType === 'persistent' ? partitionsCount.persistent[topic.topic] : partitionsCount.nonPersistent[topic.topic]}
                   highlight={{ topic: [filterQueryDebounced] }}
                 />
               );
@@ -270,7 +295,7 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
   );
 }
 
-const sortTopics = (topics: Topic[], partitionsCount: Record<string, number>, sort: Sort): Topic[] => {
+const sortTopics = (topics: Topic[], partitionsCount: { persistent: Record<string, number>, nonPersistent: Record<string, number> }, sort: Sort): Topic[] => {
   function s(defs: Topic[], undefs: Topic[], getM: (m: TopicMetrics) => number): Topic[] {
     let result = defs.sort((a, b) => {
       return getM(a.metrics) - getM(b.metrics);
@@ -295,8 +320,17 @@ const sortTopics = (topics: Topic[], partitionsCount: Record<string, number>, so
   }
 
   if (sort.key === 'partitionsCount') {
-    const [defs, undefs] = partition(topics, (t) => partitionsCount[t.topic] !== undefined);
-    const result = defs.sort((a, b) => partitionsCount[a.topic] - partitionsCount[b.topic]);
+    const [defs, undefs] = partition(topics, (t) => {
+      switch(t.topicType) {
+        case 'persistent': return partitionsCount.persistent[t.topic] !== undefined;
+        case 'non-persistent': return partitionsCount.nonPersistent[t.topic] !== undefined;
+      }
+    });
+    const result = defs.sort((a, b) => {
+      const aCount = a.topicType === 'persistent' ? partitionsCount.persistent[a.topic] : partitionsCount.nonPersistent[a.topic];
+      const bCount = b.topicType === 'persistent' ? partitionsCount.persistent[b.topic] : partitionsCount.nonPersistent[b.topic];
+      return aCount - bCount;
+    });
     return (sort.direction === 'asc' ? result : result.reverse()).concat(undefs);
   }
 
@@ -392,7 +426,7 @@ function sum(topics: Topic[], key: keyof TopicMetrics): number {
   }, 0);
 }
 
-type DetectPartitionedTopicsResult = { topics: Topic[], partitionsCount: Record<string, number> };
+type DetectPartitionedTopicsResult = { topics: Topic[], partitionsCount: { persistent: Record<string, number>, nonPersistent: Record<string, number> } };
 
 function squashPartitionedTopics(topics: Topic[]): DetectPartitionedTopicsResult {
   return topics.reduce<DetectPartitionedTopicsResult>((result, topic) => {
@@ -401,16 +435,31 @@ function squashPartitionedTopics(topics: Topic[]): DetectPartitionedTopicsResult
       return { ...result, topics: [...result.topics, topic] };
     }
 
-    return {
-      ...result,
-      topics: result.partitionsCount[topicName] === undefined ? [...result.topics, { ...topic, topic: topicName }] : result.topics,
-      partitionsCount: {
-        ...result.partitionsCount, [topicName]: (result.partitionsCount[topicName] || 0) + 1
+    switch (topic.topicType) {
+      case 'persistent': {
+        return {
+          ...result,
+          topics: result.partitionsCount.persistent[topicName] === undefined ? [...result.topics, { ...topic, topic: topicName }] : result.topics,
+          partitionsCount: {
+            ...result.partitionsCount,
+            persistent: { ...result.partitionsCount.persistent, [topicName]: (result.partitionsCount.persistent[topicName] || 0) + 1 }
+          }
+        };
       }
-    };
+      case 'non-persistent': {
+        return {
+          ...result,
+          topics: result.partitionsCount.nonPersistent[topicName] === undefined ? [...result.topics, { ...topic, topic: topicName }] : result.topics,
+          partitionsCount: {
+            ...result.partitionsCount,
+            nonPersistent: { ...result.partitionsCount.nonPersistent, [topicName]: (result.partitionsCount.nonPersistent[topicName] || 0) + 1 }
+          }
+        };
+      }
+    }
   }, {
     topics: [],
-    partitionsCount: {}
+    partitionsCount: { persistent: {}, nonPersistent: {} }
   });
 }
 
