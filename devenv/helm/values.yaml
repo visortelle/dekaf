@@ -1,0 +1,38 @@
+volumes:
+  persistence: false
+
+affinity:
+  anti_affinity: false
+
+components:
+  autorecovery: false
+
+bookkeeper:
+  replicaCount: 1
+
+## Monitoring Components
+##
+## Control what components of the monitoring stack to deploy for the cluster
+monitoring:
+  # monitoring - prometheus
+  prometheus: true
+  # monitoring - grafana
+  grafana: true
+  # monitoring - node_exporter
+  node_exporter: false
+  # alerting - alert-manager
+  alert_manager: false
+
+broker:
+  replicaCount: 3
+  configData:
+    ## Enable `autoSkipNonRecoverableData` since bookkeeper is running
+    ## without persistence
+    autoSkipNonRecoverableData: "true"
+    # storage settings
+    managedLedgerDefaultEnsembleSize: "1"
+    managedLedgerDefaultWriteQuorum: "1"
+    managedLedgerDefaultAckQuorum: "1"
+
+proxy:
+  replicaCount: 1
