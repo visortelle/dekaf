@@ -8,7 +8,7 @@ components:
   autorecovery: false
 
 bookkeeper:
-  replicaCount: 1
+  replicaCount: 3
 
 ## Monitoring Components
 ##
@@ -29,10 +29,8 @@ broker:
     ## Enable `autoSkipNonRecoverableData` since bookkeeper is running
     ## without persistence
     autoSkipNonRecoverableData: "true"
-    # storage settings
-    managedLedgerDefaultEnsembleSize: "1"
-    managedLedgerDefaultWriteQuorum: "1"
-    managedLedgerDefaultAckQuorum: "1"
+    # Dev customizations
+    brokerDeleteInactiveTopicsEnabled: "false"
 
 proxy:
-  replicaCount: 1
+  replicaCount: 3

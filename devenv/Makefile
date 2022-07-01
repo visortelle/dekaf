@@ -10,13 +10,19 @@ dev-compose: ## Start development using docker-compose (deprecated).
 dev-compose-pulsar-manager: ## Perepare pulsar-manager.
 	./pulsar-manager/create-default-user.sh
 
+.PHONY: clean
+clean: ## Install using Kubernetes Helm.
+	./helm/clean.sh
+
 .PHONY: dev
 dev: ## Install using Kubernetes Helm.
 	./helm/install.sh
 
-.PHONY: dev-port-forward
-dev-port-forward: ## Forward ports to localhost.
-	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-broker 8080:8080
+.PHONY: port-forward
+port-forward: ## Forward ports to localhost.
+	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 8080:80&
+	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 6650:6650&
+	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-grafana 8300:3000&
 
 .PHONY: help
 help:
