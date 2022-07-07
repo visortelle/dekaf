@@ -34,27 +34,19 @@ export namespace MessageId {
 }
 
 export class Message extends jspb.Message {
-  getTopic(): string;
-  setTopic(value: string): Message;
-
-  getProducerName(): string;
-  setProducerName(value: string): Message;
-
   getPropertiesMap(): jspb.Map<string, string>;
   clearPropertiesMap(): Message;
 
-  getRawPayload(): Uint8Array | string;
-  getRawPayload_asU8(): Uint8Array;
-  getRawPayload_asB64(): string;
-  setRawPayload(value: Uint8Array | string): Message;
+  getData(): Uint8Array | string;
+  getData_asU8(): Uint8Array;
+  getData_asB64(): string;
+  setData(value: Uint8Array | string): Message;
 
-  getSchemaValue(): string;
-  setSchemaValue(value: string): Message;
+  getSize(): number;
+  setSize(value: number): Message;
 
-  getId(): MessageId | undefined;
-  setId(value?: MessageId): Message;
-  hasId(): boolean;
-  clearId(): Message;
+  getValue(): string;
+  setValue(value: string): Message;
 
   getPublishTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
   setPublishTime(value?: google_protobuf_timestamp_pb.Timestamp): Message;
@@ -66,14 +58,33 @@ export class Message extends jspb.Message {
   hasEventTime(): boolean;
   clearEventTime(): Message;
 
+  getBrokerPublishTime(): number;
+  setBrokerPublishTime(value: number): Message;
+  hasBrokerPublishTime(): boolean;
+  clearBrokerPublishTime(): Message;
+
+  getSequenceId(): number;
+  setSequenceId(value: number): Message;
+
+  getProducerName(): string;
+  setProducerName(value: string): Message;
+
   getKey(): string;
   setKey(value: string): Message;
 
   getOrderingKey(): string;
   setOrderingKey(value: string): Message;
 
+  getTopic(): string;
+  setTopic(value: string): Message;
+
   getRedeliveryCount(): number;
   setRedeliveryCount(value: number): Message;
+
+  getSchemaVersion(): Uint8Array | string;
+  getSchemaVersion_asU8(): Uint8Array;
+  getSchemaVersion_asB64(): string;
+  setSchemaVersion(value: Uint8Array | string): Message;
 
   getIsReplicated(): boolean;
   setIsReplicated(value: boolean): Message;
@@ -91,19 +102,65 @@ export class Message extends jspb.Message {
 
 export namespace Message {
   export type AsObject = {
-    topic: string,
-    producerName: string,
     propertiesMap: Array<[string, string]>,
-    rawPayload: Uint8Array | string,
-    schemaValue: string,
-    id?: MessageId.AsObject,
+    data: Uint8Array | string,
+    size: number,
+    value: string,
     publishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     eventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    brokerPublishTime?: number,
+    sequenceId: number,
+    producerName: string,
     key: string,
     orderingKey: string,
+    topic: string,
     redeliveryCount: number,
+    schemaVersion: Uint8Array | string,
     isReplicated: boolean,
     replicatedFrom: string,
+  }
+
+  export enum BrokerPublishTimeCase { 
+    _BROKER_PUBLISH_TIME_NOT_SET = 0,
+    BROKER_PUBLISH_TIME = 22,
+  }
+}
+
+export class ReadMessagesRequest extends jspb.Message {
+  getTopic(): string;
+  setTopic(value: string): ReadMessagesRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ReadMessagesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ReadMessagesRequest): ReadMessagesRequest.AsObject;
+  static serializeBinaryToWriter(message: ReadMessagesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ReadMessagesRequest;
+  static deserializeBinaryFromReader(message: ReadMessagesRequest, reader: jspb.BinaryReader): ReadMessagesRequest;
+}
+
+export namespace ReadMessagesRequest {
+  export type AsObject = {
+    topic: string,
+  }
+}
+
+export class ReadMessagesResponse extends jspb.Message {
+  getMessagesList(): Array<Message>;
+  setMessagesList(value: Array<Message>): ReadMessagesResponse;
+  clearMessagesList(): ReadMessagesResponse;
+  addMessages(value?: Message, index?: number): Message;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ReadMessagesResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ReadMessagesResponse): ReadMessagesResponse.AsObject;
+  static serializeBinaryToWriter(message: ReadMessagesResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ReadMessagesResponse;
+  static deserializeBinaryFromReader(message: ReadMessagesResponse, reader: jspb.BinaryReader): ReadMessagesResponse;
+}
+
+export namespace ReadMessagesResponse {
+  export type AsObject = {
+    messagesList: Array<Message.AsObject>,
   }
 }
 

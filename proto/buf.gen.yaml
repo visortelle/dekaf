@@ -2,10 +2,12 @@ version: v1
 managed:
   enabled: true
 plugins:
-  - name: java
-    out: gen/java
+  - name: js
+    out: ../pulsar-ui/grpc-web
+    opt:
+      - import_style=commonjs
   - name: grpc-web
-    out: gen/grpc-web
+    out: ../pulsar-ui/grpc-web
     opt:
       - mode=grpcwebtext
       - import_style=typescript

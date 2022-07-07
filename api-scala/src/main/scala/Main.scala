@@ -1,25 +1,27 @@
-import org.apache.pulsar.client.api.Consumer
-import org.apache.pulsar.client.api.PulsarClient
-import org.apache.pulsar.client.api.MessageListener
+import org.apache.pulsar.client.api.{ Consumer, PulsarClient, MessageListener }
 import tools.teal.pulsar.ui.api.topic
-import tools.teal.pulsar.ui.api.topic.ReadMessagesRequest
-import tools.teal.pulsar.ui.api.topic.ReadMessagesResponse
+import tools.teal.pulsar.ui.api.topic.{ ReadMessagesRequest, ReadMessagesResponse }
 import io.grpc.{Server, ServerBuilder}
 import scala.concurrent.{ExecutionContext, Future}
 import io.grpc.stub.StreamObserver
 import io.grpc.protobuf.services.ProtoReflectionService
 import scala.jdk.CollectionConverters.*
 import com.google.protobuf.ByteString
+import org.apache.pulsar.client.api.{SubscriptionMode, SubscriptionType}
 
 @main def main: Unit =
-  println("Hello world!")
+  println("Starting Pulsar X-Ray server")
   server.start
   server.awaitTermination
 
-val client = PulsarClient.builder().serviceUrl("pulsar://localhost:6650").build()
+val client =
+  PulsarClient.builder().serviceUrl("pulsar://localhost:6650").build()
 
 private class TopicServiceImpl extends topic.TopicServiceGrpc.TopicService:
-  override def readMessages(request: ReadMessagesRequest, responseObserver: StreamObserver[ReadMessagesResponse]): Unit =
+  override def readMessages(
+      request: ReadMessagesRequest,
+      responseObserver: StreamObserver[ReadMessagesResponse]
+  ): Unit =
     val listener: MessageListener[Array[Byte]] = (consumer, msg) => {
       println("Message received: " + msg.getData)
 
@@ -27,24 +29,25 @@ private class TopicServiceImpl extends topic.TopicServiceGrpc.TopicService:
         topic = request.topic,
         producerName = msg.getProducerName,
         properties = msg.getProperties.asScala.toMap,
-        data = ByteString.copyFrom(msg.getData),
+        data = ByteString.copyFrom(msg.getData)
       )
       responseObserver.onNext(ReadMessagesResponse(messages = Seq(message)))
       consumer.acknowledge(msg)
     }
 
-    val consumer = client.newConsumer()
+    val consumer = client
+      .newConsumer
       .topic(request.topic)
-      .subscriptionName("test-subscription")
+      .subscriptionName("xray-subscription-1")
       .messageListener(listener)
-      .subscribe()
+      .subscriptionType(SubscriptionType.Shared)
+      .subscribe
 
 val server = ServerBuilder
   .forPort(8090)
-  .addService(topic.TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
+  .addService(
+    topic.TopicServiceGrpc
+      .bindService(TopicServiceImpl(), ExecutionContext.global)
+  )
   .addService(ProtoReflectionService.newInstance)
   .build
-
-def consume(tenant: String, namespace: String, topicType: "persistent" | "non-persistent", topic: String): Unit =
-  ()
-

@@ -6,8 +6,7 @@ build: ## Build protobuf
 	rm -rf ./gen
 	buf mod update
 	buf generate
-	buf build -o ./gen/protoset
-	cd ./gen && npm init -y
+	# buf build -o ./gen/protoset
 
 .PHONY: help
 help:
