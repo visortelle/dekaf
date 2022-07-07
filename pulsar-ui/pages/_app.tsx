@@ -4,6 +4,7 @@ import * as Notifications from '../components/app/contexts/Notifications';
 import * as PulsarAdminClient from '../components/app/contexts/PulsarAdminClient';
 import * as PulsarAdminBatchClient from '../components/app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
 import * as PulsarCustomApiClient from '../components/app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
+import * as PulsarGrpcClient from '../components/app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as BrokerConfig from '../components/app/contexts/BrokersConfig';
 import * as I18n from '../components/app/contexts/I18n/I18n';
 import 'react-toastify/dist/ReactToastify.css';
@@ -48,19 +49,21 @@ const _MyApp = (props: AppProps) => {
   }, []);
 
   return (
-    <SWRConfig value={{ shouldRetryOnError: false, focusThrottleInterval: 120, refreshInterval: 15 * 1000,  }}>
+    <SWRConfig value={{ shouldRetryOnError: false, focusThrottleInterval: 120, refreshInterval: 15 * 1000, }}>
       <NoSsr>
         <I18n.DefaultProvider>
           <Notifications.DefaultProvider>
-            <PulsarAdminClient.DefaultProvider>
-              <PulsarAdminBatchClient.DefaultProvider>
-                <PulsarCustomApiClient.DefaultProvider>
-                  <BrokerConfig.DefaultProvider>
-                    {typeof window === 'undefined' ? null : <props.Component />}
-                  </BrokerConfig.DefaultProvider>
-                </PulsarCustomApiClient.DefaultProvider>
-              </PulsarAdminBatchClient.DefaultProvider>
-            </PulsarAdminClient.DefaultProvider>
+            <PulsarGrpcClient.DefaultProvider>
+              <PulsarAdminClient.DefaultProvider>
+                <PulsarAdminBatchClient.DefaultProvider>
+                  <PulsarCustomApiClient.DefaultProvider>
+                    <BrokerConfig.DefaultProvider>
+                      {typeof window === 'undefined' ? null : <props.Component />}
+                    </BrokerConfig.DefaultProvider>
+                  </PulsarCustomApiClient.DefaultProvider>
+                </PulsarAdminBatchClient.DefaultProvider>
+              </PulsarAdminClient.DefaultProvider>
+            </PulsarGrpcClient.DefaultProvider>
           </Notifications.DefaultProvider>
         </I18n.DefaultProvider>
       </NoSsr >
