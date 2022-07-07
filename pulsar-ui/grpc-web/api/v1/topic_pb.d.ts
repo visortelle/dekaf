@@ -63,6 +63,11 @@ export class Message extends jspb.Message {
   hasBrokerPublishTime(): boolean;
   clearBrokerPublishTime(): Message;
 
+  getMessageId(): Uint8Array | string;
+  getMessageId_asU8(): Uint8Array;
+  getMessageId_asB64(): string;
+  setMessageId(value: Uint8Array | string): Message;
+
   getSequenceId(): number;
   setSequenceId(value: number): Message;
 
@@ -109,6 +114,7 @@ export namespace Message {
     publishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     eventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     brokerPublishTime?: number,
+    messageId: Uint8Array | string,
     sequenceId: number,
     producerName: string,
     key: string,
@@ -130,6 +136,9 @@ export class ReadMessagesRequest extends jspb.Message {
   getTopic(): string;
   setTopic(value: string): ReadMessagesRequest;
 
+  getSubscriptionId(): string;
+  setSubscriptionId(value: string): ReadMessagesRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ReadMessagesRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ReadMessagesRequest): ReadMessagesRequest.AsObject;
@@ -141,6 +150,7 @@ export class ReadMessagesRequest extends jspb.Message {
 export namespace ReadMessagesRequest {
   export type AsObject = {
     topic: string,
+    subscriptionId: string,
   }
 }
 
