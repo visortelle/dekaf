@@ -370,6 +370,7 @@ proto.api.v1.Message.toObject = function(includeInstance, msg) {
     publishTime: (f = msg.getPublishTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     eventTime: (f = msg.getEventTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     brokerPublishTime: jspb.Message.getFloatingPointFieldWithDefault(msg, 22, 0.0),
+    messageId: msg.getMessageId_asB64(),
     sequenceId: jspb.Message.getFloatingPointFieldWithDefault(msg, 8, 0.0),
     producerName: jspb.Message.getFieldWithDefault(msg, 9, ""),
     key: jspb.Message.getFieldWithDefault(msg, 10, ""),
@@ -446,6 +447,10 @@ proto.api.v1.Message.deserializeBinaryFromReader = function(msg, reader) {
     case 22:
       var value = /** @type {number} */ (reader.readDouble());
       msg.setBrokerPublishTime(value);
+      break;
+    case 30:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setMessageId(value);
       break;
     case 8:
       var value = /** @type {number} */ (reader.readDouble());
@@ -557,6 +562,13 @@ proto.api.v1.Message.serializeBinaryToWriter = function(message, writer) {
   if (f != null) {
     writer.writeDouble(
       22,
+      f
+    );
+  }
+  f = message.getMessageId_asU8();
+  if (f.length > 0) {
+    writer.writeBytes(
+      30,
       f
     );
   }
@@ -837,6 +849,48 @@ proto.api.v1.Message.prototype.hasBrokerPublishTime = function() {
 
 
 /**
+ * optional bytes message_id = 30;
+ * @return {string}
+ */
+proto.api.v1.Message.prototype.getMessageId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 30, ""));
+};
+
+
+/**
+ * optional bytes message_id = 30;
+ * This is a type-conversion wrapper around `getMessageId()`
+ * @return {string}
+ */
+proto.api.v1.Message.prototype.getMessageId_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getMessageId()));
+};
+
+
+/**
+ * optional bytes message_id = 30;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getMessageId()`
+ * @return {!Uint8Array}
+ */
+proto.api.v1.Message.prototype.getMessageId_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getMessageId()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.api.v1.Message} returns this
+ */
+proto.api.v1.Message.prototype.setMessageId = function(value) {
+  return jspb.Message.setProto3BytesField(this, 30, value);
+};
+
+
+/**
  * optional double sequence_id = 8;
  * @return {number}
  */
@@ -1054,7 +1108,8 @@ proto.api.v1.ReadMessagesRequest.prototype.toObject = function(opt_includeInstan
  */
 proto.api.v1.ReadMessagesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    topic: jspb.Message.getFieldWithDefault(msg, 1, "")
+    topic: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    subscriptionId: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1095,6 +1150,10 @@ proto.api.v1.ReadMessagesRequest.deserializeBinaryFromReader = function(msg, rea
       var value = /** @type {string} */ (reader.readString());
       msg.setTopic(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSubscriptionId(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1131,6 +1190,13 @@ proto.api.v1.ReadMessagesRequest.serializeBinaryToWriter = function(message, wri
       f
     );
   }
+  f = message.getSubscriptionId();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -1149,6 +1215,24 @@ proto.api.v1.ReadMessagesRequest.prototype.getTopic = function() {
  */
 proto.api.v1.ReadMessagesRequest.prototype.setTopic = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string subscription_id = 2;
+ * @return {string}
+ */
+proto.api.v1.ReadMessagesRequest.prototype.getSubscriptionId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.v1.ReadMessagesRequest} returns this
+ */
+proto.api.v1.ReadMessagesRequest.prototype.setSubscriptionId = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 

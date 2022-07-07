@@ -1,0 +1,36 @@
+.Messages {
+  padding: 24rem 12rem 8rem 12rem;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.List {
+  position: relative;
+  font-size: 14rem;
+  border-spacing: 0;
+  border-radius: 4rem;
+  border: 1rem solid #ddd;
+  border-left: none;
+  border-right: none;
+  flex: 1 1 auto;
+  overflow: auto;
+  margin: auto -12rem;
+}
+
+.Message {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-bottom: 1rem solid #ddd;
+}
+
+.MessageMetadata {
+  padding: 12rem;
+}
+
+.MessageData {
+  padding: 12rem;
+  word-break: break-all;
+}
