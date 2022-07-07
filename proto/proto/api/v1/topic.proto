@@ -24,6 +24,7 @@ message Message {
   google.protobuf.Timestamp event_time = 7;
   optional double broker_publish_time = 22;
 
+  bytes message_id = 30;
   double sequence_id = 8;
   string producer_name = 9;
   string key = 10;
@@ -38,6 +39,7 @@ message Message {
 
 message ReadMessagesRequest {
   string topic = 1;
+  string subscription_id = 2;
 }
 
 message ReadMessagesResponse {

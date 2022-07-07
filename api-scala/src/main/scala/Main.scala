@@ -8,6 +8,7 @@ import io.grpc.protobuf.services.ProtoReflectionService
 import scala.jdk.CollectionConverters.*
 import com.google.protobuf.ByteString
 import org.apache.pulsar.client.api.{SubscriptionMode, SubscriptionType}
+import org.apache.pulsar.client.api.SubscriptionInitialPosition
 
 @main def main: Unit =
   println("Starting Pulsar X-Ray server")
@@ -23,13 +24,12 @@ private class TopicServiceImpl extends topic.TopicServiceGrpc.TopicService:
       responseObserver: StreamObserver[ReadMessagesResponse]
   ): Unit =
     val listener: MessageListener[Array[Byte]] = (consumer, msg) => {
-      println("Message received: " + msg.getData)
-
       val message = topic.Message(
         topic = request.topic,
         producerName = msg.getProducerName,
         properties = msg.getProperties.asScala.toMap,
-        data = ByteString.copyFrom(msg.getData)
+        data = ByteString.copyFrom(msg.getData),
+        messageId = ByteString.copyFrom(msg.getMessageId.toByteArray)
       )
       responseObserver.onNext(ReadMessagesResponse(messages = Seq(message)))
       consumer.acknowledge(msg)
@@ -38,7 +38,8 @@ private class TopicServiceImpl extends topic.TopicServiceGrpc.TopicService:
     val consumer = client
       .newConsumer
       .topic(request.topic)
-      .subscriptionName("xray-subscription-1")
+      .subscriptionName("__xray-" + request.subscriptionId)
+      .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
       .messageListener(listener)
       .subscriptionType(SubscriptionType.Shared)
       .subscribe
