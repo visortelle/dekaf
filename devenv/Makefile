@@ -1,13 +1,13 @@
 .DEFAULT_GOAL := help
 
-.PHONY: dev-compose
-dev-compose: ## Start development using docker-compose (deprecated).
+.PHONY: devtools
+devtools: ## Start development using docker-compose (deprecated).
 	docker ps -a -q | xargs -I {} docker container rm -f {}
 	docker volume ls -q | xargs -I {} docker volume rm {}
 	docker-compose up -d
 
-.PHONY: dev-compose-pulsar-manager
-dev-compose-pulsar-manager: ## Perepare pulsar-manager.
+.PHONY: devtools-pulsar-manager
+devtools-pulsar-manager: ## Perepare pulsar-manager.
 	./pulsar-manager/create-default-user.sh
 
 .PHONY: clean
