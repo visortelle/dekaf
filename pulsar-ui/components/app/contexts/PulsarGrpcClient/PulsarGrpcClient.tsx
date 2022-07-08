@@ -1,24 +1,24 @@
 import React, { ReactNode, useState } from 'react';
-import * as _topicServiceClient from '../../../../grpc-web/api/v1/TopicServiceClientPb';
+import * as _consumerServiceClient from '../../../../grpc-web/api/v1/ConsumerServiceClientPb';
 
 export type Value = {
-  topicServiceClient: _topicServiceClient.TopicServiceClient,
+  consumerServiceClient: _consumerServiceClient.ConsumerServiceClient,
 }
 
 const defaultValue: Value = {
-  topicServiceClient: new _topicServiceClient.TopicServiceClient(''),
+  consumerServiceClient: new _consumerServiceClient.ConsumerServiceClient(''),
 };
 
 const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
-  const [topicServiceClient, _] = useState<_topicServiceClient.TopicServiceClient>(new _topicServiceClient.TopicServiceClient('http://localhost:10000'));
+  const [consumerServiceClient, _] = useState<_consumerServiceClient.ConsumerServiceClient>(new _consumerServiceClient.ConsumerServiceClient('http://localhost:10000'));
 
   return (
     <>
       <Context.Provider
         value={{
-          topicServiceClient,
+          consumerServiceClient: consumerServiceClient,
         }}
       >
         {children}

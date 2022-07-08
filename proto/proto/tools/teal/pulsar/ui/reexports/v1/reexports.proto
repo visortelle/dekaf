@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.reexports.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/rpc/status.proto";
+import "google/rpc/code.proto";
+
+message Google {
+  google.protobuf.Timestamp timestamp = 1;
+  google.rpc.Status rpc_status = 2;
+  google.rpc.Code rpc_code = 3;
+}

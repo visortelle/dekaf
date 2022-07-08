@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import { Message, ReadMessagesRequest, ReadMessagesResponse } from '../../../grpc-web/api/v1/topic_pb';
+import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { nanoid } from 'nanoid';
+import * as Notifications from '../../app/contexts/Notifications';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import SmallButton from '../../ui/SmallButton/SmallButton';
+import { createDeadline } from '../../../grpc/proto-utils';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
 export type MessagesProps = {
   tenant: string,
@@ -19,26 +22,46 @@ type KeyedMessage = {
   key: string
 }
 const Messages: React.FC<MessagesProps> = (props) => {
+  const { notifyError } = Notifications.useContext();
   const listRef = useRef<HTMLDivElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
-  const { topicServiceClient } = PulsarGrpcClient.useContext();
+  const { consumerServiceClient } = PulsarGrpcClient.useContext();
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [isFollowOutput, setIsFollowOutput] = useState(false);
+  const [consumerName, setConsumerName] = useState('__xray_' + nanoid());
+  const [subscriptionName, setSubscriptionName] = useState('__xray_' + nanoid());
 
   useEffect(() => {
-    let stream: ClientReadableStream<ReadMessagesResponse>;
+    let stream: ClientReadableStream<ResumeResponse>;
 
-    function startConsume() {
+    async function startConsume() {
       if (stream) {
         return;
       }
 
-      const req = new ReadMessagesRequest();
+      const createConsumerReq = new CreateConsumerRequest();
+      const topicSelector = new TopicSelector();
+      topicSelector.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      createConsumerReq.setTopicSelector(topicSelector)
+      createConsumerReq.setConsumerName(consumerName);
+      createConsumerReq.setStartPaused(true);
+      createConsumerReq.setSubscriptionName(subscriptionName);
+      createConsumerReq.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED)
+      const createConsumerRes = await consumerServiceClient.createConsumer(createConsumerReq, { deadline: createDeadline(10) });
 
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-      req.setSubscriptionId(`client-${Math.random().toString().replace('.', '')}`);
+      const status = createConsumerRes.getStatus();
+      const statusCode = status?.getCode();
 
-      stream = topicServiceClient.readMessages(req)
+      if (statusCode !== Code.OK) {
+        const errorMessage = status?.getMessage();
+        notifyError(`Unable to create consumer. ${errorMessage}`);
+        return;
+      }
+
+      const resumeReq = new ResumeRequest();
+      resumeReq.setConsumerName(consumerName);
+
+      stream = consumerServiceClient.resume(resumeReq)
       stream.on('data', (data) => {
         const newMessages = data.getMessagesList().map(m => ({ message: m, key: nanoid() }));
         setMessages(messages => messages.concat(newMessages));
@@ -47,7 +70,17 @@ const Messages: React.FC<MessagesProps> = (props) => {
 
     startConsume();
 
-    return () => stream?.cancel();
+    return () => {
+      stream?.cancel();
+
+      async function deleteConsumer() {
+        const deleteConsumerReq = new DeleteConsumerRequest();
+        deleteConsumerReq.setConsumerName(consumerName);
+        await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) });
+      }
+
+      deleteConsumer();
+    };
   }, []);
 
   return (
