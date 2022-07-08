@@ -1,4 +1,5 @@
 .metals
+.idea
 .vscode
 .bloop
 .bsp

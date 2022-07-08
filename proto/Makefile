@@ -2,10 +2,12 @@
 
 .PHONY: build
 build: ## Build protobuf
+	buf mod update
 	buf lint
 	rm -rf ./gen
-	buf mod update
-	buf generate
+	rm -rf ../pulsar-ui/grpc-web
+	rm -rf ../api-scala/src/main/scala/pb
+	buf generate --include-imports --include-wkt
 	# buf build -o ./gen/protoset
 
 .PHONY: help

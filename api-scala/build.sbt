@@ -21,10 +21,6 @@ lazy val root = project
   )
 
 // Protobuf stuff. See also /project/scalapb.sbt
-Compile / PB.targets := Seq(
-  scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
-)
-Compile / PB.protoSources := Seq(new File("../proto/proto"))
 libraryDependencies ++= Seq(
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
