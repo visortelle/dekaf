@@ -61,8 +61,6 @@ export class Message extends jspb.Message {
 
   getBrokerPublishTime(): number;
   setBrokerPublishTime(value: number): Message;
-  hasBrokerPublishTime(): boolean;
-  clearBrokerPublishTime(): Message;
 
   getMessageId(): Uint8Array | string;
   getMessageId_asU8(): Uint8Array;
@@ -114,7 +112,7 @@ export namespace Message {
     value: string,
     publishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     eventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    brokerPublishTime?: number,
+    brokerPublishTime: number,
     messageId: Uint8Array | string,
     sequenceId: number,
     producerName: string,
@@ -125,11 +123,6 @@ export namespace Message {
     schemaVersion: Uint8Array | string,
     isReplicated: boolean,
     replicatedFrom: string,
-  }
-
-  export enum BrokerPublishTimeCase { 
-    _BROKER_PUBLISH_TIME_NOT_SET = 0,
-    BROKER_PUBLISH_TIME = 22,
   }
 }
 
@@ -166,21 +159,33 @@ export class CreateConsumerRequest extends jspb.Message {
 
   getConsumerName(): string;
   setConsumerName(value: string): CreateConsumerRequest;
+  hasConsumerName(): boolean;
+  clearConsumerName(): CreateConsumerRequest;
 
   getSubscriptionName(): string;
   setSubscriptionName(value: string): CreateConsumerRequest;
+  hasSubscriptionName(): boolean;
+  clearSubscriptionName(): CreateConsumerRequest;
 
   getPriorityLevel(): number;
   setPriorityLevel(value: number): CreateConsumerRequest;
+  hasPriorityLevel(): boolean;
+  clearPriorityLevel(): CreateConsumerRequest;
 
   getStartPaused(): boolean;
   setStartPaused(value: boolean): CreateConsumerRequest;
+  hasStartPaused(): boolean;
+  clearStartPaused(): CreateConsumerRequest;
 
   getSubscriptionMode(): SubscriptionMode;
   setSubscriptionMode(value: SubscriptionMode): CreateConsumerRequest;
+  hasSubscriptionMode(): boolean;
+  clearSubscriptionMode(): CreateConsumerRequest;
 
   getSubscriptionType(): SubscriptionType;
   setSubscriptionType(value: SubscriptionType): CreateConsumerRequest;
+  hasSubscriptionType(): boolean;
+  clearSubscriptionType(): CreateConsumerRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CreateConsumerRequest.AsObject;
@@ -193,12 +198,42 @@ export class CreateConsumerRequest extends jspb.Message {
 export namespace CreateConsumerRequest {
   export type AsObject = {
     topicSelector?: TopicSelector.AsObject,
-    consumerName: string,
-    subscriptionName: string,
-    priorityLevel: number,
-    startPaused: boolean,
-    subscriptionMode: SubscriptionMode,
-    subscriptionType: SubscriptionType,
+    consumerName?: string,
+    subscriptionName?: string,
+    priorityLevel?: number,
+    startPaused?: boolean,
+    subscriptionMode?: SubscriptionMode,
+    subscriptionType?: SubscriptionType,
+  }
+
+  export enum ConsumerNameCase { 
+    _CONSUMER_NAME_NOT_SET = 0,
+    CONSUMER_NAME = 1,
+  }
+
+  export enum SubscriptionNameCase { 
+    _SUBSCRIPTION_NAME_NOT_SET = 0,
+    SUBSCRIPTION_NAME = 2,
+  }
+
+  export enum PriorityLevelCase { 
+    _PRIORITY_LEVEL_NOT_SET = 0,
+    PRIORITY_LEVEL = 3,
+  }
+
+  export enum StartPausedCase { 
+    _START_PAUSED_NOT_SET = 0,
+    START_PAUSED = 4,
+  }
+
+  export enum SubscriptionModeCase { 
+    _SUBSCRIPTION_MODE_NOT_SET = 0,
+    SUBSCRIPTION_MODE = 5,
+  }
+
+  export enum SubscriptionTypeCase { 
+    _SUBSCRIPTION_TYPE_NOT_SET = 0,
+    SUBSCRIPTION_TYPE = 6,
   }
 }
 
@@ -279,6 +314,11 @@ export namespace ResumeRequest {
 }
 
 export class ResumeResponse extends jspb.Message {
+  getStatus(): google_rpc_status_pb.Status | undefined;
+  setStatus(value?: google_rpc_status_pb.Status): ResumeResponse;
+  hasStatus(): boolean;
+  clearStatus(): ResumeResponse;
+
   getMessagesList(): Array<Message>;
   setMessagesList(value: Array<Message>): ResumeResponse;
   clearMessagesList(): ResumeResponse;
@@ -294,7 +334,13 @@ export class ResumeResponse extends jspb.Message {
 
 export namespace ResumeResponse {
   export type AsObject = {
+    status?: google_rpc_status_pb.Status.AsObject,
     messagesList: Array<Message.AsObject>,
+  }
+
+  export enum StatusCase { 
+    _STATUS_NOT_SET = 0,
+    STATUS = 1,
   }
 }
 

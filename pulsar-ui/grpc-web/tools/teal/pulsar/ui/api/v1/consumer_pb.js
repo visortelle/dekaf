@@ -717,8 +717,8 @@ proto.tools.teal.pulsar.ui.api.v1.Message.serializeBinaryToWriter = function(mes
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
-  f = /** @type {number} */ (jspb.Message.getField(message, 22));
-  if (f != null) {
+  f = message.getBrokerPublishTime();
+  if (f !== 0.0) {
     writer.writeDouble(
       22,
       f
@@ -985,25 +985,7 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getBrokerPublishTime = funct
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setBrokerPublishTime = function(value) {
-  return jspb.Message.setField(this, 22, value);
-};
-
-
-/**
- * Clears the field making it undefined.
- * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
- */
-proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearBrokerPublishTime = function() {
-  return jspb.Message.setField(this, 22, undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasBrokerPublishTime = function() {
-  return jspb.Message.getField(this, 22) != null;
+  return jspb.Message.setProto3FloatField(this, 22, value);
 };
 
 
@@ -1549,43 +1531,43 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.serializeBinaryToWriter 
       proto.tools.teal.pulsar.ui.api.v1.TopicSelector.serializeBinaryToWriter
     );
   }
-  f = message.getConsumerName();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 1));
+  if (f != null) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getSubscriptionName();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getPriorityLevel();
-  if (f !== 0) {
+  f = /** @type {number} */ (jspb.Message.getField(message, 3));
+  if (f != null) {
     writer.writeInt32(
       3,
       f
     );
   }
-  f = message.getStartPaused();
-  if (f) {
+  f = /** @type {boolean} */ (jspb.Message.getField(message, 4));
+  if (f != null) {
     writer.writeBool(
       4,
       f
     );
   }
-  f = message.getSubscriptionMode();
-  if (f !== 0.0) {
+  f = /** @type {!proto.tools.teal.pulsar.ui.api.v1.SubscriptionMode} */ (jspb.Message.getField(message, 5));
+  if (f != null) {
     writer.writeEnum(
       5,
       f
     );
   }
-  f = message.getSubscriptionType();
-  if (f !== 0.0) {
+  f = /** @type {!proto.tools.teal.pulsar.ui.api.v1.SubscriptionType} */ (jspb.Message.getField(message, 6));
+  if (f != null) {
     writer.writeEnum(
       6,
       f
@@ -1645,7 +1627,25 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getConsumerNam
  * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setConsumerName = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearConsumerName = function() {
+  return jspb.Message.setField(this, 1, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasConsumerName = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -1663,7 +1663,25 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getSubscriptio
  * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setSubscriptionName = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearSubscriptionName = function() {
+  return jspb.Message.setField(this, 2, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasSubscriptionName = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -1681,7 +1699,25 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getPriorityLev
  * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setPriorityLevel = function(value) {
-  return jspb.Message.setProto3IntField(this, 3, value);
+  return jspb.Message.setField(this, 3, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearPriorityLevel = function() {
+  return jspb.Message.setField(this, 3, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasPriorityLevel = function() {
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
@@ -1699,7 +1735,25 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getStartPaused
  * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setStartPaused = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 4, value);
+  return jspb.Message.setField(this, 4, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearStartPaused = function() {
+  return jspb.Message.setField(this, 4, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasStartPaused = function() {
+  return jspb.Message.getField(this, 4) != null;
 };
 
 
@@ -1717,7 +1771,25 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getSubscriptio
  * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setSubscriptionMode = function(value) {
-  return jspb.Message.setProto3EnumField(this, 5, value);
+  return jspb.Message.setField(this, 5, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearSubscriptionMode = function() {
+  return jspb.Message.setField(this, 5, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasSubscriptionMode = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 
@@ -1735,7 +1807,25 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getSubscriptio
  * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setSubscriptionType = function(value) {
-  return jspb.Message.setProto3EnumField(this, 6, value);
+  return jspb.Message.setField(this, 6, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearSubscriptionType = function() {
+  return jspb.Message.setField(this, 6, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasSubscriptionType = function() {
+  return jspb.Message.getField(this, 6) != null;
 };
 
 
@@ -2340,6 +2430,7 @@ proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.prototype.toObject = function(o
  */
 proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
+    status: (f = msg.getStatus()) && google_rpc_status_pb.Status.toObject(includeInstance, f),
     messagesList: jspb.Message.toObjectList(msg.getMessagesList(),
     proto.tools.teal.pulsar.ui.api.v1.Message.toObject, includeInstance)
   };
@@ -2378,6 +2469,11 @@ proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.deserializeBinaryFromReader = f
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = new google_rpc_status_pb.Status;
+      reader.readMessage(value,google_rpc_status_pb.Status.deserializeBinaryFromReader);
+      msg.setStatus(value);
+      break;
     case 2:
       var value = new proto.tools.teal.pulsar.ui.api.v1.Message;
       reader.readMessage(value,proto.tools.teal.pulsar.ui.api.v1.Message.deserializeBinaryFromReader);
@@ -2412,6 +2508,14 @@ proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.prototype.serializeBinary = fun
  */
 proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getStatus();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      google_rpc_status_pb.Status.serializeBinaryToWriter
+    );
+  }
   f = message.getMessagesList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
@@ -2420,6 +2524,43 @@ proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.serializeBinaryToWriter = funct
       proto.tools.teal.pulsar.ui.api.v1.Message.serializeBinaryToWriter
     );
   }
+};
+
+
+/**
+ * optional google.rpc.Status status = 1;
+ * @return {?proto.google.rpc.Status}
+ */
+proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.prototype.getStatus = function() {
+  return /** @type{?proto.google.rpc.Status} */ (
+    jspb.Message.getWrapperField(this, google_rpc_status_pb.Status, 1));
+};
+
+
+/**
+ * @param {?proto.google.rpc.Status|undefined} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.ResumeResponse} returns this
+*/
+proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.prototype.setStatus = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.ResumeResponse} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.prototype.clearStatus = function() {
+  return this.setStatus(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.ResumeResponse.prototype.hasStatus = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
