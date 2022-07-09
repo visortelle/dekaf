@@ -1,4 +1,4 @@
-import React, { MouseEventHandler } from 'react';
+import React from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import s from './SmallButton.module.css';
 
@@ -6,7 +6,9 @@ export type SmallButtonProps = {
   onClick: () => void,
   svgIcon?: string,
   text?: string,
+  title?: string,
   type?: 'regular' | 'primary' | 'danger',
+  disabled?: boolean
 }
 
 const SmallButton = (props: SmallButtonProps) => {
@@ -20,9 +22,11 @@ const SmallButton = (props: SmallButtonProps) => {
   return (
     <button
       type="button"
-      className={`${s.Button} ${props.text ? '' : s.ButtonWithoutText}`}
+      className={`${s.Button} ${props.disabled ? s.DisabledButton : ''} ${props.text ? '' : s.ButtonWithoutText}`}
       onClick={props.onClick}
       style={{ backgroundColor, color: textColor }}
+      disabled={props.disabled}
+      title={props.title}
     >
       {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
       {props.text && <div>{props.text}</div>}

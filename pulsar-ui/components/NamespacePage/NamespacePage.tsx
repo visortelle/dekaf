@@ -40,25 +40,25 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
         buttons={[
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
-            title: 'Topics',
+            text: 'Topics',
             onClick: () => { },
             type: 'regular'
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
-            title: 'Policies',
+            text: 'Policies',
             onClick: () => { },
             type: 'regular'
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.deleteNamespace._.get({ tenant: props.tenant, namespace: props.namespace }),
-            title: 'Delete',
+            text: 'Delete',
             onClick: () => { },
             type: 'danger'
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),
-            title: 'Create topic',
+            text: 'Create topic',
             onClick: () => { },
             type: 'primary',
             position: 'right'

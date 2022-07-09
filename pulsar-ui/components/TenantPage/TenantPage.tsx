@@ -38,25 +38,25 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
           buttons={[
             {
               linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
-              title: 'Namespaces',
+              text: 'Namespaces',
               onClick: () => { },
               type: 'regular'
             },
             {
               linkTo: routes.tenants.tenant.configuration._.get({ tenant: props.tenant }),
-              title: 'Configuration',
+              text: 'Configuration',
               onClick: () => { },
               type: 'regular'
             },
             {
               linkTo: routes.tenants.tenant.deleteTenant._.get({ tenant: props.tenant }),
-              title: 'Delete',
+              text: 'Delete',
               onClick: () => { },
               type: 'danger'
             },
             {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),
-              title: 'Create namespace',
+              text: 'Create namespace',
               onClick: () => { },
               type: 'primary',
               position: 'right'
