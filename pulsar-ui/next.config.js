@@ -10,7 +10,7 @@ module.exports = {
       },
     ];
   },
-  reactStrictMode: true,
+  reactStrictMode: false, // Disabled due to in React 18 useEffect runs twice in development mode. Maybe enable later.
   webpack: (_config) => {
     let config = fixMultipleReactInstancesIssue(_config);
 
