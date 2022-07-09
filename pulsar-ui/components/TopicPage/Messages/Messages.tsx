@@ -88,7 +88,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
 
     return () => {
       stream?.cancel();
-      stream?.removeListener('data', streamDataHandler)
+      stream?.removeListener('data', streamDataHandler);
 
       async function deleteConsumer() {
         const deleteConsumerReq = new DeleteConsumerRequest();
@@ -163,6 +163,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
         }}
       >
         <Virtuoso<KeyedMessage>
+          className={s.Virtuoso}
           ref={virtuosoRef}
           data={messages}
           totalCount={messages.length}
@@ -170,7 +171,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
           customScrollParent={listRef.current || undefined}
           itemContent={(_, { key, message }) => <MessageComponent key={key} message={message} />}
           followOutput={isFollowOutput}
-          alignToBottom={isFollowOutput}
         />
       </div>
     </div>
