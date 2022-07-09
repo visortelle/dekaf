@@ -10,7 +10,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.{
     PauseResponse,
     ResumeRequest,
     ResumeResponse,
-    TopicSelector,
+    TopicSelector
 }
 import io.grpc.{Server, ServerBuilder}
 
@@ -20,16 +20,19 @@ import io.grpc.stub.StreamObserver
 import io.grpc.protobuf.services.ProtoReflectionService
 
 import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import org.apache.pulsar.client.api.{SubscriptionMode, SubscriptionType}
 import org.apache.pulsar.client.api.SubscriptionInitialPosition
 import org.apache.pulsar.client.api.RegexSubscriptionMode
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
+import com.google.protobuf.timestamp
 import org.apache.pulsar.client.api.Message
 import scala.concurrent.Await
-import scala.concurrent.duration.{MILLISECONDS}
+import scala.concurrent.duration.MILLISECONDS
 import java.util.UUID
+import java.time.Instant
 
 case class Config(pulsarServiceUrl: String, grpcPort: Int)
 val config = Config("pulsar://localhost:6650", grpcPort = 8090)
@@ -67,16 +70,32 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case Some(handler) =>
                 handler.onNext = (msg: Message[Array[Byte]]) =>
                     logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId()}")
+
                     val message = consumerPb.Message(
-                      topic = msg.getTopicName,
-                      producerName = msg.getProducerName,
                       properties = msg.getProperties.asScala.toMap,
                       data = ByteString.copyFrom(msg.getData),
-                      messageId = ByteString.copyFrom(msg.getMessageId.toByteArray)
+                      value = msg.getValue.toString(),
+                      size = msg.getData.length,
+                      eventTime = Some(timestamp.Timestamp(Instant.ofEpochMilli(msg.getEventTime).getNano)),
+                      publishTime = Some(timestamp.Timestamp(Instant.ofEpochMilli(msg.getPublishTime).getNano)),
+                      brokerPublishTime = msg.getBrokerPublishTime.toScala match
+                          case Some(v) => Some(timestamp.Timestamp(Instant.ofEpochMilli(v).getNano))
+                          case _       => None
+                      ,
+                      messageId = ByteString.copyFrom(msg.getMessageId.toByteArray),
+                      sequenceId = msg.getSequenceId,
+                      producerName = msg.getProducerName,
+                      key = msg.getKey,
+                      orderingKey = ByteString.copyFrom(msg.getOrderingKey),
+                      topic = msg.getTopicName,
+                      redeliveryCount = msg.getRedeliveryCount(),
+                      schemaVersion = ByteString.copyFrom(msg.getSchemaVersion()),
+                      isReplicated = msg.isReplicated(),
+                      replicatedFrom = msg.getReplicatedFrom()
                     )
                     consumers.get(consumerName) match
                         case Some(consumer) => responseObserver.onNext(ResumeResponse(messages = Seq(message)))
-                        case _ => ()
+                        case _              => ()
 
                 val status: Status = Status(code = Code.OK.index)
                 return Future.successful(PauseResponse(status = Some(status)))
@@ -114,11 +133,6 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandler.onNext = _ => ()
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
 
-        val subscriptionMode = request.subscriptionMode match
-            case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_DURABLE) => SubscriptionMode.Durable
-            case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE) => SubscriptionMode.NonDurable
-            case _ => SubscriptionMode.Durable
-
         val listener: MessageListener[Array[Byte]] = (consumer, msg) =>
             logger.debug(s"Listener received a message. Consumer: $consumerName")
             streamDataHandlers.get(consumerName) match
@@ -134,45 +148,47 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             .subscriptionName(request.subscriptionName.getOrElse(consumerName))
 
         consumer = request.subscriptionMode match
-            case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_DURABLE) => consumer.subscriptionMode(SubscriptionMode.Durable)
+            case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_DURABLE)     => consumer.subscriptionMode(SubscriptionMode.Durable)
             case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE) => consumer.subscriptionMode(SubscriptionMode.NonDurable)
-            case _ => consumer
+            case _                                                               => consumer
 
         consumer = request.subscriptionType match
-            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED) => consumer.subscriptionType(SubscriptionType.Shared)
-            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER) => consumer.subscriptionType(SubscriptionType.Failover)
-            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE) => consumer.subscriptionType(SubscriptionType.Exclusive)
+            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED)     => consumer.subscriptionType(SubscriptionType.Shared)
+            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER)   => consumer.subscriptionType(SubscriptionType.Failover)
+            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE)  => consumer.subscriptionType(SubscriptionType.Exclusive)
             case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED) => consumer.subscriptionType(SubscriptionType.Key_Shared)
-            case _ => consumer
+            case _                                                              => consumer
 
         consumer = request.subscriptionInitialPosition match
-            case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST) => consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-            case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST) => consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Latest)
+            case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST) =>
+                consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
+            case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST) =>
+                consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Latest)
             case _ => consumer
 
         consumer = request.priorityLevel match
             case Some(v) => consumer.priorityLevel(v)
-            case _ => consumer
+            case _       => consumer
 
         consumer = request.ackTimeoutMs match
             case Some(v) => consumer.ackTimeout(v, MILLISECONDS)
-            case _ => consumer
+            case _       => consumer
 
         consumer = request.ackTimeoutTickTimeMs match
             case Some(v) => consumer.ackTimeoutTickTime(v, MILLISECONDS)
-            case _ => consumer
+            case _       => consumer
 
         consumer = request.expireTimeOfIncompleteChunkedMessageMs match
             case Some(v) => consumer.expireTimeOfIncompleteChunkedMessage(v, MILLISECONDS)
-            case _ => consumer
+            case _       => consumer
 
         consumer = request.acknowledgmentGroupTimeMs match
             case Some(v) => consumer.acknowledgmentGroupTime(v, MILLISECONDS)
-            case _ => consumer
+            case _       => consumer
 
         consumer = request.negativeAckRedeliveryDelayMs match
             case Some(v) => consumer.negativeAckRedeliveryDelay(v, MILLISECONDS)
-            case _ => consumer
+            case _       => consumer
 
         request.topicSelector match
             case Some(topicSelector) if topicSelector.selector.topic.isDefined =>

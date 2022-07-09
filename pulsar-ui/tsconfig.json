@@ -16,6 +16,6 @@
     "incremental": true,
     "noFallthroughCasesInSwitch": true,
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "components/TopicPage/Messages/Messages.tsx"],
   "exclude": ["node_modules"]
 }
