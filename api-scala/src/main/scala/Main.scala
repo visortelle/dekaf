@@ -83,6 +83,13 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumerName = request.consumerName
         logger.debug(s"Pausing consumer. Consumer: $consumerName")
 
+        consumers.get(consumerName) match
+            case Some(consumer) =>
+                consumer.pause
+            case _ =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "No such consumer: $consumerName")
+                return Future.successful(PauseResponse(status = Some(status)))
+
         val streamDataHandler = streamDataHandlers.get(consumerName)
 
         streamDataHandler match
