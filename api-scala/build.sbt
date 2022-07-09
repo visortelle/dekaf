@@ -7,13 +7,16 @@ lazy val root = project
     version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
-      // Scala deps
+      // Testing
       "org.scalameta" %% "munit" % "0.7.29" % Test,
+      // FP
       "org.typelevel" %% "cats-core" % "2.8.0",
-      // Java deps
+      // Logging
+       "ch.qos.logback" % "logback-classic" % "1.2.10",
+       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4",
+      // Pulsar
       "org.apache.pulsar" % "pulsar-client-original" % "2.10.1",
       "org.apache.pulsar" % "pulsar-client-admin-original" % "2.10.1",
-      // Peer dependencies
       "org.slf4j" % "slf4j-api" % "1.7.36", // Needed by pulsar-client-original
       "org.slf4j" % "slf4j-simple" % "1.7.36", // Needed by pulsar-client-original
       "io.netty" % "netty-all" % "4.1.78.Final" // Needed by pulsar-client-original
