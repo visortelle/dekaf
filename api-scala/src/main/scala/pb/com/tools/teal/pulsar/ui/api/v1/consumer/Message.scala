@@ -16,7 +16,7 @@ final case class Message(
     value: _root_.scala.Predef.String = "",
     publishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None,
     eventTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None,
-    brokerPublishTime: _root_.scala.Option[_root_.scala.Double] = _root_.scala.None,
+    brokerPublishTime: _root_.scala.Double = 0.0,
     messageId: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY,
     sequenceId: _root_.scala.Double = 0.0,
     producerName: _root_.scala.Predef.String = "",
@@ -66,9 +66,12 @@ final case class Message(
         val __value = eventTime.get
         __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__value.serializedSize) + __value.serializedSize
       };
-      if (brokerPublishTime.isDefined) {
-        val __value = brokerPublishTime.get
-        __size += _root_.com.google.protobuf.CodedOutputStream.computeDoubleSize(22, __value)
+      
+      {
+        val __value = brokerPublishTime
+        if (__value != 0.0) {
+          __size += _root_.com.google.protobuf.CodedOutputStream.computeDoubleSize(22, __value)
+        }
       };
       
       {
@@ -243,9 +246,11 @@ final case class Message(
           _output__.writeString(21, __v)
         }
       };
-      brokerPublishTime.foreach { __v =>
-        val __m = __v
-        _output__.writeDouble(22, __m)
+      {
+        val __v = brokerPublishTime
+        if (__v != 0.0) {
+          _output__.writeDouble(22, __v)
+        }
       };
       {
         val __v = messageId
@@ -268,9 +273,7 @@ final case class Message(
     def getEventTime: com.google.protobuf.timestamp.Timestamp = eventTime.getOrElse(com.google.protobuf.timestamp.Timestamp.defaultInstance)
     def clearEventTime: Message = copy(eventTime = _root_.scala.None)
     def withEventTime(__v: com.google.protobuf.timestamp.Timestamp): Message = copy(eventTime = Option(__v))
-    def getBrokerPublishTime: _root_.scala.Double = brokerPublishTime.getOrElse(0.0)
-    def clearBrokerPublishTime: Message = copy(brokerPublishTime = _root_.scala.None)
-    def withBrokerPublishTime(__v: _root_.scala.Double): Message = copy(brokerPublishTime = Option(__v))
+    def withBrokerPublishTime(__v: _root_.scala.Double): Message = copy(brokerPublishTime = __v)
     def withMessageId(__v: _root_.com.google.protobuf.ByteString): Message = copy(messageId = __v)
     def withSequenceId(__v: _root_.scala.Double): Message = copy(sequenceId = __v)
     def withProducerName(__v: _root_.scala.Predef.String): Message = copy(producerName = __v)
@@ -300,7 +303,10 @@ final case class Message(
         }
         case 6 => publishTime.orNull
         case 7 => eventTime.orNull
-        case 22 => brokerPublishTime.orNull
+        case 22 => {
+          val __t = brokerPublishTime
+          if (__t != 0.0) __t else null
+        }
         case 30 => {
           val __t = messageId
           if (__t != _root_.com.google.protobuf.ByteString.EMPTY) __t else null
@@ -352,7 +358,7 @@ final case class Message(
         case 4 => _root_.scalapb.descriptors.PString(value)
         case 6 => publishTime.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 7 => eventTime.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
-        case 22 => brokerPublishTime.map(_root_.scalapb.descriptors.PDouble(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 22 => _root_.scalapb.descriptors.PDouble(brokerPublishTime)
         case 30 => _root_.scalapb.descriptors.PByteString(messageId)
         case 8 => _root_.scalapb.descriptors.PDouble(sequenceId)
         case 9 => _root_.scalapb.descriptors.PString(producerName)
@@ -379,7 +385,7 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
     var __value: _root_.scala.Predef.String = ""
     var __publishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None
     var __eventTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None
-    var __brokerPublishTime: _root_.scala.Option[_root_.scala.Double] = _root_.scala.None
+    var __brokerPublishTime: _root_.scala.Double = 0.0
     var __messageId: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY
     var __sequenceId: _root_.scala.Double = 0.0
     var __producerName: _root_.scala.Predef.String = ""
@@ -409,7 +415,7 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
         case 58 =>
           __eventTime = Option(__eventTime.fold(_root_.scalapb.LiteParser.readMessage[com.google.protobuf.timestamp.Timestamp](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
         case 177 =>
-          __brokerPublishTime = Option(_input__.readDouble())
+          __brokerPublishTime = _input__.readDouble()
         case 242 =>
           __messageId = _input__.readBytes()
         case 65 =>
@@ -468,7 +474,7 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
         value = __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
         publishTime = __fieldsMap.get(scalaDescriptor.findFieldByNumber(6).get).flatMap(_.as[_root_.scala.Option[com.google.protobuf.timestamp.Timestamp]]),
         eventTime = __fieldsMap.get(scalaDescriptor.findFieldByNumber(7).get).flatMap(_.as[_root_.scala.Option[com.google.protobuf.timestamp.Timestamp]]),
-        brokerPublishTime = __fieldsMap.get(scalaDescriptor.findFieldByNumber(22).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Double]]),
+        brokerPublishTime = __fieldsMap.get(scalaDescriptor.findFieldByNumber(22).get).map(_.as[_root_.scala.Double]).getOrElse(0.0),
         messageId = __fieldsMap.get(scalaDescriptor.findFieldByNumber(30).get).map(_.as[_root_.com.google.protobuf.ByteString]).getOrElse(_root_.com.google.protobuf.ByteString.EMPTY),
         sequenceId = __fieldsMap.get(scalaDescriptor.findFieldByNumber(8).get).map(_.as[_root_.scala.Double]).getOrElse(0.0),
         producerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(9).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
@@ -505,7 +511,7 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
     value = "",
     publishTime = _root_.scala.None,
     eventTime = _root_.scala.None,
-    brokerPublishTime = _root_.scala.None,
+    brokerPublishTime = 0.0,
     messageId = _root_.com.google.protobuf.ByteString.EMPTY,
     sequenceId = 0.0,
     producerName = "",
@@ -670,8 +676,7 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
     def optionalPublishTime: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.google.protobuf.timestamp.Timestamp]] = field(_.publishTime)((c_, f_) => c_.copy(publishTime = f_))
     def eventTime: _root_.scalapb.lenses.Lens[UpperPB, com.google.protobuf.timestamp.Timestamp] = field(_.getEventTime)((c_, f_) => c_.copy(eventTime = Option(f_)))
     def optionalEventTime: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.google.protobuf.timestamp.Timestamp]] = field(_.eventTime)((c_, f_) => c_.copy(eventTime = f_))
-    def brokerPublishTime: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Double] = field(_.getBrokerPublishTime)((c_, f_) => c_.copy(brokerPublishTime = Option(f_)))
-    def optionalBrokerPublishTime: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Double]] = field(_.brokerPublishTime)((c_, f_) => c_.copy(brokerPublishTime = f_))
+    def brokerPublishTime: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Double] = field(_.brokerPublishTime)((c_, f_) => c_.copy(brokerPublishTime = f_))
     def messageId: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.messageId)((c_, f_) => c_.copy(messageId = f_))
     def sequenceId: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Double] = field(_.sequenceId)((c_, f_) => c_.copy(sequenceId = f_))
     def producerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.producerName)((c_, f_) => c_.copy(producerName = f_))
@@ -709,7 +714,7 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
     value: _root_.scala.Predef.String,
     publishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp],
     eventTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp],
-    brokerPublishTime: _root_.scala.Option[_root_.scala.Double],
+    brokerPublishTime: _root_.scala.Double,
     messageId: _root_.com.google.protobuf.ByteString,
     sequenceId: _root_.scala.Double,
     producerName: _root_.scala.Predef.String,

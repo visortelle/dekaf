@@ -8,12 +8,12 @@ package com.tools.teal.pulsar.ui.api.v1.consumer
 @SerialVersionUID(0L)
 final case class CreateConsumerRequest(
     topicSelector: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector] = _root_.scala.None,
-    consumerName: _root_.scala.Predef.String = "",
-    subscriptionName: _root_.scala.Predef.String = "",
-    priorityLevel: _root_.scala.Int = 0,
-    startPaused: _root_.scala.Boolean = false,
-    subscriptionMode: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.SUBSCRIPTION_MODE_UNSPECIFIED,
-    subscriptionType: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.SUBSCRIPTION_TYPE_UNSPECIFIED,
+    consumerName: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None,
+    subscriptionName: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None,
+    priorityLevel: _root_.scala.Option[_root_.scala.Int] = _root_.scala.None,
+    startPaused: _root_.scala.Option[_root_.scala.Boolean] = _root_.scala.None,
+    subscriptionMode: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode] = _root_.scala.None,
+    subscriptionType: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType] = _root_.scala.None,
     unknownFields: _root_.scalapb.UnknownFieldSet = _root_.scalapb.UnknownFieldSet.empty
     ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[CreateConsumerRequest] {
     @transient
@@ -24,47 +24,29 @@ final case class CreateConsumerRequest(
         val __value = topicSelector.get
         __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__value.serializedSize) + __value.serializedSize
       };
-      
-      {
-        val __value = consumerName
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(1, __value)
-        }
+      if (consumerName.isDefined) {
+        val __value = consumerName.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(1, __value)
       };
-      
-      {
-        val __value = subscriptionName
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(2, __value)
-        }
+      if (subscriptionName.isDefined) {
+        val __value = subscriptionName.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(2, __value)
       };
-      
-      {
-        val __value = priorityLevel
-        if (__value != 0) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeInt32Size(3, __value)
-        }
+      if (priorityLevel.isDefined) {
+        val __value = priorityLevel.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeInt32Size(3, __value)
       };
-      
-      {
-        val __value = startPaused
-        if (__value != false) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeBoolSize(4, __value)
-        }
+      if (startPaused.isDefined) {
+        val __value = startPaused.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeBoolSize(4, __value)
       };
-      
-      {
-        val __value = subscriptionMode.value
-        if (__value != 0) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeEnumSize(5, __value)
-        }
+      if (subscriptionMode.isDefined) {
+        val __value = subscriptionMode.get.value
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeEnumSize(5, __value)
       };
-      
-      {
-        val __value = subscriptionType.value
-        if (__value != 0) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeEnumSize(6, __value)
-        }
+      if (subscriptionType.isDefined) {
+        val __value = subscriptionType.get.value
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeEnumSize(6, __value)
       };
       __size += unknownFields.serializedSize
       __size
@@ -79,41 +61,29 @@ final case class CreateConsumerRequest(
       
     }
     def writeTo(`_output__`: _root_.com.google.protobuf.CodedOutputStream): _root_.scala.Unit = {
-      {
-        val __v = consumerName
-        if (!__v.isEmpty) {
-          _output__.writeString(1, __v)
-        }
+      consumerName.foreach { __v =>
+        val __m = __v
+        _output__.writeString(1, __m)
       };
-      {
-        val __v = subscriptionName
-        if (!__v.isEmpty) {
-          _output__.writeString(2, __v)
-        }
+      subscriptionName.foreach { __v =>
+        val __m = __v
+        _output__.writeString(2, __m)
       };
-      {
-        val __v = priorityLevel
-        if (__v != 0) {
-          _output__.writeInt32(3, __v)
-        }
+      priorityLevel.foreach { __v =>
+        val __m = __v
+        _output__.writeInt32(3, __m)
       };
-      {
-        val __v = startPaused
-        if (__v != false) {
-          _output__.writeBool(4, __v)
-        }
+      startPaused.foreach { __v =>
+        val __m = __v
+        _output__.writeBool(4, __m)
       };
-      {
-        val __v = subscriptionMode.value
-        if (__v != 0) {
-          _output__.writeEnum(5, __v)
-        }
+      subscriptionMode.foreach { __v =>
+        val __m = __v.value
+        _output__.writeEnum(5, __m)
       };
-      {
-        val __v = subscriptionType.value
-        if (__v != 0) {
-          _output__.writeEnum(6, __v)
-        }
+      subscriptionType.foreach { __v =>
+        val __m = __v.value
+        _output__.writeEnum(6, __m)
       };
       topicSelector.foreach { __v =>
         val __m = __v
@@ -126,53 +96,47 @@ final case class CreateConsumerRequest(
     def getTopicSelector: com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector = topicSelector.getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector.defaultInstance)
     def clearTopicSelector: CreateConsumerRequest = copy(topicSelector = _root_.scala.None)
     def withTopicSelector(__v: com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector): CreateConsumerRequest = copy(topicSelector = Option(__v))
-    def withConsumerName(__v: _root_.scala.Predef.String): CreateConsumerRequest = copy(consumerName = __v)
-    def withSubscriptionName(__v: _root_.scala.Predef.String): CreateConsumerRequest = copy(subscriptionName = __v)
-    def withPriorityLevel(__v: _root_.scala.Int): CreateConsumerRequest = copy(priorityLevel = __v)
-    def withStartPaused(__v: _root_.scala.Boolean): CreateConsumerRequest = copy(startPaused = __v)
-    def withSubscriptionMode(__v: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode): CreateConsumerRequest = copy(subscriptionMode = __v)
-    def withSubscriptionType(__v: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType): CreateConsumerRequest = copy(subscriptionType = __v)
+    def getConsumerName: _root_.scala.Predef.String = consumerName.getOrElse("")
+    def clearConsumerName: CreateConsumerRequest = copy(consumerName = _root_.scala.None)
+    def withConsumerName(__v: _root_.scala.Predef.String): CreateConsumerRequest = copy(consumerName = Option(__v))
+    def getSubscriptionName: _root_.scala.Predef.String = subscriptionName.getOrElse("")
+    def clearSubscriptionName: CreateConsumerRequest = copy(subscriptionName = _root_.scala.None)
+    def withSubscriptionName(__v: _root_.scala.Predef.String): CreateConsumerRequest = copy(subscriptionName = Option(__v))
+    def getPriorityLevel: _root_.scala.Int = priorityLevel.getOrElse(0)
+    def clearPriorityLevel: CreateConsumerRequest = copy(priorityLevel = _root_.scala.None)
+    def withPriorityLevel(__v: _root_.scala.Int): CreateConsumerRequest = copy(priorityLevel = Option(__v))
+    def getStartPaused: _root_.scala.Boolean = startPaused.getOrElse(false)
+    def clearStartPaused: CreateConsumerRequest = copy(startPaused = _root_.scala.None)
+    def withStartPaused(__v: _root_.scala.Boolean): CreateConsumerRequest = copy(startPaused = Option(__v))
+    def getSubscriptionMode: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode = subscriptionMode.getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.SUBSCRIPTION_MODE_UNSPECIFIED)
+    def clearSubscriptionMode: CreateConsumerRequest = copy(subscriptionMode = _root_.scala.None)
+    def withSubscriptionMode(__v: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode): CreateConsumerRequest = copy(subscriptionMode = Option(__v))
+    def getSubscriptionType: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType = subscriptionType.getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.SUBSCRIPTION_TYPE_UNSPECIFIED)
+    def clearSubscriptionType: CreateConsumerRequest = copy(subscriptionType = _root_.scala.None)
+    def withSubscriptionType(__v: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType): CreateConsumerRequest = copy(subscriptionType = Option(__v))
     def withUnknownFields(__v: _root_.scalapb.UnknownFieldSet) = copy(unknownFields = __v)
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
       (__fieldNumber: @_root_.scala.unchecked) match {
         case 10 => topicSelector.orNull
-        case 1 => {
-          val __t = consumerName
-          if (__t != "") __t else null
-        }
-        case 2 => {
-          val __t = subscriptionName
-          if (__t != "") __t else null
-        }
-        case 3 => {
-          val __t = priorityLevel
-          if (__t != 0) __t else null
-        }
-        case 4 => {
-          val __t = startPaused
-          if (__t != false) __t else null
-        }
-        case 5 => {
-          val __t = subscriptionMode.javaValueDescriptor
-          if (__t.getNumber() != 0) __t else null
-        }
-        case 6 => {
-          val __t = subscriptionType.javaValueDescriptor
-          if (__t.getNumber() != 0) __t else null
-        }
+        case 1 => consumerName.orNull
+        case 2 => subscriptionName.orNull
+        case 3 => priorityLevel.orNull
+        case 4 => startPaused.orNull
+        case 5 => subscriptionMode.map(_.javaValueDescriptor).orNull
+        case 6 => subscriptionType.map(_.javaValueDescriptor).orNull
       }
     }
     def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
       _root_.scala.Predef.require(__field.containingMessage eq companion.scalaDescriptor)
       (__field.number: @_root_.scala.unchecked) match {
         case 10 => topicSelector.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
-        case 1 => _root_.scalapb.descriptors.PString(consumerName)
-        case 2 => _root_.scalapb.descriptors.PString(subscriptionName)
-        case 3 => _root_.scalapb.descriptors.PInt(priorityLevel)
-        case 4 => _root_.scalapb.descriptors.PBoolean(startPaused)
-        case 5 => _root_.scalapb.descriptors.PEnum(subscriptionMode.scalaValueDescriptor)
-        case 6 => _root_.scalapb.descriptors.PEnum(subscriptionType.scalaValueDescriptor)
+        case 1 => consumerName.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 2 => subscriptionName.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 3 => priorityLevel.map(_root_.scalapb.descriptors.PInt(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 4 => startPaused.map(_root_.scalapb.descriptors.PBoolean(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 5 => subscriptionMode.map(__e => _root_.scalapb.descriptors.PEnum(__e.scalaValueDescriptor)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 6 => subscriptionType.map(__e => _root_.scalapb.descriptors.PEnum(__e.scalaValueDescriptor)).getOrElse(_root_.scalapb.descriptors.PEmpty)
       }
     }
     def toProtoString: _root_.scala.Predef.String = _root_.scalapb.TextFormat.printToUnicodeString(this)
@@ -184,12 +148,12 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
   implicit def messageCompanion: scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest] = this
   def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest = {
     var __topicSelector: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector] = _root_.scala.None
-    var __consumerName: _root_.scala.Predef.String = ""
-    var __subscriptionName: _root_.scala.Predef.String = ""
-    var __priorityLevel: _root_.scala.Int = 0
-    var __startPaused: _root_.scala.Boolean = false
-    var __subscriptionMode: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.SUBSCRIPTION_MODE_UNSPECIFIED
-    var __subscriptionType: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.SUBSCRIPTION_TYPE_UNSPECIFIED
+    var __consumerName: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None
+    var __subscriptionName: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None
+    var __priorityLevel: _root_.scala.Option[_root_.scala.Int] = _root_.scala.None
+    var __startPaused: _root_.scala.Option[_root_.scala.Boolean] = _root_.scala.None
+    var __subscriptionMode: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode] = _root_.scala.None
+    var __subscriptionType: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType] = _root_.scala.None
     var `_unknownFields__`: _root_.scalapb.UnknownFieldSet.Builder = null
     var _done__ = false
     while (!_done__) {
@@ -199,17 +163,17 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
         case 82 =>
           __topicSelector = Option(__topicSelector.fold(_root_.scalapb.LiteParser.readMessage[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
         case 10 =>
-          __consumerName = _input__.readStringRequireUtf8()
+          __consumerName = Option(_input__.readStringRequireUtf8())
         case 18 =>
-          __subscriptionName = _input__.readStringRequireUtf8()
+          __subscriptionName = Option(_input__.readStringRequireUtf8())
         case 24 =>
-          __priorityLevel = _input__.readInt32()
+          __priorityLevel = Option(_input__.readInt32())
         case 32 =>
-          __startPaused = _input__.readBool()
+          __startPaused = Option(_input__.readBool())
         case 40 =>
-          __subscriptionMode = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.fromValue(_input__.readEnum())
+          __subscriptionMode = Option(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.fromValue(_input__.readEnum()))
         case 48 =>
-          __subscriptionType = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.fromValue(_input__.readEnum())
+          __subscriptionType = Option(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.fromValue(_input__.readEnum()))
         case tag =>
           if (_unknownFields__ == null) {
             _unknownFields__ = new _root_.scalapb.UnknownFieldSet.Builder()
@@ -233,12 +197,12 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
       com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest(
         topicSelector = __fieldsMap.get(scalaDescriptor.findFieldByNumber(10).get).flatMap(_.as[_root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector]]),
-        consumerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
-        subscriptionName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
-        priorityLevel = __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).map(_.as[_root_.scala.Int]).getOrElse(0),
-        startPaused = __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).map(_.as[_root_.scala.Boolean]).getOrElse(false),
-        subscriptionMode = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.fromValue(__fieldsMap.get(scalaDescriptor.findFieldByNumber(5).get).map(_.as[_root_.scalapb.descriptors.EnumValueDescriptor]).getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.SUBSCRIPTION_MODE_UNSPECIFIED.scalaValueDescriptor).number),
-        subscriptionType = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.fromValue(__fieldsMap.get(scalaDescriptor.findFieldByNumber(6).get).map(_.as[_root_.scalapb.descriptors.EnumValueDescriptor]).getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.SUBSCRIPTION_TYPE_UNSPECIFIED.scalaValueDescriptor).number)
+        consumerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]]),
+        subscriptionName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]]),
+        priorityLevel = __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Int]]),
+        startPaused = __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Boolean]]),
+        subscriptionMode = __fieldsMap.get(scalaDescriptor.findFieldByNumber(5).get).flatMap(_.as[_root_.scala.Option[_root_.scalapb.descriptors.EnumValueDescriptor]]).map(__e => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.fromValue(__e.number)),
+        subscriptionType = __fieldsMap.get(scalaDescriptor.findFieldByNumber(6).get).flatMap(_.as[_root_.scala.Option[_root_.scalapb.descriptors.EnumValueDescriptor]]).map(__e => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.fromValue(__e.number))
       )
     case _ => throw new RuntimeException("Expected PMessage")
   }
@@ -260,22 +224,28 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
   }
   lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest(
     topicSelector = _root_.scala.None,
-    consumerName = "",
-    subscriptionName = "",
-    priorityLevel = 0,
-    startPaused = false,
-    subscriptionMode = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.SUBSCRIPTION_MODE_UNSPECIFIED,
-    subscriptionType = com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.SUBSCRIPTION_TYPE_UNSPECIFIED
+    consumerName = _root_.scala.None,
+    subscriptionName = _root_.scala.None,
+    priorityLevel = _root_.scala.None,
+    startPaused = _root_.scala.None,
+    subscriptionMode = _root_.scala.None,
+    subscriptionType = _root_.scala.None
   )
   implicit class CreateConsumerRequestLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest](_l) {
     def topicSelector: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector] = field(_.getTopicSelector)((c_, f_) => c_.copy(topicSelector = Option(f_)))
     def optionalTopicSelector: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector]] = field(_.topicSelector)((c_, f_) => c_.copy(topicSelector = f_))
-    def consumerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.consumerName)((c_, f_) => c_.copy(consumerName = f_))
-    def subscriptionName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.subscriptionName)((c_, f_) => c_.copy(subscriptionName = f_))
-    def priorityLevel: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Int] = field(_.priorityLevel)((c_, f_) => c_.copy(priorityLevel = f_))
-    def startPaused: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Boolean] = field(_.startPaused)((c_, f_) => c_.copy(startPaused = f_))
-    def subscriptionMode: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode] = field(_.subscriptionMode)((c_, f_) => c_.copy(subscriptionMode = f_))
-    def subscriptionType: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType] = field(_.subscriptionType)((c_, f_) => c_.copy(subscriptionType = f_))
+    def consumerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.getConsumerName)((c_, f_) => c_.copy(consumerName = Option(f_)))
+    def optionalConsumerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Predef.String]] = field(_.consumerName)((c_, f_) => c_.copy(consumerName = f_))
+    def subscriptionName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.getSubscriptionName)((c_, f_) => c_.copy(subscriptionName = Option(f_)))
+    def optionalSubscriptionName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Predef.String]] = field(_.subscriptionName)((c_, f_) => c_.copy(subscriptionName = f_))
+    def priorityLevel: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Int] = field(_.getPriorityLevel)((c_, f_) => c_.copy(priorityLevel = Option(f_)))
+    def optionalPriorityLevel: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Int]] = field(_.priorityLevel)((c_, f_) => c_.copy(priorityLevel = f_))
+    def startPaused: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Boolean] = field(_.getStartPaused)((c_, f_) => c_.copy(startPaused = Option(f_)))
+    def optionalStartPaused: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Boolean]] = field(_.startPaused)((c_, f_) => c_.copy(startPaused = f_))
+    def subscriptionMode: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode] = field(_.getSubscriptionMode)((c_, f_) => c_.copy(subscriptionMode = Option(f_)))
+    def optionalSubscriptionMode: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode]] = field(_.subscriptionMode)((c_, f_) => c_.copy(subscriptionMode = f_))
+    def subscriptionType: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType] = field(_.getSubscriptionType)((c_, f_) => c_.copy(subscriptionType = Option(f_)))
+    def optionalSubscriptionType: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType]] = field(_.subscriptionType)((c_, f_) => c_.copy(subscriptionType = f_))
   }
   final val TOPIC_SELECTOR_FIELD_NUMBER = 10
   final val CONSUMER_NAME_FIELD_NUMBER = 1
@@ -286,12 +256,12 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
   final val SUBSCRIPTION_TYPE_FIELD_NUMBER = 6
   def of(
     topicSelector: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector],
-    consumerName: _root_.scala.Predef.String,
-    subscriptionName: _root_.scala.Predef.String,
-    priorityLevel: _root_.scala.Int,
-    startPaused: _root_.scala.Boolean,
-    subscriptionMode: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode,
-    subscriptionType: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType
+    consumerName: _root_.scala.Option[_root_.scala.Predef.String],
+    subscriptionName: _root_.scala.Option[_root_.scala.Predef.String],
+    priorityLevel: _root_.scala.Option[_root_.scala.Int],
+    startPaused: _root_.scala.Option[_root_.scala.Boolean],
+    subscriptionMode: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode],
+    subscriptionType: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType]
   ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest(
     topicSelector,
     consumerName,
