@@ -27,7 +27,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
   return <div className={`${s.ToolbarButton} ${props.position === 'right' ? s.ToolbarButtonRight : ''}`}>
     <Link to={props.linkTo}>
       <Button
-        title={props.title}
+        text={props.text}
         onClick={props.onClick}
         type={props.type}
         disabled={props.disabled}

@@ -69,7 +69,7 @@ const DeleteTopic: React.FC<DeleteTopicProps> = (props) => {
         <div className={s.ActionButton}>
           <Button
             type="danger"
-            title={`Yes. I know what I'm doing.`}
+            text={`Yes. I know what I'm doing.`}
             onClick={() => deleteNamespace()}
           />
         </div>

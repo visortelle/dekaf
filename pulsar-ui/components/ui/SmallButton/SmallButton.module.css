@@ -32,9 +32,24 @@
 }
 
 .ButtonWithoutText {
-  padding: 2rem;
+  padding: 2rem 3rem;
 }
 
 .ButtonWithoutText svg {
   margin-right: 0;
+}
+
+.DisabledButton {
+  opacity: 1;
+  background-color: #f5f5f5 !important;
+  color: #999 !important;
+}
+
+.DisabledButton svg {
+  fill: #ddd;
+}
+
+.DisabledButton:hover {
+  cursor: default;
+  opacity: 1;
 }

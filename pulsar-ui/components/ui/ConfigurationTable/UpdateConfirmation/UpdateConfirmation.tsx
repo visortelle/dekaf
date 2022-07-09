@@ -10,8 +10,8 @@ export type UpdateConfirmationProps = {
 const UpdateConfirmation: React.FC<UpdateConfirmationProps> = (props) => {
   return (
     <div className={s.Buttons}>
-      <Button type="regular" onClick={props.onReset} title="Reset" />
-      <Button type="primary" onClick={props.onUpdate} title="Update" />
+      <Button type="regular" onClick={props.onReset} text="Reset" />
+      <Button type="primary" onClick={props.onUpdate} text="Update" />
     </div>
   );
 }

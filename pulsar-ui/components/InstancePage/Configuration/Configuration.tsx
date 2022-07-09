@@ -173,11 +173,11 @@ const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
 
           <div className={s.DynamicConfigValueEditorButtons}>
             <div className={s.DynamicConfigValueEditorUpdateButton}>
-              <Button title="Delete" type='danger' onClick={deleteDynamicConfigValue} />
+              <Button text="Delete" type='danger' onClick={deleteDynamicConfigValue} />
             </div>
 
             <div className={s.DynamicConfigValueEditorUpdateButton}>
-              <Button title="Update" type='primary' onClick={updateDynamicConfigValue} />
+              <Button text="Update" type='primary' onClick={updateDynamicConfigValue} />
             </div>
           </div>
         </div>
