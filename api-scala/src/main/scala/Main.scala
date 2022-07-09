@@ -1,63 +1,143 @@
-import org.apache.pulsar.client.api.{ Consumer, PulsarClient, MessageListener }
+import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
+import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.{
   ConsumerServiceGrpc,
   CreateConsumerRequest,
   CreateConsumerResponse,
   DeleteConsumerRequest,
   DeleteConsumerResponse,
+  PauseRequest,
+  PauseResponse,
+  ResumeRequest,
+  ResumeResponse,
+  TopicSelector
 }
 import io.grpc.{Server, ServerBuilder}
+
 import scala.concurrent.{ExecutionContext, Future}
 import io.grpc.stub.StreamObserver
 import io.grpc.protobuf.services.ProtoReflectionService
+
 import scala.jdk.CollectionConverters.*
 import com.google.protobuf.ByteString
 import org.apache.pulsar.client.api.{SubscriptionMode, SubscriptionType}
 import org.apache.pulsar.client.api.SubscriptionInitialPosition
 import org.apache.pulsar.client.api.RegexSubscriptionMode
+import com.google.rpc.status.Status
+import com.google.rpc.code.Code
+import org.apache.pulsar.client.api.Message
 
-// @main def main: Unit =
-//   println("Starting Pulsar X-Ray server")
-//   server.start
-//   server.awaitTermination
+case class Config(pulsarServiceUrl: String, grpcPort: Int)
+val config = Config("pulsar://localhost:6650", grpcPort = 8090)
 
-val client =
-  PulsarClient.builder().serviceUrl("pulsar://localhost:6650").build()
+@main def main: Unit =
+  println("Starting Pulsar X-Ray server")
+  server.start
+  server.awaitTermination
+
+val client = PulsarClient.builder().serviceUrl(config.pulsarServiceUrl).build()
+
+type ConsumerName = String
+
+class StreamDataHandler:
+  var onNext: (msg: Message[Array[Byte]]) => Unit = _ => ()
 
 private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
-  override def readMessages(
-      // request: ReadMessagesRequest,
-      // responseObserver: StreamObserver[ReadMessagesResponse]
-  ): Unit =
-    // val listener: MessageListener[Array[Byte]] = (consumer, msg) => {
-    //   val message = topic.Message(
-    //     topic = request.topic,
-    //     producerName = msg.getProducerName,
-    //     properties = msg.getProperties.asScala.toMap,
-    //     data = ByteString.copyFrom(msg.getData),
-    //     messageId = ByteString.copyFrom(msg.getMessageId.toByteArray)
-    //   )
-    //   responseObserver.onNext(ReadMessagesResponse(messages = Seq(message)))
-    //   consumer.acknowledge(msg)
-    // }
+  var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
+  var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
 
-    val consumer = client
-      .newConsumer
-      // .consumerName(request.consumerName)
-      // .subscriptionMode()
-      // .topic(request.topic)
-      // .subscriptionName(request.subscriptionId)
+  override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
+    val consumerName = request.consumerName
+
+    val streamDataHandler = streamDataHandlers.get(consumerName)
+    streamDataHandler match
+      case Some(handler) =>
+        handler.onNext = (msg: Message[Array[Byte]]) =>
+          val message = consumerPb.Message(
+            topic = msg.getTopicName,
+            producerName = msg.getProducerName,
+            properties = msg.getProperties.asScala.toMap,
+            data = ByteString.copyFrom(msg.getData),
+            messageId = ByteString.copyFrom(msg.getMessageId.toByteArray)
+          )
+
+          responseObserver.onNext(ResumeResponse(messages = Seq(message)))
+        val status: Status = Status(code = Code.OK.index)
+        return Future.successful(PauseResponse(status = Some(status)))
+      case _ =>
+        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "No such consumer: $consumerName")
+        return Future.successful(PauseResponse(status = Some(status)))
+
+  override def pause(request: PauseRequest): Future[PauseResponse] =
+    val consumerName = request.consumerName
+    val streamDataHandler = streamDataHandlers.get(consumerName)
+
+    streamDataHandler match
+      case Some(handler) =>
+        handler.onNext = _ => ()
+        val status: Status = Status(code = Code.OK.index)
+        return Future.successful(PauseResponse(status = Some(status)))
+      case _ =>
+        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "No such consumer: $consumerName")
+        return Future.successful(PauseResponse(status = Some(status)))
+
+  override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
+    val consumerName = request.consumerName.getOrElse("")
+
+    val streamDataHandler = StreamDataHandler()
+    streamDataHandler.onNext = _ => ()
+    streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
+
+    val subscriptionMode = request.subscriptionMode match
+      case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_DURABLE) =>
+        SubscriptionMode.Durable
+      case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE) =>
+        SubscriptionMode.NonDurable
+      case _ => SubscriptionMode.Durable
+
+    var consumer = client.newConsumer
+      .consumerName(consumerName)
+      .subscriptionMode(subscriptionMode)
+      .subscriptionName(
+        request.subscriptionName.getOrElse("__xray-subscription")
+      )
       .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-      // .messageListener(listener)
-      // .subscriptionType(request.subscriptionType)
-      // .startPaused(request.startPaused)
-      .subscribe
+    // .subscriptionType(request.subscriptionType)
+      .startPaused(true)
 
-// val server = ServerBuilder
-//   .forPort(8090)
-//   .addService(
-//     topic.TopicServiceGrpc
-//       .bindService(ConsumerServiceImpl(), ExecutionContext.global)
-//   )
-//   .addService(ProtoReflectionService.newInstance)
-//   .build
+    val listener: MessageListener[Array[Byte]] = (consumer, msg) =>
+      consumer.acknowledge(msg)
+
+      streamDataHandlers.get(consumerName) match
+        case Some(handler) => handler.onNext(msg)
+        case _             => ()
+
+    consumer = consumer.messageListener(listener)
+
+    request.topicSelector match
+      case Some(topicSelector) if topicSelector.selector.topic.isDefined =>
+        consumer = consumer.topic(topicSelector.selector.topic.get)
+      case _ =>
+        val status: Status = Status(
+          code = Code.INVALID_ARGUMENT.index,
+          message = "Topic selector shouldn't be empty"
+        )
+        return Future.successful(CreateConsumerResponse(status = Some(status)))
+
+    consumers = consumers + (consumerName -> consumer.subscribe)
+
+    val status: Status = Status(code = Code.OK.index)
+    Future.successful(CreateConsumerResponse(status = Some(status)))
+
+  override def deleteConsumer(
+      request: DeleteConsumerRequest
+  ): Future[DeleteConsumerResponse] = ???
+
+val server = ServerBuilder
+  .forPort(config.grpcPort)
+  .addService(
+    ConsumerServiceGrpc
+      .bindService(ConsumerServiceImpl(), ExecutionContext.global)
+  )
+  .addService(ProtoReflectionService.newInstance)
+  .build
