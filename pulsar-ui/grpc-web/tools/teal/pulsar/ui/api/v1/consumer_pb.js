@@ -35,6 +35,7 @@ goog.exportSymbol('proto.tools.teal.pulsar.ui.api.v1.PauseRequest', null, global
 goog.exportSymbol('proto.tools.teal.pulsar.ui.api.v1.PauseResponse', null, global);
 goog.exportSymbol('proto.tools.teal.pulsar.ui.api.v1.ResumeRequest', null, global);
 goog.exportSymbol('proto.tools.teal.pulsar.ui.api.v1.ResumeResponse', null, global);
+goog.exportSymbol('proto.tools.teal.pulsar.ui.api.v1.SubscriptionInitialPosition', null, global);
 goog.exportSymbol('proto.tools.teal.pulsar.ui.api.v1.SubscriptionMode', null, global);
 goog.exportSymbol('proto.tools.teal.pulsar.ui.api.v1.SubscriptionType', null, global);
 goog.exportSymbol('proto.tools.teal.pulsar.ui.api.v1.TopicSelector', null, global);
@@ -1428,7 +1429,13 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.toObject = function(incl
     priorityLevel: jspb.Message.getFieldWithDefault(msg, 3, 0),
     startPaused: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
     subscriptionMode: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    subscriptionType: jspb.Message.getFieldWithDefault(msg, 6, 0)
+    subscriptionType: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    subscriptionInitialPosition: jspb.Message.getFieldWithDefault(msg, 7, 0),
+    ackTimeoutMs: jspb.Message.getFieldWithDefault(msg, 8, 0),
+    ackTimeoutTickTimeMs: jspb.Message.getFieldWithDefault(msg, 9, 0),
+    expireTimeOfIncompleteChunkedMessageMs: jspb.Message.getFieldWithDefault(msg, 10, 0),
+    acknowledgmentGroupTimeMs: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    negativeAckRedeliveryDelayMs: jspb.Message.getFieldWithDefault(msg, 12, 0)
   };
 
   if (includeInstance) {
@@ -1465,7 +1472,7 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.deserializeBinaryFromRea
     }
     var field = reader.getFieldNumber();
     switch (field) {
-    case 10:
+    case 100:
       var value = new proto.tools.teal.pulsar.ui.api.v1.TopicSelector;
       reader.readMessage(value,proto.tools.teal.pulsar.ui.api.v1.TopicSelector.deserializeBinaryFromReader);
       msg.setTopicSelector(value);
@@ -1493,6 +1500,30 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.deserializeBinaryFromRea
     case 6:
       var value = /** @type {!proto.tools.teal.pulsar.ui.api.v1.SubscriptionType} */ (reader.readEnum());
       msg.setSubscriptionType(value);
+      break;
+    case 7:
+      var value = /** @type {!proto.tools.teal.pulsar.ui.api.v1.SubscriptionInitialPosition} */ (reader.readEnum());
+      msg.setSubscriptionInitialPosition(value);
+      break;
+    case 8:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setAckTimeoutMs(value);
+      break;
+    case 9:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setAckTimeoutTickTimeMs(value);
+      break;
+    case 10:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setExpireTimeOfIncompleteChunkedMessageMs(value);
+      break;
+    case 11:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setAcknowledgmentGroupTimeMs(value);
+      break;
+    case 12:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setNegativeAckRedeliveryDelayMs(value);
       break;
     default:
       reader.skipField();
@@ -1526,7 +1557,7 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.serializeBinaryToWriter 
   f = message.getTopicSelector();
   if (f != null) {
     writer.writeMessage(
-      10,
+      100,
       f,
       proto.tools.teal.pulsar.ui.api.v1.TopicSelector.serializeBinaryToWriter
     );
@@ -1573,16 +1604,58 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.serializeBinaryToWriter 
       f
     );
   }
+  f = /** @type {!proto.tools.teal.pulsar.ui.api.v1.SubscriptionInitialPosition} */ (jspb.Message.getField(message, 7));
+  if (f != null) {
+    writer.writeEnum(
+      7,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 8));
+  if (f != null) {
+    writer.writeInt64(
+      8,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 9));
+  if (f != null) {
+    writer.writeInt64(
+      9,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 10));
+  if (f != null) {
+    writer.writeInt64(
+      10,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 11));
+  if (f != null) {
+    writer.writeInt64(
+      11,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 12));
+  if (f != null) {
+    writer.writeInt64(
+      12,
+      f
+    );
+  }
 };
 
 
 /**
- * optional TopicSelector topic_selector = 10;
+ * optional TopicSelector topic_selector = 100;
  * @return {?proto.tools.teal.pulsar.ui.api.v1.TopicSelector}
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getTopicSelector = function() {
   return /** @type{?proto.tools.teal.pulsar.ui.api.v1.TopicSelector} */ (
-    jspb.Message.getWrapperField(this, proto.tools.teal.pulsar.ui.api.v1.TopicSelector, 10));
+    jspb.Message.getWrapperField(this, proto.tools.teal.pulsar.ui.api.v1.TopicSelector, 100));
 };
 
 
@@ -1591,7 +1664,7 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getTopicSelect
  * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
 */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setTopicSelector = function(value) {
-  return jspb.Message.setWrapperField(this, 10, value);
+  return jspb.Message.setWrapperField(this, 100, value);
 };
 
 
@@ -1609,7 +1682,7 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearTopicSele
  * @return {boolean}
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasTopicSelector = function() {
-  return jspb.Message.getField(this, 10) != null;
+  return jspb.Message.getField(this, 100) != null;
 };
 
 
@@ -1826,6 +1899,222 @@ proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearSubscript
  */
 proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasSubscriptionType = function() {
   return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional SubscriptionInitialPosition subscription_initial_position = 7;
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.SubscriptionInitialPosition}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getSubscriptionInitialPosition = function() {
+  return /** @type {!proto.tools.teal.pulsar.ui.api.v1.SubscriptionInitialPosition} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {!proto.tools.teal.pulsar.ui.api.v1.SubscriptionInitialPosition} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setSubscriptionInitialPosition = function(value) {
+  return jspb.Message.setField(this, 7, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearSubscriptionInitialPosition = function() {
+  return jspb.Message.setField(this, 7, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasSubscriptionInitialPosition = function() {
+  return jspb.Message.getField(this, 7) != null;
+};
+
+
+/**
+ * optional int64 ack_timeout_ms = 8;
+ * @return {number}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getAckTimeoutMs = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setAckTimeoutMs = function(value) {
+  return jspb.Message.setField(this, 8, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearAckTimeoutMs = function() {
+  return jspb.Message.setField(this, 8, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasAckTimeoutMs = function() {
+  return jspb.Message.getField(this, 8) != null;
+};
+
+
+/**
+ * optional int64 ack_timeout_tick_time_ms = 9;
+ * @return {number}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getAckTimeoutTickTimeMs = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 9, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setAckTimeoutTickTimeMs = function(value) {
+  return jspb.Message.setField(this, 9, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearAckTimeoutTickTimeMs = function() {
+  return jspb.Message.setField(this, 9, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasAckTimeoutTickTimeMs = function() {
+  return jspb.Message.getField(this, 9) != null;
+};
+
+
+/**
+ * optional int64 expire_time_of_incomplete_chunked_message_ms = 10;
+ * @return {number}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getExpireTimeOfIncompleteChunkedMessageMs = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 10, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setExpireTimeOfIncompleteChunkedMessageMs = function(value) {
+  return jspb.Message.setField(this, 10, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearExpireTimeOfIncompleteChunkedMessageMs = function() {
+  return jspb.Message.setField(this, 10, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasExpireTimeOfIncompleteChunkedMessageMs = function() {
+  return jspb.Message.getField(this, 10) != null;
+};
+
+
+/**
+ * optional int64 acknowledgment_group_time_ms = 11;
+ * @return {number}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getAcknowledgmentGroupTimeMs = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setAcknowledgmentGroupTimeMs = function(value) {
+  return jspb.Message.setField(this, 11, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearAcknowledgmentGroupTimeMs = function() {
+  return jspb.Message.setField(this, 11, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasAcknowledgmentGroupTimeMs = function() {
+  return jspb.Message.getField(this, 11) != null;
+};
+
+
+/**
+ * optional int64 negative_ack_redelivery_delay_ms = 12;
+ * @return {number}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.getNegativeAckRedeliveryDelayMs = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 12, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.setNegativeAckRedeliveryDelayMs = function(value) {
+  return jspb.Message.setField(this, 12, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.clearNegativeAckRedeliveryDelayMs = function() {
+  return jspb.Message.setField(this, 12, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.CreateConsumerRequest.prototype.hasNegativeAckRedeliveryDelayMs = function() {
+  return jspb.Message.getField(this, 12) != null;
 };
 
 
@@ -2901,6 +3190,15 @@ proto.tools.teal.pulsar.ui.api.v1.SubscriptionType = {
   SUBSCRIPTION_TYPE_FAILOVER: 2,
   SUBSCRIPTION_TYPE_SHARED: 3,
   SUBSCRIPTION_TYPE_KEY_SHARED: 4
+};
+
+/**
+ * @enum {number}
+ */
+proto.tools.teal.pulsar.ui.api.v1.SubscriptionInitialPosition = {
+  SUBSCRIPTION_INITIAL_POSITION_UNSPECIFIED: 0,
+  SUBSCRIPTION_INITIAL_POSITION_EARLIEST: 1,
+  SUBSCRIPTION_INITIAL_POSITION_LATEST: 2
 };
 
 goog.object.extend(exports, proto.tools.teal.pulsar.ui.api.v1);
