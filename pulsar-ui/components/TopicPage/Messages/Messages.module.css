@@ -1,5 +1,5 @@
 .Messages {
-  padding: 24rem 12rem 8rem 12rem;
+  padding: 8rem 0 8rem 0;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -16,7 +16,7 @@
   border-right: none;
   flex: 1 1 auto;
   overflow: auto;
-  margin: auto -12rem;
+  margin: auto 0;
 }
 
 .Message {
@@ -33,4 +33,25 @@
 .MessageData {
   padding: 12rem;
   word-break: break-all;
+}
+
+.Toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0 12rem;
+  margin-bottom: 12rem;
+}
+
+.Buttons {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.ButtonsButton {
+  margin-right: 12rem;
+}
+
+.ButtonsButton:last-child {
+  margin-right: 0;
 }

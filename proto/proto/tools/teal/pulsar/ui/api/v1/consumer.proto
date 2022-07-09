@@ -50,6 +50,12 @@ enum SubscriptionType {
   SUBSCRIPTION_TYPE_KEY_SHARED = 4;
 }
 
+enum SubscriptionInitialPosition {
+  SUBSCRIPTION_INITIAL_POSITION_UNSPECIFIED = 0;
+  SUBSCRIPTION_INITIAL_POSITION_EARLIEST = 1;
+  SUBSCRIPTION_INITIAL_POSITION_LATEST = 2;
+}
+
 message TopicSelector {
   oneof selector {
     string topic = 1;
@@ -57,13 +63,19 @@ message TopicSelector {
 }
 
 message CreateConsumerRequest {
-  TopicSelector topic_selector = 10;
+  TopicSelector topic_selector = 100;
   optional string consumer_name = 1;
   optional string subscription_name = 2;
   optional int32 priority_level = 3;
   optional bool start_paused = 4;
   optional SubscriptionMode subscription_mode = 5;
   optional SubscriptionType subscription_type = 6;
+  optional SubscriptionInitialPosition subscription_initial_position = 7;
+  optional int64 ack_timeout_ms = 8;
+  optional int64 ack_timeout_tick_time_ms = 9;
+  optional int64 expire_time_of_incomplete_chunked_message_ms = 10;
+  optional int64 acknowledgment_group_time_ms = 11;
+  optional int64 negative_ack_redelivery_delay_ms = 12;
 }
 
 message CreateConsumerResponse {
