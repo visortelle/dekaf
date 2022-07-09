@@ -1,21 +1,20 @@
 .Messages {
-  padding: 8rem 0 8rem 0;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-bottom: 1rem solid #ddd;
+  margin-bottom: 8rem;
 }
 
 .List {
   position: relative;
   font-size: 14rem;
   border-spacing: 0;
-  border: 1rem solid #ddd;
   border-left: none;
   border-right: none;
   flex: 1 1 auto;
   overflow: auto;
-  margin: auto 0;
 }
 
 .Message {
@@ -24,6 +23,10 @@
   overflow: hidden;
   border-bottom: 1rem solid #ddd;
   animation: fade-in 0.2s ease-in-out;
+}
+
+.Message:last-child {
+  border-bottom: none;
 }
 
 .MessageMetadata {
@@ -38,8 +41,8 @@
 .Toolbar {
   display: flex;
   align-items: center;
-  padding: 0 12rem;
-  margin-bottom: 12rem;
+  padding: 8rem 12rem;
+  border-bottom: 1rem solid #ddd;
 }
 
 .Buttons {
