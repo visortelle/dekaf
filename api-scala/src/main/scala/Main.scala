@@ -27,6 +27,7 @@ import org.apache.pulsar.client.api.RegexSubscriptionMode
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import org.apache.pulsar.client.api.Message
+import scala.concurrent.Await
 
 case class Config(pulsarServiceUrl: String, grpcPort: Int)
 val config = Config("pulsar://localhost:6650", grpcPort = 8090)
@@ -71,8 +72,10 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                       data = ByteString.copyFrom(msg.getData),
                       messageId = ByteString.copyFrom(msg.getMessageId.toByteArray)
                     )
+                    consumers.get(consumerName) match
+                        case Some(_) => responseObserver.onNext(ResumeResponse(messages = Seq(message)))
+                        case _ => ()
 
-                    responseObserver.onNext(ResumeResponse(messages = Seq(message)))
                 val status: Status = Status(code = Code.OK.index)
                 return Future.successful(PauseResponse(status = Some(status)))
             case _ =>
@@ -119,7 +122,8 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             streamDataHandlers.get(consumerName) match
                 case Some(handler) => handler.onNext(msg)
                 case _             => ()
-            consumer.acknowledge(msg)
+
+            if consumer.isConnected then consumer.acknowledge(msg)
 
         val r = scala.util.Random
         var consumer = client.newConsumer

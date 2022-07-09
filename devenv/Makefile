@@ -1,21 +1,21 @@
 .DEFAULT_GOAL := help
 
-.PHONY: devtools
-devtools: ## Start development using docker-compose (deprecated).
+.PHONY: dev
+dev: ## Start development using docker-compose
 	docker ps -a -q | xargs -I {} docker container rm -f {}
 	docker volume ls -q | xargs -I {} docker volume rm {}
 	docker-compose up -d
 
 .PHONY: devtools-pulsar-manager
-devtools-pulsar-manager: ## Perepare pulsar-manager.
+dev-pulsar-manager: ## Perepare pulsar-manager.
 	./pulsar-manager/create-default-user.sh
 
 .PHONY: clean
 clean: ## Install using Kubernetes Helm.
 	./helm/clean.sh
 
-.PHONY: dev
-dev: ## Install using Kubernetes Helm.
+.PHONY: install
+install: ## Install Pulsar using Kubernetes Helm.
 	./helm/install.sh
 
 .PHONY: port-forward
