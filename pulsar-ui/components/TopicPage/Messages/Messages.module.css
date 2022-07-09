@@ -10,7 +10,6 @@
   position: relative;
   font-size: 14rem;
   border-spacing: 0;
-  border-radius: 4rem;
   border: 1rem solid #ddd;
   border-left: none;
   border-right: none;
@@ -24,6 +23,7 @@
   flex-direction: column;
   overflow: hidden;
   border-bottom: 1rem solid #ddd;
+  animation: fade-in 0.2s ease-in-out;
 }
 
 .MessageMetadata {
@@ -54,4 +54,13 @@
 
 .ButtonsButton:last-child {
   margin-right: 0;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

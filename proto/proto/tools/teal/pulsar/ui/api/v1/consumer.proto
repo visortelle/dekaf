@@ -17,17 +17,16 @@ message Message {
   bytes data = 2;
   int64 size = 3;
   string value = 4; // JSON string
-  // MessageId messageId = 5;
 
-  google.protobuf.Timestamp publish_time = 6;
   google.protobuf.Timestamp event_time = 7;
-  double broker_publish_time = 22;
+  google.protobuf.Timestamp publish_time = 6;
+  google.protobuf.Timestamp broker_publish_time = 22;
 
   bytes message_id = 30;
   double sequence_id = 8;
   string producer_name = 9;
   string key = 10;
-  string ordering_key = 11;
+  bytes ordering_key = 11;
   string topic = 12;
   int32 redelivery_count = 13;
   bytes schema_version = 14;

@@ -527,14 +527,14 @@ proto.tools.teal.pulsar.ui.api.v1.Message.toObject = function(includeInstance, m
     data: msg.getData_asB64(),
     size: jspb.Message.getFieldWithDefault(msg, 3, 0),
     value: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    publishTime: (f = msg.getPublishTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     eventTime: (f = msg.getEventTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    brokerPublishTime: jspb.Message.getFloatingPointFieldWithDefault(msg, 22, 0.0),
+    publishTime: (f = msg.getPublishTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    brokerPublishTime: (f = msg.getBrokerPublishTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     messageId: msg.getMessageId_asB64(),
     sequenceId: jspb.Message.getFloatingPointFieldWithDefault(msg, 8, 0.0),
     producerName: jspb.Message.getFieldWithDefault(msg, 9, ""),
     key: jspb.Message.getFieldWithDefault(msg, 10, ""),
-    orderingKey: jspb.Message.getFieldWithDefault(msg, 11, ""),
+    orderingKey: msg.getOrderingKey_asB64(),
     topic: jspb.Message.getFieldWithDefault(msg, 12, ""),
     redeliveryCount: jspb.Message.getFieldWithDefault(msg, 13, 0),
     schemaVersion: msg.getSchemaVersion_asB64(),
@@ -594,18 +594,19 @@ proto.tools.teal.pulsar.ui.api.v1.Message.deserializeBinaryFromReader = function
       var value = /** @type {string} */ (reader.readString());
       msg.setValue(value);
       break;
-    case 6:
-      var value = new google_protobuf_timestamp_pb.Timestamp;
-      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setPublishTime(value);
-      break;
     case 7:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setEventTime(value);
       break;
+    case 6:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setPublishTime(value);
+      break;
     case 22:
-      var value = /** @type {number} */ (reader.readDouble());
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setBrokerPublishTime(value);
       break;
     case 30:
@@ -625,7 +626,7 @@ proto.tools.teal.pulsar.ui.api.v1.Message.deserializeBinaryFromReader = function
       msg.setKey(value);
       break;
     case 11:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setOrderingKey(value);
       break;
     case 12:
@@ -702,14 +703,6 @@ proto.tools.teal.pulsar.ui.api.v1.Message.serializeBinaryToWriter = function(mes
       f
     );
   }
-  f = message.getPublishTime();
-  if (f != null) {
-    writer.writeMessage(
-      6,
-      f,
-      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
-    );
-  }
   f = message.getEventTime();
   if (f != null) {
     writer.writeMessage(
@@ -718,11 +711,20 @@ proto.tools.teal.pulsar.ui.api.v1.Message.serializeBinaryToWriter = function(mes
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
+  f = message.getPublishTime();
+  if (f != null) {
+    writer.writeMessage(
+      6,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
   f = message.getBrokerPublishTime();
-  if (f !== 0.0) {
-    writer.writeDouble(
+  if (f != null) {
+    writer.writeMessage(
       22,
-      f
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
   f = message.getMessageId_asU8();
@@ -753,9 +755,9 @@ proto.tools.teal.pulsar.ui.api.v1.Message.serializeBinaryToWriter = function(mes
       f
     );
   }
-  f = message.getOrderingKey();
+  f = message.getOrderingKey_asU8();
   if (f.length > 0) {
-    writer.writeString(
+    writer.writeBytes(
       11,
       f
     );
@@ -899,43 +901,6 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setValue = function(value) {
 
 
 /**
- * optional google.protobuf.Timestamp publish_time = 6;
- * @return {?proto.google.protobuf.Timestamp}
- */
-proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getPublishTime = function() {
-  return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 6));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
-*/
-proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setPublishTime = function(value) {
-  return jspb.Message.setWrapperField(this, 6, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
- */
-proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearPublishTime = function() {
-  return this.setPublishTime(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasPublishTime = function() {
-  return jspb.Message.getField(this, 6) != null;
-};
-
-
-/**
  * optional google.protobuf.Timestamp event_time = 7;
  * @return {?proto.google.protobuf.Timestamp}
  */
@@ -973,20 +938,76 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasEventTime = function() {
 
 
 /**
- * optional double broker_publish_time = 22;
- * @return {number}
+ * optional google.protobuf.Timestamp publish_time = 6;
+ * @return {?proto.google.protobuf.Timestamp}
  */
-proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getBrokerPublishTime = function() {
-  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 22, 0.0));
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getPublishTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 6));
 };
 
 
 /**
- * @param {number} value
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+*/
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setPublishTime = function(value) {
+  return jspb.Message.setWrapperField(this, 6, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearPublishTime = function() {
+  return this.setPublishTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasPublishTime = function() {
+  return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp broker_publish_time = 22;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getBrokerPublishTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 22));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+*/
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setBrokerPublishTime = function(value) {
-  return jspb.Message.setProto3FloatField(this, 22, value);
+  return jspb.Message.setWrapperField(this, 22, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearBrokerPublishTime = function() {
+  return this.setBrokerPublishTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasBrokerPublishTime = function() {
+  return jspb.Message.getField(this, 22) != null;
 };
 
 
@@ -1087,7 +1108,7 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setKey = function(value) {
 
 
 /**
- * optional string ordering_key = 11;
+ * optional bytes ordering_key = 11;
  * @return {string}
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getOrderingKey = function() {
@@ -1096,11 +1117,35 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getOrderingKey = function() 
 
 
 /**
- * @param {string} value
+ * optional bytes ordering_key = 11;
+ * This is a type-conversion wrapper around `getOrderingKey()`
+ * @return {string}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getOrderingKey_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getOrderingKey()));
+};
+
+
+/**
+ * optional bytes ordering_key = 11;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getOrderingKey()`
+ * @return {!Uint8Array}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getOrderingKey_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getOrderingKey()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setOrderingKey = function(value) {
-  return jspb.Message.setProto3StringField(this, 11, value);
+  return jspb.Message.setProto3BytesField(this, 11, value);
 };
 
 

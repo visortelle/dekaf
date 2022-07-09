@@ -49,18 +49,20 @@ export class Message extends jspb.Message {
   getValue(): string;
   setValue(value: string): Message;
 
-  getPublishTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setPublishTime(value?: google_protobuf_timestamp_pb.Timestamp): Message;
-  hasPublishTime(): boolean;
-  clearPublishTime(): Message;
-
   getEventTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
   setEventTime(value?: google_protobuf_timestamp_pb.Timestamp): Message;
   hasEventTime(): boolean;
   clearEventTime(): Message;
 
-  getBrokerPublishTime(): number;
-  setBrokerPublishTime(value: number): Message;
+  getPublishTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setPublishTime(value?: google_protobuf_timestamp_pb.Timestamp): Message;
+  hasPublishTime(): boolean;
+  clearPublishTime(): Message;
+
+  getBrokerPublishTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setBrokerPublishTime(value?: google_protobuf_timestamp_pb.Timestamp): Message;
+  hasBrokerPublishTime(): boolean;
+  clearBrokerPublishTime(): Message;
 
   getMessageId(): Uint8Array | string;
   getMessageId_asU8(): Uint8Array;
@@ -76,8 +78,10 @@ export class Message extends jspb.Message {
   getKey(): string;
   setKey(value: string): Message;
 
-  getOrderingKey(): string;
-  setOrderingKey(value: string): Message;
+  getOrderingKey(): Uint8Array | string;
+  getOrderingKey_asU8(): Uint8Array;
+  getOrderingKey_asB64(): string;
+  setOrderingKey(value: Uint8Array | string): Message;
 
   getTopic(): string;
   setTopic(value: string): Message;
@@ -110,14 +114,14 @@ export namespace Message {
     data: Uint8Array | string,
     size: number,
     value: string,
-    publishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     eventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    brokerPublishTime: number,
+    publishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    brokerPublishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     messageId: Uint8Array | string,
     sequenceId: number,
     producerName: string,
     key: string,
-    orderingKey: string,
+    orderingKey: Uint8Array | string,
     topic: string,
     redeliveryCount: number,
     schemaVersion: Uint8Array | string,
