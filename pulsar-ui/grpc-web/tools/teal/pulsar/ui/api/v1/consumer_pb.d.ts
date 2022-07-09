@@ -187,6 +187,36 @@ export class CreateConsumerRequest extends jspb.Message {
   hasSubscriptionType(): boolean;
   clearSubscriptionType(): CreateConsumerRequest;
 
+  getSubscriptionInitialPosition(): SubscriptionInitialPosition;
+  setSubscriptionInitialPosition(value: SubscriptionInitialPosition): CreateConsumerRequest;
+  hasSubscriptionInitialPosition(): boolean;
+  clearSubscriptionInitialPosition(): CreateConsumerRequest;
+
+  getAckTimeoutMs(): number;
+  setAckTimeoutMs(value: number): CreateConsumerRequest;
+  hasAckTimeoutMs(): boolean;
+  clearAckTimeoutMs(): CreateConsumerRequest;
+
+  getAckTimeoutTickTimeMs(): number;
+  setAckTimeoutTickTimeMs(value: number): CreateConsumerRequest;
+  hasAckTimeoutTickTimeMs(): boolean;
+  clearAckTimeoutTickTimeMs(): CreateConsumerRequest;
+
+  getExpireTimeOfIncompleteChunkedMessageMs(): number;
+  setExpireTimeOfIncompleteChunkedMessageMs(value: number): CreateConsumerRequest;
+  hasExpireTimeOfIncompleteChunkedMessageMs(): boolean;
+  clearExpireTimeOfIncompleteChunkedMessageMs(): CreateConsumerRequest;
+
+  getAcknowledgmentGroupTimeMs(): number;
+  setAcknowledgmentGroupTimeMs(value: number): CreateConsumerRequest;
+  hasAcknowledgmentGroupTimeMs(): boolean;
+  clearAcknowledgmentGroupTimeMs(): CreateConsumerRequest;
+
+  getNegativeAckRedeliveryDelayMs(): number;
+  setNegativeAckRedeliveryDelayMs(value: number): CreateConsumerRequest;
+  hasNegativeAckRedeliveryDelayMs(): boolean;
+  clearNegativeAckRedeliveryDelayMs(): CreateConsumerRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CreateConsumerRequest.AsObject;
   static toObject(includeInstance: boolean, msg: CreateConsumerRequest): CreateConsumerRequest.AsObject;
@@ -204,6 +234,12 @@ export namespace CreateConsumerRequest {
     startPaused?: boolean,
     subscriptionMode?: SubscriptionMode,
     subscriptionType?: SubscriptionType,
+    subscriptionInitialPosition?: SubscriptionInitialPosition,
+    ackTimeoutMs?: number,
+    ackTimeoutTickTimeMs?: number,
+    expireTimeOfIncompleteChunkedMessageMs?: number,
+    acknowledgmentGroupTimeMs?: number,
+    negativeAckRedeliveryDelayMs?: number,
   }
 
   export enum ConsumerNameCase { 
@@ -234,6 +270,36 @@ export namespace CreateConsumerRequest {
   export enum SubscriptionTypeCase { 
     _SUBSCRIPTION_TYPE_NOT_SET = 0,
     SUBSCRIPTION_TYPE = 6,
+  }
+
+  export enum SubscriptionInitialPositionCase { 
+    _SUBSCRIPTION_INITIAL_POSITION_NOT_SET = 0,
+    SUBSCRIPTION_INITIAL_POSITION = 7,
+  }
+
+  export enum AckTimeoutMsCase { 
+    _ACK_TIMEOUT_MS_NOT_SET = 0,
+    ACK_TIMEOUT_MS = 8,
+  }
+
+  export enum AckTimeoutTickTimeMsCase { 
+    _ACK_TIMEOUT_TICK_TIME_MS_NOT_SET = 0,
+    ACK_TIMEOUT_TICK_TIME_MS = 9,
+  }
+
+  export enum ExpireTimeOfIncompleteChunkedMessageMsCase { 
+    _EXPIRE_TIME_OF_INCOMPLETE_CHUNKED_MESSAGE_MS_NOT_SET = 0,
+    EXPIRE_TIME_OF_INCOMPLETE_CHUNKED_MESSAGE_MS = 10,
+  }
+
+  export enum AcknowledgmentGroupTimeMsCase { 
+    _ACKNOWLEDGMENT_GROUP_TIME_MS_NOT_SET = 0,
+    ACKNOWLEDGMENT_GROUP_TIME_MS = 11,
+  }
+
+  export enum NegativeAckRedeliveryDelayMsCase { 
+    _NEGATIVE_ACK_REDELIVERY_DELAY_MS_NOT_SET = 0,
+    NEGATIVE_ACK_REDELIVERY_DELAY_MS = 12,
   }
 }
 
@@ -393,4 +459,9 @@ export enum SubscriptionType {
   SUBSCRIPTION_TYPE_FAILOVER = 2,
   SUBSCRIPTION_TYPE_SHARED = 3,
   SUBSCRIPTION_TYPE_KEY_SHARED = 4,
+}
+export enum SubscriptionInitialPosition { 
+  SUBSCRIPTION_INITIAL_POSITION_UNSPECIFIED = 0,
+  SUBSCRIPTION_INITIAL_POSITION_EARLIEST = 1,
+  SUBSCRIPTION_INITIAL_POSITION_LATEST = 2,
 }

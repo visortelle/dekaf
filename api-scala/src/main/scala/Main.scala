@@ -10,7 +10,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.{
     PauseResponse,
     ResumeRequest,
     ResumeResponse,
-    TopicSelector
+    TopicSelector,
 }
 import io.grpc.{Server, ServerBuilder}
 
@@ -28,6 +28,8 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import org.apache.pulsar.client.api.Message
 import scala.concurrent.Await
+import scala.concurrent.duration.{MILLISECONDS}
+import java.util.UUID
 
 case class Config(pulsarServiceUrl: String, grpcPort: Int)
 val config = Config("pulsar://localhost:6650", grpcPort = 8090)
@@ -105,7 +107,7 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(PauseResponse(status = Some(status)))
 
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
-        val consumerName = request.consumerName.getOrElse("")
+        val consumerName = request.consumerName.getOrElse("__xray" + UUID.randomUUID().toString)
         logger.debug(s"Creating consumer. Consumer: $consumerName")
 
         val streamDataHandler = StreamDataHandler()
@@ -127,12 +129,50 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
         var consumer = client.newConsumer
             .consumerName(consumerName)
-            .subscriptionMode(subscriptionMode)
-            .subscriptionName(request.subscriptionName.getOrElse(consumerName))
-            .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-            .subscriptionType(SubscriptionType.Shared)
-            .startPaused(true)
             .messageListener(listener)
+            .startPaused(request.startPaused.getOrElse(true))
+            .subscriptionName(request.subscriptionName.getOrElse(consumerName))
+
+        consumer = request.subscriptionMode match
+            case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_DURABLE) => consumer.subscriptionMode(SubscriptionMode.Durable)
+            case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE) => consumer.subscriptionMode(SubscriptionMode.NonDurable)
+            case _ => consumer
+
+        consumer = request.subscriptionType match
+            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED) => consumer.subscriptionType(SubscriptionType.Shared)
+            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER) => consumer.subscriptionType(SubscriptionType.Failover)
+            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE) => consumer.subscriptionType(SubscriptionType.Exclusive)
+            case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED) => consumer.subscriptionType(SubscriptionType.Key_Shared)
+            case _ => consumer
+
+        consumer = request.subscriptionInitialPosition match
+            case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST) => consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
+            case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST) => consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Latest)
+            case _ => consumer
+
+        consumer = request.priorityLevel match
+            case Some(v) => consumer.priorityLevel(v)
+            case _ => consumer
+
+        consumer = request.ackTimeoutMs match
+            case Some(v) => consumer.ackTimeout(v, MILLISECONDS)
+            case _ => consumer
+
+        consumer = request.ackTimeoutTickTimeMs match
+            case Some(v) => consumer.ackTimeoutTickTime(v, MILLISECONDS)
+            case _ => consumer
+
+        consumer = request.expireTimeOfIncompleteChunkedMessageMs match
+            case Some(v) => consumer.expireTimeOfIncompleteChunkedMessage(v, MILLISECONDS)
+            case _ => consumer
+
+        consumer = request.acknowledgmentGroupTimeMs match
+            case Some(v) => consumer.acknowledgmentGroupTime(v, MILLISECONDS)
+            case _ => consumer
+
+        consumer = request.negativeAckRedeliveryDelayMs match
+            case Some(v) => consumer.negativeAckRedeliveryDelay(v, MILLISECONDS)
+            case _ => consumer
 
         request.topicSelector match
             case Some(topicSelector) if topicSelector.selector.topic.isDefined =>

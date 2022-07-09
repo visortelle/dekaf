@@ -14,6 +14,12 @@ final case class CreateConsumerRequest(
     startPaused: _root_.scala.Option[_root_.scala.Boolean] = _root_.scala.None,
     subscriptionMode: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode] = _root_.scala.None,
     subscriptionType: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType] = _root_.scala.None,
+    subscriptionInitialPosition: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition] = _root_.scala.None,
+    ackTimeoutMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None,
+    ackTimeoutTickTimeMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None,
+    expireTimeOfIncompleteChunkedMessageMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None,
+    acknowledgmentGroupTimeMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None,
+    negativeAckRedeliveryDelayMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None,
     unknownFields: _root_.scalapb.UnknownFieldSet = _root_.scalapb.UnknownFieldSet.empty
     ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[CreateConsumerRequest] {
     @transient
@@ -22,7 +28,7 @@ final case class CreateConsumerRequest(
       var __size = 0
       if (topicSelector.isDefined) {
         val __value = topicSelector.get
-        __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__value.serializedSize) + __value.serializedSize
+        __size += 2 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__value.serializedSize) + __value.serializedSize
       };
       if (consumerName.isDefined) {
         val __value = consumerName.get
@@ -47,6 +53,30 @@ final case class CreateConsumerRequest(
       if (subscriptionType.isDefined) {
         val __value = subscriptionType.get.value
         __size += _root_.com.google.protobuf.CodedOutputStream.computeEnumSize(6, __value)
+      };
+      if (subscriptionInitialPosition.isDefined) {
+        val __value = subscriptionInitialPosition.get.value
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeEnumSize(7, __value)
+      };
+      if (ackTimeoutMs.isDefined) {
+        val __value = ackTimeoutMs.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(8, __value)
+      };
+      if (ackTimeoutTickTimeMs.isDefined) {
+        val __value = ackTimeoutTickTimeMs.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(9, __value)
+      };
+      if (expireTimeOfIncompleteChunkedMessageMs.isDefined) {
+        val __value = expireTimeOfIncompleteChunkedMessageMs.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(10, __value)
+      };
+      if (acknowledgmentGroupTimeMs.isDefined) {
+        val __value = acknowledgmentGroupTimeMs.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(11, __value)
+      };
+      if (negativeAckRedeliveryDelayMs.isDefined) {
+        val __value = negativeAckRedeliveryDelayMs.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(12, __value)
       };
       __size += unknownFields.serializedSize
       __size
@@ -85,9 +115,33 @@ final case class CreateConsumerRequest(
         val __m = __v.value
         _output__.writeEnum(6, __m)
       };
+      subscriptionInitialPosition.foreach { __v =>
+        val __m = __v.value
+        _output__.writeEnum(7, __m)
+      };
+      ackTimeoutMs.foreach { __v =>
+        val __m = __v
+        _output__.writeInt64(8, __m)
+      };
+      ackTimeoutTickTimeMs.foreach { __v =>
+        val __m = __v
+        _output__.writeInt64(9, __m)
+      };
+      expireTimeOfIncompleteChunkedMessageMs.foreach { __v =>
+        val __m = __v
+        _output__.writeInt64(10, __m)
+      };
+      acknowledgmentGroupTimeMs.foreach { __v =>
+        val __m = __v
+        _output__.writeInt64(11, __m)
+      };
+      negativeAckRedeliveryDelayMs.foreach { __v =>
+        val __m = __v
+        _output__.writeInt64(12, __m)
+      };
       topicSelector.foreach { __v =>
         val __m = __v
-        _output__.writeTag(10, 2)
+        _output__.writeTag(100, 2)
         _output__.writeUInt32NoTag(__m.serializedSize)
         __m.writeTo(_output__)
       };
@@ -114,29 +168,59 @@ final case class CreateConsumerRequest(
     def getSubscriptionType: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType = subscriptionType.getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.SUBSCRIPTION_TYPE_UNSPECIFIED)
     def clearSubscriptionType: CreateConsumerRequest = copy(subscriptionType = _root_.scala.None)
     def withSubscriptionType(__v: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType): CreateConsumerRequest = copy(subscriptionType = Option(__v))
+    def getSubscriptionInitialPosition: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition = subscriptionInitialPosition.getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_UNSPECIFIED)
+    def clearSubscriptionInitialPosition: CreateConsumerRequest = copy(subscriptionInitialPosition = _root_.scala.None)
+    def withSubscriptionInitialPosition(__v: com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition): CreateConsumerRequest = copy(subscriptionInitialPosition = Option(__v))
+    def getAckTimeoutMs: _root_.scala.Long = ackTimeoutMs.getOrElse(0L)
+    def clearAckTimeoutMs: CreateConsumerRequest = copy(ackTimeoutMs = _root_.scala.None)
+    def withAckTimeoutMs(__v: _root_.scala.Long): CreateConsumerRequest = copy(ackTimeoutMs = Option(__v))
+    def getAckTimeoutTickTimeMs: _root_.scala.Long = ackTimeoutTickTimeMs.getOrElse(0L)
+    def clearAckTimeoutTickTimeMs: CreateConsumerRequest = copy(ackTimeoutTickTimeMs = _root_.scala.None)
+    def withAckTimeoutTickTimeMs(__v: _root_.scala.Long): CreateConsumerRequest = copy(ackTimeoutTickTimeMs = Option(__v))
+    def getExpireTimeOfIncompleteChunkedMessageMs: _root_.scala.Long = expireTimeOfIncompleteChunkedMessageMs.getOrElse(0L)
+    def clearExpireTimeOfIncompleteChunkedMessageMs: CreateConsumerRequest = copy(expireTimeOfIncompleteChunkedMessageMs = _root_.scala.None)
+    def withExpireTimeOfIncompleteChunkedMessageMs(__v: _root_.scala.Long): CreateConsumerRequest = copy(expireTimeOfIncompleteChunkedMessageMs = Option(__v))
+    def getAcknowledgmentGroupTimeMs: _root_.scala.Long = acknowledgmentGroupTimeMs.getOrElse(0L)
+    def clearAcknowledgmentGroupTimeMs: CreateConsumerRequest = copy(acknowledgmentGroupTimeMs = _root_.scala.None)
+    def withAcknowledgmentGroupTimeMs(__v: _root_.scala.Long): CreateConsumerRequest = copy(acknowledgmentGroupTimeMs = Option(__v))
+    def getNegativeAckRedeliveryDelayMs: _root_.scala.Long = negativeAckRedeliveryDelayMs.getOrElse(0L)
+    def clearNegativeAckRedeliveryDelayMs: CreateConsumerRequest = copy(negativeAckRedeliveryDelayMs = _root_.scala.None)
+    def withNegativeAckRedeliveryDelayMs(__v: _root_.scala.Long): CreateConsumerRequest = copy(negativeAckRedeliveryDelayMs = Option(__v))
     def withUnknownFields(__v: _root_.scalapb.UnknownFieldSet) = copy(unknownFields = __v)
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
       (__fieldNumber: @_root_.scala.unchecked) match {
-        case 10 => topicSelector.orNull
+        case 100 => topicSelector.orNull
         case 1 => consumerName.orNull
         case 2 => subscriptionName.orNull
         case 3 => priorityLevel.orNull
         case 4 => startPaused.orNull
         case 5 => subscriptionMode.map(_.javaValueDescriptor).orNull
         case 6 => subscriptionType.map(_.javaValueDescriptor).orNull
+        case 7 => subscriptionInitialPosition.map(_.javaValueDescriptor).orNull
+        case 8 => ackTimeoutMs.orNull
+        case 9 => ackTimeoutTickTimeMs.orNull
+        case 10 => expireTimeOfIncompleteChunkedMessageMs.orNull
+        case 11 => acknowledgmentGroupTimeMs.orNull
+        case 12 => negativeAckRedeliveryDelayMs.orNull
       }
     }
     def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
       _root_.scala.Predef.require(__field.containingMessage eq companion.scalaDescriptor)
       (__field.number: @_root_.scala.unchecked) match {
-        case 10 => topicSelector.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 100 => topicSelector.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 1 => consumerName.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 2 => subscriptionName.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 3 => priorityLevel.map(_root_.scalapb.descriptors.PInt(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 4 => startPaused.map(_root_.scalapb.descriptors.PBoolean(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 5 => subscriptionMode.map(__e => _root_.scalapb.descriptors.PEnum(__e.scalaValueDescriptor)).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 6 => subscriptionType.map(__e => _root_.scalapb.descriptors.PEnum(__e.scalaValueDescriptor)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 7 => subscriptionInitialPosition.map(__e => _root_.scalapb.descriptors.PEnum(__e.scalaValueDescriptor)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 8 => ackTimeoutMs.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 9 => ackTimeoutTickTimeMs.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 10 => expireTimeOfIncompleteChunkedMessageMs.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 11 => acknowledgmentGroupTimeMs.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 12 => negativeAckRedeliveryDelayMs.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
       }
     }
     def toProtoString: _root_.scala.Predef.String = _root_.scalapb.TextFormat.printToUnicodeString(this)
@@ -154,13 +238,19 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
     var __startPaused: _root_.scala.Option[_root_.scala.Boolean] = _root_.scala.None
     var __subscriptionMode: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode] = _root_.scala.None
     var __subscriptionType: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType] = _root_.scala.None
+    var __subscriptionInitialPosition: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition] = _root_.scala.None
+    var __ackTimeoutMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None
+    var __ackTimeoutTickTimeMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None
+    var __expireTimeOfIncompleteChunkedMessageMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None
+    var __acknowledgmentGroupTimeMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None
+    var __negativeAckRedeliveryDelayMs: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None
     var `_unknownFields__`: _root_.scalapb.UnknownFieldSet.Builder = null
     var _done__ = false
     while (!_done__) {
       val _tag__ = _input__.readTag()
       _tag__ match {
         case 0 => _done__ = true
-        case 82 =>
+        case 802 =>
           __topicSelector = Option(__topicSelector.fold(_root_.scalapb.LiteParser.readMessage[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
         case 10 =>
           __consumerName = Option(_input__.readStringRequireUtf8())
@@ -174,6 +264,18 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
           __subscriptionMode = Option(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.fromValue(_input__.readEnum()))
         case 48 =>
           __subscriptionType = Option(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.fromValue(_input__.readEnum()))
+        case 56 =>
+          __subscriptionInitialPosition = Option(com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition.fromValue(_input__.readEnum()))
+        case 64 =>
+          __ackTimeoutMs = Option(_input__.readInt64())
+        case 72 =>
+          __ackTimeoutTickTimeMs = Option(_input__.readInt64())
+        case 80 =>
+          __expireTimeOfIncompleteChunkedMessageMs = Option(_input__.readInt64())
+        case 88 =>
+          __acknowledgmentGroupTimeMs = Option(_input__.readInt64())
+        case 96 =>
+          __negativeAckRedeliveryDelayMs = Option(_input__.readInt64())
         case tag =>
           if (_unknownFields__ == null) {
             _unknownFields__ = new _root_.scalapb.UnknownFieldSet.Builder()
@@ -189,6 +291,12 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
         startPaused = __startPaused,
         subscriptionMode = __subscriptionMode,
         subscriptionType = __subscriptionType,
+        subscriptionInitialPosition = __subscriptionInitialPosition,
+        ackTimeoutMs = __ackTimeoutMs,
+        ackTimeoutTickTimeMs = __ackTimeoutTickTimeMs,
+        expireTimeOfIncompleteChunkedMessageMs = __expireTimeOfIncompleteChunkedMessageMs,
+        acknowledgmentGroupTimeMs = __acknowledgmentGroupTimeMs,
+        negativeAckRedeliveryDelayMs = __negativeAckRedeliveryDelayMs,
         unknownFields = if (_unknownFields__ == null) _root_.scalapb.UnknownFieldSet.empty else _unknownFields__.result()
     )
   }
@@ -196,13 +304,19 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
     case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
       com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest(
-        topicSelector = __fieldsMap.get(scalaDescriptor.findFieldByNumber(10).get).flatMap(_.as[_root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector]]),
+        topicSelector = __fieldsMap.get(scalaDescriptor.findFieldByNumber(100).get).flatMap(_.as[_root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector]]),
         consumerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]]),
         subscriptionName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]]),
         priorityLevel = __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Int]]),
         startPaused = __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Boolean]]),
         subscriptionMode = __fieldsMap.get(scalaDescriptor.findFieldByNumber(5).get).flatMap(_.as[_root_.scala.Option[_root_.scalapb.descriptors.EnumValueDescriptor]]).map(__e => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode.fromValue(__e.number)),
-        subscriptionType = __fieldsMap.get(scalaDescriptor.findFieldByNumber(6).get).flatMap(_.as[_root_.scala.Option[_root_.scalapb.descriptors.EnumValueDescriptor]]).map(__e => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.fromValue(__e.number))
+        subscriptionType = __fieldsMap.get(scalaDescriptor.findFieldByNumber(6).get).flatMap(_.as[_root_.scala.Option[_root_.scalapb.descriptors.EnumValueDescriptor]]).map(__e => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType.fromValue(__e.number)),
+        subscriptionInitialPosition = __fieldsMap.get(scalaDescriptor.findFieldByNumber(7).get).flatMap(_.as[_root_.scala.Option[_root_.scalapb.descriptors.EnumValueDescriptor]]).map(__e => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition.fromValue(__e.number)),
+        ackTimeoutMs = __fieldsMap.get(scalaDescriptor.findFieldByNumber(8).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Long]]),
+        ackTimeoutTickTimeMs = __fieldsMap.get(scalaDescriptor.findFieldByNumber(9).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Long]]),
+        expireTimeOfIncompleteChunkedMessageMs = __fieldsMap.get(scalaDescriptor.findFieldByNumber(10).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Long]]),
+        acknowledgmentGroupTimeMs = __fieldsMap.get(scalaDescriptor.findFieldByNumber(11).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Long]]),
+        negativeAckRedeliveryDelayMs = __fieldsMap.get(scalaDescriptor.findFieldByNumber(12).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Long]])
       )
     case _ => throw new RuntimeException("Expected PMessage")
   }
@@ -211,7 +325,7 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
   def messageCompanionForFieldNumber(__number: _root_.scala.Int): _root_.scalapb.GeneratedMessageCompanion[_] = {
     var __out: _root_.scalapb.GeneratedMessageCompanion[_] = null
     (__number: @_root_.scala.unchecked) match {
-      case 10 => __out = com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector
+      case 100 => __out = com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector
     }
     __out
   }
@@ -220,6 +334,7 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
     (__fieldNumber: @_root_.scala.unchecked) match {
       case 5 => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode
       case 6 => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType
+      case 7 => com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition
     }
   }
   lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest(
@@ -229,7 +344,13 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
     priorityLevel = _root_.scala.None,
     startPaused = _root_.scala.None,
     subscriptionMode = _root_.scala.None,
-    subscriptionType = _root_.scala.None
+    subscriptionType = _root_.scala.None,
+    subscriptionInitialPosition = _root_.scala.None,
+    ackTimeoutMs = _root_.scala.None,
+    ackTimeoutTickTimeMs = _root_.scala.None,
+    expireTimeOfIncompleteChunkedMessageMs = _root_.scala.None,
+    acknowledgmentGroupTimeMs = _root_.scala.None,
+    negativeAckRedeliveryDelayMs = _root_.scala.None
   )
   implicit class CreateConsumerRequestLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest](_l) {
     def topicSelector: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector] = field(_.getTopicSelector)((c_, f_) => c_.copy(topicSelector = Option(f_)))
@@ -246,14 +367,32 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
     def optionalSubscriptionMode: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode]] = field(_.subscriptionMode)((c_, f_) => c_.copy(subscriptionMode = f_))
     def subscriptionType: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType] = field(_.getSubscriptionType)((c_, f_) => c_.copy(subscriptionType = Option(f_)))
     def optionalSubscriptionType: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType]] = field(_.subscriptionType)((c_, f_) => c_.copy(subscriptionType = f_))
+    def subscriptionInitialPosition: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition] = field(_.getSubscriptionInitialPosition)((c_, f_) => c_.copy(subscriptionInitialPosition = Option(f_)))
+    def optionalSubscriptionInitialPosition: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition]] = field(_.subscriptionInitialPosition)((c_, f_) => c_.copy(subscriptionInitialPosition = f_))
+    def ackTimeoutMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.getAckTimeoutMs)((c_, f_) => c_.copy(ackTimeoutMs = Option(f_)))
+    def optionalAckTimeoutMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Long]] = field(_.ackTimeoutMs)((c_, f_) => c_.copy(ackTimeoutMs = f_))
+    def ackTimeoutTickTimeMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.getAckTimeoutTickTimeMs)((c_, f_) => c_.copy(ackTimeoutTickTimeMs = Option(f_)))
+    def optionalAckTimeoutTickTimeMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Long]] = field(_.ackTimeoutTickTimeMs)((c_, f_) => c_.copy(ackTimeoutTickTimeMs = f_))
+    def expireTimeOfIncompleteChunkedMessageMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.getExpireTimeOfIncompleteChunkedMessageMs)((c_, f_) => c_.copy(expireTimeOfIncompleteChunkedMessageMs = Option(f_)))
+    def optionalExpireTimeOfIncompleteChunkedMessageMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Long]] = field(_.expireTimeOfIncompleteChunkedMessageMs)((c_, f_) => c_.copy(expireTimeOfIncompleteChunkedMessageMs = f_))
+    def acknowledgmentGroupTimeMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.getAcknowledgmentGroupTimeMs)((c_, f_) => c_.copy(acknowledgmentGroupTimeMs = Option(f_)))
+    def optionalAcknowledgmentGroupTimeMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Long]] = field(_.acknowledgmentGroupTimeMs)((c_, f_) => c_.copy(acknowledgmentGroupTimeMs = f_))
+    def negativeAckRedeliveryDelayMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.getNegativeAckRedeliveryDelayMs)((c_, f_) => c_.copy(negativeAckRedeliveryDelayMs = Option(f_)))
+    def optionalNegativeAckRedeliveryDelayMs: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Long]] = field(_.negativeAckRedeliveryDelayMs)((c_, f_) => c_.copy(negativeAckRedeliveryDelayMs = f_))
   }
-  final val TOPIC_SELECTOR_FIELD_NUMBER = 10
+  final val TOPIC_SELECTOR_FIELD_NUMBER = 100
   final val CONSUMER_NAME_FIELD_NUMBER = 1
   final val SUBSCRIPTION_NAME_FIELD_NUMBER = 2
   final val PRIORITY_LEVEL_FIELD_NUMBER = 3
   final val START_PAUSED_FIELD_NUMBER = 4
   final val SUBSCRIPTION_MODE_FIELD_NUMBER = 5
   final val SUBSCRIPTION_TYPE_FIELD_NUMBER = 6
+  final val SUBSCRIPTION_INITIAL_POSITION_FIELD_NUMBER = 7
+  final val ACK_TIMEOUT_MS_FIELD_NUMBER = 8
+  final val ACK_TIMEOUT_TICK_TIME_MS_FIELD_NUMBER = 9
+  final val EXPIRE_TIME_OF_INCOMPLETE_CHUNKED_MESSAGE_MS_FIELD_NUMBER = 10
+  final val ACKNOWLEDGMENT_GROUP_TIME_MS_FIELD_NUMBER = 11
+  final val NEGATIVE_ACK_REDELIVERY_DELAY_MS_FIELD_NUMBER = 12
   def of(
     topicSelector: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicSelector],
     consumerName: _root_.scala.Option[_root_.scala.Predef.String],
@@ -261,7 +400,13 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
     priorityLevel: _root_.scala.Option[_root_.scala.Int],
     startPaused: _root_.scala.Option[_root_.scala.Boolean],
     subscriptionMode: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionMode],
-    subscriptionType: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType]
+    subscriptionType: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionType],
+    subscriptionInitialPosition: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.SubscriptionInitialPosition],
+    ackTimeoutMs: _root_.scala.Option[_root_.scala.Long],
+    ackTimeoutTickTimeMs: _root_.scala.Option[_root_.scala.Long],
+    expireTimeOfIncompleteChunkedMessageMs: _root_.scala.Option[_root_.scala.Long],
+    acknowledgmentGroupTimeMs: _root_.scala.Option[_root_.scala.Long],
+    negativeAckRedeliveryDelayMs: _root_.scala.Option[_root_.scala.Long]
   ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest(
     topicSelector,
     consumerName,
@@ -269,7 +414,13 @@ object CreateConsumerRequest extends scalapb.GeneratedMessageCompanion[com.tools
     priorityLevel,
     startPaused,
     subscriptionMode,
-    subscriptionType
+    subscriptionType,
+    subscriptionInitialPosition,
+    ackTimeoutMs,
+    ackTimeoutTickTimeMs,
+    expireTimeOfIncompleteChunkedMessageMs,
+    acknowledgmentGroupTimeMs,
+    negativeAckRedeliveryDelayMs
   )
   // @@protoc_insertion_point(GeneratedMessageCompanion[tools.teal.pulsar.ui.api.v1.CreateConsumerRequest])
 }
