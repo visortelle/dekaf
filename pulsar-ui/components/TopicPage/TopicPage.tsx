@@ -47,25 +47,25 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         buttons={[
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            title: 'Messages',
+            text: 'Messages',
             onClick: () => { },
             type: 'regular'
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            title: 'Overview',
+            text: 'Overview',
             onClick: () => { },
             type: 'regular'
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            title: 'Policies',
+            text: 'Policies',
             onClick: () => { },
             type: 'regular'
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.deleteTopic._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            title: 'Delete',
+            text: 'Delete',
             onClick: () => { },
             type: 'danger'
           }

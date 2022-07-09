@@ -73,7 +73,7 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                       messageId = ByteString.copyFrom(msg.getMessageId.toByteArray)
                     )
                     consumers.get(consumerName) match
-                        case Some(_) => responseObserver.onNext(ResumeResponse(messages = Seq(message)))
+                        case Some(consumer) => responseObserver.onNext(ResumeResponse(messages = Seq(message)))
                         case _ => ()
 
                 val status: Status = Status(code = Code.OK.index)
@@ -125,7 +125,6 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
             if consumer.isConnected then consumer.acknowledge(msg)
 
-        val r = scala.util.Random
         var consumer = client.newConsumer
             .consumerName(consumerName)
             .subscriptionMode(subscriptionMode)

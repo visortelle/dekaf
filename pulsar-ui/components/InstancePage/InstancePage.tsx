@@ -30,25 +30,25 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
           buttons={[
             {
               linkTo: routes.instance.tenants._.get(),
-              title: 'Tenants',
+              text: 'Tenants',
               onClick: () => { },
               type: 'regular',
             },
             {
               linkTo: routes.instance.overview._.get(),
-              title: 'Overview',
+              text: 'Overview',
               onClick: () => { },
               type: 'regular'
             },
             {
               linkTo: routes.instance.configuration._.get(),
-              title: 'Configuration',
+              text: 'Configuration',
               onClick: () => { },
               type: 'regular'
             },
             {
               linkTo: routes.instance.createTenant._.get(),
-              title: 'Create tenant',
+              text: 'Create tenant',
               onClick: () => { },
               type: 'primary',
               position: 'right'

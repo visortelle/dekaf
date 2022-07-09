@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest, PauseRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
@@ -6,9 +6,12 @@ import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
-import SmallButton from '../../ui/SmallButton/SmallButton';
 import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import followOutputIcon from '!!raw-loader!./icons/follow-output.svg';
+import pauseIcon from '!!raw-loader!./icons/pause.svg';
+import resumeIcon from '!!raw-loader!./icons/resume.svg';
+import Button from '../../ui/Button/Button';
 
 export type MessagesProps = {
   tenant: string,
@@ -27,11 +30,25 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
-  const [isFollowOutput, setIsFollowOutput] = useState(false);
+  const [isFollowOutput, setIsFollowOutput] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [consumerName, _] = useState('__xray_' + nanoid());
   const [subscriptionName, __] = useState('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
+
+  const streamDataHandler = useCallback((data: ResumeResponse) => {
+      const newMessages = data.getMessagesList().map(m => ({ message: m, key: nanoid() }));
+      setMessages(messages => messages.concat(newMessages));
+  }, [setMessages]);
+
+  useEffect(() => {
+    if (stream === undefined) {
+      return;
+    }
+
+    stream.removeListener('data', streamDataHandler)
+    stream.on('data', streamDataHandler);
+  }, [stream]);
 
   useEffect(() => {
     async function startConsume() {
@@ -68,6 +85,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
 
     return () => {
       stream?.cancel();
+      stream?.removeListener('data', streamDataHandler)
 
       async function deleteConsumer() {
         const deleteConsumerReq = new DeleteConsumerRequest();
@@ -80,22 +98,13 @@ const Messages: React.FC<MessagesProps> = (props) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (stream === undefined) {
-      return;
-    }
-
-    stream.on('data', (data) => {
-      const newMessages = data.getMessagesList().map(m => ({ message: m, key: nanoid() }));
-      setMessages(messages => messages.concat(newMessages));
-    });
-  }, [stream]);
-
   return (
     <div className={s.Messages}>
       <div>
-        <SmallButton
-          text="Follow output"
+        <Button
+          title="Follow output"
+          svgIcon={followOutputIcon}
+          disabled={isFollowOutput}
           onClick={() => {
             setIsFollowOutput(!isFollowOutput);
             if (!isFollowOutput) {
@@ -104,14 +113,16 @@ const Messages: React.FC<MessagesProps> = (props) => {
           }}
           type='primary'
         />
-        <SmallButton
-          text={isPaused ? "Resume" : "Pause"}
+        <Button
+          title={isPaused ? "Resume" : "Pause"}
+          svgIcon={isPaused ? resumeIcon : pauseIcon}
           onClick={async () => {
             if (isPaused) {
               setIsPaused(false);
               const resumeReq = new ResumeRequest();
               resumeReq.setConsumerName(consumerName);
               stream?.cancel();
+              stream?.removeListener('data', streamDataHandler)
               const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(10) });
               setStream(() => newStream);
             } else {
@@ -122,11 +133,19 @@ const Messages: React.FC<MessagesProps> = (props) => {
                 .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
             }
           }}
-          type='danger'
+          type={isPaused ? 'primary' : 'danger'}
         />
         <strong>{messages.length}</strong> messages loaded
       </div>
-      <div className={s.List} ref={listRef}>
+      <div
+        className={s.List}
+        ref={listRef}
+        onWheel={(e) => {
+          if (e.deltaY < 0) {
+            setIsFollowOutput(false)
+          }
+        }}
+      >
         <Virtuoso<KeyedMessage>
           ref={virtuosoRef}
           data={messages}
