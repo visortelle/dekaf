@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import * as _consumerServiceClient from '../../../../grpc-web/api/v1/ConsumerServiceClientPb';
+import * as _consumerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ConsumerServiceClientPb';
 
 export type Value = {
   consumerServiceClient: _consumerServiceClient.ConsumerServiceClient,
