@@ -108,7 +108,7 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case _ => SubscriptionMode.Durable
 
         val listener: MessageListener[Array[Byte]] = (consumer, msg) =>
-            logger.debug("Listener received a message. Consumer: $consumerName")
+            logger.debug(s"Listener received a message. Consumer: $consumerName")
             streamDataHandlers.get(consumerName) match
                 case Some(handler) => handler.onNext(msg)
                 case _             => ()
@@ -141,7 +141,7 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
     override def deleteConsumer(request: DeleteConsumerRequest): Future[DeleteConsumerResponse] =
         val consumerName = request.consumerName
-        logger.debug("Deleting consumer. Consumer: $consumerName")
+        logger.debug(s"Deleting consumer. Consumer: $consumerName")
 
         consumers.get(consumerName) match
             case Some(consumer) =>

@@ -28,8 +28,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [isFollowOutput, setIsFollowOutput] = useState(false);
-  const [consumerName, setConsumerName] = useState('__xray_' + nanoid());
-  const [subscriptionName, setSubscriptionName] = useState('__xray_' + nanoid());
+  const [consumerName, _] = useState('__xray_' + nanoid());
+  const [subscriptionName, __] = useState('__xray_' + nanoid());
 
   useEffect(() => {
     let stream: ClientReadableStream<ResumeResponse>;
@@ -61,7 +61,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
 
-      stream = consumerServiceClient.resume(resumeReq)
+      stream = consumerServiceClient.resume(resumeReq);
       stream.on('data', (data) => {
         const newMessages = data.getMessagesList().map(m => ({ message: m, key: nanoid() }));
         setMessages(messages => messages.concat(newMessages));
