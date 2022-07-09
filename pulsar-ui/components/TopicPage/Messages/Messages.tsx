@@ -43,7 +43,11 @@ const Messages: React.FC<MessagesProps> = (props) => {
       createConsumerReq.setStartPaused(true);
       createConsumerReq.setSubscriptionName(subscriptionName);
       createConsumerReq.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED)
-      const createConsumerRes = await consumerServiceClient.createConsumer(createConsumerReq, { deadline: createDeadline(10) });
+      const createConsumerRes = await consumerServiceClient.createConsumer(createConsumerReq, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
+
+      if (createConsumerRes === undefined) {
+        return;
+      }
 
       const status = createConsumerRes.getStatus();
       const statusCode = status?.getCode();
@@ -68,7 +72,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
       async function deleteConsumer() {
         const deleteConsumerReq = new DeleteConsumerRequest();
         deleteConsumerReq.setConsumerName(consumerName);
-        await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) });
+        await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) })
+          .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
       }
 
       deleteConsumer();
@@ -113,7 +118,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
               setIsPaused(true);
               const pauseReq = new PauseRequest();
               pauseReq.setConsumerName(consumerName);
-              consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) });
+              consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
+                .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
             }
           }}
           type='danger'
@@ -132,7 +138,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
           alignToBottom={isFollowOutput}
         />
       </div>
-
     </div>
   );
 }
