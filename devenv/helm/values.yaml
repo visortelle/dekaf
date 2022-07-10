@@ -23,6 +23,26 @@ monitoring:
   # alerting - alert-manager
   alert_manager: false
 
+images:
+  broker:
+    repository: apachepulsar/pulsar-all
+    tag: 2.10.1
+    pullPolicy: IfNotPresent
+  proxy:
+    repository: apachepulsar/pulsar-all
+    tag: 2.10.1
+    pullPolicy: IfNotPresent
+  functions:
+    repository: apachepulsar/pulsar-all
+    tag: 2.10.1
+
+# pulsar_metadata:
+#   component: pulsar-init
+#   image:
+#     # the image used for running `pulsar-cluster-initialize` job
+#     repository: apachepulsar/pulsar-all
+#     tag: 2.10.1
+
 broker:
   replicaCount: 3
   configData:
@@ -31,6 +51,17 @@ broker:
     autoSkipNonRecoverableData: "true"
     # Dev customizations
     brokerDeleteInactiveTopicsEnabled: "false"
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+
+  podSecurityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    fsGroup: 0
+    fsGroupChangePolicy: "OnRootMismatch"
 
 proxy:
   replicaCount: 3
+  ports:
+    http: 8080 # Fix - https://github.com/apache/pulsar-helm-chart/issues/110
