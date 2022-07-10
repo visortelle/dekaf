@@ -14,25 +14,25 @@ message MessageId {
 
 message Message {
   map<string, string> properties = 1;
-  bytes data = 2;
-  int64 size = 3;
-  string value = 4; // JSON string
+  optional bytes data = 2;
+  optional int64 size = 3;
+  optional string value = 4; // JSON string
 
-  google.protobuf.Timestamp event_time = 7;
-  google.protobuf.Timestamp publish_time = 6;
-  google.protobuf.Timestamp broker_publish_time = 22;
+  optional google.protobuf.Timestamp event_time = 7;
+  optional google.protobuf.Timestamp publish_time = 6;
+  optional google.protobuf.Timestamp broker_publish_time = 22;
 
-  bytes message_id = 30;
-  double sequence_id = 8;
-  string producer_name = 9;
-  string key = 10;
-  bytes ordering_key = 11;
-  string topic = 12;
-  int32 redelivery_count = 13;
-  bytes schema_version = 14;
+  optional bytes message_id = 30;
+  optional double sequence_id = 8;
+  optional string producer_name = 9;
+  optional string key = 10;
+  optional bytes ordering_key = 11;
+  optional string topic = 12;
+  optional int32 redelivery_count = 13;
+  optional bytes schema_version = 14;
 
-  bool is_replicated = 20;
-  string replicated_from = 21;
+  optional bool is_replicated = 20;
+  optional string replicated_from = 21;
 }
 
 enum SubscriptionMode {

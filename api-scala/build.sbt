@@ -17,8 +17,6 @@ lazy val root = project
       // Pulsar
       "org.apache.pulsar" % "pulsar-client-original" % "2.10.1",
       "org.apache.pulsar" % "pulsar-client-admin-original" % "2.10.1",
-      "org.slf4j" % "slf4j-api" % "1.7.36", // Needed by pulsar-client-original
-      "org.slf4j" % "slf4j-simple" % "1.7.36", // Needed by pulsar-client-original
       "io.netty" % "netty-all" % "4.1.78.Final" // Needed by pulsar-client-original
     )
   )

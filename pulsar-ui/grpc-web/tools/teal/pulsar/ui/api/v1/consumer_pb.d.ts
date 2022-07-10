@@ -42,12 +42,18 @@ export class Message extends jspb.Message {
   getData_asU8(): Uint8Array;
   getData_asB64(): string;
   setData(value: Uint8Array | string): Message;
+  hasData(): boolean;
+  clearData(): Message;
 
   getSize(): number;
   setSize(value: number): Message;
+  hasSize(): boolean;
+  clearSize(): Message;
 
   getValue(): string;
   setValue(value: string): Message;
+  hasValue(): boolean;
+  clearValue(): Message;
 
   getEventTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
   setEventTime(value?: google_protobuf_timestamp_pb.Timestamp): Message;
@@ -68,37 +74,57 @@ export class Message extends jspb.Message {
   getMessageId_asU8(): Uint8Array;
   getMessageId_asB64(): string;
   setMessageId(value: Uint8Array | string): Message;
+  hasMessageId(): boolean;
+  clearMessageId(): Message;
 
   getSequenceId(): number;
   setSequenceId(value: number): Message;
+  hasSequenceId(): boolean;
+  clearSequenceId(): Message;
 
   getProducerName(): string;
   setProducerName(value: string): Message;
+  hasProducerName(): boolean;
+  clearProducerName(): Message;
 
   getKey(): string;
   setKey(value: string): Message;
+  hasKey(): boolean;
+  clearKey(): Message;
 
   getOrderingKey(): Uint8Array | string;
   getOrderingKey_asU8(): Uint8Array;
   getOrderingKey_asB64(): string;
   setOrderingKey(value: Uint8Array | string): Message;
+  hasOrderingKey(): boolean;
+  clearOrderingKey(): Message;
 
   getTopic(): string;
   setTopic(value: string): Message;
+  hasTopic(): boolean;
+  clearTopic(): Message;
 
   getRedeliveryCount(): number;
   setRedeliveryCount(value: number): Message;
+  hasRedeliveryCount(): boolean;
+  clearRedeliveryCount(): Message;
 
   getSchemaVersion(): Uint8Array | string;
   getSchemaVersion_asU8(): Uint8Array;
   getSchemaVersion_asB64(): string;
   setSchemaVersion(value: Uint8Array | string): Message;
+  hasSchemaVersion(): boolean;
+  clearSchemaVersion(): Message;
 
   getIsReplicated(): boolean;
   setIsReplicated(value: boolean): Message;
+  hasIsReplicated(): boolean;
+  clearIsReplicated(): Message;
 
   getReplicatedFrom(): string;
   setReplicatedFrom(value: string): Message;
+  hasReplicatedFrom(): boolean;
+  clearReplicatedFrom(): Message;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Message.AsObject;
@@ -111,22 +137,102 @@ export class Message extends jspb.Message {
 export namespace Message {
   export type AsObject = {
     propertiesMap: Array<[string, string]>,
-    data: Uint8Array | string,
-    size: number,
-    value: string,
+    data?: Uint8Array | string,
+    size?: number,
+    value?: string,
     eventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     publishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     brokerPublishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    messageId: Uint8Array | string,
-    sequenceId: number,
-    producerName: string,
-    key: string,
-    orderingKey: Uint8Array | string,
-    topic: string,
-    redeliveryCount: number,
-    schemaVersion: Uint8Array | string,
-    isReplicated: boolean,
-    replicatedFrom: string,
+    messageId?: Uint8Array | string,
+    sequenceId?: number,
+    producerName?: string,
+    key?: string,
+    orderingKey?: Uint8Array | string,
+    topic?: string,
+    redeliveryCount?: number,
+    schemaVersion?: Uint8Array | string,
+    isReplicated?: boolean,
+    replicatedFrom?: string,
+  }
+
+  export enum DataCase { 
+    _DATA_NOT_SET = 0,
+    DATA = 2,
+  }
+
+  export enum SizeCase { 
+    _SIZE_NOT_SET = 0,
+    SIZE = 3,
+  }
+
+  export enum ValueCase { 
+    _VALUE_NOT_SET = 0,
+    VALUE = 4,
+  }
+
+  export enum EventTimeCase { 
+    _EVENT_TIME_NOT_SET = 0,
+    EVENT_TIME = 7,
+  }
+
+  export enum PublishTimeCase { 
+    _PUBLISH_TIME_NOT_SET = 0,
+    PUBLISH_TIME = 6,
+  }
+
+  export enum BrokerPublishTimeCase { 
+    _BROKER_PUBLISH_TIME_NOT_SET = 0,
+    BROKER_PUBLISH_TIME = 22,
+  }
+
+  export enum MessageIdCase { 
+    _MESSAGE_ID_NOT_SET = 0,
+    MESSAGE_ID = 30,
+  }
+
+  export enum SequenceIdCase { 
+    _SEQUENCE_ID_NOT_SET = 0,
+    SEQUENCE_ID = 8,
+  }
+
+  export enum ProducerNameCase { 
+    _PRODUCER_NAME_NOT_SET = 0,
+    PRODUCER_NAME = 9,
+  }
+
+  export enum KeyCase { 
+    _KEY_NOT_SET = 0,
+    KEY = 10,
+  }
+
+  export enum OrderingKeyCase { 
+    _ORDERING_KEY_NOT_SET = 0,
+    ORDERING_KEY = 11,
+  }
+
+  export enum TopicCase { 
+    _TOPIC_NOT_SET = 0,
+    TOPIC = 12,
+  }
+
+  export enum RedeliveryCountCase { 
+    _REDELIVERY_COUNT_NOT_SET = 0,
+    REDELIVERY_COUNT = 13,
+  }
+
+  export enum SchemaVersionCase { 
+    _SCHEMA_VERSION_NOT_SET = 0,
+    SCHEMA_VERSION = 14,
+  }
+
+  export enum IsReplicatedCase { 
+    _IS_REPLICATED_NOT_SET = 0,
+    IS_REPLICATED = 20,
+  }
+
+  export enum ReplicatedFromCase { 
+    _REPLICATED_FROM_NOT_SET = 0,
+    REPLICATED_FROM = 21,
   }
 }
 
