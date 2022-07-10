@@ -17,6 +17,8 @@ export type TopicPageProps = {
 };
 
 const TopicPage: React.FC<TopicPageProps> = (props) => {
+  const key = `${props.tenant}-${props.namespace}-${props.topic}`;
+
   return (
     <div className={s.Page}>
       <BreadCrumbsAtPageTop
@@ -72,9 +74,9 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         ]}
       />
 
-      {props.view === 'messages' && <Messages tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
-      {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
-      {props.view === 'delete-topic' && <DeleteTopic tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
+      {props.view === 'messages' && <Messages key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
+      {props.view === 'policies' && <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
+      {props.view === 'delete-topic' && <DeleteTopic key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
     </div>
   );
 }

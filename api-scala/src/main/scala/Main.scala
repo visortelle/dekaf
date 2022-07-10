@@ -56,13 +56,15 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
         val consumerName = request.consumerName
-        logger.debug(s"Resume consuming. Consumer: $consumerName")
+        logger.info(s"Resume consuming. Consumer: $consumerName")
 
         consumers.get(consumerName) match
             case Some(consumer) =>
                 consumer.resume
             case _ =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "No such consumer: $consumerName")
+                val msg = "No such consumer: $consumerName"
+                logger.warn(msg)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
 
         val streamDataHandler = streamDataHandlers.get(consumerName)
@@ -72,46 +74,79 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId()}")
 
                     val message = consumerPb.Message(
-                      properties = msg.getProperties.asScala.toMap,
-                      data = ByteString.copyFrom(msg.getData),
-                      value = msg.getValue.toString(),
-                      size = msg.getData.length,
-                      eventTime = Some(timestamp.Timestamp(Instant.ofEpochMilli(msg.getEventTime).getNano)),
-                      publishTime = Some(timestamp.Timestamp(Instant.ofEpochMilli(msg.getPublishTime).getNano)),
-                      brokerPublishTime = msg.getBrokerPublishTime.toScala match
-                          case Some(v) => Some(timestamp.Timestamp(Instant.ofEpochMilli(v).getNano))
-                          case _       => None
+                      properties = Option(msg.getProperties) match
+                          case Some(v) => v.asScala.toMap
+                          case None    => Map.empty
                       ,
-                      messageId = ByteString.copyFrom(msg.getMessageId.toByteArray),
-                      sequenceId = msg.getSequenceId,
-                      producerName = msg.getProducerName,
-                      key = msg.getKey,
-                      orderingKey = ByteString.copyFrom(msg.getOrderingKey),
-                      topic = msg.getTopicName,
-                      redeliveryCount = msg.getRedeliveryCount(),
-                      schemaVersion = ByteString.copyFrom(msg.getSchemaVersion()),
-                      isReplicated = msg.isReplicated(),
-                      replicatedFrom = msg.getReplicatedFrom()
+                      data = Option(msg.getData) match
+                          case Some(v) => Option(ByteString.copyFrom(v))
+                          case None    => None
+                      ,
+                      value = Option(msg.getValue) match
+                          case Some(v) => Option(v.toString())
+                          case None    => None
+                      ,
+                      size = Option(msg.getData) match
+                          case Some(v) => Some(v.length)
+                          case None    => None
+                      ,
+                      eventTime = Option(msg.getEventTime) match
+                          case Some(v) => Some(timestamp.Timestamp(Instant.ofEpochMilli(v).getNano))
+                          case None    => None
+                      ,
+                      publishTime = Option(msg.getPublishTime) match
+                          case Some(v) => Some(timestamp.Timestamp(Instant.ofEpochMilli(v).getNano))
+                          case None    => None
+                      ,
+                      brokerPublishTime = Option(msg.getBrokerPublishTime) match
+                          case Some(v) =>
+                              v.toScala match
+                                  case Some(l) => Some(timestamp.Timestamp(Instant.ofEpochMilli(l).getNano))
+                                  case None    => None
+                          case None => None
+                      ,
+                      messageId = Option(msg.getMessageId.toByteArray) match
+                          case Some(v) => Some(ByteString.copyFrom(v))
+                          case None    => None
+                      ,
+                      sequenceId = Option(msg.getSequenceId),
+                      producerName = Option(msg.getProducerName),
+                      key = Option(msg.getKey),
+                      orderingKey = Option(msg.getOrderingKey) match
+                          case Some(v) => Some(ByteString.copyFrom(v))
+                          case None    => None
+                      ,
+                      topic = Option(msg.getTopicName),
+                      redeliveryCount = Option(msg.getRedeliveryCount),
+                      schemaVersion = Option(msg.getSchemaVersion) match
+                          case Some(v) => Some(ByteString.copyFrom(v))
+                          case None => None,
+                        isReplicated = Option(msg.isReplicated),
+                        replicatedFrom = Option(msg.getReplicatedFrom)
                     )
                     consumers.get(consumerName) match
                         case Some(consumer) => responseObserver.onNext(ResumeResponse(messages = Seq(message)))
                         case _              => ()
 
                 val status: Status = Status(code = Code.OK.index)
-                return Future.successful(PauseResponse(status = Some(status)))
+                return Future.successful(ResumeResponse(status = Some(status)))
             case _ =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "No such consumer: $consumerName")
-                return Future.successful(PauseResponse(status = Some(status)))
+                val msg = "No such consumer: $consumerName"
+                logger.warn(msg)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
+                return Future.successful(ResumeResponse(status = Some(status)))
 
     override def pause(request: PauseRequest): Future[PauseResponse] =
         val consumerName = request.consumerName
-        logger.debug(s"Pausing consumer. Consumer: $consumerName")
+        logger.info(s"Pausing consumer. Consumer: $consumerName")
 
         consumers.get(consumerName) match
             case Some(consumer) =>
                 consumer.pause
             case _ =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "No such consumer: $consumerName")
+                val msg = "No such consumer: $consumerName"
+                logger.warn(msg)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
 
         val streamDataHandler = streamDataHandlers.get(consumerName)
@@ -122,12 +157,14 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.OK.index)
                 return Future.successful(PauseResponse(status = Some(status)))
             case _ =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "No such consumer: $consumerName")
+                val msg = "No such consumer: $consumerName"
+                logger.warn(msg)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
 
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
         val consumerName = request.consumerName.getOrElse("__xray" + UUID.randomUUID().toString)
-        logger.debug(s"Creating consumer. Consumer: $consumerName")
+        logger.info(s"Creating consumer. Consumer: $consumerName")
 
         val streamDataHandler = StreamDataHandler()
         streamDataHandler.onNext = _ => ()
@@ -194,10 +231,9 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case Some(topicSelector) if topicSelector.selector.topic.isDefined =>
                 consumer = consumer.topic(topicSelector.selector.topic.get)
             case _ =>
-                val status: Status = Status(
-                  code = Code.INVALID_ARGUMENT.index,
-                  message = "Topic selector shouldn't be empty"
-                )
+                val msg = "Topic selector shouldn't be empty"
+                logger.warn(msg)
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = msg)
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
 
         consumers = consumers + (consumerName -> consumer.subscribe)
@@ -207,7 +243,7 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
     override def deleteConsumer(request: DeleteConsumerRequest): Future[DeleteConsumerResponse] =
         val consumerName = request.consumerName
-        logger.debug(s"Deleting consumer. Consumer: $consumerName")
+        logger.info(s"Deleting consumer. Consumer: $consumerName")
 
         consumers.get(consumerName) match
             case Some(consumer) =>

@@ -682,22 +682,22 @@ proto.tools.teal.pulsar.ui.api.v1.Message.serializeBinaryToWriter = function(mes
   if (f && f.getLength() > 0) {
     f.serializeBinary(1, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
-  f = message.getData_asU8();
-  if (f.length > 0) {
+  f = /** @type {!(string|Uint8Array)} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
     writer.writeBytes(
       2,
       f
     );
   }
-  f = message.getSize();
-  if (f !== 0) {
+  f = /** @type {number} */ (jspb.Message.getField(message, 3));
+  if (f != null) {
     writer.writeInt64(
       3,
       f
     );
   }
-  f = message.getValue();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 4));
+  if (f != null) {
     writer.writeString(
       4,
       f
@@ -727,71 +727,71 @@ proto.tools.teal.pulsar.ui.api.v1.Message.serializeBinaryToWriter = function(mes
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
-  f = message.getMessageId_asU8();
-  if (f.length > 0) {
+  f = /** @type {!(string|Uint8Array)} */ (jspb.Message.getField(message, 30));
+  if (f != null) {
     writer.writeBytes(
       30,
       f
     );
   }
-  f = message.getSequenceId();
-  if (f !== 0.0) {
+  f = /** @type {number} */ (jspb.Message.getField(message, 8));
+  if (f != null) {
     writer.writeDouble(
       8,
       f
     );
   }
-  f = message.getProducerName();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 9));
+  if (f != null) {
     writer.writeString(
       9,
       f
     );
   }
-  f = message.getKey();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 10));
+  if (f != null) {
     writer.writeString(
       10,
       f
     );
   }
-  f = message.getOrderingKey_asU8();
-  if (f.length > 0) {
+  f = /** @type {!(string|Uint8Array)} */ (jspb.Message.getField(message, 11));
+  if (f != null) {
     writer.writeBytes(
       11,
       f
     );
   }
-  f = message.getTopic();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 12));
+  if (f != null) {
     writer.writeString(
       12,
       f
     );
   }
-  f = message.getRedeliveryCount();
-  if (f !== 0) {
+  f = /** @type {number} */ (jspb.Message.getField(message, 13));
+  if (f != null) {
     writer.writeInt32(
       13,
       f
     );
   }
-  f = message.getSchemaVersion_asU8();
-  if (f.length > 0) {
+  f = /** @type {!(string|Uint8Array)} */ (jspb.Message.getField(message, 14));
+  if (f != null) {
     writer.writeBytes(
       14,
       f
     );
   }
-  f = message.getIsReplicated();
-  if (f) {
+  f = /** @type {boolean} */ (jspb.Message.getField(message, 20));
+  if (f != null) {
     writer.writeBool(
       20,
       f
     );
   }
-  f = message.getReplicatedFrom();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 21));
+  if (f != null) {
     writer.writeString(
       21,
       f
@@ -860,7 +860,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getData_asU8 = function() {
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setData = function(value) {
-  return jspb.Message.setProto3BytesField(this, 2, value);
+  return jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearData = function() {
+  return jspb.Message.setField(this, 2, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasData = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -878,7 +896,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getSize = function() {
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setSize = function(value) {
-  return jspb.Message.setProto3IntField(this, 3, value);
+  return jspb.Message.setField(this, 3, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearSize = function() {
+  return jspb.Message.setField(this, 3, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasSize = function() {
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
@@ -896,7 +932,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getValue = function() {
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setValue = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setField(this, 4, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearValue = function() {
+  return jspb.Message.setField(this, 4, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasValue = function() {
+  return jspb.Message.getField(this, 4) != null;
 };
 
 
@@ -1049,7 +1103,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getMessageId_asU8 = function
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setMessageId = function(value) {
-  return jspb.Message.setProto3BytesField(this, 30, value);
+  return jspb.Message.setField(this, 30, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearMessageId = function() {
+  return jspb.Message.setField(this, 30, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasMessageId = function() {
+  return jspb.Message.getField(this, 30) != null;
 };
 
 
@@ -1067,7 +1139,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getSequenceId = function() {
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setSequenceId = function(value) {
-  return jspb.Message.setProto3FloatField(this, 8, value);
+  return jspb.Message.setField(this, 8, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearSequenceId = function() {
+  return jspb.Message.setField(this, 8, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasSequenceId = function() {
+  return jspb.Message.getField(this, 8) != null;
 };
 
 
@@ -1085,7 +1175,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getProducerName = function()
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setProducerName = function(value) {
-  return jspb.Message.setProto3StringField(this, 9, value);
+  return jspb.Message.setField(this, 9, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearProducerName = function() {
+  return jspb.Message.setField(this, 9, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasProducerName = function() {
+  return jspb.Message.getField(this, 9) != null;
 };
 
 
@@ -1103,7 +1211,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getKey = function() {
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setKey = function(value) {
-  return jspb.Message.setProto3StringField(this, 10, value);
+  return jspb.Message.setField(this, 10, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearKey = function() {
+  return jspb.Message.setField(this, 10, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasKey = function() {
+  return jspb.Message.getField(this, 10) != null;
 };
 
 
@@ -1145,7 +1271,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getOrderingKey_asU8 = functi
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setOrderingKey = function(value) {
-  return jspb.Message.setProto3BytesField(this, 11, value);
+  return jspb.Message.setField(this, 11, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearOrderingKey = function() {
+  return jspb.Message.setField(this, 11, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasOrderingKey = function() {
+  return jspb.Message.getField(this, 11) != null;
 };
 
 
@@ -1163,7 +1307,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getTopic = function() {
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setTopic = function(value) {
-  return jspb.Message.setProto3StringField(this, 12, value);
+  return jspb.Message.setField(this, 12, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearTopic = function() {
+  return jspb.Message.setField(this, 12, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasTopic = function() {
+  return jspb.Message.getField(this, 12) != null;
 };
 
 
@@ -1181,7 +1343,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getRedeliveryCount = functio
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setRedeliveryCount = function(value) {
-  return jspb.Message.setProto3IntField(this, 13, value);
+  return jspb.Message.setField(this, 13, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearRedeliveryCount = function() {
+  return jspb.Message.setField(this, 13, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasRedeliveryCount = function() {
+  return jspb.Message.getField(this, 13) != null;
 };
 
 
@@ -1223,7 +1403,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getSchemaVersion_asU8 = func
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setSchemaVersion = function(value) {
-  return jspb.Message.setProto3BytesField(this, 14, value);
+  return jspb.Message.setField(this, 14, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearSchemaVersion = function() {
+  return jspb.Message.setField(this, 14, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasSchemaVersion = function() {
+  return jspb.Message.getField(this, 14) != null;
 };
 
 
@@ -1241,7 +1439,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getIsReplicated = function()
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setIsReplicated = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 20, value);
+  return jspb.Message.setField(this, 20, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearIsReplicated = function() {
+  return jspb.Message.setField(this, 20, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasIsReplicated = function() {
+  return jspb.Message.getField(this, 20) != null;
 };
 
 
@@ -1259,7 +1475,25 @@ proto.tools.teal.pulsar.ui.api.v1.Message.prototype.getReplicatedFrom = function
  * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
  */
 proto.tools.teal.pulsar.ui.api.v1.Message.prototype.setReplicatedFrom = function(value) {
-  return jspb.Message.setProto3StringField(this, 21, value);
+  return jspb.Message.setField(this, 21, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.tools.teal.pulsar.ui.api.v1.Message} returns this
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.clearReplicatedFrom = function() {
+  return jspb.Message.setField(this, 21, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.tools.teal.pulsar.ui.api.v1.Message.prototype.hasReplicatedFrom = function() {
+  return jspb.Message.getField(this, 21) != null;
 };
 
 
