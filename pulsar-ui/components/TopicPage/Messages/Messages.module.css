@@ -22,7 +22,6 @@
   flex-direction: column;
   overflow: hidden;
   border-bottom: 1rem solid #ddd;
-  animation: fade-in 0.2s ease-in-out;
 }
 
 .Message:last-child {
@@ -45,10 +44,17 @@
   border-bottom: 1rem solid #ddd;
 }
 
+.ToolbarLeft {
+  margin-right: auto;
+}
+
+.ToolbarRight {
+  margin-left: auto;
+}
+
 .Buttons {
   display: flex;
   align-items: center;
-  margin-left: auto;
 }
 
 .ButtonsButton {
@@ -57,13 +63,4 @@
 
 .ButtonsButton:last-child {
   margin-right: 0;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }

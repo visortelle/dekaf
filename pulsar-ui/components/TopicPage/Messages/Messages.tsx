@@ -8,7 +8,6 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import followOutputIcon from '!!raw-loader!./icons/follow-output.svg';
 import pauseIcon from '!!raw-loader!./icons/pause.svg';
 import resumeIcon from '!!raw-loader!./icons/resume.svg';
 import Button from '../../ui/Button/Button';
@@ -25,12 +24,14 @@ type KeyedMessage = {
   message: Message,
   key: string
 }
+
+const maxMessages = 10000;
+
 const Messages: React.FC<MessagesProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const listRef = useRef<HTMLDivElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
-  const [isFollowOutput, setIsFollowOutput] = useState(true);
   const [isPaused, setIsPaused] = useState(true);
   const [isPausedBeforeWindowBlur, setIsPausedBeforeWindowBlur] = useState(isPaused);
   const [consumerName, _] = useState('__xray_' + nanoid());
@@ -38,12 +39,17 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
-  const [messagesDebounced] = useDebounce(messages, 200, { maxWait: 200 })
+  const [messagesCount, setMessagesCount] = useState(0);
+  const [messagesDebounced] = useDebounce(messages, 200, { maxWait: 400 })
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
-    setMessages(messages => messages.concat(newMessages));
-  }, [setMessages]);
+    setMessagesCount(messagesCount => messagesCount + newMessages.length);
+    setMessages(messages => {
+      let messagesToSet = messages.concat(newMessages);
+      return messagesToSet.slice(messagesToSet.length - maxMessages, messagesToSet.length);
+    });
+  }, []);
 
   useEffect(() => {
     streamRef.current = stream;
@@ -134,8 +140,12 @@ const Messages: React.FC<MessagesProps> = (props) => {
       resumeReq.setConsumerName(consumerName);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler)
-      const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(10) });
+      const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });
       setStream(() => newStream);
+    }
+
+    if (!isPaused) {
+      virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1);
     }
   }, [isPaused]);
 
@@ -143,30 +153,21 @@ const Messages: React.FC<MessagesProps> = (props) => {
   return (
     <div className={s.Messages}>
       <div className={s.Toolbar}>
-        <strong>{messagesDebounced.length}</strong>&nbsp;messages loaded
-        <div className={s.Buttons}>
-          <div className={s.ButtonsButton}>
-            <Button
-              title={isPaused ? "Resume" : "Pause"}
-              svgIcon={isPaused ? resumeIcon : pauseIcon}
-              onClick={() => setIsPaused(isPaused => !isPaused)}
-              type={isPaused ? 'primary' : 'danger'}
-            />
+        <div className={s.ToolbarLeft}>
+          <div className={s.Buttons}>
+            <div className={s.ButtonsButton}>
+              <Button
+                title={isPaused ? "Resume" : "Pause"}
+                svgIcon={isPaused ? resumeIcon : pauseIcon}
+                onClick={() => setIsPaused(isPaused => !isPaused)}
+                type={isPaused ? 'primary' : 'danger'}
+              />
+            </div>
           </div>
-          <div className={s.ButtonsButton}>
-            <Button
-              title="Follow output"
-              svgIcon={followOutputIcon}
-              disabled={isFollowOutput}
-              onClick={() => {
-                setIsFollowOutput(!isFollowOutput);
-                if (!isFollowOutput) {
-                  virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1);
-                }
-              }}
-              type='primary'
-            />
-          </div>
+        </div>
+
+        <div className={s.ToolbarRight}>
+          <strong>{messagesCount}</strong>&nbsp;messages loaded
         </div>
       </div>
       <div
@@ -174,12 +175,12 @@ const Messages: React.FC<MessagesProps> = (props) => {
         ref={listRef}
         onWheel={(e) => {
           if (e.deltaY < 0) {
-            setIsFollowOutput(false)
+            setIsPaused(true);
             return;
           }
 
           if (listRef.current && listRef.current?.scrollHeight - listRef.current?.scrollTop - listRef.current?.clientHeight <= 0) {
-            setIsFollowOutput(true);
+            setIsPaused(false);
           }
         }}
       >
@@ -191,12 +192,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
           overscan={{ main: (listRef?.current?.clientHeight || 0), reverse: (listRef?.current?.clientHeight || 0) }}
           customScrollParent={listRef.current || undefined}
           itemContent={(_, { key, message }) => <MessageComponent key={key} message={message} />}
-          followOutput={isFollowOutput}
-          itemsRendered={() => {
-            if (isFollowOutput) {
-              virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1);
-            }
-          }}
+          followOutput={!isPaused}
         />
       </div>
     </div>
