@@ -31,7 +31,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [isFollowOutput, setIsFollowOutput] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState(true);
+  const [isPausedBeforeWindowBlur, setIsPausedBeforeWindowBlur] = useState(isPaused);
   const [consumerName, _] = useState('__xray_' + nanoid());
   const [subscriptionName, __] = useState('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
@@ -43,54 +44,48 @@ const Messages: React.FC<MessagesProps> = (props) => {
   }, [setMessages]);
 
   useEffect(() => {
+    streamRef.current = stream;
+
     if (stream === undefined) {
       return;
     }
 
-    streamRef.current = stream;
     stream.removeListener('data', streamDataHandler)
     stream.on('data', streamDataHandler);
   }, [stream]);
 
   useEffect(() => {
-    async function startConsume() {
-      const createConsumerReq = new CreateConsumerRequest();
+    async function createConsumer() {
+      const req = new CreateConsumerRequest();
       const topicSelector = new TopicSelector();
       topicSelector.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-      createConsumerReq.setTopicSelector(topicSelector)
-      createConsumerReq.setConsumerName(consumerName);
-      createConsumerReq.setStartPaused(true);
-      createConsumerReq.setSubscriptionName(subscriptionName);
-      createConsumerReq.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
-      createConsumerReq.setSubscriptionInitialPosition(SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST);
-      createConsumerReq.setPriorityLevel(1000);
+      req.setTopicSelector(topicSelector)
+      req.setConsumerName(consumerName);
+      req.setStartPaused(true);
+      req.setSubscriptionName(subscriptionName);
+      req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
+      req.setSubscriptionInitialPosition(SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST);
+      req.setPriorityLevel(1000);
 
-      const createConsumerRes = await consumerServiceClient.createConsumer(createConsumerReq, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
+      const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
 
-      if (createConsumerRes === undefined) {
+      if (res === undefined) {
         return;
       }
 
-      const status = createConsumerRes.getStatus();
-      const statusCode = status?.getCode();
+      const status = res.getStatus();
+      const code = status?.getCode();
 
-      if (statusCode !== Code.OK) {
+      if (code !== Code.OK) {
         const errorMessage = status?.getMessage();
         notifyError(`Unable to create consumer. ${errorMessage}`);
         return;
       }
-
-      const resumeReq = new ResumeRequest();
-      resumeReq.setConsumerName(consumerName);
-
-      setStream(() => consumerServiceClient.resume(resumeReq));
     }
 
-    startConsume();
+    createConsumer();
 
     return () => {
-      console.log('unmounting', props.topic, streamRef.current);
-
       streamRef.current?.cancel();
       streamRef.current?.removeListener('data', streamDataHandler);
 
@@ -105,6 +100,46 @@ const Messages: React.FC<MessagesProps> = (props) => {
     };
   }, []);
 
+  // Stream's connection pauses on window blur and we don't receive new messages.
+  // Here we are trying to handle this situation.
+  const handleVisibilityChange = useCallback(() => {
+    if (document.visibilityState === 'hidden') {
+      console.log('hidden', isPaused, isPausedBeforeWindowBlur);
+      setIsPausedBeforeWindowBlur(isPaused);
+      setIsPaused(true);
+      return;
+    }
+
+    if (document.visibilityState === 'visible') {
+      console.log('visible', isPaused, isPausedBeforeWindowBlur);
+      setIsPaused(isPausedBeforeWindowBlur);
+      return;
+    }
+  }, [isPaused, isPausedBeforeWindowBlur]);
+
+  useEffect(() => {
+    if (window === undefined) return;
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => window.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [handleVisibilityChange]);
+
+  useEffect(() => {
+    if (isPaused) {
+      const pauseReq = new PauseRequest();
+      pauseReq.setConsumerName(consumerName);
+      consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
+        .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
+    } else {
+      const resumeReq = new ResumeRequest();
+      resumeReq.setConsumerName(consumerName);
+      stream?.cancel();
+      stream?.removeListener('data', streamDataHandler)
+      const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(10) });
+      setStream(() => newStream);
+    }
+  }, [isPaused]);
+
+
   return (
     <div className={s.Messages}>
       <div className={s.Toolbar}>
@@ -114,23 +149,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
             <Button
               title={isPaused ? "Resume" : "Pause"}
               svgIcon={isPaused ? resumeIcon : pauseIcon}
-              onClick={async () => {
-                if (isPaused) {
-                  setIsPaused(false);
-                  const resumeReq = new ResumeRequest();
-                  resumeReq.setConsumerName(consumerName);
-                  stream?.cancel();
-                  stream?.removeListener('data', streamDataHandler)
-                  const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(10) });
-                  setStream(() => newStream);
-                } else {
-                  setIsPaused(true);
-                  const pauseReq = new PauseRequest();
-                  pauseReq.setConsumerName(consumerName);
-                  consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
-                    .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
-                }
-              }}
+              onClick={() => setIsPaused(isPaused => !isPaused)}
               type={isPaused ? 'primary' : 'danger'}
             />
           </div>
