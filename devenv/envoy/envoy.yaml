@@ -13,6 +13,7 @@ static_resources:
           - name: envoy.filters.network.http_connection_manager
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stream_idle_timeout: 0s
               access_log:
                 - name: envoy.access_loggers.file
                   typed_config:
@@ -32,6 +33,7 @@ static_resources:
                           timeout: 0s
                           max_stream_duration:
                             grpc_timeout_header_max: 0s
+                            max_stream_duration: 0s
                     cors:
                       allow_origin_string_match:
                         - prefix: "*"
