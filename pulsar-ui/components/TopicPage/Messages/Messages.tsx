@@ -35,6 +35,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [consumerName, _] = useState('__xray_' + nanoid());
   const [subscriptionName, __] = useState('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
+  const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
@@ -45,12 +46,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
     if (stream === undefined) {
       return;
     }
-    console.log('stream', stream);
 
-    stream.on('end', () => console.log('stream end'));
-    stream.on('metadata', (status) => console.log('stream metadata:', status));
-    stream.on('error', (err) => console.log('stream error:', err));
-
+    streamRef.current = stream;
     stream.removeListener('data', streamDataHandler)
     stream.on('data', streamDataHandler);
   }, [stream]);
@@ -69,7 +66,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
       createConsumerReq.setPriorityLevel(1000);
 
       const createConsumerRes = await consumerServiceClient.createConsumer(createConsumerReq, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
-      console.log('createConsumerRes', createConsumerRes);
 
       if (createConsumerRes === undefined) {
         return;
@@ -93,8 +89,10 @@ const Messages: React.FC<MessagesProps> = (props) => {
     startConsume();
 
     return () => {
-      stream?.cancel();
-      stream?.removeListener('data', streamDataHandler);
+      console.log('unmounting', props.topic, streamRef.current);
+
+      streamRef.current?.cancel();
+      streamRef.current?.removeListener('data', streamDataHandler);
 
       async function deleteConsumer() {
         const deleteConsumerReq = new DeleteConsumerRequest();
