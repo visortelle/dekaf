@@ -36,8 +36,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [subscriptionName, __] = useState('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
 
-  const streamDataHandler = useCallback((data: ResumeResponse) => {
-    const newMessages = data.getMessagesList().map(m => ({ message: m, key: nanoid() }));
+  const streamDataHandler = useCallback((res: ResumeResponse) => {
+    const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
     setMessages(messages => messages.concat(newMessages));
   }, [setMessages]);
 
@@ -45,6 +45,11 @@ const Messages: React.FC<MessagesProps> = (props) => {
     if (stream === undefined) {
       return;
     }
+    console.log('stream', stream);
+
+    stream.on('end', () => console.log('stream end'));
+    stream.on('metadata', (status) => console.log('stream metadata:', status));
+    stream.on('error', (err) => console.log('stream error:', err));
 
     stream.removeListener('data', streamDataHandler)
     stream.on('data', streamDataHandler);
@@ -64,6 +69,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
       createConsumerReq.setPriorityLevel(1000);
 
       const createConsumerRes = await consumerServiceClient.createConsumer(createConsumerReq, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
+      console.log('createConsumerRes', createConsumerRes);
 
       if (createConsumerRes === undefined) {
         return;
@@ -144,8 +150,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
               type='primary'
             />
           </div>
-
-
         </div>
       </div>
       <div
@@ -171,6 +175,11 @@ const Messages: React.FC<MessagesProps> = (props) => {
           customScrollParent={listRef.current || undefined}
           itemContent={(_, { key, message }) => <MessageComponent key={key} message={message} />}
           followOutput={isFollowOutput}
+          itemsRendered={() => {
+            if (isFollowOutput) {
+              virtuosoRef.current?.scrollToIndex(messages.length - 1);
+            }
+          }}
         />
       </div>
     </div>

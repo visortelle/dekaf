@@ -11,22 +11,22 @@ package com.tools.teal.pulsar.ui.api.v1.consumer
 @SerialVersionUID(0L)
 final case class Message(
     properties: _root_.scala.collection.immutable.Map[_root_.scala.Predef.String, _root_.scala.Predef.String] = _root_.scala.collection.immutable.Map.empty,
-    data: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY,
-    size: _root_.scala.Long = 0L,
-    value: _root_.scala.Predef.String = "",
+    data: _root_.scala.Option[_root_.com.google.protobuf.ByteString] = _root_.scala.None,
+    size: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None,
+    value: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None,
     eventTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None,
     publishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None,
     brokerPublishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None,
-    messageId: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY,
-    sequenceId: _root_.scala.Double = 0.0,
-    producerName: _root_.scala.Predef.String = "",
-    key: _root_.scala.Predef.String = "",
-    orderingKey: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY,
-    topic: _root_.scala.Predef.String = "",
-    redeliveryCount: _root_.scala.Int = 0,
-    schemaVersion: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY,
-    isReplicated: _root_.scala.Boolean = false,
-    replicatedFrom: _root_.scala.Predef.String = "",
+    messageId: _root_.scala.Option[_root_.com.google.protobuf.ByteString] = _root_.scala.None,
+    sequenceId: _root_.scala.Option[_root_.scala.Double] = _root_.scala.None,
+    producerName: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None,
+    key: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None,
+    orderingKey: _root_.scala.Option[_root_.com.google.protobuf.ByteString] = _root_.scala.None,
+    topic: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None,
+    redeliveryCount: _root_.scala.Option[_root_.scala.Int] = _root_.scala.None,
+    schemaVersion: _root_.scala.Option[_root_.com.google.protobuf.ByteString] = _root_.scala.None,
+    isReplicated: _root_.scala.Option[_root_.scala.Boolean] = _root_.scala.None,
+    replicatedFrom: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None,
     unknownFields: _root_.scalapb.UnknownFieldSet = _root_.scalapb.UnknownFieldSet.empty
     ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[Message] {
     @transient
@@ -37,26 +37,17 @@ final case class Message(
         val __value = com.tools.teal.pulsar.ui.api.v1.consumer.Message._typemapper_properties.toBase(__item)
         __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__value.serializedSize) + __value.serializedSize
       }
-      
-      {
-        val __value = data
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeBytesSize(2, __value)
-        }
+      if (data.isDefined) {
+        val __value = data.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeBytesSize(2, __value)
       };
-      
-      {
-        val __value = size
-        if (__value != 0L) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(3, __value)
-        }
+      if (size.isDefined) {
+        val __value = size.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(3, __value)
       };
-      
-      {
-        val __value = value
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(4, __value)
-        }
+      if (value.isDefined) {
+        val __value = value.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(4, __value)
       };
       if (eventTime.isDefined) {
         val __value = eventTime.get
@@ -70,75 +61,45 @@ final case class Message(
         val __value = brokerPublishTime.get
         __size += 2 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__value.serializedSize) + __value.serializedSize
       };
-      
-      {
-        val __value = messageId
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeBytesSize(30, __value)
-        }
+      if (messageId.isDefined) {
+        val __value = messageId.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeBytesSize(30, __value)
       };
-      
-      {
-        val __value = sequenceId
-        if (__value != 0.0) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeDoubleSize(8, __value)
-        }
+      if (sequenceId.isDefined) {
+        val __value = sequenceId.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeDoubleSize(8, __value)
       };
-      
-      {
-        val __value = producerName
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(9, __value)
-        }
+      if (producerName.isDefined) {
+        val __value = producerName.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(9, __value)
       };
-      
-      {
-        val __value = key
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(10, __value)
-        }
+      if (key.isDefined) {
+        val __value = key.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(10, __value)
       };
-      
-      {
-        val __value = orderingKey
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeBytesSize(11, __value)
-        }
+      if (orderingKey.isDefined) {
+        val __value = orderingKey.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeBytesSize(11, __value)
       };
-      
-      {
-        val __value = topic
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(12, __value)
-        }
+      if (topic.isDefined) {
+        val __value = topic.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(12, __value)
       };
-      
-      {
-        val __value = redeliveryCount
-        if (__value != 0) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeInt32Size(13, __value)
-        }
+      if (redeliveryCount.isDefined) {
+        val __value = redeliveryCount.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeInt32Size(13, __value)
       };
-      
-      {
-        val __value = schemaVersion
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeBytesSize(14, __value)
-        }
+      if (schemaVersion.isDefined) {
+        val __value = schemaVersion.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeBytesSize(14, __value)
       };
-      
-      {
-        val __value = isReplicated
-        if (__value != false) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeBoolSize(20, __value)
-        }
+      if (isReplicated.isDefined) {
+        val __value = isReplicated.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeBoolSize(20, __value)
       };
-      
-      {
-        val __value = replicatedFrom
-        if (!__value.isEmpty) {
-          __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(21, __value)
-        }
+      if (replicatedFrom.isDefined) {
+        val __value = replicatedFrom.get
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(21, __value)
       };
       __size += unknownFields.serializedSize
       __size
@@ -159,23 +120,17 @@ final case class Message(
         _output__.writeUInt32NoTag(__m.serializedSize)
         __m.writeTo(_output__)
       };
-      {
-        val __v = data
-        if (!__v.isEmpty) {
-          _output__.writeBytes(2, __v)
-        }
+      data.foreach { __v =>
+        val __m = __v
+        _output__.writeBytes(2, __m)
       };
-      {
-        val __v = size
-        if (__v != 0L) {
-          _output__.writeInt64(3, __v)
-        }
+      size.foreach { __v =>
+        val __m = __v
+        _output__.writeInt64(3, __m)
       };
-      {
-        val __v = value
-        if (!__v.isEmpty) {
-          _output__.writeString(4, __v)
-        }
+      value.foreach { __v =>
+        val __m = __v
+        _output__.writeString(4, __m)
       };
       publishTime.foreach { __v =>
         val __m = __v
@@ -189,59 +144,41 @@ final case class Message(
         _output__.writeUInt32NoTag(__m.serializedSize)
         __m.writeTo(_output__)
       };
-      {
-        val __v = sequenceId
-        if (__v != 0.0) {
-          _output__.writeDouble(8, __v)
-        }
+      sequenceId.foreach { __v =>
+        val __m = __v
+        _output__.writeDouble(8, __m)
       };
-      {
-        val __v = producerName
-        if (!__v.isEmpty) {
-          _output__.writeString(9, __v)
-        }
+      producerName.foreach { __v =>
+        val __m = __v
+        _output__.writeString(9, __m)
       };
-      {
-        val __v = key
-        if (!__v.isEmpty) {
-          _output__.writeString(10, __v)
-        }
+      key.foreach { __v =>
+        val __m = __v
+        _output__.writeString(10, __m)
       };
-      {
-        val __v = orderingKey
-        if (!__v.isEmpty) {
-          _output__.writeBytes(11, __v)
-        }
+      orderingKey.foreach { __v =>
+        val __m = __v
+        _output__.writeBytes(11, __m)
       };
-      {
-        val __v = topic
-        if (!__v.isEmpty) {
-          _output__.writeString(12, __v)
-        }
+      topic.foreach { __v =>
+        val __m = __v
+        _output__.writeString(12, __m)
       };
-      {
-        val __v = redeliveryCount
-        if (__v != 0) {
-          _output__.writeInt32(13, __v)
-        }
+      redeliveryCount.foreach { __v =>
+        val __m = __v
+        _output__.writeInt32(13, __m)
       };
-      {
-        val __v = schemaVersion
-        if (!__v.isEmpty) {
-          _output__.writeBytes(14, __v)
-        }
+      schemaVersion.foreach { __v =>
+        val __m = __v
+        _output__.writeBytes(14, __m)
       };
-      {
-        val __v = isReplicated
-        if (__v != false) {
-          _output__.writeBool(20, __v)
-        }
+      isReplicated.foreach { __v =>
+        val __m = __v
+        _output__.writeBool(20, __m)
       };
-      {
-        val __v = replicatedFrom
-        if (!__v.isEmpty) {
-          _output__.writeString(21, __v)
-        }
+      replicatedFrom.foreach { __v =>
+        val __m = __v
+        _output__.writeString(21, __m)
       };
       brokerPublishTime.foreach { __v =>
         val __m = __v
@@ -249,11 +186,9 @@ final case class Message(
         _output__.writeUInt32NoTag(__m.serializedSize)
         __m.writeTo(_output__)
       };
-      {
-        val __v = messageId
-        if (!__v.isEmpty) {
-          _output__.writeBytes(30, __v)
-        }
+      messageId.foreach { __v =>
+        val __m = __v
+        _output__.writeBytes(30, __m)
       };
       unknownFields.writeTo(_output__)
     }
@@ -261,9 +196,15 @@ final case class Message(
     def addProperties(__vs: (_root_.scala.Predef.String, _root_.scala.Predef.String) *): Message = addAllProperties(__vs)
     def addAllProperties(__vs: Iterable[(_root_.scala.Predef.String, _root_.scala.Predef.String)]): Message = copy(properties = properties ++ __vs)
     def withProperties(__v: _root_.scala.collection.immutable.Map[_root_.scala.Predef.String, _root_.scala.Predef.String]): Message = copy(properties = __v)
-    def withData(__v: _root_.com.google.protobuf.ByteString): Message = copy(data = __v)
-    def withSize(__v: _root_.scala.Long): Message = copy(size = __v)
-    def withValue(__v: _root_.scala.Predef.String): Message = copy(value = __v)
+    def getData: _root_.com.google.protobuf.ByteString = data.getOrElse(_root_.com.google.protobuf.ByteString.EMPTY)
+    def clearData: Message = copy(data = _root_.scala.None)
+    def withData(__v: _root_.com.google.protobuf.ByteString): Message = copy(data = Option(__v))
+    def getSize: _root_.scala.Long = size.getOrElse(0L)
+    def clearSize: Message = copy(size = _root_.scala.None)
+    def withSize(__v: _root_.scala.Long): Message = copy(size = Option(__v))
+    def getValue: _root_.scala.Predef.String = value.getOrElse("")
+    def clearValue: Message = copy(value = _root_.scala.None)
+    def withValue(__v: _root_.scala.Predef.String): Message = copy(value = Option(__v))
     def getEventTime: com.google.protobuf.timestamp.Timestamp = eventTime.getOrElse(com.google.protobuf.timestamp.Timestamp.defaultInstance)
     def clearEventTime: Message = copy(eventTime = _root_.scala.None)
     def withEventTime(__v: com.google.protobuf.timestamp.Timestamp): Message = copy(eventTime = Option(__v))
@@ -273,98 +214,79 @@ final case class Message(
     def getBrokerPublishTime: com.google.protobuf.timestamp.Timestamp = brokerPublishTime.getOrElse(com.google.protobuf.timestamp.Timestamp.defaultInstance)
     def clearBrokerPublishTime: Message = copy(brokerPublishTime = _root_.scala.None)
     def withBrokerPublishTime(__v: com.google.protobuf.timestamp.Timestamp): Message = copy(brokerPublishTime = Option(__v))
-    def withMessageId(__v: _root_.com.google.protobuf.ByteString): Message = copy(messageId = __v)
-    def withSequenceId(__v: _root_.scala.Double): Message = copy(sequenceId = __v)
-    def withProducerName(__v: _root_.scala.Predef.String): Message = copy(producerName = __v)
-    def withKey(__v: _root_.scala.Predef.String): Message = copy(key = __v)
-    def withOrderingKey(__v: _root_.com.google.protobuf.ByteString): Message = copy(orderingKey = __v)
-    def withTopic(__v: _root_.scala.Predef.String): Message = copy(topic = __v)
-    def withRedeliveryCount(__v: _root_.scala.Int): Message = copy(redeliveryCount = __v)
-    def withSchemaVersion(__v: _root_.com.google.protobuf.ByteString): Message = copy(schemaVersion = __v)
-    def withIsReplicated(__v: _root_.scala.Boolean): Message = copy(isReplicated = __v)
-    def withReplicatedFrom(__v: _root_.scala.Predef.String): Message = copy(replicatedFrom = __v)
+    def getMessageId: _root_.com.google.protobuf.ByteString = messageId.getOrElse(_root_.com.google.protobuf.ByteString.EMPTY)
+    def clearMessageId: Message = copy(messageId = _root_.scala.None)
+    def withMessageId(__v: _root_.com.google.protobuf.ByteString): Message = copy(messageId = Option(__v))
+    def getSequenceId: _root_.scala.Double = sequenceId.getOrElse(0.0)
+    def clearSequenceId: Message = copy(sequenceId = _root_.scala.None)
+    def withSequenceId(__v: _root_.scala.Double): Message = copy(sequenceId = Option(__v))
+    def getProducerName: _root_.scala.Predef.String = producerName.getOrElse("")
+    def clearProducerName: Message = copy(producerName = _root_.scala.None)
+    def withProducerName(__v: _root_.scala.Predef.String): Message = copy(producerName = Option(__v))
+    def getKey: _root_.scala.Predef.String = key.getOrElse("")
+    def clearKey: Message = copy(key = _root_.scala.None)
+    def withKey(__v: _root_.scala.Predef.String): Message = copy(key = Option(__v))
+    def getOrderingKey: _root_.com.google.protobuf.ByteString = orderingKey.getOrElse(_root_.com.google.protobuf.ByteString.EMPTY)
+    def clearOrderingKey: Message = copy(orderingKey = _root_.scala.None)
+    def withOrderingKey(__v: _root_.com.google.protobuf.ByteString): Message = copy(orderingKey = Option(__v))
+    def getTopic: _root_.scala.Predef.String = topic.getOrElse("")
+    def clearTopic: Message = copy(topic = _root_.scala.None)
+    def withTopic(__v: _root_.scala.Predef.String): Message = copy(topic = Option(__v))
+    def getRedeliveryCount: _root_.scala.Int = redeliveryCount.getOrElse(0)
+    def clearRedeliveryCount: Message = copy(redeliveryCount = _root_.scala.None)
+    def withRedeliveryCount(__v: _root_.scala.Int): Message = copy(redeliveryCount = Option(__v))
+    def getSchemaVersion: _root_.com.google.protobuf.ByteString = schemaVersion.getOrElse(_root_.com.google.protobuf.ByteString.EMPTY)
+    def clearSchemaVersion: Message = copy(schemaVersion = _root_.scala.None)
+    def withSchemaVersion(__v: _root_.com.google.protobuf.ByteString): Message = copy(schemaVersion = Option(__v))
+    def getIsReplicated: _root_.scala.Boolean = isReplicated.getOrElse(false)
+    def clearIsReplicated: Message = copy(isReplicated = _root_.scala.None)
+    def withIsReplicated(__v: _root_.scala.Boolean): Message = copy(isReplicated = Option(__v))
+    def getReplicatedFrom: _root_.scala.Predef.String = replicatedFrom.getOrElse("")
+    def clearReplicatedFrom: Message = copy(replicatedFrom = _root_.scala.None)
+    def withReplicatedFrom(__v: _root_.scala.Predef.String): Message = copy(replicatedFrom = Option(__v))
     def withUnknownFields(__v: _root_.scalapb.UnknownFieldSet) = copy(unknownFields = __v)
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
       (__fieldNumber: @_root_.scala.unchecked) match {
         case 1 => properties.iterator.map(com.tools.teal.pulsar.ui.api.v1.consumer.Message._typemapper_properties.toBase(_)).toSeq
-        case 2 => {
-          val __t = data
-          if (__t != _root_.com.google.protobuf.ByteString.EMPTY) __t else null
-        }
-        case 3 => {
-          val __t = size
-          if (__t != 0L) __t else null
-        }
-        case 4 => {
-          val __t = value
-          if (__t != "") __t else null
-        }
+        case 2 => data.orNull
+        case 3 => size.orNull
+        case 4 => value.orNull
         case 7 => eventTime.orNull
         case 6 => publishTime.orNull
         case 22 => brokerPublishTime.orNull
-        case 30 => {
-          val __t = messageId
-          if (__t != _root_.com.google.protobuf.ByteString.EMPTY) __t else null
-        }
-        case 8 => {
-          val __t = sequenceId
-          if (__t != 0.0) __t else null
-        }
-        case 9 => {
-          val __t = producerName
-          if (__t != "") __t else null
-        }
-        case 10 => {
-          val __t = key
-          if (__t != "") __t else null
-        }
-        case 11 => {
-          val __t = orderingKey
-          if (__t != _root_.com.google.protobuf.ByteString.EMPTY) __t else null
-        }
-        case 12 => {
-          val __t = topic
-          if (__t != "") __t else null
-        }
-        case 13 => {
-          val __t = redeliveryCount
-          if (__t != 0) __t else null
-        }
-        case 14 => {
-          val __t = schemaVersion
-          if (__t != _root_.com.google.protobuf.ByteString.EMPTY) __t else null
-        }
-        case 20 => {
-          val __t = isReplicated
-          if (__t != false) __t else null
-        }
-        case 21 => {
-          val __t = replicatedFrom
-          if (__t != "") __t else null
-        }
+        case 30 => messageId.orNull
+        case 8 => sequenceId.orNull
+        case 9 => producerName.orNull
+        case 10 => key.orNull
+        case 11 => orderingKey.orNull
+        case 12 => topic.orNull
+        case 13 => redeliveryCount.orNull
+        case 14 => schemaVersion.orNull
+        case 20 => isReplicated.orNull
+        case 21 => replicatedFrom.orNull
       }
     }
     def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
       _root_.scala.Predef.require(__field.containingMessage eq companion.scalaDescriptor)
       (__field.number: @_root_.scala.unchecked) match {
         case 1 => _root_.scalapb.descriptors.PRepeated(properties.iterator.map(com.tools.teal.pulsar.ui.api.v1.consumer.Message._typemapper_properties.toBase(_).toPMessage).toVector)
-        case 2 => _root_.scalapb.descriptors.PByteString(data)
-        case 3 => _root_.scalapb.descriptors.PLong(size)
-        case 4 => _root_.scalapb.descriptors.PString(value)
+        case 2 => data.map(_root_.scalapb.descriptors.PByteString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 3 => size.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 4 => value.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 7 => eventTime.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 6 => publishTime.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 22 => brokerPublishTime.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
-        case 30 => _root_.scalapb.descriptors.PByteString(messageId)
-        case 8 => _root_.scalapb.descriptors.PDouble(sequenceId)
-        case 9 => _root_.scalapb.descriptors.PString(producerName)
-        case 10 => _root_.scalapb.descriptors.PString(key)
-        case 11 => _root_.scalapb.descriptors.PByteString(orderingKey)
-        case 12 => _root_.scalapb.descriptors.PString(topic)
-        case 13 => _root_.scalapb.descriptors.PInt(redeliveryCount)
-        case 14 => _root_.scalapb.descriptors.PByteString(schemaVersion)
-        case 20 => _root_.scalapb.descriptors.PBoolean(isReplicated)
-        case 21 => _root_.scalapb.descriptors.PString(replicatedFrom)
+        case 30 => messageId.map(_root_.scalapb.descriptors.PByteString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 8 => sequenceId.map(_root_.scalapb.descriptors.PDouble(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 9 => producerName.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 10 => key.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 11 => orderingKey.map(_root_.scalapb.descriptors.PByteString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 12 => topic.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 13 => redeliveryCount.map(_root_.scalapb.descriptors.PInt(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 14 => schemaVersion.map(_root_.scalapb.descriptors.PByteString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 20 => isReplicated.map(_root_.scalapb.descriptors.PBoolean(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 21 => replicatedFrom.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
       }
     }
     def toProtoString: _root_.scala.Predef.String = _root_.scalapb.TextFormat.printToUnicodeString(this)
@@ -376,22 +298,22 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
   implicit def messageCompanion: scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.Message] = this
   def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.Message = {
     val __properties: _root_.scala.collection.mutable.Builder[(_root_.scala.Predef.String, _root_.scala.Predef.String), _root_.scala.collection.immutable.Map[_root_.scala.Predef.String, _root_.scala.Predef.String]] = _root_.scala.collection.immutable.Map.newBuilder[_root_.scala.Predef.String, _root_.scala.Predef.String]
-    var __data: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY
-    var __size: _root_.scala.Long = 0L
-    var __value: _root_.scala.Predef.String = ""
+    var __data: _root_.scala.Option[_root_.com.google.protobuf.ByteString] = _root_.scala.None
+    var __size: _root_.scala.Option[_root_.scala.Long] = _root_.scala.None
+    var __value: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None
     var __eventTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None
     var __publishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None
     var __brokerPublishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp] = _root_.scala.None
-    var __messageId: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY
-    var __sequenceId: _root_.scala.Double = 0.0
-    var __producerName: _root_.scala.Predef.String = ""
-    var __key: _root_.scala.Predef.String = ""
-    var __orderingKey: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY
-    var __topic: _root_.scala.Predef.String = ""
-    var __redeliveryCount: _root_.scala.Int = 0
-    var __schemaVersion: _root_.com.google.protobuf.ByteString = _root_.com.google.protobuf.ByteString.EMPTY
-    var __isReplicated: _root_.scala.Boolean = false
-    var __replicatedFrom: _root_.scala.Predef.String = ""
+    var __messageId: _root_.scala.Option[_root_.com.google.protobuf.ByteString] = _root_.scala.None
+    var __sequenceId: _root_.scala.Option[_root_.scala.Double] = _root_.scala.None
+    var __producerName: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None
+    var __key: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None
+    var __orderingKey: _root_.scala.Option[_root_.com.google.protobuf.ByteString] = _root_.scala.None
+    var __topic: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None
+    var __redeliveryCount: _root_.scala.Option[_root_.scala.Int] = _root_.scala.None
+    var __schemaVersion: _root_.scala.Option[_root_.com.google.protobuf.ByteString] = _root_.scala.None
+    var __isReplicated: _root_.scala.Option[_root_.scala.Boolean] = _root_.scala.None
+    var __replicatedFrom: _root_.scala.Option[_root_.scala.Predef.String] = _root_.scala.None
     var `_unknownFields__`: _root_.scalapb.UnknownFieldSet.Builder = null
     var _done__ = false
     while (!_done__) {
@@ -401,11 +323,11 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
         case 10 =>
           __properties += com.tools.teal.pulsar.ui.api.v1.consumer.Message._typemapper_properties.toCustom(_root_.scalapb.LiteParser.readMessage[com.tools.teal.pulsar.ui.api.v1.consumer.Message.PropertiesEntry](_input__))
         case 18 =>
-          __data = _input__.readBytes()
+          __data = Option(_input__.readBytes())
         case 24 =>
-          __size = _input__.readInt64()
+          __size = Option(_input__.readInt64())
         case 34 =>
-          __value = _input__.readStringRequireUtf8()
+          __value = Option(_input__.readStringRequireUtf8())
         case 58 =>
           __eventTime = Option(__eventTime.fold(_root_.scalapb.LiteParser.readMessage[com.google.protobuf.timestamp.Timestamp](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
         case 50 =>
@@ -413,25 +335,25 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
         case 178 =>
           __brokerPublishTime = Option(__brokerPublishTime.fold(_root_.scalapb.LiteParser.readMessage[com.google.protobuf.timestamp.Timestamp](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
         case 242 =>
-          __messageId = _input__.readBytes()
+          __messageId = Option(_input__.readBytes())
         case 65 =>
-          __sequenceId = _input__.readDouble()
+          __sequenceId = Option(_input__.readDouble())
         case 74 =>
-          __producerName = _input__.readStringRequireUtf8()
+          __producerName = Option(_input__.readStringRequireUtf8())
         case 82 =>
-          __key = _input__.readStringRequireUtf8()
+          __key = Option(_input__.readStringRequireUtf8())
         case 90 =>
-          __orderingKey = _input__.readBytes()
+          __orderingKey = Option(_input__.readBytes())
         case 98 =>
-          __topic = _input__.readStringRequireUtf8()
+          __topic = Option(_input__.readStringRequireUtf8())
         case 104 =>
-          __redeliveryCount = _input__.readInt32()
+          __redeliveryCount = Option(_input__.readInt32())
         case 114 =>
-          __schemaVersion = _input__.readBytes()
+          __schemaVersion = Option(_input__.readBytes())
         case 160 =>
-          __isReplicated = _input__.readBool()
+          __isReplicated = Option(_input__.readBool())
         case 170 =>
-          __replicatedFrom = _input__.readStringRequireUtf8()
+          __replicatedFrom = Option(_input__.readStringRequireUtf8())
         case tag =>
           if (_unknownFields__ == null) {
             _unknownFields__ = new _root_.scalapb.UnknownFieldSet.Builder()
@@ -465,22 +387,22 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
       com.tools.teal.pulsar.ui.api.v1.consumer.Message(
         properties = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).map(_.as[_root_.scala.Seq[com.tools.teal.pulsar.ui.api.v1.consumer.Message.PropertiesEntry]]).getOrElse(_root_.scala.Seq.empty).iterator.map(com.tools.teal.pulsar.ui.api.v1.consumer.Message._typemapper_properties.toCustom(_)).toMap,
-        data = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.com.google.protobuf.ByteString]).getOrElse(_root_.com.google.protobuf.ByteString.EMPTY),
-        size = __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).map(_.as[_root_.scala.Long]).getOrElse(0L),
-        value = __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
+        data = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).flatMap(_.as[_root_.scala.Option[_root_.com.google.protobuf.ByteString]]),
+        size = __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Long]]),
+        value = __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]]),
         eventTime = __fieldsMap.get(scalaDescriptor.findFieldByNumber(7).get).flatMap(_.as[_root_.scala.Option[com.google.protobuf.timestamp.Timestamp]]),
         publishTime = __fieldsMap.get(scalaDescriptor.findFieldByNumber(6).get).flatMap(_.as[_root_.scala.Option[com.google.protobuf.timestamp.Timestamp]]),
         brokerPublishTime = __fieldsMap.get(scalaDescriptor.findFieldByNumber(22).get).flatMap(_.as[_root_.scala.Option[com.google.protobuf.timestamp.Timestamp]]),
-        messageId = __fieldsMap.get(scalaDescriptor.findFieldByNumber(30).get).map(_.as[_root_.com.google.protobuf.ByteString]).getOrElse(_root_.com.google.protobuf.ByteString.EMPTY),
-        sequenceId = __fieldsMap.get(scalaDescriptor.findFieldByNumber(8).get).map(_.as[_root_.scala.Double]).getOrElse(0.0),
-        producerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(9).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
-        key = __fieldsMap.get(scalaDescriptor.findFieldByNumber(10).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
-        orderingKey = __fieldsMap.get(scalaDescriptor.findFieldByNumber(11).get).map(_.as[_root_.com.google.protobuf.ByteString]).getOrElse(_root_.com.google.protobuf.ByteString.EMPTY),
-        topic = __fieldsMap.get(scalaDescriptor.findFieldByNumber(12).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
-        redeliveryCount = __fieldsMap.get(scalaDescriptor.findFieldByNumber(13).get).map(_.as[_root_.scala.Int]).getOrElse(0),
-        schemaVersion = __fieldsMap.get(scalaDescriptor.findFieldByNumber(14).get).map(_.as[_root_.com.google.protobuf.ByteString]).getOrElse(_root_.com.google.protobuf.ByteString.EMPTY),
-        isReplicated = __fieldsMap.get(scalaDescriptor.findFieldByNumber(20).get).map(_.as[_root_.scala.Boolean]).getOrElse(false),
-        replicatedFrom = __fieldsMap.get(scalaDescriptor.findFieldByNumber(21).get).map(_.as[_root_.scala.Predef.String]).getOrElse("")
+        messageId = __fieldsMap.get(scalaDescriptor.findFieldByNumber(30).get).flatMap(_.as[_root_.scala.Option[_root_.com.google.protobuf.ByteString]]),
+        sequenceId = __fieldsMap.get(scalaDescriptor.findFieldByNumber(8).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Double]]),
+        producerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(9).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]]),
+        key = __fieldsMap.get(scalaDescriptor.findFieldByNumber(10).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]]),
+        orderingKey = __fieldsMap.get(scalaDescriptor.findFieldByNumber(11).get).flatMap(_.as[_root_.scala.Option[_root_.com.google.protobuf.ByteString]]),
+        topic = __fieldsMap.get(scalaDescriptor.findFieldByNumber(12).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]]),
+        redeliveryCount = __fieldsMap.get(scalaDescriptor.findFieldByNumber(13).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Int]]),
+        schemaVersion = __fieldsMap.get(scalaDescriptor.findFieldByNumber(14).get).flatMap(_.as[_root_.scala.Option[_root_.com.google.protobuf.ByteString]]),
+        isReplicated = __fieldsMap.get(scalaDescriptor.findFieldByNumber(20).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Boolean]]),
+        replicatedFrom = __fieldsMap.get(scalaDescriptor.findFieldByNumber(21).get).flatMap(_.as[_root_.scala.Option[_root_.scala.Predef.String]])
       )
     case _ => throw new RuntimeException("Expected PMessage")
   }
@@ -503,22 +425,22 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
   def enumCompanionForFieldNumber(__fieldNumber: _root_.scala.Int): _root_.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
   lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.Message(
     properties = _root_.scala.collection.immutable.Map.empty,
-    data = _root_.com.google.protobuf.ByteString.EMPTY,
-    size = 0L,
-    value = "",
+    data = _root_.scala.None,
+    size = _root_.scala.None,
+    value = _root_.scala.None,
     eventTime = _root_.scala.None,
     publishTime = _root_.scala.None,
     brokerPublishTime = _root_.scala.None,
-    messageId = _root_.com.google.protobuf.ByteString.EMPTY,
-    sequenceId = 0.0,
-    producerName = "",
-    key = "",
-    orderingKey = _root_.com.google.protobuf.ByteString.EMPTY,
-    topic = "",
-    redeliveryCount = 0,
-    schemaVersion = _root_.com.google.protobuf.ByteString.EMPTY,
-    isReplicated = false,
-    replicatedFrom = ""
+    messageId = _root_.scala.None,
+    sequenceId = _root_.scala.None,
+    producerName = _root_.scala.None,
+    key = _root_.scala.None,
+    orderingKey = _root_.scala.None,
+    topic = _root_.scala.None,
+    redeliveryCount = _root_.scala.None,
+    schemaVersion = _root_.scala.None,
+    isReplicated = _root_.scala.None,
+    replicatedFrom = _root_.scala.None
   )
   @SerialVersionUID(0L)
   final case class PropertiesEntry(
@@ -666,25 +588,38 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
   
   implicit class MessageLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.Message]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.Message](_l) {
     def properties: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.collection.immutable.Map[_root_.scala.Predef.String, _root_.scala.Predef.String]] = field(_.properties)((c_, f_) => c_.copy(properties = f_))
-    def data: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.data)((c_, f_) => c_.copy(data = f_))
-    def size: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.size)((c_, f_) => c_.copy(size = f_))
-    def value: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.value)((c_, f_) => c_.copy(value = f_))
+    def data: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.getData)((c_, f_) => c_.copy(data = Option(f_)))
+    def optionalData: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.com.google.protobuf.ByteString]] = field(_.data)((c_, f_) => c_.copy(data = f_))
+    def size: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.getSize)((c_, f_) => c_.copy(size = Option(f_)))
+    def optionalSize: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Long]] = field(_.size)((c_, f_) => c_.copy(size = f_))
+    def value: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.getValue)((c_, f_) => c_.copy(value = Option(f_)))
+    def optionalValue: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Predef.String]] = field(_.value)((c_, f_) => c_.copy(value = f_))
     def eventTime: _root_.scalapb.lenses.Lens[UpperPB, com.google.protobuf.timestamp.Timestamp] = field(_.getEventTime)((c_, f_) => c_.copy(eventTime = Option(f_)))
     def optionalEventTime: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.google.protobuf.timestamp.Timestamp]] = field(_.eventTime)((c_, f_) => c_.copy(eventTime = f_))
     def publishTime: _root_.scalapb.lenses.Lens[UpperPB, com.google.protobuf.timestamp.Timestamp] = field(_.getPublishTime)((c_, f_) => c_.copy(publishTime = Option(f_)))
     def optionalPublishTime: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.google.protobuf.timestamp.Timestamp]] = field(_.publishTime)((c_, f_) => c_.copy(publishTime = f_))
     def brokerPublishTime: _root_.scalapb.lenses.Lens[UpperPB, com.google.protobuf.timestamp.Timestamp] = field(_.getBrokerPublishTime)((c_, f_) => c_.copy(brokerPublishTime = Option(f_)))
     def optionalBrokerPublishTime: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.google.protobuf.timestamp.Timestamp]] = field(_.brokerPublishTime)((c_, f_) => c_.copy(brokerPublishTime = f_))
-    def messageId: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.messageId)((c_, f_) => c_.copy(messageId = f_))
-    def sequenceId: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Double] = field(_.sequenceId)((c_, f_) => c_.copy(sequenceId = f_))
-    def producerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.producerName)((c_, f_) => c_.copy(producerName = f_))
-    def key: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.key)((c_, f_) => c_.copy(key = f_))
-    def orderingKey: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.orderingKey)((c_, f_) => c_.copy(orderingKey = f_))
-    def topic: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.topic)((c_, f_) => c_.copy(topic = f_))
-    def redeliveryCount: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Int] = field(_.redeliveryCount)((c_, f_) => c_.copy(redeliveryCount = f_))
-    def schemaVersion: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.schemaVersion)((c_, f_) => c_.copy(schemaVersion = f_))
-    def isReplicated: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Boolean] = field(_.isReplicated)((c_, f_) => c_.copy(isReplicated = f_))
-    def replicatedFrom: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.replicatedFrom)((c_, f_) => c_.copy(replicatedFrom = f_))
+    def messageId: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.getMessageId)((c_, f_) => c_.copy(messageId = Option(f_)))
+    def optionalMessageId: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.com.google.protobuf.ByteString]] = field(_.messageId)((c_, f_) => c_.copy(messageId = f_))
+    def sequenceId: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Double] = field(_.getSequenceId)((c_, f_) => c_.copy(sequenceId = Option(f_)))
+    def optionalSequenceId: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Double]] = field(_.sequenceId)((c_, f_) => c_.copy(sequenceId = f_))
+    def producerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.getProducerName)((c_, f_) => c_.copy(producerName = Option(f_)))
+    def optionalProducerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Predef.String]] = field(_.producerName)((c_, f_) => c_.copy(producerName = f_))
+    def key: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.getKey)((c_, f_) => c_.copy(key = Option(f_)))
+    def optionalKey: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Predef.String]] = field(_.key)((c_, f_) => c_.copy(key = f_))
+    def orderingKey: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.getOrderingKey)((c_, f_) => c_.copy(orderingKey = Option(f_)))
+    def optionalOrderingKey: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.com.google.protobuf.ByteString]] = field(_.orderingKey)((c_, f_) => c_.copy(orderingKey = f_))
+    def topic: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.getTopic)((c_, f_) => c_.copy(topic = Option(f_)))
+    def optionalTopic: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Predef.String]] = field(_.topic)((c_, f_) => c_.copy(topic = f_))
+    def redeliveryCount: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Int] = field(_.getRedeliveryCount)((c_, f_) => c_.copy(redeliveryCount = Option(f_)))
+    def optionalRedeliveryCount: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Int]] = field(_.redeliveryCount)((c_, f_) => c_.copy(redeliveryCount = f_))
+    def schemaVersion: _root_.scalapb.lenses.Lens[UpperPB, _root_.com.google.protobuf.ByteString] = field(_.getSchemaVersion)((c_, f_) => c_.copy(schemaVersion = Option(f_)))
+    def optionalSchemaVersion: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.com.google.protobuf.ByteString]] = field(_.schemaVersion)((c_, f_) => c_.copy(schemaVersion = f_))
+    def isReplicated: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Boolean] = field(_.getIsReplicated)((c_, f_) => c_.copy(isReplicated = Option(f_)))
+    def optionalIsReplicated: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Boolean]] = field(_.isReplicated)((c_, f_) => c_.copy(isReplicated = f_))
+    def replicatedFrom: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.getReplicatedFrom)((c_, f_) => c_.copy(replicatedFrom = Option(f_)))
+    def optionalReplicatedFrom: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[_root_.scala.Predef.String]] = field(_.replicatedFrom)((c_, f_) => c_.copy(replicatedFrom = f_))
   }
   final val PROPERTIES_FIELD_NUMBER = 1
   final val DATA_FIELD_NUMBER = 2
@@ -707,22 +642,22 @@ object Message extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.u
   private[consumer] val _typemapper_properties: _root_.scalapb.TypeMapper[com.tools.teal.pulsar.ui.api.v1.consumer.Message.PropertiesEntry, (_root_.scala.Predef.String, _root_.scala.Predef.String)] = implicitly[_root_.scalapb.TypeMapper[com.tools.teal.pulsar.ui.api.v1.consumer.Message.PropertiesEntry, (_root_.scala.Predef.String, _root_.scala.Predef.String)]]
   def of(
     properties: _root_.scala.collection.immutable.Map[_root_.scala.Predef.String, _root_.scala.Predef.String],
-    data: _root_.com.google.protobuf.ByteString,
-    size: _root_.scala.Long,
-    value: _root_.scala.Predef.String,
+    data: _root_.scala.Option[_root_.com.google.protobuf.ByteString],
+    size: _root_.scala.Option[_root_.scala.Long],
+    value: _root_.scala.Option[_root_.scala.Predef.String],
     eventTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp],
     publishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp],
     brokerPublishTime: _root_.scala.Option[com.google.protobuf.timestamp.Timestamp],
-    messageId: _root_.com.google.protobuf.ByteString,
-    sequenceId: _root_.scala.Double,
-    producerName: _root_.scala.Predef.String,
-    key: _root_.scala.Predef.String,
-    orderingKey: _root_.com.google.protobuf.ByteString,
-    topic: _root_.scala.Predef.String,
-    redeliveryCount: _root_.scala.Int,
-    schemaVersion: _root_.com.google.protobuf.ByteString,
-    isReplicated: _root_.scala.Boolean,
-    replicatedFrom: _root_.scala.Predef.String
+    messageId: _root_.scala.Option[_root_.com.google.protobuf.ByteString],
+    sequenceId: _root_.scala.Option[_root_.scala.Double],
+    producerName: _root_.scala.Option[_root_.scala.Predef.String],
+    key: _root_.scala.Option[_root_.scala.Predef.String],
+    orderingKey: _root_.scala.Option[_root_.com.google.protobuf.ByteString],
+    topic: _root_.scala.Option[_root_.scala.Predef.String],
+    redeliveryCount: _root_.scala.Option[_root_.scala.Int],
+    schemaVersion: _root_.scala.Option[_root_.com.google.protobuf.ByteString],
+    isReplicated: _root_.scala.Option[_root_.scala.Boolean],
+    replicatedFrom: _root_.scala.Option[_root_.scala.Predef.String]
   ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.Message = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.Message(
     properties,
     data,
