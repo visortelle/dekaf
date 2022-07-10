@@ -20,7 +20,7 @@ install: ## Install Pulsar using Kubernetes Helm.
 
 .PHONY: port-forward
 port-forward: ## Forward ports to localhost.
-	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 8080:80&
+	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 8080:8080&
 	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 6650:6650&
 	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-grafana 8300:3000&
 
