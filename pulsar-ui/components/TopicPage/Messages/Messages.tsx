@@ -12,6 +12,7 @@ import followOutputIcon from '!!raw-loader!./icons/follow-output.svg';
 import pauseIcon from '!!raw-loader!./icons/pause.svg';
 import resumeIcon from '!!raw-loader!./icons/resume.svg';
 import Button from '../../ui/Button/Button';
+import { useDebounce } from 'use-debounce'
 
 export type MessagesProps = {
   tenant: string,
@@ -29,7 +30,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const listRef = useRef<HTMLDivElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
-  const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [isFollowOutput, setIsFollowOutput] = useState(true);
   const [isPaused, setIsPaused] = useState(true);
   const [isPausedBeforeWindowBlur, setIsPausedBeforeWindowBlur] = useState(isPaused);
@@ -37,6 +37,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [subscriptionName, __] = useState('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
+  const [messages, setMessages] = useState<KeyedMessage[]>([]);
+  const [messagesDebounced] = useDebounce(messages, 200, { maxWait: 200 })
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
@@ -104,14 +106,12 @@ const Messages: React.FC<MessagesProps> = (props) => {
   // Here we are trying to handle this situation.
   const handleVisibilityChange = useCallback(() => {
     if (document.visibilityState === 'hidden') {
-      console.log('hidden', isPaused, isPausedBeforeWindowBlur);
       setIsPausedBeforeWindowBlur(isPaused);
       setIsPaused(true);
       return;
     }
 
     if (document.visibilityState === 'visible') {
-      console.log('visible', isPaused, isPausedBeforeWindowBlur);
       setIsPaused(isPausedBeforeWindowBlur);
       return;
     }
@@ -143,7 +143,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
   return (
     <div className={s.Messages}>
       <div className={s.Toolbar}>
-        <strong>{messages.length}</strong>&nbsp;messages loaded
+        <strong>{messagesDebounced.length}</strong>&nbsp;messages loaded
         <div className={s.Buttons}>
           <div className={s.ButtonsButton}>
             <Button
@@ -161,7 +161,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
               onClick={() => {
                 setIsFollowOutput(!isFollowOutput);
                 if (!isFollowOutput) {
-                  virtuosoRef.current?.scrollToIndex(messages.length - 1);
+                  virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1);
                 }
               }}
               type='primary'
@@ -186,15 +186,15 @@ const Messages: React.FC<MessagesProps> = (props) => {
         <Virtuoso<KeyedMessage>
           className={s.Virtuoso}
           ref={virtuosoRef}
-          data={messages}
-          totalCount={messages.length}
+          data={messagesDebounced}
+          totalCount={messagesDebounced.length}
           overscan={{ main: (listRef?.current?.clientHeight || 0), reverse: (listRef?.current?.clientHeight || 0) }}
           customScrollParent={listRef.current || undefined}
           itemContent={(_, { key, message }) => <MessageComponent key={key} message={message} />}
           followOutput={isFollowOutput}
           itemsRendered={() => {
             if (isFollowOutput) {
-              virtuosoRef.current?.scrollToIndex(messages.length - 1);
+              virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1);
             }
           }}
         />
