@@ -51,7 +51,6 @@ val adminClient = PulsarAdmin.builder().serviceHttpUrl(config.pulsarAdminUrl).bu
     server.start
     server.awaitTermination
 
-
 type ConsumerName = String
 
 class StreamDataHandler:
@@ -84,51 +83,52 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     val message = consumerPb.Message(
                       properties = Option(msg.getProperties) match
                           case Some(v) => v.asScala.toMap
-                          case None    => Map.empty
+                          case _    => Map.empty
                       ,
                       data = Option(msg.getData) match
                           case Some(v) => Option(ByteString.copyFrom(v))
-                          case None    => None
+                          case _    => None
                       ,
                       value = Option(msg.getValue) match
-                          case Some(v) => Option(v.toString())
-                          case None    => None
+                          case Some(v) => Option(v.map(_.toChar).mkString)
+                          case _    => None
                       ,
                       size = Option(msg.getData) match
                           case Some(v) => Some(v.length)
-                          case None    => None
+                          case _    => None
                       ,
                       eventTime = Option(msg.getEventTime) match
-                          case Some(v) => Some(timestamp.Timestamp(Instant.ofEpochMilli(v).getNano))
-                          case None    => None
+                          case Some(v) => if v > 0 then Some(timestamp.Timestamp(Instant.ofEpochMilli(v))) else None
+                          case _    => None
                       ,
                       publishTime = Option(msg.getPublishTime) match
-                          case Some(v) => Some(timestamp.Timestamp(Instant.ofEpochMilli(v).getNano))
-                          case None    => None
+                          case Some(v) =>
+                            Some(timestamp.Timestamp(Instant.ofEpochMilli(v)))
+                          case _    => None
                       ,
                       brokerPublishTime = Option(msg.getBrokerPublishTime) match
                           case Some(v) =>
                               v.toScala match
-                                  case Some(l) => Some(timestamp.Timestamp(Instant.ofEpochMilli(l).getNano))
-                                  case None    => None
-                          case None => None
+                                  case Some(l) => Some(timestamp.Timestamp(Instant.ofEpochMilli(l)))
+                                  case _    => None
+                          case _ => None
                       ,
                       messageId = Option(msg.getMessageId.toByteArray) match
                           case Some(v) => Some(ByteString.copyFrom(v))
-                          case None    => None
+                          case _    => None
                       ,
                       sequenceId = Option(msg.getSequenceId),
                       producerName = Option(msg.getProducerName),
                       key = Option(msg.getKey),
                       orderingKey = Option(msg.getOrderingKey) match
                           case Some(v) => Some(ByteString.copyFrom(v))
-                          case None    => None
+                          case _    => None
                       ,
                       topic = Option(msg.getTopicName),
                       redeliveryCount = Option(msg.getRedeliveryCount),
                       schemaVersion = Option(msg.getSchemaVersion) match
                           case Some(v) => Some(ByteString.copyFrom(v))
-                          case None => None,
+                          case _ => None,
                         isReplicated = Option(msg.isReplicated),
                         replicatedFrom = Option(msg.getReplicatedFrom)
                     )

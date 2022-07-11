@@ -17,26 +17,6 @@
   overflow: auto;
 }
 
-.Message {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-bottom: 1rem solid #ddd;
-}
-
-.Message:last-child {
-  border-bottom: none;
-}
-
-.MessageMetadata {
-  padding: 12rem;
-}
-
-.MessageData {
-  padding: 12rem;
-  word-break: break-all;
-}
-
 .Toolbar {
   display: flex;
   align-items: center;
@@ -50,6 +30,29 @@
 
 .ToolbarRight {
   margin-left: auto;
+}
+
+.MessagesLoadedStats {
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+}
+
+.MessagesLoadedStat {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: space-between;
+  line-height: 1;
+  font-size: 12rem;
+}
+
+.MessagesLoadedStatValue {
+  text-align: right;
+  flex: 1 1 auto;
+}
+.MessagesLoadedStatTitle {
+  width: 11ch;
+  text-align: right;
 }
 
 .Buttons {

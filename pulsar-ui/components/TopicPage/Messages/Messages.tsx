@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import s from './Messages.module.css'
+import * as AppContext from '../../app/contexts/AppContext';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest, PauseRequest, SubscriptionInitialPosition, DeleteSubscriptionRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import MessageComponent from './Message/Message';
@@ -14,6 +15,7 @@ import resumeIcon from '!!raw-loader!./icons/resume.svg';
 import Button from '../../ui/Button/Button';
 import { useDebounce } from 'use-debounce'
 import * as I18n from '../../app/contexts/I18n/I18n';
+import { useInterval } from '../../app/hooks/use-interval';
 
 export type MessagesProps = {
   tenant: string,
@@ -31,6 +33,7 @@ const displayMessagesLimit = 10000;
 
 const Messages: React.FC<MessagesProps> = (props) => {
   const i18n = I18n.useContext();
+  const appContext = AppContext.useContext();
   const { notifyError } = Notifications.useContext();
   const listRef = useRef<HTMLDivElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
@@ -42,12 +45,15 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
-  const [messagesCount, setMessagesCount] = useState(0);
+  const [messagesLoaded, setMessagesLoaded] = useState(0);
+  const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<{ prevMessagesLoaded: number, messagesLoadedPerSecond: number }>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
   const [messagesDebounced] = useDebounce(messages, 300, { maxWait: 300 })
+
+  useInterval(() => setMessagesLoadedPerSecond({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }), 1000);
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
-    setMessagesCount(messagesCount => messagesCount + newMessages.length);
+    setMessagesLoaded(messagesCount => messagesCount + newMessages.length);
     setMessages(messages => {
       let messagesToSet = messages.concat(newMessages);
       return messagesToSet.slice(messagesToSet.length - displayMessagesLimit, messagesToSet.length);
@@ -170,6 +176,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
     if (!isPaused) {
       virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1);
     }
+
+    appContext.setPerformanceOptimizations({ ...appContext.performanceOptimizations, pulsarConsumerState: isPaused ? 'inactive' : 'active' });
   }, [isPaused]);
 
   return (
@@ -189,7 +197,16 @@ const Messages: React.FC<MessagesProps> = (props) => {
         </div>
 
         <div className={s.ToolbarRight}>
-          <strong>{i18n.formatLongNumber(messagesCount)}</strong>&nbsp;messages loaded
+          <div className={s.MessagesLoadedStats}>
+            <div className={s.MessagesLoadedStat}>
+              <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(messagesLoaded)}</strong>
+              <span className={s.MessagesLoadedStatTitle}>&nbsp; loaded</span>
+            </div>
+            <div className={s.MessagesLoadedStat}>
+              <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(messagesLoadedPerSecond.messagesLoadedPerSecond)}</strong>
+              <span className={s.MessagesLoadedStatTitle}>&nbsp;per second</span>
+            </div>
+          </div>
         </div>
       </div>
       <div

@@ -1,0 +1,52 @@
+.Message {
+  overflow: hidden;
+  padding: 4rem 0;
+  border-bottom: 1rem solid #ddd;
+  margin-bottom: -1rem; /* Remove Message's border. We can't use :first/last-child selector due to it is placed inside a virtualized list. */
+}
+
+.LeftSection {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+}
+
+.RightSection {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+}
+
+.Field {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 0 12rem;
+}
+
+.FieldName {
+  white-space: nowrap;
+  font-weight: bold;
+  font-size: 13rem;
+  width: 18ch;
+  margin-right: 8rem;
+}
+
+.FieldValue {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline;
+  max-width: 50ch;
+  text-align: right;
+}
+
+.FieldValueLink:hover {
+  text-decoration: underline;
+}
+
+.NoData {
+  color: #aaa;
+}
