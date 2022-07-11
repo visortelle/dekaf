@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest, PauseRequest, SubscriptionInitialPosition, DeleteSubscriptionRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
@@ -12,6 +13,7 @@ import pauseIcon from '!!raw-loader!./icons/pause.svg';
 import resumeIcon from '!!raw-loader!./icons/resume.svg';
 import Button from '../../ui/Button/Button';
 import { useDebounce } from 'use-debounce'
+import * as I18n from '../../app/contexts/I18n/I18n';
 
 export type MessagesProps = {
   tenant: string,
@@ -25,9 +27,10 @@ type KeyedMessage = {
   key: string
 }
 
-const maxMessages = 10000;
+const displayMessagesLimit = 10000;
 
 const Messages: React.FC<MessagesProps> = (props) => {
+  const i18n = I18n.useContext();
   const { notifyError } = Notifications.useContext();
   const listRef = useRef<HTMLDivElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
@@ -40,16 +43,19 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [messagesCount, setMessagesCount] = useState(0);
-  const [messagesDebounced] = useDebounce(messages, 200, { maxWait: 400 })
+  const [messagesDebounced] = useDebounce(messages, 300, { maxWait: 300 })
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
     setMessagesCount(messagesCount => messagesCount + newMessages.length);
     setMessages(messages => {
       let messagesToSet = messages.concat(newMessages);
-      return messagesToSet.slice(messagesToSet.length - maxMessages, messagesToSet.length);
+      return messagesToSet.slice(messagesToSet.length - displayMessagesLimit, messagesToSet.length);
     });
   }, []);
+
+  // It fixes Virtuoso's native "followOutput" glitches.
+  useEffect(() => virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1), [messagesDebounced]);
 
   useEffect(() => {
     streamRef.current = stream;
@@ -93,8 +99,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
 
     createConsumer();
 
-
-
     const cleanup = async () => {
       streamRef.current?.cancel();
       streamRef.current?.removeListener('data', streamDataHandler);
@@ -107,7 +111,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
       }
 
       async function deleteSubscription() {
-        console.log('delete subscription');
         const deleteSubscriptionReq = new DeleteSubscriptionRequest();
         deleteSubscriptionReq.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
         deleteSubscriptionReq.setSubscriptionName(subscriptionName);
@@ -116,8 +119,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
           .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
       }
 
-      deleteConsumer();
-      deleteSubscription();
+      deleteConsumer(); // Don't await this
+      deleteSubscription(); // Don't await this
     };
 
     window.addEventListener('beforeunload', cleanup);
@@ -169,7 +172,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
     }
   }, [isPaused]);
 
-
   return (
     <div className={s.Messages}>
       <div className={s.Toolbar}>
@@ -187,7 +189,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
         </div>
 
         <div className={s.ToolbarRight}>
-          <strong>{messagesCount}</strong>&nbsp;messages loaded
+          <strong>{i18n.formatLongNumber(messagesCount)}</strong>&nbsp;messages loaded
         </div>
       </div>
       <div
@@ -195,12 +197,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
         ref={listRef}
         onWheel={(e) => {
           if (e.deltaY < 0) {
-            setIsPaused(true);
+            setIsPaused(() => true);
             return;
-          }
-
-          if (listRef.current && listRef.current?.scrollHeight - listRef.current?.scrollTop - listRef.current?.clientHeight <= 0) {
-            setIsPaused(false);
           }
         }}
       >
@@ -209,27 +207,10 @@ const Messages: React.FC<MessagesProps> = (props) => {
           ref={virtuosoRef}
           data={messagesDebounced}
           totalCount={messagesDebounced.length}
-          overscan={{ main: (listRef?.current?.clientHeight || 0), reverse: (listRef?.current?.clientHeight || 0) }}
           customScrollParent={listRef.current || undefined}
           itemContent={(_, { key, message }) => <MessageComponent key={key} message={message} />}
           followOutput={!isPaused}
         />
-      </div>
-    </div>
-  );
-}
-
-type MessageComponentProps = {
-  message: Message,
-}
-const MessageComponent: React.FC<MessageComponentProps> = (props) => {
-  return (
-    <div className={s.Message}>
-      <div className={s.MessageMetadata}>
-        <div>Message Id: <br />{props.message.getMessageId_asU8().toString()}</div>
-      </div>
-      <div>
-        <div className={s.MessageData}>Data: {atob(props.message.getData_asB64())}</div>
       </div>
     </div>
   );
