@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest, PauseRequest, SubscriptionInitialPosition } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest, PauseRequest, SubscriptionInitialPosition, DeleteSubscriptionRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
@@ -93,7 +93,9 @@ const Messages: React.FC<MessagesProps> = (props) => {
 
     createConsumer();
 
-    return () => {
+
+
+    const cleanup = async () => {
       streamRef.current?.cancel();
       streamRef.current?.removeListener('data', streamDataHandler);
 
@@ -104,7 +106,25 @@ const Messages: React.FC<MessagesProps> = (props) => {
           .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
       }
 
+      async function deleteSubscription() {
+        console.log('delete subscription');
+        const deleteSubscriptionReq = new DeleteSubscriptionRequest();
+        deleteSubscriptionReq.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+        deleteSubscriptionReq.setSubscriptionName(subscriptionName);
+        deleteSubscriptionReq.setForce(true);
+        await consumerServiceClient.deleteSubscription(deleteSubscriptionReq, { deadline: createDeadline(10) })
+          .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
+      }
+
       deleteConsumer();
+      deleteSubscription();
+    };
+
+    window.addEventListener('beforeunload', cleanup);
+
+    return () => {
+      window.removeEventListener('beforeunload', cleanup);
+      cleanup();
     };
   }, []);
 

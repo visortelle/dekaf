@@ -186,5 +186,48 @@ export class ConsumerServiceClient {
     this.methodDescriptorPause);
   }
 
+  methodDescriptorDeleteSubscription = new grpcWeb.MethodDescriptor(
+    '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscription',
+    grpcWeb.MethodType.UNARY,
+    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest,
+    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse,
+    (request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest) => {
+      return request.serializeBinary();
+    },
+    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse.deserializeBinary
+  );
+
+  deleteSubscription(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest,
+    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse>;
+
+  deleteSubscription(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse>;
+
+  deleteSubscription(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscription',
+        request,
+        metadata || {},
+        this.methodDescriptorDeleteSubscription,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscription',
+    request,
+    metadata || {},
+    this.methodDescriptorDeleteSubscription);
+  }
+
 }
 
