@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import s from './Metrics.module.css'
 import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import * as Notifications from '../../../app/contexts/Notifications';

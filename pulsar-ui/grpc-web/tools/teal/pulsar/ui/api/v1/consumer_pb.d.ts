@@ -558,6 +558,52 @@ export namespace PauseResponse {
   }
 }
 
+export class DeleteSubscriptionRequest extends jspb.Message {
+  getSubscriptionName(): string;
+  setSubscriptionName(value: string): DeleteSubscriptionRequest;
+
+  getTopic(): string;
+  setTopic(value: string): DeleteSubscriptionRequest;
+
+  getForce(): boolean;
+  setForce(value: boolean): DeleteSubscriptionRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeleteSubscriptionRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteSubscriptionRequest): DeleteSubscriptionRequest.AsObject;
+  static serializeBinaryToWriter(message: DeleteSubscriptionRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteSubscriptionRequest;
+  static deserializeBinaryFromReader(message: DeleteSubscriptionRequest, reader: jspb.BinaryReader): DeleteSubscriptionRequest;
+}
+
+export namespace DeleteSubscriptionRequest {
+  export type AsObject = {
+    subscriptionName: string,
+    topic: string,
+    force: boolean,
+  }
+}
+
+export class DeleteSubscriptionResponse extends jspb.Message {
+  getStatus(): google_rpc_status_pb.Status | undefined;
+  setStatus(value?: google_rpc_status_pb.Status): DeleteSubscriptionResponse;
+  hasStatus(): boolean;
+  clearStatus(): DeleteSubscriptionResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeleteSubscriptionResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteSubscriptionResponse): DeleteSubscriptionResponse.AsObject;
+  static serializeBinaryToWriter(message: DeleteSubscriptionResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteSubscriptionResponse;
+  static deserializeBinaryFromReader(message: DeleteSubscriptionResponse, reader: jspb.BinaryReader): DeleteSubscriptionResponse;
+}
+
+export namespace DeleteSubscriptionResponse {
+  export type AsObject = {
+    status?: google_rpc_status_pb.Status.AsObject,
+  }
+}
+
 export enum SubscriptionMode { 
   SUBSCRIPTION_MODE_UNSPECIFIED = 0,
   SUBSCRIPTION_MODE_DURABLE = 1,

@@ -1,4 +1,5 @@
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
+import org.apache.pulsar.client.admin.{PulsarAdmin}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.{
     ConsumerServiceGrpc,
@@ -10,6 +11,8 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.{
     PauseResponse,
     ResumeRequest,
     ResumeResponse,
+    DeleteSubscriptionRequest,
+    DeleteSubscriptionResponse,
     TopicSelector
 }
 import io.grpc.{Server, ServerBuilder}
@@ -34,15 +37,20 @@ import scala.concurrent.duration.MILLISECONDS
 import java.util.UUID
 import java.time.Instant
 
-case class Config(pulsarServiceUrl: String, grpcPort: Int)
-val config = Config("pulsar://localhost:6650", grpcPort = 8090)
+case class Config(pulsarServiceUrl: String, pulsarAdminUrl: String, grpcPort: Int)
+val config = Config(
+    pulsarServiceUrl = "pulsar://localhost:6650",
+    pulsarAdminUrl = "http://localhost:8080",
+    grpcPort = 8090
+)
+val client = PulsarClient.builder().serviceUrl(config.pulsarServiceUrl).build()
+val adminClient = PulsarAdmin.builder().serviceHttpUrl(config.pulsarAdminUrl).build()
 
 @main def main: Unit =
     println("Starting Pulsar X-Ray server")
     server.start
     server.awaitTermination
 
-val client = PulsarClient.builder().serviceUrl(config.pulsarServiceUrl).build()
 
 type ConsumerName = String
 
@@ -71,7 +79,7 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandler match
             case Some(handler) =>
                 handler.onNext = (msg: Message[Array[Byte]]) =>
-                    logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId()}")
+                    logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId}")
 
                     val message = consumerPb.Message(
                       properties = Option(msg.getProperties) match
@@ -258,6 +266,12 @@ private class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteConsumerResponse(status = Some(status)))
+
+    override def deleteSubscription(request: DeleteSubscriptionRequest): Future[DeleteSubscriptionResponse] =
+        logger.info(s"Deleting subscription. Topic: ${request.topic}, Subscription: ${request.subscriptionName}")
+        adminClient.topics().deleteSubscription(request.topic, request.subscriptionName, request.force)
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(DeleteSubscriptionResponse(status = Some(status)))
 
 val server = ServerBuilder
     .forPort(config.grpcPort)
