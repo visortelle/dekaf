@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app'
+import * as AppContext from '../components/app/contexts/AppContext';
 import * as AsyncTasks from '../components/app/contexts/AsyncTasks';
 import * as Notifications from '../components/app/contexts/Notifications';
 import * as PulsarAdminClient from '../components/app/contexts/PulsarAdminClient';
@@ -13,12 +14,15 @@ import { SWRConfig } from 'swr';
 import fetchIntercept from 'fetch-intercept';
 import { useEffect } from 'react';
 import stringify from 'safe-stable-stringify';
+import App from 'next/app';
 
 const MyApp = (props: AppProps) => {
   return (
-    <AsyncTasks.DefaultProvider>
-      <_MyApp {...props} />
-    </AsyncTasks.DefaultProvider>
+    <AppContext.DefaultProvider>
+      <AsyncTasks.DefaultProvider>
+        <_MyApp {...props} />
+      </AsyncTasks.DefaultProvider>
+    </AppContext.DefaultProvider>
   );
 }
 
@@ -26,6 +30,7 @@ export const hideShowProgressIndicatorHeader = 'x-hide-show-progress-indicator';
 
 const _MyApp = (props: AppProps) => {
   const { startTask, finishTask } = AsyncTasks.useContext();
+  const appContext = AppContext.useContext();
 
   useEffect(() => {
     // Consider all requests as async tasks to display global progress indicator.
@@ -49,7 +54,12 @@ const _MyApp = (props: AppProps) => {
   }, []);
 
   return (
-    <SWRConfig value={{ shouldRetryOnError: false, focusThrottleInterval: 120, refreshInterval: 15 * 1000, }}>
+    <SWRConfig
+      value={{
+        shouldRetryOnError: false,
+        focusThrottleInterval: 120,
+        refreshInterval: appContext.performanceOptimizations.pulsarConsumerState === 'active' ? 0 : 15 * 1000
+      }}>
       <NoSsr>
         <I18n.DefaultProvider>
           <Notifications.DefaultProvider>

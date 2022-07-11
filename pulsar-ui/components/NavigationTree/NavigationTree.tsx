@@ -18,6 +18,7 @@ import { isEqual } from 'lodash';
 import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { useNavigate } from 'react-router';
 import { useTimeout } from '@react-hook/timeout';
+import { remToPx } from '../ui/rem-to-px';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -381,8 +382,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               itemContent={(_, item) => renderTreeItem(item)}
               data={plainTree}
               customScrollParent={scrollParentRef.current || undefined}
-              defaultItemHeight={40}
-              fixedItemHeight={40}
+              defaultItemHeight={remToPx(40)}
+              fixedItemHeight={remToPx(40)}
               components={{
                 EmptyPlaceholder: () => <div className={s.Loading}>
                   <span>No items found. <br />Try another filter query.</span>
