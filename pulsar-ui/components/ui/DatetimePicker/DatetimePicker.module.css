@@ -1,0 +1,132 @@
+.DatetimePicker {
+
+}
+
+.Picker {
+
+}
+
+.SvgIcon svg {
+  width: 18rem;
+  height: 18rem;
+  fill: var(--text-color);
+  opacity: 0.5;
+}
+
+.Picker :global(.react-datetime-picker__inputGroup) input,
+.Picker :global(.react-datetime-picker__inputGroup) select {
+  color: var(--text-color) !important;
+}
+
+.Picker :global(.react-datetime-picker__inputGroup) input:focus,
+.Picker :global(.react-datetime-picker__inputGroup) select:focus {
+  color: var(--text-color) !important;
+  outline: none !important;
+}
+
+
+.Picker :global(.react-datetime-picker__inputGroup__input:invalid) {
+  background-color: inherit !important;
+}
+
+.Calendar {
+  font-family: inherit !important;
+  border: none !important;
+  box-shadow: 1rem 1rem 8rem rgba(0, 0, 0, 0.27) !important;
+  border-radius: 8rem !important;
+  padding: 8rem;
+}
+
+.Calendar :global(.react-calendar__month-view__days__day--weekend) {
+  color: var(--accent-color-red) !important;
+}
+
+.Calendar :global(.react-calendar__tile) {
+  border-radius: 4rem !important;
+  width: 6ch !important;
+  height: 6ch !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  font-size: 14rem !important;
+}
+
+.Calendar :global(.react-calendar__tile:enabled:hover),
+.Calendar :global(.react-calendar__tile:enabled:focus) {
+  background-color: #fff !important;
+  opacity: 0.5 !important;
+  transition: var(--transition-short) !important;
+}
+
+.Picker .Calendar :global(.react-calendar__tile--active:enabled:hover),
+.Picker .Calendar :global(.react-calendar__tile--active:enabled:focus) {
+  background-color: var(--accent-color-blue) !important;
+  opacity: 0.5 !important;
+  transition: var(--transition-short) !important;
+}
+
+.Calendar :global(.react-calendar__tile--now) {
+  background-color: #f5f5f5 !important;
+  position: relative !important;
+}
+
+.Calendar :global(.react-calendar__tile--now)::after {
+  content: 'Today';
+  position: absolute;
+  font-size: 10rem;
+  bottom: 6rem;
+  right: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.Calendar :global(.react-calendar__tile--now:enabled:hover),
+.Calendar :global(.react-calendar__tile--now:enabled:focus) {
+  opacity: 0.5 !important;
+  background-color: #f5f5f5 !important;
+  transition: var(--transition-short) !important;
+}
+
+.Calendar :global(.react-calendar__tile--active) {
+  background-color: var(--accent-color-blue) !important;
+  color: #fff !important;
+}
+
+.Calendar :global(.react-calendar__tile--hasActive) {
+  background-color: var(--accent-color-blue) !important;
+  color: #fff !important;
+}
+
+.Picker .Calendar :global(.react-calendar__tile--hasActive:hover) {
+  background-color: var(--accent-color-blue) !important;
+  color: #fff !important;
+  opacity: 0.5 !important;
+  transition: var(--transition-short) !important;
+}
+
+.Calendar :global(.react-calendar__month-view__weekdays__weekday abbr) {
+  text-transform: none !important;
+  text-decoration: none !important;
+  font-size: 14rem !important;
+  font-family: inherit !important;
+}
+
+.Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__prev-button),
+.Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__prev2-button),
+.Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__next-button),
+.Calendar :global(react-calendar__navigation__arrow react-calendar__navigation__next2-button){
+  font-size: 14rem !important;
+}
+
+.Calendar :global(.react-calendar__navigation button:enabled:hover),
+.Calendar :global(.react-calendar__navigation button:enabled:focus) {
+  background-color: #fff !important;
+  opacity: 0.5 !important;
+  transition: var(--transition-short) !important;
+}
+
+.Picker :global(.react-datetime-picker__wrapper) {
+  border: 1px solid #ddd !important;
+  border-radius: 4rem;
+  height: 36rem;
+  padding: 0 6rem 0 12rem;
+}

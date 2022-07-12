@@ -15,13 +15,13 @@
 .Table {
   font-size: 14rem;
   border-spacing: 0;
-  border: 1rem solid #ddd;
+  border: 1px solid #ddd;
   width: 100%;
 }
 
 .Cell {
   padding: 4rem 12rem;
-  border: 1rem solid #ddd;
+  border: 1px solid #ddd;
   border-bottom: none;
   border-right: none;
   word-wrap: break-word;
