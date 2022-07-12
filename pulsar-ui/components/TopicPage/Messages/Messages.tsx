@@ -51,7 +51,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [messagesDebounced] = useDebounce(messages, 300, { maxWait: 300 })
 
   useInterval(() => setMessagesLoadedPerSecond({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }), 1000);
-  useInterval(() => isPaused && ReactTooltip.rebuild(), 200);
+  useInterval(() => isPaused && ReactTooltip.rebuild(), 500);
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
