@@ -4,52 +4,7 @@ import { Message } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consum
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import { routes } from '../../../routes';
 import { parseTopic } from '../../../pulsar/parse-topic';
-
-type FieldName =
-  'messageId' |
-  'data' |
-  'value' |
-  'brokerPublishTime' |
-  'eventTime' |
-  'isReplicated' |
-  'key' |
-  'orderingKey' |
-  'producerName' |
-  'propertiesMap' |
-  'publishTime' |
-  'redeliveryCount' |
-  'replicatedFrom' |
-  'schemaVersion' |
-  'sequenceId' |
-  'size' |
-  'topic';
-
-const help: Record<FieldName, string | React.ReactElement> = {
-  data: "The data carried by the message. All Pulsar messages contain raw bytes, although message data can also conform to data schemas.",
-  key: "Messages are optionally tagged with keys, which is useful for things like topic compaction.",
-  propertiesMap: "An optional key/value map of user-defined properties.",
-  producerName: "The name of the producer who produces the message. If you do not specify a producer name, the default name is used.",
-  topic: "The name of the topic that the message is published to.",
-  schemaVersion: "The version number of the schema that the message is produced with.",
-  sequenceId: (
-    <div>
-      Each Pulsar message belongs to an ordered sequence on its topic. The sequence ID of a message is initially assigned by its producer, indicating its order in that sequence, and can also be customized.
-      <br />
-      Sequence ID can be used for message deduplication. If brokerDeduplicationEnabled is set to true, the sequence ID of each message is unique within a producer of a topic (non-partitioned) or a partition.
-    </div>
-  ),
-  messageId: "The message ID of a message is assigned by bookies as soon as the message is persistently stored. Message ID indicates a message&apos;s specific position in a ledger and is unique within a Pulsar cluster.",
-  publishTime: "The timestamp of when the message is published. The timestamp is automatically applied by the producer.",
-  eventTime: "An optional timestamp attached to a message by applications. For example, applications attach a timestamp on when the message is processed.",
-  size: "Size of the message in bytes.",
-  brokerPublishTime: '',
-  value: '',
-  isReplicated: '',
-  orderingKey: '',
-  redeliveryCount: '',
-  replicatedFrom: '',
-}
-console.log(help);
+import { help, FieldName } from './fields';
 
 export type MessageProps = {
   message: Message
@@ -83,20 +38,19 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   return (
     <div className={s.Message}>
       <div className={s.LeftSection}>
-        <Field name="topic" value={topic || undefined} valueHref={topicHref} />
-        <Field name="key" title="Key" value={key || undefined} />
-        <Field name="producerName" title="Producer name" value={producerName || undefined} />
-        <Field name="size" title="Size" value={i18n.formatBytes(size) || undefined} />
-        <Field name="publishTime" title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} />
-        <Field name="brokerPublishTime" title="Broker pub. time" value={brokerPublishTime === undefined ? undefined : i18n.formatDate(brokerPublishTime.toDate())} />
-        <Field name="eventTime" title="Event time" value={eventTime === undefined ? undefined : i18n.formatDate(eventTime.toDate())} />
-        <Field name="messageId" title="Message id" value={messageId === undefined ? undefined : i18n.formatByteArray(messageId)} />
-        <Field name="sequenceId" title="Sequence Id" value={sequenceId === undefined ? undefined : i18n.formatLongNumber(sequenceId)} />
-        <Field name="orderingKey" title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.formatByteArray(orderingKey)} />
-        <Field name="replicatedFrom" title="Replicated from" value={replicatedFrom || undefined} />
-        <Field name="redeliveryCount" title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} />
-        <Field name="schemaVersion" title="Schema version" value={i18n.formatByteArray(schemaVersion) || undefined} />
-        <Field name="value" title="Value" value={value || undefined} />
+        <Field name="topic" value={topic || undefined} valueHref={topicHref} tooltip={help.topic} />
+        <Field name="key" title="Key" value={key || undefined} tooltip={help.key} />
+        <Field name="producerName" title="Producer name" value={producerName || undefined} tooltip={help.producerName}/>
+        <Field name="size" title="Size" value={i18n.formatBytes(size) || undefined} tooltip={help.size} />
+        <Field name="publishTime" title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} tooltip={help.publishTime} />
+        <Field name="brokerPublishTime" title="Broker pub. time" value={brokerPublishTime === undefined ? undefined : i18n.formatDate(brokerPublishTime.toDate())} tooltip={help.brokerPublishTime} />
+        <Field name="eventTime" title="Event time" value={eventTime === undefined ? undefined : i18n.formatDate(eventTime.toDate())} tooltip={help.eventTime} />
+        <Field name="messageId" title="Message id" value={messageId === undefined ? undefined : i18n.formatByteArray(messageId)} tooltip={help.messageId} />
+        <Field name="sequenceId" title="Sequence Id" value={sequenceId === undefined ? undefined : i18n.formatLongNumber(sequenceId)} tooltip={help.sequenceId} />
+        <Field name="orderingKey" title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.formatByteArray(orderingKey)} tooltip={help.orderingKey} />
+        <Field name="redeliveryCount" title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} tooltip={help.redeliveryCount} />
+        <Field name="schemaVersion" title="Schema version" value={i18n.formatByteArray(schemaVersion) || undefined} tooltip={help.schemaVersion} />
+        <Field name="value" title="Value" value={value || undefined} tooltip={help.value} />
       </div>
       <div className={s.RightSection}></div>
     </div >
@@ -106,6 +60,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
 type FieldProps = {
   name: FieldName,
   value: string | undefined,
+  tooltip: string | undefined
   title?: string,
   valueOnClick?: () => void,
   valueHref?: string,
@@ -121,7 +76,7 @@ const Field: React.FC<FieldProps> = (props) => {
 
   return (
     <div className={s.Field}>
-      {props.title && <div className={s.FieldName}>{props.title}</div>}
+      {props.title && <div className={s.FieldName} data-tip={props.tooltip}>{props.title}</div>}
       {valueElement}
     </div>
   );

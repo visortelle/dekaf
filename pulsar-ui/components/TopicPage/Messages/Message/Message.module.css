@@ -50,3 +50,7 @@
 .NoData {
   color: #aaa;
 }
+
+.Tooltip {
+  max-width: 480rem;
+}
