@@ -229,5 +229,48 @@ export class ConsumerServiceClient {
     this.methodDescriptorDeleteSubscription);
   }
 
+  methodDescriptorSeek = new grpcWeb.MethodDescriptor(
+    '/tools.teal.pulsar.ui.api.v1.ConsumerService/Seek',
+    grpcWeb.MethodType.UNARY,
+    tools_teal_pulsar_ui_api_v1_consumer_pb.SeekRequest,
+    tools_teal_pulsar_ui_api_v1_consumer_pb.SeekResponse,
+    (request: tools_teal_pulsar_ui_api_v1_consumer_pb.SeekRequest) => {
+      return request.serializeBinary();
+    },
+    tools_teal_pulsar_ui_api_v1_consumer_pb.SeekResponse.deserializeBinary
+  );
+
+  seek(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.SeekRequest,
+    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_consumer_pb.SeekResponse>;
+
+  seek(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.SeekRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: tools_teal_pulsar_ui_api_v1_consumer_pb.SeekResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_consumer_pb.SeekResponse>;
+
+  seek(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.SeekRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: tools_teal_pulsar_ui_api_v1_consumer_pb.SeekResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/tools.teal.pulsar.ui.api.v1.ConsumerService/Seek',
+        request,
+        metadata || {},
+        this.methodDescriptorSeek,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/tools.teal.pulsar.ui.api.v1.ConsumerService/Seek',
+    request,
+    metadata || {},
+    this.methodDescriptorSeek);
+  }
+
 }
 

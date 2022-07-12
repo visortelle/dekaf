@@ -3,23 +3,10 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.PulsarAdmin
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    DeleteSubscriptionRequest,
-    DeleteSubscriptionResponse,
-    PauseRequest,
-    PauseResponse,
-    ResumeRequest,
-    ResumeResponse,
-    TopicSelector
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, DeleteSubscriptionRequest, DeleteSubscriptionResponse, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, SeekRequest, SeekResponse, TopicSelector}
 import _root_.client.{adminClient, client}
-
 import com.typesafe.scalalogging.Logger
+
 import scala.concurrent.{ExecutionContext, Future}
 import io.grpc.stub.StreamObserver
 
@@ -29,7 +16,9 @@ import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.google.protobuf.timestamp
+import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import org.apache.pulsar.client.api.Message
+
 import java.util.UUID
 import java.time.Instant
 
@@ -161,15 +150,15 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandler.onNext = _ => ()
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
 
-        val consumer = buildConsumer(consumerName, request, logger, streamDataHandlers) match
+        val consumerBuilder = buildConsumer(consumerName, request, logger, streamDataHandlers) match
             case Right(consumer) => consumer
             case Left(error) =>
                 logger.warn(error)
                 val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = error)
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
 
-        val subscribedConsumer = consumer.subscribe
-        consumers = consumers + (consumerName -> subscribedConsumer)
+        val consumer = consumerBuilder.subscribe
+        consumers = consumers + (consumerName -> consumer)
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(CreateConsumerResponse(status = Some(status)))
@@ -197,3 +186,27 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         adminClient.topics().deleteSubscription(request.topic, request.subscriptionName, request.force)
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteSubscriptionResponse(status = Some(status)))
+
+    override def seek(request: SeekRequest): Future[SeekResponse] =
+        val consumerName: ConsumerName = request.consumerName
+        logger.info(s"Seek over subscription. Consumer: $consumerName")
+
+        val consumer = consumers.get(consumerName) match
+            case Some(v) => v
+            case _ =>
+                val msg = "No such consumer: $consumerName"
+                logger.warn(msg)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
+                return Future.successful(SeekResponse(status = Some(status)))
+
+        val res = request.seek match
+            case Seek.Empty => Left("Seek request should contain timestamp or message id")
+            case Seek.Timestamp(v) =>
+                consumer.seek(Instant.ofEpochSecond(v.seconds, v.nanos).toEpochMilli)
+                Right(())
+            case Seek.MessageId(v) =>
+//                consumer.seek(v)
+                Right(())
+
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(SeekResponse(status = Some(status)))
