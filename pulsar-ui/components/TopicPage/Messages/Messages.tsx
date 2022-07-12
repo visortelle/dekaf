@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest, PauseRequest, SubscriptionInitialPosition, DeleteSubscriptionRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest, PauseRequest, SubscriptionInitialPosition, DeleteSubscriptionRequest, SeekRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -10,13 +11,11 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import pauseIcon from '!!raw-loader!./icons/pause.svg';
-import resumeIcon from '!!raw-loader!./icons/resume.svg';
-import Button from '../../ui/Button/Button';
 import { useDebounce } from 'use-debounce'
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { useInterval } from '../../app/hooks/use-interval';
 import ReactTooltip from 'react-tooltip';
+import Toolbar from './Toolbar';
 
 export type MessagesProps = {
   tenant: string,
@@ -89,7 +88,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
       req.setSubscriptionInitialPosition(SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST);
       req.setPriorityLevel(1000);
 
-      const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
+      const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
 
       if (res === undefined) {
         return;
@@ -115,7 +114,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
         const deleteConsumerReq = new DeleteConsumerRequest();
         deleteConsumerReq.setConsumerName(consumerName.current);
         await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) })
-          .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
+          .catch((err) => notifyError(`Unable to delete consumer ${consumerName.current}. ${err}`));
       }
 
       async function deleteSubscription() {
@@ -124,7 +123,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
         deleteSubscriptionReq.setSubscriptionName(subscriptionName.current);
         deleteSubscriptionReq.setForce(true);
         await consumerServiceClient.deleteSubscription(deleteSubscriptionReq, { deadline: createDeadline(10) })
-          .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
+          .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName.current}. ${err}`));
       }
 
       deleteConsumer(); // Don't await this
@@ -165,7 +164,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
       const pauseReq = new PauseRequest();
       pauseReq.setConsumerName(consumerName.current);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to pause consumer ${consumerName.current}. ${err}`));
     } else {
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName.current);
@@ -182,35 +181,26 @@ const Messages: React.FC<MessagesProps> = (props) => {
     appContext.setPerformanceOptimizations({ ...appContext.performanceOptimizations, pulsarConsumerState: isPaused ? 'inactive' : 'active' });
   }, [isPaused]);
 
+  const seekByTimestamp = (ts: Date) => {
+    const seekReq = new SeekRequest();
+    const timestamp = new Timestamp();
+    timestamp.setSeconds(ts.getTime() / 1000);
+    timestamp.setNanos(ts.getMilliseconds() * 1000);
+    seekReq.setConsumerName(consumerName.current);
+    seekReq.setTimestamp(timestamp);
+    consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
+      .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
+  }
+
   return (
     <div className={s.Messages}>
-      <div className={s.Toolbar}>
-        <div className={s.ToolbarLeft}>
-          <div className={s.Buttons}>
-            <div className={s.ButtonsButton}>
-              <Button
-                title={isPaused ? "Resume" : "Pause"}
-                svgIcon={isPaused ? resumeIcon : pauseIcon}
-                onClick={() => setIsPaused(isPaused => !isPaused)}
-                type={isPaused ? 'primary' : 'danger'}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className={s.ToolbarRight}>
-          <div className={s.MessagesLoadedStats}>
-            <div className={s.MessagesLoadedStat}>
-              <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(messagesLoaded)}</strong>
-              <span className={s.MessagesLoadedStatTitle}>&nbsp; loaded</span>
-            </div>
-            <div className={s.MessagesLoadedStat}>
-              <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(messagesLoadedPerSecond.messagesLoadedPerSecond)}</strong>
-              <span className={s.MessagesLoadedStatTitle}>&nbsp;per second</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Toolbar
+        isPaused={isPaused}
+        onSetIsPaused={setIsPaused}
+        onSeekByTimestamp={seekByTimestamp}
+        messagesLoaded={messagesLoaded}
+        messagesLoadedPerSecond={messagesLoadedPerSecond}
+      />
       <div
         className={s.List}
         ref={listRef}

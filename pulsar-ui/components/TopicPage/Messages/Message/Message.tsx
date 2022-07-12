@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import s from './Message.module.css'
 import { Message } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import * as I18n from '../../../app/contexts/I18n/I18n';
+import * as Notifications from '../../../app/contexts/Notifications';
 import { routes } from '../../../routes';
 import { parseTopic } from '../../../pulsar/parse-topic';
 import { help, FieldName } from './fields';
@@ -39,18 +40,18 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
     <div className={s.Message}>
       <div className={s.LeftSection}>
         <Field name="topic" value={topic || undefined} valueHref={topicHref} tooltip={help.topic} />
-        <Field name="key" title="Key" value={key || undefined} tooltip={help.key} />
-        <Field name="producerName" title="Producer name" value={producerName || undefined} tooltip={help.producerName}/>
-        <Field name="size" title="Size" value={i18n.formatBytes(size) || undefined} tooltip={help.size} />
-        <Field name="publishTime" title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} tooltip={help.publishTime} />
-        <Field name="brokerPublishTime" title="Broker pub. time" value={brokerPublishTime === undefined ? undefined : i18n.formatDate(brokerPublishTime.toDate())} tooltip={help.brokerPublishTime} />
-        <Field name="eventTime" title="Event time" value={eventTime === undefined ? undefined : i18n.formatDate(eventTime.toDate())} tooltip={help.eventTime} />
-        <Field name="messageId" title="Message id" value={messageId === undefined ? undefined : i18n.formatByteArray(messageId)} tooltip={help.messageId} />
-        <Field name="sequenceId" title="Sequence Id" value={sequenceId === undefined ? undefined : i18n.formatLongNumber(sequenceId)} tooltip={help.sequenceId} />
-        <Field name="orderingKey" title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.formatByteArray(orderingKey)} tooltip={help.orderingKey} />
-        <Field name="redeliveryCount" title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} tooltip={help.redeliveryCount} />
-        <Field name="schemaVersion" title="Schema version" value={i18n.formatByteArray(schemaVersion) || undefined} tooltip={help.schemaVersion} />
-        <Field name="value" title="Value" value={value || undefined} tooltip={help.value} />
+        <Field name="key" title="Key" value={key || undefined} rawValue={key || undefined} tooltip={help.key} />
+        <Field name="producerName" title="Producer name" value={producerName || undefined} rawValue={producerName || undefined} tooltip={help.producerName} />
+        <Field name="size" title="Size" value={i18n.formatBytes(size) || undefined} rawValue={String(size) || undefined} tooltip={help.size} />
+        <Field name="publishTime" title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} rawValue={publishTime?.toDate().toISOString()} tooltip={help.publishTime} />
+        <Field name="brokerPublishTime" title="Broker pub. time" value={brokerPublishTime === undefined ? undefined : i18n.formatDate(brokerPublishTime.toDate())} rawValue={brokerPublishTime?.toDate().toISOString()} tooltip={help.brokerPublishTime} />
+        <Field name="eventTime" title="Event time" value={eventTime === undefined ? undefined : i18n.formatDate(eventTime.toDate())} rawValue={eventTime?.toDate().toISOString()} tooltip={help.eventTime} />
+        <Field name="messageId" title="Message id" value={messageId === undefined ? undefined : i18n.formatByteArray(messageId, 'hex-with-space')} rawValue={i18n.formatByteArray(messageId, 'hex-no-space')} tooltip={help.messageId} />
+        <Field name="sequenceId" title="Sequence Id" value={sequenceId === undefined ? undefined : i18n.formatLongNumber(sequenceId)} rawValue={String(sequenceId)} tooltip={help.sequenceId} />
+        <Field name="orderingKey" title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.formatByteArray(orderingKey, 'hex-with-space')} rawValue={i18n.formatByteArray(orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
+        <Field name="redeliveryCount" title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} rawValue={String(redeliveryCount)} tooltip={help.redeliveryCount} />
+        <Field name="schemaVersion" title="Schema version" value={i18n.formatByteArray(schemaVersion, 'hex-with-space') || undefined} rawValue={i18n.formatByteArray(schemaVersion, 'hex-no-space')} tooltip={help.schemaVersion} />
+        <Field name="value" title="Value" value={value || undefined} rawValue={value} tooltip={help.value} />
       </div>
       <div className={s.RightSection}></div>
     </div >
@@ -61,17 +62,27 @@ type FieldProps = {
   name: FieldName,
   value: string | undefined,
   tooltip: string | undefined
+  rawValue?: string,
   title?: string,
-  valueOnClick?: () => void,
   valueHref?: string,
 }
 const Field: React.FC<FieldProps> = (props) => {
-  const valueContent = props.value === undefined ? <NoData /> : props.value;
+  const {notifySuccess } = Notifications.useContext();
+  const valueContent = props.value === undefined ? <div className={s.NoData}>-</div> : props.value;
 
-  let valueElement = <div className={s.FieldValue} title={props.value} onClick={props.valueOnClick}>{valueContent}</div>;
+  const copyRawValue = () => {
+    if (props.rawValue === undefined) {
+      return;
+    }
+
+    navigator.clipboard.writeText(props.rawValue);
+    notifySuccess(`${props.title} value copied to clipboard.`);
+  }
+
+  let valueElement = <div className={`${s.FieldValue} ${props.rawValue === undefined ? '' : s.ClickableFieldValue}`} title={props.rawValue} onClick={copyRawValue} data-tip={props.rawValue === undefined ? undefined : "Click to copy"}>{valueContent}</div>;
 
   if (props.valueHref !== undefined) {
-    valueElement = <a href={props.valueHref} className={`${s.FieldValue} ${s.FieldValueLink}`} title={props.value} onClick={props.valueOnClick}>{valueContent}</a>;
+    valueElement = <a href={props.valueHref} className={`${s.FieldValue} ${s.FieldValueLink}`} title={props.rawValue}>{valueContent}</a>;
   }
 
   return (
@@ -80,10 +91,6 @@ const Field: React.FC<FieldProps> = (props) => {
       {valueElement}
     </div>
   );
-}
-
-const NoData = () => {
-  return <div className={s.NoData}>-</div>
 }
 
 export default MessageComponent;

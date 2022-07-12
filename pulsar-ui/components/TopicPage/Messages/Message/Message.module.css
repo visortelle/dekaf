@@ -43,6 +43,11 @@
   text-align: right;
 }
 
+.ClickableFieldValue:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
 .FieldValueLink:hover {
   text-decoration: underline;
 }

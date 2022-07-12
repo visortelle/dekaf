@@ -61,15 +61,6 @@ message TopicSelector {
   }
 }
 
-message StartFrom {
-  oneof start_from {
-    bool start_from_latest = 1;
-    bool start_from_earliest = 2;
-    string start_from_sequence_id = 3;
-    string start_from_message_id = 4;
-  }
-}
-
 message CreateConsumerRequest {
   TopicSelector topic_selector = 100;
   optional string consumer_name = 1;
@@ -125,10 +116,23 @@ message DeleteSubscriptionResponse {
   google.rpc.Status status = 1;
 }
 
+message SeekRequest {
+  string consumer_name = 1;
+  oneof seek {
+    google.protobuf.Timestamp timestamp = 2;
+    bytes message_id = 3;
+  }
+}
+
+message SeekResponse {
+  google.rpc.Status status = 1;
+}
+
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
   rpc Resume(ResumeRequest) returns (stream ResumeResponse);
   rpc Pause(PauseRequest) returns (PauseResponse);
   rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse);
+  rpc Seek(SeekRequest) returns (SeekResponse);
 }
