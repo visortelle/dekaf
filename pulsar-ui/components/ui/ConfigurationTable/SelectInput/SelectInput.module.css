@@ -8,7 +8,7 @@
 
 .Select {
   height: 36rem;
-  border: 1rem solid #ddd;
+  border: 1px solid #ddd;
   border-radius: 4rem;
   padding: 0 12rem;
   appearance: none;
@@ -17,7 +17,7 @@
 
 .Select:focus {
   outline: none;
-  border: 1rem solid var(--accent-color-blue);
+  border: 1px solid var(--accent-color-blue);
   transition: var(--transition-short);
 }
 
