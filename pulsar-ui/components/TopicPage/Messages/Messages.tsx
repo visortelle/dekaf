@@ -11,16 +11,19 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import { useDebounce } from 'use-debounce'
 import { useInterval } from '../../app/hooks/use-interval';
-import ReactTooltip from 'react-tooltip';
-import Toolbar from './Toolbar';
+import Toolbar, { Filter } from './Toolbar';
 
 export type MessagesProps = {
   tenant: string,
   namespace: string,
   topicType: 'persistent' | 'non-persistent',
   topic: string,
+  messages: KeyedMessage[],
+  onMessagesChange: (messages: KeyedMessage[]) => void,
+  filter: Filter,
+  onFilterChange: (filter: Filter) => void,
+  sessionKey: number,
 };
 
 type KeyedMessage = {
@@ -42,27 +45,46 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const subscriptionName = useRef('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
-  const [filterChangeCounter, setFilterChangeCounter] = useState(0);
-  const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [messagesLoaded, setMessagesLoaded] = useState(0);
+  const [latestFilterKey, setLatestFilterKey] = useState(-1);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<{ prevMessagesLoaded: number, messagesLoadedPerSecond: number }>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
-  const [messagesDebounced] = useDebounce(messages, 300, { maxWait: 300 });
-  const [seekByTimestamp, setSeekByTimestamp] = useState<Date | undefined>(undefined);
+  const messagesBuffer = useRef<KeyedMessage[]>([]);
 
-  useInterval(() => setMessagesLoadedPerSecond({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }), 1000);
-  useInterval(() => ReactTooltip.rebuild(), 500);
+  useInterval(() => {
+    setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: isPaused ? 0 : messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }));
+  }, isPaused ? false : 1000);
+  useInterval(() => {
+    if (messagesBuffer.current.length === 0) {
+      return;
+    }
+
+    let messagesToSet = props.messages.concat(messagesBuffer.current);
+    messagesToSet = messagesToSet.slice(messagesToSet.length - displayMessagesLimit, messagesToSet.length);
+    props.onMessagesChange(messagesToSet);
+
+    messagesBuffer.current = [];
+  }, isPaused ? false : 32)
+
+  const applyFilter = async () => {
+    setLatestFilterKey(props.sessionKey);
+
+    if (props.filter.startFrom.type === 'date') {
+      const seekReq = new SeekRequest();
+      const timestamp = new Timestamp();
+      timestamp.setSeconds(props.filter.startFrom.date.getTime() / 1000);
+      timestamp.setNanos(props.filter.startFrom.date.getMilliseconds() * 1000);
+      seekReq.setConsumerName(consumerName.current);
+      seekReq.setTimestamp(timestamp);
+      await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
+        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
+    }
+  }
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
     setMessagesLoaded(messagesCount => messagesCount + newMessages.length);
-    setMessages(messages => {
-      let messagesToSet = messages.concat(newMessages);
-      return messagesToSet.slice(messagesToSet.length - displayMessagesLimit, messagesToSet.length);
-    });
+    messagesBuffer.current.push(...newMessages);
   }, []);
-
-  // It fixes Virtuoso's native "followOutput" glitches.
-  useEffect(() => virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1), [messagesDebounced]);
 
   useEffect(() => {
     streamRef.current = stream;
@@ -89,6 +111,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
       req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
+      await applyFilter();
 
       if (res === undefined) {
         return;
@@ -174,45 +197,21 @@ const Messages: React.FC<MessagesProps> = (props) => {
       setStream(() => newStream);
     }
 
-    if (!isPaused) {
-      virtuosoRef.current?.scrollToIndex(messagesDebounced.length - 1);
+    // New session has been initiated.
+    if (!isPaused && props.sessionKey !== latestFilterKey) {
+      props.onMessagesChange([]);
     }
 
     appContext.setPerformanceOptimizations({ ...appContext.performanceOptimizations, pulsarConsumerState: isPaused ? 'inactive' : 'active' });
   }, [isPaused]);
-
-  useEffect(() => {
-    async function seek() {
-      setIsPaused(true);
-      if (seekByTimestamp === undefined) {
-        return;
-      }
-      const seekReq = new SeekRequest();
-      const timestamp = new Timestamp();
-      timestamp.setSeconds(seekByTimestamp.getTime() / 1000);
-      timestamp.setNanos(seekByTimestamp.getMilliseconds() * 1000);
-      seekReq.setConsumerName(consumerName.current);
-      seekReq.setTimestamp(timestamp);
-      await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
-    }
-
-    setFilterChangeCounter(filterChangeCounter + 1);
-    seek();
-
-  }, [seekByTimestamp])
-
-  useEffect(() => {
-    setMessages([]); // Reset loaded messages.
-  }, [filterChangeCounter]);
 
   return (
     <div className={s.Messages}>
       <Toolbar
         isPaused={isPaused}
         onSetIsPaused={setIsPaused}
-        onSeekByTimestamp={(date) => setSeekByTimestamp(date)}
-        seekByTimestamp={seekByTimestamp}
+        filter={props.filter}
+        onFilterChange={props.onFilterChange}
         messagesLoaded={messagesLoaded}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
       />
@@ -229,15 +228,38 @@ const Messages: React.FC<MessagesProps> = (props) => {
         <Virtuoso<KeyedMessage>
           className={s.Virtuoso}
           ref={virtuosoRef}
-          data={messagesDebounced}
-          totalCount={messagesDebounced.length}
+          data={props.messages}
+          totalCount={props.messages.length}
           customScrollParent={listRef.current || undefined}
-          itemContent={(_, { key, message }) => <MessageComponent key={key} message={message} />}
-          followOutput={!isPaused}
+          itemContent={(_, { key, message }) => <MessageComponent key={key} message={message} isShowTooltips={isPaused} />}
+          overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
+          followOutput={'auto'}
         />
       </div>
     </div>
   );
 }
 
-export default Messages;
+const _Messages: React.FC<Omit<MessagesProps, 'sessionKey' | 'messages' | 'onMessagesChange' | 'filter' | 'onFilterChange'>> = (props) => {
+  const [filter, setFilter] = useState<Filter>({ startFrom: { type: 'earliest' } });
+  const [messages, setMessages] = useState<KeyedMessage[]>([]);
+
+  const [sessionKey, setSessionKey] = useState(0);
+
+  return (
+    <Messages
+      key={sessionKey}
+      {...props}
+      sessionKey={sessionKey}
+      messages={messages}
+      onMessagesChange={setMessages}
+      filter={filter}
+      onFilterChange={(v) => {
+        setFilter(v);
+        setSessionKey(v => v + 1);
+      }}
+    />
+  );
+}
+
+export default _Messages;

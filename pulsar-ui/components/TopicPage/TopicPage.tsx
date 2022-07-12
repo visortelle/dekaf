@@ -74,7 +74,15 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         ]}
       />
 
-      {props.view === 'messages' && <Messages key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
+      {props.view === 'messages' && (
+        <Messages
+          key={key}
+          tenant={props.tenant}
+          namespace={props.namespace}
+          topic={props.topic}
+          topicType={props.topicType}
+        />
+      )}
       {props.view === 'policies' && <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
       {props.view === 'delete-topic' && <DeleteTopic key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
     </div>

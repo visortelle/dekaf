@@ -7,7 +7,7 @@
     "prepare": "npm run prepare-api",
     "dev": "npm run prepare && next dev",
     "build": "npm run prepare && next build",
-    "start": "next start",
+    "start": "next start -H localhost",
     "lint": "next lint",
     "test": "npm run lint && npm run test:jest",
     "test:jest": "jest"

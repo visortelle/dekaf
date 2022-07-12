@@ -25,21 +25,11 @@ const DatetimePicker: React.FC<DatetimePickerProps> = (props) => {
         clearIcon={<div className={s.SvgIcon}><SvgIcon svg={clearIcon} /></div>}
         disableClock={true}
         disabled={false}
-        format={isUs() ? 'MM/dd/y hh:mm:ss:a' : 'dd/MM/y hh:mm:ss'}
+        showLeadingZeros={true}
         maxDetail="second"
       />
     </div>
   );
-}
-
-function getLang(): string {
-  if (navigator.languages != undefined)
-    return navigator.languages[0];
-  return navigator.language;
-}
-
-function isUs(): boolean {
-  return getLang() === 'en-US';
 }
 
 export default DatetimePicker;
