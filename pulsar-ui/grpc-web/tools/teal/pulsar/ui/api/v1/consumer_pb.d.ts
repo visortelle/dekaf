@@ -604,6 +604,64 @@ export namespace DeleteSubscriptionResponse {
   }
 }
 
+export class SeekRequest extends jspb.Message {
+  getConsumerName(): string;
+  setConsumerName(value: string): SeekRequest;
+
+  getTimestamp(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTimestamp(value?: google_protobuf_timestamp_pb.Timestamp): SeekRequest;
+  hasTimestamp(): boolean;
+  clearTimestamp(): SeekRequest;
+
+  getMessageId(): Uint8Array | string;
+  getMessageId_asU8(): Uint8Array;
+  getMessageId_asB64(): string;
+  setMessageId(value: Uint8Array | string): SeekRequest;
+
+  getSeekCase(): SeekRequest.SeekCase;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SeekRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: SeekRequest): SeekRequest.AsObject;
+  static serializeBinaryToWriter(message: SeekRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SeekRequest;
+  static deserializeBinaryFromReader(message: SeekRequest, reader: jspb.BinaryReader): SeekRequest;
+}
+
+export namespace SeekRequest {
+  export type AsObject = {
+    consumerName: string,
+    timestamp?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    messageId: Uint8Array | string,
+  }
+
+  export enum SeekCase { 
+    SEEK_NOT_SET = 0,
+    TIMESTAMP = 2,
+    MESSAGE_ID = 3,
+  }
+}
+
+export class SeekResponse extends jspb.Message {
+  getStatus(): google_rpc_status_pb.Status | undefined;
+  setStatus(value?: google_rpc_status_pb.Status): SeekResponse;
+  hasStatus(): boolean;
+  clearStatus(): SeekResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SeekResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: SeekResponse): SeekResponse.AsObject;
+  static serializeBinaryToWriter(message: SeekResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SeekResponse;
+  static deserializeBinaryFromReader(message: SeekResponse, reader: jspb.BinaryReader): SeekResponse;
+}
+
+export namespace SeekResponse {
+  export type AsObject = {
+    status?: google_rpc_status_pb.Status.AsObject,
+  }
+}
+
 export enum SubscriptionMode { 
   SUBSCRIPTION_MODE_UNSPECIFIED = 0,
   SUBSCRIPTION_MODE_DURABLE = 1,

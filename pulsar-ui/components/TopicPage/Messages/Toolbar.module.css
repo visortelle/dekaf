@@ -1,0 +1,50 @@
+.Toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8rem 12rem;
+  border-bottom: 1rem solid #ddd;
+}
+
+.ToolbarLeft {
+  margin-right: auto;
+}
+
+.ToolbarRight {
+  margin-left: auto;
+}
+
+.MessagesLoadedStats {
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+}
+
+.MessagesLoadedStat {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: space-between;
+  line-height: 1;
+  font-size: 12rem;
+}
+
+.MessagesLoadedStatValue {
+  text-align: right;
+  flex: 1 1 auto;
+}
+.MessagesLoadedStatTitle {
+  width: 11ch;
+  text-align: right;
+}
+
+.Buttons {
+  display: flex;
+  align-items: center;
+}
+
+.ButtonsButton {
+  margin-right: 12rem;
+}
+
+.ButtonsButton:last-child {
+  margin-right: 0;
+}
