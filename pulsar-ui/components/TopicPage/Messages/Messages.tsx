@@ -16,6 +16,7 @@ import Button from '../../ui/Button/Button';
 import { useDebounce } from 'use-debounce'
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { useInterval } from '../../app/hooks/use-interval';
+import ReactTooltip from 'react-tooltip';
 
 export type MessagesProps = {
   tenant: string,
@@ -40,8 +41,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
   const [isPaused, setIsPaused] = useState(true);
   const [isPausedBeforeWindowBlur, setIsPausedBeforeWindowBlur] = useState(isPaused);
-  const [consumerName, _] = useState('__xray_' + nanoid());
-  const [subscriptionName, __] = useState('__xray_' + nanoid());
+  const consumerName = useRef('__xray_' + nanoid());
+  const subscriptionName = useRef('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
@@ -50,6 +51,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [messagesDebounced] = useDebounce(messages, 300, { maxWait: 300 })
 
   useInterval(() => setMessagesLoadedPerSecond({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }), 1000);
+  useInterval(() => isPaused && ReactTooltip.rebuild(), 200);
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
@@ -80,9 +82,9 @@ const Messages: React.FC<MessagesProps> = (props) => {
       const topicSelector = new TopicSelector();
       topicSelector.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setTopicSelector(topicSelector)
-      req.setConsumerName(consumerName);
+      req.setConsumerName(consumerName.current);
       req.setStartPaused(true);
-      req.setSubscriptionName(subscriptionName);
+      req.setSubscriptionName(subscriptionName.current);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
       req.setSubscriptionInitialPosition(SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST);
       req.setPriorityLevel(1000);
@@ -111,7 +113,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
 
       async function deleteConsumer() {
         const deleteConsumerReq = new DeleteConsumerRequest();
-        deleteConsumerReq.setConsumerName(consumerName);
+        deleteConsumerReq.setConsumerName(consumerName.current);
         await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) })
           .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
       }
@@ -119,7 +121,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
       async function deleteSubscription() {
         const deleteSubscriptionReq = new DeleteSubscriptionRequest();
         deleteSubscriptionReq.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-        deleteSubscriptionReq.setSubscriptionName(subscriptionName);
+        deleteSubscriptionReq.setSubscriptionName(subscriptionName.current);
         deleteSubscriptionReq.setForce(true);
         await consumerServiceClient.deleteSubscription(deleteSubscriptionReq, { deadline: createDeadline(10) })
           .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
@@ -161,12 +163,12 @@ const Messages: React.FC<MessagesProps> = (props) => {
   useEffect(() => {
     if (isPaused) {
       const pauseReq = new PauseRequest();
-      pauseReq.setConsumerName(consumerName);
+      pauseReq.setConsumerName(consumerName.current);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
         .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
     } else {
       const resumeReq = new ResumeRequest();
-      resumeReq.setConsumerName(consumerName);
+      resumeReq.setConsumerName(consumerName.current);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler)
       const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });
