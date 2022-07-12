@@ -61,6 +61,15 @@ message TopicSelector {
   }
 }
 
+message StartFrom {
+  oneof start_from {
+    bool start_from_latest = 1;
+    bool start_from_earliest = 2;
+    string start_from_sequence_id = 3;
+    string start_from_message_id = 4;
+  }
+}
+
 message CreateConsumerRequest {
   TopicSelector topic_selector = 100;
   optional string consumer_name = 1;
