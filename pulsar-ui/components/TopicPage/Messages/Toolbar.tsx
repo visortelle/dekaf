@@ -4,13 +4,15 @@ import pauseIcon from '!!raw-loader!./icons/pause.svg';
 import resumeIcon from '!!raw-loader!./icons/resume.svg';
 import Button from '../../ui/Button/Button';
 import * as I18n from '../../app/contexts/I18n/I18n';
+import DatetimePicker from '../../ui/DatetimePicker/DatetimePicker';
 
 export type ToolbarProps = {
   isPaused: boolean,
   onSetIsPaused: (isPaused: boolean) => void,
   messagesLoaded: number,
   messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number },
-  onSeekByTimestamp: (date: Date) => void,
+  onSeekByTimestamp: (date: Date | undefined) => void,
+  seekByTimestamp: Date | undefined,
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
@@ -29,6 +31,12 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             />
           </div>
         </div>
+
+        <DatetimePicker
+          value={props.seekByTimestamp}
+          onChange={(v) => props.onSeekByTimestamp(v)}
+        />
+
       </div>
 
       <div className={s.ToolbarRight}>
@@ -45,6 +53,10 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       </div>
     </div>
   );
+}
+
+function dateInputValueFromDate(date: Date) {
+  return date.toISOString().split('.')[0];
 }
 
 export default Toolbar;
