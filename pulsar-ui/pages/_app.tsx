@@ -8,13 +8,13 @@ import * as PulsarCustomApiClient from '../components/app/contexts/PulsarCustomA
 import * as PulsarGrpcClient from '../components/app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as BrokerConfig from '../components/app/contexts/BrokersConfig';
 import * as I18n from '../components/app/contexts/I18n/I18n';
+import ReactTooltip from 'react-tooltip';
 import 'react-toastify/dist/ReactToastify.css';
 import NoSsr from '../components/ui/NoSsr/NoSsr';
 import { SWRConfig } from 'swr';
 import fetchIntercept from 'fetch-intercept';
 import { useEffect } from 'react';
 import stringify from 'safe-stable-stringify';
-import App from 'next/app';
 
 const MyApp = (props: AppProps) => {
   return (
@@ -61,6 +61,7 @@ const _MyApp = (props: AppProps) => {
         refreshInterval: appContext.performanceOptimizations.pulsarConsumerState === 'active' ? 0 : 15 * 1000
       }}>
       <NoSsr>
+        <ReactTooltip html={true} />
         <I18n.DefaultProvider>
           <Notifications.DefaultProvider>
             <PulsarGrpcClient.DefaultProvider>
