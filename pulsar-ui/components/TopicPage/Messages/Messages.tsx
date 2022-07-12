@@ -42,6 +42,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const subscriptionName = useRef('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
+  const [filterChangeCounter, setFilterChangeCounter] = useState(0);
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [messagesLoaded, setMessagesLoaded] = useState(0);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<{ prevMessagesLoaded: number, messagesLoadedPerSecond: number }>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
@@ -49,7 +50,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [seekByTimestamp, setSeekByTimestamp] = useState<Date | undefined>(undefined);
 
   useInterval(() => setMessagesLoadedPerSecond({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }), 1000);
-  useInterval(() => isPaused && ReactTooltip.rebuild(), 500);
+  useInterval(() => ReactTooltip.rebuild(), 500);
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
@@ -181,7 +182,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
   }, [isPaused]);
 
   useEffect(() => {
-    console.log('sss', seekByTimestamp);
     async function seek() {
       setIsPaused(true);
       if (seekByTimestamp === undefined) {
@@ -197,9 +197,14 @@ const Messages: React.FC<MessagesProps> = (props) => {
         .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
     }
 
+    setFilterChangeCounter(filterChangeCounter + 1);
     seek();
 
   }, [seekByTimestamp])
+
+  useEffect(() => {
+    setMessages([]); // Reset loaded messages.
+  }, [filterChangeCounter]);
 
   return (
     <div className={s.Messages}>
