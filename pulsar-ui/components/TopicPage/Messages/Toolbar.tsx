@@ -4,15 +4,20 @@ import pauseIcon from '!!raw-loader!./icons/pause.svg';
 import resumeIcon from '!!raw-loader!./icons/resume.svg';
 import Button from '../../ui/Button/Button';
 import * as I18n from '../../app/contexts/I18n/I18n';
-import DatetimePicker from '../../ui/DatetimePicker/DatetimePicker';
+import StartFromInput, { StartFrom } from './StartFromInput/StartFromInput';
+import { filter } from 'lodash';
+
+export type Filter = {
+  startFrom: StartFrom;
+}
 
 export type ToolbarProps = {
   isPaused: boolean,
   onSetIsPaused: (isPaused: boolean) => void,
   messagesLoaded: number,
   messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number },
-  onSeekByTimestamp: (date: Date | undefined) => void,
-  seekByTimestamp: Date | undefined,
+  onFilterChange: (filter: Filter) => void,
+  filter: Filter,
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
@@ -31,12 +36,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             />
           </div>
         </div>
-
-        <DatetimePicker
-          value={props.seekByTimestamp}
-          onChange={(v) => props.onSeekByTimestamp(v)}
-        />
-
+        <StartFromInput value={props.filter.startFrom} onChange={(v) => props.onFilterChange({ ...filter, startFrom: v }) } />
       </div>
 
       <div className={s.ToolbarRight}>

@@ -1,3 +1,4 @@
+import { filterProps } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 
 /* istanbul ignore next */
@@ -7,7 +8,7 @@ const noop = () => { };
 export function useInterval(
   callback: () => void,
   delay: number | null | false,
-  immediate?: boolean
+  immediate?: boolean,
 ) {
   const savedCallback = useRef(noop);
 
@@ -25,7 +26,10 @@ export function useInterval(
 
   // Set up the interval.
   useEffect(() => {
-    if (delay === null || delay === false) return undefined;
+    if (delay === null || delay === false) {
+      savedCallback.current();
+      return undefined;
+    }
     const tick = () => savedCallback.current();
     const id = setInterval(tick, delay);
     return () => clearInterval(id);
