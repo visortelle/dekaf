@@ -12,7 +12,6 @@ import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useDebounce } from 'use-debounce'
-import * as I18n from '../../app/contexts/I18n/I18n';
 import { useInterval } from '../../app/hooks/use-interval';
 import ReactTooltip from 'react-tooltip';
 import Toolbar from './Toolbar';
@@ -32,7 +31,6 @@ type KeyedMessage = {
 const displayMessagesLimit = 10000;
 
 const Messages: React.FC<MessagesProps> = (props) => {
-  const i18n = I18n.useContext();
   const appContext = AppContext.useContext();
   const { notifyError } = Notifications.useContext();
   const listRef = useRef<HTMLDivElement>(null);
@@ -47,7 +45,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [messagesLoaded, setMessagesLoaded] = useState(0);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<{ prevMessagesLoaded: number, messagesLoadedPerSecond: number }>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
-  const [messagesDebounced] = useDebounce(messages, 300, { maxWait: 300 })
+  const [messagesDebounced] = useDebounce(messages, 300, { maxWait: 300 });
+  const [seekByTimestamp, setSeekByTimestamp] = useState<Date | undefined>(undefined);
 
   useInterval(() => setMessagesLoadedPerSecond({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }), 1000);
   useInterval(() => isPaused && ReactTooltip.rebuild(), 500);
@@ -181,23 +180,34 @@ const Messages: React.FC<MessagesProps> = (props) => {
     appContext.setPerformanceOptimizations({ ...appContext.performanceOptimizations, pulsarConsumerState: isPaused ? 'inactive' : 'active' });
   }, [isPaused]);
 
-  const seekByTimestamp = (ts: Date) => {
-    const seekReq = new SeekRequest();
-    const timestamp = new Timestamp();
-    timestamp.setSeconds(ts.getTime() / 1000);
-    timestamp.setNanos(ts.getMilliseconds() * 1000);
-    seekReq.setConsumerName(consumerName.current);
-    seekReq.setTimestamp(timestamp);
-    consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-      .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
-  }
+  useEffect(() => {
+    console.log('sss', seekByTimestamp);
+    async function seek() {
+      setIsPaused(true);
+      if (seekByTimestamp === undefined) {
+        return;
+      }
+      const seekReq = new SeekRequest();
+      const timestamp = new Timestamp();
+      timestamp.setSeconds(seekByTimestamp.getTime() / 1000);
+      timestamp.setNanos(seekByTimestamp.getMilliseconds() * 1000);
+      seekReq.setConsumerName(consumerName.current);
+      seekReq.setTimestamp(timestamp);
+      await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
+        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
+    }
+
+    seek();
+
+  }, [seekByTimestamp])
 
   return (
     <div className={s.Messages}>
       <Toolbar
         isPaused={isPaused}
         onSetIsPaused={setIsPaused}
-        onSeekByTimestamp={seekByTimestamp}
+        onSeekByTimestamp={(date) => setSeekByTimestamp(date)}
+        seekByTimestamp={seekByTimestamp}
         messagesLoaded={messagesLoaded}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
       />
