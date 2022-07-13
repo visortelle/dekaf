@@ -21,6 +21,11 @@
   transition: var(--transition-short);
 }
 
+.DisabledSelect {
+  opacity: 1;
+  color: #aaa;
+}
+
 .Placeholder {
   opacity: 0.5;
   font-size: 14rem;
@@ -50,4 +55,8 @@
   width: 24rem;
   height: 24rem;
   fill: var(--text-color);
+}
+
+.DisabledArrow svg {
+  fill: #aaa;
 }

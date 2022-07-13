@@ -44,8 +44,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
   const [isPaused, setIsPaused] = useState(true);
   const [isPausedBeforeWindowBlur, setIsPausedBeforeWindowBlur] = useState(isPaused);
-  const consumerName = useRef('__xray_' + nanoid());
-  const subscriptionName = useRef('__xray_' + nanoid());
+  const [consumerName, setConsumerName] = useState('__xray_' + nanoid());
+  const [subscriptionName, setSubscriptionName] = useState('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
   const [messagesLoaded, setMessagesLoaded] = useState(0);
@@ -77,15 +77,15 @@ const Messages: React.FC<MessagesProps> = (props) => {
   }, [props.filter]);
 
   const applyFilter = async () => {
-    if (props.filter.startFrom.type === 'date') {
+    if (props.filter.startFrom.type === 'date' && props.filter.startFrom.date !== undefined) {
       const seekReq = new SeekRequest();
       const timestamp = new Timestamp();
       timestamp.setSeconds(props.filter.startFrom.date.getTime() / 1000);
       timestamp.setNanos(props.filter.startFrom.date.getMilliseconds() * 1000);
-      seekReq.setConsumerName(consumerName.current);
+      seekReq.setConsumerName(consumerName);
       seekReq.setTimestamp(timestamp);
       await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
+        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName}. ${err}`));
     }
   }
 
@@ -112,15 +112,14 @@ const Messages: React.FC<MessagesProps> = (props) => {
       const topicSelector = new TopicSelector();
       topicSelector.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setTopicSelector(topicSelector)
-      req.setConsumerName(consumerName.current);
+      req.setConsumerName(consumerName);
       req.setStartPaused(true);
-      req.setSubscriptionName(subscriptionName.current);
+      req.setSubscriptionName(subscriptionName);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
       req.setSubscriptionInitialPosition(props.filter.startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
-      const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
-      await applyFilter();
+      const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
 
       if (res === undefined) {
         return;
@@ -136,7 +135,12 @@ const Messages: React.FC<MessagesProps> = (props) => {
       }
     }
 
-    createConsumer();
+    async function initNewSession() {
+      await createConsumer();
+      await applyFilter();
+    }
+
+    initNewSession();
 
     const cleanup = async () => {
       streamRef.current?.cancel();
@@ -144,18 +148,18 @@ const Messages: React.FC<MessagesProps> = (props) => {
 
       async function deleteConsumer() {
         const deleteConsumerReq = new DeleteConsumerRequest();
-        deleteConsumerReq.setConsumerName(consumerName.current);
+        deleteConsumerReq.setConsumerName(consumerName);
         await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) })
-          .catch((err) => notifyError(`Unable to delete consumer ${consumerName.current}. ${err}`));
+          .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
       }
 
       async function deleteSubscription() {
         const deleteSubscriptionReq = new DeleteSubscriptionRequest();
         deleteSubscriptionReq.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-        deleteSubscriptionReq.setSubscriptionName(subscriptionName.current);
+        deleteSubscriptionReq.setSubscriptionName(subscriptionName);
         deleteSubscriptionReq.setForce(true);
         await consumerServiceClient.deleteSubscription(deleteSubscriptionReq, { deadline: createDeadline(10) })
-          .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName.current}. ${err}`));
+          .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
       }
 
       deleteConsumer(); // Don't await this
@@ -194,12 +198,12 @@ const Messages: React.FC<MessagesProps> = (props) => {
   useEffect(() => {
     if (isPaused) {
       const pauseReq = new PauseRequest();
-      pauseReq.setConsumerName(consumerName.current);
+      pauseReq.setConsumerName(consumerName);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to pause consumer ${consumerName.current}. ${err}`));
+        .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
     } else {
       const resumeReq = new ResumeRequest();
-      resumeReq.setConsumerName(consumerName.current);
+      resumeReq.setConsumerName(consumerName);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler)
       const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });
@@ -257,12 +261,10 @@ const _Messages: React.FC<_MessagesProps> = (props) => {
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [sessionKey, setSessionKey] = useState(0);
   const prevSessionKey = usePrevious(sessionKey);
-  const [startPaused, setStartPaused] = useState(true);
 
   useEffect(() => {
     if (prevSessionKey !== undefined && prevSessionKey !== sessionKey) {
       setMessages([]);
-      setStartPaused(false);
     }
   }, [sessionKey]);
 
