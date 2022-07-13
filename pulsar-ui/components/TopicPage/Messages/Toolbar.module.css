@@ -7,10 +7,16 @@
 
 .ToolbarLeft {
   margin-right: auto;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
 }
 
 .ToolbarRight {
-  margin-left: auto;
+  margin-right: auto;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
 }
 
 .MessagesLoadedStats {
@@ -29,22 +35,24 @@
 
 .MessagesLoadedStatValue {
   text-align: right;
-  flex: 1 1 auto;
+  flex: 1 1;
 }
 .MessagesLoadedStatTitle {
   width: 11ch;
   text-align: right;
 }
 
-.Buttons {
-  display: flex;
+.Controls {
+  display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
+  flex: 1 1;
 }
 
-.ButtonsButton {
+.Control {
   margin-right: 12rem;
 }
 
-.ButtonsButton:last-child {
+.Control:last-child {
   margin-right: 0;
 }
