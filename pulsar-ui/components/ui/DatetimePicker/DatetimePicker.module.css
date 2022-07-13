@@ -13,6 +13,21 @@
   opacity: 0.5;
 }
 
+.SvgIcon:hover {
+  opacity: 0.5;
+  transition: var(--transition-short);
+}
+
+.DatetimePicker .Picker:global(.react-datetime-picker--disabled),
+.DatetimePicker .Picker:global(.react-datetime-picker--disabled) * {
+  background-color: transparent !important;
+  color: #aaa !important;
+  fill: #aaa !important;
+}
+.DatetimePicker .Picker:global(.react-datetime-picker--disabled) :global(.react-datetime-picker__wrapper) {
+  border: 1px solid #ddd !important;
+}
+
 .Picker :global(.react-datetime-picker__inputGroup) input,
 .Picker :global(.react-datetime-picker__inputGroup) select {
   color: var(--text-color) !important;

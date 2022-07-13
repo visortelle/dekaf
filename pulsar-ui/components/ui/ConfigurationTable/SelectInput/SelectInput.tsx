@@ -25,7 +25,7 @@ function Input<V extends { toString: () => string }>(props: InputProps<V>): Reac
     <div className={s.Container}>
       {typeof props.value === 'undefined' && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
-        className={s.Select}
+        className={`${s.Select} ${props.disabled ? s.DisabledSelect : ''}`}
         onChange={(e) => props.onChange((e.target.value as unknown as V) || undefined)}
         value={props.getValueKey === undefined ? props?.value?.toString() : props.getValueKey(props.value)}
         disabled={props.disabled}
@@ -39,7 +39,7 @@ function Input<V extends { toString: () => string }>(props: InputProps<V>): Reac
           return <option key={valueKey} value={valueKey}>{item.title}</option>
         })}
       </select>
-      <div className={s.Arrow}>
+      <div className={`${s.Arrow} ${props.disabled ? s.DisabledArrow : ''}`}>
         <SvgIcon svg={arrowDownIcon} />
       </div>
     </div>
