@@ -48,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <SelectInput<Strategy>
-      list={strategies.map(s => ({ value: s, title: s }))}
+      list={strategies.map(s => ({ type: 'item', value: s, title: s }))}
       value={strategy}
       onChange={async (v) => {
         await adminClient.namespaces.setSchemaCompatibilityStrategy(props.tenant, props.namespace, v).catch(onUpdateError);

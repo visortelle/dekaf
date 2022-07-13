@@ -79,7 +79,7 @@ const RetentionInput: React.FC<RetentionInputProps> = (props) => {
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           onChange={(v) => setRetention(() => v === 'disabled' ? 'disabled' : { size: 'infinite', time: 'infinite' })}
           value={retention === 'disabled' ? 'disabled' : 'enabled'}
         />
@@ -89,7 +89,7 @@ const RetentionInput: React.FC<RetentionInputProps> = (props) => {
           <strong className={sf.FormLabel}>Size</strong>
           <div className={sf.FormItem}>
             <SelectInput<'infinite' | 'custom'>
-              list={[{ value: 'infinite', title: 'Infinite' }, { value: 'custom', title: 'Custom' }]}
+              list={[{ type: 'item', value: 'infinite', title: 'Infinite' }, { type: 'item', value: 'custom', title: 'Custom' }]}
               onChange={(v) => setRetention(() => ({ ...retention, size: v === 'infinite' ? 'infinite' : { size: 1, unit: 'M' } }))}
               value={retention.size === 'infinite' ? 'infinite' : 'custom'}
             />
@@ -106,7 +106,7 @@ const RetentionInput: React.FC<RetentionInputProps> = (props) => {
           <strong className={sf.FormLabel}>Time</strong>
           <div className={sf.FormItem}>
             <SelectInput<'infinite' | 'custom'>
-              list={[{ value: 'infinite', title: 'Infinite' }, { value: 'custom', title: 'Custom' }]}
+              list={[{ type: 'item', value: 'infinite', title: 'Infinite' }, { type: 'item', value: 'custom', title: 'Custom' }]}
               onChange={(v) => setRetention(() => ({ ...retention, time: v === 'infinite' ? 'infinite' : { value: 14, unit: 'd' } }))}
               value={retention.time === 'infinite' ? 'infinite' : 'custom'}
             />

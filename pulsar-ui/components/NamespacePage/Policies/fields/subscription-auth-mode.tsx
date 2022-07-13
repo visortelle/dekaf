@@ -37,7 +37,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <SelectInput<SubscriptionAuthMode>
-      list={[{ value: 'None', title: 'None' }, { value: 'Prefix', title: 'Prefix' }]}
+      list={[{ type: 'item', value: 'None', title: 'None' }, { type: 'item', value: 'Prefix', title: 'Prefix' }]}
       value={subscriptionAuthMode}
       onChange={async (v) => {
         await adminClient.namespaces.setSubscriptionAuthMode(props.tenant, props.namespace, v).catch(onUpdateError);

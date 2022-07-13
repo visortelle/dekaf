@@ -1,4 +1,4 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
+import SelectInput, { ListItem } from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import * as Either from 'fp-ts/lib/Either';
@@ -36,13 +36,13 @@ const SubscriptionTypesEnabledInput: React.FC<SubscriptionTypesEnabledProps> = (
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'all' | 'customList'>
-          list={[{ value: 'all', title: 'All' }, { value: 'customList', title: 'Custom list' }]}
+          list={[{ type: 'item', value: 'all', title: 'All' }, { type: 'item', value: 'customList', title: 'Custom list' }]}
           onChange={(v) => v === 'all' ? setSubscriptionTypesEnabled(() => 'all') : setSubscriptionTypesEnabled(() => ({ customList: [...subscriptionTypes] }))}
           value={subscriptionTypesEnabled === 'all' ? 'all' : 'customList'}
         />
       </div>
       {subscriptionTypesEnabled !== 'all' && (() => {
-        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled.customList.some(ste => ste === t)).map(c => ({ value: c, title: c })).sort((a, b) => a.title.localeCompare(b.title, 'en', { numeric: true }));
+        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled.customList.some(ste => ste === t)).map<ListItem<SubscriptionType>>(c => ({ type: 'item', value: c, title: c })).sort((a, b) => a.title.localeCompare(b.title, 'en', { numeric: true }));
         return (
           <div className={sf.FormItem}>
             <ListInput<SubscriptionType>
@@ -59,7 +59,7 @@ const SubscriptionTypesEnabledInput: React.FC<SubscriptionTypesEnabledProps> = (
                     />
                   )
                 },
-                initialValue: list[0].value,
+                initialValue: list[0].type === 'item' ? list[0].value : undefined,
               }}
               onRemove={async (id) => {
                 setSubscriptionTypesEnabled(() => ({

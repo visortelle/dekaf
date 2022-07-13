@@ -25,7 +25,7 @@ const DurationInput: React.FC<DurationInputProps> = (props) => {
 
       <div className={s.Unit}>
         <SelectInput<DurationUnit>
-          list={durationUnits.map(u => ({ value: u, title: u }))}
+          list={durationUnits.map(u => ({ type: 'item', value: u, title: u }))}
           onChange={(unit) => {
             const duration: Duration = { ...props.value, unit: unit as DurationUnit };
             props.onChange(duration)

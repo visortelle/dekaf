@@ -33,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <SelectInput<SchemaValidationEnforce>
-      list={[{ value: 'disabled', title: 'Not enforced' }, { value: 'enabled', title: 'Enforced' }]}
+      list={[{ type: 'item', value: 'disabled', title: 'Not enforced' }, { type: 'item', value: 'enabled', title: 'Enforced' }]}
       value={Boolean(isAllowAutoUpdateSchema) ? 'enabled' : 'disabled'}
       onChange={async (v) => {
         await adminClient.namespaces.setSchemaValidationEnforced(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);

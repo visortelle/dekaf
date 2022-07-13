@@ -1,4 +1,4 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
+import SelectInput, { ListItem } from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import * as Either from 'fp-ts/lib/Either';
@@ -48,10 +48,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     renderItem={(v) => <div>{v}</div>}
     editor={hideAddButton ? undefined : {
       render: (v, onChange) => {
-        const list = (clusters || []).filter(c => !replicationClusters?.some(ac => ac === c)).map(c => ({ value: c, title: c || '' }));
+        const list = (clusters || []).filter(c => !replicationClusters?.some(ac => ac === c)).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c || '' }));
         return (
           <SelectInput<string>
-            list={[undefined, ...list]}
+            list={[{ type: 'empty', title: '' }, ...list]}
             value={v}
             onChange={(v) => onChange(v as string)}
             placeholder="Select cluster"
