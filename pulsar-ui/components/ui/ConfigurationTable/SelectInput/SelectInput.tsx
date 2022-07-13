@@ -2,6 +2,7 @@ import React from 'react'
 import s from './SelectInput.module.css';
 import SvgIcon from '../../SvgIcon/SvgIcon';
 import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
+import stringify from 'safe-stable-stringify';
 
 export type ListItem<V> = {
   value: V,
@@ -16,6 +17,7 @@ export type InputProps<V> = {
   list: List<V>;
   placeholder?: string;
   disabled?: boolean;
+  getValueKey?: (value: V) => string;
 }
 
 function Input<V extends { toString: () => string }>(props: InputProps<V>): React.ReactElement {
@@ -25,7 +27,7 @@ function Input<V extends { toString: () => string }>(props: InputProps<V>): Reac
       <select
         className={s.Select}
         onChange={(e) => props.onChange((e.target.value as unknown as V) || undefined)}
-        value={props.value?.toString()}
+        value={props.getValueKey === undefined ? props?.value?.toString() : props.getValueKey(props.value)}
         disabled={props.disabled}
       >
         {props.list.map(item => {
@@ -33,7 +35,8 @@ function Input<V extends { toString: () => string }>(props: InputProps<V>): Reac
             return <option key={'undefined'} value={undefined}></option>
           }
 
-          return <option key={item.value.toString()} value={item.value.toString()}>{item.title}</option>
+          const valueKey = props.getValueKey === undefined ? item.value.toString() : props.getValueKey(item.value);
+          return <option key={valueKey} value={valueKey}>{item.title}</option>
         })}
       </select>
       <div className={s.Arrow}>
@@ -43,4 +46,4 @@ function Input<V extends { toString: () => string }>(props: InputProps<V>): Reac
   )
 }
 
-export default Input
+export default Input;

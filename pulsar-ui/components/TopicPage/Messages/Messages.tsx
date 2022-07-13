@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
@@ -7,12 +7,14 @@ import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { ItemContent, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
+import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar, { Filter } from './Toolbar';
+import { isEqual } from 'lodash';
 
 export type MessagesProps = {
   tenant: string,
@@ -24,6 +26,7 @@ export type MessagesProps = {
   filter: Filter,
   onFilterChange: (filter: Filter) => void,
   sessionKey: number,
+  onSessionKeyChange: (sessionKey: number) => void,
 };
 
 type KeyedMessage = {
@@ -36,8 +39,8 @@ const displayMessagesLimit = 10000;
 const Messages: React.FC<MessagesProps> = (props) => {
   const appContext = AppContext.useContext();
   const { notifyError } = Notifications.useContext();
-  const listRef = useRef<HTMLDivElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
   const [isPaused, setIsPaused] = useState(true);
   const [isPausedBeforeWindowBlur, setIsPausedBeforeWindowBlur] = useState(isPaused);
@@ -46,9 +49,9 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
   const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
   const [messagesLoaded, setMessagesLoaded] = useState(0);
-  const [latestFilterKey, setLatestFilterKey] = useState(-1);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<{ prevMessagesLoaded: number, messagesLoadedPerSecond: number }>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
   const messagesBuffer = useRef<KeyedMessage[]>([]);
+  const prevFilter = usePrevious(props.filter);
 
   useInterval(() => {
     setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: isPaused ? 0 : messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }));
@@ -65,9 +68,15 @@ const Messages: React.FC<MessagesProps> = (props) => {
     messagesBuffer.current = [];
   }, isPaused ? false : 32)
 
-  const applyFilter = async () => {
-    setLatestFilterKey(props.sessionKey);
+  useEffect(() => {
+    if (prevFilter !== undefined && !isEqual(prevFilter, props.filter)) {
+      // Start new session.
+      props.onSessionKeyChange(props.sessionKey + 1);
+    }
 
+  }, [props.filter]);
+
+  const applyFilter = async () => {
     if (props.filter.startFrom.type === 'date') {
       const seekReq = new SeekRequest();
       const timestamp = new Timestamp();
@@ -107,7 +116,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName.current);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
-      req.setSubscriptionInitialPosition(SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST);
+      req.setSubscriptionInitialPosition(props.filter.startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
@@ -197,13 +206,16 @@ const Messages: React.FC<MessagesProps> = (props) => {
       setStream(() => newStream);
     }
 
-    // New session has been initiated.
-    if (!isPaused && props.sessionKey !== latestFilterKey) {
-      props.onMessagesChange([]);
-    }
-
     appContext.setPerformanceOptimizations({ ...appContext.performanceOptimizations, pulsarConsumerState: isPaused ? 'inactive' : 'active' });
   }, [isPaused]);
+
+  const itemContent = useCallback<ItemContent<KeyedMessage, undefined>>((_, { key, message }) => <MessageComponent key={key} message={message} isShowTooltips={isPaused} />, [isPaused]);
+  const overscan = useMemo(() => ({ main: window.innerHeight, reverse: window.innerHeight }), []);
+  const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
+    if (e.deltaY < 0) {
+      setIsPaused(() => true);
+    }
+  }, []);
 
   return (
     <div className={s.Messages}>
@@ -218,46 +230,55 @@ const Messages: React.FC<MessagesProps> = (props) => {
       <div
         className={s.List}
         ref={listRef}
-        onWheel={(e) => {
-          if (e.deltaY < 0) {
-            setIsPaused(() => true);
-            return;
-          }
-        }}
+        onWheel={onWheel}
       >
-        <Virtuoso<KeyedMessage>
+        <Virtuoso
           className={s.Virtuoso}
           ref={virtuosoRef}
           data={props.messages}
           totalCount={props.messages.length}
-          customScrollParent={listRef.current || undefined}
-          itemContent={(_, { key, message }) => <MessageComponent key={key} message={message} isShowTooltips={isPaused} />}
-          overscan={{ main: window.innerHeight, reverse: window.innerHeight }}
-          followOutput={'auto'}
+          itemContent={itemContent}
+          overscan={overscan}
+          followOutput={true}
         />
       </div>
     </div>
   );
 }
 
-const _Messages: React.FC<Omit<MessagesProps, 'sessionKey' | 'messages' | 'onMessagesChange' | 'filter' | 'onFilterChange'>> = (props) => {
-  const [filter, setFilter] = useState<Filter>({ startFrom: { type: 'earliest' } });
+type _MessagesProps = {
+  tenant: string,
+  namespace: string,
+  topicType: 'persistent' | 'non-persistent',
+  topic: string,
+}
+const _Messages: React.FC<_MessagesProps> = (props) => {
+  const [filter, setFilter] = useState<Filter>({ startFrom: { type: 'latest' } });
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
-
   const [sessionKey, setSessionKey] = useState(0);
+  const prevSessionKey = usePrevious(sessionKey);
+  const [startPaused, setStartPaused] = useState(true);
+
+  useEffect(() => {
+    if (prevSessionKey !== undefined && prevSessionKey !== sessionKey) {
+      setMessages([]);
+      setStartPaused(false);
+    }
+  }, [sessionKey]);
 
   return (
     <Messages
       key={sessionKey}
-      {...props}
-      sessionKey={sessionKey}
+      tenant={props.tenant}
+      namespace={props.namespace}
+      topic={props.topic}
+      topicType={props.topicType}
       messages={messages}
       onMessagesChange={setMessages}
       filter={filter}
-      onFilterChange={(v) => {
-        setFilter(v);
-        setSessionKey(v => v + 1);
-      }}
+      onFilterChange={setFilter}
+      sessionKey={sessionKey}
+      onSessionKeyChange={setSessionKey}
     />
   );
 }
