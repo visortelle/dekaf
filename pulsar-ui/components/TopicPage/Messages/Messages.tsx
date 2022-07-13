@@ -52,10 +52,12 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<{ prevMessagesLoaded: number, messagesLoadedPerSecond: number }>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
   const messagesBuffer = useRef<KeyedMessage[]>([]);
   const prevFilter = usePrevious(props.filter);
+  const [isSessionReady, setIsSessionReady] = useState(false);
 
   useInterval(() => {
     setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: isPaused ? 0 : messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }));
   }, isPaused ? false : 1000);
+  useInterval(() => virtuosoRef.current?.scrollToIndex(props.messages.length - 1), isPaused ? false : 200); // Virtuoso's followOutput option doesn't work well with fast updates.
   useInterval(() => {
     if (messagesBuffer.current.length === 0) {
       return;
@@ -138,6 +140,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
     async function initNewSession() {
       await createConsumer();
       await applyFilter();
+      setIsSessionReady(() => true);
     }
 
     initNewSession();
@@ -224,6 +227,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
   return (
     <div className={s.Messages}>
       <Toolbar
+        isSessionReady={isSessionReady}
         isPaused={isPaused}
         onSetIsPaused={setIsPaused}
         filter={props.filter}
@@ -261,6 +265,8 @@ const _Messages: React.FC<_MessagesProps> = (props) => {
   const [messages, setMessages] = useState<KeyedMessage[]>([]);
   const [sessionKey, setSessionKey] = useState(0);
   const prevSessionKey = usePrevious(sessionKey);
+
+  console.log('filter', filter);
 
   useEffect(() => {
     if (prevSessionKey !== undefined && prevSessionKey !== sessionKey) {

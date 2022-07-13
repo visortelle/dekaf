@@ -83,7 +83,7 @@ const PoliciesInput: React.FC<PoliciesInputProps> = (props) => {
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           onChange={(v) => setPolicies(v === 'disabled' ? 'disabled' : defaultPolicies)}
           value={policies === 'disabled' ? 'disabled' : 'enabled'}
         />
@@ -93,7 +93,7 @@ const PoliciesInput: React.FC<PoliciesInputProps> = (props) => {
           <strong className={sf.FormLabel}>Delete mode</strong>
           <div className={sf.FormItem}>
             <SelectInput<DeleteMode>
-              list={[{ value: 'delete_when_no_subscriptions', title: 'Delete when no subscriptions' }, { value: 'delete_when_subscriptions_caught_up', title: 'Delete when subscriptions caught up' }]}
+              list={[{ type: 'item', value: 'delete_when_no_subscriptions', title: 'Delete when no subscriptions' }, { type: 'item', value: 'delete_when_subscriptions_caught_up', title: 'Delete when subscriptions caught up' }]}
               onChange={(v) => setPolicies({ ...policies, deleteMode: v })}
               value={policies.deleteMode}
             />
@@ -101,7 +101,7 @@ const PoliciesInput: React.FC<PoliciesInputProps> = (props) => {
           <strong className={sf.FormLabel}>Enable delete while inactive</strong>
           <div className={sf.FormItem}>
             <SelectInput<EnableWhileDeleteInactive>
-              list={[{ value: true, title: 'Enabled' }, { value: false, title: 'Disabled' }]}
+              list={[{ type: 'item', value: true, title: 'Enabled' }, { type: 'item', value: false, title: 'Disabled' }]}
               onChange={(v) => setPolicies({ ...policies, enableDeleteWhileInactive: v })}
               value={policies.enableDeleteWhileInactive}
             />

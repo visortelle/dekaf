@@ -33,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <SelectInput<Deduplication>
-      list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+      list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
       value={deduplication ? 'enabled' : 'disabled'}
       onChange={async (v) => {
         if (v === 'enabled') {

@@ -38,7 +38,7 @@ const MaxUnackedMessagesPerConsumerInput: React.FC<MaxUnackedMessagesPerConsumer
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           value={maxUnackedMessagesPerConsumer === 'disabled' ? 'disabled' : 'enabled'}
           onChange={(v) => v === 'disabled' ? setMaxUnackedMessagesPerConsumer('disabled') : setMaxUnackedMessagesPerConsumer(defaultMaxUnackedMessagesPerConsumer)}
         />

@@ -43,7 +43,7 @@ const SubscriptionExpirationTimeInput: React.FC<SubscriptionExpirationTimeInputP
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           value={subscriptionExpirationTime === 'disabled' ? 'disabled' : 'enabled'}
           onChange={(v) => v === 'disabled' ? setSubscriptionExpirationTime('disabled') : setSubscriptionExpirationTime(defaultSubscriptionExpirationTime)}
         />

@@ -82,7 +82,7 @@ const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Type</strong>
         <SelectInput<BacklogType>
-          list={props.backlogTypes.map(p => ({ value: p, title: p }))}
+          list={props.backlogTypes.map(p => ({ type: 'item', value: p, title: p }))}
           onChange={(type) => props.onChange({ ...props.value, type: type as BacklogType })}
           value={props.value.type}
           disabled={props.disabledInputs?.includes('type')}
@@ -101,7 +101,7 @@ const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
         <div className={sf.FormItem}>
           <SelectInput<'enabled' | 'disabled'>
             value={props.value.limitTime > 0 ? 'enabled' : 'disabled'}
-            list={[{ value: 'enabled', title: 'Enabled' }, { value: 'disabled', title: 'Disabled' }]}
+            list={[{ type: 'item', value: 'enabled', title: 'Enabled' }, { type: 'item', value: 'disabled', title: 'Disabled' }]}
             onChange={(v) => {
               switch (v) {
                 case 'enabled':
@@ -124,7 +124,7 @@ const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
       <div className={sf.FormItem}>
         <strong className={sf.FormLabel}>Policy</strong>
         <SelectInput<BacklogPolicy>
-          list={backlogPolicies.map(p => ({ value: p, title: p }))}
+          list={backlogPolicies.map(p => ({ type: 'item', value: p, title: p }))}
           onChange={(policy) => props.onChange({ ...props.value, policy: policy as BacklogPolicy })}
           value={props.value.policy}
         />

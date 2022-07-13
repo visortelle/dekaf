@@ -13,6 +13,7 @@ export type Filter = {
 
 export type ToolbarProps = {
   isPaused: boolean,
+  isSessionReady: boolean,
   onSetIsPaused: (isPaused: boolean) => void,
   messagesLoaded: number,
   messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number },
@@ -33,10 +34,11 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
               svgIcon={props.isPaused ? resumeIcon : pauseIcon}
               onClick={() => props.onSetIsPaused(!props.isPaused)}
               type={props.isPaused ? 'primary' : 'danger'}
+              disabled={!props.isSessionReady}
             />
           </div>
           <div className={s.Control}>
-            <StartFromInput value={props.filter.startFrom} onChange={(v) => { console.log('change'); props.onFilterChange({ ...filter, startFrom: v })}} disabled={!props.isPaused} />
+            <StartFromInput value={props.filter.startFrom} onChange={(v) => { console.log('change'); props.onFilterChange({ ...filter, startFrom: v }) }} disabled={!props.isPaused} />
           </div>
         </div>
       </div>

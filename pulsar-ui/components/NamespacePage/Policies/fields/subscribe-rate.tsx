@@ -39,7 +39,7 @@ export const SubscribeRateInput: React.FC<SubscribeRateInputProps> = (props) => 
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           value={subscribeRate === 'disabled' ? 'disabled' : 'enabled'}
           onChange={(value) => setSubscribeRate(value === 'disabled' ? 'disabled' : defaultSubscribeRate)}
         />

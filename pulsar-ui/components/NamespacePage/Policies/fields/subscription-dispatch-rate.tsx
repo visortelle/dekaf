@@ -43,7 +43,7 @@ export const SubscriptionDispatchRateInput: React.FC<SubscriptionDispatchRateInp
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           value={dispatchRate === 'disabled' ? 'disabled' : 'enabled'}
           onChange={(value) => setDispatchRate(value === 'disabled' ? 'disabled' : defaultSubscriptionDispatchRate)}
         />
@@ -81,7 +81,7 @@ export const SubscriptionDispatchRateInput: React.FC<SubscriptionDispatchRateInp
           <div className={sf.FormItem}>
             <strong className={sf.FormLabel}>Relative to publish rate</strong>
             <SelectInput<boolean>
-              list={[{ value: true, title: 'True' }, { value: false, title: 'False' }]}
+              list={[{ type: 'item', value: true, title: 'True' }, { type: 'item', value: false, title: 'False' }]}
               onChange={(v) => setDispatchRate({ ...dispatchRate, relativeToPublishRate: v })}
               value={dispatchRate.relativeToPublishRate}
             />

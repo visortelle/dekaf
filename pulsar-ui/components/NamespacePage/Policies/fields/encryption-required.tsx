@@ -33,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <SelectInput<EncryptionRequired>
-      list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+      list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
       value={encryptionRequired ? 'enabled' : 'disabled'}
       onChange={async (v) => {
         await adminClient.namespaces.modifyEncryptionRequired(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);
