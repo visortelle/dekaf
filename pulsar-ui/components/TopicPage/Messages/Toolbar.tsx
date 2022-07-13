@@ -35,8 +35,8 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
               type={props.isPaused ? 'primary' : 'danger'}
             />
           </div>
-          <div className={s.Control} style={{ width: '16ch'}}>
-            <StartFromInput value={props.filter.startFrom} onChange={(v) => props.onFilterChange({ ...filter, startFrom: v })} disabled={!props.isPaused} />
+          <div className={s.Control}>
+            <StartFromInput value={props.filter.startFrom} onChange={(v) => { console.log('change'); props.onFilterChange({ ...filter, startFrom: v })}} disabled={!props.isPaused} />
           </div>
         </div>
       </div>

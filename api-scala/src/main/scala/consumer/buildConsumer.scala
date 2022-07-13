@@ -26,7 +26,7 @@ def buildConsumer(
             case _             => ()
 
         if consumer.isConnected then consumer.acknowledge(msg)
-
+    
     var consumer = client.newConsumer
         .consumerName(consumerName)
         .messageListener(listener)
