@@ -12,7 +12,7 @@ export type Value = {
 }
 
 const defaultValue: Value = {
-  formatBytes: (bytes) => bytes === 0 ? String(0) : numeral(bytes).format('0.00b'),
+  formatBytes: (bytes) => bytes === 0 ? String(0) : (bytes < 1024 ? numeral(bytes).format('0b') : numeral(bytes).format('0.00b')),
   formatBytesRate: (bytesPerSecond) => bytesPerSecond === 0 ? String(0) : numeral(bytesPerSecond).format('0.00b') + '/s',
   formatByteArray: (byteArray, style) => toHexString(byteArray, style),
   formatCount: (count) => count === 0 ? String(0) : numeral(count).format(count < 1000 ? '0a' : '0.00a'),

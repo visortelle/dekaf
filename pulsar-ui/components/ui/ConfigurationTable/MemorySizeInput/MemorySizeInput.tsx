@@ -25,7 +25,7 @@ const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
 
       <div className={s.Unit}>
         <SelectInput<MemoryUnit>
-          list={memoryUnits.map(u => ({ value: u, title: u }))}
+          list={memoryUnits.map(u => ({ type: 'item', value: u, title: u }))}
           onChange={(unit) => {
             const memorySize: MemorySize = { ...props.value, unit: unit as MemoryUnit };
             props.onChange(memorySize)

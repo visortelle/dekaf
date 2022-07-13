@@ -38,7 +38,7 @@ const MaxTopicsPerNamespaceInput: React.FC<MaxTopicsPerNamespaceInputProps> = (p
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           value={maxTopicsPerNamespace === 'disabled' ? 'disabled' : 'enabled'}
           onChange={(v) => v === 'disabled' ? setMaxTopicsPerNamespace('disabled') : setMaxTopicsPerNamespace(defaultMaxSubscriptionPerTopic)}
         />

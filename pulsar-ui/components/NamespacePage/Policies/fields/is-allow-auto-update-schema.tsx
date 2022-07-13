@@ -33,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <SelectInput<IsAllowAutoUpdateSchema>
-      list={[{ value: 'disabled', title: 'Not allow' }, { value: 'enabled', title: 'Allow' }]}
+      list={[{ type: 'item', value: 'disabled', title: 'Not allow' }, { type: 'item', value: 'enabled', title: 'Allow' }]}
       value={Boolean(isAllowAutoUpdateSchema) ? 'enabled' : 'disabled'}
       onChange={async (v) => {
         await adminClient.namespaces.setIsAllowAutoUpdateSchema(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);

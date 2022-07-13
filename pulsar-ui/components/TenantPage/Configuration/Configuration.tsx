@@ -6,7 +6,7 @@ import * as Notifications from '../../app/contexts/Notifications';
 import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import * as Either from 'fp-ts/lib/Either';
 import Input from '../../ui/ConfigurationTable/Input/Input';
-import SelectInput from '../../ui/ConfigurationTable/SelectInput/SelectInput';
+import SelectInput, { ListItem } from '../../ui/ConfigurationTable/SelectInput/SelectInput';
 import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
 import { swrKeys } from '../../swrKeys';
 
@@ -67,7 +67,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Admin roles cannot be empty'))}
   />
 
-  const clustersList = (clusters || []).filter(c => !configuration?.allowedClusters?.some(ac => ac === c)).map(c => ({ value: c, title: c }));
+  const clustersList = (clusters || []).filter(c => !configuration?.allowedClusters?.some(ac => ac === c)).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c }));
   const hideAddButton = clustersList.length === 0;
 
   const allowedClustersInput = <ListInput<string>
@@ -77,7 +77,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     editor={hideAddButton ? undefined : {
       render: (v, onChange) => (
         <SelectInput<string>
-          list={[undefined, ...clustersList]}
+          list={[{ type: 'empty', title: '' }, ...clustersList]}
           value={v}
           onChange={(v) => onChange(v as string)}
           placeholder="Select cluster"

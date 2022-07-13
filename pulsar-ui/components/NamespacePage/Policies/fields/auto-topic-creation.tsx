@@ -39,7 +39,7 @@ export const AutoTopicCreationInput: React.FC<AutoTopicCreationInputProps> = (pr
         <SelectInput<AutoTopicCreation['enabled']>
           onChange={(v) => setAutoTopicCreation({ ...autoTopicCreation, enabled: v })}
           value={autoTopicCreation.enabled}
-          list={[{ value: 'false', title: 'Disabled' }, { value: 'true', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'false', title: 'Disabled' }, { type: 'item', value: 'true', title: 'Enabled' }]}
         />
       </div>
 
@@ -49,7 +49,7 @@ export const AutoTopicCreationInput: React.FC<AutoTopicCreationInputProps> = (pr
           <SelectInput<AutoTopicCreation['type']>
             onChange={(v) => setAutoTopicCreation({ ...autoTopicCreation, type: v })}
             value={autoTopicCreation.type}
-            list={[{ value: 'non-partitioned', title: 'Non-partitioned' }, { value: 'partitioned', title: 'Partitioned' }]}
+            list={[{ type: 'item', value: 'non-partitioned', title: 'Non-partitioned' }, { type: 'item', value: 'partitioned', title: 'Partitioned' }]}
           />
         </div>
       )}

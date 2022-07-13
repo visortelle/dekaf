@@ -43,7 +43,7 @@ const OffloadThresholdInput: React.FC<OffloadThresholdInputProps> = (props) => {
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           value={offloadThreshold === 'disabled' ? 'disabled' : 'enabled'}
           onChange={(v) => v === 'disabled' ? setOffloadThreshold('disabled') : setOffloadThreshold(defaultOffloadThreshold)}
         />

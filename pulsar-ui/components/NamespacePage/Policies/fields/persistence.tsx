@@ -77,7 +77,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
     <div>
       <div className={sf.FormItem}>
         <SelectInput<'enabled' | 'disabled'>
-          list={[{ value: 'disabled', title: 'Disabled' }, { value: 'enabled', title: 'Enabled' }]}
+          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
           value={persistence === 'disabled' ? 'disabled' : 'enabled'}
           onChange={(v) => v === 'disabled' ? setPersistence('disabled') : setPersistence(defaultPersistence)}
         />
