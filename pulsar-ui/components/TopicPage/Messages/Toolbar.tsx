@@ -26,8 +26,8 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   return (
     <div className={s.Toolbar}>
       <div className={s.ToolbarLeft}>
-        <div className={s.Buttons}>
-          <div className={s.ButtonsButton}>
+        <div className={s.Controls}>
+          <div className={s.Control}>
             <Button
               title={props.isPaused ? "Resume" : "Pause"}
               svgIcon={props.isPaused ? resumeIcon : pauseIcon}
@@ -35,8 +35,10 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
               type={props.isPaused ? 'primary' : 'danger'}
             />
           </div>
+          <div className={s.Control} style={{ width: '16ch'}}>
+            <StartFromInput value={props.filter.startFrom} onChange={(v) => props.onFilterChange({ ...filter, startFrom: v })} disabled={!props.isPaused} />
+          </div>
         </div>
-        <StartFromInput value={props.filter.startFrom} onChange={(v) => props.onFilterChange({ ...filter, startFrom: v }) } />
       </div>
 
       <div className={s.ToolbarRight}>
@@ -53,10 +55,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       </div>
     </div>
   );
-}
-
-function dateInputValueFromDate(date: Date) {
-  return date.toISOString().split('.')[0];
 }
 
 export default Toolbar;

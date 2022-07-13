@@ -19,9 +19,11 @@ import stringify from 'safe-stable-stringify';
 const MyApp = (props: AppProps) => {
   return (
     <AppContext.DefaultProvider>
-      <AsyncTasks.DefaultProvider>
-        <_MyApp {...props} />
-      </AsyncTasks.DefaultProvider>
+      <I18n.DefaultProvider>
+        <AsyncTasks.DefaultProvider>
+          <_MyApp {...props} />
+        </AsyncTasks.DefaultProvider>
+      </I18n.DefaultProvider>
     </AppContext.DefaultProvider>
   );
 }
@@ -62,21 +64,19 @@ const _MyApp = (props: AppProps) => {
       }}>
       <NoSsr>
         <ReactTooltip html={true} />
-        <I18n.DefaultProvider>
-          <Notifications.DefaultProvider>
-            <PulsarGrpcClient.DefaultProvider>
-              <PulsarAdminClient.DefaultProvider>
-                <PulsarAdminBatchClient.DefaultProvider>
-                  <PulsarCustomApiClient.DefaultProvider>
-                    <BrokerConfig.DefaultProvider>
-                      {typeof window === 'undefined' ? null : <props.Component />}
-                    </BrokerConfig.DefaultProvider>
-                  </PulsarCustomApiClient.DefaultProvider>
-                </PulsarAdminBatchClient.DefaultProvider>
-              </PulsarAdminClient.DefaultProvider>
-            </PulsarGrpcClient.DefaultProvider>
-          </Notifications.DefaultProvider>
-        </I18n.DefaultProvider>
+        <Notifications.DefaultProvider>
+          <PulsarGrpcClient.DefaultProvider>
+            <PulsarAdminClient.DefaultProvider>
+              <PulsarAdminBatchClient.DefaultProvider>
+                <PulsarCustomApiClient.DefaultProvider>
+                  <BrokerConfig.DefaultProvider>
+                    {typeof window === 'undefined' ? null : <props.Component />}
+                  </BrokerConfig.DefaultProvider>
+                </PulsarCustomApiClient.DefaultProvider>
+              </PulsarAdminBatchClient.DefaultProvider>
+            </PulsarAdminClient.DefaultProvider>
+          </PulsarGrpcClient.DefaultProvider>
+        </Notifications.DefaultProvider>
       </NoSsr >
     </SWRConfig>
   );
