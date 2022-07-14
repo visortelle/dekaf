@@ -5,7 +5,6 @@ import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import { StartFrom } from '../../types';
 import { QuickDate, quickDateToDate } from './quick-date';
 import Input from '../../../../ui/Input/Input';
-import dayjs from 'dayjs';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { timestampToDate } from './timestamp-to-date';
 
@@ -34,22 +33,22 @@ const list: List = [
     type: 'group',
     title: 'Quick date',
     items: [
-      { type: 'item', title: 'Last 5 minutes', value: 'last-5-minutes' },
-      { type: 'item', title: 'Last 15 minutes', value: 'last-15-minutes' },
-      { type: 'item', title: 'Last 30 minutes', value: 'last-30-minutes' },
-      { type: 'item', title: 'Last 1 hour', value: 'last-1-hour' },
-      { type: 'item', title: 'Last 3 hours', value: 'last-3-hours' },
-      { type: 'item', title: 'Last 6 hours', value: 'last-6-hours' },
-      { type: 'item', title: 'Last 12 hours', value: 'last-12-hours' },
-      { type: 'item', title: 'Last 24 hours', value: 'last-24-hours' },
-      { type: 'item', title: 'Last 2 days', value: 'last-2-days' },
-      { type: 'item', title: 'Last 7 days', value: 'last-7-days' },
-      { type: 'item', title: 'Last 30 days', value: 'last-30-days' },
-      { type: 'item', title: 'Last 90 days', value: 'last-90-days' },
-      { type: 'item', title: 'Last 6 months', value: 'last-6-months' },
-      { type: 'item', title: 'Last 1 year', value: 'last-1-year' },
-      { type: 'item', title: 'Last 2 years', value: 'last-2-years' },
-      { type: 'item', title: 'Last 5 years', value: 'last-5-years' },
+      { type: 'item', title: '5 minutes ago', value: '5-minutes-ago' },
+      { type: 'item', title: '15 minutes ago', value: '15-minutes-ago' },
+      { type: 'item', title: '30 minutes ago', value: '30-minutes-ago' },
+      { type: 'item', title: '1 hour ago', value: '1-hour-ago' },
+      { type: 'item', title: '3 hours ago', value: '3-hour-ago' },
+      { type: 'item', title: '6 hours ago', value: '6-hour-ago' },
+      { type: 'item', title: '12 hours ago', value: '12-hours-ago' },
+      { type: 'item', title: '24 hours ago', value: '24-hours-ago' },
+      { type: 'item', title: '2 days ago', value: 'last-2-days' },
+      { type: 'item', title: '7 days ago', value: '7-days-ago' },
+      { type: 'item', title: '30 days ago', value: '30-days-ago' },
+      { type: 'item', title: '90 days ago', value: '90-days-ago' },
+      { type: 'item', title: '6 months ago', value: '6-months-ago' },
+      { type: 'item', title: '1 year ago', value: '1-year-ago' },
+      { type: 'item', title: '2 years ago', value: '2-years-ago' },
+      { type: 'item', title: '5 years ago', value: 'last-5-years' },
       { type: 'item', title: 'Yesterday', value: 'yesterday' },
       { type: 'item', title: 'Day before yesterday', value: 'day-before-yesterday' },
       { type: 'item', title: 'This day last week', value: 'this-day-last-week' },
