@@ -1,8 +1,20 @@
-import React, { Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import { Message, CreateConsumerRequest, ResumeRequest, ResumeResponse, SubscriptionType, TopicSelector, DeleteConsumerRequest, PauseRequest, SubscriptionInitialPosition, DeleteSubscriptionRequest, SeekRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import {
+  Message,
+  CreateConsumerRequest,
+  ResumeRequest,
+  ResumeResponse,
+  SubscriptionType,
+  TopicSelector,
+  DeleteConsumerRequest,
+  PauseRequest,
+  SubscriptionInitialPosition,
+  DeleteSubscriptionRequest,
+  SeekRequest
+} from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
@@ -13,26 +25,24 @@ import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
-import Toolbar, { Filter } from './Toolbar';
+import Toolbar from './Toolbar';
 import { isEqual } from 'lodash';
+import { SessionState, SessionConfig } from './types';
+import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 
 export type MessagesProps = {
   tenant: string,
   namespace: string,
   topicType: 'persistent' | 'non-persistent',
   topic: string,
-  messages: KeyedMessage[],
-  onMessagesChange: (messages: KeyedMessage[]) => void,
-  filter: Filter,
-  onFilterChange: (filter: Filter) => void,
-  sessionKey: number,
-  onSessionKeyChange: (sessionKey: number) => void,
 };
 
 type KeyedMessage = {
   message: Message,
   key: string
 }
+
+type Content = 'messages' | 'configuration';
 
 const displayMessagesLimit = 10000;
 
@@ -42,8 +52,9 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
-  const [isPaused, setIsPaused] = useState(true);
-  const [isPausedBeforeWindowBlur, setIsPausedBeforeWindowBlur] = useState(isPaused);
+  const [sessionState, setSessionState] = useState<SessionState>('new');
+  const prevSessionState = usePrevious(sessionState);
+  const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState(sessionState);
   const [consumerName, setConsumerName] = useState('__xray_' + nanoid());
   const [subscriptionName, setSubscriptionName] = useState('__xray_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
@@ -51,39 +62,30 @@ const Messages: React.FC<MessagesProps> = (props) => {
   const [messagesLoaded, setMessagesLoaded] = useState(0);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<{ prevMessagesLoaded: number, messagesLoadedPerSecond: number }>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
   const messagesBuffer = useRef<KeyedMessage[]>([]);
-  const prevFilter = usePrevious(props.filter);
-  const [isSessionReady, setIsSessionReady] = useState(false);
+  const [config, setConfig] = useState<SessionConfig>({ startFrom: { type: 'latest' } });
+  const [messages, setMessages] = useState<KeyedMessage[]>([]);
 
   useInterval(() => {
-    setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: isPaused ? 0 : messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }));
-  }, isPaused ? false : 1000);
-  useInterval(() => virtuosoRef.current?.scrollToIndex(props.messages.length - 1), isPaused ? false : 200); // Virtuoso's followOutput option doesn't work well with fast updates.
+    setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: sessionState === 'running' ? messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded : 0 }));
+  }, sessionState === 'running' ? 1000 : false);
+  useInterval(() => virtuosoRef.current?.scrollToIndex(messages.length - 1), sessionState === 'running' ? 300 : false); // Virtuoso's followOutput option doesn't work well with fast updates. We are trying to help it a bit. :)
   useInterval(() => {
     if (messagesBuffer.current.length === 0) {
       return;
     }
 
-    let messagesToSet = props.messages.concat(messagesBuffer.current);
-    messagesToSet = messagesToSet.slice(messagesToSet.length - displayMessagesLimit, messagesToSet.length);
-    props.onMessagesChange(messagesToSet);
+    setMessages((messages) => {
+      const newMessages = messages.concat(messagesBuffer.current);
+      messagesBuffer.current = [];
+      return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
+    });
 
-    messagesBuffer.current = [];
-  }, isPaused ? false : 32)
+  }, sessionState === 'running' ? 32 : false)
 
-  useEffect(() => {
-    if (prevFilter !== undefined && !isEqual(prevFilter, props.filter)) {
-      // Start new session.
-      props.onSessionKeyChange(props.sessionKey + 1);
-    }
-
-  }, [props.filter]);
-
-  const applyFilter = async () => {
-    if (props.filter.startFrom.type === 'date' && props.filter.startFrom.date !== undefined) {
+  const applyConfig = async () => {
+    if (config.startFrom.type === 'date' && config.startFrom.date !== undefined) {
       const seekReq = new SeekRequest();
-      const timestamp = new Timestamp();
-      timestamp.setSeconds(props.filter.startFrom.date.getTime() / 1000);
-      timestamp.setNanos(props.filter.startFrom.date.getMilliseconds() * 1000);
+      const timestamp = Timestamp.fromDate(config.startFrom.date);
       seekReq.setConsumerName(consumerName);
       seekReq.setTimestamp(timestamp);
       await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
@@ -104,11 +106,44 @@ const Messages: React.FC<MessagesProps> = (props) => {
       return;
     }
 
-    stream.removeListener('data', streamDataHandler)
-    stream.on('data', streamDataHandler);
+    (async () => {
+      await applyConfig();
+      stream.removeListener('data', streamDataHandler);
+      stream.on('data', streamDataHandler);
+    })()
+
   }, [stream]);
 
-  useEffect(() => {
+  const cleanup = useCallback(async () => {
+    if (prevSessionState !== 'running' && prevSessionState !== 'paused') {
+      return;
+    }
+
+    streamRef.current?.cancel();
+    streamRef.current?.removeListener('data', streamDataHandler);
+    setMessages([]);
+
+    async function deleteConsumer() {
+      const deleteConsumerReq = new DeleteConsumerRequest();
+      deleteConsumerReq.setConsumerName(consumerName);
+      await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) })
+        .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
+    }
+
+    async function deleteSubscription() {
+      const deleteSubscriptionReq = new DeleteSubscriptionRequest();
+      deleteSubscriptionReq.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      deleteSubscriptionReq.setSubscriptionName(subscriptionName);
+      deleteSubscriptionReq.setForce(true);
+      await consumerServiceClient.deleteSubscription(deleteSubscriptionReq, { deadline: createDeadline(10) })
+        .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
+    }
+
+    deleteConsumer(); // Don't await this
+    deleteSubscription(); // Don't await this
+  }, [consumerName, consumerServiceClient, props.namespace, props.tenant, props.topic, props.topicType, streamDataHandler, subscriptionName]);
+
+  const initializeSession = useCallback(() => {
     async function createConsumer() {
       const req = new CreateConsumerRequest();
       const topicSelector = new TopicSelector();
@@ -118,7 +153,7 @@ const Messages: React.FC<MessagesProps> = (props) => {
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
-      req.setSubscriptionInitialPosition(props.filter.startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
+      req.setSubscriptionInitialPosition(config.startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
@@ -130,6 +165,10 @@ const Messages: React.FC<MessagesProps> = (props) => {
       const status = res.getStatus();
       const code = status?.getCode();
 
+      if (code === Code.OK) {
+        setSessionState('running');
+      }
+
       if (code !== Code.OK) {
         const errorMessage = status?.getMessage();
         notifyError(`Unable to create consumer. ${errorMessage}`);
@@ -137,60 +176,29 @@ const Messages: React.FC<MessagesProps> = (props) => {
       }
     }
 
-    async function initNewSession() {
-      await createConsumer();
-      await applyFilter();
-      setIsSessionReady(() => true);
-    }
-
-    initNewSession();
-
-    const cleanup = async () => {
-      streamRef.current?.cancel();
-      streamRef.current?.removeListener('data', streamDataHandler);
-
-      async function deleteConsumer() {
-        const deleteConsumerReq = new DeleteConsumerRequest();
-        deleteConsumerReq.setConsumerName(consumerName);
-        await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) })
-          .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
-      }
-
-      async function deleteSubscription() {
-        const deleteSubscriptionReq = new DeleteSubscriptionRequest();
-        deleteSubscriptionReq.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-        deleteSubscriptionReq.setSubscriptionName(subscriptionName);
-        deleteSubscriptionReq.setForce(true);
-        await consumerServiceClient.deleteSubscription(deleteSubscriptionReq, { deadline: createDeadline(10) })
-          .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
-      }
-
-      deleteConsumer(); // Don't await this
-      deleteSubscription(); // Don't await this
-    };
+    createConsumer();
 
     window.addEventListener('beforeunload', cleanup);
-
     return () => {
       window.removeEventListener('beforeunload', cleanup);
       cleanup();
     };
-  }, []);
+  }, [cleanup, config, consumerServiceClient, props.namespace, props.tenant, props.topic, props.topicType, subscriptionName]);
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
   const handleVisibilityChange = useCallback(() => {
     if (document.visibilityState === 'hidden') {
-      setIsPausedBeforeWindowBlur(isPaused);
-      setIsPaused(true);
+      setSessionStateBeforeWindowBlur(sessionState);
+      setSessionState('paused');
       return;
     }
 
     if (document.visibilityState === 'visible') {
-      setIsPaused(isPausedBeforeWindowBlur);
+      setSessionState(sessionStateBeforeWindowBlur);
       return;
     }
-  }, [isPaused, isPausedBeforeWindowBlur]);
+  }, [sessionState, sessionStateBeforeWindowBlur]);
 
   useEffect(() => {
     if (window === undefined) return;
@@ -199,96 +207,81 @@ const Messages: React.FC<MessagesProps> = (props) => {
   }, [handleVisibilityChange]);
 
   useEffect(() => {
-    if (isPaused) {
+    appContext.setPerformanceOptimizations({ ...appContext.performanceOptimizations, pulsarConsumerState: sessionState === 'running' ? 'active' : 'inactive' });
+
+    if (sessionState === 'initializing') {
+      initializeSession();
+    }
+
+    if (sessionState === 'paused') {
       const pauseReq = new PauseRequest();
       pauseReq.setConsumerName(consumerName);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
         .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
-    } else {
+      return;
+    }
+
+    if (sessionState === 'running') {
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler)
       const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });
       setStream(() => newStream);
+      return;
     }
 
-    appContext.setPerformanceOptimizations({ ...appContext.performanceOptimizations, pulsarConsumerState: isPaused ? 'inactive' : 'active' });
-  }, [isPaused]);
+    if (sessionState === 'new' && prevSessionState !== 'new') {
+      cleanup();
+      return;
+    }
+  }, [sessionState]);
 
-  const itemContent = useCallback<ItemContent<KeyedMessage, undefined>>((_, { key, message }) => <MessageComponent key={key} message={message} isShowTooltips={isPaused} />, [isPaused]);
+  const itemContent = useCallback<ItemContent<KeyedMessage, undefined>>((_, { key, message }) => <MessageComponent key={key} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const overscan = useMemo(() => ({ main: window.innerHeight, reverse: window.innerHeight }), []);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0) {
-      setIsPaused(() => true);
+      setSessionState('paused');
     }
   }, []);
+
+  const content: Content = sessionState === 'new' ? 'configuration' : 'messages';
 
   return (
     <div className={s.Messages}>
       <Toolbar
-        isSessionReady={isSessionReady}
-        isPaused={isPaused}
-        onSetIsPaused={setIsPaused}
-        filter={props.filter}
-        onFilterChange={props.onFilterChange}
+        sessionState={sessionState}
+        onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
       />
-      <div
-        className={s.List}
-        ref={listRef}
-        onWheel={onWheel}
-      >
-        <Virtuoso
-          className={s.Virtuoso}
-          ref={virtuosoRef}
-          data={props.messages}
-          totalCount={props.messages.length}
-          itemContent={itemContent}
-          overscan={overscan}
-          followOutput={true}
+
+      {content === 'messages' && (
+        <div
+          className={s.List}
+          ref={listRef}
+          onWheel={onWheel}
+        >
+          <Virtuoso
+            className={s.Virtuoso}
+            ref={virtuosoRef}
+            data={messages}
+            totalCount={messages.length}
+            itemContent={itemContent}
+            overscan={overscan}
+            followOutput={true}
+          />
+
+        </div>
+      )}
+      {content === 'configuration' && (
+        <SessionConfiguration
+          config={config}
+          onConfigChange={setConfig}
         />
-      </div>
+      )}
     </div>
   );
 }
 
-type _MessagesProps = {
-  tenant: string,
-  namespace: string,
-  topicType: 'persistent' | 'non-persistent',
-  topic: string,
-}
-const _Messages: React.FC<_MessagesProps> = (props) => {
-  const [filter, setFilter] = useState<Filter>({ startFrom: { type: 'latest' } });
-  const [messages, setMessages] = useState<KeyedMessage[]>([]);
-  const [sessionKey, setSessionKey] = useState(0);
-  const prevSessionKey = usePrevious(sessionKey);
-
-  console.log('filter', filter);
-
-  useEffect(() => {
-    if (prevSessionKey !== undefined && prevSessionKey !== sessionKey) {
-      setMessages([]);
-    }
-  }, [sessionKey]);
-
-  return (
-    <Messages
-      key={sessionKey}
-      tenant={props.tenant}
-      namespace={props.namespace}
-      topic={props.topic}
-      topicType={props.topicType}
-      messages={messages}
-      onMessagesChange={setMessages}
-      filter={filter}
-      onFilterChange={setFilter}
-      sessionKey={sessionKey}
-      onSessionKeyChange={setSessionKey}
-    />
-  );
-}
-
-export default _Messages;
+export default Messages;

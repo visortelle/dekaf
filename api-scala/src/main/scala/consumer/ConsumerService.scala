@@ -40,7 +40,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case Some(consumer) =>
                 consumer.resume
             case _ =>
-                val msg = "No such consumer: $consumerName"
+                val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
@@ -111,7 +111,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.OK.index)
                 return Future.successful(ResumeResponse(status = Some(status)))
             case _ =>
-                val msg = "No such consumer: $consumerName"
+                val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(ResumeResponse(status = Some(status)))
@@ -124,7 +124,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case Some(consumer) =>
                 consumer.pause
             case _ =>
-                val msg = "No such consumer: $consumerName"
+                val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
@@ -137,7 +137,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.OK.index)
                 return Future.successful(PauseResponse(status = Some(status)))
             case _ =>
-                val msg = "No such consumer: $consumerName"
+                val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
@@ -194,7 +194,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumer = consumers.get(consumerName) match
             case Some(v) => v
             case _ =>
-                val msg = "No such consumer: $consumerName"
+                val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(SeekResponse(status = Some(status)))
@@ -202,6 +202,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val res = request.seek match
             case Seek.Empty => Left("Seek request should contain timestamp or message id")
             case Seek.Timestamp(v) =>
+                println(s"--------------------------------               Seek to timestamp: $v")
                 consumer.seek(Instant.ofEpochSecond(v.seconds, v.nanos).toEpochMilli)
                 Right(())
             case Seek.MessageId(v) =>
