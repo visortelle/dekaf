@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect } from 'react';
 import s from './StartFromInput.module.css'
 import Select, { List } from '../../../../ui/Select/Select';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import { StartFrom } from '../../types';
-import { QuickDate } from './quick-date';
+import { QuickDate, quickDateToDate } from './quick-date';
 import Input from '../../../../ui/Input/Input';
 import dayjs from 'dayjs';
+import SmallButton from '../../../../ui/SmallButton/SmallButton';
+import { timestampToDate } from './timestamp-to-date';
 
 export type StartFromInputProps = {
   value: StartFrom,
@@ -60,6 +62,16 @@ const list: List = [
 type StartFromType = StartFrom['type'] | QuickDate;
 
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {
+  const [latestSelectedDate, setLatestSelectedDate] = React.useState<Date>(new Date());
+
+  useEffect(() => {
+    switch (props.value.type) {
+      case 'date': setLatestSelectedDate(props.value.date); break;
+      case 'timestamp': setLatestSelectedDate(timestampToDate(props.value.ts) || latestSelectedDate); break;
+      case 'quickDate': setLatestSelectedDate(quickDateToDate(props.value.quickDate, latestSelectedDate)); break;
+    }
+  }, [props.value]);
+
   return (
     <div className={s.StartFromInput}>
       <div className={s.TypeSelect}>
@@ -70,41 +82,50 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             switch (v as StartFromType) {
               case 'earliest': props.onChange({ type: 'earliest' }); return;
               case 'latest': props.onChange({ type: 'latest' }); return;
-              case 'date': props.onChange({ type: 'date', date: new Date() }); return;
-              case 'timestamp': props.onChange({ type: 'timestamp', date: new Date() }); return;
-              default: props.onChange({ type: 'quickDate', quickDate: v as QuickDate }); return;
+              case 'date': props.onChange({ type: 'date', date: latestSelectedDate }); return;
+              case 'timestamp': props.onChange({ type: 'timestamp', ts: new Date().getTime().toString() }); return;
+              default: {
+                const relativeTo = new Date();
+                setLatestSelectedDate(relativeTo);
+                props.onChange({ type: 'quickDate', quickDate: v as QuickDate, relativeTo });
+              }; return;
             }
           }}
           disabled={props.disabled}
         />
       </div>
 
-      {props.value.type === 'date' && (
-        <DatetimePicker
-          value={props.value.date}
-          onChange={(v) => props.onChange({ type: 'date', date: v || new Date() })}
-          disabled={props.disabled}
-        />
-      )}
-      {props.value.type === 'timestamp' && (
-        <Input
-          value={props.value.date.toISOString()}
-          placeholder="0 or 1970-01-01T00:00:00.000Z"
-          onChange={(s) => {
-            if (props.value.type !== 'timestamp') {
-              return;
-            }
+      <div className={s.AdditionalControls}>
+        {props.value.type === 'date' && (
+          <DatetimePicker
+            value={props.value.date}
+            onChange={(v) => props.onChange({ type: 'date', date: v || new Date() })}
+            disabled={props.disabled}
+          />
+        )}
+        {props.value.type === 'timestamp' && (
+          <Input
+            value={props.value.ts}
+            placeholder="UNIX timestamp in ms, or ISO-8601"
+            onChange={(v) => props.onChange({ type: 'timestamp', ts: v })}
+          />
+        )}
+        {props.value.type === 'quickDate' && (
+          <SmallButton
+            onClick={() => {
+              if (props.value.type !== 'quickDate') {
+                return;
+              }
 
-            const v = s.replace(/["'`]/g, '').trim(); // It may be copy-pasted from logs with quotes or spaces
-            console.log('s', s);
-            console.log('v', v);
-            const isUnixTimestamp = /^\d+$/.test(v);
-            const isValid = isUnixTimestamp ? true : dayjs(v).isValid();
-
-            props.onChange({ type: 'timestamp', date: isValid ? dayjs(isUnixTimestamp ? Number(v) : v).toDate() : props.value.date })
-          }}
-        />
-      )}
+              const relativeTo = new Date();
+              setLatestSelectedDate(relativeTo);
+              props.onChange({ ...props.value, relativeTo });
+            }}
+            type='primary'
+            text='Actualize from now'
+          />
+        )}
+      </div>
     </div>
   );
 }

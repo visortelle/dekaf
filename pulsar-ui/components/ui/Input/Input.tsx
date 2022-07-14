@@ -1,8 +1,7 @@
 import s from './Input.module.css';
-import { HTMLInputTypeAttribute, useEffect, useRef } from 'react';
+import { Attributes, HTMLAttributes, HTMLInputTypeAttribute, InputHTMLAttributes, useEffect, useRef } from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import clearIcon from '!!raw-loader!./clear.svg';
-import { filterProps } from 'framer-motion';
 
 export type InputProps = {
   placeholder: string,
@@ -12,8 +11,9 @@ export type InputProps = {
   focusOnMount?: boolean
   clearable?: boolean,
   type?: HTMLInputTypeAttribute,
+  inputProps?: InputHTMLAttributes<any>
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount, type }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount, type, inputProps }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -36,6 +36,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, o
             inputRef?.current?.blur();
           }
         }}
+        {...inputProps}
       />
       {iconSvg && (<div className={s.InputIcon}>
         <SvgIcon svg={iconSvg} />

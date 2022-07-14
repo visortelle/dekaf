@@ -1,8 +1,8 @@
 .Toolbar {
   display: flex;
-  align-items: center;
   padding: 8rem 12rem;
   border-bottom: 1rem solid #ddd;
+  line-height: 1.2;
 }
 
 .ToolbarLeft {
@@ -29,7 +29,6 @@
   display: flex;
   flex: 1 1 auto;
   justify-content: space-between;
-  line-height: 1;
   font-size: 12rem;
 }
 
@@ -42,17 +41,25 @@
   text-align: right;
 }
 
-.Controls {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex: 1 1;
-}
-
 .Control {
+  font-size: 12rem;
   margin-right: 12rem;
 }
 
 .Control:last-child {
   margin-right: 0;
+}
+
+.ConfigParam {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.ConfigParamName {
+  font-weight: bold;
+}
+
+.NoData {
+  color: #aaa;
 }
