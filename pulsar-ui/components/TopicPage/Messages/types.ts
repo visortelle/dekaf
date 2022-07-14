@@ -19,8 +19,8 @@ export type SessionTopicsSelector = {
 
 export type StartFrom =
   { type: 'date', date: Date } |
-  { type: 'quickDate', quickDate: QuickDate } |
-  { type: 'timestamp', date: Date } |
+  { type: 'quickDate', quickDate: QuickDate, relativeTo: Date } |
+  { type: 'timestamp', ts: string } |
   { type: 'earliest' } |
   { type: 'latest' };
 

@@ -32,6 +32,9 @@ import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
 import { SessionState, SessionConfig, SessionTopicsSelector } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
+import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
+import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
+import dayjs from 'dayjs';
 
 export type SessionProps = {
   config: SessionConfig;
@@ -108,12 +111,23 @@ const Session: React.FC<SessionProps> = (props) => {
       return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
     });
 
-  }, sessionState === 'running' ? 32 : false)
+  }, sessionState === 'running' ? 32 : false);
 
   const applyConfig = async () => {
-    if (props.config.startFrom.type === 'date' || props.config.startFrom.type === 'timestamp') {
+    if (props.config.startFrom.type === 'date' || props.config.startFrom.type === 'timestamp' || props.config.startFrom.type === 'quickDate') {
+      let fromDate;
+      switch(props.config.startFrom.type) {
+        case 'date': fromDate = dayjs(props.config.startFrom.date).millisecond(0).toDate(); break;
+        case 'timestamp': fromDate = dayjs(timestampToDate(props.config.startFrom.ts)).millisecond(0).toDate(); break;
+        case 'quickDate': fromDate = dayjs(quickDateToDate(props.config.startFrom.quickDate, props.config.startFrom.relativeTo)).millisecond(0).toDate(); break;
+      }
+
+      if (fromDate === undefined) {
+        return;
+      }
+
       const seekReq = new SeekRequest();
-      const timestamp = Timestamp.fromDate(props.config.startFrom.date);
+      const timestamp = Timestamp.fromDate(fromDate);
       seekReq.setConsumerName(consumerName);
       seekReq.setTimestamp(timestamp);
       await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })

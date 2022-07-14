@@ -11,11 +11,14 @@ export type SessionConfigurationProps = {
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   return (
     <div className={s.SessionConfiguration}>
-      <div className={s.Control}>
-        <StartFromInput
-          value={props.config.startFrom}
-          onChange={(v) => props.onConfigChange({ ...props.config, startFrom: v })}
-        />
+      <div className={s.LeftColumn}>
+        <div className={s.Control}>
+          <div className={s.ControlLabel}>Start from</div>
+          <StartFromInput
+            value={props.config.startFrom}
+            onChange={(v) => props.onConfigChange({ ...props.config, startFrom: v })}
+          />
+        </div>
       </div>
     </div>
   );

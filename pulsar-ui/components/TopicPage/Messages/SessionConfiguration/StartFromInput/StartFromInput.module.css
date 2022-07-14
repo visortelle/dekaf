@@ -1,12 +1,12 @@
 .StartFromInput {
   display: flex;
+  flex-direction: column;
 }
 
 .TypeSelect {
   display: flex;
-  margin-right: 8rem;
 }
 
-.TypeSelect:last-child {
-  margin-right: 0;
+.AdditionalControls {
+  margin-top: 8rem;
 }

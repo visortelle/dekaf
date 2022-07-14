@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import numeral from 'numeral';
+import dayjs from 'dayjs';
 
 export type Value = {
   formatBytes: (bytes: number) => string;
@@ -17,7 +18,7 @@ const defaultValue: Value = {
   formatByteArray: (byteArray, style) => toHexString(byteArray, style),
   formatCount: (count) => count === 0 ? String(0) : numeral(count).format(count < 1000 ? '0a' : '0.00a'),
   formatCountRate: (countPerSecond) => countPerSecond === 0 ? String(0) : numeral(countPerSecond).format(countPerSecond < 1000 ? '0a' : '0.00a') + '/s',
-  formatDate: (date) => date.toISOString(),
+  formatDate: (date) => dayjs(date).format('ddd, MMM DD, YYYY HH:mm:ss UTCZ'),
   formatLongNumber: (longNumber) => numeral(longNumber).format('0,0'),
 };
 

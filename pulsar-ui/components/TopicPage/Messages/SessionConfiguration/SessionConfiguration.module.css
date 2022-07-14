@@ -1,0 +1,12 @@
+.SessionConfiguration {
+  padding: 36rem 12rem;
+}
+
+.LeftColumn {
+  max-width: 480rem;
+}
+
+.ControlLabel {
+  font-weight: bold;
+  margin-bottom: 4rem;
+}
