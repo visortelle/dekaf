@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './SessionConfiguration.module.css'
-import StartFromInput from '../StartFromInput/StartFromInput';
+import StartFromInput from './StartFromInput/StartFromInput';
 import { SessionConfig } from '../types';
 
 export type SessionConfigurationProps = {
