@@ -45,6 +45,9 @@ export type SessionTopicsSelector = {
 
 export type SessionProps = {
   topicsSelector: SessionTopicsSelector;
+  config: SessionConfig;
+  onConfigChange: (config: SessionConfig) => void;
+  onStopSession: () => void;
 };
 
 type KeyedMessage = {
@@ -89,7 +92,6 @@ const Session: React.FC<SessionProps> = (props) => {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
-  const [config, setConfig] = useState<SessionConfig>({ startFrom: { type: 'latest' } });
   const [sessionState, setSessionState] = useState<SessionState>(defaults.sessionState());
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(defaults.sessionStateBeforeBlur());
   const prevSessionState = usePrevious(sessionState);
@@ -120,9 +122,9 @@ const Session: React.FC<SessionProps> = (props) => {
   }, sessionState === 'running' ? 32 : false)
 
   const applyConfig = async () => {
-    if (config.startFrom.type === 'date' && config.startFrom.date !== undefined) {
+    if (props.config.startFrom.type === 'date' && props.config.startFrom.date !== undefined) {
       const seekReq = new SeekRequest();
-      const timestamp = Timestamp.fromDate(config.startFrom.date);
+      const timestamp = Timestamp.fromDate(props.config.startFrom.date);
       seekReq.setConsumerName(consumerName);
       seekReq.setTimestamp(timestamp);
       await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
@@ -234,7 +236,7 @@ const Session: React.FC<SessionProps> = (props) => {
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
-      req.setSubscriptionInitialPosition(config.startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
+      req.setSubscriptionInitialPosition(props.config.startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
@@ -263,7 +265,7 @@ const Session: React.FC<SessionProps> = (props) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
     };
-  }, [config, consumerServiceClient, props.topicsSelector, subscriptionName]);
+  }, [props.config, consumerServiceClient, props.topicsSelector, subscriptionName]);
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
@@ -333,6 +335,7 @@ const Session: React.FC<SessionProps> = (props) => {
         onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
+        onStopSession={props.onStopSession}
       />
 
       {content === 'messages' && (
@@ -355,8 +358,8 @@ const Session: React.FC<SessionProps> = (props) => {
       )}
       {content === 'configuration' && (
         <SessionConfiguration
-          config={config}
-          onConfigChange={setConfig}
+          config={props.config}
+          onConfigChange={props.onConfigChange}
         />
       )}
     </div>
@@ -364,10 +367,22 @@ const Session: React.FC<SessionProps> = (props) => {
 }
 
 type SessionControllerProps = {
+  topicsSelector: SessionTopicsSelector;
+  config: SessionConfig;
+};
+const SessionController: React.FC<SessionControllerProps> = (props) => {
+  const [sessionKey, setSessionKey] = useState<number>(0);
+  const [config, setConfig] = useState<SessionConfig>(props.config);
 
+  return (
+    <Session
+      key={sessionKey}
+      {...props}
+      onStopSession={() => setSessionKey(n => n + 1)}
+      config={config}
+      onConfigChange={setConfig}
+    />
+  );
 }
-// const SessionController: React.FC<SessionControllerProps> => (props) => {
 
-// }
-
-export default Session;
+export default SessionController;
