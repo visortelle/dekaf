@@ -8,12 +8,16 @@ import {
   ResumeRequest,
   ResumeResponse,
   SubscriptionType,
-  TopicSelector,
+  TopicsSelector,
   DeleteConsumerRequest,
   PauseRequest,
   SubscriptionInitialPosition,
-  DeleteSubscriptionRequest,
-  SeekRequest
+  DeleteSubscriptionsRequest,
+  DeleteSubscription,
+  SeekRequest,
+  RegexSubscriptionMode,
+  TopicsSelectorByName,
+  TopicsSelectorByRegex
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
@@ -26,44 +30,77 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
-import { isEqual } from 'lodash';
 import { SessionState, SessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 
-export type MessagesProps = {
-  tenant: string,
-  namespace: string,
-  topicType: 'persistent' | 'non-persistent',
-  topic: string,
+type RegexSubMode = 'unspecified' | 'all-topics' | 'persistent-only' | 'non-persistent-only';
+export type SessionTopicsSelector = {
+  type: 'by-names',
+  topics: string[]
+} | {
+  type: 'by-regex',
+  pattern: string;
+  regexSubscriptionMode: RegexSubMode;
+}
+
+export type SessionProps = {
+  topicsSelector: SessionTopicsSelector;
 };
 
 type KeyedMessage = {
-  message: Message,
-  key: string
+  message: Message;
+  key: string;
 }
 
 type Content = 'messages' | 'configuration';
+type MessagesLoadedPerSecond = { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
 
 const displayMessagesLimit = 10000;
 
-const Messages: React.FC<MessagesProps> = (props) => {
+type Defaults = {
+  sessionState: () => SessionState,
+  sessionStateBeforeBlur: () => SessionState,
+  consumerName: () => string,
+  subscriptionName: () => string,
+  stream: () => ClientReadableStream<ResumeResponse> | undefined,
+  streamRef: () => ClientReadableStream<ResumeResponse> | undefined,
+  messagesLoaded: () => number,
+  messagesLoadedPerSecond: () => MessagesLoadedPerSecond,
+  messagesBuffer: () => KeyedMessage[],
+  messages: () => KeyedMessage[]
+}
+
+const defaults: Defaults = {
+  sessionState: (): SessionState => 'new',
+  sessionStateBeforeBlur: (): SessionState => 'new',
+  consumerName: () => '__xray_' + nanoid(),
+  subscriptionName: () => '__xray_' + nanoid(),
+  stream: () => undefined,
+  streamRef: () => undefined,
+  messagesLoaded: () => 0,
+  messagesLoadedPerSecond: (): MessagesLoadedPerSecond => ({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 }),
+  messagesBuffer: (): KeyedMessage[] => [],
+  messages: (): KeyedMessage[] => []
+}
+
+const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
-  const { notifyError } = Notifications.useContext();
+  const { notifyError, notifyWarn } = Notifications.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
-  const [sessionState, setSessionState] = useState<SessionState>('new');
-  const prevSessionState = usePrevious(sessionState);
-  const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState(sessionState);
-  const [consumerName, setConsumerName] = useState('__xray_' + nanoid());
-  const [subscriptionName, setSubscriptionName] = useState('__xray_' + nanoid());
-  const [stream, setStream] = useState<ClientReadableStream<ResumeResponse>>();
-  const streamRef = useRef<ClientReadableStream<ResumeResponse>>();
-  const [messagesLoaded, setMessagesLoaded] = useState(0);
-  const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<{ prevMessagesLoaded: number, messagesLoadedPerSecond: number }>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
-  const messagesBuffer = useRef<KeyedMessage[]>([]);
   const [config, setConfig] = useState<SessionConfig>({ startFrom: { type: 'latest' } });
-  const [messages, setMessages] = useState<KeyedMessage[]>([]);
+  const [sessionState, setSessionState] = useState<SessionState>(defaults.sessionState());
+  const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(defaults.sessionStateBeforeBlur());
+  const prevSessionState = usePrevious(sessionState);
+  const [consumerName, setConsumerName] = useState<string>(defaults.consumerName());
+  const [subscriptionName, setSubscriptionName] = useState<string>(defaults.subscriptionName());
+  const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(defaults.stream());
+  const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(defaults.streamRef());
+  const [messagesLoaded, setMessagesLoaded] = useState<number>(defaults.messagesLoaded());
+  const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesLoadedPerSecond>(defaults.messagesLoadedPerSecond());
+  const messagesBuffer = useRef<KeyedMessage[]>(defaults.messagesBuffer());
+  const [messages, setMessages] = useState<KeyedMessage[]>(defaults.messages());
 
   useInterval(() => {
     setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: sessionState === 'running' ? messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded : 0 }));
@@ -115,10 +152,6 @@ const Messages: React.FC<MessagesProps> = (props) => {
   }, [stream]);
 
   const cleanup = useCallback(async () => {
-    if (prevSessionState !== 'running' && prevSessionState !== 'paused') {
-      return;
-    }
-
     streamRef.current?.cancel();
     streamRef.current?.removeListener('data', streamDataHandler);
     setMessages([]);
@@ -130,25 +163,73 @@ const Messages: React.FC<MessagesProps> = (props) => {
         .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
     }
 
-    async function deleteSubscription() {
-      const deleteSubscriptionReq = new DeleteSubscriptionRequest();
-      deleteSubscriptionReq.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-      deleteSubscriptionReq.setSubscriptionName(subscriptionName);
-      deleteSubscriptionReq.setForce(true);
-      await consumerServiceClient.deleteSubscription(deleteSubscriptionReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
+    async function deleteSubscriptions() {
+      if (props.topicsSelector.type === 'by-regex') {
+        notifyWarn(
+          <div>
+            Currently we don&apos;t automatically delete subscriptions we create for topics matched to regex matched topics.
+            <br />
+            You should do it by yourself or
+            <br />
+            specify <code>subscriptionExpirationTimeMinutes</code> property in <code>broker.conf</code> or use **Subscription expiration time** policy at namespace level.
+          </div>
+        );
+      }
+
+      if (props.topicsSelector.type === 'by-names') {
+        const deleteSubscriptionsReq = new DeleteSubscriptionsRequest();
+        const deleteSubscriptionsList = props.topicsSelector.topics.map(t => {
+          const deleteSub = new DeleteSubscription();
+          deleteSub.setTopic(t);
+          deleteSub.setSubscriptionName(subscriptionName);
+          deleteSub.setForce(true);
+          return deleteSub;
+        });
+        deleteSubscriptionsReq.setSubscriptionsList(deleteSubscriptionsList);
+
+        await consumerServiceClient.deleteSubscriptions(deleteSubscriptionsReq, { deadline: createDeadline(10) })
+          .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
+      }
     }
 
     deleteConsumer(); // Don't await this
-    deleteSubscription(); // Don't await this
-  }, [consumerName, consumerServiceClient, props.namespace, props.tenant, props.topic, props.topicType, streamDataHandler, subscriptionName]);
+    deleteSubscriptions(); // Don't await this
+  }, [prevSessionState, sessionState]);
+
+  useEffect(() => {
+    return () => {
+      cleanup();
+    }
+  }, []);
 
   const initializeSession = useCallback(() => {
     async function createConsumer() {
       const req = new CreateConsumerRequest();
-      const topicSelector = new TopicSelector();
-      topicSelector.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-      req.setTopicSelector(topicSelector)
+      const topicSelector = new TopicsSelector();
+
+      if (props.topicsSelector.type === 'by-names') {
+        const selector = new TopicsSelectorByName();
+        selector.setTopicsList(props.topicsSelector.topics);
+        topicSelector.setByName(selector);
+      }
+
+      if (props.topicsSelector.type === 'by-regex') {
+        const selector = new TopicsSelectorByRegex();
+        selector.setPattern(props.topicsSelector.pattern);
+
+        let regexSubscriptionMode: RegexSubscriptionMode;
+        switch (props.topicsSelector.regexSubscriptionMode) {
+          case 'unspecified': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_UNSPECIFIED; break;
+          case 'persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY; break;
+          case 'non-persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY; break;
+          case 'all-topics': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS; break;
+        }
+
+        selector.setRegexSubscriptionMode(regexSubscriptionMode);
+        topicSelector.setByRegex(selector);
+      }
+
+      req.setTopicsSelector(topicSelector)
       req.setConsumerName(consumerName);
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName);
@@ -181,9 +262,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
     window.addEventListener('beforeunload', cleanup);
     return () => {
       window.removeEventListener('beforeunload', cleanup);
-      cleanup();
     };
-  }, [cleanup, config, consumerServiceClient, props.namespace, props.tenant, props.topic, props.topicType, subscriptionName]);
+  }, [config, consumerServiceClient, props.topicsSelector, subscriptionName]);
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
@@ -231,9 +311,8 @@ const Messages: React.FC<MessagesProps> = (props) => {
       return;
     }
 
-    if (sessionState === 'new' && prevSessionState !== 'new') {
+    if (sessionState === 'new' && prevSessionState !== undefined) {
       cleanup();
-      return;
     }
   }, [sessionState]);
 
@@ -284,4 +363,11 @@ const Messages: React.FC<MessagesProps> = (props) => {
   );
 }
 
-export default Messages;
+type SessionControllerProps = {
+
+}
+// const SessionController: React.FC<SessionControllerProps> => (props) => {
+
+// }
+
+export default Session;

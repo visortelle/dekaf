@@ -6,11 +6,15 @@ export const toastContainerId = 'pulsar-ui-toast-container';
 
 export type Value = {
   notifySuccess: (content: ReactNode, notificationId?: string) => void,
+  notifyInfo: (content: ReactNode, notificationId?: string) => void,
+  notifyWarn: (content: ReactNode, notificationId?: string) => void,
   notifyError: (content: ReactNode, notificationId?: string) => void,
 }
 
 const defaultValue: Value = {
   notifySuccess: (content, notificationId) => toast.success(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
+  notifyInfo: (content, notificationId) => toast.info(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
+  notifyWarn: (content, notificationId) => toast.warn(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
   notifyError: (content, notificationId) => toast.error(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
 };
 

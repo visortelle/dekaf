@@ -6,10 +6,10 @@
 package com.tools.teal.pulsar.ui.api.v1.consumer
 
 @SerialVersionUID(0L)
-final case class DeleteSubscriptionResponse(
+final case class DeleteSubscriptionsResponse(
     status: _root_.scala.Option[com.google.rpc.status.Status] = _root_.scala.None,
     unknownFields: _root_.scalapb.UnknownFieldSet = _root_.scalapb.UnknownFieldSet.empty
-    ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[DeleteSubscriptionResponse] {
+    ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[DeleteSubscriptionsResponse] {
     @transient
     private[this] var __serializedSizeMemoized: _root_.scala.Int = 0
     private[this] def __computeSerializedSize(): _root_.scala.Int = {
@@ -40,8 +40,8 @@ final case class DeleteSubscriptionResponse(
       unknownFields.writeTo(_output__)
     }
     def getStatus: com.google.rpc.status.Status = status.getOrElse(com.google.rpc.status.Status.defaultInstance)
-    def clearStatus: DeleteSubscriptionResponse = copy(status = _root_.scala.None)
-    def withStatus(__v: com.google.rpc.status.Status): DeleteSubscriptionResponse = copy(status = Option(__v))
+    def clearStatus: DeleteSubscriptionsResponse = copy(status = _root_.scala.None)
+    def withStatus(__v: com.google.rpc.status.Status): DeleteSubscriptionsResponse = copy(status = Option(__v))
     def withUnknownFields(__v: _root_.scalapb.UnknownFieldSet) = copy(unknownFields = __v)
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
@@ -56,13 +56,13 @@ final case class DeleteSubscriptionResponse(
       }
     }
     def toProtoString: _root_.scala.Predef.String = _root_.scalapb.TextFormat.printToUnicodeString(this)
-    def companion: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse.type = com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse
-    // @@protoc_insertion_point(GeneratedMessage[tools.teal.pulsar.ui.api.v1.DeleteSubscriptionResponse])
+    def companion: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse.type = com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse
+    // @@protoc_insertion_point(GeneratedMessage[tools.teal.pulsar.ui.api.v1.DeleteSubscriptionsResponse])
 }
 
-object DeleteSubscriptionResponse extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse] {
-  implicit def messageCompanion: scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse] = this
-  def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse = {
+object DeleteSubscriptionsResponse extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse] {
+  implicit def messageCompanion: scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse] = this
+  def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse = {
     var __status: _root_.scala.Option[com.google.rpc.status.Status] = _root_.scala.None
     var `_unknownFields__`: _root_.scalapb.UnknownFieldSet.Builder = null
     var _done__ = false
@@ -79,21 +79,21 @@ object DeleteSubscriptionResponse extends scalapb.GeneratedMessageCompanion[com.
           _unknownFields__.parseField(tag, _input__)
       }
     }
-    com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse(
+    com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse(
         status = __status,
         unknownFields = if (_unknownFields__ == null) _root_.scalapb.UnknownFieldSet.empty else _unknownFields__.result()
     )
   }
-  implicit def messageReads: _root_.scalapb.descriptors.Reads[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse] = _root_.scalapb.descriptors.Reads{
+  implicit def messageReads: _root_.scalapb.descriptors.Reads[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse] = _root_.scalapb.descriptors.Reads{
     case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
-      com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse(
+      com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse(
         status = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).flatMap(_.as[_root_.scala.Option[com.google.rpc.status.Status]])
       )
     case _ => throw new RuntimeException("Expected PMessage")
   }
-  def javaDescriptor: _root_.com.google.protobuf.Descriptors.Descriptor = ConsumerProto.javaDescriptor.getMessageTypes().get(12)
-  def scalaDescriptor: _root_.scalapb.descriptors.Descriptor = ConsumerProto.scalaDescriptor.messages(12)
+  def javaDescriptor: _root_.com.google.protobuf.Descriptors.Descriptor = ConsumerProto.javaDescriptor.getMessageTypes().get(15)
+  def scalaDescriptor: _root_.scalapb.descriptors.Descriptor = ConsumerProto.scalaDescriptor.messages(15)
   def messageCompanionForFieldNumber(__number: _root_.scala.Int): _root_.scalapb.GeneratedMessageCompanion[_] = {
     var __out: _root_.scalapb.GeneratedMessageCompanion[_] = null
     (__number: @_root_.scala.unchecked) match {
@@ -103,18 +103,18 @@ object DeleteSubscriptionResponse extends scalapb.GeneratedMessageCompanion[com.
   }
   lazy val nestedMessagesCompanions: Seq[_root_.scalapb.GeneratedMessageCompanion[_ <: _root_.scalapb.GeneratedMessage]] = Seq.empty
   def enumCompanionForFieldNumber(__fieldNumber: _root_.scala.Int): _root_.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
-  lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse(
+  lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse(
     status = _root_.scala.None
   )
-  implicit class DeleteSubscriptionResponseLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse](_l) {
+  implicit class DeleteSubscriptionsResponseLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse](_l) {
     def status: _root_.scalapb.lenses.Lens[UpperPB, com.google.rpc.status.Status] = field(_.getStatus)((c_, f_) => c_.copy(status = Option(f_)))
     def optionalStatus: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.google.rpc.status.Status]] = field(_.status)((c_, f_) => c_.copy(status = f_))
   }
   final val STATUS_FIELD_NUMBER = 1
   def of(
     status: _root_.scala.Option[com.google.rpc.status.Status]
-  ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionResponse(
+  ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse(
     status
   )
-  // @@protoc_insertion_point(GeneratedMessageCompanion[tools.teal.pulsar.ui.api.v1.DeleteSubscriptionResponse])
+  // @@protoc_insertion_point(GeneratedMessageCompanion[tools.teal.pulsar.ui.api.v1.DeleteSubscriptionsResponse])
 }

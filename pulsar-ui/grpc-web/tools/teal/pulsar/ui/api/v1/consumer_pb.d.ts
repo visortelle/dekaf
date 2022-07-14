@@ -236,36 +236,101 @@ export namespace Message {
   }
 }
 
-export class TopicSelector extends jspb.Message {
-  getTopic(): string;
-  setTopic(value: string): TopicSelector;
-
-  getSelectorCase(): TopicSelector.SelectorCase;
+export class TopicsSelectorByName extends jspb.Message {
+  getTopicsList(): Array<string>;
+  setTopicsList(value: Array<string>): TopicsSelectorByName;
+  clearTopicsList(): TopicsSelectorByName;
+  addTopics(value: string, index?: number): TopicsSelectorByName;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): TopicSelector.AsObject;
-  static toObject(includeInstance: boolean, msg: TopicSelector): TopicSelector.AsObject;
-  static serializeBinaryToWriter(message: TopicSelector, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): TopicSelector;
-  static deserializeBinaryFromReader(message: TopicSelector, reader: jspb.BinaryReader): TopicSelector;
+  toObject(includeInstance?: boolean): TopicsSelectorByName.AsObject;
+  static toObject(includeInstance: boolean, msg: TopicsSelectorByName): TopicsSelectorByName.AsObject;
+  static serializeBinaryToWriter(message: TopicsSelectorByName, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TopicsSelectorByName;
+  static deserializeBinaryFromReader(message: TopicsSelectorByName, reader: jspb.BinaryReader): TopicsSelectorByName;
 }
 
-export namespace TopicSelector {
+export namespace TopicsSelectorByName {
   export type AsObject = {
-    topic: string,
+    topicsList: Array<string>,
+  }
+}
+
+export class TopicsSelectorByRegex extends jspb.Message {
+  getPattern(): string;
+  setPattern(value: string): TopicsSelectorByRegex;
+  hasPattern(): boolean;
+  clearPattern(): TopicsSelectorByRegex;
+
+  getRegexSubscriptionMode(): RegexSubscriptionMode;
+  setRegexSubscriptionMode(value: RegexSubscriptionMode): TopicsSelectorByRegex;
+  hasRegexSubscriptionMode(): boolean;
+  clearRegexSubscriptionMode(): TopicsSelectorByRegex;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TopicsSelectorByRegex.AsObject;
+  static toObject(includeInstance: boolean, msg: TopicsSelectorByRegex): TopicsSelectorByRegex.AsObject;
+  static serializeBinaryToWriter(message: TopicsSelectorByRegex, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TopicsSelectorByRegex;
+  static deserializeBinaryFromReader(message: TopicsSelectorByRegex, reader: jspb.BinaryReader): TopicsSelectorByRegex;
+}
+
+export namespace TopicsSelectorByRegex {
+  export type AsObject = {
+    pattern?: string,
+    regexSubscriptionMode?: RegexSubscriptionMode,
   }
 
-  export enum SelectorCase { 
-    SELECTOR_NOT_SET = 0,
-    TOPIC = 1,
+  export enum PatternCase { 
+    _PATTERN_NOT_SET = 0,
+    PATTERN = 2,
+  }
+
+  export enum RegexSubscriptionModeCase { 
+    _REGEX_SUBSCRIPTION_MODE_NOT_SET = 0,
+    REGEX_SUBSCRIPTION_MODE = 3,
+  }
+}
+
+export class TopicsSelector extends jspb.Message {
+  getByName(): TopicsSelectorByName | undefined;
+  setByName(value?: TopicsSelectorByName): TopicsSelector;
+  hasByName(): boolean;
+  clearByName(): TopicsSelector;
+
+  getByRegex(): TopicsSelectorByRegex | undefined;
+  setByRegex(value?: TopicsSelectorByRegex): TopicsSelector;
+  hasByRegex(): boolean;
+  clearByRegex(): TopicsSelector;
+
+  getTopicsSelectorCase(): TopicsSelector.TopicsSelectorCase;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TopicsSelector.AsObject;
+  static toObject(includeInstance: boolean, msg: TopicsSelector): TopicsSelector.AsObject;
+  static serializeBinaryToWriter(message: TopicsSelector, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TopicsSelector;
+  static deserializeBinaryFromReader(message: TopicsSelector, reader: jspb.BinaryReader): TopicsSelector;
+}
+
+export namespace TopicsSelector {
+  export type AsObject = {
+    byName?: TopicsSelectorByName.AsObject,
+    byRegex?: TopicsSelectorByRegex.AsObject,
+  }
+
+  export enum TopicsSelectorCase { 
+    TOPICS_SELECTOR_NOT_SET = 0,
+    BY_NAME = 1,
+    BY_REGEX = 2,
   }
 }
 
 export class CreateConsumerRequest extends jspb.Message {
-  getTopicSelector(): TopicSelector | undefined;
-  setTopicSelector(value?: TopicSelector): CreateConsumerRequest;
-  hasTopicSelector(): boolean;
-  clearTopicSelector(): CreateConsumerRequest;
+  getTopicsSelector(): TopicsSelector | undefined;
+  setTopicsSelector(value?: TopicsSelector): CreateConsumerRequest;
+  hasTopicsSelector(): boolean;
+  clearTopicsSelector(): CreateConsumerRequest;
 
   getConsumerName(): string;
   setConsumerName(value: string): CreateConsumerRequest;
@@ -337,7 +402,7 @@ export class CreateConsumerRequest extends jspb.Message {
 
 export namespace CreateConsumerRequest {
   export type AsObject = {
-    topicSelector?: TopicSelector.AsObject,
+    topicsSelector?: TopicsSelector.AsObject,
     consumerName?: string,
     subscriptionName?: string,
     priorityLevel?: number,
@@ -558,25 +623,25 @@ export namespace PauseResponse {
   }
 }
 
-export class DeleteSubscriptionRequest extends jspb.Message {
+export class DeleteSubscription extends jspb.Message {
   getSubscriptionName(): string;
-  setSubscriptionName(value: string): DeleteSubscriptionRequest;
+  setSubscriptionName(value: string): DeleteSubscription;
 
   getTopic(): string;
-  setTopic(value: string): DeleteSubscriptionRequest;
+  setTopic(value: string): DeleteSubscription;
 
   getForce(): boolean;
-  setForce(value: boolean): DeleteSubscriptionRequest;
+  setForce(value: boolean): DeleteSubscription;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteSubscriptionRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteSubscriptionRequest): DeleteSubscriptionRequest.AsObject;
-  static serializeBinaryToWriter(message: DeleteSubscriptionRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteSubscriptionRequest;
-  static deserializeBinaryFromReader(message: DeleteSubscriptionRequest, reader: jspb.BinaryReader): DeleteSubscriptionRequest;
+  toObject(includeInstance?: boolean): DeleteSubscription.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteSubscription): DeleteSubscription.AsObject;
+  static serializeBinaryToWriter(message: DeleteSubscription, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteSubscription;
+  static deserializeBinaryFromReader(message: DeleteSubscription, reader: jspb.BinaryReader): DeleteSubscription;
 }
 
-export namespace DeleteSubscriptionRequest {
+export namespace DeleteSubscription {
   export type AsObject = {
     subscriptionName: string,
     topic: string,
@@ -584,21 +649,41 @@ export namespace DeleteSubscriptionRequest {
   }
 }
 
-export class DeleteSubscriptionResponse extends jspb.Message {
-  getStatus(): google_rpc_status_pb.Status | undefined;
-  setStatus(value?: google_rpc_status_pb.Status): DeleteSubscriptionResponse;
-  hasStatus(): boolean;
-  clearStatus(): DeleteSubscriptionResponse;
+export class DeleteSubscriptionsRequest extends jspb.Message {
+  getSubscriptionsList(): Array<DeleteSubscription>;
+  setSubscriptionsList(value: Array<DeleteSubscription>): DeleteSubscriptionsRequest;
+  clearSubscriptionsList(): DeleteSubscriptionsRequest;
+  addSubscriptions(value?: DeleteSubscription, index?: number): DeleteSubscription;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteSubscriptionResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteSubscriptionResponse): DeleteSubscriptionResponse.AsObject;
-  static serializeBinaryToWriter(message: DeleteSubscriptionResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteSubscriptionResponse;
-  static deserializeBinaryFromReader(message: DeleteSubscriptionResponse, reader: jspb.BinaryReader): DeleteSubscriptionResponse;
+  toObject(includeInstance?: boolean): DeleteSubscriptionsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteSubscriptionsRequest): DeleteSubscriptionsRequest.AsObject;
+  static serializeBinaryToWriter(message: DeleteSubscriptionsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteSubscriptionsRequest;
+  static deserializeBinaryFromReader(message: DeleteSubscriptionsRequest, reader: jspb.BinaryReader): DeleteSubscriptionsRequest;
 }
 
-export namespace DeleteSubscriptionResponse {
+export namespace DeleteSubscriptionsRequest {
+  export type AsObject = {
+    subscriptionsList: Array<DeleteSubscription.AsObject>,
+  }
+}
+
+export class DeleteSubscriptionsResponse extends jspb.Message {
+  getStatus(): google_rpc_status_pb.Status | undefined;
+  setStatus(value?: google_rpc_status_pb.Status): DeleteSubscriptionsResponse;
+  hasStatus(): boolean;
+  clearStatus(): DeleteSubscriptionsResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeleteSubscriptionsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteSubscriptionsResponse): DeleteSubscriptionsResponse.AsObject;
+  static serializeBinaryToWriter(message: DeleteSubscriptionsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteSubscriptionsResponse;
+  static deserializeBinaryFromReader(message: DeleteSubscriptionsResponse, reader: jspb.BinaryReader): DeleteSubscriptionsResponse;
+}
+
+export namespace DeleteSubscriptionsResponse {
   export type AsObject = {
     status?: google_rpc_status_pb.Status.AsObject,
   }
@@ -678,4 +763,10 @@ export enum SubscriptionInitialPosition {
   SUBSCRIPTION_INITIAL_POSITION_UNSPECIFIED = 0,
   SUBSCRIPTION_INITIAL_POSITION_EARLIEST = 1,
   SUBSCRIPTION_INITIAL_POSITION_LATEST = 2,
+}
+export enum RegexSubscriptionMode { 
+  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0,
+  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1,
+  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2,
+  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3,
 }
