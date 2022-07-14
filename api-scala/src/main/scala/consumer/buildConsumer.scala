@@ -2,16 +2,18 @@ package consumer
 
 import org.apache.pulsar.client.api.{Consumer, MessageListener}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    CreateConsumerRequest,
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest
 import _root_.client.client
+import com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.{SubscriptionMode, SubscriptionType}
 import org.apache.pulsar.client.api.SubscriptionInitialPosition
 import org.apache.pulsar.client.api.RegexSubscriptionMode
+
 import scala.concurrent.duration.MILLISECONDS
 import org.apache.pulsar.client.api.ConsumerBuilder
+
+import scala.jdk.CollectionConverters.*
 
 def buildConsumer(
     consumerName: ConsumerName,
@@ -26,7 +28,7 @@ def buildConsumer(
             case _             => ()
 
         if consumer.isConnected then consumer.acknowledge(msg)
-    
+
     var consumer = client.newConsumer
         .consumerName(consumerName)
         .messageListener(listener)
@@ -76,9 +78,27 @@ def buildConsumer(
         case Some(v) => consumer.negativeAckRedeliveryDelay(v, MILLISECONDS)
         case _       => consumer
 
-    request.topicSelector match
-        case Some(topicSelector) if topicSelector.selector.topic.isDefined =>
-            consumer = consumer.topic(topicSelector.selector.topic.get)
-        case _ =>
-            return Left("Topic selector shouldn't be empty")
+    val topicsSelector = request.topicsSelector match
+        case Some(v) => v.topicsSelector
+        case _ => return Left("Topic selector shouldn't be empty")
+
+    topicsSelector match
+        case TopicsSelector.ByName(s) =>
+            consumer = consumer.topics(s.topics.toList.asJava)
+        case TopicsSelector.ByRegex(s) =>
+            s.pattern match
+                case Some(p) =>
+                    consumer = consumer.topicsPattern(p)
+
+                    s.regexSubscriptionMode match
+                        case Some(consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY) =>
+                            consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.PersistentOnly)
+                        case Some(consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY) =>
+                            consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.NonPersistentOnly)
+                        case Some(consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS) =>
+                            consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.AllTopics)
+                        case _ => consumer = consumer
+                case _ => ()
+        case _ => ()
+
     Right(consumer)

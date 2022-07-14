@@ -2,7 +2,7 @@ import React from 'react';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import s from './TopicPage.module.css'
 import Toolbar from '../ui/Toolbar/Toolbar';
-import Messages from './Messages/Messages';
+import Session from './Messages/Messages';
 import Policies from './Policies/Policies';
 import DeleteTopic from './DeleteTopic/DeleteTopic';
 import { routes } from '../routes';
@@ -75,12 +75,9 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       />
 
       {props.view === 'messages' && (
-        <Messages
+        <Session
           key={key}
-          tenant={props.tenant}
-          namespace={props.namespace}
-          topic={props.topic}
-          topicType={props.topicType}
+          topicsSelector={{ type: 'by-names', topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] }}
         />
       )}
       {props.view === 'policies' && <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}

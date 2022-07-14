@@ -55,14 +55,31 @@ enum SubscriptionInitialPosition {
   SUBSCRIPTION_INITIAL_POSITION_LATEST = 2;
 }
 
-message TopicSelector {
-  oneof selector {
-    string topic = 1;
+enum RegexSubscriptionMode {
+  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
+  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
+  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2;
+  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
+}
+
+message TopicsSelectorByNames {
+    repeated string topics = 1;
+}
+
+message TopicsSelectorByRegex {
+  optional string pattern = 2;
+  optional RegexSubscriptionMode regex_subscription_mode = 3;
+}
+
+message TopicsSelector {
+  oneof topics_selector {
+    TopicsSelectorByNames by_names = 1;
+    TopicsSelectorByRegex by_regex = 2;
   }
 }
 
 message CreateConsumerRequest {
-  TopicSelector topic_selector = 100;
+  TopicsSelector topics_selector = 100;
   optional string consumer_name = 1;
   optional string subscription_name = 2;
   optional int32 priority_level = 3;
@@ -106,13 +123,17 @@ message PauseResponse {
   google.rpc.Status status = 1;
 }
 
-message DeleteSubscriptionRequest {
+message DeleteSubscription {
   string subscription_name = 1;
   string topic = 2;
   bool force = 3;
 }
 
-message DeleteSubscriptionResponse {
+message DeleteSubscriptionsRequest {
+  repeated DeleteSubscription subscriptions = 1;
+}
+
+message DeleteSubscriptionsResponse {
   google.rpc.Status status = 1;
 }
 
@@ -133,6 +154,6 @@ service ConsumerService {
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
   rpc Resume(ResumeRequest) returns (stream ResumeResponse);
   rpc Pause(PauseRequest) returns (PauseResponse);
-  rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse);
+  rpc DeleteSubscriptions(DeleteSubscriptionsRequest) returns (DeleteSubscriptionsResponse);
   rpc Seek(SeekRequest) returns (SeekResponse);
 }
