@@ -186,47 +186,47 @@ export class ConsumerServiceClient {
     this.methodDescriptorPause);
   }
 
-  methodDescriptorDeleteSubscription = new grpcWeb.MethodDescriptor(
-    '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscription',
+  methodDescriptorDeleteSubscriptions = new grpcWeb.MethodDescriptor(
+    '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscriptions',
     grpcWeb.MethodType.UNARY,
-    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest,
-    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse,
-    (request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest) => {
+    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest,
+    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse,
+    (request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest) => {
       return request.serializeBinary();
     },
-    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse.deserializeBinary
+    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse.deserializeBinary
   );
 
-  deleteSubscription(
-    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest,
-    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse>;
+  deleteSubscriptions(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest,
+    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse>;
 
-  deleteSubscription(
-    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest,
+  deleteSubscriptions(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
-               response: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse>;
+               response: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse>;
 
-  deleteSubscription(
-    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionRequest,
+  deleteSubscriptions(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest,
     metadata: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
-               response: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionResponse) => void) {
+               response: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +
-          '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscription',
+          '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscriptions',
         request,
         metadata || {},
-        this.methodDescriptorDeleteSubscription,
+        this.methodDescriptorDeleteSubscriptions,
         callback);
     }
     return this.client_.unaryCall(
     this.hostname_ +
-      '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscription',
+      '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscriptions',
     request,
     metadata || {},
-    this.methodDescriptorDeleteSubscription);
+    this.methodDescriptorDeleteSubscriptions);
   }
 
   methodDescriptorSeek = new grpcWeb.MethodDescriptor(

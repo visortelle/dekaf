@@ -43,7 +43,6 @@ const Configuration: React.FC = () => {
     <div className={s.Configuration}>
       <div className={s.Toolbar}>
         <div style={{ width: '480rem' }}>
-          <strong className={sf.FormLabel}>Filter by param</strong>
           <Input value={paramFilter} onChange={v => setParamFilter(v)} placeholder="managedLedger" focusOnMount={true} clearable={true} />
         </div>
         <div style={{ marginLeft: 'auto', marginTop: 'auto' }}>
