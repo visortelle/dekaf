@@ -30,21 +30,10 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
-import { SessionState, SessionConfig } from './types';
+import { SessionState, SessionConfig, SessionTopicsSelector } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 
-type RegexSubMode = 'unspecified' | 'all-topics' | 'persistent-only' | 'non-persistent-only';
-export type SessionTopicsSelector = {
-  type: 'by-names',
-  topics: string[]
-} | {
-  type: 'by-regex',
-  pattern: string;
-  regexSubscriptionMode: RegexSubMode;
-}
-
 export type SessionProps = {
-  topicsSelector: SessionTopicsSelector;
   config: SessionConfig;
   onConfigChange: (config: SessionConfig) => void;
   onStopSession: () => void;
@@ -122,7 +111,7 @@ const Session: React.FC<SessionProps> = (props) => {
   }, sessionState === 'running' ? 32 : false)
 
   const applyConfig = async () => {
-    if (props.config.startFrom.type === 'date' && props.config.startFrom.date !== undefined) {
+    if (props.config.startFrom.type === 'date' || props.config.startFrom.type === 'timestamp') {
       const seekReq = new SeekRequest();
       const timestamp = Timestamp.fromDate(props.config.startFrom.date);
       seekReq.setConsumerName(consumerName);
@@ -166,7 +155,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     async function deleteSubscriptions() {
-      if (props.topicsSelector.type === 'by-regex') {
+      if (props.config.topicsSelector.type === 'by-regex') {
         notifyWarn(
           <div>
             Currently we don&apos;t automatically delete subscriptions we create for topics matched to regex matched topics.
@@ -178,9 +167,9 @@ const Session: React.FC<SessionProps> = (props) => {
         );
       }
 
-      if (props.topicsSelector.type === 'by-names') {
+      if (props.config.topicsSelector.type === 'by-names') {
         const deleteSubscriptionsReq = new DeleteSubscriptionsRequest();
-        const deleteSubscriptionsList = props.topicsSelector.topics.map(t => {
+        const deleteSubscriptionsList = props.config.topicsSelector.topics.map(t => {
           const deleteSub = new DeleteSubscription();
           deleteSub.setTopic(t);
           deleteSub.setSubscriptionName(subscriptionName);
@@ -209,18 +198,18 @@ const Session: React.FC<SessionProps> = (props) => {
       const req = new CreateConsumerRequest();
       const topicSelector = new TopicsSelector();
 
-      if (props.topicsSelector.type === 'by-names') {
+      if (props.config.topicsSelector.type === 'by-names') {
         const selector = new TopicsSelectorByName();
-        selector.setTopicsList(props.topicsSelector.topics);
+        selector.setTopicsList(props.config.topicsSelector.topics);
         topicSelector.setByName(selector);
       }
 
-      if (props.topicsSelector.type === 'by-regex') {
+      if (props.config.topicsSelector.type === 'by-regex') {
         const selector = new TopicsSelectorByRegex();
-        selector.setPattern(props.topicsSelector.pattern);
+        selector.setPattern(props.config.topicsSelector.pattern);
 
         let regexSubscriptionMode: RegexSubscriptionMode;
-        switch (props.topicsSelector.regexSubscriptionMode) {
+        switch (props.config.topicsSelector.regexSubscriptionMode) {
           case 'unspecified': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_UNSPECIFIED; break;
           case 'persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY; break;
           case 'non-persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY; break;
@@ -265,7 +254,7 @@ const Session: React.FC<SessionProps> = (props) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
     };
-  }, [props.config, consumerServiceClient, props.topicsSelector, subscriptionName]);
+  }, [props.config, consumerServiceClient, subscriptionName]);
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
@@ -331,6 +320,7 @@ const Session: React.FC<SessionProps> = (props) => {
   return (
     <div className={s.Messages}>
       <Toolbar
+        config={props.config}
         sessionState={sessionState}
         onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded}
@@ -367,7 +357,6 @@ const Session: React.FC<SessionProps> = (props) => {
 }
 
 type SessionControllerProps = {
-  topicsSelector: SessionTopicsSelector;
   config: SessionConfig;
 };
 const SessionController: React.FC<SessionControllerProps> = (props) => {
@@ -380,7 +369,10 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       {...props}
       onStopSession={() => setSessionKey(n => n + 1)}
       config={config}
-      onConfigChange={setConfig}
+      onConfigChange={(v) => {
+        console.log(v);
+        setConfig(v);
+      }}
     />
   );
 }

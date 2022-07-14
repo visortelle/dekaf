@@ -1,0 +1,62 @@
+.Container {
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.Select {
+  height: 36rem;
+  border: 1px solid #ddd;
+  border-radius: 4rem;
+  padding: 0 12rem;
+  appearance: none;
+  transition: var(--transition-short);
+}
+
+.Select:focus {
+  outline: none;
+  border: 1px solid var(--accent-color-blue);
+  transition: var(--transition-short);
+}
+
+.DisabledSelect {
+  opacity: 1;
+  color: #aaa;
+}
+
+.Placeholder {
+  opacity: 0.5;
+  font-size: 14rem;
+  color: var(--text-color);
+  line-height: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 12rem;
+  pointer-events: none;
+}
+
+.Arrow {
+  position: absolute;
+  right: 8rem;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.Arrow svg {
+  width: 24rem;
+  height: 24rem;
+  fill: var(--text-color);
+}
+
+.DisabledArrow svg {
+  fill: #aaa;
+}

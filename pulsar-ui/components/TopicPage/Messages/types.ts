@@ -1,4 +1,4 @@
-import { StartFrom } from "./StartFromInput/StartFromInput";
+import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
 
 export type SessionState =
   | "running"
@@ -6,7 +6,25 @@ export type SessionState =
   | "initializing"
   | "new";
 
-export type SessionConfig = {
-  startFrom: StartFrom;
+type RegexSubMode = 'unspecified' | 'all-topics' | 'persistent-only' | 'non-persistent-only';
+
+export type SessionTopicsSelector = {
+  type: 'by-names',
+  topics: string[]
+} | {
+  type: 'by-regex',
+  pattern: string;
+  regexSubscriptionMode: RegexSubMode;
 }
 
+export type StartFrom =
+  { type: 'date', date: Date } |
+  { type: 'quickDate', quickDate: QuickDate } |
+  { type: 'timestamp', date: Date } |
+  { type: 'earliest' } |
+  { type: 'latest' };
+
+export type SessionConfig = {
+  startFrom: StartFrom;
+  topicsSelector: SessionTopicsSelector;
+}
