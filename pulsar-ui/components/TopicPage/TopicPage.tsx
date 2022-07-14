@@ -78,6 +78,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         <Session
           key={key}
           topicsSelector={{ type: 'by-names', topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] }}
+          config={{ startFrom: { type: 'latest' } }}
         />
       )}
       {props.view === 'policies' && <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}

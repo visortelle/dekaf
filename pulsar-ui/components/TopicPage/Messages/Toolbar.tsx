@@ -10,6 +10,7 @@ import { SessionState } from './types';
 export type ToolbarProps = {
   sessionState: SessionState,
   onSessionStateChange: (state: SessionState) => void,
+  onStopSession: () => void,
   messagesLoaded: number,
   messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number },
 };
@@ -44,7 +45,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             <Button
               title={"Stop"}
               svgIcon={stopIcon}
-              onClick={() => props.onSessionStateChange('new')}
+              onClick={() => props.onStopSession()}
               type={'danger'}
               disabled={props.sessionState === 'new'}
             />
