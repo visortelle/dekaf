@@ -86,7 +86,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     }}
     onRemove={clustersList.length <= 1 ? undefined : async (id) => {
       if (!configuration) {
-        return
+        return;
       }
 
       await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: configuration.allowedClusters.filter(r => r !== id) }).catch(onUpdateError);
@@ -94,7 +94,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     }}
     onAdd={hideAddButton ? undefined : async (v) => {
       if (!configuration) {
-        return
+        return;
       }
 
       await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: [...configuration.allowedClusters, v] }).catch(onUpdateError);

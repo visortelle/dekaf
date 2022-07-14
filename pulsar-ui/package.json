@@ -19,6 +19,7 @@
     "@types/react-datetime-picker": "^3.4.1",
     "axios": "^0.27.2",
     "batchelorjs": "^2.0.0",
+    "dayjs": "^1.11.3",
     "fetch-intercept": "^2.4.0",
     "fp-ts": "^2.12.1",
     "framer-motion": "^6.3.12",

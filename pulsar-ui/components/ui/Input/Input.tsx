@@ -1,7 +1,8 @@
 import s from './Input.module.css';
-import { useEffect, useRef } from 'react';
+import { HTMLInputTypeAttribute, useEffect, useRef } from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import clearIcon from '!!raw-loader!./clear.svg';
+import { filterProps } from 'framer-motion';
 
 export type InputProps = {
   placeholder: string,
@@ -10,8 +11,9 @@ export type InputProps = {
   iconSvg?: string,
   focusOnMount?: boolean
   clearable?: boolean,
+  type?: HTMLInputTypeAttribute,
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount, type }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, o
       <input
         ref={inputRef}
         className={`${s.InputInput} ${iconSvg ? s.InputInputWithIcon : ''} ${clearable ? s.InputInputClearable : ''}`}
-        type="text"
+        type={type || 'text'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
