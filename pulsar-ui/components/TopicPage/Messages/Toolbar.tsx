@@ -2,27 +2,30 @@ import React from 'react';
 import s from './Toolbar.module.css'
 import pauseIcon from '!!raw-loader!./icons/pause.svg';
 import resumeIcon from '!!raw-loader!./icons/resume.svg';
+import stopIcon from '!!raw-loader!./icons/stop.svg';
 import Button from '../../ui/Button/Button';
 import * as I18n from '../../app/contexts/I18n/I18n';
-import StartFromInput, { StartFrom } from './StartFromInput/StartFromInput';
-import { filter } from 'lodash';
-
-export type Filter = {
-  startFrom: StartFrom;
-}
+import { SessionState } from './types';
 
 export type ToolbarProps = {
-  isPaused: boolean,
-  isSessionReady: boolean,
-  onSetIsPaused: (isPaused: boolean) => void,
+  sessionState: SessionState,
+  onSessionStateChange: (state: SessionState) => void,
   messagesLoaded: number,
   messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number },
-  onFilterChange: (filter: Filter) => void,
-  filter: Filter,
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   const i18n = I18n.useContext();
+
+  const playButtonState = props.sessionState === 'new' || props.sessionState === 'paused' ? 'play' : 'pause';
+
+  let playButtonOnClick: () => void;
+  switch(props.sessionState) {
+    case 'new': playButtonOnClick = () => props.onSessionStateChange('initializing'); break;
+    case 'initializing': playButtonOnClick = () => {}; break;
+    case 'running': playButtonOnClick = () => props.onSessionStateChange('paused'); break;
+    case 'paused': playButtonOnClick = () => props.onSessionStateChange('running'); break;
+  }
 
   return (
     <div className={s.Toolbar}>
@@ -30,15 +33,21 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         <div className={s.Controls}>
           <div className={s.Control}>
             <Button
-              title={props.isPaused ? "Resume" : "Pause"}
-              svgIcon={props.isPaused ? resumeIcon : pauseIcon}
-              onClick={() => props.onSetIsPaused(!props.isPaused)}
-              type={props.isPaused ? 'primary' : 'danger'}
-              disabled={!props.isSessionReady}
+              title={props.sessionState ? "Resume" : "Pause"}
+              svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
+              onClick={playButtonOnClick}
+              type={'primary'}
+              disabled={props.sessionState === 'initializing'}
             />
           </div>
           <div className={s.Control}>
-            <StartFromInput value={props.filter.startFrom} onChange={(v) => { console.log('change'); props.onFilterChange({ ...filter, startFrom: v }) }} disabled={!props.isPaused} />
+            <Button
+              title={"Stop"}
+              svgIcon={stopIcon}
+              onClick={() => props.onSessionStateChange('new')}
+              type={'danger'}
+              disabled={props.sessionState === 'new'}
+            />
           </div>
         </div>
       </div>

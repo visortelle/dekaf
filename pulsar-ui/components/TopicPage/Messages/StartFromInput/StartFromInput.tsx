@@ -85,8 +85,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         { type: 'item', title: 'Previous week', value: 'previous-week' },
         { type: 'item', title: 'Previous month', value: 'previous-month' },
       ]
-    },
-
+    }
   ], []);
 
   return (
@@ -100,13 +99,23 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             switch (v) {
               case 'earliest': props.onChange({ type: 'earliest' }); break;
               case 'latest': props.onChange({ type: 'latest' }); break;
+              case 'date': props.onChange({ type: 'date', date: fromDate }); break;
             }
           }}
           disabled={props.disabled}
         />
       </div>
 
-      {startFromType === 'date' && <DatetimePicker value={fromDate} onChange={(v) => setFromDate(v)} disabled={props.disabled} />}
+      {startFromType === 'date' && (
+        <DatetimePicker
+          value={fromDate}
+          onChange={(v) => {
+            setFromDate(v);
+            props.onChange({ type: 'date', date: v });
+          }}
+          disabled={props.disabled}
+        />
+      )}
     </div>
   );
 }
