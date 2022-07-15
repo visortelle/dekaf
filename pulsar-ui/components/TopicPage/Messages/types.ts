@@ -24,7 +24,7 @@ export type StartFrom =
   | { type: "quickDate"; quickDate: QuickDate; relativeTo: Date }
   | { type: "timestamp"; ts: string }
   | { type: "messageId"; hexString: string }
-  | { type: "earliest" }
+  | { type: "earliest", skip: number }
   | { type: "latest" };
 
 export type SessionConfig = {

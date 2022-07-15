@@ -40,18 +40,13 @@ import { useAnimationFrame } from '../../app/hooks/use-animation-frame';
 import dayjs from 'dayjs';
 
 const browser = detectBrowser();
-const isOptimizePerf = browser?.name === 'safari' || browser?.name === 'firefox';
+const isSlowBrowser = browser?.name === 'safari' || browser?.name === 'firefox';
 
 export type SessionProps = {
   config: SessionConfig;
   onConfigChange: (config: SessionConfig) => void;
   onStopSession: () => void;
 };
-
-type KeyedMessage = {
-  message: Message;
-  key: string;
-}
 
 type Content = 'messages' | 'configuration';
 type MessagesLoadedPerSecond = { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
@@ -68,8 +63,8 @@ type Defaults = {
   messagesLoaded: () => number,
   messagesLoadedPerSecond: () => MessagesLoadedPerSecond,
   messagesProcessed: () => number,
-  messagesBuffer: () => KeyedMessage[],
-  messages: () => KeyedMessage[]
+  messagesBuffer: () => Message[],
+  messages: () => Message[]
 }
 
 const defaults: Defaults = {
@@ -82,8 +77,8 @@ const defaults: Defaults = {
   messagesLoaded: () => 0,
   messagesLoadedPerSecond: (): MessagesLoadedPerSecond => ({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 }),
   messagesProcessed: () => 0,
-  messagesBuffer: (): KeyedMessage[] => [],
-  messages: (): KeyedMessage[] => []
+  messagesBuffer: (): Message[] => [],
+  messages: (): Message[] => []
 }
 
 const Session: React.FC<SessionProps> = (props) => {
@@ -103,8 +98,8 @@ const Session: React.FC<SessionProps> = (props) => {
   const [messagesLoaded, setMessagesLoaded] = useState<number>(defaults.messagesLoaded());
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesLoadedPerSecond>(defaults.messagesLoadedPerSecond());
   const messagesProcessed = useRef<number>(defaults.messagesProcessed());
-  const messagesBuffer = useRef<KeyedMessage[]>(defaults.messagesBuffer());
-  const [messages, setMessages] = useState<KeyedMessage[]>(defaults.messages());
+  const messagesBuffer = useRef<Message[]>(defaults.messagesBuffer());
+  const [messages, setMessages] = useState<Message[]>(defaults.messages());
   const { startFrom, topicsSelector } = props.config;
 
   const scrollToBottom = () => {
@@ -121,16 +116,15 @@ const Session: React.FC<SessionProps> = (props) => {
       return;
     }
 
-    console.log('isOptimize', isOptimizePerf);
     setMessages((messages) => {
       const newMessages = messages.concat(messagesBuffer.current);
       messagesBuffer.current = [];
       return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
     });
-  }, sessionState === 'running' ? isOptimizePerf ? 250 : 32 : false);
+  }, sessionState === 'running' ? (isSlowBrowser && messagesLoadedPerSecond.messagesLoadedPerSecond > 1000) ? 500 : (messagesLoadedPerSecond.messagesLoadedPerSecond > 3000 ? 500 : 32) : false);
 
-  useAnimationFrame((perf) => {
-    if (sessionState === 'running' && (isOptimizePerf ? perf.delta < 64 : true)) {
+  useAnimationFrame(() => {
+    if (sessionState === 'running') {
       scrollToBottom();
     }
   });
@@ -180,9 +174,12 @@ const Session: React.FC<SessionProps> = (props) => {
   }
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
-    const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
+    const newMessages = res.getMessagesList();
     setMessagesLoaded(messagesCount => messagesCount + newMessages.length);
-    messagesBuffer.current.push(...newMessages);
+    for (let i = 0; i < newMessages.length; i++) {
+      messagesBuffer.current.push(newMessages[i]);
+    }
+
     messagesProcessed.current = res.getProcessedMessages();
   }, []);
 
@@ -213,37 +210,7 @@ const Session: React.FC<SessionProps> = (props) => {
         .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
     }
 
-    async function deleteSubscriptions() {
-      if (topicsSelector.type === 'by-regex') {
-        notifyWarn(
-          <div>
-            Currently we don&apos;t automatically delete subscriptions we create for topics matched to regex matched topics.
-            <br />
-            You should do it by yourself or
-            <br />
-            specify <code>subscriptionExpirationTimeMinutes</code> property in <code>broker.conf</code> or use **Subscription expiration time** policy at namespace level.
-          </div>
-        );
-      }
-
-      if (topicsSelector.type === 'by-names') {
-        const deleteSubscriptionsReq = new DeleteSubscriptionsRequest();
-        const deleteSubscriptionsList = topicsSelector.topics.map(t => {
-          const deleteSub = new DeleteSubscription();
-          deleteSub.setTopic(t);
-          deleteSub.setSubscriptionName(subscriptionName);
-          deleteSub.setForce(true);
-          return deleteSub;
-        });
-        deleteSubscriptionsReq.setSubscriptionsList(deleteSubscriptionsList);
-
-        await consumerServiceClient.deleteSubscriptions(deleteSubscriptionsReq, { deadline: createDeadline(10) })
-          .catch((err) => notifyError(`Unable to delete subscription ${subscriptionName}. ${err}`));
-      }
-    }
-
     deleteConsumer(); // Don't await this
-    deleteSubscriptions(); // Don't await this
   }, [prevSessionState, sessionState]);
 
   useEffect(() => {
@@ -283,7 +250,7 @@ const Session: React.FC<SessionProps> = (props) => {
       req.setConsumerName(consumerName);
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName);
-      req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
+      req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
       req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
@@ -344,14 +311,14 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     if (sessionState === 'paused') {
-      if (prevSessionState === 'running') {
-        scrollToBottom(); // Force scroll to bottom. Otherwise, scroll position sometimes left in a middle after pausing.
-      }
-
       const pauseReq = new PauseRequest();
       pauseReq.setConsumerName(consumerName);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
         .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
+
+      if (prevSessionState === 'running') {
+        scrollToBottom(); // Force scroll to bottom. Otherwise, scroll position sometimes left in a middle after pausing.
+      }
       return;
     }
 
@@ -370,7 +337,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
   }, [sessionState]);
 
-  const itemContent = useCallback<ItemContent<KeyedMessage, undefined>>((_, { key, message }) => <MessageComponent key={key} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
+  const itemContent = useCallback<ItemContent<Message, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0) {
       setSessionState('paused');
@@ -405,7 +372,6 @@ const Session: React.FC<SessionProps> = (props) => {
             itemContent={itemContent}
             followOutput={false}
           />
-
         </div>
       )}
       {content === 'configuration' && (

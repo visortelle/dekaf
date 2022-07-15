@@ -236,21 +236,21 @@ export namespace Message {
   }
 }
 
-export class TopicsSelectorByName extends jspb.Message {
+export class TopicsSelectorByNames extends jspb.Message {
   getTopicsList(): Array<string>;
-  setTopicsList(value: Array<string>): TopicsSelectorByName;
-  clearTopicsList(): TopicsSelectorByName;
-  addTopics(value: string, index?: number): TopicsSelectorByName;
+  setTopicsList(value: Array<string>): TopicsSelectorByNames;
+  clearTopicsList(): TopicsSelectorByNames;
+  addTopics(value: string, index?: number): TopicsSelectorByNames;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): TopicsSelectorByName.AsObject;
-  static toObject(includeInstance: boolean, msg: TopicsSelectorByName): TopicsSelectorByName.AsObject;
-  static serializeBinaryToWriter(message: TopicsSelectorByName, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): TopicsSelectorByName;
-  static deserializeBinaryFromReader(message: TopicsSelectorByName, reader: jspb.BinaryReader): TopicsSelectorByName;
+  toObject(includeInstance?: boolean): TopicsSelectorByNames.AsObject;
+  static toObject(includeInstance: boolean, msg: TopicsSelectorByNames): TopicsSelectorByNames.AsObject;
+  static serializeBinaryToWriter(message: TopicsSelectorByNames, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TopicsSelectorByNames;
+  static deserializeBinaryFromReader(message: TopicsSelectorByNames, reader: jspb.BinaryReader): TopicsSelectorByNames;
 }
 
-export namespace TopicsSelectorByName {
+export namespace TopicsSelectorByNames {
   export type AsObject = {
     topicsList: Array<string>,
   }
@@ -293,10 +293,10 @@ export namespace TopicsSelectorByRegex {
 }
 
 export class TopicsSelector extends jspb.Message {
-  getByName(): TopicsSelectorByName | undefined;
-  setByName(value?: TopicsSelectorByName): TopicsSelector;
-  hasByName(): boolean;
-  clearByName(): TopicsSelector;
+  getByNames(): TopicsSelectorByNames | undefined;
+  setByNames(value?: TopicsSelectorByNames): TopicsSelector;
+  hasByNames(): boolean;
+  clearByNames(): TopicsSelector;
 
   getByRegex(): TopicsSelectorByRegex | undefined;
   setByRegex(value?: TopicsSelectorByRegex): TopicsSelector;
@@ -315,13 +315,13 @@ export class TopicsSelector extends jspb.Message {
 
 export namespace TopicsSelector {
   export type AsObject = {
-    byName?: TopicsSelectorByName.AsObject,
+    byNames?: TopicsSelectorByNames.AsObject,
     byRegex?: TopicsSelectorByRegex.AsObject,
   }
 
   export enum TopicsSelectorCase { 
     TOPICS_SELECTOR_NOT_SET = 0,
-    BY_NAME = 1,
+    BY_NAMES = 1,
     BY_REGEX = 2,
   }
 }
@@ -565,6 +565,9 @@ export class ResumeResponse extends jspb.Message {
   clearMessagesList(): ResumeResponse;
   addMessages(value?: Message, index?: number): Message;
 
+  getProcessedMessages(): number;
+  setProcessedMessages(value: number): ResumeResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ResumeResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ResumeResponse): ResumeResponse.AsObject;
@@ -577,6 +580,7 @@ export namespace ResumeResponse {
   export type AsObject = {
     status?: google_rpc_status_pb.Status.AsObject,
     messagesList: Array<Message.AsObject>,
+    processedMessages: number,
   }
 
   export enum StatusCase { 
@@ -618,72 +622,6 @@ export class PauseResponse extends jspb.Message {
 }
 
 export namespace PauseResponse {
-  export type AsObject = {
-    status?: google_rpc_status_pb.Status.AsObject,
-  }
-}
-
-export class DeleteSubscription extends jspb.Message {
-  getSubscriptionName(): string;
-  setSubscriptionName(value: string): DeleteSubscription;
-
-  getTopic(): string;
-  setTopic(value: string): DeleteSubscription;
-
-  getForce(): boolean;
-  setForce(value: boolean): DeleteSubscription;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteSubscription.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteSubscription): DeleteSubscription.AsObject;
-  static serializeBinaryToWriter(message: DeleteSubscription, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteSubscription;
-  static deserializeBinaryFromReader(message: DeleteSubscription, reader: jspb.BinaryReader): DeleteSubscription;
-}
-
-export namespace DeleteSubscription {
-  export type AsObject = {
-    subscriptionName: string,
-    topic: string,
-    force: boolean,
-  }
-}
-
-export class DeleteSubscriptionsRequest extends jspb.Message {
-  getSubscriptionsList(): Array<DeleteSubscription>;
-  setSubscriptionsList(value: Array<DeleteSubscription>): DeleteSubscriptionsRequest;
-  clearSubscriptionsList(): DeleteSubscriptionsRequest;
-  addSubscriptions(value?: DeleteSubscription, index?: number): DeleteSubscription;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteSubscriptionsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteSubscriptionsRequest): DeleteSubscriptionsRequest.AsObject;
-  static serializeBinaryToWriter(message: DeleteSubscriptionsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteSubscriptionsRequest;
-  static deserializeBinaryFromReader(message: DeleteSubscriptionsRequest, reader: jspb.BinaryReader): DeleteSubscriptionsRequest;
-}
-
-export namespace DeleteSubscriptionsRequest {
-  export type AsObject = {
-    subscriptionsList: Array<DeleteSubscription.AsObject>,
-  }
-}
-
-export class DeleteSubscriptionsResponse extends jspb.Message {
-  getStatus(): google_rpc_status_pb.Status | undefined;
-  setStatus(value?: google_rpc_status_pb.Status): DeleteSubscriptionsResponse;
-  hasStatus(): boolean;
-  clearStatus(): DeleteSubscriptionsResponse;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteSubscriptionsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteSubscriptionsResponse): DeleteSubscriptionsResponse.AsObject;
-  static serializeBinaryToWriter(message: DeleteSubscriptionsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteSubscriptionsResponse;
-  static deserializeBinaryFromReader(message: DeleteSubscriptionsResponse, reader: jspb.BinaryReader): DeleteSubscriptionsResponse;
-}
-
-export namespace DeleteSubscriptionsResponse {
   export type AsObject = {
     status?: google_rpc_status_pb.Status.AsObject,
   }
@@ -744,6 +682,32 @@ export class SeekResponse extends jspb.Message {
 export namespace SeekResponse {
   export type AsObject = {
     status?: google_rpc_status_pb.Status.AsObject,
+  }
+}
+
+export class SkipMessagesRequest extends jspb.Message {
+  getTopic(): string;
+  setTopic(value: string): SkipMessagesRequest;
+
+  getSubscription(): string;
+  setSubscription(value: string): SkipMessagesRequest;
+
+  getCount(): number;
+  setCount(value: number): SkipMessagesRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SkipMessagesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: SkipMessagesRequest): SkipMessagesRequest.AsObject;
+  static serializeBinaryToWriter(message: SkipMessagesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SkipMessagesRequest;
+  static deserializeBinaryFromReader(message: SkipMessagesRequest, reader: jspb.BinaryReader): SkipMessagesRequest;
+}
+
+export namespace SkipMessagesRequest {
+  export type AsObject = {
+    topic: string,
+    subscription: string,
+    count: number,
   }
 }
 

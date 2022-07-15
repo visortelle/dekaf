@@ -14,8 +14,8 @@ final case class TopicsSelector(
     private[this] var __serializedSizeMemoized: _root_.scala.Int = 0
     private[this] def __computeSerializedSize(): _root_.scala.Int = {
       var __size = 0
-      if (topicsSelector.byName.isDefined) {
-        val __value = topicsSelector.byName.get
+      if (topicsSelector.byNames.isDefined) {
+        val __value = topicsSelector.byNames.get
         __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__value.serializedSize) + __value.serializedSize
       };
       if (topicsSelector.byRegex.isDefined) {
@@ -35,7 +35,7 @@ final case class TopicsSelector(
       
     }
     def writeTo(`_output__`: _root_.com.google.protobuf.CodedOutputStream): _root_.scala.Unit = {
-      topicsSelector.byName.foreach { __v =>
+      topicsSelector.byNames.foreach { __v =>
         val __m = __v
         _output__.writeTag(1, 2)
         _output__.writeUInt32NoTag(__m.serializedSize)
@@ -49,8 +49,8 @@ final case class TopicsSelector(
       };
       unknownFields.writeTo(_output__)
     }
-    def getByName: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName = topicsSelector.byName.getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName.defaultInstance)
-    def withByName(__v: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName): TopicsSelector = copy(topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByName(__v))
+    def getByNames: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames = topicsSelector.byNames.getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames.defaultInstance)
+    def withByNames(__v: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames): TopicsSelector = copy(topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByNames(__v))
     def getByRegex: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByRegex = topicsSelector.byRegex.getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByRegex.defaultInstance)
     def withByRegex(__v: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByRegex): TopicsSelector = copy(topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByRegex(__v))
     def clearTopicsSelector: TopicsSelector = copy(topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.Empty)
@@ -59,14 +59,14 @@ final case class TopicsSelector(
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
       (__fieldNumber: @_root_.scala.unchecked) match {
-        case 1 => topicsSelector.byName.orNull
+        case 1 => topicsSelector.byNames.orNull
         case 2 => topicsSelector.byRegex.orNull
       }
     }
     def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
       _root_.scala.Predef.require(__field.containingMessage eq companion.scalaDescriptor)
       (__field.number: @_root_.scala.unchecked) match {
-        case 1 => topicsSelector.byName.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        case 1 => topicsSelector.byNames.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 2 => topicsSelector.byRegex.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
       }
     }
@@ -86,7 +86,7 @@ object TopicsSelector extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
       _tag__ match {
         case 0 => _done__ = true
         case 10 =>
-          __topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByName(__topicsSelector.byName.fold(_root_.scalapb.LiteParser.readMessage[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
+          __topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByNames(__topicsSelector.byNames.fold(_root_.scalapb.LiteParser.readMessage[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
         case 18 =>
           __topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByRegex(__topicsSelector.byRegex.fold(_root_.scalapb.LiteParser.readMessage[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByRegex](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
         case tag =>
@@ -105,7 +105,7 @@ object TopicsSelector extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
     case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
       com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector(
-        topicsSelector = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).flatMap(_.as[_root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName]]).map(com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByName(_))
+        topicsSelector = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).flatMap(_.as[_root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames]]).map(com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByNames(_))
             .orElse[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector](__fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).flatMap(_.as[_root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByRegex]]).map(com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByRegex(_)))
             .getOrElse(com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.Empty)
       )
@@ -116,7 +116,7 @@ object TopicsSelector extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
   def messageCompanionForFieldNumber(__number: _root_.scala.Int): _root_.scalapb.GeneratedMessageCompanion[_] = {
     var __out: _root_.scalapb.GeneratedMessageCompanion[_] = null
     (__number: @_root_.scala.unchecked) match {
-      case 1 => __out = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName
+      case 1 => __out = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames
       case 2 => __out = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByRegex
     }
     __out
@@ -129,9 +129,9 @@ object TopicsSelector extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
   sealed trait TopicsSelector extends _root_.scalapb.GeneratedOneof {
     def isEmpty: _root_.scala.Boolean = false
     def isDefined: _root_.scala.Boolean = true
-    def isByName: _root_.scala.Boolean = false
+    def isByNames: _root_.scala.Boolean = false
     def isByRegex: _root_.scala.Boolean = false
-    def byName: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName] = _root_.scala.None
+    def byNames: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames] = _root_.scala.None
     def byRegex: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByRegex] = _root_.scala.None
   }
   object TopicsSelector {
@@ -145,10 +145,10 @@ object TopicsSelector extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
     }
   
     @SerialVersionUID(0L)
-    final case class ByName(value: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName) extends com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector {
-      type ValueType = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName
-      override def isByName: _root_.scala.Boolean = true
-      override def byName: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName] = Some(value)
+    final case class ByNames(value: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames) extends com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector {
+      type ValueType = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames
+      override def isByNames: _root_.scala.Boolean = true
+      override def byNames: _root_.scala.Option[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames] = Some(value)
       override def number: _root_.scala.Int = 1
     }
     @SerialVersionUID(0L)
@@ -160,11 +160,11 @@ object TopicsSelector extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
     }
   }
   implicit class TopicsSelectorLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector](_l) {
-    def byName: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName] = field(_.getByName)((c_, f_) => c_.copy(topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByName(f_)))
+    def byNames: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames] = field(_.getByNames)((c_, f_) => c_.copy(topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByNames(f_)))
     def byRegex: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByRegex] = field(_.getByRegex)((c_, f_) => c_.copy(topicsSelector = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector.ByRegex(f_)))
     def topicsSelector: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector] = field(_.topicsSelector)((c_, f_) => c_.copy(topicsSelector = f_))
   }
-  final val BY_NAME_FIELD_NUMBER = 1
+  final val BY_NAMES_FIELD_NUMBER = 1
   final val BY_REGEX_FIELD_NUMBER = 2
   def of(
     topicsSelector: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector

@@ -83,7 +83,7 @@ def buildConsumer(
         case _ => return Left("Topic selector shouldn't be empty")
 
     topicsSelector match
-        case TopicsSelector.ByName(s) =>
+        case TopicsSelector.ByNames(s) =>
             consumer = consumer.topics(s.topics.toList.asJava)
         case TopicsSelector.ByRegex(s) =>
             s.pattern match
