@@ -23,6 +23,7 @@ import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
+import * as I18n from '../../app/contexts/I18n/I18n';
 import { ItemContent, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../grpc/proto-utils';
@@ -81,6 +82,7 @@ const defaults: Defaults = {
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
   const { notifyError, notifyWarn } = Notifications.useContext();
+  const i18n = I18n.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
@@ -114,9 +116,33 @@ const Session: React.FC<SessionProps> = (props) => {
   }, sessionState === 'running' ? 32 : false);
 
   const applyConfig = async () => {
+    if (props.config.startFrom.type === 'messageId') {
+      if (props.config.startFrom.hexString.length === 0) {
+        notifyError("Please specify proper message id");
+        props.onStopSession();
+        return;
+      }
+
+      const seekReq = new SeekRequest();
+      seekReq.setConsumerName(consumerName);
+      seekReq.setMessageId(i18n.hexStringToBytes(props.config.startFrom.hexString));
+      const res = await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
+        .catch((err) => notifyError(`Unable to seek by messageId. Consumer: ${consumerName}. ${err}`));
+
+      if (res !== undefined) {
+        const status = res.getStatus();
+        const code = status?.getCode();
+        if (code === Code.INVALID_ARGUMENT) {
+          notifyError(`Unable to seek by messageId. Consumer: ${consumerName}. Please specify proper message id.`);
+          props.onStopSession();
+          return;
+        }
+      }
+    }
+
     if (props.config.startFrom.type === 'date' || props.config.startFrom.type === 'timestamp' || props.config.startFrom.type === 'quickDate') {
       let fromDate;
-      switch(props.config.startFrom.type) {
+      switch (props.config.startFrom.type) {
         case 'date': fromDate = dayjs(props.config.startFrom.date).millisecond(0).toDate(); break;
         case 'timestamp': fromDate = dayjs(timestampToDate(props.config.startFrom.ts)).millisecond(0).toDate(); break;
         case 'quickDate': fromDate = dayjs(quickDateToDate(props.config.startFrom.quickDate, props.config.startFrom.relativeTo)).millisecond(0).toDate(); break;
@@ -381,10 +407,11 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
     <Session
       key={sessionKey}
       {...props}
-      onStopSession={() => setSessionKey(n => n + 1)}
+      onStopSession={() => {
+        setSessionKey(n => n + 1);
+      }}
       config={config}
       onConfigChange={(v) => {
-        console.log(v);
         setConfig(v);
       }}
     />
@@ -392,3 +419,15 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
 }
 
 export default SessionController;
+
+export function hexStringToByteArray(hexString: string): Uint8Array {
+  if (hexString.length % 2 !== 0) {
+    throw "Must have an even number of hex digits to convert to bytes";
+  }
+  var numBytes = hexString.length / 2;
+  var byteArray = new Uint8Array(numBytes);
+  for (var i = 0; i < numBytes; i++) {
+    byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
+  }
+  return byteArray;
+}

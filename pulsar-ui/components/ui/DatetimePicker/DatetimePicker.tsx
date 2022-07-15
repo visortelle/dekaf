@@ -3,6 +3,7 @@ import s from './DatetimePicker.module.css'
 import Picker from 'react-datetime-picker/dist/entry.nostyle';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import clearIcon from '!!raw-loader!./clear.svg';
+import calendarIcon from '!!raw-loader!./calendar.svg';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 import 'react-datetime-picker/dist/DateTimePicker.css';
@@ -22,7 +23,7 @@ const DatetimePicker: React.FC<DatetimePickerProps> = (props) => {
         onChange={(v: Date | null) => props.onChange(v || undefined)}
         className={s.Picker}
         calendarClassName={s.Calendar}
-        calendarIcon={null}
+        calendarIcon={<div className={s.SvgIcon}><SvgIcon svg={calendarIcon} /></div>}
         clearIcon={props.clearable ? <div className={s.SvgIcon}><SvgIcon svg={clearIcon} /></div> : null}
         disableClock={true}
         showLeadingZeros={true}
