@@ -85,7 +85,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           value={props.value.type === 'quickDate' ? props.value.quickDate : props.value.type}
           onChange={(v) => {
             switch (v as StartFromVariants) {
-              case 'earliest': props.onChange({ type: 'earliest' }); return;
+              case 'earliest': props.onChange({ type: 'earliest', skip: 0 }); return;
               case 'latest': props.onChange({ type: 'latest' }); return;
               case 'date': props.onChange({ type: 'date', date: latestSelectedDate }); return;
               case 'timestamp': props.onChange({ type: 'timestamp', ts: new Date().getTime().toString() }); return;
@@ -101,6 +101,14 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         />
       </div>
       <div className={s.AdditionalControls}>
+        {props.value.type === 'earliest' && (
+          <Input
+            value={String(props.value.skip)}
+            placeholder="10"
+            type={'number'}
+            onChange={(v) => props.onChange({ type: 'earliest', skip: Number(v) < 0 ? 0 : Number(v) })}
+          />
+        )}
         {props.value.type === 'messageId' && (
           <Input
             value={props.value.hexString}

@@ -47,16 +47,6 @@ object ConsumerServiceGrpc {
       .setSchemaDescriptor(_root_.scalapb.grpc.ConcreteProtoMethodDescriptorSupplier.fromMethodDescriptor(com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerProto.javaDescriptor.getServices().get(0).getMethods().get(3)))
       .build()
   
-  val METHOD_DELETE_SUBSCRIPTIONS: _root_.io.grpc.MethodDescriptor[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsRequest, com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse] =
-    _root_.io.grpc.MethodDescriptor.newBuilder()
-      .setType(_root_.io.grpc.MethodDescriptor.MethodType.UNARY)
-      .setFullMethodName(_root_.io.grpc.MethodDescriptor.generateFullMethodName("tools.teal.pulsar.ui.api.v1.ConsumerService", "DeleteSubscriptions"))
-      .setSampledToLocalTracing(true)
-      .setRequestMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsRequest])
-      .setResponseMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse])
-      .setSchemaDescriptor(_root_.scalapb.grpc.ConcreteProtoMethodDescriptorSupplier.fromMethodDescriptor(com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerProto.javaDescriptor.getServices().get(0).getMethods().get(4)))
-      .build()
-  
   val METHOD_SEEK: _root_.io.grpc.MethodDescriptor[com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest, com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse] =
     _root_.io.grpc.MethodDescriptor.newBuilder()
       .setType(_root_.io.grpc.MethodDescriptor.MethodType.UNARY)
@@ -64,7 +54,7 @@ object ConsumerServiceGrpc {
       .setSampledToLocalTracing(true)
       .setRequestMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest])
       .setResponseMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse])
-      .setSchemaDescriptor(_root_.scalapb.grpc.ConcreteProtoMethodDescriptorSupplier.fromMethodDescriptor(com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerProto.javaDescriptor.getServices().get(0).getMethods().get(5)))
+      .setSchemaDescriptor(_root_.scalapb.grpc.ConcreteProtoMethodDescriptorSupplier.fromMethodDescriptor(com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerProto.javaDescriptor.getServices().get(0).getMethods().get(4)))
       .build()
   
   val SERVICE: _root_.io.grpc.ServiceDescriptor =
@@ -74,7 +64,6 @@ object ConsumerServiceGrpc {
       .addMethod(METHOD_DELETE_CONSUMER)
       .addMethod(METHOD_RESUME)
       .addMethod(METHOD_PAUSE)
-      .addMethod(METHOD_DELETE_SUBSCRIPTIONS)
       .addMethod(METHOD_SEEK)
       .build()
   
@@ -84,7 +73,8 @@ object ConsumerServiceGrpc {
     def deleteConsumer(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteConsumerRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteConsumerResponse]
     def resume(request: com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest, responseObserver: _root_.io.grpc.stub.StreamObserver[com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse]): _root_.scala.Unit
     def pause(request: com.tools.teal.pulsar.ui.api.v1.consumer.PauseRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.PauseResponse]
-    def deleteSubscriptions(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse]
+    /** rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
+      */
     def seek(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse]
   }
   
@@ -122,13 +112,6 @@ object ConsumerServiceGrpc {
               executionContext)
         }))
       .addMethod(
-        METHOD_DELETE_SUBSCRIPTIONS,
-        _root_.io.grpc.stub.ServerCalls.asyncUnaryCall(new _root_.io.grpc.stub.ServerCalls.UnaryMethod[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsRequest, com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse] {
-          override def invoke(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsRequest, observer: _root_.io.grpc.stub.StreamObserver[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse]): _root_.scala.Unit =
-            serviceImpl.deleteSubscriptions(request).onComplete(scalapb.grpc.Grpc.completeObserver(observer))(
-              executionContext)
-        }))
-      .addMethod(
         METHOD_SEEK,
         _root_.io.grpc.stub.ServerCalls.asyncUnaryCall(new _root_.io.grpc.stub.ServerCalls.UnaryMethod[com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest, com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse] {
           override def invoke(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest, observer: _root_.io.grpc.stub.StreamObserver[com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse]): _root_.scala.Unit =
@@ -144,7 +127,8 @@ object ConsumerServiceGrpc {
     def deleteConsumer(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteConsumerRequest): com.tools.teal.pulsar.ui.api.v1.consumer.DeleteConsumerResponse
     def resume(request: com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest): scala.collection.Iterator[com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse]
     def pause(request: com.tools.teal.pulsar.ui.api.v1.consumer.PauseRequest): com.tools.teal.pulsar.ui.api.v1.consumer.PauseResponse
-    def deleteSubscriptions(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsRequest): com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse
+    /** rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
+      */
     def seek(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest): com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse
   }
   
@@ -165,10 +149,8 @@ object ConsumerServiceGrpc {
       _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_PAUSE, options, request)
     }
     
-    override def deleteSubscriptions(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsRequest): com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse = {
-      _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_DELETE_SUBSCRIPTIONS, options, request)
-    }
-    
+    /** rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
+      */
     override def seek(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest): com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse = {
       _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_SEEK, options, request)
     }
@@ -193,10 +175,8 @@ object ConsumerServiceGrpc {
       _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_PAUSE, options, request)
     }
     
-    override def deleteSubscriptions(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteSubscriptionsResponse] = {
-      _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_DELETE_SUBSCRIPTIONS, options, request)
-    }
-    
+    /** rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
+      */
     override def seek(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse] = {
       _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_SEEK, options, request)
     }

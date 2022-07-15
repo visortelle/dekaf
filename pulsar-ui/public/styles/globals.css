@@ -42,6 +42,7 @@ body {
 input,
 textarea,
 button,
+option,
 select {
   font-family: inherit;
   background-color: #fff;

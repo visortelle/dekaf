@@ -6,10 +6,10 @@
 package com.tools.teal.pulsar.ui.api.v1.consumer
 
 @SerialVersionUID(0L)
-final case class TopicsSelectorByName(
+final case class TopicsSelectorByNames(
     topics: _root_.scala.Seq[_root_.scala.Predef.String] = _root_.scala.Seq.empty,
     unknownFields: _root_.scalapb.UnknownFieldSet = _root_.scalapb.UnknownFieldSet.empty
-    ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[TopicsSelectorByName] {
+    ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[TopicsSelectorByNames] {
     @transient
     private[this] var __serializedSizeMemoized: _root_.scala.Int = 0
     private[this] def __computeSerializedSize(): _root_.scala.Int = {
@@ -38,9 +38,9 @@ final case class TopicsSelectorByName(
       unknownFields.writeTo(_output__)
     }
     def clearTopics = copy(topics = _root_.scala.Seq.empty)
-    def addTopics(__vs: _root_.scala.Predef.String *): TopicsSelectorByName = addAllTopics(__vs)
-    def addAllTopics(__vs: Iterable[_root_.scala.Predef.String]): TopicsSelectorByName = copy(topics = topics ++ __vs)
-    def withTopics(__v: _root_.scala.Seq[_root_.scala.Predef.String]): TopicsSelectorByName = copy(topics = __v)
+    def addTopics(__vs: _root_.scala.Predef.String *): TopicsSelectorByNames = addAllTopics(__vs)
+    def addAllTopics(__vs: Iterable[_root_.scala.Predef.String]): TopicsSelectorByNames = copy(topics = topics ++ __vs)
+    def withTopics(__v: _root_.scala.Seq[_root_.scala.Predef.String]): TopicsSelectorByNames = copy(topics = __v)
     def withUnknownFields(__v: _root_.scalapb.UnknownFieldSet) = copy(unknownFields = __v)
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
@@ -55,13 +55,13 @@ final case class TopicsSelectorByName(
       }
     }
     def toProtoString: _root_.scala.Predef.String = _root_.scalapb.TextFormat.printToUnicodeString(this)
-    def companion: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName.type = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName
-    // @@protoc_insertion_point(GeneratedMessage[tools.teal.pulsar.ui.api.v1.TopicsSelectorByName])
+    def companion: com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames.type = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames
+    // @@protoc_insertion_point(GeneratedMessage[tools.teal.pulsar.ui.api.v1.TopicsSelectorByNames])
 }
 
-object TopicsSelectorByName extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName] {
-  implicit def messageCompanion: scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName] = this
-  def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName = {
+object TopicsSelectorByNames extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames] {
+  implicit def messageCompanion: scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames] = this
+  def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames = {
     val __topics: _root_.scala.collection.immutable.VectorBuilder[_root_.scala.Predef.String] = new _root_.scala.collection.immutable.VectorBuilder[_root_.scala.Predef.String]
     var `_unknownFields__`: _root_.scalapb.UnknownFieldSet.Builder = null
     var _done__ = false
@@ -78,15 +78,15 @@ object TopicsSelectorByName extends scalapb.GeneratedMessageCompanion[com.tools.
           _unknownFields__.parseField(tag, _input__)
       }
     }
-    com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName(
+    com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames(
         topics = __topics.result(),
         unknownFields = if (_unknownFields__ == null) _root_.scalapb.UnknownFieldSet.empty else _unknownFields__.result()
     )
   }
-  implicit def messageReads: _root_.scalapb.descriptors.Reads[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName] = _root_.scalapb.descriptors.Reads{
+  implicit def messageReads: _root_.scalapb.descriptors.Reads[com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames] = _root_.scalapb.descriptors.Reads{
     case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
-      com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName(
+      com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames(
         topics = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).map(_.as[_root_.scala.Seq[_root_.scala.Predef.String]]).getOrElse(_root_.scala.Seq.empty)
       )
     case _ => throw new RuntimeException("Expected PMessage")
@@ -96,17 +96,17 @@ object TopicsSelectorByName extends scalapb.GeneratedMessageCompanion[com.tools.
   def messageCompanionForFieldNumber(__number: _root_.scala.Int): _root_.scalapb.GeneratedMessageCompanion[_] = throw new MatchError(__number)
   lazy val nestedMessagesCompanions: Seq[_root_.scalapb.GeneratedMessageCompanion[_ <: _root_.scalapb.GeneratedMessage]] = Seq.empty
   def enumCompanionForFieldNumber(__fieldNumber: _root_.scala.Int): _root_.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
-  lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName(
+  lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames(
     topics = _root_.scala.Seq.empty
   )
-  implicit class TopicsSelectorByNameLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName](_l) {
+  implicit class TopicsSelectorByNamesLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames](_l) {
     def topics: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Seq[_root_.scala.Predef.String]] = field(_.topics)((c_, f_) => c_.copy(topics = f_))
   }
   final val TOPICS_FIELD_NUMBER = 1
   def of(
     topics: _root_.scala.Seq[_root_.scala.Predef.String]
-  ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByName(
+  ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelectorByNames(
     topics
   )
-  // @@protoc_insertion_point(GeneratedMessageCompanion[tools.teal.pulsar.ui.api.v1.TopicsSelectorByName])
+  // @@protoc_insertion_point(GeneratedMessageCompanion[tools.teal.pulsar.ui.api.v1.TopicsSelectorByNames])
 }
