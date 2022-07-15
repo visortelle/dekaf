@@ -9,6 +9,7 @@ package com.tools.teal.pulsar.ui.api.v1.consumer
 final case class ResumeResponse(
     status: _root_.scala.Option[com.google.rpc.status.Status] = _root_.scala.None,
     messages: _root_.scala.Seq[com.tools.teal.pulsar.ui.api.v1.consumer.Message] = _root_.scala.Seq.empty,
+    processedMessages: _root_.scala.Long = 0L,
     unknownFields: _root_.scalapb.UnknownFieldSet = _root_.scalapb.UnknownFieldSet.empty
     ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[ResumeResponse] {
     @transient
@@ -23,6 +24,13 @@ final case class ResumeResponse(
         val __value = __item
         __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__value.serializedSize) + __value.serializedSize
       }
+      
+      {
+        val __value = processedMessages
+        if (__value != 0L) {
+          __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(3, __value)
+        }
+      };
       __size += unknownFields.serializedSize
       __size
     }
@@ -48,6 +56,12 @@ final case class ResumeResponse(
         _output__.writeUInt32NoTag(__m.serializedSize)
         __m.writeTo(_output__)
       };
+      {
+        val __v = processedMessages
+        if (__v != 0L) {
+          _output__.writeInt64(3, __v)
+        }
+      };
       unknownFields.writeTo(_output__)
     }
     def getStatus: com.google.rpc.status.Status = status.getOrElse(com.google.rpc.status.Status.defaultInstance)
@@ -57,12 +71,17 @@ final case class ResumeResponse(
     def addMessages(__vs: com.tools.teal.pulsar.ui.api.v1.consumer.Message *): ResumeResponse = addAllMessages(__vs)
     def addAllMessages(__vs: Iterable[com.tools.teal.pulsar.ui.api.v1.consumer.Message]): ResumeResponse = copy(messages = messages ++ __vs)
     def withMessages(__v: _root_.scala.Seq[com.tools.teal.pulsar.ui.api.v1.consumer.Message]): ResumeResponse = copy(messages = __v)
+    def withProcessedMessages(__v: _root_.scala.Long): ResumeResponse = copy(processedMessages = __v)
     def withUnknownFields(__v: _root_.scalapb.UnknownFieldSet) = copy(unknownFields = __v)
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
       (__fieldNumber: @_root_.scala.unchecked) match {
         case 1 => status.orNull
         case 2 => messages
+        case 3 => {
+          val __t = processedMessages
+          if (__t != 0L) __t else null
+        }
       }
     }
     def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
@@ -70,6 +89,7 @@ final case class ResumeResponse(
       (__field.number: @_root_.scala.unchecked) match {
         case 1 => status.map(_.toPMessage).getOrElse(_root_.scalapb.descriptors.PEmpty)
         case 2 => _root_.scalapb.descriptors.PRepeated(messages.iterator.map(_.toPMessage).toVector)
+        case 3 => _root_.scalapb.descriptors.PLong(processedMessages)
       }
     }
     def toProtoString: _root_.scala.Predef.String = _root_.scalapb.TextFormat.printToUnicodeString(this)
@@ -82,6 +102,7 @@ object ResumeResponse extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
   def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse = {
     var __status: _root_.scala.Option[com.google.rpc.status.Status] = _root_.scala.None
     val __messages: _root_.scala.collection.immutable.VectorBuilder[com.tools.teal.pulsar.ui.api.v1.consumer.Message] = new _root_.scala.collection.immutable.VectorBuilder[com.tools.teal.pulsar.ui.api.v1.consumer.Message]
+    var __processedMessages: _root_.scala.Long = 0L
     var `_unknownFields__`: _root_.scalapb.UnknownFieldSet.Builder = null
     var _done__ = false
     while (!_done__) {
@@ -92,6 +113,8 @@ object ResumeResponse extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
           __status = Option(__status.fold(_root_.scalapb.LiteParser.readMessage[com.google.rpc.status.Status](_input__))(_root_.scalapb.LiteParser.readMessage(_input__, _)))
         case 18 =>
           __messages += _root_.scalapb.LiteParser.readMessage[com.tools.teal.pulsar.ui.api.v1.consumer.Message](_input__)
+        case 24 =>
+          __processedMessages = _input__.readInt64()
         case tag =>
           if (_unknownFields__ == null) {
             _unknownFields__ = new _root_.scalapb.UnknownFieldSet.Builder()
@@ -102,6 +125,7 @@ object ResumeResponse extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
     com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse(
         status = __status,
         messages = __messages.result(),
+        processedMessages = __processedMessages,
         unknownFields = if (_unknownFields__ == null) _root_.scalapb.UnknownFieldSet.empty else _unknownFields__.result()
     )
   }
@@ -110,7 +134,8 @@ object ResumeResponse extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
       com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse(
         status = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).flatMap(_.as[_root_.scala.Option[com.google.rpc.status.Status]]),
-        messages = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.scala.Seq[com.tools.teal.pulsar.ui.api.v1.consumer.Message]]).getOrElse(_root_.scala.Seq.empty)
+        messages = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.scala.Seq[com.tools.teal.pulsar.ui.api.v1.consumer.Message]]).getOrElse(_root_.scala.Seq.empty),
+        processedMessages = __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).map(_.as[_root_.scala.Long]).getOrElse(0L)
       )
     case _ => throw new RuntimeException("Expected PMessage")
   }
@@ -128,21 +153,26 @@ object ResumeResponse extends scalapb.GeneratedMessageCompanion[com.tools.teal.p
   def enumCompanionForFieldNumber(__fieldNumber: _root_.scala.Int): _root_.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
   lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse(
     status = _root_.scala.None,
-    messages = _root_.scala.Seq.empty
+    messages = _root_.scala.Seq.empty,
+    processedMessages = 0L
   )
   implicit class ResumeResponseLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse](_l) {
     def status: _root_.scalapb.lenses.Lens[UpperPB, com.google.rpc.status.Status] = field(_.getStatus)((c_, f_) => c_.copy(status = Option(f_)))
     def optionalStatus: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Option[com.google.rpc.status.Status]] = field(_.status)((c_, f_) => c_.copy(status = f_))
     def messages: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Seq[com.tools.teal.pulsar.ui.api.v1.consumer.Message]] = field(_.messages)((c_, f_) => c_.copy(messages = f_))
+    def processedMessages: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.processedMessages)((c_, f_) => c_.copy(processedMessages = f_))
   }
   final val STATUS_FIELD_NUMBER = 1
   final val MESSAGES_FIELD_NUMBER = 2
+  final val PROCESSED_MESSAGES_FIELD_NUMBER = 3
   def of(
     status: _root_.scala.Option[com.google.rpc.status.Status],
-    messages: _root_.scala.Seq[com.tools.teal.pulsar.ui.api.v1.consumer.Message]
+    messages: _root_.scala.Seq[com.tools.teal.pulsar.ui.api.v1.consumer.Message],
+    processedMessages: _root_.scala.Long
   ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse(
     status,
-    messages
+    messages,
+    processedMessages
   )
   // @@protoc_insertion_point(GeneratedMessageCompanion[tools.teal.pulsar.ui.api.v1.ResumeResponse])
 }

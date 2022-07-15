@@ -2,7 +2,6 @@
   overflow: hidden;
   padding: 4rem 0;
   border-bottom: 1rem solid #ddd;
-  margin-bottom: -1rem; /* Remove Message's border. We can't use :first/last-child selector due to it is placed inside a virtualized list. */
 }
 
 .LeftSection {
@@ -31,7 +30,7 @@
   font-weight: bold;
   font-size: 13rem;
   width: 18ch;
-  margin-right: 8rem;
+  padding-right: 8rem;
 }
 
 .FieldValue {

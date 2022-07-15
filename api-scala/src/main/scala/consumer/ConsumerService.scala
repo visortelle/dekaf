@@ -3,7 +3,20 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, DeleteSubscriptionsRequest, DeleteSubscriptionsResponse, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, SeekRequest, SeekResponse, TopicsSelector}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{
+    ConsumerServiceGrpc,
+    CreateConsumerRequest,
+    CreateConsumerResponse,
+    DeleteConsumerRequest,
+    DeleteConsumerResponse,
+    PauseRequest,
+    PauseResponse,
+    ResumeRequest,
+    ResumeResponse,
+    SeekRequest,
+    SeekResponse,
+    TopicsSelector
+}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
@@ -30,6 +43,8 @@ class StreamDataHandler:
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
     var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
+    var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
+
     val logger = Logger(getClass.getName)
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
@@ -50,6 +65,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case Some(handler) =>
                 handler.onNext = (msg: Message[Array[Byte]]) =>
                     logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId}")
+
+                    processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
                     val message = consumerPb.Message(
                       properties = Option(msg.getProperties) match
@@ -104,17 +121,23 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                       isReplicated = Option(msg.isReplicated),
                       replicatedFrom = Option(msg.getReplicatedFrom)
                     )
+
                     consumers.get(consumerName) match
-                        case Some(consumer) => responseObserver.onNext(ResumeResponse(messages = Seq(message)))
-                        case _              => ()
+                        case Some(_) =>
+                            val resumeResponse = ResumeResponse(
+                              messages = Seq(message),
+                              processedMessages = processedMessagesCount.get(consumerName).getOrElse(0: Long)
+                            )
+                            responseObserver.onNext(resumeResponse)
+                        case _ => ()
 
                 val status: Status = Status(code = Code.OK.index)
-                return Future.successful(ResumeResponse(status = Some(status)))
+                Future.successful(ResumeResponse(status = Some(status)))
             case _ =>
                 val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
-                return Future.successful(ResumeResponse(status = Some(status)))
+                Future.successful(ResumeResponse(status = Some(status)))
 
     override def pause(request: PauseRequest): Future[PauseResponse] =
         val consumerName: ConsumerName = request.consumerName
@@ -135,12 +158,12 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case Some(handler) =>
                 handler.onNext = _ => ()
                 val status: Status = Status(code = Code.OK.index)
-                return Future.successful(PauseResponse(status = Some(status)))
+                Future.successful(PauseResponse(status = Some(status)))
             case _ =>
                 val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
-                return Future.successful(PauseResponse(status = Some(status)))
+                Future.successful(PauseResponse(status = Some(status)))
 
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
         val consumerName: ConsumerName = request.consumerName.getOrElse("__xray" + UUID.randomUUID().toString)
@@ -149,6 +172,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val streamDataHandler = StreamDataHandler()
         streamDataHandler.onNext = _ => ()
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
+        processedMessagesCount = processedMessagesCount + (consumerName -> 0)
 
         val consumerBuilder = buildConsumer(consumerName, request, logger, streamDataHandlers) match
             case Right(consumer) => consumer
@@ -168,32 +192,15 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         logger.info(s"Deleting consumer. Consumer: $consumerName")
 
         consumers.get(consumerName) match
-            case Some(consumer) =>
-                consumer.close
-                consumers = consumers - consumerName
+            case Some(consumer) => consumer.unsubscribe
             case _ => ()
-        streamDataHandlers.get(consumerName) match
-            case Some(handler) =>
-                handler.onNext = _ => ()
-                streamDataHandlers = streamDataHandlers - consumerName
-            case _ => ()
+
+        consumers = consumers.removed(consumerName)
+        streamDataHandlers = streamDataHandlers.removed(consumerName)
+        processedMessagesCount = processedMessagesCount.removed(consumerName)
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteConsumerResponse(status = Some(status)))
-
-    override def deleteSubscriptions(request: DeleteSubscriptionsRequest): Future[DeleteSubscriptionsResponse] =
-        request.subscriptions.foreach(s => {
-            logger.info(s"Deleting subscription. Topic: ${s.topic}, Subscription: ${s.subscriptionName}")
-            try {
-                adminClient.topics().deleteSubscription(s.topic, s.subscriptionName, s.force)
-            } catch {
-                // Ignore. If we can't delete the subscription or it not found, we can't do anything with it anyway.
-                case _ => ()
-            }
-        })
-
-        val status: Status = Status(code = Code.OK.index)
-        Future.successful(DeleteSubscriptionsResponse(status = Some(status)))
 
     override def seek(request: SeekRequest): Future[SeekResponse] =
         val consumerName: ConsumerName = request.consumerName

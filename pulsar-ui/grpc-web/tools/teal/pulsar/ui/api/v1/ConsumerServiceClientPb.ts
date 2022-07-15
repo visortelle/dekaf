@@ -186,49 +186,6 @@ export class ConsumerServiceClient {
     this.methodDescriptorPause);
   }
 
-  methodDescriptorDeleteSubscriptions = new grpcWeb.MethodDescriptor(
-    '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscriptions',
-    grpcWeb.MethodType.UNARY,
-    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest,
-    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse,
-    (request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest) => {
-      return request.serializeBinary();
-    },
-    tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse.deserializeBinary
-  );
-
-  deleteSubscriptions(
-    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest,
-    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse>;
-
-  deleteSubscriptions(
-    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest,
-    metadata: grpcWeb.Metadata | null,
-    callback: (err: grpcWeb.RpcError,
-               response: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse>;
-
-  deleteSubscriptions(
-    request: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsRequest,
-    metadata: grpcWeb.Metadata | null,
-    callback?: (err: grpcWeb.RpcError,
-               response: tools_teal_pulsar_ui_api_v1_consumer_pb.DeleteSubscriptionsResponse) => void) {
-    if (callback !== undefined) {
-      return this.client_.rpcCall(
-        this.hostname_ +
-          '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscriptions',
-        request,
-        metadata || {},
-        this.methodDescriptorDeleteSubscriptions,
-        callback);
-    }
-    return this.client_.unaryCall(
-    this.hostname_ +
-      '/tools.teal.pulsar.ui.api.v1.ConsumerService/DeleteSubscriptions',
-    request,
-    metadata || {},
-    this.methodDescriptorDeleteSubscriptions);
-  }
-
   methodDescriptorSeek = new grpcWeb.MethodDescriptor(
     '/tools.teal.pulsar.ui.api.v1.ConsumerService/Seek',
     grpcWeb.MethodType.UNARY,

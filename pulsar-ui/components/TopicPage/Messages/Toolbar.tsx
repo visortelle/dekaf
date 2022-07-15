@@ -15,6 +15,7 @@ export type ToolbarProps = {
   onSessionStateChange: (state: SessionState) => void,
   onStopSession: () => void,
   messagesLoaded: number,
+  messagesProcessed: number,
   messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number },
 };
 
@@ -75,6 +76,13 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       </div>
 
       <div className={s.ToolbarRight}>
+        <div className={s.MessagesLoadedStats}>
+          <div className={s.MessagesLoadedStat}>
+            <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesProcessed)}</strong>
+            <span className={s.MessagesLoadedStatTitle}>&nbsp;processed</span>
+          </div>
+        </div>
+
         <div className={s.MessagesLoadedStats}>
           <div className={s.MessagesLoadedStat}>
             <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesLoaded)}</strong>
