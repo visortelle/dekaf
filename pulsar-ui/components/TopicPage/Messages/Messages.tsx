@@ -16,9 +16,10 @@ import {
   DeleteSubscription,
   SeekRequest,
   RegexSubscriptionMode,
-  TopicsSelectorByName,
+  TopicsSelectorByNames,
   TopicsSelectorByRegex
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import { detect as detectBrowser } from 'detect-browser';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
@@ -31,11 +32,15 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
-import { SessionState, SessionConfig, SessionTopicsSelector } from './types';
+import { SessionState, SessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
+import { useAnimationFrame } from '../../app/hooks/use-animation-frame';
 import dayjs from 'dayjs';
+
+const browser = detectBrowser();
+const isOptimizePerf = browser?.name === 'safari' || browser?.name === 'firefox';
 
 export type SessionProps = {
   config: SessionConfig;
@@ -62,6 +67,7 @@ type Defaults = {
   streamRef: () => ClientReadableStream<ResumeResponse> | undefined,
   messagesLoaded: () => number,
   messagesLoadedPerSecond: () => MessagesLoadedPerSecond,
+  messagesProcessed: () => number,
   messagesBuffer: () => KeyedMessage[],
   messages: () => KeyedMessage[]
 }
@@ -75,6 +81,7 @@ const defaults: Defaults = {
   streamRef: () => undefined,
   messagesLoaded: () => 0,
   messagesLoadedPerSecond: (): MessagesLoadedPerSecond => ({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 }),
+  messagesProcessed: () => 0,
   messagesBuffer: (): KeyedMessage[] => [],
   messages: (): KeyedMessage[] => []
 }
@@ -95,37 +102,48 @@ const Session: React.FC<SessionProps> = (props) => {
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(defaults.streamRef());
   const [messagesLoaded, setMessagesLoaded] = useState<number>(defaults.messagesLoaded());
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesLoadedPerSecond>(defaults.messagesLoadedPerSecond());
+  const messagesProcessed = useRef<number>(defaults.messagesProcessed());
   const messagesBuffer = useRef<KeyedMessage[]>(defaults.messagesBuffer());
   const [messages, setMessages] = useState<KeyedMessage[]>(defaults.messages());
+  const { startFrom, topicsSelector } = props.config;
+
+  const scrollToBottom = () => {
+    const scrollParent = listRef.current?.children[0];
+    scrollParent?.scrollTo({ top: scrollParent.scrollHeight, behavior: 'auto' });
+  }
 
   useInterval(() => {
     setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: sessionState === 'running' ? messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded : 0 }));
   }, sessionState === 'running' ? 1000 : false);
-  useInterval(() => virtuosoRef.current?.scrollToIndex(messages.length - 1), sessionState === 'running' ? 300 : false); // Virtuoso's followOutput option doesn't work well with fast updates. We are trying to help it a bit. :)
+
   useInterval(() => {
     if (messagesBuffer.current.length === 0) {
       return;
     }
 
+    console.log('isOptimize', isOptimizePerf);
     setMessages((messages) => {
       const newMessages = messages.concat(messagesBuffer.current);
       messagesBuffer.current = [];
       return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
     });
+  }, sessionState === 'running' ? isOptimizePerf ? 250 : 32 : false);
 
-  }, sessionState === 'running' ? 32 : false);
+  useAnimationFrame((perf) => {
+    if (sessionState === 'running' && (isOptimizePerf ? perf.delta < 64 : true)) {
+      scrollToBottom();
+    }
+  });
 
   const applyConfig = async () => {
-    if (props.config.startFrom.type === 'messageId') {
-      if (props.config.startFrom.hexString.length === 0) {
-        notifyError("Please specify proper message id");
-        props.onStopSession();
-        return;
-      }
+    if (startFrom.type === 'earliest' && startFrom.skip > 0) {
 
+    }
+
+    if (startFrom.type === 'messageId') {
       const seekReq = new SeekRequest();
       seekReq.setConsumerName(consumerName);
-      seekReq.setMessageId(i18n.hexStringToBytes(props.config.startFrom.hexString));
+      seekReq.setMessageId(i18n.hexStringToBytes(startFrom.hexString));
       const res = await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
         .catch((err) => notifyError(`Unable to seek by messageId. Consumer: ${consumerName}. ${err}`));
 
@@ -140,12 +158,12 @@ const Session: React.FC<SessionProps> = (props) => {
       }
     }
 
-    if (props.config.startFrom.type === 'date' || props.config.startFrom.type === 'timestamp' || props.config.startFrom.type === 'quickDate') {
+    if (startFrom.type === 'date' || startFrom.type === 'timestamp' || startFrom.type === 'quickDate') {
       let fromDate;
-      switch (props.config.startFrom.type) {
-        case 'date': fromDate = dayjs(props.config.startFrom.date).millisecond(0).toDate(); break;
-        case 'timestamp': fromDate = dayjs(timestampToDate(props.config.startFrom.ts)).millisecond(0).toDate(); break;
-        case 'quickDate': fromDate = dayjs(quickDateToDate(props.config.startFrom.quickDate, props.config.startFrom.relativeTo)).millisecond(0).toDate(); break;
+      switch (startFrom.type) {
+        case 'date': fromDate = dayjs(startFrom.date).millisecond(0).toDate(); break;
+        case 'timestamp': fromDate = dayjs(timestampToDate(startFrom.ts)).millisecond(0).toDate(); break;
+        case 'quickDate': fromDate = dayjs(quickDateToDate(startFrom.quickDate, startFrom.relativeTo)).millisecond(0).toDate(); break;
       }
 
       if (fromDate === undefined) {
@@ -165,6 +183,7 @@ const Session: React.FC<SessionProps> = (props) => {
     const newMessages = res.getMessagesList().map(m => ({ message: m, key: nanoid() }));
     setMessagesLoaded(messagesCount => messagesCount + newMessages.length);
     messagesBuffer.current.push(...newMessages);
+    messagesProcessed.current = res.getProcessedMessages();
   }, []);
 
   useEffect(() => {
@@ -195,7 +214,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     async function deleteSubscriptions() {
-      if (props.config.topicsSelector.type === 'by-regex') {
+      if (topicsSelector.type === 'by-regex') {
         notifyWarn(
           <div>
             Currently we don&apos;t automatically delete subscriptions we create for topics matched to regex matched topics.
@@ -207,9 +226,9 @@ const Session: React.FC<SessionProps> = (props) => {
         );
       }
 
-      if (props.config.topicsSelector.type === 'by-names') {
+      if (topicsSelector.type === 'by-names') {
         const deleteSubscriptionsReq = new DeleteSubscriptionsRequest();
-        const deleteSubscriptionsList = props.config.topicsSelector.topics.map(t => {
+        const deleteSubscriptionsList = topicsSelector.topics.map(t => {
           const deleteSub = new DeleteSubscription();
           deleteSub.setTopic(t);
           deleteSub.setSubscriptionName(subscriptionName);
@@ -238,18 +257,18 @@ const Session: React.FC<SessionProps> = (props) => {
       const req = new CreateConsumerRequest();
       const topicSelector = new TopicsSelector();
 
-      if (props.config.topicsSelector.type === 'by-names') {
-        const selector = new TopicsSelectorByName();
-        selector.setTopicsList(props.config.topicsSelector.topics);
-        topicSelector.setByName(selector);
+      if (topicsSelector.type === 'by-names') {
+        const selector = new TopicsSelectorByNames();
+        selector.setTopicsList(topicsSelector.topics);
+        topicSelector.setByNames(selector);
       }
 
-      if (props.config.topicsSelector.type === 'by-regex') {
+      if (topicsSelector.type === 'by-regex') {
         const selector = new TopicsSelectorByRegex();
-        selector.setPattern(props.config.topicsSelector.pattern);
+        selector.setPattern(topicsSelector.pattern);
 
         let regexSubscriptionMode: RegexSubscriptionMode;
-        switch (props.config.topicsSelector.regexSubscriptionMode) {
+        switch (topicsSelector.regexSubscriptionMode) {
           case 'unspecified': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_UNSPECIFIED; break;
           case 'persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY; break;
           case 'non-persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY; break;
@@ -265,7 +284,7 @@ const Session: React.FC<SessionProps> = (props) => {
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_SHARED);
-      req.setSubscriptionInitialPosition(props.config.startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
+      req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
@@ -325,6 +344,10 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     if (sessionState === 'paused') {
+      if (prevSessionState === 'running') {
+        scrollToBottom(); // Force scroll to bottom. Otherwise, scroll position sometimes left in a middle after pausing.
+      }
+
       const pauseReq = new PauseRequest();
       pauseReq.setConsumerName(consumerName);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
@@ -348,7 +371,6 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sessionState]);
 
   const itemContent = useCallback<ItemContent<KeyedMessage, undefined>>((_, { key, message }) => <MessageComponent key={key} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
-  const overscan = useMemo(() => ({ main: window.innerHeight, reverse: window.innerHeight }), []);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0) {
       setSessionState('paused');
@@ -365,6 +387,7 @@ const Session: React.FC<SessionProps> = (props) => {
         onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
+        messagesProcessed={messagesProcessed.current}
         onStopSession={props.onStopSession}
       />
 
@@ -380,8 +403,7 @@ const Session: React.FC<SessionProps> = (props) => {
             data={messages}
             totalCount={messages.length}
             itemContent={itemContent}
-            overscan={overscan}
-            followOutput={true}
+            followOutput={false}
           />
 
         </div>
