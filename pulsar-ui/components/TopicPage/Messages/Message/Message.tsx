@@ -52,11 +52,11 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <Field isShowTooltips={props.isShowTooltips} name="publishTime" title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} rawValue={publishTime?.toDate().toISOString()} tooltip={help.publishTime} />
         <Field isShowTooltips={props.isShowTooltips} name="brokerPublishTime" title="Broker pub. time" value={brokerPublishTime === undefined ? undefined : i18n.formatDate(brokerPublishTime.toDate())} rawValue={brokerPublishTime?.toDate().toISOString()} tooltip={help.brokerPublishTime} />
         <Field isShowTooltips={props.isShowTooltips} name="eventTime" title="Event time" value={eventTime === undefined ? undefined : i18n.formatDate(eventTime.toDate())} rawValue={eventTime?.toDate().toISOString()} tooltip={help.eventTime} />
-        <Field isShowTooltips={props.isShowTooltips} name="messageId" title="Message id" value={messageId === undefined ? undefined : i18n.formatByteArray(messageId, 'hex-with-space')} rawValue={i18n.formatByteArray(messageId, 'hex-no-space')} tooltip={help.messageId} />
+        <Field isShowTooltips={props.isShowTooltips} name="messageId" title="Message id" value={messageId === undefined ? undefined : i18n.bytesToHexString(messageId, 'hex-with-space')} rawValue={i18n.bytesToHexString(messageId, 'hex-no-space')} tooltip={help.messageId} />
         <Field isShowTooltips={props.isShowTooltips} name="sequenceId" title="Sequence Id" value={sequenceId === undefined ? undefined : i18n.formatLongNumber(sequenceId)} rawValue={String(sequenceId)} tooltip={help.sequenceId} />
-        <Field isShowTooltips={props.isShowTooltips} name="orderingKey" title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.formatByteArray(orderingKey, 'hex-with-space')} rawValue={i18n.formatByteArray(orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
+        <Field isShowTooltips={props.isShowTooltips} name="orderingKey" title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.bytesToHexString(orderingKey, 'hex-with-space')} rawValue={i18n.bytesToHexString(orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
         <Field isShowTooltips={props.isShowTooltips} name="redeliveryCount" title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} rawValue={String(redeliveryCount)} tooltip={help.redeliveryCount} />
-        <Field isShowTooltips={props.isShowTooltips} name="schemaVersion" title="Schema version" value={i18n.formatByteArray(schemaVersion, 'hex-with-space') || undefined} rawValue={i18n.formatByteArray(schemaVersion, 'hex-no-space')} tooltip={help.schemaVersion} />
+        <Field isShowTooltips={props.isShowTooltips} name="schemaVersion" title="Schema version" value={i18n.bytesToHexString(schemaVersion, 'hex-with-space') || undefined} rawValue={i18n.bytesToHexString(schemaVersion, 'hex-no-space')} tooltip={help.schemaVersion} />
         <Field isShowTooltips={props.isShowTooltips} name="value" title="Value" value={value || undefined} rawValue={value} tooltip={help.value} />
       </div>
       <div className={s.RightSection}></div>
@@ -74,7 +74,7 @@ type FieldProps = {
   valueHref?: string,
 }
 const Field: React.FC<FieldProps> = (props) => {
-  const {notifySuccess } = Notifications.useContext();
+  const { notifySuccess } = Notifications.useContext();
   const valueContent = props.value === undefined ? <div className={s.NoData}>-</div> : props.value;
 
   const copyRawValue = () => {

@@ -57,15 +57,18 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           <div>
             {props.config.startFrom.type === 'earliest' && <div>Earliest</div>}
             {props.config.startFrom.type === 'latest' && <div>Latest</div>}
-            {(props.config.startFrom.type === 'date') && <div>{i18n.formatDate(props.config.startFrom.date)}</div>}
-            {(props.config.startFrom.type === 'timestamp') && (() => {
-              if (props.config.startFrom.type !== 'timestamp') {
-                return;
-              }
-
-              const date = timestampToDate(props.config.startFrom.ts);
-              return date === undefined ? <div className={s.NoData}>-</div> : <div>{i18n.formatDate(date)}</div>
+            {(props.config.startFrom.type === 'messageId') && (() => {
+              const str = i18n.bytesToHexString(i18n.hexStringToBytes(props.config.startFrom.hexString), 'hex-with-space');
+              return (
+                props.config.startFrom.hexString.length === 0 ?
+                  <div className={s.NoData}>-</div> :
+                  <div style={{ maxWidth: '48ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={str}>
+                    {str}
+                  </div>
+              )
             })()}
+            {(props.config.startFrom.type === 'date') && <div>{i18n.formatDate(props.config.startFrom.date)}</div>}
+            {(props.config.startFrom.type === 'timestamp') && <div>{i18n.formatDate(timestampToDate(props.config.startFrom.ts))}</div>}
             {props.config.startFrom.type === 'quickDate' && <div>{i18n.formatDate(quickDateToDate(props.config.startFrom.quickDate, props.config.startFrom.relativeTo))}</div>}
           </div>
         </div>

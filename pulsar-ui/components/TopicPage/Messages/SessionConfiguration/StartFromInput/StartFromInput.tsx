@@ -14,11 +14,18 @@ export type StartFromInputProps = {
   disabled?: boolean
 };
 
-const list: List = [
+type StartFromVariants = StartFrom['type'] | QuickDate;
+
+const list: List<StartFromVariants> = [
   {
     type: 'group', title: 'Subscription position', items: [
       { type: 'item', title: 'Latest', value: 'latest' },
       { type: 'item', title: 'Earliest', value: 'earliest' },
+    ]
+  },
+  {
+    type: 'group', title: 'Specific message', items: [
+      { type: 'item', title: 'Message with specific id', value: 'messageId' },
     ]
   },
   {
@@ -33,6 +40,7 @@ const list: List = [
     type: 'group',
     title: 'Quick date',
     items: [
+      { type: 'item', title: 'Now', value: 'now' },
       { type: 'item', title: '5 minutes ago', value: '5-minutes-ago' },
       { type: 'item', title: '15 minutes ago', value: '15-minutes-ago' },
       { type: 'item', title: '30 minutes ago', value: '30-minutes-ago' },
@@ -58,8 +66,6 @@ const list: List = [
   }
 ];
 
-type StartFromType = StartFrom['type'] | QuickDate;
-
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {
   const [latestSelectedDate, setLatestSelectedDate] = React.useState<Date>(new Date());
 
@@ -78,11 +84,12 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           list={list}
           value={props.value.type === 'quickDate' ? props.value.quickDate : props.value.type}
           onChange={(v) => {
-            switch (v as StartFromType) {
+            switch (v as StartFromVariants) {
               case 'earliest': props.onChange({ type: 'earliest' }); return;
               case 'latest': props.onChange({ type: 'latest' }); return;
               case 'date': props.onChange({ type: 'date', date: latestSelectedDate }); return;
               case 'timestamp': props.onChange({ type: 'timestamp', ts: new Date().getTime().toString() }); return;
+              case 'messageId': props.onChange({ type: 'messageId', hexString: "" }); return;
               default: {
                 const relativeTo = new Date();
                 setLatestSelectedDate(relativeTo);
@@ -93,8 +100,14 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           disabled={props.disabled}
         />
       </div>
-
       <div className={s.AdditionalControls}>
+        {props.value.type === 'messageId' && (
+          <Input
+            value={props.value.hexString}
+            placeholder="08 c3 03 10 cd 04 20 00 30 01"
+            onChange={(v) => props.onChange({ type: 'messageId', hexString: v })}
+          />
+        )}
         {props.value.type === 'date' && (
           <DatetimePicker
             value={props.value.date}
@@ -121,7 +134,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
               props.onChange({ ...props.value, relativeTo });
             }}
             type='primary'
-            text='Actualize from now'
+            text='Actualize'
           />
         )}
       </div>
