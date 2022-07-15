@@ -1,12 +1,15 @@
 import React from 'react';
 import s from './BreadCrumbs.module.css'
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../Icons/Icons';
+import * as Notifications from '../../app/contexts/Notifications';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowIcon from '!!raw-loader!./arrow.svg';
+import copyIcon from '!!raw-loader!./copy.svg';
 import Link from '../../ui/LinkWithQuery/LinkWithQuery';
 import { routes } from '../../routes';
 import { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';
+import Button from '../Button/Button';
 
 export type CrumbType = 'instance' | 'tenant' | 'namespace' | 'persistent-topic' | 'non-persistent-topic';
 export type Crumb = {
@@ -23,6 +26,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
   const tenant = props.crumbs[1]?.value;
   const namespace = props.crumbs[2]?.value;
   const topic = props.crumbs[3]?.value;
+  const { notifySuccess } = Notifications.useContext();
 
   const renderCrumb = (crumb: Crumb, i: number, total: number) => {
     let icon = null;
@@ -65,11 +69,42 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     );
   }
 
+  const qualifiedResourceName = crumbsToQualifiedName(props.crumbs);
   return (
     <div className={s.BreadCrumbs}>
       {props.crumbs.map((crumb, i) => renderCrumb(crumb, i, props.crumbs.length))}
+
+      {qualifiedResourceName !== undefined && (
+        <div className={s.CopyNameButton}>
+          <Button
+            onClick={() => {
+              if (qualifiedResourceName !== undefined) {
+                navigator.clipboard.writeText(qualifiedResourceName);
+                notifySuccess(`Qualified resource name copied to clipboard: ${qualifiedResourceName}`);
+              }
+            }}
+            svgIcon={copyIcon}
+            type={'regular'}
+            title="Copy path to clipboard"
+          />
+        </div>
+      )}
     </div>
   );
+}
+
+function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
+  const tenant = crumbs[1]?.value;
+  const namespace = crumbs[2]?.value;
+  const topic = crumbs[3]?.value;
+
+  switch (crumbs[crumbs.length - 1].type) {
+    case 'tenant': return tenant;
+    case 'namespace': return `${tenant}/${namespace}`;
+    case 'persistent-topic': return `${'persistent'}://${tenant}/${namespace}/${topic}`;
+    case 'non-persistent-topic': return `${'non-persistent'}://${tenant}/${namespace}/${topic}`;
+    default: return undefined;
+  }
 }
 
 export default BreadCrumbs;
