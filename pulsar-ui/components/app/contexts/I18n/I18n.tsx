@@ -5,7 +5,8 @@ import dayjs from 'dayjs';
 export type Value = {
   formatBytes: (bytes: number) => string;
   formatBytesRate: (bytesPerSecond: number) => string;
-  formatByteArray: (byteArray: Uint8Array, style: ByteArrayStyle) => string;
+  bytesToHexString: (byteArray: Uint8Array, style: ByteArrayStyle) => string;
+  hexStringToBytes: (hexString: string) => Uint8Array;
   formatCount: (count: number) => string;
   formatCountRate: (countPerSecond: number) => string;
   formatDate: (date: Date) => string;
@@ -15,7 +16,8 @@ export type Value = {
 const defaultValue: Value = {
   formatBytes: (bytes) => bytes === 0 ? String(0) : (bytes < 1024 ? numeral(bytes).format('0b') : numeral(bytes).format('0.00b')),
   formatBytesRate: (bytesPerSecond) => bytesPerSecond === 0 ? String(0) : numeral(bytesPerSecond).format('0.00b') + '/s',
-  formatByteArray: (byteArray, style) => toHexString(byteArray, style),
+  bytesToHexString: (byteArray, style) => bytesToHexString(byteArray, style),
+  hexStringToBytes: (hexString) => hexStringToBytes(hexString),
   formatCount: (count) => count === 0 ? String(0) : numeral(count).format(count < 1000 ? '0a' : '0.00a'),
   formatCountRate: (countPerSecond) => countPerSecond === 0 ? String(0) : numeral(countPerSecond).format(countPerSecond < 1000 ? '0a' : '0.00a') + '/s',
   formatDate: (date) => dayjs(date).format('ddd, MMM DD, YYYY HH:mm:ss UTCZ'),
@@ -39,8 +41,22 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
 export const useContext = () => React.useContext(Context);
 
 type ByteArrayStyle = 'hex-no-space' | 'hex-with-space';
-function toHexString(byteArray: Uint8Array, style: ByteArrayStyle): string {
-  return Array.from(byteArray, function(byte) {
+function bytesToHexString(byteArray: Uint8Array, style: ByteArrayStyle): string {
+  return Array.from(byteArray, function (byte) {
     return ('0' + (byte & 0xFF).toString(16)).slice(-2);
   }).join(style === 'hex-with-space' ? ' ' : '');
+}
+function hexStringToBytes(hexString: string): Uint8Array {
+  const hs = hexString.replace(/\s/g, '');
+
+  if (!hs) {
+    return new Uint8Array();
+  }
+
+  let a = [];
+  for (let i = 0, len = hs.length; i < len; i += 2) {
+    a.push(parseInt(hs.substr(i, 2), 16));
+  }
+
+  return new Uint8Array(a);
 }

@@ -4,24 +4,24 @@ import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
 import { nanoid } from 'nanoid';
 
-export type ListItem = {
+export type ListItem<V> = {
   type: 'item',
-  value: string,
+  value: V,
   title: string
-} | { type: 'group', title: string, items: ListItem[] } | { type: 'empty', title: string };
+} | { type: 'group', title: string, items: ListItem<V>[] } | { type: 'empty', title: string };
 
-export type List = ListItem[]
+export type List<V> = ListItem<V>[]
 
-export type InputProps = {
+export type InputProps<V> = {
   value: string;
   onChange: (value: string) => void;
-  list: List;
+  list: List<V>;
   placeholder?: string;
   disabled?: boolean;
 }
 
-function Input(props: InputProps): React.ReactElement {
-  function renderRegularItem(item: ListItem) {
+function Input<V extends string>(props: InputProps<V>): React.ReactElement {
+  function renderRegularItem(item: ListItem<V>) {
     if (item.type !== 'item') {
       return <></>
     }

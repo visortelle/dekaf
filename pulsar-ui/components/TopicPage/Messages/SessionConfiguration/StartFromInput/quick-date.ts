@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 
 export const quickDates = [
+  "now",
   "5-minutes-ago",
   "15-minutes-ago",
   "30-minutes-ago",
@@ -27,6 +28,7 @@ export type QuickDate = typeof quickDates[number];
 
 export function quickDateToDate(qd: QuickDate, relativeTo: Date): Date {
   switch (qd) {
+    case "now": return new Date();
     case "5-minutes-ago":
       return dayjs(relativeTo).subtract(5, "minute").toDate();
     case "15-minutes-ago":

@@ -17,7 +17,7 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.google.protobuf.timestamp
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
-import org.apache.pulsar.client.api.Message
+import org.apache.pulsar.client.api.{Message, MessageId}
 
 import java.util.UUID
 import java.time.Instant
@@ -207,15 +207,23 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(SeekResponse(status = Some(status)))
 
-        val res = request.seek match
+        request.seek match
             case Seek.Empty => Left("Seek request should contain timestamp or message id")
             case Seek.Timestamp(v) =>
-                println(s"--------------------------------               Seek to timestamp: $v")
+                logger.info(s"Seek by timestamp. Consumer ${request.consumerName}. Timestamp: ${v.toString}")
                 consumer.seek(Instant.ofEpochSecond(v.seconds, v.nanos).toEpochMilli)
                 Right(())
             case Seek.MessageId(v) =>
-//                consumer.seek(v)
-                Right(())
+                logger.info(s"Seek by message id. Consumer ${request.consumerName}. Message id: ${v.toString}")
+                try {
+                    val messageId = MessageId.fromByteArray(v.toByteArray)
+                    consumer.seek(messageId)
+                    Right(())
+                } catch {
+                    case _ =>
+                        val status: Status = Status(code = Code.INVALID_ARGUMENT.index)
+                        return Future.successful(SeekResponse(status = Some(status)))
+                }
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(SeekResponse(status = Some(status)))

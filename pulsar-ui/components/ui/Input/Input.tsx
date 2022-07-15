@@ -31,6 +31,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, o
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        spellCheck={false}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
             inputRef?.current?.blur();
