@@ -229,5 +229,48 @@ export class ConsumerServiceClient {
     this.methodDescriptorSeek);
   }
 
+  methodDescriptorSkipMessages = new grpcWeb.MethodDescriptor(
+    '/tools.teal.pulsar.ui.api.v1.ConsumerService/SkipMessages',
+    grpcWeb.MethodType.UNARY,
+    tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesRequest,
+    tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesResponse,
+    (request: tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesRequest) => {
+      return request.serializeBinary();
+    },
+    tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesResponse.deserializeBinary
+  );
+
+  skipMessages(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesRequest,
+    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesResponse>;
+
+  skipMessages(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesResponse>;
+
+  skipMessages(
+    request: tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: tools_teal_pulsar_ui_api_v1_consumer_pb.SkipMessagesResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/tools.teal.pulsar.ui.api.v1.ConsumerService/SkipMessages',
+        request,
+        metadata || {},
+        this.methodDescriptorSkipMessages,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/tools.teal.pulsar.ui.api.v1.ConsumerService/SkipMessages',
+    request,
+    metadata || {},
+    this.methodDescriptorSkipMessages);
+  }
+
 }
 

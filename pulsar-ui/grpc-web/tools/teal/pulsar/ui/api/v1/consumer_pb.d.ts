@@ -686,11 +686,11 @@ export namespace SeekResponse {
 }
 
 export class SkipMessagesRequest extends jspb.Message {
-  getTopic(): string;
-  setTopic(value: string): SkipMessagesRequest;
+  getConsumerName(): string;
+  setConsumerName(value: string): SkipMessagesRequest;
 
-  getSubscription(): string;
-  setSubscription(value: string): SkipMessagesRequest;
+  getSubscriptionName(): string;
+  setSubscriptionName(value: string): SkipMessagesRequest;
 
   getCount(): number;
   setCount(value: number): SkipMessagesRequest;
@@ -705,9 +705,29 @@ export class SkipMessagesRequest extends jspb.Message {
 
 export namespace SkipMessagesRequest {
   export type AsObject = {
-    topic: string,
-    subscription: string,
+    consumerName: string,
+    subscriptionName: string,
     count: number,
+  }
+}
+
+export class SkipMessagesResponse extends jspb.Message {
+  getStatus(): google_rpc_status_pb.Status | undefined;
+  setStatus(value?: google_rpc_status_pb.Status): SkipMessagesResponse;
+  hasStatus(): boolean;
+  clearStatus(): SkipMessagesResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SkipMessagesResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: SkipMessagesResponse): SkipMessagesResponse.AsObject;
+  static serializeBinaryToWriter(message: SkipMessagesResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SkipMessagesResponse;
+  static deserializeBinaryFromReader(message: SkipMessagesResponse, reader: jspb.BinaryReader): SkipMessagesResponse;
+}
+
+export namespace SkipMessagesResponse {
+  export type AsObject = {
+    status?: google_rpc_status_pb.Status.AsObject,
   }
 }
 

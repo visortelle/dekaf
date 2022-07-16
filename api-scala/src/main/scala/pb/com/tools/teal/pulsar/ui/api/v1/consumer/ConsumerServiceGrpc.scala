@@ -57,6 +57,16 @@ object ConsumerServiceGrpc {
       .setSchemaDescriptor(_root_.scalapb.grpc.ConcreteProtoMethodDescriptorSupplier.fromMethodDescriptor(com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerProto.javaDescriptor.getServices().get(0).getMethods().get(4)))
       .build()
   
+  val METHOD_SKIP_MESSAGES: _root_.io.grpc.MethodDescriptor[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest, com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesResponse] =
+    _root_.io.grpc.MethodDescriptor.newBuilder()
+      .setType(_root_.io.grpc.MethodDescriptor.MethodType.UNARY)
+      .setFullMethodName(_root_.io.grpc.MethodDescriptor.generateFullMethodName("tools.teal.pulsar.ui.api.v1.ConsumerService", "SkipMessages"))
+      .setSampledToLocalTracing(true)
+      .setRequestMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest])
+      .setResponseMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesResponse])
+      .setSchemaDescriptor(_root_.scalapb.grpc.ConcreteProtoMethodDescriptorSupplier.fromMethodDescriptor(com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerProto.javaDescriptor.getServices().get(0).getMethods().get(5)))
+      .build()
+  
   val SERVICE: _root_.io.grpc.ServiceDescriptor =
     _root_.io.grpc.ServiceDescriptor.newBuilder("tools.teal.pulsar.ui.api.v1.ConsumerService")
       .setSchemaDescriptor(new _root_.scalapb.grpc.ConcreteProtoFileDescriptorSupplier(com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerProto.javaDescriptor))
@@ -65,6 +75,7 @@ object ConsumerServiceGrpc {
       .addMethod(METHOD_RESUME)
       .addMethod(METHOD_PAUSE)
       .addMethod(METHOD_SEEK)
+      .addMethod(METHOD_SKIP_MESSAGES)
       .build()
   
   trait ConsumerService extends _root_.scalapb.grpc.AbstractService {
@@ -73,9 +84,8 @@ object ConsumerServiceGrpc {
     def deleteConsumer(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteConsumerRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.DeleteConsumerResponse]
     def resume(request: com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest, responseObserver: _root_.io.grpc.stub.StreamObserver[com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse]): _root_.scala.Unit
     def pause(request: com.tools.teal.pulsar.ui.api.v1.consumer.PauseRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.PauseResponse]
-    /** rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
-      */
     def seek(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse]
+    def skipMessages(request: com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesResponse]
   }
   
   object ConsumerService extends _root_.scalapb.grpc.ServiceCompanion[ConsumerService] {
@@ -118,6 +128,13 @@ object ConsumerServiceGrpc {
             serviceImpl.seek(request).onComplete(scalapb.grpc.Grpc.completeObserver(observer))(
               executionContext)
         }))
+      .addMethod(
+        METHOD_SKIP_MESSAGES,
+        _root_.io.grpc.stub.ServerCalls.asyncUnaryCall(new _root_.io.grpc.stub.ServerCalls.UnaryMethod[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest, com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesResponse] {
+          override def invoke(request: com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest, observer: _root_.io.grpc.stub.StreamObserver[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesResponse]): _root_.scala.Unit =
+            serviceImpl.skipMessages(request).onComplete(scalapb.grpc.Grpc.completeObserver(observer))(
+              executionContext)
+        }))
       .build()
   }
   
@@ -127,9 +144,8 @@ object ConsumerServiceGrpc {
     def deleteConsumer(request: com.tools.teal.pulsar.ui.api.v1.consumer.DeleteConsumerRequest): com.tools.teal.pulsar.ui.api.v1.consumer.DeleteConsumerResponse
     def resume(request: com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest): scala.collection.Iterator[com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse]
     def pause(request: com.tools.teal.pulsar.ui.api.v1.consumer.PauseRequest): com.tools.teal.pulsar.ui.api.v1.consumer.PauseResponse
-    /** rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
-      */
     def seek(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest): com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse
+    def skipMessages(request: com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest): com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesResponse
   }
   
   class ConsumerServiceBlockingStub(channel: _root_.io.grpc.Channel, options: _root_.io.grpc.CallOptions = _root_.io.grpc.CallOptions.DEFAULT) extends _root_.io.grpc.stub.AbstractStub[ConsumerServiceBlockingStub](channel, options) with ConsumerServiceBlockingClient {
@@ -149,10 +165,12 @@ object ConsumerServiceGrpc {
       _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_PAUSE, options, request)
     }
     
-    /** rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
-      */
     override def seek(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest): com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse = {
       _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_SEEK, options, request)
+    }
+    
+    override def skipMessages(request: com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest): com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesResponse = {
+      _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_SKIP_MESSAGES, options, request)
     }
     
     override def build(channel: _root_.io.grpc.Channel, options: _root_.io.grpc.CallOptions): ConsumerServiceBlockingStub = new ConsumerServiceBlockingStub(channel, options)
@@ -175,10 +193,12 @@ object ConsumerServiceGrpc {
       _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_PAUSE, options, request)
     }
     
-    /** rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
-      */
     override def seek(request: com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.SeekResponse] = {
       _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_SEEK, options, request)
+    }
+    
+    override def skipMessages(request: com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesResponse] = {
+      _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_SKIP_MESSAGES, options, request)
     }
     
     override def build(channel: _root_.io.grpc.Channel, options: _root_.io.grpc.CallOptions): ConsumerServiceStub = new ConsumerServiceStub(channel, options)

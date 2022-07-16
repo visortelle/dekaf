@@ -105,15 +105,19 @@ message DeleteConsumerRequest {
 message DeleteConsumerResponse {
   google.rpc.Status status = 1;
 }
-
 message ResumeRequest {
   string consumer_name = 1;
+  bool include_consumer_stats = 2;
+}
+
+message ConsumerStats {
 }
 
 message ResumeResponse {
   optional google.rpc.Status status = 1;
   repeated Message messages = 2;
   int64 processed_messages = 3;
+  optional ConsumerStats consumer_stats = 4;
 }
 
 message PauseRequest {
@@ -137,14 +141,14 @@ message SeekResponse {
 }
 
 message SkipMessagesRequest {
-  string topic = 1;
-  string subscription = 2;
+  string consumer_name = 1;
+  string subscription_name = 2;
   int64 count = 3;
 }
 
-// message SkipMessagesResponse {
-//   google.rpc.Status status = 1;
-// }
+message SkipMessagesResponse {
+  google.rpc.Status status = 1;
+}
 
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
@@ -152,5 +156,5 @@ service ConsumerService {
   rpc Resume(ResumeRequest) returns (stream ResumeResponse);
   rpc Pause(PauseRequest) returns (PauseResponse);
   rpc Seek(SeekRequest) returns (SeekResponse);
-  // rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
-
+  rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
+}

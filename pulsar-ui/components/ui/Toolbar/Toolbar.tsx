@@ -18,21 +18,26 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 }
 
 export type ToolbarButtonProps = ButtonProps & {
-  linkTo: string;
+  linkTo?: string;
   position?: 'left' | 'right';
   disabled?: boolean;
 }
 
 export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
+  const button = (
+    <Button
+      text={props.text}
+      onClick={props.onClick}
+      type={props.type}
+      disabled={props.disabled}
+    />
+  );
   return <div className={`${s.ToolbarButton} ${props.position === 'right' ? s.ToolbarButtonRight : ''}`}>
-    <Link to={props.linkTo}>
-      <Button
-        text={props.text}
-        onClick={props.onClick}
-        type={props.type}
-        disabled={props.disabled}
-      />
-    </Link>
+    {props.linkTo ? (
+      <Link to={props.linkTo}>
+        {button}
+      </Link>
+    ) : button}
   </div>
 }
 
