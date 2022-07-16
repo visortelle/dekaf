@@ -80,7 +80,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
             onClick={() => {
               if (qualifiedResourceName !== undefined) {
                 navigator.clipboard.writeText(qualifiedResourceName);
-                notifySuccess(`Qualified resource name copied to clipboard: ${qualifiedResourceName}`);
+                notifySuccess(<div>Fully qualified resource name copied to clipboard: {qualifiedResourceName}</div>);
               }
             }}
             svgIcon={copyIcon}

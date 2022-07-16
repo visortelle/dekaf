@@ -12,12 +12,11 @@ import {
   DeleteConsumerRequest,
   PauseRequest,
   SubscriptionInitialPosition,
-  DeleteSubscriptionsRequest,
-  DeleteSubscription,
   SeekRequest,
   RegexSubscriptionMode,
   TopicsSelectorByNames,
-  TopicsSelectorByRegex
+  TopicsSelectorByRegex,
+  SubscriptionMode
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { detect as detectBrowser } from 'detect-browser';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
@@ -108,8 +107,8 @@ const Session: React.FC<SessionProps> = (props) => {
   }
 
   useInterval(() => {
-    setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: sessionState === 'running' ? messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded : 0 }));
-  }, sessionState === 'running' ? 1000 : false);
+    setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }));
+  }, 1000);
 
   useInterval(() => {
     if (messagesBuffer.current.length === 0) {
@@ -251,6 +250,7 @@ const Session: React.FC<SessionProps> = (props) => {
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
+      req.setSubscriptionMode(SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE);
       req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 

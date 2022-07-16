@@ -7,8 +7,8 @@ package com.tools.teal.pulsar.ui.api.v1.consumer
 
 @SerialVersionUID(0L)
 final case class SkipMessagesRequest(
-    topic: _root_.scala.Predef.String = "",
-    subscription: _root_.scala.Predef.String = "",
+    consumerName: _root_.scala.Predef.String = "",
+    subscriptionName: _root_.scala.Predef.String = "",
     count: _root_.scala.Long = 0L,
     unknownFields: _root_.scalapb.UnknownFieldSet = _root_.scalapb.UnknownFieldSet.empty
     ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[SkipMessagesRequest] {
@@ -18,14 +18,14 @@ final case class SkipMessagesRequest(
       var __size = 0
       
       {
-        val __value = topic
+        val __value = consumerName
         if (!__value.isEmpty) {
           __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(1, __value)
         }
       };
       
       {
-        val __value = subscription
+        val __value = subscriptionName
         if (!__value.isEmpty) {
           __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(2, __value)
         }
@@ -51,13 +51,13 @@ final case class SkipMessagesRequest(
     }
     def writeTo(`_output__`: _root_.com.google.protobuf.CodedOutputStream): _root_.scala.Unit = {
       {
-        val __v = topic
+        val __v = consumerName
         if (!__v.isEmpty) {
           _output__.writeString(1, __v)
         }
       };
       {
-        val __v = subscription
+        val __v = subscriptionName
         if (!__v.isEmpty) {
           _output__.writeString(2, __v)
         }
@@ -70,19 +70,19 @@ final case class SkipMessagesRequest(
       };
       unknownFields.writeTo(_output__)
     }
-    def withTopic(__v: _root_.scala.Predef.String): SkipMessagesRequest = copy(topic = __v)
-    def withSubscription(__v: _root_.scala.Predef.String): SkipMessagesRequest = copy(subscription = __v)
+    def withConsumerName(__v: _root_.scala.Predef.String): SkipMessagesRequest = copy(consumerName = __v)
+    def withSubscriptionName(__v: _root_.scala.Predef.String): SkipMessagesRequest = copy(subscriptionName = __v)
     def withCount(__v: _root_.scala.Long): SkipMessagesRequest = copy(count = __v)
     def withUnknownFields(__v: _root_.scalapb.UnknownFieldSet) = copy(unknownFields = __v)
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
       (__fieldNumber: @_root_.scala.unchecked) match {
         case 1 => {
-          val __t = topic
+          val __t = consumerName
           if (__t != "") __t else null
         }
         case 2 => {
-          val __t = subscription
+          val __t = subscriptionName
           if (__t != "") __t else null
         }
         case 3 => {
@@ -94,8 +94,8 @@ final case class SkipMessagesRequest(
     def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
       _root_.scala.Predef.require(__field.containingMessage eq companion.scalaDescriptor)
       (__field.number: @_root_.scala.unchecked) match {
-        case 1 => _root_.scalapb.descriptors.PString(topic)
-        case 2 => _root_.scalapb.descriptors.PString(subscription)
+        case 1 => _root_.scalapb.descriptors.PString(consumerName)
+        case 2 => _root_.scalapb.descriptors.PString(subscriptionName)
         case 3 => _root_.scalapb.descriptors.PLong(count)
       }
     }
@@ -107,8 +107,8 @@ final case class SkipMessagesRequest(
 object SkipMessagesRequest extends scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest] {
   implicit def messageCompanion: scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest] = this
   def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest = {
-    var __topic: _root_.scala.Predef.String = ""
-    var __subscription: _root_.scala.Predef.String = ""
+    var __consumerName: _root_.scala.Predef.String = ""
+    var __subscriptionName: _root_.scala.Predef.String = ""
     var __count: _root_.scala.Long = 0L
     var `_unknownFields__`: _root_.scalapb.UnknownFieldSet.Builder = null
     var _done__ = false
@@ -117,9 +117,9 @@ object SkipMessagesRequest extends scalapb.GeneratedMessageCompanion[com.tools.t
       _tag__ match {
         case 0 => _done__ = true
         case 10 =>
-          __topic = _input__.readStringRequireUtf8()
+          __consumerName = _input__.readStringRequireUtf8()
         case 18 =>
-          __subscription = _input__.readStringRequireUtf8()
+          __subscriptionName = _input__.readStringRequireUtf8()
         case 24 =>
           __count = _input__.readInt64()
         case tag =>
@@ -130,8 +130,8 @@ object SkipMessagesRequest extends scalapb.GeneratedMessageCompanion[com.tools.t
       }
     }
     com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest(
-        topic = __topic,
-        subscription = __subscription,
+        consumerName = __consumerName,
+        subscriptionName = __subscriptionName,
         count = __count,
         unknownFields = if (_unknownFields__ == null) _root_.scalapb.UnknownFieldSet.empty else _unknownFields__.result()
     )
@@ -140,8 +140,8 @@ object SkipMessagesRequest extends scalapb.GeneratedMessageCompanion[com.tools.t
     case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
       com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest(
-        topic = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
-        subscription = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
+        consumerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
+        subscriptionName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
         count = __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).map(_.as[_root_.scala.Long]).getOrElse(0L)
       )
     case _ => throw new RuntimeException("Expected PMessage")
@@ -152,25 +152,25 @@ object SkipMessagesRequest extends scalapb.GeneratedMessageCompanion[com.tools.t
   lazy val nestedMessagesCompanions: Seq[_root_.scalapb.GeneratedMessageCompanion[_ <: _root_.scalapb.GeneratedMessage]] = Seq.empty
   def enumCompanionForFieldNumber(__fieldNumber: _root_.scala.Int): _root_.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
   lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest(
-    topic = "",
-    subscription = "",
+    consumerName = "",
+    subscriptionName = "",
     count = 0L
   )
   implicit class SkipMessagesRequestLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest](_l) {
-    def topic: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.topic)((c_, f_) => c_.copy(topic = f_))
-    def subscription: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.subscription)((c_, f_) => c_.copy(subscription = f_))
+    def consumerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.consumerName)((c_, f_) => c_.copy(consumerName = f_))
+    def subscriptionName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.subscriptionName)((c_, f_) => c_.copy(subscriptionName = f_))
     def count: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Long] = field(_.count)((c_, f_) => c_.copy(count = f_))
   }
-  final val TOPIC_FIELD_NUMBER = 1
-  final val SUBSCRIPTION_FIELD_NUMBER = 2
+  final val CONSUMER_NAME_FIELD_NUMBER = 1
+  final val SUBSCRIPTION_NAME_FIELD_NUMBER = 2
   final val COUNT_FIELD_NUMBER = 3
   def of(
-    topic: _root_.scala.Predef.String,
-    subscription: _root_.scala.Predef.String,
+    consumerName: _root_.scala.Predef.String,
+    subscriptionName: _root_.scala.Predef.String,
     count: _root_.scala.Long
   ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.SkipMessagesRequest(
-    topic,
-    subscription,
+    consumerName,
+    subscriptionName,
     count
   )
   // @@protoc_insertion_point(GeneratedMessageCompanion[tools.teal.pulsar.ui.api.v1.SkipMessagesRequest])
