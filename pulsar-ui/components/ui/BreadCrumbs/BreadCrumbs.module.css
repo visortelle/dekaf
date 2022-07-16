@@ -1,5 +1,7 @@
 .BreadCrumbs {
   display: flex;
+  position: relative;
+  padding-right: 48rem; /* For copy path button */
 }
 
 .Crumb {
@@ -39,4 +41,27 @@
 
 .BreadCrumbsAtPageTop {
   border-bottom: 1rem solid #ddd;
+}
+
+.CopyNameButton {
+  position: absolute;
+  top: 0;
+  right: 12rem;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.CopyNameButton button {
+  width: 24rem;
+  height: 24rem;
+  border: 1px solid var(--text-color);
+  box-shadow: none;
+}
+
+.CopyNameButton svg {
+  fill: var(--text-color);
+  width: 16rem;
+  height: 16rem;
 }

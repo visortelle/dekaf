@@ -1,31 +1,24 @@
 package consumer
 
-import org.apache.pulsar.client.api.{Consumer, MessageListener}
+import org.apache.pulsar.client.api.{BatchReceivePolicy, Consumer, ConsumerBuilder, MessageListener, RegexSubscriptionMode, SubscriptionInitialPosition, SubscriptionMode, SubscriptionType}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest
 import _root_.client.client
 import com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector
 import com.typesafe.scalalogging.Logger
-import org.apache.pulsar.client.api.{SubscriptionMode, SubscriptionType}
-import org.apache.pulsar.client.api.SubscriptionInitialPosition
-import org.apache.pulsar.client.api.RegexSubscriptionMode
 
 import scala.concurrent.duration.MILLISECONDS
-import org.apache.pulsar.client.api.ConsumerBuilder
-
 import scala.jdk.CollectionConverters.*
 
 def buildConsumer(
     consumerName: ConsumerName,
     request: CreateConsumerRequest,
     logger: Logger,
-    streamDataHandlers: Map[ConsumerName, StreamDataHandler]
+    streamDataHandler: StreamDataHandler
 ): Either[String, ConsumerBuilder[Array[Byte]]] =
     val listener: MessageListener[Array[Byte]] = (consumer, msg) =>
         logger.debug(s"Listener received a message. Consumer: $consumerName")
-        streamDataHandlers.get(consumerName) match
-            case Some(handler) => handler.onNext(msg)
-            case _             => ()
+        streamDataHandler.onNext(msg)
 
         if consumer.isConnected then consumer.acknowledge(msg)
 
