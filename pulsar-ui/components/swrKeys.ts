@@ -37,6 +37,14 @@ export const swrKeys = {
             namespace,
           ],
         },
+        topicsInternalStats: {
+          _: (topics: string[]) => [
+            "customApi",
+            "metrics",
+            "topicsInternalStats",
+            stringify(topics),
+          ]
+        }
       },
     },
     batch: {

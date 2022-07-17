@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
@@ -36,6 +36,7 @@ import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
 import { useAnimationFrame } from '../../app/hooks/use-animation-frame';
+import TopicsSubscriptionsCursors from '../../pulsar/topic/TopicsSubscriptionsCursors/TopicsSubscriptionsCursors';
 import dayjs from 'dayjs';
 
 const browser = detectBrowser();
@@ -69,8 +70,8 @@ type Defaults = {
 const defaults: Defaults = {
   sessionState: (): SessionState => 'new',
   sessionStateBeforeBlur: (): SessionState => 'new',
-  consumerName: () => '__xray_' + nanoid(),
-  subscriptionName: () => '__xray_' + nanoid(),
+  consumerName: () => '__xray_con_' + nanoid(),
+  subscriptionName: () => '__xray_sub_' + nanoid(),
   stream: () => undefined,
   streamRef: () => undefined,
   messagesLoaded: () => 0,
@@ -373,6 +374,12 @@ const Session: React.FC<SessionProps> = (props) => {
             followOutput={false}
           />
         </div>
+      )}
+
+      {props.config.topicsSelector.type === 'by-names' && (
+        <TopicsSubscriptionsCursors
+          selector={props.config.topicsSelector.topics.reduce((acc, topic) => ({ ...acc, [topic]: [subscriptionName] }), {})}
+        />
       )}
       {content === 'configuration' && (
         <SessionConfiguration
