@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import s from './SubscriptionsCursors.module.css'
 import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient'
 import * as Notifications from '../../../../app/contexts/Notifications'
@@ -21,7 +21,9 @@ type TopicCursorStats =
 type SubscriptionsCursorStats = Record<SubscriptionName, CursorStats>
 
 export type SubscriptionsCursorsProps = {
-  selector: CursorSelector
+  selector: CursorSelector;
+  isGetInitialCursorPositions: boolean; // Intended to correctly display current session range bar.
+  onGetInitialCursorPositions: () => void;
 };
 
 const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
@@ -37,12 +39,25 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
       req.setTopicsList(topics);
       return await topicServiceClient.getTopicsInternalStats(req, {});
     },
-    { refreshInterval: 1000 }
+    { refreshInterval: props.isGetInitialCursorPositions ? 200 : 1000 }
   );
 
   if (topicsInternalStatsError || (topicsInternalStats && topicsInternalStats?.getStatus()?.getCode() !== Code.OK)) {
     notifyError(`Unable to get topics internal stats. ${topicsInternalStatsError}`);
   }
+
+  useEffect(() => {
+    if (!props.isGetInitialCursorPositions && topicsInternalStats !== undefined) {
+      const gotInitialCursorsPositions = topicsInternalStats.toObject().statsMap.some(sm => {
+        const a = (sm[1].topicStats?.managedLedgerInternalStats?.cursorsMap?.length || 0) > 0;
+        const b = (sm[1].partitionedTopicStats?.partitionsMap.some(p => (p[1].managedLedgerInternalStats?.cursorsMap?.length || 0) > 0))
+        return a || b;
+      });
+      if (gotInitialCursorsPositions) {
+        props.onGetInitialCursorPositions();
+      }
+    }
+  }, [topicsInternalStats, props.isGetInitialCursorPositions]);
 
   const statsMapPb = topicsInternalStats?.getStatsMap();
 
@@ -107,7 +122,7 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
               <div className={s.TopicName}>
                 <strong>Topic: </strong>
                 {topicCursorStats.topic}
-                </div>
+              </div>
               <div className={s.TopicCursors}>
                 {Object.keys(topicCursorStats.subscriptions).length === 0 && (<div className={s.NoSubscriptions}>-</div>)}
                 {Object.keys(topicCursorStats.subscriptions).map(subscriptionName => {
