@@ -62,28 +62,24 @@ message CursorStats {
   optional bool subscription_have_pending_read = 13;
   optional bool subscription_have_pending_replay_read = 14;
   map<string, int64> properties = 15;
-
 }
 
-message GetTopicInternalStatsRequest {
-  optional string topic = 1;
+message TopicInternalStats {
+  oneof stats {
+    PersistentTopicInternalStats topic_stats = 2;
+    PartitionedTopicInternalStats partitioned_topic_stats = 3;
+  }
 }
 
-message GetTopicInternalStatsResponse {
+message GetTopicsInternalStatsRequest {
+  repeated string topics = 1;
+}
+
+message GetTopicsInternalStatsResponse {
   google.rpc.Status status = 1;
-  optional PartitionedTopicInternalStats stats = 2;
-}
-
-message GetPartitionedTopicInternalStatsRequest {
-  optional string topic = 1;
-}
-
-message GetPartitionedTopicInternalStatsResponse {
-  google.rpc.Status status = 1;
-  optional PartitionedTopicInternalStats stats = 2;
+  map<string, TopicInternalStats> stats = 2;
 }
 
 service TopicService {
-  rpc GetTopicInternalStats(GetTopicInternalStatsRequest) returns (GetTopicInternalStatsResponse);
-  rpc GetPartitionedTopicInternalStats(GetPartitionedTopicInternalStatsRequest) returns (GetPartitionedTopicInternalStatsResponse);
+  rpc GetTopicsInternalStats(GetTopicsInternalStatsRequest) returns (GetTopicsInternalStatsResponse);
 }

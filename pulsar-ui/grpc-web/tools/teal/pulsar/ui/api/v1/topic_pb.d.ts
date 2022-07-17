@@ -495,115 +495,81 @@ export namespace CursorStats {
   }
 }
 
-export class GetTopicInternalStatsRequest extends jspb.Message {
-  getTopic(): string;
-  setTopic(value: string): GetTopicInternalStatsRequest;
-  hasTopic(): boolean;
-  clearTopic(): GetTopicInternalStatsRequest;
+export class TopicInternalStats extends jspb.Message {
+  getTopicStats(): PersistentTopicInternalStats | undefined;
+  setTopicStats(value?: PersistentTopicInternalStats): TopicInternalStats;
+  hasTopicStats(): boolean;
+  clearTopicStats(): TopicInternalStats;
+
+  getPartitionedTopicStats(): PartitionedTopicInternalStats | undefined;
+  setPartitionedTopicStats(value?: PartitionedTopicInternalStats): TopicInternalStats;
+  hasPartitionedTopicStats(): boolean;
+  clearPartitionedTopicStats(): TopicInternalStats;
+
+  getStatsCase(): TopicInternalStats.StatsCase;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetTopicInternalStatsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetTopicInternalStatsRequest): GetTopicInternalStatsRequest.AsObject;
-  static serializeBinaryToWriter(message: GetTopicInternalStatsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetTopicInternalStatsRequest;
-  static deserializeBinaryFromReader(message: GetTopicInternalStatsRequest, reader: jspb.BinaryReader): GetTopicInternalStatsRequest;
+  toObject(includeInstance?: boolean): TopicInternalStats.AsObject;
+  static toObject(includeInstance: boolean, msg: TopicInternalStats): TopicInternalStats.AsObject;
+  static serializeBinaryToWriter(message: TopicInternalStats, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TopicInternalStats;
+  static deserializeBinaryFromReader(message: TopicInternalStats, reader: jspb.BinaryReader): TopicInternalStats;
 }
 
-export namespace GetTopicInternalStatsRequest {
+export namespace TopicInternalStats {
   export type AsObject = {
-    topic?: string,
-  }
-
-  export enum TopicCase { 
-    _TOPIC_NOT_SET = 0,
-    TOPIC = 1,
-  }
-}
-
-export class GetTopicInternalStatsResponse extends jspb.Message {
-  getStatus(): google_rpc_status_pb.Status | undefined;
-  setStatus(value?: google_rpc_status_pb.Status): GetTopicInternalStatsResponse;
-  hasStatus(): boolean;
-  clearStatus(): GetTopicInternalStatsResponse;
-
-  getStats(): PartitionedTopicInternalStats | undefined;
-  setStats(value?: PartitionedTopicInternalStats): GetTopicInternalStatsResponse;
-  hasStats(): boolean;
-  clearStats(): GetTopicInternalStatsResponse;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetTopicInternalStatsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: GetTopicInternalStatsResponse): GetTopicInternalStatsResponse.AsObject;
-  static serializeBinaryToWriter(message: GetTopicInternalStatsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetTopicInternalStatsResponse;
-  static deserializeBinaryFromReader(message: GetTopicInternalStatsResponse, reader: jspb.BinaryReader): GetTopicInternalStatsResponse;
-}
-
-export namespace GetTopicInternalStatsResponse {
-  export type AsObject = {
-    status?: google_rpc_status_pb.Status.AsObject,
-    stats?: PartitionedTopicInternalStats.AsObject,
+    topicStats?: PersistentTopicInternalStats.AsObject,
+    partitionedTopicStats?: PartitionedTopicInternalStats.AsObject,
   }
 
   export enum StatsCase { 
-    _STATS_NOT_SET = 0,
-    STATS = 2,
+    STATS_NOT_SET = 0,
+    TOPIC_STATS = 2,
+    PARTITIONED_TOPIC_STATS = 3,
   }
 }
 
-export class GetPartitionedTopicInternalStatsRequest extends jspb.Message {
-  getTopic(): string;
-  setTopic(value: string): GetPartitionedTopicInternalStatsRequest;
-  hasTopic(): boolean;
-  clearTopic(): GetPartitionedTopicInternalStatsRequest;
+export class GetTopicsInternalStatsRequest extends jspb.Message {
+  getTopicsList(): Array<string>;
+  setTopicsList(value: Array<string>): GetTopicsInternalStatsRequest;
+  clearTopicsList(): GetTopicsInternalStatsRequest;
+  addTopics(value: string, index?: number): GetTopicsInternalStatsRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetPartitionedTopicInternalStatsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetPartitionedTopicInternalStatsRequest): GetPartitionedTopicInternalStatsRequest.AsObject;
-  static serializeBinaryToWriter(message: GetPartitionedTopicInternalStatsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetPartitionedTopicInternalStatsRequest;
-  static deserializeBinaryFromReader(message: GetPartitionedTopicInternalStatsRequest, reader: jspb.BinaryReader): GetPartitionedTopicInternalStatsRequest;
+  toObject(includeInstance?: boolean): GetTopicsInternalStatsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetTopicsInternalStatsRequest): GetTopicsInternalStatsRequest.AsObject;
+  static serializeBinaryToWriter(message: GetTopicsInternalStatsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetTopicsInternalStatsRequest;
+  static deserializeBinaryFromReader(message: GetTopicsInternalStatsRequest, reader: jspb.BinaryReader): GetTopicsInternalStatsRequest;
 }
 
-export namespace GetPartitionedTopicInternalStatsRequest {
+export namespace GetTopicsInternalStatsRequest {
   export type AsObject = {
-    topic?: string,
-  }
-
-  export enum TopicCase { 
-    _TOPIC_NOT_SET = 0,
-    TOPIC = 1,
+    topicsList: Array<string>,
   }
 }
 
-export class GetPartitionedTopicInternalStatsResponse extends jspb.Message {
+export class GetTopicsInternalStatsResponse extends jspb.Message {
   getStatus(): google_rpc_status_pb.Status | undefined;
-  setStatus(value?: google_rpc_status_pb.Status): GetPartitionedTopicInternalStatsResponse;
+  setStatus(value?: google_rpc_status_pb.Status): GetTopicsInternalStatsResponse;
   hasStatus(): boolean;
-  clearStatus(): GetPartitionedTopicInternalStatsResponse;
+  clearStatus(): GetTopicsInternalStatsResponse;
 
-  getStats(): PartitionedTopicInternalStats | undefined;
-  setStats(value?: PartitionedTopicInternalStats): GetPartitionedTopicInternalStatsResponse;
-  hasStats(): boolean;
-  clearStats(): GetPartitionedTopicInternalStatsResponse;
+  getStatsMap(): jspb.Map<string, TopicInternalStats>;
+  clearStatsMap(): GetTopicsInternalStatsResponse;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetPartitionedTopicInternalStatsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: GetPartitionedTopicInternalStatsResponse): GetPartitionedTopicInternalStatsResponse.AsObject;
-  static serializeBinaryToWriter(message: GetPartitionedTopicInternalStatsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetPartitionedTopicInternalStatsResponse;
-  static deserializeBinaryFromReader(message: GetPartitionedTopicInternalStatsResponse, reader: jspb.BinaryReader): GetPartitionedTopicInternalStatsResponse;
+  toObject(includeInstance?: boolean): GetTopicsInternalStatsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetTopicsInternalStatsResponse): GetTopicsInternalStatsResponse.AsObject;
+  static serializeBinaryToWriter(message: GetTopicsInternalStatsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetTopicsInternalStatsResponse;
+  static deserializeBinaryFromReader(message: GetTopicsInternalStatsResponse, reader: jspb.BinaryReader): GetTopicsInternalStatsResponse;
 }
 
-export namespace GetPartitionedTopicInternalStatsResponse {
+export namespace GetTopicsInternalStatsResponse {
   export type AsObject = {
     status?: google_rpc_status_pb.Status.AsObject,
-    stats?: PartitionedTopicInternalStats.AsObject,
-  }
-
-  export enum StatsCase { 
-    _STATS_NOT_SET = 0,
-    STATS = 2,
+    statsMap: Array<[string, TopicInternalStats.AsObject]>,
   }
 }
 
