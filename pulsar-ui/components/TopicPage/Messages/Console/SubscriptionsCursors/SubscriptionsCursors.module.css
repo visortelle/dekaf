@@ -1,0 +1,41 @@
+.SubscriptionsCursors {
+  overflow: auto;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+  flex: 1 1 auto;
+}
+
+.Topic {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 24rem;
+}
+
+.Topic:last-child {
+  border-bottom: none;
+}
+
+.TopicName {
+  padding: 8rem 12rem;
+}
+
+.Partition {
+  margin-bottom: 12rem;
+}
+
+.PartitionName {
+  padding: 8rem 12rem 0 12rem;
+  line-height: 1;
+}
+
+.SubscriptionComponent {
+  padding: 4rem 12rem;
+}
+
+.NoSubscriptions {
+  padding: 0 12rem;
+  color: #aaa;
+}
+
+.SubscriptionName {
+  margin-bottom: 2rem;
+}

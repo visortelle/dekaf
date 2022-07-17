@@ -1,0 +1,51 @@
+.Bar {
+  height: 8rem;
+  background-color: #ddd;
+  border-radius: 4rem;
+  position: relative;
+  margin-bottom: 12rem;
+}
+
+.NumberOfEntries {
+  position: absolute;
+  right: 0;
+  top: -6rem;
+  display: flex;
+  align-items: center;
+  transform: translate(0%, -100%);
+  line-height: 1;
+  display: inline-flex;
+}
+
+.ReadPosition,
+.MarkDeletePosition {
+  position: absolute;
+  width: 4rem;
+  height: 100%;
+  background-color: var(--accent-color-blue);
+  border-radius: 2rem;
+}
+
+.ReadPosition {
+  z-index: 1;
+}
+
+.ReadPositionValue,
+.MarkDeletePositionValue {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translate(0, 100%);
+}
+
+.MarkDeletePosition {
+  top: 0;
+  bottom: unset;
+  background-color: var(--accent-color-red);
+}
+
+.MarkDeletePositionValue {
+  bottom: unset;
+  top: 0;
+  color: var(--accent-color-red);
+}

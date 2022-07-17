@@ -36,7 +36,7 @@ import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
 import { useAnimationFrame } from '../../app/hooks/use-animation-frame';
-import TopicsSubscriptionsCursors from '../../pulsar/topic/TopicsSubscriptionsCursors/TopicsSubscriptionsCursors';
+import Console from './Console/Console';
 import dayjs from 'dayjs';
 
 const browser = detectBrowser();
@@ -145,7 +145,7 @@ const Session: React.FC<SessionProps> = (props) => {
         const status = res.getStatus();
         const code = status?.getCode();
         if (code === Code.INVALID_ARGUMENT) {
-          notifyError(`Unable to seek by messageId. Consumer: ${consumerName}. Please specify proper message id.`);
+          notifyError(`Unable to seek by messageId. Consumer: ${consumerName}. Please specify existing message id.`);
           props.onStopSession();
           return;
         }
@@ -376,17 +376,19 @@ const Session: React.FC<SessionProps> = (props) => {
         </div>
       )}
 
-      {props.config.topicsSelector.type === 'by-names' && (
-        <TopicsSubscriptionsCursors
-          selector={props.config.topicsSelector.topics.reduce((acc, topic) => ({ ...acc, [topic]: [subscriptionName] }), {})}
-        />
-      )}
       {content === 'configuration' && (
         <SessionConfiguration
           config={props.config}
           onConfigChange={props.onConfigChange}
         />
       )}
+
+      <div className={s.Console}>
+        <Console
+          sessionConfig={props.config}
+          sessionSubscriptionName={subscriptionName}
+        />
+      </div>
     </div>
   );
 }
