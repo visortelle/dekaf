@@ -1,103 +1,56 @@
+package topic
+
 import _root_.client.{adminClient, client}
-import org.apache.pulsar.common.policies.data.ManagedLedgerInternalStats.{CursorStats, LedgerInfo}
-import org.apache.pulsar.common.policies.data.{ManagedLedgerInternalStats, PartitionedTopicInternalStats, PersistentTopicInternalStats}
+import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import com.tools.teal.pulsar.ui.api.v1.topic as topicPb
-import org.apache.pulsar.common.partition.PartitionedTopicMetadata
 
-import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
+type TopicInternalStatsPb = topicPb.PersistentTopicInternalStats | topicPb.PartitionedTopicInternalStats
+def getTopicInternalStatsPb(topic: String): Either[String, TopicInternalStatsPb] =
+    getTopicType(topic) match
+        case Right(NonPartitionedTopic()) =>
+            getNonPartitionedTopicInternalStats(topic) match
+                case Right(stats) => Right(persistentTopicInternalStatsToPb(stats))
+                case _ => Left(s"Unable to get stats for topic: ${topic}")
+        case Right(PartitionedTopic()) =>
+            getPartitionedTopicInternalStats(topic) match
+                case Right(stats) => Right(partitionedTopicInternalStatsToPb(stats))
+                case _ => Left(s"Unable to get stats for topic: ${topic}")
+        case Left(error) => Left(error)
 
-//def getNonPartitionedTopicInternalStats(topic: String): Either[String, PersistentTopicInternalStats] =
-//    try {
-//        val stats = adminClient.topics.getInternalStats(topic)
-//        Right(stats)
-//    } catch {
-//        case err => Left(err.getMessage)
-//    }
-//
-//def getPartitionedTopicInternalStats(topic: String): Either[String, PartitionedTopicInternalStats] =
-//    try {
-//        val stats = adminClient.topics.getPartitionedInternalStats(topic)
-//        Right(stats)
-//    } catch {
-//        case err => Left(err.getMessage)
-//    }
+case class PartitionedTopic()
+case class NonPartitionedTopic()
+type TopicType =  Either[String, PartitionedTopic | NonPartitionedTopic]
+def getTopicType(topic: String): TopicType =
+    val isNonPartitioned = try {
+        adminClient.lookups().lookupTopic(topic)
+        true
+    } catch {
+        case _ => false
+    }
+    if isNonPartitioned then return Right(NonPartitionedTopic())
 
-//def persistentTopicInternalStatsToPb(stats: PersistentTopicInternalStats) =
-//    val cursors = Option(stats.cursors).map(_.asScala).getOrElse(Map.empty)
-//    cursors.get() match
-//        case Some(cursor) =>
-//            cursor.
-//        case _ => ()
+    val isPartitioned = try {
+        adminClient.lookups().lookupPartitionedTopic(topic)
+        true
+    } catch {
+        case _ => false
+    }
+    if isPartitioned then return Right(PartitionedTopic())
 
-//    ()
+    Left("Topic not found")
 
-def partitionedTopicInternalStatsToPb(stats: PartitionedTopicInternalStats): topicPb.PartitionedTopicInternalStats =
-    topicPb.PartitionedTopicInternalStats(
-      metadata = Option(stats.metadata).map(partitionedTopicMetadataToPb(_)),
-      partitions = Option(stats.partitions)
-          .map(_.asScala)
-          .getOrElse(Map.empty)
-          .toArray
-          .map(kv => (kv._1, persistentTopicInternalStatsToPb(kv._2)))
-          .toMap
-    )
+def getNonPartitionedTopicInternalStats(topic: String): Either[String, PersistentTopicInternalStats] =
+    try {
+        val stats = adminClient.topics.getInternalStats(topic)
+        Right(stats)
+    } catch {
+        case err => Left(err.getMessage)
+    }
 
-def partitionedTopicMetadataToPb(metadata: PartitionedTopicMetadata): topicPb.PartitionedTopicMetadata =
-    topicPb.PartitionedTopicMetadata(
-      partitions = Option(metadata.partitions),
-      properties = Option(metadata.properties).map(_.asScala.toMap).getOrElse(Map.empty)
-    )
-
-def persistentTopicInternalStatsToPb(stats: PersistentTopicInternalStats): topicPb.PersistentTopicInternalStats =
-    topicPb.PersistentTopicInternalStats(
-      managedLedgerInternalStats = Option(managedLedgerInternalStatsToPb(stats)),
-      schemaLedgers = Option(stats.schemaLedgers).map(_.asScala.toVector).getOrElse(Vector.empty).map(ledgerInfoToPb),
-      compactedLedger = Option(stats.compactedLedger).map(ledgerInfoToPb)
-    )
-
-def managedLedgerInternalStatsToPb(stats: ManagedLedgerInternalStats): topicPb.ManagedLedgerInternalStats =
-    topicPb.ManagedLedgerInternalStats(
-      entriesAddedCounter = Option(stats.entriesAddedCounter),
-      numberOfEntries = Option(stats.numberOfEntries),
-      totalSize = Option(stats.totalSize),
-      currentLedgerEntries = Option(stats.currentLedgerEntries),
-      currentLedgerSize = Option(stats.currentLedgerSize),
-      lastLedgerCreatedTimestamp = Option(stats.lastLedgerCreatedTimestamp),
-      lastLedgerCreationFailureTimestamp = Option(stats.lastLedgerCreationFailureTimestamp),
-      waitingCursorsCount = Option(stats.waitingCursorsCount),
-      pendingEntriesCount = Option(stats.pendingAddEntriesCount),
-      lastConfirmedEntry = Option(stats.lastConfirmedEntry),
-      state = Option(stats.state),
-      ledgers = Option(stats.ledgers).map(_.asScala.toVector).getOrElse(Vector.empty).map(ledgerInfoToPb),
-      cursors = Option(stats.cursors).map(_.asScala).getOrElse(Map.empty).toArray.map(kv => (kv._1, cursorStatsToPb(kv._2))).toMap
-    )
-
-def ledgerInfoToPb(info: LedgerInfo): topicPb.LedgerInfo =
-    topicPb.LedgerInfo(
-      ledgerId = Option(info.ledgerId),
-      entries = Option(info.entries),
-      size = Option(info.size),
-      offloaded = Option(info.offloaded),
-      metadata = Option(info.metadata),
-      underReplicated = Option(info.underReplicated)
-    )
-
-def cursorStatsToPb(cursor: CursorStats): topicPb.CursorStats =
-    topicPb.CursorStats(
-      markDeletePosition = Option(cursor.markDeletePosition),
-      readPosition = Option(cursor.readPosition),
-      waitingReadOp = Option(cursor.waitingReadOp),
-      pendingReadOps = Option(cursor.pendingReadOps),
-      messagesConsumedCounter = Option(cursor.messagesConsumedCounter),
-      cursorLedger = Option(cursor.cursorLedger),
-      cursorLedgerLastEntry = Option(cursor.cursorLedgerLastEntry),
-      individuallyDeletedMessages = Option(cursor.individuallyDeletedMessages),
-      lastLedgerSwitchTimestamp = Option(cursor.lastLedgerSwitchTimestamp),
-      state = Option(cursor.state),
-      numberOfEntriesSinceFirstNotAckedMessage = Option(cursor.numberOfEntriesSinceFirstNotAckedMessage),
-      totalNonContiguousDeletedMessagesRange = Option(cursor.totalNonContiguousDeletedMessagesRange),
-      subscriptionHavePendingRead = Option(cursor.subscriptionHavePendingRead),
-      subscriptionHavePendingReplayRead = Option(cursor.subscriptionHavePendingReplayRead),
-      properties = Option(cursor.properties).map(_.asScala.toMap).getOrElse(Map.empty).toArray.map(kv => (kv._1, kv._2.toLong)).toMap
-    )
+def getPartitionedTopicInternalStats(topic: String): Either[String, PartitionedTopicInternalStats] =
+    try {
+        val stats = adminClient.topics.getPartitionedInternalStats(topic)
+        Right(stats)
+    } catch {
+        case err => Left(err.getMessage)
+    }

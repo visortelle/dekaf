@@ -7,37 +7,25 @@ package com.tools.teal.pulsar.ui.api.v1.topic
 
 
 object TopicServiceGrpc {
-  val METHOD_GET_TOPIC_INTERNAL_STATS: _root_.io.grpc.MethodDescriptor[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsRequest, com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsResponse] =
+  val METHOD_GET_TOPICS_INTERNAL_STATS: _root_.io.grpc.MethodDescriptor[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsRequest, com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsResponse] =
     _root_.io.grpc.MethodDescriptor.newBuilder()
       .setType(_root_.io.grpc.MethodDescriptor.MethodType.UNARY)
-      .setFullMethodName(_root_.io.grpc.MethodDescriptor.generateFullMethodName("tools.teal.pulsar.ui.api.v1.TopicService", "GetTopicInternalStats"))
+      .setFullMethodName(_root_.io.grpc.MethodDescriptor.generateFullMethodName("tools.teal.pulsar.ui.api.v1.TopicService", "GetTopicsInternalStats"))
       .setSampledToLocalTracing(true)
-      .setRequestMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsRequest])
-      .setResponseMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsResponse])
+      .setRequestMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsRequest])
+      .setResponseMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsResponse])
       .setSchemaDescriptor(_root_.scalapb.grpc.ConcreteProtoMethodDescriptorSupplier.fromMethodDescriptor(com.tools.teal.pulsar.ui.api.v1.topic.TopicProto.javaDescriptor.getServices().get(0).getMethods().get(0)))
-      .build()
-  
-  val METHOD_GET_PARTITIONED_TOPIC_INTERNAL_STATS: _root_.io.grpc.MethodDescriptor[com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsRequest, com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsResponse] =
-    _root_.io.grpc.MethodDescriptor.newBuilder()
-      .setType(_root_.io.grpc.MethodDescriptor.MethodType.UNARY)
-      .setFullMethodName(_root_.io.grpc.MethodDescriptor.generateFullMethodName("tools.teal.pulsar.ui.api.v1.TopicService", "GetPartitionedTopicInternalStats"))
-      .setSampledToLocalTracing(true)
-      .setRequestMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsRequest])
-      .setResponseMarshaller(_root_.scalapb.grpc.Marshaller.forMessage[com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsResponse])
-      .setSchemaDescriptor(_root_.scalapb.grpc.ConcreteProtoMethodDescriptorSupplier.fromMethodDescriptor(com.tools.teal.pulsar.ui.api.v1.topic.TopicProto.javaDescriptor.getServices().get(0).getMethods().get(1)))
       .build()
   
   val SERVICE: _root_.io.grpc.ServiceDescriptor =
     _root_.io.grpc.ServiceDescriptor.newBuilder("tools.teal.pulsar.ui.api.v1.TopicService")
       .setSchemaDescriptor(new _root_.scalapb.grpc.ConcreteProtoFileDescriptorSupplier(com.tools.teal.pulsar.ui.api.v1.topic.TopicProto.javaDescriptor))
-      .addMethod(METHOD_GET_TOPIC_INTERNAL_STATS)
-      .addMethod(METHOD_GET_PARTITIONED_TOPIC_INTERNAL_STATS)
+      .addMethod(METHOD_GET_TOPICS_INTERNAL_STATS)
       .build()
   
   trait TopicService extends _root_.scalapb.grpc.AbstractService {
     override def serviceCompanion = TopicService
-    def getTopicInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsResponse]
-    def getPartitionedTopicInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsResponse]
+    def getTopicsInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsResponse]
   }
   
   object TopicService extends _root_.scalapb.grpc.ServiceCompanion[TopicService] {
@@ -47,17 +35,10 @@ object TopicServiceGrpc {
     def bindService(serviceImpl: TopicService, executionContext: scala.concurrent.ExecutionContext): _root_.io.grpc.ServerServiceDefinition =
       _root_.io.grpc.ServerServiceDefinition.builder(SERVICE)
       .addMethod(
-        METHOD_GET_TOPIC_INTERNAL_STATS,
-        _root_.io.grpc.stub.ServerCalls.asyncUnaryCall(new _root_.io.grpc.stub.ServerCalls.UnaryMethod[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsRequest, com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsResponse] {
-          override def invoke(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsRequest, observer: _root_.io.grpc.stub.StreamObserver[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsResponse]): _root_.scala.Unit =
-            serviceImpl.getTopicInternalStats(request).onComplete(scalapb.grpc.Grpc.completeObserver(observer))(
-              executionContext)
-        }))
-      .addMethod(
-        METHOD_GET_PARTITIONED_TOPIC_INTERNAL_STATS,
-        _root_.io.grpc.stub.ServerCalls.asyncUnaryCall(new _root_.io.grpc.stub.ServerCalls.UnaryMethod[com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsRequest, com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsResponse] {
-          override def invoke(request: com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsRequest, observer: _root_.io.grpc.stub.StreamObserver[com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsResponse]): _root_.scala.Unit =
-            serviceImpl.getPartitionedTopicInternalStats(request).onComplete(scalapb.grpc.Grpc.completeObserver(observer))(
+        METHOD_GET_TOPICS_INTERNAL_STATS,
+        _root_.io.grpc.stub.ServerCalls.asyncUnaryCall(new _root_.io.grpc.stub.ServerCalls.UnaryMethod[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsRequest, com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsResponse] {
+          override def invoke(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsRequest, observer: _root_.io.grpc.stub.StreamObserver[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsResponse]): _root_.scala.Unit =
+            serviceImpl.getTopicsInternalStats(request).onComplete(scalapb.grpc.Grpc.completeObserver(observer))(
               executionContext)
         }))
       .build()
@@ -65,29 +46,20 @@ object TopicServiceGrpc {
   
   trait TopicServiceBlockingClient {
     def serviceCompanion = TopicService
-    def getTopicInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsRequest): com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsResponse
-    def getPartitionedTopicInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsRequest): com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsResponse
+    def getTopicsInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsRequest): com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsResponse
   }
   
   class TopicServiceBlockingStub(channel: _root_.io.grpc.Channel, options: _root_.io.grpc.CallOptions = _root_.io.grpc.CallOptions.DEFAULT) extends _root_.io.grpc.stub.AbstractStub[TopicServiceBlockingStub](channel, options) with TopicServiceBlockingClient {
-    override def getTopicInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsRequest): com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsResponse = {
-      _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_GET_TOPIC_INTERNAL_STATS, options, request)
-    }
-    
-    override def getPartitionedTopicInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsRequest): com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsResponse = {
-      _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_GET_PARTITIONED_TOPIC_INTERNAL_STATS, options, request)
+    override def getTopicsInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsRequest): com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsResponse = {
+      _root_.scalapb.grpc.ClientCalls.blockingUnaryCall(channel, METHOD_GET_TOPICS_INTERNAL_STATS, options, request)
     }
     
     override def build(channel: _root_.io.grpc.Channel, options: _root_.io.grpc.CallOptions): TopicServiceBlockingStub = new TopicServiceBlockingStub(channel, options)
   }
   
   class TopicServiceStub(channel: _root_.io.grpc.Channel, options: _root_.io.grpc.CallOptions = _root_.io.grpc.CallOptions.DEFAULT) extends _root_.io.grpc.stub.AbstractStub[TopicServiceStub](channel, options) with TopicService {
-    override def getTopicInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicInternalStatsResponse] = {
-      _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_GET_TOPIC_INTERNAL_STATS, options, request)
-    }
-    
-    override def getPartitionedTopicInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.topic.GetPartitionedTopicInternalStatsResponse] = {
-      _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_GET_PARTITIONED_TOPIC_INTERNAL_STATS, options, request)
+    override def getTopicsInternalStats(request: com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsRequest): scala.concurrent.Future[com.tools.teal.pulsar.ui.api.v1.topic.GetTopicsInternalStatsResponse] = {
+      _root_.scalapb.grpc.ClientCalls.asyncUnaryCall(channel, METHOD_GET_TOPICS_INTERNAL_STATS, options, request)
     }
     
     override def build(channel: _root_.io.grpc.Channel, options: _root_.io.grpc.CallOptions): TopicServiceStub = new TopicServiceStub(channel, options)
