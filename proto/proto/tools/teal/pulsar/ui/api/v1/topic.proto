@@ -34,7 +34,6 @@ message ManagedLedgerInternalStats {
   optional string state = 11;
   repeated LedgerInfo ledgers = 12;
   map<string, CursorStats> cursors = 13;
-
 }
 
 message LedgerInfo {

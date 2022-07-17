@@ -5,10 +5,15 @@
   overflow: hidden;
   border-bottom: 1rem solid #ddd;
   margin-bottom: 8rem;
+  position: relative;
 }
 
 .List {
   font-size: 14rem;
   flex: 1 1 auto;
   overflow: auto;
+}
+
+.Console {
+ 
 }
