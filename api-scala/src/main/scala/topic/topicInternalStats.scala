@@ -7,35 +7,40 @@ import com.tools.teal.pulsar.ui.api.v1.topic as topicPb
 type TopicInternalStatsPb = topicPb.PersistentTopicInternalStats | topicPb.PartitionedTopicInternalStats
 def getTopicInternalStatsPb(topic: String): Either[String, TopicInternalStatsPb] =
     getTopicType(topic) match
-        case Right(NonPartitionedTopic()) =>
+        case Right(_: NonPartitionedTopic) =>
             getNonPartitionedTopicInternalStats(topic) match
                 case Right(stats) => Right(persistentTopicInternalStatsToPb(stats))
-                case _ => Left(s"Unable to get stats for topic: ${topic}")
-        case Right(PartitionedTopic()) =>
+                case _            => Left(s"Unable to get stats for topic: $topic")
+        case Right(_: PartitionedTopic) =>
             getPartitionedTopicInternalStats(topic) match
                 case Right(stats) => Right(partitionedTopicInternalStatsToPb(stats))
-                case _ => Left(s"Unable to get stats for topic: ${topic}")
+                case _            => Left(s"Unable to get stats for topic: $topic")
         case Left(error) => Left(error)
 
 case class PartitionedTopic()
 case class NonPartitionedTopic()
-type TopicType =  Either[String, PartitionedTopic | NonPartitionedTopic]
+type TopicType = Either[String, PartitionedTopic | NonPartitionedTopic]
 def getTopicType(topic: String): TopicType =
-    val isNonPartitioned = try {
-        adminClient.lookups().lookupTopic(topic)
-        true
-    } catch {
-        case _ => false
-    }
-    if isNonPartitioned then return Right(NonPartitionedTopic())
+    // XXX - Pulsar admin .lookup() is truthy both for partitioned and non-partitioned topics.
+    // Therefore, the of lookups matters here.
 
-    val isPartitioned = try {
-        adminClient.lookups().lookupPartitionedTopic(topic)
-        true
-    } catch {
-        case _ => false
-    }
+    val isPartitioned =
+        try {
+            adminClient.lookups().lookupPartitionedTopic(topic)
+            true
+        } catch {
+            case _ => false
+        }
     if isPartitioned then return Right(PartitionedTopic())
+
+    val isNonPartitioned =
+        try {
+            val b = adminClient.lookups().lookupTopic(topic)
+            true
+        } catch {
+            case _ => false
+        }
+    if isNonPartitioned then return Right(NonPartitionedTopic())
 
     Left("Topic not found")
 
