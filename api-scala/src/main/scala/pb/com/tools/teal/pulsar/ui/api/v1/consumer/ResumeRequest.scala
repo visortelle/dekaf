@@ -8,6 +8,7 @@ package com.tools.teal.pulsar.ui.api.v1.consumer
 @SerialVersionUID(0L)
 final case class ResumeRequest(
     consumerName: _root_.scala.Predef.String = "",
+    includeConsumerStats: _root_.scala.Boolean = false,
     unknownFields: _root_.scalapb.UnknownFieldSet = _root_.scalapb.UnknownFieldSet.empty
     ) extends scalapb.GeneratedMessage with scalapb.lenses.Updatable[ResumeRequest] {
     @transient
@@ -19,6 +20,13 @@ final case class ResumeRequest(
         val __value = consumerName
         if (!__value.isEmpty) {
           __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(1, __value)
+        }
+      };
+      
+      {
+        val __value = includeConsumerStats
+        if (__value != false) {
+          __size += _root_.com.google.protobuf.CodedOutputStream.computeBoolSize(2, __value)
         }
       };
       __size += unknownFields.serializedSize
@@ -40,9 +48,16 @@ final case class ResumeRequest(
           _output__.writeString(1, __v)
         }
       };
+      {
+        val __v = includeConsumerStats
+        if (__v != false) {
+          _output__.writeBool(2, __v)
+        }
+      };
       unknownFields.writeTo(_output__)
     }
     def withConsumerName(__v: _root_.scala.Predef.String): ResumeRequest = copy(consumerName = __v)
+    def withIncludeConsumerStats(__v: _root_.scala.Boolean): ResumeRequest = copy(includeConsumerStats = __v)
     def withUnknownFields(__v: _root_.scalapb.UnknownFieldSet) = copy(unknownFields = __v)
     def discardUnknownFields = copy(unknownFields = _root_.scalapb.UnknownFieldSet.empty)
     def getFieldByNumber(__fieldNumber: _root_.scala.Int): _root_.scala.Any = {
@@ -51,12 +66,17 @@ final case class ResumeRequest(
           val __t = consumerName
           if (__t != "") __t else null
         }
+        case 2 => {
+          val __t = includeConsumerStats
+          if (__t != false) __t else null
+        }
       }
     }
     def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
       _root_.scala.Predef.require(__field.containingMessage eq companion.scalaDescriptor)
       (__field.number: @_root_.scala.unchecked) match {
         case 1 => _root_.scalapb.descriptors.PString(consumerName)
+        case 2 => _root_.scalapb.descriptors.PBoolean(includeConsumerStats)
       }
     }
     def toProtoString: _root_.scala.Predef.String = _root_.scalapb.TextFormat.printToUnicodeString(this)
@@ -68,6 +88,7 @@ object ResumeRequest extends scalapb.GeneratedMessageCompanion[com.tools.teal.pu
   implicit def messageCompanion: scalapb.GeneratedMessageCompanion[com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest] = this
   def parseFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest = {
     var __consumerName: _root_.scala.Predef.String = ""
+    var __includeConsumerStats: _root_.scala.Boolean = false
     var `_unknownFields__`: _root_.scalapb.UnknownFieldSet.Builder = null
     var _done__ = false
     while (!_done__) {
@@ -76,6 +97,8 @@ object ResumeRequest extends scalapb.GeneratedMessageCompanion[com.tools.teal.pu
         case 0 => _done__ = true
         case 10 =>
           __consumerName = _input__.readStringRequireUtf8()
+        case 16 =>
+          __includeConsumerStats = _input__.readBool()
         case tag =>
           if (_unknownFields__ == null) {
             _unknownFields__ = new _root_.scalapb.UnknownFieldSet.Builder()
@@ -85,6 +108,7 @@ object ResumeRequest extends scalapb.GeneratedMessageCompanion[com.tools.teal.pu
     }
     com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest(
         consumerName = __consumerName,
+        includeConsumerStats = __includeConsumerStats,
         unknownFields = if (_unknownFields__ == null) _root_.scalapb.UnknownFieldSet.empty else _unknownFields__.result()
     )
   }
@@ -92,7 +116,8 @@ object ResumeRequest extends scalapb.GeneratedMessageCompanion[com.tools.teal.pu
     case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
       _root_.scala.Predef.require(__fieldsMap.keys.forall(_.containingMessage eq scalaDescriptor), "FieldDescriptor does not match message type.")
       com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest(
-        consumerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).map(_.as[_root_.scala.Predef.String]).getOrElse("")
+        consumerName = __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).map(_.as[_root_.scala.Predef.String]).getOrElse(""),
+        includeConsumerStats = __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.scala.Boolean]).getOrElse(false)
       )
     case _ => throw new RuntimeException("Expected PMessage")
   }
@@ -102,16 +127,21 @@ object ResumeRequest extends scalapb.GeneratedMessageCompanion[com.tools.teal.pu
   lazy val nestedMessagesCompanions: Seq[_root_.scalapb.GeneratedMessageCompanion[_ <: _root_.scalapb.GeneratedMessage]] = Seq.empty
   def enumCompanionForFieldNumber(__fieldNumber: _root_.scala.Int): _root_.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
   lazy val defaultInstance = com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest(
-    consumerName = ""
+    consumerName = "",
+    includeConsumerStats = false
   )
   implicit class ResumeRequestLens[UpperPB](_l: _root_.scalapb.lenses.Lens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest]) extends _root_.scalapb.lenses.ObjectLens[UpperPB, com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest](_l) {
     def consumerName: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Predef.String] = field(_.consumerName)((c_, f_) => c_.copy(consumerName = f_))
+    def includeConsumerStats: _root_.scalapb.lenses.Lens[UpperPB, _root_.scala.Boolean] = field(_.includeConsumerStats)((c_, f_) => c_.copy(includeConsumerStats = f_))
   }
   final val CONSUMER_NAME_FIELD_NUMBER = 1
+  final val INCLUDE_CONSUMER_STATS_FIELD_NUMBER = 2
   def of(
-    consumerName: _root_.scala.Predef.String
+    consumerName: _root_.scala.Predef.String,
+    includeConsumerStats: _root_.scala.Boolean
   ): _root_.com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest = _root_.com.tools.teal.pulsar.ui.api.v1.consumer.ResumeRequest(
-    consumerName
+    consumerName,
+    includeConsumerStats
   )
   // @@protoc_insertion_point(GeneratedMessageCompanion[tools.teal.pulsar.ui.api.v1.ResumeRequest])
 }

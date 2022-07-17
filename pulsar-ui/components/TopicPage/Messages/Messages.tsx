@@ -120,10 +120,10 @@ const Session: React.FC<SessionProps> = (props) => {
       messagesBuffer.current = [];
       return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
     });
-  }, sessionState === 'running' ? (isSlowBrowser && messagesLoadedPerSecond.messagesLoadedPerSecond > 1000) ? 500 : (messagesLoadedPerSecond.messagesLoadedPerSecond > 3000 ? 500 : 32) : false);
+  }, messagesLoadedPerSecond.messagesLoadedPerSecond > 0 ? (isSlowBrowser && messagesLoadedPerSecond.messagesLoadedPerSecond > 1000) ? 500 : (messagesLoadedPerSecond.messagesLoadedPerSecond > 3000 ? 500 : 32) : false);
 
   useAnimationFrame(() => {
-    if (sessionState === 'running') {
+    if (messagesLoadedPerSecond.messagesLoadedPerSecond > 0) {
       scrollToBottom();
     }
   });
