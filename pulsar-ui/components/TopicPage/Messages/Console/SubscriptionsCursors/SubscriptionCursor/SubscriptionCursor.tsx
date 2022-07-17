@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './SubscriptionCursor.module.css';
 
 type LedgerInfo = {
@@ -45,11 +45,24 @@ export type SubscriptionCursorProps = {
 }
 
 const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
+  const [sessionStart, setSessionStart] = React.useState<number>();
+  const [sessionAt, setSessionAt] = React.useState<number>();
+
+  useEffect(() => {
+    if (sessionStart === undefined && props.cursor.readPosition) {
+      setSessionStart(Number(props.cursor.readPosition.split(':')[1]));
+    }
+    setSessionAt(Number(props.cursor.readPosition.split(':')[1]));
+  }, [props.cursor]);
+
   const numberOfEntries = props.managedLedgerInternalStats.numberOfEntries;
   const readPosition = Number(props.cursor.readPosition.split(':')[1]);
   const readPositionPercent = readPosition / (numberOfEntries / 100);
   const markDeletePosition = Number(props.cursor.markDeletePosition.split(':')[1]);
   const markDeletePositionPercent = markDeletePosition / (numberOfEntries / 100);
+
+  const sessionStartPercentage = sessionStart === undefined ? 0 : sessionStart / (numberOfEntries / 100);
+  const sessionAtPercentage = sessionAt === undefined ? 0 : sessionAt / (numberOfEntries / 100);
 
   return (
     <div className={s.SubscriptionCursor}>
@@ -61,6 +74,11 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
           <div className={s.MarkDeletePositionValue} style={{ left: markDeletePositionPercent < 50 ? 0 : 'unset' }}>{markDeletePosition}</div>
         </div>
         <div className={s.NumberOfEntries} data-tip="Number of entries">{numberOfEntries}</div>
+        <div
+          className={s.CurrentSession}
+          style={{ left: `${sessionStartPercentage}%`, width: `${sessionAtPercentage - sessionStartPercentage}%` }}
+          data-tip={`Current session. Started at position: ${sessionStart}`}
+        ></div>
       </div>
     </div>
   );

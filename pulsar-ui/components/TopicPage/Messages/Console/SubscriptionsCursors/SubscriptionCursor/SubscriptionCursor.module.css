@@ -49,3 +49,15 @@
   top: 0;
   color: var(--accent-color-red);
 }
+
+.CurrentSession {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: var(--accent-color-green);
+  opacity: 0.5;
+  border-radius: 4rem;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}

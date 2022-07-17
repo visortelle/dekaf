@@ -100,6 +100,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesProcessed = useRef<number>(defaults.messagesProcessed());
   const messagesBuffer = useRef<Message[]>(defaults.messagesBuffer());
   const [messages, setMessages] = useState<Message[]>(defaults.messages());
+  const [isGetInitialCursorPositions, setIsGetInitialCursorPositions] = useState<boolean>(false);
   const { startFrom, topicsSelector } = props.config;
 
   const scrollToBottom = () => {
@@ -323,7 +324,7 @@ const Session: React.FC<SessionProps> = (props) => {
       return;
     }
 
-    if (sessionState === 'running') {
+    if (sessionState === 'running' && isGetInitialCursorPositions) {
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
       stream?.cancel();
@@ -336,7 +337,7 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState === 'new' && prevSessionState !== undefined) {
       cleanup();
     }
-  }, [sessionState]);
+  }, [sessionState, isGetInitialCursorPositions]);
 
   const itemContent = useCallback<ItemContent<Message, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
@@ -387,6 +388,8 @@ const Session: React.FC<SessionProps> = (props) => {
         <Console
           sessionConfig={props.config}
           sessionSubscriptionName={subscriptionName}
+          isGetInitialCursorPositions={isGetInitialCursorPositions}
+          onGetInitialCursorPositions={() => setIsGetInitialCursorPositions(true)}
         />
       </div>
     </div>

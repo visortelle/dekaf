@@ -6,6 +6,8 @@ import { SessionConfig } from '../types';
 export type ConsoleProps = {
   sessionSubscriptionName: string;
   sessionConfig: SessionConfig;
+  isGetInitialCursorPositions: boolean;
+  onGetInitialCursorPositions: () => void;
 };
 
 const Console: React.FC<ConsoleProps> = (props) => {
@@ -18,6 +20,8 @@ const Console: React.FC<ConsoleProps> = (props) => {
       {props.sessionConfig.topicsSelector.type === 'by-names' && (
         <div className={s.SubscriptionsCursors}>
           <SubscriptionsCursors
+            isGetInitialCursorPositions={props.isGetInitialCursorPositions}
+            onGetInitialCursorPositions={props.onGetInitialCursorPositions}
             selector={props.sessionConfig.topicsSelector.topics.reduce((acc, topic) => ({ ...acc, [topic]: [props.sessionSubscriptionName] }), {})}
           />
         </div>
