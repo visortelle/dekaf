@@ -540,6 +540,9 @@ export class ResumeRequest extends jspb.Message {
   getConsumerName(): string;
   setConsumerName(value: string): ResumeRequest;
 
+  getIncludeConsumerStats(): boolean;
+  setIncludeConsumerStats(value: boolean): ResumeRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ResumeRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ResumeRequest): ResumeRequest.AsObject;
@@ -551,6 +554,21 @@ export class ResumeRequest extends jspb.Message {
 export namespace ResumeRequest {
   export type AsObject = {
     consumerName: string,
+    includeConsumerStats: boolean,
+  }
+}
+
+export class ConsumerStats extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ConsumerStats.AsObject;
+  static toObject(includeInstance: boolean, msg: ConsumerStats): ConsumerStats.AsObject;
+  static serializeBinaryToWriter(message: ConsumerStats, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ConsumerStats;
+  static deserializeBinaryFromReader(message: ConsumerStats, reader: jspb.BinaryReader): ConsumerStats;
+}
+
+export namespace ConsumerStats {
+  export type AsObject = {
   }
 }
 
@@ -568,6 +586,11 @@ export class ResumeResponse extends jspb.Message {
   getProcessedMessages(): number;
   setProcessedMessages(value: number): ResumeResponse;
 
+  getConsumerStats(): ConsumerStats | undefined;
+  setConsumerStats(value?: ConsumerStats): ResumeResponse;
+  hasConsumerStats(): boolean;
+  clearConsumerStats(): ResumeResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ResumeResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ResumeResponse): ResumeResponse.AsObject;
@@ -581,11 +604,17 @@ export namespace ResumeResponse {
     status?: google_rpc_status_pb.Status.AsObject,
     messagesList: Array<Message.AsObject>,
     processedMessages: number,
+    consumerStats?: ConsumerStats.AsObject,
   }
 
   export enum StatusCase { 
     _STATUS_NOT_SET = 0,
     STATUS = 1,
+  }
+
+  export enum ConsumerStatsCase { 
+    _CONSUMER_STATS_NOT_SET = 0,
+    CONSUMER_STATS = 4,
   }
 }
 
