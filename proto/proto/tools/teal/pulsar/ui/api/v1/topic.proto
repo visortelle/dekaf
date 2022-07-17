@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.api.v1;
+
+import "google/rpc/status.proto";
+
+message PartitionedTopicMetadata {
+  optional int32 partitions = 1;
+  map<string, string> properties = 2;
+}
+
+message PartitionedTopicInternalStats {
+  optional PartitionedTopicMetadata metadata = 1;
+  map<string, PersistentTopicInternalStats> partitions = 2;
+}
+
+message PersistentTopicInternalStats {
+  ManagedLedgerInternalStats managed_ledger_internal_stats = 1;
+  repeated LedgerInfo schema_ledgers = 2;
+  optional LedgerInfo compacted_ledger = 3;
+}
+
+message ManagedLedgerInternalStats {
+  optional int64 entries_added_counter = 1;
+  optional int64 number_of_entries = 2;
+  optional int64 total_size = 3;
+  optional int64 current_ledger_entries = 4;
+  optional int64 current_ledger_size = 5;
+  optional string last_ledger_created_timestamp = 6;
+  optional string last_ledger_creation_failure_timestamp = 7;
+  optional int32 waiting_cursors_count = 8;
+  optional int32 pending_entries_count = 9;
+  optional string last_confirmed_entry = 10;
+  optional string state = 11;
+  repeated LedgerInfo ledgers = 12;
+  map<string, CursorStats> cursors = 13;
+
+}
+
+message LedgerInfo {
+  optional int64 ledger_id = 1;
+  optional int64 entries = 2;
+  optional int64 size = 3;
+  optional bool offloaded = 4;
+  optional string metadata = 5;
+  optional bool under_replicated = 6;
+}
+
+message CursorStats {
+  optional string mark_delete_position = 1;
+  optional string read_position = 2;
+  optional bool waiting_read_op = 3;
+  optional int32 pending_read_ops = 4;
+  optional int64 messages_consumed_counter = 5;
+  optional int64 cursor_ledger = 6;
+  optional int64 cursor_ledger_last_entry = 7;
+  optional string individually_deleted_messages = 8;
+  optional string last_ledger_switch_timestamp = 9;
+  optional string state = 10;
+  optional int64 number_of_entries_since_first_not_acked_message = 11;
+  optional int32 total_non_contiguous_deleted_messages_range = 12;
+  optional bool subscription_have_pending_read = 13;
+  optional bool subscription_have_pending_replay_read = 14;
+  map<string, int64> properties = 15;
+
+}
+
+message GetTopicInternalStatsRequest {
+  optional string topic = 1;
+}
+
+message GetTopicInternalStatsResponse {
+  google.rpc.Status status = 1;
+  optional PartitionedTopicInternalStats stats = 2;
+}
+
+message GetPartitionedTopicInternalStatsRequest {
+  optional string topic = 1;
+}
+
+message GetPartitionedTopicInternalStatsResponse {
+  google.rpc.Status status = 1;
+  optional PartitionedTopicInternalStats stats = 2;
+}
+
+service TopicService {
+  rpc GetTopicInternalStats(GetTopicInternalStatsRequest) returns (GetTopicInternalStatsResponse);
+  rpc GetPartitionedTopicInternalStats(GetPartitionedTopicInternalStatsRequest) returns (GetPartitionedTopicInternalStatsResponse);
+}
