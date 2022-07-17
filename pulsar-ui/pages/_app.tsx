@@ -15,6 +15,7 @@ import { SWRConfig } from 'swr';
 import fetchIntercept from 'fetch-intercept';
 import { useEffect } from 'react';
 import stringify from 'safe-stable-stringify';
+import useInterval from '../components/app/hooks/use-interval';
 
 const MyApp = (props: AppProps) => {
   return (
@@ -33,6 +34,8 @@ export const hideShowProgressIndicatorHeader = 'x-hide-show-progress-indicator';
 const _MyApp = (props: AppProps) => {
   const { startTask, finishTask } = AsyncTasks.useContext();
   const appContext = AppContext.useContext();
+
+  useInterval(() => ReactTooltip.rebuild(), 2000); // Fix for case when tooltip doesn't hide.
 
   useEffect(() => {
     // Consider all requests as async tasks to display global progress indicator.
