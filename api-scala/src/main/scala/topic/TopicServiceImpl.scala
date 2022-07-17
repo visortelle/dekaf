@@ -20,7 +20,7 @@ class TopicServiceImpl extends TopicServiceGrpc.TopicService:
 
     override def getTopicsInternalStats(request: GetTopicsInternalStatsRequest): Future[GetTopicsInternalStatsResponse] =
         val stats: Map[String, topicPb.TopicInternalStats] = request.topics.flatMap(topic => {
-            getTopicInternalStatsPb(topic) match
+                getTopicInternalStatsPb(topic) match
                 case Right(ss: topicPb.PersistentTopicInternalStats) =>
                     val topicInternalStatsPb = topicPb.TopicInternalStats(stats = topicPb.TopicInternalStats.Stats.TopicStats(ss))
                     Some(topic, topicInternalStatsPb)
