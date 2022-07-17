@@ -48,7 +48,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     var topics: Map[ConsumerName, Vector[String]] = Map.empty
     var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
 
-    val logger = Logger(getClass.getName)
+    val logger: Logger = Logger(getClass.getName)
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
         val consumerName: ConsumerName = request.consumerName
@@ -78,12 +78,12 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                         case Some(_) =>
                             val resumeResponse = ResumeResponse(
                               messages = Seq(message),
-                              processedMessages = processedMessagesCount.get(consumerName).getOrElse(0: Long)
+                              processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long)
                             )
                             responseObserver.onNext(resumeResponse)
                         case _ => ()
 
-                consumer.resume
+                consumer.resume()
                 val status: Status = Status(code = Code.OK.index)
                 Future.successful(ResumeResponse(status = Some(status)))
             case _ =>
@@ -104,7 +104,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
 
-        consumer.pause
+        consumer.pause()
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(PauseResponse(status = Some(status)))
@@ -142,7 +142,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
         consumers.get(consumerName) match
             case Some(consumer) =>
-                consumer.unsubscribe
+                consumer.unsubscribe()
             case _ => ()
 
         consumers = consumers.removed(consumerName)
@@ -186,6 +186,6 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val status: Status = Status(code = Code.OK.index)
         Future.successful(SeekResponse(status = Some(status)))
 
-    override def skipMessages(request: SkipMessagesRequest) =
+    override def skipMessages(request: SkipMessagesRequest): Future[SkipMessagesResponse] =
         val status: Status = Status(code = Code.OK.index)
         Future.successful(SkipMessagesResponse(status = Some(status)))

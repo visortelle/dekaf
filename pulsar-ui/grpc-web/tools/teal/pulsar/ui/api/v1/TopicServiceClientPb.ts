@@ -35,90 +35,47 @@ export class TopicServiceClient {
     this.options_ = options;
   }
 
-  methodDescriptorGetTopicInternalStats = new grpcWeb.MethodDescriptor(
-    '/tools.teal.pulsar.ui.api.v1.TopicService/GetTopicInternalStats',
+  methodDescriptorGetTopicsInternalStats = new grpcWeb.MethodDescriptor(
+    '/tools.teal.pulsar.ui.api.v1.TopicService/GetTopicsInternalStats',
     grpcWeb.MethodType.UNARY,
-    tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsRequest,
-    tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsResponse,
-    (request: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsRequest) => {
+    tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsRequest,
+    tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsResponse,
+    (request: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsRequest) => {
       return request.serializeBinary();
     },
-    tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsResponse.deserializeBinary
+    tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsResponse.deserializeBinary
   );
 
-  getTopicInternalStats(
-    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsRequest,
-    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsResponse>;
+  getTopicsInternalStats(
+    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsRequest,
+    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsResponse>;
 
-  getTopicInternalStats(
-    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsRequest,
+  getTopicsInternalStats(
+    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
-               response: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsResponse>;
+               response: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsResponse>;
 
-  getTopicInternalStats(
-    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsRequest,
+  getTopicsInternalStats(
+    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsRequest,
     metadata: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
-               response: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicInternalStatsResponse) => void) {
+               response: tools_teal_pulsar_ui_api_v1_topic_pb.GetTopicsInternalStatsResponse) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +
-          '/tools.teal.pulsar.ui.api.v1.TopicService/GetTopicInternalStats',
+          '/tools.teal.pulsar.ui.api.v1.TopicService/GetTopicsInternalStats',
         request,
         metadata || {},
-        this.methodDescriptorGetTopicInternalStats,
+        this.methodDescriptorGetTopicsInternalStats,
         callback);
     }
     return this.client_.unaryCall(
     this.hostname_ +
-      '/tools.teal.pulsar.ui.api.v1.TopicService/GetTopicInternalStats',
+      '/tools.teal.pulsar.ui.api.v1.TopicService/GetTopicsInternalStats',
     request,
     metadata || {},
-    this.methodDescriptorGetTopicInternalStats);
-  }
-
-  methodDescriptorGetPartitionedTopicInternalStats = new grpcWeb.MethodDescriptor(
-    '/tools.teal.pulsar.ui.api.v1.TopicService/GetPartitionedTopicInternalStats',
-    grpcWeb.MethodType.UNARY,
-    tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsRequest,
-    tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsResponse,
-    (request: tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsRequest) => {
-      return request.serializeBinary();
-    },
-    tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsResponse.deserializeBinary
-  );
-
-  getPartitionedTopicInternalStats(
-    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsRequest,
-    metadata: grpcWeb.Metadata | null): Promise<tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsResponse>;
-
-  getPartitionedTopicInternalStats(
-    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsRequest,
-    metadata: grpcWeb.Metadata | null,
-    callback: (err: grpcWeb.RpcError,
-               response: tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsResponse) => void): grpcWeb.ClientReadableStream<tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsResponse>;
-
-  getPartitionedTopicInternalStats(
-    request: tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsRequest,
-    metadata: grpcWeb.Metadata | null,
-    callback?: (err: grpcWeb.RpcError,
-               response: tools_teal_pulsar_ui_api_v1_topic_pb.GetPartitionedTopicInternalStatsResponse) => void) {
-    if (callback !== undefined) {
-      return this.client_.rpcCall(
-        this.hostname_ +
-          '/tools.teal.pulsar.ui.api.v1.TopicService/GetPartitionedTopicInternalStats',
-        request,
-        metadata || {},
-        this.methodDescriptorGetPartitionedTopicInternalStats,
-        callback);
-    }
-    return this.client_.unaryCall(
-    this.hostname_ +
-      '/tools.teal.pulsar.ui.api.v1.TopicService/GetPartitionedTopicInternalStats',
-    request,
-    metadata || {},
-    this.methodDescriptorGetPartitionedTopicInternalStats);
+    this.methodDescriptorGetTopicsInternalStats);
   }
 
 }
