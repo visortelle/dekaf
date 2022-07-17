@@ -23,7 +23,6 @@ type TopicType = Either[String, PartitionedTopic | NonPartitionedTopic]
 def getTopicType(topic: String): TopicType =
     // XXX - Pulsar admin .lookup() is truthy both for partitioned and non-partitioned topics.
     // Therefore, the of lookups matters here.
-
     val isPartitioned =
         try {
             adminClient.lookups().lookupPartitionedTopic(topic)
