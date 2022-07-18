@@ -110,11 +110,11 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
 
   return (
     <div className={s.SubscriptionsCursors}>
-      {topicsCursorStats.map(topicCursorStats => {
+      {topicsCursorStats.map((topicCursorStats) => {
         if (topicCursorStats.topicType === 'non-partitioned') {
           const managedLedger = topicsInternalStats?.getStatsMap()?.get(topicCursorStats.topic)?.getTopicStats()?.getManagedLedgerInternalStats();
           if (managedLedger === undefined) {
-            return <></>;
+            return null;
           }
 
           return (
@@ -137,13 +137,13 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
         if (topicCursorStats.topicType === 'partitioned') {
           const partitions = topicsInternalStats?.getStatsMap()?.get(topicCursorStats.topic)?.getPartitionedTopicStats()?.getPartitionsMap();
           if (partitions === undefined) {
-            return <></>;
+            return null;
           }
 
           const partitionsElement = Object.keys(topicCursorStats.partitions).map(partitionName => {
             const managedLedger = partitions.get(partitionName)?.getManagedLedgerInternalStats();
             if (managedLedger === undefined) {
-              return;
+              return null;
             }
 
             const partition = topicCursorStats.partitions[partitionName];
@@ -165,7 +165,7 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
           });
 
           return (
-            <div className={s.Topic}>
+            <div key={topicCursorStats.topic} className={s.Topic}>
               <div className={s.TopicName}>
                 <strong>Topic: </strong>
                 {topicCursorStats.topic}
