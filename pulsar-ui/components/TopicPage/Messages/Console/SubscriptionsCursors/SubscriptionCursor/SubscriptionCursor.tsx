@@ -48,6 +48,15 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
   const [sessionStart, setSessionStart] = React.useState<number>();
   const [sessionAt, setSessionAt] = React.useState<number>();
 
+  const numberOfEntries = props.managedLedgerInternalStats.numberOfEntries;
+  const readPosition = Number(props.cursor.readPosition.split(':')[1]);
+  const readPositionPercent = readPosition / (numberOfEntries / 100);
+  const markDeletePosition = Number(props.cursor.markDeletePosition.split(':')[1]);
+  const markDeletePositionPercent = markDeletePosition / (numberOfEntries / 100);
+
+  const sessionStartPercentage = sessionStart === undefined ? 0 : sessionStart / (numberOfEntries / 100);
+  const sessionAtPercentage = sessionAt === undefined ? 0 : sessionAt / (numberOfEntries / 100);
+
   useEffect(() => {
     if (sessionStart === undefined) {
       setSessionStart(readPosition);
@@ -66,15 +75,6 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
     }
   }, [props.cursor]);
 
-  const numberOfEntries = props.managedLedgerInternalStats.numberOfEntries;
-  const readPosition = Number(props.cursor.readPosition.split(':')[1]);
-  const readPositionPercent = readPosition / (numberOfEntries / 100);
-  const markDeletePosition = Number(props.cursor.markDeletePosition.split(':')[1]);
-  const markDeletePositionPercent = markDeletePosition / (numberOfEntries / 100);
-
-  const sessionStartPercentage = sessionStart === undefined ? 0 : sessionStart / (numberOfEntries / 100);
-  const sessionAtPercentage = sessionAt === undefined ? 0 : sessionAt / (numberOfEntries / 100);
-
   return (
     <div className={s.SubscriptionCursor}>
       <div className={s.Bar}>
@@ -88,7 +88,7 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
         <div
           className={s.CurrentSession}
           style={{ left: `${sessionStartPercentage}%`, width: `${sessionAtPercentage - sessionStartPercentage}%` }}
-          data-tip={`Current session. Started at position: ${sessionStart}`}
+          data-tip={`Current session. <br />Started at position: ${sessionStart}${sessionStart !== undefined && sessionAt !== undefined ? `<br />Length: ${sessionAt - sessionStart}` : ''}`}
         ></div>
       </div>
     </div>
