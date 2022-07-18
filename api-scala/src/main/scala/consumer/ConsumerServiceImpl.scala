@@ -143,13 +143,12 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         consumers.get(consumerName) match
             case Some(consumer) =>
                 consumer.unsubscribe()
+                consumers = consumers.removed(consumerName)
+                streamDataHandlers = streamDataHandlers.removed(consumerName)
+                processedMessagesCount = processedMessagesCount.removed(consumerName)
+                responseObservers = responseObservers.removed(consumerName)
             case _ => ()
-
-        consumers = consumers.removed(consumerName)
-        streamDataHandlers = streamDataHandlers.removed(consumerName)
-        processedMessagesCount = processedMessagesCount.removed(consumerName)
-        responseObservers = responseObservers.removed(consumerName)
-
+        
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteConsumerResponse(status = Some(status)))
 

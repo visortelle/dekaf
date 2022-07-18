@@ -131,10 +131,6 @@ const Session: React.FC<SessionProps> = (props) => {
   });
 
   const applyConfig = async () => {
-    if (startFrom.type === 'earliest' && startFrom.skip > 0) {
-
-    }
-
     if (startFrom.type === 'messageId') {
       const seekReq = new SeekRequest();
       seekReq.setConsumerName(consumerName);
@@ -187,11 +183,11 @@ const Session: React.FC<SessionProps> = (props) => {
   useEffect(() => {
     streamRef.current = stream;
 
-    if (stream === undefined) {
-      return;
-    }
-
     (async () => {
+      if (stream === undefined) {
+        return;
+      }
+
       await applyConfig();
       stream.removeListener('data', streamDataHandler);
       stream.on('data', streamDataHandler);
@@ -328,7 +324,7 @@ const Session: React.FC<SessionProps> = (props) => {
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
       stream?.cancel();
-      stream?.removeListener('data', streamDataHandler)
+      stream?.removeListener('data', streamDataHandler);
       const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });
       setStream(() => newStream);
       return;
