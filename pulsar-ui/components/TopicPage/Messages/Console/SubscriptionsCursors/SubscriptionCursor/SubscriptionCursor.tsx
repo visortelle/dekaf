@@ -49,10 +49,21 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
   const [sessionAt, setSessionAt] = React.useState<number>();
 
   useEffect(() => {
-    if (sessionStart === undefined && props.cursor.readPosition) {
-      setSessionStart(Number(props.cursor.readPosition.split(':')[1]));
+    if (sessionStart === undefined) {
+      setSessionStart(readPosition);
     }
-    setSessionAt(Number(props.cursor.readPosition.split(':')[1]));
+
+    // Reset sessionStart after partitions have been rebalanced. Otherwise the current session ber will be displayed after cursor.
+    if (sessionStart !== undefined && sessionStart > readPosition) {
+      setSessionStart(undefined);
+    }
+
+    // Reset sessionAt after partitions have been rebalanced. Otherwise the current session ber will be displayed after cursor.
+    if (sessionAt !== undefined && sessionAt > numberOfEntries) {
+      setSessionAt(undefined);
+    } else {
+      setSessionAt(readPosition);
+    }
   }, [props.cursor]);
 
   const numberOfEntries = props.managedLedgerInternalStats.numberOfEntries;

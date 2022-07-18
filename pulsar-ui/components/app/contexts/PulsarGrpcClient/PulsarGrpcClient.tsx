@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import * as _consumerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ConsumerServiceClientPb';
 import * as _topicServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/TopicServiceClientPb';
 
@@ -17,6 +17,14 @@ const Context = React.createContext<Value>(defaultValue);
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [consumerServiceClient] = useState<_consumerServiceClient.ConsumerServiceClient>(new _consumerServiceClient.ConsumerServiceClient('http://localhost:10000'));
   const [topicServiceClient] = useState<_topicServiceClient.TopicServiceClient>(new _topicServiceClient.TopicServiceClient('http://localhost:10000'));
+
+  useEffect(() => {
+    const enableDevTools = (window as any).__GRPCWEB_DEVTOOLS__ || (() => { });
+    enableDevTools([
+      consumerServiceClient,
+      topicServiceClient
+    ]);
+  }, []);
 
   return (
     <>
