@@ -28,6 +28,8 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   switch (props.sessionState) {
     case 'new': playButtonOnClick = () => props.onSessionStateChange('initializing'); break;
     case 'initializing': playButtonOnClick = () => { }; break;
+    case 'awaiting-initial-cursor-positions': playButtonOnClick = () => { }; break;
+    case 'got-initial-cursor-positions': playButtonOnClick = () => { }; break;
     case 'running': playButtonOnClick = () => props.onSessionStateChange('paused'); break;
     case 'paused': playButtonOnClick = () => props.onSessionStateChange('running'); break;
   }
@@ -41,7 +43,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
             onClick={playButtonOnClick}
             type={'primary'}
-            disabled={props.sessionState === 'initializing'}
+            disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
           />
         </div>
         <div className={s.Control}>
