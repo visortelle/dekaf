@@ -3,6 +3,7 @@ import s from './Toolbar.module.css'
 import pauseIcon from '!!raw-loader!./icons/pause.svg';
 import resumeIcon from '!!raw-loader!./icons/resume.svg';
 import resetIcon from '!!raw-loader!./icons/reset.svg';
+import consoleIcon from '!!raw-loader!./icons/console.svg';
 import Button from '../../ui/Button/Button';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { SessionState, SessionConfig } from './types';
@@ -17,6 +18,7 @@ export type ToolbarProps = {
   messagesLoaded: number;
   messagesProcessed: number;
   messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
+  onToggleConsoleClick: () => void;
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
@@ -53,6 +55,14 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             onClick={() => props.onStopSession()}
             type={'danger'}
             disabled={props.sessionState === 'new'}
+          />
+        </div>
+        <div className={s.Control}>
+          <Button
+            title={"Toggle console"}
+            svgIcon={consoleIcon}
+            onClick={props.onToggleConsoleClick}
+            type={'regular'}
           />
         </div>
         <div className={s.Control}>
@@ -96,7 +106,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
