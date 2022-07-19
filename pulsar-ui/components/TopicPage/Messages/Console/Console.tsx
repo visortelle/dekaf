@@ -8,8 +8,7 @@ export type ConsoleProps = {
   sessionSubscriptionName: string;
   sessionConfig: SessionConfig;
   sessionState: SessionState;
-  initialCursorPositions: boolean;
-  onInitialCursorPositionsChange: (v: boolean) => void;
+  onSessionStateChange: (state: SessionState) => void;
 };
 
 const Console: React.FC<ConsoleProps> = (props) => {
@@ -24,8 +23,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
           <SubscriptionsCursors
             sessionKey={props.sessionKey}
             sessionState={props.sessionState}
-            initialCursorPositions={props.initialCursorPositions}
-            onInitialCursorPositionsChange={props.onInitialCursorPositionsChange}
+            onSessionStateChange={props.onSessionStateChange}
             selector={props.sessionConfig.topicsSelector.topics.reduce((acc, topic) => ({ ...acc, [topic]: [props.sessionSubscriptionName] }), {})}
           />
         </div>

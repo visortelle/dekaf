@@ -1,6 +1,6 @@
 import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
 
-export type SessionState = "running" | "paused" | "initializing" | "new";
+export type SessionState = "running" | "paused" | "got-initial-cursor-positions" | "awaiting-initial-cursor-positions" | "initializing" | "new";
 
 type RegexSubMode =
   | "unspecified"

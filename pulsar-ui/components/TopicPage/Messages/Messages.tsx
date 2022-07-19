@@ -54,36 +54,6 @@ type MessagesLoadedPerSecond = { prevMessagesLoaded: number, messagesLoadedPerSe
 
 const displayMessagesLimit = 10000;
 
-type Defaults = {
-  sessionState: () => SessionState,
-  sessionStateBeforeBlur: () => SessionState,
-  consumerName: () => string,
-  subscriptionName: () => string,
-  stream: () => ClientReadableStream<ResumeResponse> | undefined,
-  streamRef: () => ClientReadableStream<ResumeResponse> | undefined,
-  messagesLoaded: () => number,
-  messagesLoadedPerSecond: () => MessagesLoadedPerSecond,
-  messagesProcessed: () => number,
-  messagesBuffer: () => Message[],
-  messages: () => Message[],
-  initialCursorPositions: () => boolean,
-}
-
-const defaults: Defaults = {
-  sessionState: (): SessionState => 'new',
-  sessionStateBeforeBlur: (): SessionState => 'new',
-  consumerName: () => '__xray_con_' + nanoid(),
-  subscriptionName: () => '__xray_sub_' + nanoid(),
-  stream: () => undefined,
-  streamRef: () => undefined,
-  messagesLoaded: () => 0,
-  messagesLoadedPerSecond: (): MessagesLoadedPerSecond => ({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 }),
-  messagesProcessed: () => 0,
-  messagesBuffer: (): Message[] => [],
-  messages: (): Message[] => [],
-  initialCursorPositions: () => false,
-}
-
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
   const { notifyError } = Notifications.useContext();
@@ -91,19 +61,19 @@ const Session: React.FC<SessionProps> = (props) => {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient } = PulsarGrpcClient.useContext();
-  const [sessionState, setSessionState] = useState<SessionState>(defaults.sessionState());
-  const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(defaults.sessionStateBeforeBlur());
+  const [sessionState, setSessionState] = useState<SessionState>('new');
+  const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);
-  const [consumerName, setConsumerName] = useState<string>(defaults.consumerName());
-  const [subscriptionName, setSubscriptionName] = useState<string>(defaults.subscriptionName());
-  const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(defaults.stream());
-  const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(defaults.streamRef());
-  const [messagesLoaded, setMessagesLoaded] = useState<number>(defaults.messagesLoaded());
-  const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesLoadedPerSecond>(defaults.messagesLoadedPerSecond());
-  const messagesProcessed = useRef<number>(defaults.messagesProcessed());
-  const messagesBuffer = useRef<Message[]>(defaults.messagesBuffer());
-  const [messages, setMessages] = useState<Message[]>(defaults.messages());
-  const [initialCursorPositions, setInitialCursorPositions] = useState<boolean>(defaults.initialCursorPositions());
+  const [consumerName, setConsumerName] = useState<string>('__xray_con_' + nanoid());
+  const [subscriptionName, setSubscriptionName] = useState<string>('__xray_sub_' + nanoid());
+  const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
+  const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
+  const [messagesLoaded, setMessagesLoaded] = useState<number>(0);
+  const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesLoadedPerSecond>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
+  const messagesProcessed = useRef<number>(0);
+  const messagesBuffer = useRef<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
   const { startFrom, topicsSelector } = props.config;
 
   const scrollToBottom = () => {
@@ -265,7 +235,7 @@ const Session: React.FC<SessionProps> = (props) => {
       const code = status?.getCode();
 
       if (code === Code.OK) {
-        setSessionState('running');
+        setSessionState('awaiting-initial-cursor-positions');
       }
 
       if (code !== Code.OK) {
@@ -323,7 +293,11 @@ const Session: React.FC<SessionProps> = (props) => {
       return;
     }
 
-    if (sessionState === 'running' && initialCursorPositions) {
+    if (sessionState === 'got-initial-cursor-positions') {
+      setSessionState('running');
+    }
+
+    if (sessionState === 'running') {
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
       stream?.cancel();
@@ -336,7 +310,7 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState === 'new' && prevSessionState !== undefined) {
       cleanup();
     }
-  }, [sessionState, initialCursorPositions]);
+  }, [sessionState]);
 
   const itemContent = useCallback<ItemContent<Message, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
@@ -387,10 +361,9 @@ const Session: React.FC<SessionProps> = (props) => {
         <Console
           sessionKey={props.sessionKey}
           sessionState={sessionState}
+          onSessionStateChange={setSessionState}
           sessionConfig={props.config}
           sessionSubscriptionName={subscriptionName}
-          initialCursorPositions={initialCursorPositions}
-          onInitialCursorPositionsChange={setInitialCursorPositions}
         />
       </div>
     </div>
