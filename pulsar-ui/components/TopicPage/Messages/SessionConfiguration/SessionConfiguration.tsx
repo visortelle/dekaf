@@ -2,10 +2,12 @@ import React from 'react';
 import s from './SessionConfiguration.module.css'
 import StartFromInput from './StartFromInput/StartFromInput';
 import { SessionConfig } from '../types';
+import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
 
 export type SessionConfigurationProps = {
-  config: SessionConfig,
-  onConfigChange: (config: SessionConfig) => void
+  config: SessionConfig;
+  onConfigChange: (config: SessionConfig) => void;
+  topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
 };
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
@@ -17,6 +19,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           <StartFromInput
             value={props.config.startFrom}
             onChange={(v) => props.onConfigChange({ ...props.config, startFrom: v })}
+            topicsInternalStats={props.topicsInternalStats}
           />
         </div>
       </div>

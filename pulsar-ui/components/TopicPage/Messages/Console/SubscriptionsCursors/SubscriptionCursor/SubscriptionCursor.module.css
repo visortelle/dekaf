@@ -27,7 +27,7 @@
 }
 
 .ReadPosition {
-  z-index: 1;
+  z-index: 2;
 }
 
 .ReadPositionValue,
@@ -42,6 +42,7 @@
   top: 0;
   bottom: unset;
   background-color: var(--accent-color-red);
+  z-index: 1;
 }
 
 .MarkDeletePositionValue {

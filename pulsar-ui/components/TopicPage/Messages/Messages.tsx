@@ -38,7 +38,9 @@ import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp
 import { useAnimationFrame } from '../../app/hooks/use-animation-frame';
 import Console from './Console/Console';
 import dayjs from 'dayjs';
-import stringify from 'safe-stable-stringify';
+import useSWR from 'swr';
+import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
+import { swrKeys } from '../../swrKeys';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 const browser = detectBrowser();
@@ -62,7 +64,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const i18n = I18n.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const { consumerServiceClient } = PulsarGrpcClient.useContext();
+  const { consumerServiceClient, topicServiceClient } = PulsarGrpcClient.useContext();
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);
@@ -77,6 +79,27 @@ const Session: React.FC<SessionProps> = (props) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
   const { startFrom, topicsSelector } = props.config;
+
+  const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
+    swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
+      props.config.topicsSelector.type === 'by-names' ? props.config.topicsSelector.topics : []
+    ).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
+    async () => {
+      if (props.config.topicsSelector.type !== 'by-names') {
+        return undefined;
+      }
+
+      const req = new GetTopicsInternalStatsRequest();
+      req.setTopicsList(props.config.topicsSelector.topics);
+      const res = await topicServiceClient.getTopicsInternalStats(req, {});
+      return res;
+    },
+    { refreshInterval: sessionState === 'awaiting-initial-cursor-positions' ? 200 : 1000 }
+  );
+
+  if (topicsInternalStatsError || (topicsInternalStats && topicsInternalStats?.getStatus()?.getCode() !== Code.OK)) {
+    notifyError(`Unable to get topics internal stats. ${topicsInternalStatsError}`);
+  }
 
   const scrollToBottom = () => {
     const scrollParent = listRef.current?.children[0];
@@ -117,7 +140,14 @@ const Session: React.FC<SessionProps> = (props) => {
         const status = res.getStatus();
         const code = status?.getCode();
         if (code === Code.INVALID_ARGUMENT) {
-          notifyError(`Unable to seek by messageId. Consumer: ${consumerName}. Please specify existing message id.`);
+          notifyError(
+            <div>
+              Unable to seek by messageId. Consumer: {consumerName}.<br /><br />
+              Possible reasons:<br />
+              - Message with such id doesn&apos;t exist specified.<br />
+              - Some of the topics is partitioned topic.
+            </div>
+          );
           props.onStopSession();
           return;
         }
@@ -302,7 +332,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     if (sessionState === 'awaiting-initial-cursor-positions') {
-        console.info(`%cAwaiting initial cursor positions for session: ${props.sessionKey}`, consoleCss);
+      console.info(`%cAwaiting initial cursor positions for session: ${props.sessionKey}`, consoleCss);
     }
 
     if (sessionState === 'got-initial-cursor-positions') {
@@ -377,6 +407,7 @@ const Session: React.FC<SessionProps> = (props) => {
         <SessionConfiguration
           config={props.config}
           onConfigChange={props.onConfigChange}
+          topicsInternalStats={topicsInternalStats}
         />
       )}
 
@@ -387,6 +418,7 @@ const Session: React.FC<SessionProps> = (props) => {
           onSessionStateChange={setSessionState}
           sessionConfig={props.config}
           sessionSubscriptionName={subscriptionName}
+          topicsInternalStats={topicsInternalStats}
         />
       </div>
     </div>
