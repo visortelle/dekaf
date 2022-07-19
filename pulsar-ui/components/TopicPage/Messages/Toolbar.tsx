@@ -10,13 +10,13 @@ import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-dat
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
 
 export type ToolbarProps = {
-  sessionState: SessionState,
-  config: SessionConfig,
-  onSessionStateChange: (state: SessionState) => void,
-  onStopSession: () => void,
-  messagesLoaded: number,
-  messagesProcessed: number,
-  messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number },
+  sessionState: SessionState;
+  config: SessionConfig;
+  onSessionStateChange: (state: SessionState) => void;
+  onStopSession: () => void;
+  messagesLoaded: number;
+  messagesProcessed: number;
+  messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {

@@ -1,11 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import s from './SubscriptionsCursors.module.css'
-import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient'
-import * as Notifications from '../../../../app/contexts/Notifications'
-import { swrKeys } from '../../../../swrKeys';
-import useSWR from 'swr';
-import { CursorStats, GetTopicsInternalStatsRequest, GetTopicsInternalStatsResponse, ManagedLedgerInternalStats, TopicInternalStats } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
-import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
+import { CursorStats, GetTopicsInternalStatsResponse, ManagedLedgerInternalStats, TopicInternalStats } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
 import { SessionConfig, SessionState } from '../../types';
 import SubscriptionCursor, { SubscriptionCursorProps, Cursor } from './SubscriptionCursor/SubscriptionCursor';
 
@@ -28,31 +23,16 @@ export type SubscriptionsCursorsProps = {
   sessionState: SessionState;
   sessionSubscriptionName: string;
   onSessionStateChange: (sessionState: SessionState) => void;
+  topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
 };
 
 const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
-  const { topicServiceClient } = PulsarGrpcClient.useContext();
-  const { notifyError } = Notifications.useContext();
   const [sessionStartStats, setSessionStartStats] = React.useState<ReturnType<GetTopicsInternalStatsResponse['getStatsMap']>>();
 
   const topics = useMemo(() => Object.keys(props.selector), [props.selector]);
 
-  const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.topicsInternalStats._(topics).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
-    async () => {
-      const req = new GetTopicsInternalStatsRequest();
-      req.setTopicsList(topics);
-      return await topicServiceClient.getTopicsInternalStats(req, {});
-    },
-    { refreshInterval: props.sessionState === 'awaiting-initial-cursor-positions' ? 200 : 1000 }
-  );
-
-  if (topicsInternalStatsError || (topicsInternalStats && topicsInternalStats?.getStatus()?.getCode() !== Code.OK)) {
-    notifyError(`Unable to get topics internal stats. ${topicsInternalStatsError}`);
-  }
-
   useEffect(() => {
-    if (props.sessionState !== 'awaiting-initial-cursor-positions' || topicsInternalStats === undefined) {
+    if (props.sessionState !== 'awaiting-initial-cursor-positions' || props.topicsInternalStats === undefined) {
       return;
     }
 
@@ -62,17 +42,21 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
     }
 
     const gotInitialCursorsPositions = props.sessionConfig.topicsSelector.topics.every(topic => {
-      const hasCursor = getCursorForSubscription(topicsInternalStats.getStatsMap(), topic, { type: 'any-partition' }, props.sessionSubscriptionName);
+      if (props.topicsInternalStats === undefined) {
+        return;
+      }
+
+      const hasCursor = getCursorForSubscription(props.topicsInternalStats.getStatsMap(), topic, { type: 'any-partition' }, props.sessionSubscriptionName);
       return hasCursor;
     });
 
     if (gotInitialCursorsPositions) {
-      setSessionStartStats(topicsInternalStats.getStatsMap());
+      setSessionStartStats(props.topicsInternalStats.getStatsMap());
       props.onSessionStateChange('got-initial-cursor-positions');
     }
-  }, [topicsInternalStats, props.sessionState, props.sessionConfig]);
+  }, [props.topicsInternalStats, props.sessionState, props.sessionConfig]);
 
-  const statsMapPb = topicsInternalStats?.getStatsMap();
+  const statsMapPb = props.topicsInternalStats?.getStatsMap();
 
   function getSubscriptions(stats: ManagedLedgerInternalStats, topicName: string): Record<SubscriptionName, CursorStats> {
     let topicCursors: Record<string, CursorStats> = {};
@@ -127,7 +111,7 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
     <div className={s.SubscriptionsCursors}>
       {topicsCursorStats.map((topicCursorStats) => {
         if (topicCursorStats.topicType === 'non-partitioned') {
-          const managedLedger = topicsInternalStats?.getStatsMap()?.get(topicCursorStats.topic)?.getTopicStats()?.getManagedLedgerInternalStats();
+          const managedLedger = props.topicsInternalStats?.getStatsMap()?.get(topicCursorStats.topic)?.getTopicStats()?.getManagedLedgerInternalStats();
           if (managedLedger === undefined) {
             return null;
           }
@@ -161,7 +145,7 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
         }
 
         if (topicCursorStats.topicType === 'partitioned') {
-          const partitions = topicsInternalStats?.getStatsMap()?.get(topicCursorStats.topic)?.getPartitionedTopicStats()?.getPartitionsMap();
+          const partitions = props.topicsInternalStats?.getStatsMap()?.get(topicCursorStats.topic)?.getPartitionedTopicStats()?.getPartitionsMap();
           if (partitions === undefined) {
             return null;
           }
