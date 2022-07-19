@@ -11,6 +11,7 @@
   border: none;
   appearance: none;
   border-bottom: 2rem solid rgba(0, 0, 0, 0.27);
+  box-shadow: 0rem 0rem 1rem rgba(0, 0, 0, 0.5);
 }
 
 .Button:hover {
@@ -38,7 +39,11 @@
 .Regular {
   background-color: #fff;
   color: var(--text-color);
-  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  box-shadow: 0rem 0rem 1rem rgba(0, 0, 0, 0.5), 1rem 1rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+.Regular svg {
+  fill: var(--text-color);
 }
 
 .Primary {

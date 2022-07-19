@@ -51,6 +51,8 @@ export type SessionProps = {
   config: SessionConfig;
   onConfigChange: (config: SessionConfig) => void;
   onStopSession: () => void;
+  isShowConsole: boolean;
+  onSetIsShowConsole: (v: boolean) => void;
 };
 
 type Content = 'messages' | 'configuration';
@@ -77,7 +79,6 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesProcessed = useRef<number>(0);
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
   const { startFrom, topicsSelector } = props.config;
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
@@ -384,6 +385,7 @@ const Session: React.FC<SessionProps> = (props) => {
         messagesLoadedPerSecond={messagesLoadedPerSecond}
         messagesProcessed={messagesProcessed.current}
         onStopSession={props.onStopSession}
+        onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
       />
 
       {content === 'messages' && (
@@ -413,6 +415,8 @@ const Session: React.FC<SessionProps> = (props) => {
 
       <div className={s.Console}>
         <Console
+          isShow={props.isShowConsole}
+          onClose={() => props.onSetIsShowConsole(false)}
           sessionKey={props.sessionKey}
           sessionState={sessionState}
           onSessionStateChange={setSessionState}
@@ -431,11 +435,14 @@ type SessionControllerProps = {
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
   const [config, setConfig] = useState<SessionConfig>(props.config);
+  const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
   return (
     <Session
       key={sessionKey}
       sessionKey={sessionKey}
+      isShowConsole={isShowConsole}
+      onSetIsShowConsole={() => setIsShowConsole(!isShowConsole)}
       {...props}
       onStopSession={() => {
         setSessionKey(n => n + 1);
