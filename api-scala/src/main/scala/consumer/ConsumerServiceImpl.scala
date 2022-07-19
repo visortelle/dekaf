@@ -140,15 +140,24 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumerName = request.consumerName
         logger.info(s"Deleting consumer. Consumer: $consumerName")
 
-        consumers.get(consumerName) match
-            case Some(consumer) =>
-                consumer.unsubscribe()
-                consumers = consumers.removed(consumerName)
-                streamDataHandlers = streamDataHandlers.removed(consumerName)
-                processedMessagesCount = processedMessagesCount.removed(consumerName)
-                responseObservers = responseObservers.removed(consumerName)
-            case _ => ()
-        
+        def tryUnsubscribe: Unit =
+            consumers.get(consumerName) match
+                case Some(consumer) =>
+                    try {
+                        consumer.unsubscribe()
+                    } catch
+                        // Unsubscribe fails on partitioned topics in most cases. Anyway we can' handle it meaningfully.
+                        _ => ()
+                    finally ()
+                case _ => ()
+
+        tryUnsubscribe
+
+        consumers = consumers.removed(consumerName)
+        streamDataHandlers = streamDataHandlers.removed(consumerName)
+        processedMessagesCount = processedMessagesCount.removed(consumerName)
+        responseObservers = responseObservers.removed(consumerName)
+
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteConsumerResponse(status = Some(status)))
 

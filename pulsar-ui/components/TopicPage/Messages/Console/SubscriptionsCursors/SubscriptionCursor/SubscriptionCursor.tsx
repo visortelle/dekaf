@@ -9,6 +9,24 @@ type LedgerInfo = {
   metadata: string;
   underReplicated: boolean;
 }
+export type Cursor = {
+  markDeletePosition: string;
+  readPosition: string,
+  waitingReadOp: boolean;
+  pendingReadOps: number;
+  messagesConsumedCounter: number;
+  cursorLedger: number;
+  cursorLedgerLastEntry: number;
+  individuallyDeletedMessages: string;
+  lastLedgerSwitchTimestamp: string;
+  state: string;
+  numberOfEntriesSinceFirstNotAckedMessage: number;
+  totalNonContiguousDeletedMessagesRange: number;
+  subscriptionHavePendingRead: boolean;
+  subscriptionHavePendingReplayRead: boolean;
+  properties: Record<string, number>;
+
+}
 
 export type SubscriptionCursorProps = {
   managedLedgerInternalStats: {
@@ -25,55 +43,25 @@ export type SubscriptionCursorProps = {
     state: string;
     ledgers: LedgerInfo[];
   },
-  cursor: {
-    markDeletePosition: string;
-    readPosition: string,
-    waitingReadOp: boolean;
-    pendingReadOps: number;
-    messagesConsumedCounter: number;
-    cursorLedger: number;
-    cursorLedgerLastEntry: number;
-    individuallyDeletedMessages: string;
-    lastLedgerSwitchTimestamp: string;
-    state: string;
-    numberOfEntriesSinceFirstNotAckedMessage: number;
-    totalNonContiguousDeletedMessagesRange: number;
-    subscriptionHavePendingRead: boolean;
-    subscriptionHavePendingReplayRead: boolean;
-    properties: Record<string, number>;
-  }
+  sessionStartCursor: Cursor;
+  cursor: Cursor;
 }
 
-const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
-  const [sessionStart, setSessionStart] = React.useState<number>();
-  const [sessionAt, setSessionAt] = React.useState<number>();
+const parseReadPosition = (cursor: SubscriptionCursorProps['cursor']) => Number(cursor.readPosition.split(':')[1]);
+const parseMarkDeletePosition = (cursor: SubscriptionCursorProps['cursor']) => Number(cursor.markDeletePosition.split(':')[1]);
 
+const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
   const numberOfEntries = props.managedLedgerInternalStats.numberOfEntries;
-  const readPosition = Number(props.cursor.readPosition.split(':')[1]);
+
+  const readPosition = parseReadPosition(props.cursor);
   const readPositionPercent = readPosition / (numberOfEntries / 100);
-  const markDeletePosition = Number(props.cursor.markDeletePosition.split(':')[1]);
+  const markDeletePosition = parseMarkDeletePosition(props.cursor);
   const markDeletePositionPercent = markDeletePosition / (numberOfEntries / 100);
 
-  const sessionStartPercentage = sessionStart === undefined ? 0 : sessionStart / (numberOfEntries / 100);
-  const sessionAtPercentage = sessionAt === undefined ? 0 : sessionAt / (numberOfEntries / 100);
-
-  useEffect(() => {
-    if (sessionStart === undefined) {
-      setSessionStart(readPosition);
-    }
-
-    // Reset sessionStart after partitions have been rebalanced. Otherwise the current session ber will be displayed after cursor.
-    if (sessionStart !== undefined && sessionStart > readPosition) {
-      setSessionStart(undefined);
-    }
-
-    // Reset sessionAt after partitions have been rebalanced. Otherwise the current session ber will be displayed after cursor.
-    if (sessionAt !== undefined && sessionAt > numberOfEntries) {
-      setSessionAt(undefined);
-    } else {
-      setSessionAt(readPosition);
-    }
-  }, [props.cursor]);
+  const _sessionStartReadPosition = parseReadPosition(props.sessionStartCursor);
+  const sessionStartReadPosition = _sessionStartReadPosition > readPosition ? 0 : _sessionStartReadPosition;
+  const sessionStartPercentage = sessionStartReadPosition / (numberOfEntries / 100);
+  const sessionAtPercentage = readPosition / (numberOfEntries / 100);
 
   return (
     <div className={s.SubscriptionCursor}>
@@ -88,7 +76,7 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
         <div
           className={s.CurrentSession}
           style={{ left: `${sessionStartPercentage}%`, width: `${sessionAtPercentage - sessionStartPercentage}%` }}
-          data-tip={`Current session. <br />Started at position: ${sessionStart}${sessionStart !== undefined && sessionAt !== undefined ? `<br />Length: ${sessionAt - sessionStart}` : ''}`}
+          data-tip={`Current session. <br />Started at position: ${sessionStartReadPosition}${readPosition !== undefined ? `<br />Processed: ${readPosition - sessionStartReadPosition}` : ''}`}
         ></div>
       </div>
     </div>

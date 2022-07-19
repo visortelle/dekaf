@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import s from './SubscriptionsCursors.module.css'
 import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient'
 import * as Notifications from '../../../../app/contexts/Notifications'
 import { swrKeys } from '../../../../swrKeys';
 import useSWR from 'swr';
-import { CursorStats, GetTopicsInternalStatsRequest, ManagedLedgerInternalStats, TopicInternalStats } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
+import { CursorStats, GetTopicsInternalStatsRequest, GetTopicsInternalStatsResponse, ManagedLedgerInternalStats, TopicInternalStats } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
-import SubscriptionCursor, { SubscriptionCursorProps } from './SubscriptionCursor/SubscriptionCursor';
+import { SessionState } from '../../types';
+import SubscriptionCursor, { SubscriptionCursorProps, Cursor } from './SubscriptionCursor/SubscriptionCursor';
 
 type TopicName = string;
 type PartitionName = string;
@@ -21,25 +22,28 @@ type TopicCursorStats =
 type SubscriptionsCursorStats = Record<SubscriptionName, CursorStats>
 
 export type SubscriptionsCursorsProps = {
+  sessionKey: number;
   selector: CursorSelector;
-  isGetInitialCursorPositions: boolean; // Intended to correctly display current session range bar.
-  onGetInitialCursorPositions: () => void;
+  sessionState: SessionState;
+  initialCursorPositions: boolean; // Intended to correctly display current session range bar.
+  onInitialCursorPositionsChange: (v: boolean) => void;
 };
 
 const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
   const { topicServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
+  const [sessionStartStats, setSessionStartStats] = React.useState<ReturnType<GetTopicsInternalStatsResponse['getStatsMap']>>();
 
   const topics = useMemo(() => Object.keys(props.selector), [props.selector]);
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.topicsInternalStats._(topics),
+    swrKeys.pulsar.customApi.metrics.topicsInternalStats._(topics).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
     async () => {
       const req = new GetTopicsInternalStatsRequest();
       req.setTopicsList(topics);
       return await topicServiceClient.getTopicsInternalStats(req, {});
     },
-    { refreshInterval: props.isGetInitialCursorPositions ? 200 : 1000 }
+    { refreshInterval: props.initialCursorPositions ? 200 : 1000 }
   );
 
   if (topicsInternalStatsError || (topicsInternalStats && topicsInternalStats?.getStatus()?.getCode() !== Code.OK)) {
@@ -47,17 +51,18 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
   }
 
   useEffect(() => {
-    if (!props.isGetInitialCursorPositions && topicsInternalStats !== undefined) {
+    if (!props.initialCursorPositions && topicsInternalStats !== undefined && props.sessionState !== 'new') {
       const gotInitialCursorsPositions = topicsInternalStats.toObject().statsMap.some(sm => {
         const a = (sm[1].topicStats?.managedLedgerInternalStats?.cursorsMap?.length || 0) > 0;
         const b = (sm[1].partitionedTopicStats?.partitionsMap.some(p => (p[1].managedLedgerInternalStats?.cursorsMap?.length || 0) > 0))
         return a || b;
       });
       if (gotInitialCursorsPositions) {
-        props.onGetInitialCursorPositions();
+        setSessionStartStats(topicsInternalStats.getStatsMap());
+        props.onInitialCursorPositionsChange(true);
       }
     }
-  }, [topicsInternalStats, props.isGetInitialCursorPositions]);
+  }, [topicsInternalStats, props.initialCursorPositions, props.sessionState]);
 
   const statsMapPb = topicsInternalStats?.getStatsMap();
 
@@ -107,7 +112,9 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
       };
     };
   });
-
+  if (sessionStartStats === undefined) {
+    return null;
+  }
   return (
     <div className={s.SubscriptionsCursors}>
       {topicsCursorStats.map((topicCursorStats) => {
@@ -127,7 +134,18 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
                 {Object.keys(topicCursorStats.subscriptions).length === 0 && (<div className={s.NoSubscriptions}>-</div>)}
                 {Object.keys(topicCursorStats.subscriptions).map(subscriptionName => {
                   const cursor = topicCursorStats.subscriptions[subscriptionName];
-                  return <SubscriptionComponent key={subscriptionName} subscriptionName={subscriptionName} cursor={cursor} managedLedger={managedLedger} />
+                  return (
+                    <SubscriptionComponent
+                      key={subscriptionName}
+                      subscriptionName={subscriptionName}
+                      cursor={cursor}
+                      managedLedger={managedLedger}
+                      partition={undefined}
+                      sessionStartStats={sessionStartStats}
+                      subscription={subscriptionName}
+                      topic={topicCursorStats.topic}
+                    />
+                  );
                 })}
               </div>
             </div>
@@ -157,7 +175,19 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
                   {Object.keys(partition.subscriptions).length === 0 && (<div className={s.NoSubscriptions}>-</div>)}
                   {Object.keys(partition.subscriptions).map(subscriptionName => {
                     const cursor = partition.subscriptions[subscriptionName];
-                    return <SubscriptionComponent key={subscriptionName} subscriptionName={subscriptionName} cursor={cursor} managedLedger={managedLedger} />
+
+                    return (
+                      <SubscriptionComponent
+                        key={subscriptionName}
+                        subscriptionName={subscriptionName}
+                        cursor={cursor}
+                        managedLedger={managedLedger}
+                        partition={partitionName}
+                        sessionStartStats={sessionStartStats}
+                        subscription={subscriptionName}
+                        topic={topicCursorStats.topic}
+                      />
+                    );
                   })}
                 </div>
               </div>
@@ -184,21 +214,52 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
 type SubscriptionComponentProps = {
   subscriptionName: string;
   cursor: CursorStats;
+  sessionStartStats: ReturnType<GetTopicsInternalStatsResponse['getStatsMap']>;
   managedLedger: ManagedLedgerInternalStats;
+  topic: string;
+  partition: string | undefined;
+  subscription: string;
 }
 const SubscriptionComponent: React.FC<SubscriptionComponentProps> = (props) => {
+  const subscriptionCursorProps = getSubscriptionCursorProps({
+    cursor: props.cursor,
+    managedLedger: props.managedLedger,
+    partition: props.partition,
+    sessionStartStats: props.sessionStartStats,
+    subscription: props.subscription,
+    topic: props.topic,
+  });
+  if (subscriptionCursorProps === undefined) {
+    return null;
+  }
+
   return (
     <div className={s.SubscriptionComponent}>
       <div className={s.SubscriptionName}>
         <strong>Subscription: </strong>
         {props.subscriptionName}
       </div>
-      <SubscriptionCursor {...getSubscriptionCursorProps(props.managedLedger, props.cursor)} />
+      <SubscriptionCursor {...subscriptionCursorProps} />
     </div>
   );
 }
 
-function getSubscriptionCursorProps(managedLedger: ManagedLedgerInternalStats, cursor: CursorStats): SubscriptionCursorProps {
+type GetSubscriptionCursorPropsArgs = {
+  sessionStartStats: ReturnType<GetTopicsInternalStatsResponse['getStatsMap']>;
+  managedLedger: ManagedLedgerInternalStats;
+  cursor: CursorStats;
+  topic: string,
+  partition: string | undefined,
+  subscription: string;
+}
+function getSubscriptionCursorProps(props: GetSubscriptionCursorPropsArgs): SubscriptionCursorProps | undefined {
+  const { cursor, managedLedger, partition, sessionStartStats, subscription, topic } = props;
+
+  const sessionStartCursorStats = getCursorForSubscription(sessionStartStats, topic, partition, subscription);
+  if (sessionStartCursorStats === undefined) {
+    return undefined;
+  }
+
   return {
     managedLedgerInternalStats: {
       currentLedgerEntries: managedLedger.getCurrentLedgerEntries(),
@@ -221,28 +282,41 @@ function getSubscriptionCursorProps(managedLedger: ManagedLedgerInternalStats, c
       totalSize: managedLedger.getTotalSize(),
       waitingCursorsCount: managedLedger.getWaitingCursorsCount(),
     },
-    cursor: {
-      markDeletePosition: cursor.getMarkDeletePosition(),
-      readPosition: cursor.getReadPosition(),
-      waitingReadOp: cursor.getWaitingReadOp(),
-      pendingReadOps: cursor.getPendingReadOps(),
-      messagesConsumedCounter: cursor.getMessagesConsumedCounter(),
-      cursorLedger: cursor.getCursorLedger(),
-      cursorLedgerLastEntry: cursor.getCursorLedgerLastEntry(),
-      individuallyDeletedMessages: cursor.getIndividuallyDeletedMessages(),
-      lastLedgerSwitchTimestamp: cursor.getLastLedgerSwitchTimestamp(),
-      state: cursor.getState(),
-      numberOfEntriesSinceFirstNotAckedMessage: cursor.getNumberOfEntriesSinceFirstNotAckedMessage(),
-      totalNonContiguousDeletedMessagesRange: cursor.getTotalNonContiguousDeletedMessagesRange(),
-      subscriptionHavePendingRead: cursor.getSubscriptionHavePendingRead(),
-      subscriptionHavePendingReplayRead: cursor.getSubscriptionHavePendingReplayRead(),
-      properties: (() => {
-        let properties: Record<string, number> = {};
-        cursor.getPropertiesMap().forEach((value, key) => properties = { ...properties, [key]: value });
-        return properties;
-      })()
-    }
+    sessionStartCursor: cursorStatsToCursor(sessionStartCursorStats),
+    cursor: cursorStatsToCursor(cursor),
   }
+}
+
+function cursorStatsToCursor(stats: CursorStats): Cursor {
+  return {
+    markDeletePosition: stats.getMarkDeletePosition(),
+    readPosition: stats.getReadPosition(),
+    waitingReadOp: stats.getWaitingReadOp(),
+    pendingReadOps: stats.getPendingReadOps(),
+    messagesConsumedCounter: stats.getMessagesConsumedCounter(),
+    cursorLedger: stats.getCursorLedger(),
+    cursorLedgerLastEntry: stats.getCursorLedgerLastEntry(),
+    individuallyDeletedMessages: stats.getIndividuallyDeletedMessages(),
+    lastLedgerSwitchTimestamp: stats.getLastLedgerSwitchTimestamp(),
+    state: stats.getState(),
+    numberOfEntriesSinceFirstNotAckedMessage: stats.getNumberOfEntriesSinceFirstNotAckedMessage(),
+    totalNonContiguousDeletedMessagesRange: stats.getTotalNonContiguousDeletedMessagesRange(),
+    subscriptionHavePendingRead: stats.getSubscriptionHavePendingRead(),
+    subscriptionHavePendingReplayRead: stats.getSubscriptionHavePendingReplayRead(),
+    properties: (() => {
+      let properties: Record<string, number> = {};
+      stats.getPropertiesMap().forEach((value, key) => properties = { ...properties, [key]: value });
+      return properties;
+    })()
+  }
+}
+
+function getCursorForSubscription(stats: ReturnType<GetTopicsInternalStatsResponse['getStatsMap']>, topic: string, partition: string | undefined, subscription: string): CursorStats | undefined {
+  if (partition === undefined) {
+    return stats.get(topic)?.getTopicStats()?.getManagedLedgerInternalStats()?.getCursorsMap()?.get(subscription);
+  }
+
+  return stats.get(topic)?.getPartitionedTopicStats()?.getPartitionsMap()?.get(partition)?.getManagedLedgerInternalStats()?.getCursorsMap()?.get(subscription);
 }
 
 export default SubscriptionsCursors;

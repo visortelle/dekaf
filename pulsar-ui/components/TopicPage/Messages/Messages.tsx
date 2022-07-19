@@ -43,6 +43,7 @@ const browser = detectBrowser();
 const isSlowBrowser = browser?.name === 'safari' || browser?.name === 'firefox';
 
 export type SessionProps = {
+  sessionKey: number;
   config: SessionConfig;
   onConfigChange: (config: SessionConfig) => void;
   onStopSession: () => void;
@@ -64,7 +65,8 @@ type Defaults = {
   messagesLoadedPerSecond: () => MessagesLoadedPerSecond,
   messagesProcessed: () => number,
   messagesBuffer: () => Message[],
-  messages: () => Message[]
+  messages: () => Message[],
+  initialCursorPositions: () => boolean,
 }
 
 const defaults: Defaults = {
@@ -78,12 +80,13 @@ const defaults: Defaults = {
   messagesLoadedPerSecond: (): MessagesLoadedPerSecond => ({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 }),
   messagesProcessed: () => 0,
   messagesBuffer: (): Message[] => [],
-  messages: (): Message[] => []
+  messages: (): Message[] => [],
+  initialCursorPositions: () => false,
 }
 
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
-  const { notifyError, notifyWarn } = Notifications.useContext();
+  const { notifyError } = Notifications.useContext();
   const i18n = I18n.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -100,7 +103,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesProcessed = useRef<number>(defaults.messagesProcessed());
   const messagesBuffer = useRef<Message[]>(defaults.messagesBuffer());
   const [messages, setMessages] = useState<Message[]>(defaults.messages());
-  const [isGetInitialCursorPositions, setIsGetInitialCursorPositions] = useState<boolean>(false);
+  const [initialCursorPositions, setInitialCursorPositions] = useState<boolean>(defaults.initialCursorPositions());
   const { startFrom, topicsSelector } = props.config;
 
   const scrollToBottom = () => {
@@ -320,7 +323,7 @@ const Session: React.FC<SessionProps> = (props) => {
       return;
     }
 
-    if (sessionState === 'running' && isGetInitialCursorPositions) {
+    if (sessionState === 'running' && initialCursorPositions) {
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
       stream?.cancel();
@@ -333,7 +336,7 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState === 'new' && prevSessionState !== undefined) {
       cleanup();
     }
-  }, [sessionState, isGetInitialCursorPositions]);
+  }, [sessionState, initialCursorPositions]);
 
   const itemContent = useCallback<ItemContent<Message, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
@@ -382,10 +385,12 @@ const Session: React.FC<SessionProps> = (props) => {
 
       <div className={s.Console}>
         <Console
+          sessionKey={props.sessionKey}
+          sessionState={sessionState}
           sessionConfig={props.config}
           sessionSubscriptionName={subscriptionName}
-          isGetInitialCursorPositions={isGetInitialCursorPositions}
-          onGetInitialCursorPositions={() => setIsGetInitialCursorPositions(true)}
+          initialCursorPositions={initialCursorPositions}
+          onInitialCursorPositionsChange={setInitialCursorPositions}
         />
       </div>
     </div>
@@ -402,6 +407,7 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
   return (
     <Session
       key={sessionKey}
+      sessionKey={sessionKey}
       {...props}
       onStopSession={() => {
         setSessionKey(n => n + 1);
