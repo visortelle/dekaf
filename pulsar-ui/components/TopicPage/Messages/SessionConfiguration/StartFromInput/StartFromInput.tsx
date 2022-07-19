@@ -7,11 +7,14 @@ import { QuickDate, quickDateToDate } from './quick-date';
 import Input from '../../../../ui/Input/Input';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { timestampToDate } from './timestamp-to-date';
+import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
+import { boolean } from 'fp-ts';
 
 export type StartFromInputProps = {
-  value: StartFrom,
-  onChange: (value: StartFrom) => void,
-  disabled?: boolean
+  value: StartFrom;
+  onChange: (value: StartFrom) => void;
+  disabled?: boolean;
+  topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
 };
 
 type StartFromVariants = StartFrom['type'] | QuickDate;
@@ -25,7 +28,11 @@ const list: List<StartFromVariants> = [
   },
   {
     type: 'group', title: 'Specific message', items: [
-      { type: 'item', title: 'Message with specific id', value: 'messageId' },
+      {
+        type: 'item',
+        title: 'Message with specific id',
+        value: 'messageId'
+      },
     ]
   },
   {
@@ -77,6 +84,8 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
     }
   }, [props.value]);
 
+  const isHasPartitionedTopic = hasPartitionedTopic(props.topicsInternalStats);
+
   return (
     <div className={s.StartFromInput}>
       <div className={s.TypeSelect}>
@@ -102,44 +111,64 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       </div>
       <div className={s.AdditionalControls}>
         {props.value.type === 'messageId' && (
-          <Input
-            value={props.value.hexString}
-            placeholder="08 c3 03 10 cd 04 20 00 30 01"
-            onChange={(v) => props.onChange({ type: 'messageId', hexString: v })}
-          />
+          isHasPartitionedTopic ? (
+            <div style={{ color: 'var(--accent-color-red)', marginTop: '2rem' }}>
+              <strong>Can only be applied on non-partitioned topics or individual partitions.</strong>
+            </div>
+          ) : (
+            <Input
+              value={props.value.hexString}
+              placeholder="08 c3 03 10 cd 04 20 00 30 01"
+              onChange={(v) => props.onChange({ type: 'messageId', hexString: v })}
+            />
+          )
         )}
-        {props.value.type === 'date' && (
-          <DatetimePicker
-            value={props.value.date}
-            onChange={(v) => props.onChange({ type: 'date', date: v || new Date() })}
-            disabled={props.disabled}
-          />
-        )}
-        {props.value.type === 'timestamp' && (
-          <Input
-            value={props.value.ts}
-            placeholder="UNIX timestamp in ms, or ISO-8601"
-            onChange={(v) => props.onChange({ type: 'timestamp', ts: v })}
-          />
-        )}
-        {props.value.type === 'quickDate' && (
-          <SmallButton
-            onClick={() => {
-              if (props.value.type !== 'quickDate') {
-                return;
-              }
+      {props.value.type === 'date' && (
+        <DatetimePicker
+          value={props.value.date}
+          onChange={(v) => props.onChange({ type: 'date', date: v || new Date() })}
+          disabled={props.disabled}
+        />
+      )}
+      {props.value.type === 'timestamp' && (
+        <Input
+          value={props.value.ts}
+          placeholder="UNIX timestamp in ms, or ISO-8601"
+          onChange={(v) => props.onChange({ type: 'timestamp', ts: v })}
+        />
+      )}
+      {props.value.type === 'quickDate' && (
+        <SmallButton
+          onClick={() => {
+            if (props.value.type !== 'quickDate') {
+              return;
+            }
 
-              const relativeTo = new Date();
-              setLatestSelectedDate(relativeTo);
-              props.onChange({ ...props.value, relativeTo });
-            }}
-            type='primary'
-            text='Actualize'
-          />
-        )}
-      </div>
+            const relativeTo = new Date();
+            setLatestSelectedDate(relativeTo);
+            props.onChange({ ...props.value, relativeTo });
+          }}
+          type='primary'
+          text='Actualize'
+        />
+      )}
     </div>
+    </div >
   );
+}
+
+function hasPartitionedTopic(topicsInternalStats: GetTopicsInternalStatsResponse | undefined): boolean {
+  if (topicsInternalStats === undefined) {
+    return false;
+  }
+
+  let result = false;
+  topicsInternalStats.getStatsMap().forEach((stats) => {
+    if (stats.getPartitionedTopicStats() !== undefined) {
+      result = true;
+    }
+  });
+  return result;
 }
 
 export default StartFromInput;
