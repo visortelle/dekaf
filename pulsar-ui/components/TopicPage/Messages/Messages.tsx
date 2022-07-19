@@ -38,7 +38,9 @@ import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp
 import { useAnimationFrame } from '../../app/hooks/use-animation-frame';
 import Console from './Console/Console';
 import dayjs from 'dayjs';
+import stringify from 'safe-stable-stringify';
 
+const consoleCss = "color: #276ff4; font-weight: bold;";
 const browser = detectBrowser();
 const isSlowBrowser = browser?.name === 'safari' || browser?.name === 'firefox';
 
@@ -169,6 +171,8 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [stream]);
 
   const cleanup = useCallback(async () => {
+    console.info(`%cCleaning up session: ${props.sessionKey}`, consoleCss);
+
     streamRef.current?.cancel();
     streamRef.current?.removeListener('data', streamDataHandler);
     setMessages([]);
@@ -278,10 +282,14 @@ const Session: React.FC<SessionProps> = (props) => {
     appContext.setPerformanceOptimizations({ ...appContext.performanceOptimizations, pulsarConsumerState: sessionState === 'running' ? 'active' : 'inactive' });
 
     if (sessionState === 'initializing') {
+      console.info(`%cInitializing session: ${props.sessionKey}`, consoleCss);
+
       initializeSession();
     }
 
     if (sessionState === 'paused') {
+      console.info(`%cPausing session: ${props.sessionKey}`, consoleCss);
+
       const pauseReq = new PauseRequest();
       pauseReq.setConsumerName(consumerName);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
@@ -293,11 +301,18 @@ const Session: React.FC<SessionProps> = (props) => {
       return;
     }
 
+    if (sessionState === 'awaiting-initial-cursor-positions') {
+        console.info(`%cAwaiting initial cursor positions for session: ${props.sessionKey}`, consoleCss);
+    }
+
     if (sessionState === 'got-initial-cursor-positions') {
+      console.info(`%cGot initial cursor positions for session: ${props.sessionKey}`, consoleCss);
       setSessionState('running');
     }
 
     if (sessionState === 'running') {
+      console.info(`%cRunning session: ${props.sessionKey}`, consoleCss);
+
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
       stream?.cancel();
@@ -305,6 +320,14 @@ const Session: React.FC<SessionProps> = (props) => {
       const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });
       setStream(() => newStream);
       return;
+    }
+
+    if (sessionState && prevSessionState === undefined) {
+      console.info(`%c--------------------`, consoleCss);
+      console.info(`%cStarting new consumer session: ${props.sessionKey}`, consoleCss);
+      console.info('%cSession config: %o', consoleCss, props.config);
+      console.info('%cConsumer name:', consoleCss, consumerName);
+      console.info('%cSubscription name:', consoleCss, subscriptionName);
     }
 
     if (sessionState === 'new' && prevSessionState !== undefined) {

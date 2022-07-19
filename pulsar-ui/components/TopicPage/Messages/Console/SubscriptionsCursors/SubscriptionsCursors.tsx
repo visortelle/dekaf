@@ -6,7 +6,7 @@ import { swrKeys } from '../../../../swrKeys';
 import useSWR from 'swr';
 import { CursorStats, GetTopicsInternalStatsRequest, GetTopicsInternalStatsResponse, ManagedLedgerInternalStats, TopicInternalStats } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
-import { SessionState } from '../../types';
+import { SessionConfig, SessionState } from '../../types';
 import SubscriptionCursor, { SubscriptionCursorProps, Cursor } from './SubscriptionCursor/SubscriptionCursor';
 
 type TopicName = string;
@@ -23,8 +23,10 @@ type SubscriptionsCursorStats = Record<SubscriptionName, CursorStats>
 
 export type SubscriptionsCursorsProps = {
   sessionKey: number;
+  sessionConfig: SessionConfig;
   selector: CursorSelector;
   sessionState: SessionState;
+  sessionSubscriptionName: string;
   onSessionStateChange: (sessionState: SessionState) => void;
 };
 
@@ -50,18 +52,25 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
   }
 
   useEffect(() => {
-    if (props.sessionState === 'awaiting-initial-cursor-positions' && topicsInternalStats !== undefined) {
-      const gotInitialCursorsPositions = topicsInternalStats.toObject().statsMap.some(sm => {
-        const a = (sm[1].topicStats?.managedLedgerInternalStats?.cursorsMap?.length || 0) > 0;
-        const b = (sm[1].partitionedTopicStats?.partitionsMap.some(p => (p[1].managedLedgerInternalStats?.cursorsMap?.length || 0) > 0))
-        return a || b;
-      });
-      if (gotInitialCursorsPositions) {
-        setSessionStartStats(topicsInternalStats.getStatsMap());
-        props.onSessionStateChange('got-initial-cursor-positions');
-      }
+    if (props.sessionState !== 'awaiting-initial-cursor-positions' || topicsInternalStats === undefined) {
+      return;
     }
-  }, [topicsInternalStats, props.sessionState, props.sessionState]);
+
+    if (props.sessionConfig.topicsSelector.type !== 'by-names') {
+      props.onSessionStateChange('got-initial-cursor-positions');
+      return;
+    }
+
+    const gotInitialCursorsPositions = props.sessionConfig.topicsSelector.topics.every(topic => {
+      const hasCursor = getCursorForSubscription(topicsInternalStats.getStatsMap(), topic, { type: 'any-partition' }, props.sessionSubscriptionName);
+      return hasCursor;
+    });
+
+    if (gotInitialCursorsPositions) {
+      setSessionStartStats(topicsInternalStats.getStatsMap());
+      props.onSessionStateChange('got-initial-cursor-positions');
+    }
+  }, [topicsInternalStats, props.sessionState, props.sessionConfig]);
 
   const statsMapPb = topicsInternalStats?.getStatsMap();
 
@@ -139,7 +148,7 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
                       subscriptionName={subscriptionName}
                       cursor={cursor}
                       managedLedger={managedLedger}
-                      partition={undefined}
+                      partitionSelector={{ type: 'non-partitioned' }}
                       sessionStartStats={sessionStartStats}
                       subscription={subscriptionName}
                       topic={topicCursorStats.topic}
@@ -174,14 +183,13 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
                   {Object.keys(partition.subscriptions).length === 0 && (<div className={s.NoSubscriptions}>-</div>)}
                   {Object.keys(partition.subscriptions).map(subscriptionName => {
                     const cursor = partition.subscriptions[subscriptionName];
-
                     return (
                       <SubscriptionComponent
                         key={subscriptionName}
                         subscriptionName={subscriptionName}
                         cursor={cursor}
                         managedLedger={managedLedger}
-                        partition={partitionName}
+                        partitionSelector={{ type: 'partition', partitionName }}
                         sessionStartStats={sessionStartStats}
                         subscription={subscriptionName}
                         topic={topicCursorStats.topic}
@@ -216,14 +224,14 @@ type SubscriptionComponentProps = {
   sessionStartStats: ReturnType<GetTopicsInternalStatsResponse['getStatsMap']>;
   managedLedger: ManagedLedgerInternalStats;
   topic: string;
-  partition: string | undefined;
+  partitionSelector: PartitionSelector;
   subscription: string;
 }
 const SubscriptionComponent: React.FC<SubscriptionComponentProps> = (props) => {
   const subscriptionCursorProps = getSubscriptionCursorProps({
     cursor: props.cursor,
     managedLedger: props.managedLedger,
-    partition: props.partition,
+    partitionSelector: props.partitionSelector,
     sessionStartStats: props.sessionStartStats,
     subscription: props.subscription,
     topic: props.topic,
@@ -248,13 +256,13 @@ type GetSubscriptionCursorPropsArgs = {
   managedLedger: ManagedLedgerInternalStats;
   cursor: CursorStats;
   topic: string,
-  partition: string | undefined,
+  partitionSelector: PartitionSelector,
   subscription: string;
 }
 function getSubscriptionCursorProps(props: GetSubscriptionCursorPropsArgs): SubscriptionCursorProps | undefined {
-  const { cursor, managedLedger, partition, sessionStartStats, subscription, topic } = props;
+  const { cursor, managedLedger, partitionSelector, sessionStartStats, subscription, topic } = props;
 
-  const sessionStartCursorStats = getCursorForSubscription(sessionStartStats, topic, partition, subscription);
+  const sessionStartCursorStats = getCursorForSubscription(sessionStartStats, topic, partitionSelector, subscription);
   if (sessionStartCursorStats === undefined) {
     return undefined;
   }
@@ -310,12 +318,38 @@ function cursorStatsToCursor(stats: CursorStats): Cursor {
   }
 }
 
-function getCursorForSubscription(stats: ReturnType<GetTopicsInternalStatsResponse['getStatsMap']>, topic: string, partition: string | undefined, subscription: string): CursorStats | undefined {
-  if (partition === undefined) {
+type PartitionSelector = { type: 'any-partition' } | { type: 'non-partitioned' } | { type: 'partition', partitionName: string };
+function getCursorForSubscription(
+  stats: ReturnType<GetTopicsInternalStatsResponse['getStatsMap']>,
+  topic: string,
+  partitionSelector: PartitionSelector,
+  subscription: string
+): CursorStats | undefined {
+  if (partitionSelector.type === 'non-partitioned') {
     return stats.get(topic)?.getTopicStats()?.getManagedLedgerInternalStats()?.getCursorsMap()?.get(subscription);
   }
+  if (partitionSelector.type === 'partition') {
+    return stats.get(topic)?.getPartitionedTopicStats()?.getPartitionsMap()?.get(partitionSelector.partitionName)?.getManagedLedgerInternalStats()?.getCursorsMap()?.get(subscription);
+  }
+  if (partitionSelector.type === 'any-partition') {
+    const nonPartitionedTopicCursor = stats.get(topic)?.getTopicStats()?.getManagedLedgerInternalStats()?.getCursorsMap()?.get(subscription);
+    if (nonPartitionedTopicCursor !== undefined) {
+      return  nonPartitionedTopicCursor;
+    }
 
-  return stats.get(topic)?.getPartitionedTopicStats()?.getPartitionsMap()?.get(partition)?.getManagedLedgerInternalStats()?.getCursorsMap()?.get(subscription);
+    const partitions = stats.get(topic)?.getPartitionedTopicStats()?.getPartitionsMap();
+    let cursor: CursorStats | undefined = undefined;
+    partitions?.forEach((partition) => {
+      if (cursor !== undefined) {
+        return;
+      }
+      const _cursor = partition.getManagedLedgerInternalStats()?.getCursorsMap()?.get(subscription);
+      if (_cursor !== undefined) {
+        cursor = _cursor;
+      }
+    });
+    return cursor;
+  }
 }
 
 export default SubscriptionsCursors;
