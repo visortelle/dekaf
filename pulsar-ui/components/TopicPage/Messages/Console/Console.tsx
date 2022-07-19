@@ -22,7 +22,9 @@ const Console: React.FC<ConsoleProps> = (props) => {
         <div className={s.SubscriptionsCursors}>
           <SubscriptionsCursors
             sessionKey={props.sessionKey}
+            sessionSubscriptionName={props.sessionSubscriptionName}
             sessionState={props.sessionState}
+            sessionConfig={props.sessionConfig}
             onSessionStateChange={props.onSessionStateChange}
             selector={props.sessionConfig.topicsSelector.topics.reduce((acc, topic) => ({ ...acc, [topic]: [props.sessionSubscriptionName] }), {})}
           />
