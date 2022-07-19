@@ -1,13 +1,15 @@
 import React from 'react';
 import s from './Console.module.css'
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
-import { SessionConfig } from '../types';
+import { SessionConfig, SessionState } from '../types';
 
 export type ConsoleProps = {
+  sessionKey: number;
   sessionSubscriptionName: string;
   sessionConfig: SessionConfig;
-  isGetInitialCursorPositions: boolean;
-  onGetInitialCursorPositions: () => void;
+  sessionState: SessionState;
+  initialCursorPositions: boolean;
+  onInitialCursorPositionsChange: (v: boolean) => void;
 };
 
 const Console: React.FC<ConsoleProps> = (props) => {
@@ -20,8 +22,10 @@ const Console: React.FC<ConsoleProps> = (props) => {
       {props.sessionConfig.topicsSelector.type === 'by-names' && (
         <div className={s.SubscriptionsCursors}>
           <SubscriptionsCursors
-            isGetInitialCursorPositions={props.isGetInitialCursorPositions}
-            onGetInitialCursorPositions={props.onGetInitialCursorPositions}
+            sessionKey={props.sessionKey}
+            sessionState={props.sessionState}
+            initialCursorPositions={props.initialCursorPositions}
+            onInitialCursorPositionsChange={props.onInitialCursorPositionsChange}
             selector={props.sessionConfig.topicsSelector.topics.reduce((acc, topic) => ({ ...acc, [topic]: [props.sessionSubscriptionName] }), {})}
           />
         </div>
