@@ -25,8 +25,7 @@ export type SubscriptionsCursorsProps = {
   sessionKey: number;
   selector: CursorSelector;
   sessionState: SessionState;
-  initialCursorPositions: boolean; // Intended to correctly display current session range bar.
-  onInitialCursorPositionsChange: (v: boolean) => void;
+  onSessionStateChange: (sessionState: SessionState) => void;
 };
 
 const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
@@ -43,7 +42,7 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
       req.setTopicsList(topics);
       return await topicServiceClient.getTopicsInternalStats(req, {});
     },
-    { refreshInterval: props.initialCursorPositions ? 200 : 1000 }
+    { refreshInterval: props.sessionState === 'awaiting-initial-cursor-positions' ? 200 : 1000 }
   );
 
   if (topicsInternalStatsError || (topicsInternalStats && topicsInternalStats?.getStatus()?.getCode() !== Code.OK)) {
@@ -51,7 +50,7 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
   }
 
   useEffect(() => {
-    if (!props.initialCursorPositions && topicsInternalStats !== undefined && props.sessionState !== 'new') {
+    if (props.sessionState === 'awaiting-initial-cursor-positions' && topicsInternalStats !== undefined) {
       const gotInitialCursorsPositions = topicsInternalStats.toObject().statsMap.some(sm => {
         const a = (sm[1].topicStats?.managedLedgerInternalStats?.cursorsMap?.length || 0) > 0;
         const b = (sm[1].partitionedTopicStats?.partitionsMap.some(p => (p[1].managedLedgerInternalStats?.cursorsMap?.length || 0) > 0))
@@ -59,10 +58,10 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
       });
       if (gotInitialCursorsPositions) {
         setSessionStartStats(topicsInternalStats.getStatsMap());
-        props.onInitialCursorPositionsChange(true);
+        props.onSessionStateChange('got-initial-cursor-positions');
       }
     }
-  }, [topicsInternalStats, props.initialCursorPositions, props.sessionState]);
+  }, [topicsInternalStats, props.sessionState, props.sessionState]);
 
   const statsMapPb = topicsInternalStats?.getStatsMap();
 
