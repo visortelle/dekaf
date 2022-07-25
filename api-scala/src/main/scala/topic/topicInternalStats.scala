@@ -34,7 +34,7 @@ def getTopicType(topic: String): TopicType =
 
     val isNonPartitioned =
         try {
-            val b = adminClient.lookups().lookupTopic(topic)
+            adminClient.lookups().lookupTopic(topic)
             true
         } catch {
             case _ => false
