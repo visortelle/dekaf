@@ -1,0 +1,43 @@
+.Producer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.Content {
+  display: flex;
+  flex: 1 1 auto;
+}
+
+.Presets {
+  width: 180rem;
+  height: 100%;
+  padding: 12rem 12rem 12rem 0;
+  background-color: #f5f5f5;
+}
+
+.Config {
+  padding: 12rem 12rem;
+}
+
+.FormControl {
+  display: flex;
+  flex-direction: column;
+  width: 480rem;
+  margin-bottom: 12rem;
+}
+
+.Value {
+  padding: 12rem;
+}
+
+.Toolbar {
+  padding: 8rem 12rem;
+  margin-top: auto;
+  border-top: 1px solid #ddd;
+  display: flex;
+}
+
+.ToolbarControl {
+  margin-right: 12rem;
+}

@@ -10,7 +10,9 @@ const EnteringFromBottomDiv = ({ motionKey, children, className, isVisible }: { 
         exit={{ y: '120%' }}
         className={className || ''}
         transition={{ duration: 0.33 }}
-        style={{ zIndex: isVisible ? 1 : 0 }}
+        style={{
+          zIndex: isVisible ? 1 : 0,
+        }}
       >
         {children}
       </motion.div>
