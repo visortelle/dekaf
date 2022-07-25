@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.api.v1;
+
+import "google/rpc/status.proto";
+
+message CreateProducerRequest {
+  string producer_name = 1;
+  string topic = 2;
+}
+
+message CreateProducerResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteProducerRequest {
+  string producer_name = 1;
+}
+
+message DeleteProducerResponse {
+  google.rpc.Status status = 1;
+}
+
+message SendRequest {
+  string producer_name = 1;
+  repeated bytes messages = 2;
+}
+
+message SendResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetStatsRequest {
+  string producer_name = 1;
+}
+
+message Stats {
+  int64 num_messages_sent = 1;
+  int64 num_bytes_sent = 2;
+  int64 num_send_failed = 3;
+  int64 num_acks_received = 4;
+  double send_messages_rate = 5;
+  double send_bytes_rate = 6;
+  int64 total_messages_sent = 7;
+  int64 total_bytes_sent = 8;
+  int64 total_send_failed = 9;
+  int64 total_acks_received = 10;
+  int32 pending_queue_size = 11;
+}
+
+message GetStatsResponse {
+  google.rpc.Status status = 1;
+  Stats stats = 2;
+}
+
+service ProducerService {
+  rpc CreateProducer(CreateProducerRequest) returns (CreateProducerResponse);
+  rpc DeleteProducer(DeleteProducerRequest) returns (DeleteProducerResponse);
+  rpc Send(SendRequest) returns (SendResponse);
+  rpc GetStats(GetStatsRequest) returns (GetStatsResponse);
+}

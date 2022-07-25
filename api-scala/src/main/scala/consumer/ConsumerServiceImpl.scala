@@ -42,13 +42,12 @@ class StreamDataHandler:
     var onNext: (msg: Message[Array[Byte]]) => Unit = _ => ()
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
+    val logger: Logger = Logger(getClass.getName)
     var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
     var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
     var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
     var topics: Map[ConsumerName, Vector[String]] = Map.empty
     var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
-
-    val logger: Logger = Logger(getClass.getName)
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
         val consumerName: ConsumerName = request.consumerName

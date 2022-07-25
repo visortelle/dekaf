@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import s from './SubscriptionCursor.module.css';
+import { position } from '../../../../../pulsar/position';
 
 type LedgerInfo = {
   ledgerId: number;
@@ -51,22 +52,34 @@ const parseReadPosition = (cursor: SubscriptionCursorProps['cursor']) => Number(
 const parseMarkDeletePosition = (cursor: SubscriptionCursorProps['cursor']) => Number(cursor.markDeletePosition.split(':')[1]);
 
 const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
+  const [readPosition, setReadPosition] = useState(props.cursor.readPosition);
+  const [sessionStartReadPosition, setSessionStartReadPosition] = useState(position.gt(props.sessionStartCursor.readPosition, readPosition) ? readPosition : props.sessionStartCursor.readPosition);
+
+  useEffect(() => {
+    if (sessionStartReadPosition > readPosition) {
+      setSessionStartReadPosition(() => readPosition);
+    }
+  }, [readPosition]);
+
+  // useEffect(() => {
+  //   setReadPosition(() => parseReadPosition(props.cursor));
+  // }, [props.cursor]);
+
+  console.log('read position ledger', position.getLedgerId(props.cursor.readPosition));
+
   const numberOfEntries = props.managedLedgerInternalStats.numberOfEntries;
 
-  const readPosition = parseReadPosition(props.cursor);
-  const readPositionPercent = readPosition / (numberOfEntries / 100);
-  const markDeletePosition = parseMarkDeletePosition(props.cursor);
-  const markDeletePositionPercent = markDeletePosition / (numberOfEntries / 100);
+  // const readPositionPercent = readPosition / (numberOfEntries / 100);
+  // const markDeletePosition = parseMarkDeletePosition(props.cursor);
+  // const markDeletePositionPercent = markDeletePosition / (numberOfEntries / 100);
 
-  const _sessionStartReadPosition = parseReadPosition(props.sessionStartCursor);
-  const sessionStartReadPosition = _sessionStartReadPosition > readPosition ? 0 : _sessionStartReadPosition;
-  const sessionStartPercentage = sessionStartReadPosition / (numberOfEntries / 100);
-  const sessionAtPercentage = readPosition / (numberOfEntries / 100);
+  // const sessionStartPercentage = sessionStartReadPosition / (numberOfEntries / 100);
+  // const sessionAtPercentage = readPosition / (numberOfEntries / 100);
 
   return (
     <div className={s.SubscriptionCursor}>
       <div className={s.Bar}>
-        <div className={s.ReadPosition} style={{ left: `${readPositionPercent}%` }} data-tip="Read position">
+        {/* <div className={s.ReadPosition} style={{ left: `${readPositionPercent}%` }} data-tip="Read position">
           <div className={s.ReadPositionValue} style={{ left: readPositionPercent < 50 ? 0 : 'unset' }}>{readPosition}</div>
         </div>
         <div className={s.MarkDeletePosition} style={{ left: `${markDeletePositionPercent}%` }} data-tip="Mark-delete position">
@@ -77,10 +90,11 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
           className={s.CurrentSession}
           style={{ left: `${sessionStartPercentage}%`, width: `${sessionAtPercentage - sessionStartPercentage}%` }}
           data-tip={`Current session. <br />Started at position: ${sessionStartReadPosition}${readPosition !== undefined ? `<br />Processed: ${readPosition - sessionStartReadPosition}` : ''}`}
-        ></div>
+        ></div> */}
       </div>
     </div>
   );
 }
+
 
 export default SubscriptionCursor;
