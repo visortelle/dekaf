@@ -146,7 +146,7 @@ const Session: React.FC<SessionProps> = (props) => {
               Unable to seek by messageId. Consumer: {consumerName}.<br /><br />
               Possible reasons:<br />
               - Message with such id doesn&apos;t exist specified.<br />
-              - Some of the topics is partitioned topic.
+              - Some of the topics are partitioned.
             </div>
           );
           props.onStopSession();
@@ -388,7 +388,10 @@ const Session: React.FC<SessionProps> = (props) => {
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
       />
 
-      {content === 'messages' && (
+      {content === 'messages' && messages.length === 0 && (
+        <div className={s.NoMessages}>Awaiting for messages...</div>
+      )}
+      {content === 'messages' && messages.length > 0 && (
         <div
           className={s.List}
           ref={listRef}
