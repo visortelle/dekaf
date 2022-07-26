@@ -13,3 +13,8 @@
   flex: 1 1 auto;
   overflow: auto;
 }
+
+.NoMessages {
+  flex: 1;
+  padding: 12rem;
+}

@@ -2,20 +2,21 @@ import React, { ReactNode } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import s from './Notifications.module.css';
 
-export const toastContainerId = 'pulsar-ui-toast-container';
+export const toastContainerId = '__xray-toast-container';
 
 export type Value = {
-  notifySuccess: (content: ReactNode, notificationId?: string) => void,
-  notifyInfo: (content: ReactNode, notificationId?: string) => void,
-  notifyWarn: (content: ReactNode, notificationId?: string) => void,
-  notifyError: (content: ReactNode, notificationId?: string) => void,
+  notifySuccess: (content: ReactNode, notificationId?: string, isShort?: boolean) => void,
+  notifyInfo: (content: ReactNode, notificationId?: string, isShort?: boolean) => void,
+  notifyWarn: (content: ReactNode, notificationId?: string, isShort?: boolean) => void,
+  notifyError: (content: ReactNode, notificationId?: string, isShort?: boolean) => void,
 }
 
+const isShortTimeout = 100;
 const defaultValue: Value = {
-  notifySuccess: (content, notificationId) => toast.success(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
-  notifyInfo: (content, notificationId) => toast.info(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
-  notifyWarn: (content, notificationId) => toast.warn(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
-  notifyError: (content, notificationId) => toast.error(content, { containerId: toastContainerId, toastId: notificationId || content?.toString() }),
+  notifySuccess: (content, notificationId, isShort) => toast.success(content, { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }),
+  notifyInfo: (content, notificationId, isShort) => toast.info(content, { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }),
+  notifyWarn: (content, notificationId, isShort) => toast.warn(content, { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }),
+  notifyError: (content, notificationId, isShort) => toast.error(content, { containerId: toastContainerId, toastId: notificationId || content?.toString(), autoClose: isShort ? isShortTimeout : undefined }),
 };
 
 const Context = React.createContext<Value>(defaultValue);
@@ -28,7 +29,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           enableMultiContainer
           containerId={toastContainerId}
           position="top-right"
-          autoClose={3000}
+          autoClose={5000}
           newestOnTop={true}
           hideProgressBar={true}
           closeOnClick={true}

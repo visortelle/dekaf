@@ -65,8 +65,6 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
   //   setReadPosition(() => parseReadPosition(props.cursor));
   // }, [props.cursor]);
 
-  console.log('read position ledger', position.getLedgerId(props.cursor.readPosition));
-
   const numberOfEntries = props.managedLedgerInternalStats.numberOfEntries;
 
   // const readPositionPercent = readPosition / (numberOfEntries / 100);
