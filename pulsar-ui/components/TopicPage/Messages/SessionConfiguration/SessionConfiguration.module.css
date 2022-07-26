@@ -1,5 +1,6 @@
 .SessionConfiguration {
   padding: 36rem 12rem;
+  flex: 1;
 }
 
 .LeftColumn {
