@@ -9,6 +9,7 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import SchemaTypeInput, { SchemaTypeT } from './SchemaTypeInput/SchemaTypeInput';
 import Button from '../../ui/Button/Button';
 import Input from '../../ui/Input/Input';
+import ProtobufNativeEditor from './ProtobufNativeEditor/ProtobufNativeEditor';
 
 export type SchemaProps = {
   tenant: string,
@@ -20,7 +21,7 @@ export type SchemaProps = {
 const Schema: React.FC<SchemaProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const [schemaType, setSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_NONE');
+  const [schemaType, setSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_PROTOBUF_NATIVE');
   const [schemaName, setSchemaName] = useState<string>('');
   const [schema, setSchema] = useState<string>('');
 
@@ -64,7 +65,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
             // rootFileDescriptorName: "Test.proto"
           // rootMessageTypeName: "proto.TestMessage"
             <div>
-              <textarea value={schema} onChange={e => setSchema(e.target.value)}></textarea>
+              <ProtobufNativeEditor />
             </div>
           )}
         </div>
