@@ -14,7 +14,7 @@ export type List<V> = ListItem<V>[]
 
 export type InputProps<V> = {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: V) => void;
   list: List<V>;
   placeholder?: string;
   disabled?: boolean;
@@ -35,7 +35,7 @@ function Input<V extends string>(props: InputProps<V>): React.ReactElement {
       {typeof props.value === 'undefined' && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={`${s.Select} ${props.disabled ? s.DisabledSelect : ''}`}
-        onChange={(v) => props.onChange(v.target.value)}
+        onChange={(v) => props.onChange(v.target.value as V)}
         value={props.value}
         disabled={props.disabled}
       >

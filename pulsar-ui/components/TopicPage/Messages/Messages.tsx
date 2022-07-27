@@ -389,7 +389,12 @@ const Session: React.FC<SessionProps> = (props) => {
       />
 
       {content === 'messages' && messages.length === 0 && (
-        <div className={s.NoMessages}>Awaiting for messages...</div>
+        <div className={s.NoMessages}>
+          {sessionState === 'initializing' && 'Initializing session.'}
+          {sessionState === 'awaiting-initial-cursor-positions' && 'Awaiting for initial cursor positions.'}
+          {sessionState === 'running' && 'Awaiting for new messages...'}
+          {sessionState === 'paused' && 'No messages where loaded.'}
+        </div>
       )}
       {content === 'messages' && messages.length > 0 && (
         <div

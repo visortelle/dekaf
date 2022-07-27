@@ -17,7 +17,9 @@ lazy val root = project
       // Pulsar
       "org.apache.pulsar" % "pulsar-client-original" % "2.10.1",
       "org.apache.pulsar" % "pulsar-client-admin-original" % "2.10.1",
-      "io.netty" % "netty-all" % "4.1.78.Final" // Needed by pulsar-client-original
+      "io.netty" % "netty-all" % "4.1.78.Final", // Needed by pulsar-client-original
+      // Protobuf
+      "com.google.protobuf" % "protobuf-java" % "3.21.3",
     )
   )
 
