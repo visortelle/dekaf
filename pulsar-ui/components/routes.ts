@@ -108,6 +108,18 @@ export const routes = {
                       `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/overview`,
                   },
                 },
+                schema: {
+                  _: {
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/schema",
+                    get: (props: {
+                      tenant: string;
+                      namespace: string;
+                      topicType: "persistent" | "non-persistent";
+                      topic: string;
+                    }) =>
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/schema`,
+                  },
+                },
                 policies: {
                   _: {
                     path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/policies",

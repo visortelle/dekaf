@@ -1,77 +1,126 @@
-package producer
+package schema
 
 import _root_.client.{adminClient, client}
-import org.apache.pulsar.client.api.{ProducerAccessMode, Producer}
-import com.typesafe.scalalogging.Logger
-import com.google.rpc.status.Status
+import com.google.protobuf.Descriptors
+import com.google.protobuf.ByteString
+import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptorSet}
+import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
+import com.google.rpc.status.Status
+import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufFileRequest, CompileProtobufFileResponse, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, SchemaServiceGrpc, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import com.typesafe.scalalogging.Logger
+import org.apache.pulsar.client.admin.PulsarAdminException
+import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
 
+import scala.sys.process.*
+import scala.jdk.CollectionConverters.*
+import org.apache.pulsar.client.api.{Producer, ProducerAccessMode}
+import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
+
+import java.io.FileInputStream
+import java.nio.file.Paths
 import scala.concurrent.Future
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto
+import com.google.protobuf.Descriptors.DescriptorValidationException
+import org.apache.pulsar.common.protocol.schema.ProtobufNativeSchemaData
 
-type ProducerName = String
+import java.util
 
-class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
+class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
     val logger: Logger = Logger(getClass.getName)
-    var producers: Map[ProducerName, Producer[Array[Byte]]] = Map.empty
 
-    override def createProducer(request: CreateProducerRequest): Future[CreateProducerResponse] =
-        val producerName: ProducerName = request.producerName
-        logger.info(s"Creating producer: $producerName")
+    override def createSchema(request: CreateSchemaRequest): Future[CreateSchemaResponse] =
+        request.schemaInfo match
+            case Some(s) =>
+                val schemaInfo = SchemaInfo.builder
+                    .name(s.name)
+                    .`type`(schemaTypeFromPb(s.`type`))
+                    .properties(s.properties.asJava)
+                    .schema(s.schema.toByteArray)
+                    .build()
 
-        try {
-            val producer = client
-                .newProducer()
-                .accessMode(ProducerAccessMode.Shared)
-                .producerName(producerName)
-                .topic(request.topic)
-                .create()
-
-            producers = producers + (producerName -> producer)
-
-            val status: Status = Status(code = Code.OK.index)
-            Future.successful(CreateProducerResponse(status = Some(status)))
-        } catch {
-            case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(CreateProducerResponse(status = Some(status)))
-        }
-
-    override def deleteProducer(request: DeleteProducerRequest): Future[DeleteProducerResponse] =
-        val producerName: ProducerName = request.producerName
-        logger.info(s"Deleting producer: $producerName")
-
-        producers.get(producerName) match
-            case Some(p) =>
                 try {
-                    producers = producers.removed(producerName)
-                    p.close()
+                    adminClient.schemas.createSchema(request.topic, schemaInfo)
 
-                    val status: Status = Status(code = Code.OK.index)
-                    Future.successful(DeleteProducerResponse(status = Some(status)))
+                    val status = Status(code = Code.OK.index)
+                    Future.successful(CreateSchemaResponse(status = Some(status)))
                 } catch {
                     case err =>
-                        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                        Future.successful(DeleteProducerResponse(status = Some(status)))
+                        println(err)
+                        val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                        Future.successful(CreateSchemaResponse(status = Some(status)))
                 }
+
             case _ =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"No such producer: $producerName")
-                Future.successful(DeleteProducerResponse(status = Some(status)))
+                val status = Status(code = Code.INVALID_ARGUMENT.index)
+                Future.successful(CreateSchemaResponse(status = Some(status)))
 
-    override def send(request: SendRequest): Future[SendResponse] =
-        val producerName: ProducerName = request.producerName
-        logger.debug(s"Sending message. Producer: $producerName")
+    override def deleteSchema(request: DeleteSchemaRequest): Future[DeleteSchemaResponse] = ???
 
-        producers.get(producerName) match
-            case Some(p) =>
-                request.messages.foreach(msg => p.sendAsync(msg.toByteArray))
+    override def getLatestSchemaInfo(request: GetLatestSchemaInfoRequest): Future[GetLatestSchemaInfoResponse] =
+        try {
+            val schemaInfoWithVersion = adminClient.schemas.getSchemaInfoWithVersion(request.topic)
+            val status = Status(code = Code.OK.index)
 
-                val status: Status = Status(code = Code.OK.index)
-                Future.successful(SendResponse(status = Some(status)))
-            case _ =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"No such producer: $producerName")
-                Future.successful(SendResponse(status = Some(status)))
+            Future.successful(
+              GetLatestSchemaInfoResponse(
+                status = Some(status),
+                schemaInfo = Some(schemaInfoToPb(schemaInfoWithVersion.getSchemaInfo)),
+                schemaVersion = Option(schemaInfoWithVersion.getVersion)
+              )
+            )
+        } catch {
+            case (_: PulsarAdminException.NotFoundException) =>
+                val status = Status(code = Code.OK.index)
+                Future.successful(GetLatestSchemaInfoResponse(status = Some(status), schemaInfo = None, schemaVersion = None))
+            case (err: PulsarAdminException) =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetLatestSchemaInfoResponse(status = Some(status)))
+        }
 
-    override def getStats(request: GetStatsRequest): Future[GetStatsResponse] = ???
+    override def listSchemas(request: ListSchemasRequest): Future[ListSchemasResponse] =
+        try {
+            val schemaInfos = adminClient.schemas.getAllSchemas(request.topic).asScala.toSeq.map(schemaInfoToPb(_))
+            val status = Status(code = Code.OK.index)
+            Future.successful(ListSchemasResponse(status = Some(status), schemaInfos))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(ListSchemasResponse(status = Some(status)))
+        }
+
+    override def compileProtobufFile(request: CompileProtobufFileRequest): Future[CompileProtobufFileResponse] =
+        try {
+            val descriptorSetOut = "/tmp/descriptor_set_out.pb"
+            logger.info(s"Compiling protobuf native schema for: ${request.protoFilePath}")
+
+            val protosDir = Paths.get(request.protoFilePath).getParent.toAbsolutePath
+            val protoFile = Paths.get(request.protoFilePath).getFileName.toString
+
+            val protocCommand = s"protoc --descriptor_set_out=${descriptorSetOut} -I $protosDir ${protoFile}"
+            Seq("sh", "-c", s"set -e; ${protocCommand}").! == 0
+
+            val descriptorSet = FileDescriptorSet.parseFrom(new FileInputStream(descriptorSetOut))
+            val fileDescriptor = buildFileDescriptor(descriptorSet.getFile(0), Map.empty)
+            val messageDescriptor = fileDescriptor.findMessageTypeByName("MySchema")
+            val nativeProtobufSchema = ProtobufNativeSchemaUtils.serialize(messageDescriptor)
+
+            val status = Status(code = Code.OK.index)
+            Future.successful(CompileProtobufFileResponse(
+                status = Some(status),
+                nativeProtobufSchema = ByteString.copyFrom(nativeProtobufSchema)
+            ))
+        } catch {
+            case err =>
+                logger.error(s"Unable to compile protobuf file ${request.protoFilePath}", err)
+
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(CompileProtobufFileResponse(status = Some(status)))
+        }
 
 
+
+//val d = adminClient.schemas().testCompatibility()
+
+//val b = FileDescriptorSet.parseFrom()
+//val d = ProtobufNativeSchemaUtils.serialize(b)
