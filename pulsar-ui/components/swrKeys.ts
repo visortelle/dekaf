@@ -3,6 +3,14 @@ import { TreeNode } from "./NavigationTree/TreeView";
 
 export const swrKeys = {
   pulsar: {
+    schemas: {
+      getLatestSchemaInfo: {
+        _: (topic: string) => ["pulsar", "schemas", "getLatestSchemaInfo", topic],
+      },
+      listSchemas: {
+        _: (topic: string) => ["pulsar", "schemas", "listSchemas", topic],
+      }
+    },
     customApi: {
       metrics: {
         allTenants: {

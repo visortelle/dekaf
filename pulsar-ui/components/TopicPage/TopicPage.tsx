@@ -3,11 +3,12 @@ import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import s from './TopicPage.module.css'
 import Toolbar from '../ui/Toolbar/Toolbar';
 import Session from './Messages/Messages';
+import Schema from './Schema/Schema';
 import Policies from './Policies/Policies';
 import DeleteTopic from './DeleteTopic/DeleteTopic';
 import { routes } from '../routes';
 
-export type TopicPageView = 'messages' | 'overview' | 'policies' | 'delete-topic';
+export type TopicPageView = 'messages' | 'overview' | 'schema' | 'policies' | 'delete-topic';
 export type TopicPageProps = {
   view: TopicPageView;
   tenant: string;
@@ -60,6 +61,12 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
             type: 'regular'
           },
           {
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+            text: 'Schema',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
             text: 'Policies',
             onClick: () => { },
@@ -83,6 +90,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           }}
         />
       )}
+
+      {props.view === 'schema' && <Schema key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
       {props.view === 'policies' && <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
       {props.view === 'delete-topic' && <DeleteTopic key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
     </div>

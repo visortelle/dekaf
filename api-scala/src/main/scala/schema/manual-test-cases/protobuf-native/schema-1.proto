@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package manual.test.cases;
+
+message MySchema {
+  string name = 1;
+  string abc = 2;
+  int32 hz = 3;
+}

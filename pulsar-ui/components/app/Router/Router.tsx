@@ -49,6 +49,7 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     /* Topics */
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.path, element: withLayout(<RoutedTopicPage view='messages' />, setScrollMode(withLayoutProps, 'page-own')) },
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.path, element: withLayout(<RoutedTopicPage view='overview' />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.path, element: withLayout(<RoutedTopicPage view='schema' />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.path, element: withLayout(<RoutedTopicPage view='policies' />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.deleteTopic._.path, element: withLayout(<RoutedTopicPage view='delete-topic' />, withLayoutProps) },
 
