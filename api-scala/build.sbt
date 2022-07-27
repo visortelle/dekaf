@@ -20,6 +20,8 @@ lazy val root = project
       "io.netty" % "netty-all" % "4.1.78.Final", // Needed by pulsar-client-original
       // Protobuf
       "com.google.protobuf" % "protobuf-java" % "3.21.3",
+      // os
+      "com.lihaoyi" %% "os-lib" % "0.8.1"
     )
   )
 

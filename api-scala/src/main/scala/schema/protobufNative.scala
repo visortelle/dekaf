@@ -7,15 +7,17 @@ import com.google.protobuf.Descriptors.FileDescriptor
 import scala.reflect.ClassTag
 
 
+val ProtobufNativeDescriptionSetFile = "description_set_out.pb"
+
 // Recursively build file descriptor and all it's dependencies.
-private def buildFileDescriptor(currentFileProto: FileDescriptorProto, fileProtoCache: Map[String, FileDescriptorProto]): FileDescriptor = {
+private def buildProtobufNativeFileDescriptor(currentFileProto: FileDescriptorProto, fileProtoCache: Map[String, FileDescriptorProto]): FileDescriptor = {
     val dependencyFileDescriptorList: collection.mutable.ArrayBuffer[FileDescriptor] = collection.mutable.ArrayBuffer.empty
     currentFileProto.getDependencyList.forEach { (dependencyStr: String) =>
         def helper(dependencyStr: String) = {
             val dependencyFileProto = fileProtoCache.get(dependencyStr)
             dependencyFileProto match
                 case Some(v) =>
-                    val dependencyFileDescriptor = buildFileDescriptor(v, fileProtoCache)
+                    val dependencyFileDescriptor = buildProtobufNativeFileDescriptor(v, fileProtoCache)
                     dependencyFileDescriptorList.addOne(dependencyFileDescriptor)
                 case _ => ()
         }

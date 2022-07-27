@@ -77,13 +77,42 @@ message ListSchemasResponse {
   repeated SchemaInfo schema_infos = 2;
 }
 
-message CompileProtobufFileRequest {
-  string proto_file_path = 1;
+message FileEntry {
+  string name = 1;
+  string relative_path = 2;
+  string content = 3;
 }
 
-message CompileProtobufFileResponse {
+message CompileProtobufNativeFileRequest {
+  string proto_file_path = 1;
+  string schema_id = 2;
+  repeated FileEntry files = 3;
+}
+
+message CompileProtobufNativeFileResponse {
   google.rpc.Status status = 1;
-  bytes native_protobuf_schema = 2;
+  string schema_root_dir = 2;
+}
+
+message GetProtobufNativeMessageNamesRequest {
+  string schema_root_dir = 1;
+  string relative_path = 2;
+}
+
+message GetProtobufNativeMessageNamesResponse {
+  google.rpc.Status status = 1;
+  repeated string message_names = 2;
+}
+
+message GetProtobufNativeSchemaRequest {
+  string schema_root_dir = 1;
+  string message_name = 2;
+}
+
+message GetProtobufNativeSchemaResponse {
+  google.rpc.Status status = 1;
+  bytes schema = 2;
+  string human_readable_schema = 3;
 }
 
 service SchemaService {
@@ -91,5 +120,8 @@ service SchemaService {
   rpc GetLatestSchemaInfo(GetLatestSchemaInfoRequest) returns (GetLatestSchemaInfoResponse);
   rpc DeleteSchema(DeleteSchemaRequest) returns (DeleteSchemaResponse);
   rpc ListSchemas(ListSchemasRequest) returns (ListSchemasResponse);
-  rpc CompileProtobufFile(CompileProtobufFileRequest) returns (CompileProtobufFileResponse);
+
+  rpc CompileProtobufNativeFile(CompileProtobufNativeFileRequest) returns (CompileProtobufNativeFileResponse);
+  rpc GetProtobufNativeSchema(GetProtobufNativeSchemaRequest) returns (GetProtobufNativeSchemaResponse);
+  rpc GetProtobufNativeMessageNames(GetProtobufNativeMessageNamesRequest) returns (GetProtobufNativeMessageNamesResponse);
 }
