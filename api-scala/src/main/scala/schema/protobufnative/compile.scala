@@ -15,6 +15,8 @@ import org.apache.pulsar.client.impl
 import org.apache.pulsar.common.protocol.schema.ProtobufNativeSchemaData
 
 import scala.reflect.ClassTag
+import java.io.OutputStream
+import java.io.PrintStream
 
 // Recursively build file descriptor and all it's dependencies.
 private def buildProtobufNativeFilesDescriptor(
@@ -68,11 +70,14 @@ def compileFiles(files: Seq[FileEntry]): CompiledFiles =
 private def compileFile(f: FileEntry, tempDir: os.Path): (String, Either[String, CompiledFile]) =
     val inputFile = tempDir / os.PathChunk.SeqPathChunk(f.relativePath.split("/"))
         val descriptorSetOut = tempDir / os.PathChunk.SeqPathChunk((f.relativePath + ".pb").split("/"))
-        val protocCommand = s"protoc --descriptor_set_out=$descriptorSetOut -I $tempDir $inputFile"
-        val isCompiled = Seq("sh", "-c", s"set -e; $protocCommand").! == 0
+        val protocLogFile = tempDir / s"${f.relativePath.replace(java.io.File.separator, "--")}-protoc.log"
+        val protocCommand = s"protoc --descriptor_set_out=$descriptorSetOut -I $tempDir $inputFile &> $protocLogFile"
 
-        if (!isCompiled) {
-            return (f.relativePath, Left(s"Failed to compile $inputFile"))
+        val protocProcess = Seq("sh", "-c", s"set -e; $protocCommand").run
+
+        if (protocProcess.exitValue != 0) {
+            val compilationError = os.read(protocLogFile)
+            return (f.relativePath, Left(s"Failed to compile $inputFile.\nError: $compilationError"))
         }
 
         val descriptorSetOutContent = os.read.inputStream(descriptorSetOut)

@@ -4,5 +4,5 @@ package pkg_a;
 
 message MySchema {
   string name = 1;
-  int32 a = 1;
+  int32 a = 1; // Duplicate field number. Should emit a compilation error.
 }
