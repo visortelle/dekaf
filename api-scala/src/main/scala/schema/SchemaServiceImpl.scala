@@ -7,23 +7,32 @@ import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptor
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeFileRequest, CompileProtobufNativeFileResponse, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, GetProtobufNativeMessageNamesRequest, GetProtobufNativeMessageNamesResponse, GetProtobufNativeSchemaRequest, GetProtobufNativeSchemaResponse, ListSchemasRequest, ListSchemasResponse, SchemaServiceGrpc, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import com.tools.teal.pulsar.ui.api.v1.schema.{
+    CompiledProtobufNativeFile,
+    CompileProtobufNativeRequest,
+    CompileProtobufNativeResponse,
+    CreateSchemaRequest,
+    CreateSchemaResponse,
+    DeleteSchemaRequest,
+    DeleteSchemaResponse,
+    GetLatestSchemaInfoRequest,
+    GetLatestSchemaInfoResponse,
+    ListSchemasRequest,
+    ListSchemasResponse,
+    ProtobufNativeSchema,
+    SchemaInfo as SchemaInfoPb,
+    SchemaServiceGrpc,
+    SchemaType as SchemaTypePb
+}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
-import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
 
-import scala.sys.process.*
 import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.client.api.{Producer, ProducerAccessMode}
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
-import os._
+import _root_.schema.protobufnative
 
-import java.io.FileInputStream
-import java.nio.file.Paths
 import scala.concurrent.Future
-import com.google.protobuf.DescriptorProtos.FileDescriptorProto
-import com.google.protobuf.Descriptors.DescriptorValidationException
-import org.apache.pulsar.common.protocol.schema.ProtobufNativeSchemaData
 
 import java.util
 
@@ -90,55 +99,32 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 Future.successful(ListSchemasResponse(status = Some(status)))
         }
 
-    override def compileProtobufNativeFile(request: CompileProtobufNativeFileRequest): Future[CompileProtobufNativeFileResponse] =
-        logger.info(s"Compiling protobuf native schema for: ${request.protoFilePath}")
+    override def compileProtobufNative(request: CompileProtobufNativeRequest): Future[CompileProtobufNativeResponse] =
+        val filesToCompile = request.files
+            .filter(f => f.relativePath.endsWith(".proto"))
+            .map(f => protobufnative.FileEntry(relativePath = f.relativePath, content = f.content))
 
-        try {
-            // Write protobuf files to temp dir
-            val tempDir = os.temp.dir(null, "__xray-protobuf-native_")
-            request.files.map(f =>
-                val path = tempDir / os.PathChunk.StringPathChunk(f.relativePath)
-                os.write(path, f.content, null, true)
+        logger.info(s"Compiling ${filesToCompile.size} protobuf native files")
+
+        val files: Map[String, CompiledProtobufNativeFile] = protobufnative.compileFiles(files = filesToCompile).files
+            .map(f =>
+                val (relativePath, compiledFile) = f
+                val compiledFilePb = compiledFile match
+                    case Right(f) =>
+                        CompiledProtobufNativeFile(
+                            schemas = f.schemas.map(s =>
+                                val (messageName, schema) = s
+                                val schemaPb: ProtobufNativeSchema = ProtobufNativeSchema(
+                                    rawSchema = ByteString.copyFrom(schema.rawSchema),
+                                    humanReadableSchema = schema.humanReadableSchema
+                                )
+                                (messageName, schemaPb)
+                            ).toMap
+                        )
+                    case Left(err) => CompiledProtobufNativeFile(compilationError = Some(err))
+                (relativePath, compiledFilePb)
             )
+            .toMap
 
-            val descriptorSetOut = tempDir / ProtobufNativeDescriptionSetFile
-
-            val protosDir = Paths.get(request.protoFilePath).getParent.toAbsolutePath
-            val protoFile = Paths.get(request.protoFilePath).getFileName.toString
-
-            val protocCommand = s"protoc --descriptor_set_out=${descriptorSetOut} -I $protosDir ${protoFile}"
-            Seq("sh", "-c", s"set -e; ${protocCommand}").! == 0
-
-            val status = Status(code = Code.OK.index)
-            Future.successful(CompileProtobufNativeFileResponse(
-                status = Some(status),
-                schemaRootDir = tempDir.toNIO.toAbsolutePath.toString
-            ))
-        } catch {
-            case err =>
-                logger.error(s"Unable to compile protobuf file ${request.protoFilePath}", err)
-
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(CompileProtobufNativeFileResponse(status = Some(status)))
-        }
-
-    override def getProtobufNativeMessageNames(request: GetProtobufNativeMessageNamesRequest): Future[GetProtobufNativeMessageNamesResponse] =
-        val descriptorSetOut = os.read.inputStream(os.root / request.schemaRootDir)
-        val descriptorSet = FileDescriptorSet.parseFrom(descriptorSetOut)
-        val fileDescriptor = buildProtobufNativeFileDescriptor(descriptorSet.getFile(0), Map.empty)
-
-        val messageNames = fileDescriptor.getMessageTypes.asScala.map(t => t.getName).toSeq
-        val enumNames = fileDescriptor.getEnumTypes.asScala.map(t => t.getName).toSeq
-
-        val status = Status(code = Code.FAILED_PRECONDITION.index)
-        Future.successful(GetProtobufNativeMessageNamesResponse(
-            status = Some(status),
-            messageNames = messageNames ++ enumNames
-        ))
-
-    override def getProtobufNativeSchema(request: GetProtobufNativeSchemaRequest): Future[GetProtobufNativeSchemaResponse] = ???
-
-//            val messageDescriptor = fileDescriptor.findMessageTypeByName("MySchema")
-//            val nativeProtobufSchema = ProtobufNativeSchemaUtils.serialize(messageDescriptor)
-//            nativeProtobufSchema = ByteString.copyFrom(nativeProtobufSchema),
-//
+        val status = Status(code = Code.OK.index)
+        Future.successful(CompileProtobufNativeResponse(status = Some(status), files))
