@@ -1,9 +1,8 @@
 syntax = "proto3";
 
-package rootPkg;
+package pkg_a;
 
 message MySchema {
   string name = 1;
-  string abc = 2;
-  int32 hz = 3;
+  int32 a = 1;
 }
