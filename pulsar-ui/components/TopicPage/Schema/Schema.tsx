@@ -20,10 +20,10 @@ export type SchemaProps = {
 
 const Schema: React.FC<SchemaProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
-  const { notifyError } = Notifications.useContext();
+  const { notifySuccess, notifyError } = Notifications.useContext();
   const [schemaType, setSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_PROTOBUF_NATIVE');
   const [schemaName, setSchemaName] = useState<string>('');
-  const [schema, setSchema] = useState<string>('');
+  const [schema, setSchema] = useState<Uint8Array | undefined>(undefined);
 
   const topic = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
@@ -54,18 +54,18 @@ const Schema: React.FC<SchemaProps> = (props) => {
         <SchemaTypeInput value={schemaType} onChange={setSchemaType} />
 
         <div>
-          {schemaType === 'SCHEMA_TYPE_PROTOBUF' && (
+          {/* {schemaType === 'SCHEMA_TYPE_PROTOBUF' && (
             <div>
               <textarea value={schema} onChange={e => setSchema(e.target.value)}></textarea>
             </div>
-          )}
+          )} */}
           {schemaType === 'SCHEMA_TYPE_PROTOBUF_NATIVE' && (
             // https://github.com/apache/pulsar/blob/c01b1eeda3221bdbf863bf0f3f8373e93d90adef/pulsar-client/src/test/java/org/apache/pulsar/client/impl/schema/ProtobufNativeSchemaTest.java
             // fileDescriptorSet: "CtMDCgpUZXN0LnByb3RvEgVwcm90bxoSRXh0ZXJuYWxUZXN0LnByb3RvImUKClN1Yk1lc3NhZ2USCwoDZm9vGAEgASgJEgsKA2JhchgCIAEoARo9Cg1OZXN0ZWRNZXNzYWdlEgsKA3VybBgBIAEoCRINCgV0aXRsZRgCIAEoCRIQCghzbmlwcGV0cxgDIAMoCSLlAQoLVGVzdE1lc3NhZ2USEwoLc3RyaW5nRmllbGQYASABKAkSEwoLZG91YmxlRmllbGQYAiABKAESEAoIaW50RmllbGQYBiABKAUSIQoIdGVzdEVudW0YBCABKA4yDy5wcm90by5UZXN0RW51bRImCgtuZXN0ZWRGaWVsZBgFIAEoCzIRLnByb3RvLlN1Yk1lc3NhZ2USFQoNcmVwZWF0ZWRGaWVsZBgKIAMoCRI4Cg9leHRlcm5hbE1lc3NhZ2UYCyABKAsyHy5wcm90by5leHRlcm5hbC5FeHRlcm5hbE1lc3NhZ2UqJAoIVGVzdEVudW0SCgoGU0hBUkVEEAASDAoIRkFJTE9WRVIQAUItCiVvcmcuYXBhY2hlLnB1bHNhci5jbGllbnQuc2NoZW1hLnByb3RvQgRUZXN0YgZwcm90bzMKoAEKEkV4dGVybmFsVGVzdC5wcm90bxIOcHJvdG8uZXh0ZXJuYWwiOwoPRXh0ZXJuYWxNZXNzYWdlEhMKC3N0cmluZ0ZpZWxkGAEgASgJEhMKC2RvdWJsZUZpZWxkGAIgASgBQjUKJW9yZy5hcGFjaGUucHVsc2FyLmNsaWVudC5zY2hlbWEucHJvdG9CDEV4dGVybmFsVGVzdGIGcHJvdG8z"
             // rootFileDescriptorName: "Test.proto"
-          // rootMessageTypeName: "proto.TestMessage"
+            // rootMessageTypeName: "proto.TestMessage"
             <div>
-              <ProtobufNativeEditor />
+              <ProtobufNativeEditor onSchemaCompiled={setSchema} />
             </div>
           )}
         </div>
@@ -76,20 +76,27 @@ const Schema: React.FC<SchemaProps> = (props) => {
         <Button
           text='Create'
           type='primary'
+          disabled={schema === undefined}
           onClick={async () => {
+            if (schema === undefined) {
+              return;
+            }
+
             const schemaInfo = new SchemaInfo();
             schemaInfo.setName(schemaName);
             schemaInfo.setType(SchemaType[schemaType]);
-            schemaInfo.setSchema(new TextEncoder().encode(schema));
+            schemaInfo.setSchema(schema);
 
             const req = new CreateSchemaRequest();
             req.setTopic(topic);
             req.setSchemaInfo(schemaInfo);
 
             const res = await schemaServiceClient.createSchema(req, {}).catch(err => notifyError(`Unable to create schema. ${err}`));
-            console.log('res', res);
             if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
               notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);
+            }
+            if (res !== undefined && res.getStatus()?.getCode() === Code.OK) {
+              notifySuccess(`Schema successfully created.`);
             }
           }}
         />
