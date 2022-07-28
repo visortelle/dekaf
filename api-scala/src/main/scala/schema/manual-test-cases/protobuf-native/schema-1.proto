@@ -7,3 +7,11 @@ message MySchema {
   string abc = 2;
   int32 hz = 3;
 }
+
+message TheirSchema {
+  string test = 1;
+}
+
+message OurSchema {
+  bool isOur = 1;
+}

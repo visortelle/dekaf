@@ -22,3 +22,8 @@
   width: 36rem;
   height: 36rem;
 }
+
+.CompilationError {
+  color: var(--accent-color-red);
+  padding: 12rem 0;
+}
