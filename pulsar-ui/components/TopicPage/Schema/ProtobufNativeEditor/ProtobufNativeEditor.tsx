@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import s from './ProtobufNativeEditor.module.css'
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
@@ -6,10 +6,11 @@ import uploadIcon from '!!raw-loader!./upload.svg';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import Upload from 'rc-upload';
 import Select from '../../../ui/Select/Select';
-import { CompiledProtobufNativeFile, CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry as FileEntryPb } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
-import { divide } from 'lodash';
+import { CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry as FileEntryPb } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 
-export type ProtobufNativeEditorProps = {};
+export type ProtobufNativeEditorProps = {
+  onSchemaCompiled: (schema: Uint8Array) => void;
+};
 
 type UploadState = 'awaiting' | 'uploading' | 'done' | 'error';
 
@@ -70,8 +71,19 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
       setSelectedMessage(undefined);
     }
 
-    const selectedMessage = file.getSchemasMap().getEntryList().map(([k]) => k)[0];
-    setSelectedMessage(selectedMessage);
+    if (file.getSchemasMap().getLength() === 0) {
+      return;
+    }
+
+    const messageName = file.getSchemasMap().keys().next().value;
+    const messageSchema = file.getSchemasMap().get(messageName);
+
+    setSelectedMessage(messageName);
+
+    const rawSchema = messageSchema?.getRawSchema_asU8();
+    if (rawSchema !== undefined) {
+      props.onSchemaCompiled(rawSchema);
+    }
   }, [selectedFile]);
 
   const fileNames = files === undefined ? [] : files.getEntryList().map(([k]) => k);
@@ -133,8 +145,9 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
             rows={20}
             cols={80}
             spellCheck={false}
-            style={{ display: 'block'}}
+            style={{ display: 'block' }}
             value={files?.get(selectedFile)?.getSchemasMap().get(selectedMessage)?.getHumanReadableSchema()}
+            onChange={(e) => { }}
           />
         </div>
       )}
@@ -149,18 +162,19 @@ type UploadZoneProps = {
 }
 
 export const UploadZone: React.FC<UploadZoneProps> = (props) => {
+  const filesBuffer = useRef<FileEntry[]>([]); // A simple way to hack a bit the <Upload /> component lifecycle.
+
   return (
     <Upload
       directory={props.isDirectory}
-      beforeUpload={async (_, _files) => {
-        console.log('BEFORE');
-        let files: FileEntry[] = [];
-        for (let file of _files) {
-          const content = await file.text();
-          files.push({ relativePath: file.webkitRelativePath || file.name, content });
-        }
+      beforeUpload={async (_file, _files) => {
+        const content = await _file.text();
+        filesBuffer.current.push({ relativePath: _file.webkitRelativePath || _file.name, content });
 
-        props.onFiles(files);
+        if (filesBuffer.current.length === _files.length) {
+          props.onFiles(filesBuffer.current);
+          filesBuffer.current = [];
+        }
         return false;
       }}
     >
