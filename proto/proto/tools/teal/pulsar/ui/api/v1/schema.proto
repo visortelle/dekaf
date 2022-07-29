@@ -101,6 +101,17 @@ message CompileProtobufNativeResponse {
   map<string, CompiledProtobufNativeFile> files = 2; // Compilation result for each file.
 }
 
+message TestCompatibilityRequest {
+  string topic = 1;
+  SchemaInfo schema_info = 2;
+}
+
+message TestCompatibilityResponse {
+  google.rpc.Status status = 1;
+  bool is_compatible = 2;
+  string strategy = 3;
+}
+
 service SchemaService {
   rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse);
   rpc GetLatestSchemaInfo(GetLatestSchemaInfoRequest) returns (GetLatestSchemaInfoResponse);
@@ -108,4 +119,5 @@ service SchemaService {
   rpc ListSchemas(ListSchemasRequest) returns (ListSchemasResponse);
 
   rpc CompileProtobufNative(CompileProtobufNativeRequest) returns (CompileProtobufNativeResponse);
+  rpc TestCompatibility(TestCompatibilityRequest) returns (TestCompatibilityResponse);
 }

@@ -1,6 +1,7 @@
 .Schema {
   padding: 12rem;
   display: flex;
+  flex-direction: column;
 }
 
 .FormControl {
