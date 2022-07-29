@@ -135,6 +135,8 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
         Future.successful(CompileProtobufNativeResponse(status = Some(status), files))
 
     override def testCompatibility(request: TestCompatibilityRequest): Future[TestCompatibilityResponse] =
+        logger.info(s"Testing schema compatibility for topic ${request.topic}")
+
         val schemaInfo = request.schemaInfo match
             case Some(spb) => schemaInfoFromPb(spb)
             case None =>
@@ -148,7 +150,8 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                   TestCompatibilityResponse(
                     status = Some(status),
                     isCompatible = compatibilityTestResult.isCompatible,
-                    strategy = compatibilityTestResult.strategy
+                    strategy = compatibilityTestResult.strategy,
+                    incompatibleReason = compatibilityTestResult.incompatibleReason
                   )
                 )
             case Left(err) =>
