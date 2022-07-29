@@ -110,6 +110,7 @@ message TestCompatibilityResponse {
   google.rpc.Status status = 1;
   bool is_compatible = 2;
   string strategy = 3;
+  string incompatible_reason = 4;
 }
 
 service SchemaService {

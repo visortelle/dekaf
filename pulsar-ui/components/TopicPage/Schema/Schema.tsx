@@ -20,7 +20,8 @@ export type SchemaProps = {
 
 type SchemaCompatibiity = {
   isCompatible: boolean,
-  strategy: string
+  strategy: string,
+  incompatibleReason: string
 }
 
 const Schema: React.FC<SchemaProps> = (props) => {
@@ -72,7 +73,8 @@ const Schema: React.FC<SchemaProps> = (props) => {
 
     setSchemaCompatibility({
       isCompatible: res.getIsCompatible(),
-      strategy: res.getStrategy()
+      strategy: res.getStrategy(),
+      incompatibleReason: res.getIncompatibleReason()
     });
   }
 
@@ -106,7 +108,13 @@ const Schema: React.FC<SchemaProps> = (props) => {
             // rootFileDescriptorName: "Test.proto"
             // rootMessageTypeName: "proto.TestMessage"
             <div>
-              <ProtobufNativeEditor onSchemaCompiled={setSchema} />
+              <ProtobufNativeEditor
+                onSchemaCompiled={setSchema}
+                onCompilationError={() => {
+                  setSchema(undefined);
+                  setSchemaCompatibility(undefined);
+                }}
+              />
             </div>
           )}
         </div>
@@ -114,9 +122,12 @@ const Schema: React.FC<SchemaProps> = (props) => {
 
       {schemaCompatibility !== undefined && (
         <div>
-          <strong>Schema compatibility</strong>
+          <div>
+          <strong>Schema compatibility: </strong>
           {schemaCompatibility.isCompatible ? 'Compatible' : 'Incompatible'}
-          <div>Strategy: {schemaCompatibility.strategy}</div>
+          </div>
+          {schemaCompatibility.strategy && <div>Strategy: {schemaCompatibility.strategy}</div>}
+          {schemaCompatibility.incompatibleReason && <div><strong>Reason:</strong> {schemaCompatibility.incompatibleReason}</div>}
         </div>
       )}
 
