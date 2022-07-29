@@ -1,4 +1,12 @@
 .Schema {
+  display: flex;
+}
+
+.Schemas {
+  width: 200rem;
+}
+
+.Content {
   padding: 12rem;
   display: flex;
   flex-direction: column;

@@ -43,21 +43,24 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
     override def createSchema(request: CreateSchemaRequest): Future[CreateSchemaResponse] =
         request.schemaInfo match
             case Some(s) =>
+                logger.info(s"Creating schema with name ${s.name} for topic ${request.topic}.")
+
                 val schemaInfo = SchemaInfo.builder
                     .name(s.name)
                     .`type`(schemaTypeFromPb(s.`type`))
                     .properties(s.properties.asJava)
                     .schema(s.schema.toByteArray)
                     .build()
-
+                
                 try {
                     adminClient.schemas.createSchema(request.topic, schemaInfo)
 
+                    logger.info(s"Successfully created schema with name ${s.name} for topic ${request.topic}.")
                     val status = Status(code = Code.OK.index)
                     Future.successful(CreateSchemaResponse(status = Some(status)))
                 } catch {
                     case err =>
-                        println(err)
+                        logger.info(s"Failed to create schema with name ${s.name} for topic ${request.topic}. Reason: ${err.getMessage}.")
                         val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                         Future.successful(CreateSchemaResponse(status = Some(status)))
                 }
@@ -69,10 +72,13 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
     override def deleteSchema(request: DeleteSchemaRequest): Future[DeleteSchemaResponse] = ???
 
     override def getLatestSchemaInfo(request: GetLatestSchemaInfoRequest): Future[GetLatestSchemaInfoResponse] =
+        logger.info(s"Getting latest schema info for topic ${request.topic}.")
+
         try {
             val schemaInfoWithVersion = adminClient.schemas.getSchemaInfoWithVersion(request.topic)
             val status = Status(code = Code.OK.index)
 
+            logger.info(s"Successfully got latest schema info for topic ${request.topic}.")
             Future.successful(
               GetLatestSchemaInfoResponse(
                 status = Some(status),
@@ -82,20 +88,27 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
             )
         } catch {
             case (_: PulsarAdminException.NotFoundException) =>
+                logger.info(s"No schema where found for topic ${request.topic}.")
                 val status = Status(code = Code.OK.index)
                 Future.successful(GetLatestSchemaInfoResponse(status = Some(status), schemaInfo = None, schemaVersion = None))
             case (err: PulsarAdminException) =>
+                logger.info(s"Failed to get latest schema info for topic ${request.topic}. Reason: ${err.getMessage}.")
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetLatestSchemaInfoResponse(status = Some(status)))
         }
 
     override def listSchemas(request: ListSchemasRequest): Future[ListSchemasResponse] =
+        logger.info(s"Listing schemas for topic ${request.topic}.")
+
         try {
             val schemaInfos = adminClient.schemas.getAllSchemas(request.topic).asScala.toSeq.map(schemaInfoToPb(_))
+
+            logger.info(s"Successfully listed schemas for topic ${request.topic}.")
             val status = Status(code = Code.OK.index)
             Future.successful(ListSchemasResponse(status = Some(status), schemaInfos))
         } catch {
             case err =>
+                logger.info(s"Failed to list schemas for topic ${request.topic}. Reason: ${err.getMessage}.")
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(ListSchemasResponse(status = Some(status)))
         }
@@ -105,7 +118,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
             .filter(f => f.relativePath.endsWith(".proto"))
             .map(f => protobufnative.FileEntry(relativePath = f.relativePath, content = f.content))
 
-        logger.info(s"Compiling ${filesToCompile.size} protobuf native files")
+        logger.info(s"Compiling ${filesToCompile.size} protobuf native files.")
 
         val files: Map[String, CompiledProtobufNativeFile] = protobufnative
             .compileFiles(files = filesToCompile)
@@ -131,20 +144,23 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
             )
             .toMap
 
+        logger.info(s"Compiled ${files.size} protobuf native files.")
         val status = Status(code = Code.OK.index)
         Future.successful(CompileProtobufNativeResponse(status = Some(status), files))
 
     override def testCompatibility(request: TestCompatibilityRequest): Future[TestCompatibilityResponse] =
-        logger.info(s"Testing schema compatibility for topic ${request.topic}")
+        logger.info(s"Testing schema compatibility for topic ${request.topic}.")
 
         val schemaInfo = request.schemaInfo match
             case Some(spb) => schemaInfoFromPb(spb)
             case None =>
+                logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
                 val status = Status(code = Code.INVALID_ARGUMENT.index)
                 return Future.successful(TestCompatibilityResponse(status = Some(status)))
 
         protobufnative.testCompatibility(topic = request.topic, schemaInfo = schemaInfo) match
             case Right(compatibilityTestResult) =>
+                logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
                 val status = Status(code = Code.OK.index)
                 Future.successful(
                   TestCompatibilityResponse(
@@ -155,5 +171,6 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                   )
                 )
             case Left(err) =>
+                logger.info(s"Failed to test schema compatibility for topic ${request.topic}. Reason: ${err}")
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err)
                 Future.successful(TestCompatibilityResponse(status = Some(status)))

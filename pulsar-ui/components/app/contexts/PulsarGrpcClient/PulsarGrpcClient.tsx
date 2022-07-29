@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 
 import * as _producerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ProducerServiceClientPb';
 import * as _consumerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ConsumerServiceClientPb';
@@ -27,7 +27,9 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [topicServiceClient] = useState<_topicServiceClient.TopicServiceClient>(new _topicServiceClient.TopicServiceClient('http://localhost:10000'));
   const [schemaServiceClient] = useState<_schemaServiceClient.SchemaServiceClient>(new _schemaServiceClient.SchemaServiceClient('http://localhost:10000'));
 
-  useEffect(() => {
+  const isDevToolsInitiates = useRef<boolean>(false);
+
+  if (!isDevToolsInitiates.current) {
     const enableDevTools = (window as any).__GRPCWEB_DEVTOOLS__ || (() => { });
     enableDevTools([
       consumerServiceClient,
@@ -35,7 +37,8 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
       topicServiceClient,
       schemaServiceClient,
     ]);
-  }, []);
+    isDevToolsInitiates.current = true;
+  }
 
   return (
     <>
