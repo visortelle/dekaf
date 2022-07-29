@@ -22,7 +22,9 @@ import com.tools.teal.pulsar.ui.api.v1.schema.{
     ProtobufNativeSchema,
     SchemaInfo as SchemaInfoPb,
     SchemaServiceGrpc,
-    SchemaType as SchemaTypePb
+    SchemaType as SchemaTypePb,
+    TestCompatibilityRequest,
+    TestCompatibilityResponse
 }
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
@@ -33,7 +35,6 @@ import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import _root_.schema.protobufnative
 
 import scala.concurrent.Future
-
 import java.util
 
 class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
@@ -106,20 +107,24 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
         logger.info(s"Compiling ${filesToCompile.size} protobuf native files")
 
-        val files: Map[String, CompiledProtobufNativeFile] = protobufnative.compileFiles(files = filesToCompile).files
+        val files: Map[String, CompiledProtobufNativeFile] = protobufnative
+            .compileFiles(files = filesToCompile)
+            .files
             .map(f =>
                 val (relativePath, compiledFile) = f
                 val compiledFilePb = compiledFile match
                     case Right(f) =>
                         CompiledProtobufNativeFile(
-                            schemas = f.schemas.map(s =>
-                                val (messageName, schema) = s
-                                val schemaPb: ProtobufNativeSchema = ProtobufNativeSchema(
+                          schemas = f.schemas
+                              .map(s =>
+                                  val (messageName, schema) = s
+                                  val schemaPb: ProtobufNativeSchema = ProtobufNativeSchema(
                                     rawSchema = ByteString.copyFrom(schema.rawSchema),
                                     humanReadableSchema = schema.humanReadableSchema
-                                )
-                                (messageName, schemaPb)
-                            ).toMap
+                                  )
+                                  (messageName, schemaPb)
+                              )
+                              .toMap
                         )
                     case Left(err) => CompiledProtobufNativeFile(compilationError = Some(err))
                 (relativePath, compiledFilePb)
@@ -128,3 +133,24 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
         val status = Status(code = Code.OK.index)
         Future.successful(CompileProtobufNativeResponse(status = Some(status), files))
+
+    override def testCompatibility(request: TestCompatibilityRequest): Future[TestCompatibilityResponse] =
+        val schemaInfo = request.schemaInfo match
+            case Some(spb) => schemaInfoFromPb(spb)
+            case None =>
+                val status = Status(code = Code.INVALID_ARGUMENT.index)
+                return Future.successful(TestCompatibilityResponse(status = Some(status)))
+
+        protobufnative.testCompatibility(topic = request.topic, schemaInfo = schemaInfo) match
+            case Right(compatibilityTestResult) =>
+                val status = Status(code = Code.OK.index)
+                Future.successful(
+                  TestCompatibilityResponse(
+                    status = Some(status),
+                    isCompatible = compatibilityTestResult.isCompatible,
+                    strategy = compatibilityTestResult.strategy
+                  )
+                )
+            case Left(err) =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err)
+                Future.successful(TestCompatibilityResponse(status = Some(status)))
