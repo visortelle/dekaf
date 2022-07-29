@@ -51,7 +51,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                     .properties(s.properties.asJava)
                     .schema(s.schema.toByteArray)
                     .build()
-                
+
                 try {
                     adminClient.schemas.createSchema(request.topic, schemaInfo)
 
@@ -69,7 +69,21 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val status = Status(code = Code.INVALID_ARGUMENT.index)
                 Future.successful(CreateSchemaResponse(status = Some(status)))
 
-    override def deleteSchema(request: DeleteSchemaRequest): Future[DeleteSchemaResponse] = ???
+    override def deleteSchema(request: DeleteSchemaRequest): Future[DeleteSchemaResponse] =
+        logger.info(s"Deleting latest schema for topic ${request.topic}.")
+
+        try {
+            adminClient.schemas.deleteSchema(request.topic)
+
+            logger.info(s"Successfully deleted latest schema for topic ${request.topic}.")
+            val status = Status(code = Code.OK.index)
+            Future.successful(DeleteSchemaResponse(status = Some(status)))
+        } catch {
+            case err =>
+                logger.info(s"Failed to delete latest schema for topic ${request.topic}. Reason: ${err.getMessage}.")
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(DeleteSchemaResponse(status = Some(status)))
+        }
 
     override def getLatestSchemaInfo(request: GetLatestSchemaInfoRequest): Future[GetLatestSchemaInfoResponse] =
         logger.info(s"Getting latest schema info for topic ${request.topic}.")
