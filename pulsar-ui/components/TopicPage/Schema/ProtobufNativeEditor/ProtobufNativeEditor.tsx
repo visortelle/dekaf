@@ -10,6 +10,7 @@ import { CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry 
 
 export type ProtobufNativeEditorProps = {
   onSchemaCompiled: (schema: Uint8Array) => void;
+  onCompilationError: (error: string) => void;
 };
 
 type UploadState = 'awaiting' | 'uploading' | 'done' | 'error';
@@ -68,6 +69,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
     const compilationError = file.getCompilationError();
     if (compilationError !== undefined) {
       setCompilationError(compilationError);
+      props.onCompilationError(compilationError);
       setSelectedMessage(undefined);
     }
 
