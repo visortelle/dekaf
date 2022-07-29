@@ -1,10 +1,9 @@
 package schema
 
+import scala.jdk.CollectionConverters.*
 import com.google.protobuf.ByteString
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import com.tools.teal.pulsar.ui.api.v1.schema.{SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
-
-import scala.jdk.CollectionConverters.*
 
 def schemaInfoToPb(s: SchemaInfo): SchemaInfoPb =
     SchemaInfoPb(
@@ -13,6 +12,14 @@ def schemaInfoToPb(s: SchemaInfo): SchemaInfoPb =
         schema = Option(s.getSchema).map(v => ByteString.copyFrom(v)).getOrElse(ByteString.EMPTY),
         properties = Option(s.getProperties).map(_.asScala.toMap).getOrElse(Map.empty[String, String])
     )
+
+def schemaInfoFromPb(spb: SchemaInfoPb): SchemaInfo =
+    SchemaInfo.builder
+        .name(spb.name)
+        .`type`(schemaTypeFromPb(spb.`type`))
+        .properties(spb.properties.asJava)
+        .schema(spb.schema.toByteArray)
+        .build
 
 def schemaTypeFromPb(pb: SchemaTypePb): SchemaType =
     pb match

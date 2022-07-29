@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import s from './Schema.module.css'
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import useSWR from 'swr';
 import { swrKeys } from '../../swrKeys';
-import { CreateSchemaRequest, GetLatestSchemaInfoRequest, SchemaInfo, SchemaType } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
+import { CreateSchemaRequest, GetLatestSchemaInfoRequest, SchemaInfo, SchemaType, TestCompatibilityRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import SchemaTypeInput, { SchemaTypeT } from './SchemaTypeInput/SchemaTypeInput';
 import Button from '../../ui/Button/Button';
@@ -18,12 +18,18 @@ export type SchemaProps = {
   topicType: 'persistent' | 'non-persistent'
 };
 
+type SchemaCompatibiity = {
+  isCompatible: boolean,
+  strategy: string
+}
+
 const Schema: React.FC<SchemaProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
   const [schemaType, setSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_PROTOBUF_NATIVE');
   const [schemaName, setSchemaName] = useState<string>('');
   const [schema, setSchema] = useState<Uint8Array | undefined>(undefined);
+  const [schemaCompatibility, setSchemaCompatibility] = useState<SchemaCompatibiity | undefined>(undefined);
 
   const topic = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
@@ -40,6 +46,40 @@ const Schema: React.FC<SchemaProps> = (props) => {
     notifyError(`Unable to get latest schema info. ${latestSchemaInfoError}`);
   }
 
+  const checkSchemaCompatibility = async () => {
+    if (schema === undefined) {
+      return;
+    }
+
+    const schemaInfo = new SchemaInfo();
+    schemaInfo.setName(schemaName);
+    schemaInfo.setSchema(schema);
+    schemaInfo.setType(SchemaType[schemaType]);
+
+    const req = new TestCompatibilityRequest();
+    req.setTopic(topic);
+    req.setSchemaInfo(schemaInfo);
+
+    const res = await schemaServiceClient.testCompatibility(req, {}).catch(err => notifyError(err));
+    if (res === undefined) {
+      return;
+    }
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to check schema compatibility. ${res.getStatus()?.getMessage()}`);
+      setSchemaCompatibility(undefined);
+    }
+
+    setSchemaCompatibility({
+      isCompatible: res.getIsCompatible(),
+      strategy: res.getStrategy()
+    });
+  }
+
+  useEffect(() => {
+    checkSchemaCompatibility();
+  }, [schema])
+
   // console.log('latest schema info', latestSchemaInfo);
 
   return (
@@ -49,6 +89,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
         <strong>Schema name</strong>
         <Input value={schemaName} onChange={setSchemaName} placeholder="New schema" />
       </div>
+
       <div className={s.FormControl}>
         <strong>Schema type</strong>
         <SchemaTypeInput value={schemaType} onChange={setSchemaType} />
@@ -71,12 +112,19 @@ const Schema: React.FC<SchemaProps> = (props) => {
         </div>
       </div>
 
+      {schemaCompatibility !== undefined && (
+        <div>
+          <strong>Schema compatibility</strong>
+          {schemaCompatibility.isCompatible ? 'Compatible' : 'Incompatible'}
+          <div>Strategy: {schemaCompatibility.strategy}</div>
+        </div>
+      )}
 
       <div>
         <Button
           text='Create'
           type='primary'
-          disabled={schema === undefined}
+          disabled={!schemaCompatibility?.isCompatible}
           onClick={async () => {
             if (schema === undefined) {
               return;
