@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import s from './Schema.module.css'
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';
-import { GetLatestSchemaInfoRequest, ListSchemasRequest, SchemaInfo } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
+import { DeleteSchemaRequest, GetLatestSchemaInfoRequest, ListSchemasRequest, SchemaInfo } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import CreateSchema from './CreateSchema/CreateSchema';
 import { schemaTypes } from './types';
+import Button from '../../ui/Button/Button';
 
 export type SchemaProps = {
   tenant: string,
@@ -52,8 +53,13 @@ const Schema: React.FC<SchemaProps> = (props) => {
     notifyError(`Unable to get schemas. ${schemasError}`);
   }
 
-  if(schemas !== undefined && schemas.getStatus()?.getCode() !== Code.OK) {
+  if (schemas !== undefined && schemas.getStatus()?.getCode() !== Code.OK) {
     notifyError(`Unable to get schemas. ${schemas?.getStatus()?.getMessage()}`);
+  }
+
+  const refetchData = () => {
+    mutate(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topic));
+    mutate(swrKeys.pulsar.schemas.listSchemas._(topic));
   }
 
   // console.log('latest schema info', latestSchemaInfo);
@@ -62,21 +68,59 @@ const Schema: React.FC<SchemaProps> = (props) => {
   return (
     <div className={s.Schema}>
       <div className={s.Schemas}>
-        {schemas?.getSchemaInfosList().map((schemaInfo, i) => <SchemaListEntry key={i} schemaInfo={schemaInfo} />)}
+        {schemas?.getSchemaInfosList().map((schemaInfo, i) => {
+          return (
+            <SchemaListEntry
+              key={i}
+              schemaInfo={schemaInfo}
+              isLatestSchema={i === schemas?.getSchemaInfosList().length - 1}
+              onDeleteLatestSchema={async () => {
+                const req = new DeleteSchemaRequest();
+                req.setTopic(props.topic);
+                const res = await schemaServiceClient.deleteSchema(req, {}).catch(err => notifyError(err));
+
+                if (res === undefined) {
+                  return;
+                }
+
+                if (res.getStatus()?.getCode() === Code.OK) {
+                  notifySuccess('Successfully deleted latest schema');
+                } else {
+                  notifyError(res.getStatus()?.getMessage());
+                }
+
+                refetchData();
+              }}
+            />
+          );
+        })}
       </div>
       <div className={s.Content}>
-        <CreateSchema topic={topic} isTopicHasAnySchema={(schemas?.getSchemaInfosList().length || 0) > 0} />
+        <CreateSchema
+          topic={topic}
+          isTopicHasAnySchema={(schemas?.getSchemaInfosList().length || 0) > 0}
+          onCreate={refetchData}
+        />
       </div>
     </div>
   );
 }
 
 type SchemaListEntryProps = {
-  schemaInfo: SchemaInfo
+  schemaInfo: SchemaInfo;
+  isLatestSchema: boolean;
+  onDeleteLatestSchema: () => void;
 }
 const SchemaListEntry: React.FC<SchemaListEntryProps> = (props) => {
   return (
     <div>
+      {props.isLatestSchema && (
+        <Button
+          text="Delete"
+          type='danger'
+          onClick={props.onDeleteLatestSchema}
+        />
+      )}
       <div>
         {props.schemaInfo.getName()}
       </div>

@@ -13,6 +13,7 @@ import SchemaTypeInput from '../SchemaTypeInput/SchemaTypeInput';
 export type CreateSchemaProps = {
   topic: string;
   isTopicHasAnySchema: boolean;
+  onCreate: () => void;
 };
 
 type SchemaCompatibiity = {
@@ -145,15 +146,18 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               req.setSchemaInfo(schemaInfo);
 
               const res = await schemaServiceClient.createSchema(req, {}).catch(err => notifyError(`Unable to create schema. ${err}`));
-              if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-                notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);
+              if (res === undefined) {
+                return;
               }
-              if (res !== undefined && res.getStatus()?.getCode() === Code.OK) {
+
+              if (res.getStatus()?.getCode() === Code.OK) {
+                props.onCreate();
                 notifySuccess(`Schema successfully created.`);
+              } else {
+                notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);
               }
             }}
           />
-
         </div>
       </div>
     </div>
