@@ -13,7 +13,7 @@ import SchemaTypeInput from '../SchemaTypeInput/SchemaTypeInput';
 export type CreateSchemaProps = {
   topic: string;
   isTopicHasAnySchema: boolean;
-  onCreate: () => void;
+  onCreateSuccess: () => void;
 };
 
 type SchemaCompatibiity = {
@@ -69,9 +69,12 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   }
 
   useEffect(() => {
+    console.log('CreateSchema: useEffect');
     checkSchemaCompatibility();
   }, [schemaDefinition, schemaType])
 
+
+  console.log('asdf', schemaShouldHaveDefinition, schemaDefinition);
 
   return (
     <div>
@@ -151,7 +154,8 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               }
 
               if (res.getStatus()?.getCode() === Code.OK) {
-                props.onCreate();
+                props.onCreateSuccess();
+                checkSchemaCompatibility();
                 notifySuccess(`Schema successfully created.`);
               } else {
                 notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);

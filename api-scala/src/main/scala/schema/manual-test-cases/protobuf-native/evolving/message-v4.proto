@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package rootPkg;
+
+message Message {
+  string name = 1;
+  int32 age = 2;
+  string hair_color = 3;
+  string eye_color = 4;
+}
