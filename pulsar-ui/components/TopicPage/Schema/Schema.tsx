@@ -65,6 +65,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
   // console.log('latest schema info', latestSchemaInfo);
   // console.log('schemas', schemas);
 
+  console.log('schemas', schemas?.getSchemaInfosList());
   return (
     <div className={s.Schema}>
       <div className={s.Schemas}>

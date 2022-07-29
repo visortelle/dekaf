@@ -78,15 +78,27 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
     }
 
     const messageName = file.getSchemasMap().keys().next().value;
-    const messageSchema = file.getSchemasMap().get(messageName);
 
     setSelectedMessage(messageName);
+  }, [selectedFile]);
 
+  useEffect(() => {
+    if (files === undefined || selectedFile === undefined || selectedMessage === undefined) {
+      return;
+    }
+
+    console.log('HELLO');
+    const file = files.get(selectedFile);
+    if (file === undefined) {
+      return;
+    }
+
+    const messageSchema = file.getSchemasMap().get(selectedMessage);
     const rawSchema = messageSchema?.getRawSchema_asU8();
     if (rawSchema !== undefined) {
       props.onSchemaCompiled(rawSchema);
     }
-  }, [selectedFile]);
+  }, [selectedFile, selectedMessage]);
 
   const fileNames = files === undefined ? [] : files.getEntryList().map(([k]) => k);
 
