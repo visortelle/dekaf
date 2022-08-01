@@ -1,9 +1,11 @@
 import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
+import { GetSchemaCompatibilityStrategyRequest, SchemaCompatibilityStrategy, SetSchemaCompatibilityStrategyRequest} from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 const policy = 'schemaCompatibilityStrategy';
 
@@ -12,21 +14,11 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-const strategies = [
-  'FULL',
-  'BACKWARD',
-  'FORWARD',
-  'UNDEFINED',
-  'BACKWARD_TRANSITIVE',
-  'FORWARD_TRANSITIVE',
-  'FULL_TRANSITIVE',
-  'ALWAYS_INCOMPATIBLE',
-  'ALWAYS_COMPATIBLE'] as const;
-
-type Strategy = typeof strategies[number];
+type Strategy = keyof typeof SchemaCompatibilityStrategy;
+const strategies = (Object.keys(SchemaCompatibilityStrategy) as Strategy[]).filter(key => key !== 'SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED');
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -35,23 +27,35 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const { data: strategy, error: strategyError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getSchemaCompatibilityStrategy(props.tenant, props.namespace)
+    async () => {
+      const req = new GetSchemaCompatibilityStrategyRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      const res = await namespaceServiceClient.getSchemaCompatibilityStrategy(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Can't get schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
+        return undefined;
+      }
+      return (Object.entries(SchemaCompatibilityStrategy).find(([_, i]) => i === res.getStrategy()) || [])[0] as Strategy;
+    },
   );
 
   if (strategyError) {
-    notifyError(`Unable to schema compatibility strategy: ${strategyError}`);
+    notifyError(`Can't get schema compatibility strategy: ${strategyError}`);
   }
 
-  if (typeof strategy === 'undefined') {
+  if (strategy === undefined) {
     return <></>;
   }
 
   return (
     <SelectInput<Strategy>
-      list={strategies.map(s => ({ type: 'item', value: s, title: s }))}
+      list={strategies.map(s => ({ type: 'item', value: s, title: s.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '') }))}
       value={strategy}
       onChange={async (v) => {
-        await adminClient.namespaces.setSchemaCompatibilityStrategy(props.tenant, props.namespace, v).catch(onUpdateError);
+        const req = new SetSchemaCompatibilityStrategyRequest();
+        req.setNamespace(`${props.tenant}/${props.namespace}`);
+        req.setStrategy(SchemaCompatibilityStrategy[v]);
+        await namespaceServiceClient.setSchemaCompatibilityStrategy(req, {}).catch(onUpdateError);
         await mutate(swrKey);
       }}
     />

@@ -27,7 +27,6 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const { notifySuccess, notifyError } = Notifications.useContext();
 
   const [schemaType, setSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_PROTOBUF_NATIVE');
-  const [schemaName, setSchemaName] = useState<string>('');
   const [schemaDefinition, setSchemaDefinition] = useState<Uint8Array | undefined>(undefined);
   const [schemaCompatibility, setSchemaCompatibility] = useState<SchemaCompatibiity | undefined>(undefined);
 
@@ -39,7 +38,6 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
     }
 
     const schemaInfo = new SchemaInfo();
-    schemaInfo.setName(schemaName);
 
     if (schemaShouldHaveDefinition && schemaDefinition !== undefined) {
       schemaInfo.setSchema(schemaDefinition);
@@ -79,11 +77,6 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   return (
     <div>
       <div className={s.CreateSchema}>
-        <div className={s.FormControl}>
-          <strong>Schema name</strong>
-          <Input value={schemaName} onChange={setSchemaName} placeholder="New schema" />
-        </div>
-
         <div className={s.FormControl}>
           <strong>Schema type</strong>
           <SchemaTypeInput value={schemaType} onChange={setSchemaType} />
@@ -137,7 +130,6 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               }
 
               const schemaInfo = new SchemaInfo();
-              schemaInfo.setName(schemaName);
               schemaInfo.setType(SchemaType[schemaType]);
 
               if (schemaShouldHaveDefinition && schemaDefinition !== undefined) {

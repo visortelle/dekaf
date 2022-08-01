@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.namespace.v1;
+
+import "google/rpc/status.proto";
+
+enum SchemaCompatibilityStrategy {
+  SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED = 0;
+  SCHEMA_COMPATIBILITY_STRATEGY_UNDEFINED = 100;
+  SCHEMA_COMPATIBILITY_STRATEGY_ALWAYS_INCOMPATIBLE = 1;
+  SCHEMA_COMPATIBILITY_STRATEGY_ALWAYS_COMPATIBLE = 2;
+  SCHEMA_COMPATIBILITY_STRATEGY_BACKWARD = 3;
+  SCHEMA_COMPATIBILITY_STRATEGY_FORWARD = 4;
+  SCHEMA_COMPATIBILITY_STRATEGY_FULL = 5;
+  SCHEMA_COMPATIBILITY_STRATEGY_BACKWARD_TRANSITIVE = 6;
+  SCHEMA_COMPATIBILITY_STRATEGY_FORWARD_TRANSITIVE = 7;
+  SCHEMA_COMPATIBILITY_STRATEGY_FULL_TRANSITIVE = 8;
+}
+
+message SetSchemaCompatibilityStrategyRequest {
+  string namespace = 1;
+  SchemaCompatibilityStrategy strategy = 2;
+}
+
+message SetSchemaCompatibilityStrategyResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetSchemaCompatibilityStrategyRequest {
+  string namespace = 1;
+}
+
+message GetSchemaCompatibilityStrategyResponse {
+  google.rpc.Status status = 1;
+  SchemaCompatibilityStrategy strategy = 2;
+}
+
+message SetIsAllowAutoUpdateSchemaRequest {
+  string namespace = 1;
+  bool is_allow_auto_update_schema = 2;
+}
+
+message SetIsAllowAutoUpdateSchemaResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetIsAllowAutoUpdateSchemaRequest {
+  string namespace = 1;
+}
+
+message GetIsAllowAutoUpdateSchemaResponse {
+  google.rpc.Status status = 1;
+  bool is_allow_auto_update_schema = 2;
+}
+
+message SetSchemaValidationEnforcedRequest {
+  string namespace = 1;
+  bool schema_validation_enforced = 2;
+}
+
+message SetSchemaValidationEnforcedResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetSchemaValidationEnforcedRequest {
+  string namespace = 1;
+}
+
+message GetSchemaValidationEnforcedResponse {
+  google.rpc.Status status = 1;
+  bool schema_validation_enforced = 2;
+}
+
+service NamespaceService {
+  rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);
+  rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
+
+  rpc SetIsAllowAutoUpdateSchema(SetIsAllowAutoUpdateSchemaRequest) returns (SetIsAllowAutoUpdateSchemaResponse);
+  rpc GetIsAllowAutoUpdateSchema(GetIsAllowAutoUpdateSchemaRequest) returns (GetIsAllowAutoUpdateSchemaResponse);
+
+  rpc SetSchemaValidationEnforced(SetSchemaValidationEnforcedRequest) returns (SetSchemaValidationEnforcedResponse);
+  rpc GetSchemaValidationEnforced(GetSchemaValidationEnforcedRequest) returns (GetSchemaValidationEnforcedResponse);
+}
