@@ -53,20 +53,20 @@ message GetIsAllowAutoUpdateSchemaResponse {
   bool is_allow_auto_update_schema = 2;
 }
 
-message SetSchemaValidationEnforcedRequest {
+message SetSchemaValidationEnforceRequest {
   string namespace = 1;
   bool schema_validation_enforced = 2;
 }
 
-message SetSchemaValidationEnforcedResponse {
+message SetSchemaValidationEnforceResponse {
   google.rpc.Status status = 1;
 }
 
-message GetSchemaValidationEnforcedRequest {
+message GetSchemaValidationEnforceRequest {
   string namespace = 1;
 }
 
-message GetSchemaValidationEnforcedResponse {
+message GetSchemaValidationEnforceResponse {
   google.rpc.Status status = 1;
   bool schema_validation_enforced = 2;
 }
@@ -78,6 +78,6 @@ service NamespaceService {
   rpc SetIsAllowAutoUpdateSchema(SetIsAllowAutoUpdateSchemaRequest) returns (SetIsAllowAutoUpdateSchemaResponse);
   rpc GetIsAllowAutoUpdateSchema(GetIsAllowAutoUpdateSchemaRequest) returns (GetIsAllowAutoUpdateSchemaResponse);
 
-  rpc SetSchemaValidationEnforced(SetSchemaValidationEnforcedRequest) returns (SetSchemaValidationEnforcedResponse);
-  rpc GetSchemaValidationEnforced(GetSchemaValidationEnforcedRequest) returns (GetSchemaValidationEnforcedResponse);
+  rpc SetSchemaValidationEnforce(SetSchemaValidationEnforceRequest) returns (SetSchemaValidationEnforceResponse);
+  rpc GetSchemaValidationEnforce(GetSchemaValidationEnforceRequest) returns (GetSchemaValidationEnforceResponse);
 }
