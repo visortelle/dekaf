@@ -113,15 +113,6 @@ message TestCompatibilityResponse {
   string incompatible_reason = 4;
 }
 
-// message GetProtoDefinitionFromSchemaInfoRequest {
-//   SchemaInfo schema_info = 1;
-// }
-
-// message GetProtoDefinitionFromSchemaInfoResponse {
-//   google.rpc.Status status = 1;
-//   string proto_definition = 2;
-// }
-
 service SchemaService {
   rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse);
   rpc GetLatestSchemaInfo(GetLatestSchemaInfoRequest) returns (GetLatestSchemaInfoResponse);
@@ -130,6 +121,4 @@ service SchemaService {
 
   rpc CompileProtobufNative(CompileProtobufNativeRequest) returns (CompileProtobufNativeResponse);
   rpc TestCompatibility(TestCompatibilityRequest) returns (TestCompatibilityResponse);
-
-  // rpc GetProtoDefinitionFromSchemaInfo(GetProtoDefinitionFromSchemaInfoRequest) returns (GetProtoDefinitionFromSchemaInfoResponse);
 }

@@ -260,8 +260,7 @@ const Session: React.FC<SessionProps> = (props) => {
       req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
-      const res = await consumerServiceClient.createConsumer(req, { deadline: createDeadline(10) }).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
-
+      const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
       if (res === undefined) {
         return;
       }
@@ -286,7 +285,7 @@ const Session: React.FC<SessionProps> = (props) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
     };
-  }, [props.config, consumerServiceClient, subscriptionName]);
+  }, [props.config, subscriptionName]);
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
