@@ -1,9 +1,11 @@
 import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
+import { GetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 const policy = 'is-allow-auto-update-schema';
 
@@ -15,7 +17,7 @@ export type FieldInputProps = {
 type IsAllowAutoUpdateSchema = 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -24,19 +26,43 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const { data: isAllowAutoUpdateSchema, error: isAllowAutoUpdateSchemaError } = useSWR(
     swrKey,
-    async () => Boolean(await adminClient.namespaces.getIsAllowAutoUpdateSchema(props.tenant, props.namespace))
+    async () => {
+      const req = new GetIsAllowAutoUpdateSchemaRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      const res = await namespaceServiceClient.getIsAllowAutoUpdateSchema(req, {}).catch(err => notifyError(`Can't get is allow auto update schema policy. ${err}`));
+      if (res === undefined) {
+        return;
+      }
+
+      return res.getIsAllowAutoUpdateSchema() ? 'enabled' : 'disabled';
+    }
   );
 
   if (isAllowAutoUpdateSchemaError) {
     notifyError(`Unable to get deduplication: ${isAllowAutoUpdateSchemaError}`);
   }
 
+  if (isAllowAutoUpdateSchema === undefined) {
+    return null;
+  }
+
   return (
     <SelectInput<IsAllowAutoUpdateSchema>
       list={[{ type: 'item', value: 'disabled', title: 'Not allow' }, { type: 'item', value: 'enabled', title: 'Allow' }]}
-      value={Boolean(isAllowAutoUpdateSchema) ? 'enabled' : 'disabled'}
+      value={isAllowAutoUpdateSchema}
       onChange={async (v) => {
-        await adminClient.namespaces.setIsAllowAutoUpdateSchema(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);
+        const req = new SetIsAllowAutoUpdateSchemaRequest();
+        req.setIsAllowAutoUpdateSchema(v === 'enabled');
+        req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+        const res = await namespaceServiceClient.setIsAllowAutoUpdateSchema(req, {}).catch(err => onUpdateError(err));
+        if (res === undefined) {
+          return;
+        }
+        if (res.getStatus()?.getCode() !== Code.OK) {
+          notifyError(`Can't update is allow auto update schema. ${res.getStatus()?.getMessage()}`);
+        }
+
         await mutate(swrKey);
       }}
     />

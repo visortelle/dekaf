@@ -26,6 +26,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     val logger: Logger = Logger(getClass.getName)
 
     override def getIsAllowAutoUpdateSchema(request: GetIsAllowAutoUpdateSchemaRequest): Future[GetIsAllowAutoUpdateSchemaResponse] =
+        logger.info(s"Getting is allow auto update schema for namespace: ${request.namespace}")
+
         try {
             val isAllowAutoUpdateSchema = adminClient.namespaces.getIsAllowAutoUpdateSchema(request.namespace)
             val status = Status(code = Code.OK.index)
@@ -43,6 +45,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setIsAllowAutoUpdateSchema(request: SetIsAllowAutoUpdateSchemaRequest): Future[SetIsAllowAutoUpdateSchemaResponse] =
+        logger.info(s"Setting is allow auto update schema for namespace: ${request.namespace}. Value: ${request.isAllowAutoUpdateSchema}")
+
         try {
             adminClient.namespaces.setIsAllowAutoUpdateSchema(request.namespace, request.isAllowAutoUpdateSchema)
             val status = Status(code = Code.OK.index)
@@ -78,6 +82,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     override def setSchemaCompatibilityStrategy(
         request: SetSchemaCompatibilityStrategyRequest
     ): Future[SetSchemaCompatibilityStrategyResponse] =
+        logger.info(s"Setting schema compatibility strategy for namespace: ${request.namespace}")
+
         try {
             adminClient.namespaces.setSchemaCompatibilityStrategy(
               request.namespace,
