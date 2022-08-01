@@ -63,7 +63,9 @@ const _MyApp = (props: AppProps) => {
       value={{
         shouldRetryOnError: false,
         focusThrottleInterval: 120,
-        refreshInterval: appContext.performanceOptimizations.pulsarConsumerState === 'active' ? 0 : 15 * 1000
+        // refreshInterval: appContext.performanceOptimizations.pulsarConsumerState === 'active' ? 0 : 15 * 1000
+        refreshInterval: 0,
+        revalidateOnFocus: false,
       }}>
       <NoSsr>
         <ReactTooltip html={true} />
