@@ -20,7 +20,7 @@ type FileEntry = {
   content: string;
 }
 
-type CreateFrom = 'text' | 'single-file' | 'directory';
+type CreateFrom = 'single-file' | 'directory';
 
 const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
   const { notifyError, notifySuccess } = Notifications.useContext();
@@ -107,7 +107,6 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
       <div>
         <Select<CreateFrom>
           list={[
-            { type: 'item', title: 'Editor', value: 'text' },
             { type: 'item', title: 'Single .proto file', value: 'single-file' },
             { type: 'item', title: 'Directory with .proto files', value: 'directory' },
           ]}
