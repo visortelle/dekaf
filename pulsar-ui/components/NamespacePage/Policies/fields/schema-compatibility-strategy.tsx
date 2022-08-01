@@ -15,7 +15,9 @@ export type FieldInputProps = {
 }
 
 type Strategy = keyof typeof SchemaCompatibilityStrategy;
-const strategies = (Object.keys(SchemaCompatibilityStrategy) as Strategy[]).filter(key => key !== 'SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED');
+const strategies = (Object.keys(SchemaCompatibilityStrategy) as Strategy[])
+  .filter(key => key !== 'SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED')
+  .sort((a, b) => a.localeCompare(b));
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
@@ -55,7 +57,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         const req = new SetSchemaCompatibilityStrategyRequest();
         req.setNamespace(`${props.tenant}/${props.namespace}`);
         req.setStrategy(SchemaCompatibilityStrategy[v]);
-        await namespaceServiceClient.setSchemaCompatibilityStrategy(req, {}).catch(onUpdateError);
+        const res = await namespaceServiceClient.setSchemaCompatibilityStrategy(req, {}).catch(onUpdateError);
+
+        if (res === undefined) {
+          return;
+        }
+        if (res.getStatus()?.getCode() !== Code.OK) {
+          notifyError(`Can't update schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
+        }
+
         await mutate(swrKey);
       }}
     />
