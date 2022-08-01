@@ -7,25 +7,7 @@ import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptor
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.api.v1.schema.{
-    CompiledProtobufNativeFile,
-    CompileProtobufNativeRequest,
-    CompileProtobufNativeResponse,
-    CreateSchemaRequest,
-    CreateSchemaResponse,
-    DeleteSchemaRequest,
-    DeleteSchemaResponse,
-    GetLatestSchemaInfoRequest,
-    GetLatestSchemaInfoResponse,
-    ListSchemasRequest,
-    ListSchemasResponse,
-    ProtobufNativeSchema,
-    SchemaInfo as SchemaInfoPb,
-    SchemaServiceGrpc,
-    SchemaType as SchemaTypePb,
-    TestCompatibilityRequest,
-    TestCompatibilityResponse
-}
+import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
 
@@ -188,3 +170,15 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 logger.info(s"Failed to test schema compatibility for topic ${request.topic}. Reason: ${err}")
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err)
                 Future.successful(TestCompatibilityResponse(status = Some(status)))
+
+//    override def getProtoDefinitionFromSchemaInfo(request: GetProtoDefinitionFromSchemaInfoRequest): Future[GetProtoDefinitionFromSchemaInfoResponse] =
+//        logger.info(s"Getting proto definition from schema info")
+//
+//        val schemaInfo = request.schemaInfo match
+//            case Some(si) => si
+//            case None =>
+//                logger.info(s"Unable to get proto definition from schema info. Schema info not specified")
+//                val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Schema info not specified")
+//                return Future.successful(GetProtoDefinitionFromSchemaInfoResponse(status = Some(status)))
+//
+

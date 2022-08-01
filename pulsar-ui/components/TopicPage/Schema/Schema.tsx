@@ -100,7 +100,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
         <CreateSchema
           topic={topic}
           isTopicHasAnySchema={(schemas?.getSchemaInfosList().length || 0) > 0}
-          onCreate={refetchData}
+          onCreateSuccess={refetchData}
         />
       </div>
     </div>
