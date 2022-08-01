@@ -6,15 +6,15 @@ import com.tools.teal.pulsar.ui.namespace.v1.namespace.{
     GetIsAllowAutoUpdateSchemaResponse,
     GetSchemaCompatibilityStrategyRequest,
     GetSchemaCompatibilityStrategyResponse,
-    GetSchemaValidationEnforcedRequest,
-    GetSchemaValidationEnforcedResponse,
+    GetSchemaValidationEnforceRequest,
+    GetSchemaValidationEnforceResponse,
     NamespaceServiceGrpc,
     SetIsAllowAutoUpdateSchemaRequest,
     SetIsAllowAutoUpdateSchemaResponse,
     SetSchemaCompatibilityStrategyRequest,
     SetSchemaCompatibilityStrategyResponse,
-    SetSchemaValidationEnforcedRequest,
-    SetSchemaValidationEnforcedResponse
+    SetSchemaValidationEnforceRequest,
+    SetSchemaValidationEnforceResponse
 }
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
@@ -98,12 +98,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
         }
 
-    override def getSchemaValidationEnforced(request: GetSchemaValidationEnforcedRequest): Future[GetSchemaValidationEnforcedResponse] =
+    override def getSchemaValidationEnforce(request: GetSchemaValidationEnforceRequest): Future[GetSchemaValidationEnforceResponse] =
         try {
             val schemaValidationEnforced = adminClient.namespaces.getSchemaValidationEnforced(request.namespace)
             val status = Status(code = Code.OK.index)
             Future.successful(
-              GetSchemaValidationEnforcedResponse(
+              GetSchemaValidationEnforceResponse(
                   status = Some(status),
                   schemaValidationEnforced = schemaValidationEnforced
               )
@@ -111,17 +111,17 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         } catch {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(GetSchemaValidationEnforcedResponse(status = Some(status)))
+                Future.successful(GetSchemaValidationEnforceResponse(status = Some(status)))
         }
 
-    override def setSchemaValidationEnforced(request: SetSchemaValidationEnforcedRequest): Future[SetSchemaValidationEnforcedResponse] =
+    override def setSchemaValidationEnforce(request: SetSchemaValidationEnforceRequest): Future[SetSchemaValidationEnforceResponse] =
         try {
             adminClient.namespaces.setSchemaValidationEnforced(request.namespace, request.schemaValidationEnforced)
             val status = Status(code = Code.OK.index)
-            Future.successful(SetSchemaValidationEnforcedResponse(status = Some(status)))
+            Future.successful(SetSchemaValidationEnforceResponse(status = Some(status)))
         } catch {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(SetSchemaValidationEnforcedResponse(status = Some(status)))
+                Future.successful(SetSchemaValidationEnforceResponse(status = Some(status)))
 
         }

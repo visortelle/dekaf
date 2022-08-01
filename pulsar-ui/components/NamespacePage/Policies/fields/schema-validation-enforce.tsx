@@ -1,9 +1,11 @@
 import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
+import { GetSchemaValidationEnforceRequest, SetSchemaValidationEnforceRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 const policy = 'schemaValidationEnforce';
 
@@ -15,28 +17,55 @@ export type FieldInputProps = {
 type SchemaValidationEnforce = 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update is allow auto update schema. ${err}`);
+  const onUpdateError = (err: string) => notifyError(`Can't update schema validation enforce policy. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: isAllowAutoUpdateSchema, error: isAllowAutoUpdateSchemaError } = useSWR(
+  const { data: schemaValidationEnforce, error: schemaValidationEnforceError } = useSWR(
     swrKey,
-    async () => Boolean(await adminClient.namespaces.getSchemaValidtionEnforced(props.tenant, props.namespace))
+    async () => {
+      const req = new GetSchemaValidationEnforceRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      const res = await namespaceServiceClient.getSchemaValidationEnforce(req, {}).catch(err => notifyError(`Can't get schema validation enforce policy. ${err}`))
+      if (res === undefined) {
+        return;
+      }
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get schema validation enforce: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+      return res.getSchemaValidationEnforced();
+    }
   );
 
-  if (isAllowAutoUpdateSchemaError) {
-    notifyError(`Unable to get deduplication: ${isAllowAutoUpdateSchemaError}`);
+  if (schemaValidationEnforceError) {
+    notifyError(`Can't get schema validation enforce policy: ${schemaValidationEnforceError}`);
+  }
+
+  if (schemaValidationEnforce === undefined) {
+    return null;
   }
 
   return (
     <SelectInput<SchemaValidationEnforce>
       list={[{ type: 'item', value: 'disabled', title: 'Not enforced' }, { type: 'item', value: 'enabled', title: 'Enforced' }]}
-      value={Boolean(isAllowAutoUpdateSchema) ? 'enabled' : 'disabled'}
+      value={schemaValidationEnforce ? 'enabled' : 'disabled'}
       onChange={async (v) => {
-        await adminClient.namespaces.setSchemaValidationEnforced(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);
+        const req = new SetSchemaValidationEnforceRequest();
+        req.setNamespace(`${props.tenant}/${props.namespace}`);
+        req.setSchemaValidationEnforced(v === 'enabled');
+
+        const res = await namespaceServiceClient.setSchemaValidationEnforce(req, {}).catch(err => onUpdateError(err));
+        if (res === undefined) {
+          return;
+        }
+        if (res.getStatus()?.getCode() !== Code.OK) {
+          notifyError(`Unable to update schema validation enforce: ${res.getStatus()?.getMessage()}`);
+        }
+
         await mutate(swrKey);
       }}
     />
