@@ -92,7 +92,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
         <Button onClick={() => { }} title="Edit" type="regular" svgIcon={editIcon} />
       </a>
       <div className={s.Header}>
-        <H3>Schema policies</H3>
+        <H3>Related policies</H3>
       </div>
       <div className={s.FormControl}>
         <strong>Schema compatibility strategy:</strong> {strategy?.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '')}
