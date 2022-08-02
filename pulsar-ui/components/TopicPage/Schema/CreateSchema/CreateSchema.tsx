@@ -10,6 +10,7 @@ import s from './CreateSchema.module.css'
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import SchemaTypeInput from '../SchemaTypeInput/SchemaTypeInput';
 import { H1 } from '../../../ui/H/H';
+import Policies from '../Policies/Policies';
 
 export type CreateSchemaProps = {
   topic: string;
@@ -83,6 +84,12 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
       <div className={s.CreateSchema}>
         <div className={s.Header}>
           <H1>Create schema</H1>
+        </div>
+
+        <div className={s.FormControl}>
+          <div className={s.Policies}>
+            <Policies topic={props.topic} />
+          </div>
         </div>
 
         <div className={s.FormControl}>

@@ -6,6 +6,7 @@ import s from './SchemaEntry.module.css'
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import Pre from '../../../ui/Pre/Pre';
 import { H1 } from '../../../ui/H/H';
+import Policies from '../Policies/Policies';
 
 export type SchemaEntryProps = {
   topic: string,
@@ -44,6 +45,11 @@ const SchemaEntry: React.FC<SchemaEntryProps> = (props) => {
     <div className={s.SchemaEntry}>
       <div className={s.Header}>
         <H1>View schema</H1>
+      </div>
+      <div className={s.FormControl}>
+        <div className={s.Policies}>
+          <Policies topic={props.topic} />
+        </div>
       </div>
       <div className={s.FormControl}>
         <strong>Topic:</strong> {props.topic}

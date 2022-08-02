@@ -17,8 +17,13 @@ const LinkWithQuery = (props: Parameters<typeof Link>[0]) => {
     .filter(p => p !== undefined)
     .join('&');
 
+  const pathname = `${typeof props.to === 'object' ? props.to.pathname : props.to}?${p}`;
+
   return (
-    <Link {...props} to={`${props.to}?${p}`} />
+    <Link
+      {...props}
+      to={typeof props.to === 'object' ? { ...props.to, pathname } : pathname}
+    />
   );
 };
 
