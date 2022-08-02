@@ -1,0 +1,11 @@
+.SchemaDefinition {
+  margin: 0;
+  padding: 12rem;
+  max-height: 50ch;
+}
+
+.SchemaDefinitionContainer {
+  overflow: hidden;
+  border-radius: 8rem;
+  border: 1px solid #ddd;
+}

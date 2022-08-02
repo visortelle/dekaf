@@ -114,6 +114,16 @@ message TestCompatibilityResponse {
   string incompatible_reason = 4;
 }
 
+message GetHumanReadableSchemaRequest {
+  bytes raw_schema = 1;
+  SchemaType schema_type = 2;
+}
+
+message GetHumanReadableSchemaResponse {
+  google.rpc.Status status = 1;
+  optional string human_readable_schema = 2;
+}
+
 service SchemaService {
   rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse);
   rpc GetLatestSchemaInfo(GetLatestSchemaInfoRequest) returns (GetLatestSchemaInfoResponse);
@@ -122,4 +132,6 @@ service SchemaService {
 
   rpc CompileProtobufNative(CompileProtobufNativeRequest) returns (CompileProtobufNativeResponse);
   rpc TestCompatibility(TestCompatibilityRequest) returns (TestCompatibilityResponse);
+
+  rpc GetHumanReadableSchema(GetHumanReadableSchemaRequest) returns (GetHumanReadableSchemaResponse);
 }
