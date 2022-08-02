@@ -4,6 +4,7 @@ import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/Pulsar
 import * as Notifications from '../../../app/contexts/Notifications';
 import s from './SchemaEntry.module.css'
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import Pre from '../../../ui/Pre/Pre';
 
 export type SchemaEntryProps = {
   topic: string,
@@ -52,12 +53,10 @@ const SchemaEntry: React.FC<SchemaEntryProps> = (props) => {
       {humanReadableSchema !== undefined && humanReadableSchema.length > 0 && (
         <div className={s.Stat}>
           <strong>Schema definition:</strong>
-          <div className={s.SchemaDefinitionContainer}>
-            <pre className={s.SchemaDefinition}>
-              {humanReadableSchema}
-            </pre>
-          </div>
 
+          <Pre>
+              {humanReadableSchema}
+          </Pre>
         </div>
       )}
     </div>

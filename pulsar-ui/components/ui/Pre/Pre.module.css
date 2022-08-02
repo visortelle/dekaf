@@ -1,0 +1,10 @@
+.Pre {
+  margin: 0;
+  padding: 12rem;
+}
+
+.PreContainer {
+  overflow: hidden;
+  border-radius: 8rem;
+  border: 1px solid #ddd;
+}
