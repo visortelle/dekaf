@@ -112,7 +112,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
               No schemas found.
             </div>
           )}
-          {schemas?.getSchemasList().map((schema) => {
+          {schemas?.getSchemasList().sort((a, b) => b.getSchemaVersion() - a.getSchemaVersion()).map((schema) => {
             const schemaInfo = schema.getSchemaInfo();
             const schemaVersion = schema.getSchemaVersion();
             if (schemaInfo === undefined) {

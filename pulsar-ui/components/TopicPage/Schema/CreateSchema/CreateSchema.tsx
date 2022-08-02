@@ -34,20 +34,15 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const schemaShouldHaveDefinition = isSchemaShouldHaveDefinition(schemaType);
 
   const checkSchemaCompatibility = async () => {
-    console.log('wtf', schemaType, SchemaType[schemaType])
     if (schemaShouldHaveDefinition && schemaDefinition === undefined) {
-      console.log('a', schemaShouldHaveDefinition);
       return;
     }
 
-    console.log('b');
     const schemaInfo = new SchemaInfo();
 
     if (schemaShouldHaveDefinition && schemaDefinition !== undefined) {
-      console.log('c');
       schemaInfo.setSchema(schemaDefinition);
     }
-    console.log('d');
     schemaInfo.setType(SchemaType[schemaType]);
 
     const req = new TestCompatibilityRequest();
