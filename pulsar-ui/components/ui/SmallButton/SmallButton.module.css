@@ -4,7 +4,7 @@
   padding: 0;
 
   display: inline-flex;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
   font-size: 12rem;

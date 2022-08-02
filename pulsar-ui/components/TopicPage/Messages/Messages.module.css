@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-bottom: 1rem solid #ddd;
+  border-bottom: 1px solid #ddd;
   margin-bottom: 8rem;
   position: relative;
 }

@@ -41,7 +41,10 @@ const Producer: React.FC<ProducerProps> = (props) => {
     sendReq.setMessagesList([valueToBytes(value, valueType)]);
 
     const res = await producerServiceClient.send(sendReq, {}).catch(err => notifyError(`Unable to send a message. ${err}`));
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+    if (res === undefined) {
+      return;
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to send a message. ${res.getStatus()?.getMessage()}`);
       return;
     }
