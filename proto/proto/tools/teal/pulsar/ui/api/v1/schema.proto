@@ -27,11 +27,7 @@ enum SchemaType {
   SCHEMA_TYPE_LOCAL_TIME = 19;
   SCHEMA_TYPE_LOCAL_DATE_TIME = 20;
   SCHEMA_TYPE_PROTOBUF_NATIVE = 21;
-
-  // Schemas that don't have schema info.
   SCHEMA_TYPE_BYTES = 22;
-  SCHEMA_TYPE_AUTO_CONSUME = 23;
-  SCHEMA_TYPE_AUTO_PUBLISH = 24;
 }
 
 message SchemaInfo {
@@ -39,6 +35,11 @@ message SchemaInfo {
   SchemaType type = 2;
   bytes schema = 3;
   map<string, string> properties = 4;
+}
+
+message SchemaInfoWithVersion {
+  SchemaInfo schema_info = 1;
+  int64 schema_version = 2;
 }
 
 message FileEntry {
@@ -89,7 +90,7 @@ message ListSchemasRequest {
 
 message ListSchemasResponse {
   google.rpc.Status status = 1;
-  repeated SchemaInfo schema_infos = 2;
+  repeated SchemaInfoWithVersion schemas = 2;
 }
 
 message CompileProtobufNativeRequest {

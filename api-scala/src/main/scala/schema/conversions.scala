@@ -52,8 +52,6 @@ def schemaTypeFromPb(pb: SchemaTypePb): SchemaType =
         case SchemaTypePb.SCHEMA_TYPE_PROTOBUF_NATIVE => SchemaType.PROTOBUF_NATIVE
 
         case SchemaTypePb.SCHEMA_TYPE_BYTES => SchemaType.BYTES
-        case SchemaTypePb.SCHEMA_TYPE_AUTO_CONSUME => SchemaType.AUTO_CONSUME
-        case SchemaTypePb.SCHEMA_TYPE_AUTO_PUBLISH => SchemaType.AVRO
 
         case _ => SchemaType.NONE
 
@@ -87,8 +85,6 @@ def schemaTypeToPb(schemaType: SchemaType): SchemaTypePb =
         case SchemaType.PROTOBUF_NATIVE => SchemaTypePb.SCHEMA_TYPE_PROTOBUF_NATIVE
 
         case SchemaType.BYTES => SchemaTypePb.SCHEMA_TYPE_BYTES
-        case SchemaType.AUTO_CONSUME => SchemaTypePb.SCHEMA_TYPE_AUTO_CONSUME
-        case SchemaType.AUTO_PUBLISH => SchemaTypePb.SCHEMA_TYPE_AUTO_PUBLISH
 
         case _ => SchemaTypePb.SCHEMA_TYPE_NONE
 

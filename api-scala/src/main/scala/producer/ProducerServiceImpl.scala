@@ -1,11 +1,13 @@
 package producer
 
 import _root_.client.{adminClient, client}
-import org.apache.pulsar.client.api.{ProducerAccessMode, Producer}
+import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, Schema}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
+import org.apache.pulsar.client.api.schema.SchemaInfoProvider
+import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 
 import scala.concurrent.Future
 
@@ -20,8 +22,10 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
         logger.info(s"Creating producer: $producerName")
 
         try {
-            val producer = client
-                .newProducer()
+            val schema = new AutoProduceBytesSchema[Array[Byte]]
+
+            val producer: Producer[Array[Byte]] = client
+                .newProducer(schema)
                 .accessMode(ProducerAccessMode.Shared)
                 .producerName(producerName)
                 .topic(request.topic)
@@ -60,12 +64,19 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
 
     override def send(request: SendRequest): Future[SendResponse] =
         val producerName: ProducerName = request.producerName
-        logger.debug(s"Sending message. Producer: $producerName")
+        logger.info(s"Sending message. Producer: $producerName")
 
         producers.get(producerName) match
             case Some(p) =>
-                request.messages.foreach(msg => p.sendAsync(msg.toByteArray))
-
+                request.messages.foreach(msg =>
+                    try {
+                        p.send(msg.toByteArray)
+                    } catch {
+                        case err =>
+                            val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                            return Future.successful(SendResponse(status = Some(status)))
+                    }
+                )
                 val status: Status = Status(code = Code.OK.index)
                 Future.successful(SendResponse(status = Some(status)))
             case _ =>

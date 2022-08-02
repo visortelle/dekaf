@@ -16,12 +16,6 @@ const SchemaTypeInput: React.FC<SchemaTypeInputProps> = (props) => {
         list={[
           { type: 'item', title: 'None', value: 'SCHEMA_TYPE_NONE' },
           {
-            type: 'group', title: 'Auto', items: [
-              { type: 'item', title: 'AUTO_CONSUME', value: 'SCHEMA_TYPE_AUTO_CONSUME' },
-              { type: 'item', title: 'AUTO_PUBLISH', value: 'SCHEMA_TYPE_AUTO_PUBLISH' },
-            ]
-          },
-          {
             type: 'group', title: 'Complex type', items: [
               { type: 'item', title: 'AVRO', value: 'SCHEMA_TYPE_AVRO' },
               { type: 'item', title: 'PROTOBUF', value: 'SCHEMA_TYPE_PROTOBUF' },
@@ -53,7 +47,6 @@ const SchemaTypeInput: React.FC<SchemaTypeInputProps> = (props) => {
               { type: 'item', title: 'LOCAL_DATE_TIME', value: 'SCHEMA_TYPE_LOCAL_DATE_TIME' },
             ]
           }
-
         ]}
         onChange={props.onChange}
         value={props.value}

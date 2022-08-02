@@ -2,7 +2,7 @@
   background-color: #fff;
   height: 100%;
   font-size: 14rem;
-  border-right: 1rem solid #ddd;
+  border-right: 1px solid #ddd;
   display: flex;
   flex-direction: column;
 }
@@ -85,7 +85,7 @@
 .TreeControlButtons {
   padding: 8rem 12rem;
   display: flex;
-  border-bottom: 1rem solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
 
 .TreeControlButtons > * {
@@ -135,4 +135,3 @@
     opacity: 1;
   }
 }
-

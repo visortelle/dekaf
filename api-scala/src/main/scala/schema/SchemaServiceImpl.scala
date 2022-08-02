@@ -7,17 +7,21 @@ import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptor
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaInfoWithVersion, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
+import scala.concurrent.ExecutionContext
 
 import scala.jdk.CollectionConverters.*
+import scala.jdk.FutureConverters.*
 import org.apache.pulsar.client.api.{Producer, ProducerAccessMode}
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import _root_.schema.protobufnative
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import java.util
+import java.util.concurrent.CompletableFuture
+import scala.concurrent.duration.Duration
 
 class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
     val logger: Logger = Logger(getClass.getName)
@@ -97,11 +101,22 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
         logger.info(s"Listing schemas for topic ${request.topic}.")
 
         try {
-            val schemaInfos = adminClient.schemas.getAllSchemas(request.topic).asScala.toSeq.map(schemaInfoToPb(_))
+            val schemaInfos = adminClient.schemas.getAllSchemas(request.topic).asScala.toList
+
+            val getVersionFutures = schemaInfos
+                .map(si => adminClient.schemas.getVersionBySchemaAsync(request.topic, si))
+                .map(_.asScala)
+
+            given ExecutionContext = ExecutionContext.global
+            val schemaVersions = Await.result(Future.sequence(getVersionFutures), Duration.Inf)
+
+            val schemas = schemaInfos.zip(schemaVersions).map(v =>
+                SchemaInfoWithVersion(schemaInfo = Some(schemaInfoToPb(v._1)), schemaVersion = v._2)
+            )
 
             logger.info(s"Successfully listed schemas for topic ${request.topic}.")
             val status = Status(code = Code.OK.index)
-            Future.successful(ListSchemasResponse(status = Some(status), schemaInfos))
+            Future.successful(ListSchemasResponse(status = Some(status), schemas = schemas))
         } catch {
             case err =>
                 logger.info(s"Failed to list schemas for topic ${request.topic}. Reason: ${err.getMessage}.")
@@ -170,15 +185,3 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 logger.info(s"Failed to test schema compatibility for topic ${request.topic}. Reason: ${err}")
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err)
                 Future.successful(TestCompatibilityResponse(status = Some(status)))
-
-//    override def getProtoDefinitionFromSchemaInfo(request: GetProtoDefinitionFromSchemaInfoRequest): Future[GetProtoDefinitionFromSchemaInfoResponse] =
-//        logger.info(s"Getting proto definition from schema info")
-//
-//        val schemaInfo = request.schemaInfo match
-//            case Some(si) => si
-//            case None =>
-//                logger.info(s"Unable to get proto definition from schema info. Schema info not specified")
-//                val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Schema info not specified")
-//                return Future.successful(GetProtoDefinitionFromSchemaInfoResponse(status = Some(status)))
-//
-

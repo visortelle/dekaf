@@ -15,7 +15,7 @@
 .ListFieldValue {
   padding: 0 12rem;
   min-height: 36rem;
-  border-bottom: 1rem solid #ddd;
+  border-bottom: 1px solid #ddd;
   display: flex;
   align-items: center;
   font-size: 14rem;
@@ -82,7 +82,7 @@
   line-height: 1;
   color: #fff;
   user-select: none;
-  border-bottom: 1rem solid rgba(0, 0, 0, 0.27);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.27);
 }
 
 .AddButton svg {
