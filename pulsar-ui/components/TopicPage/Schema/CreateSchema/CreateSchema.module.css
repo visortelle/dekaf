@@ -1,8 +1,12 @@
 .Header {
-  margin-bottom: 36rem;
+  margin-bottom: 12rem;
+}
+
+.Policies {
+  margin-bottom: 24rem;
 }
 
 .FormControl {
-  margin-bottom: 12rem;
+  margin-bottom: 8rem;
   max-width: 480rem;
 }

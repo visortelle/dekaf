@@ -16,7 +16,7 @@ export type ConfigurationTableProps = {
 const ConfigurationTable: React.FC<ConfigurationTableProps> = (props) => {
   return (
     <div className={s.ConfigurationTable}>
-      {props.title && <h2 className={s.Title}>{props.title}</h2>}
+      {props.title && <h2 className={s.Title} id={props.title.toLowerCase()}>{props.title}</h2>}
       {props.fields.map(field => {
         return (
           <div className={s.Field} key={field.id}>
