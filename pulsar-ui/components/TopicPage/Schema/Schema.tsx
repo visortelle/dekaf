@@ -67,8 +67,6 @@ const Schema: React.FC<SchemaProps> = (props) => {
     mutate(swrKeys.pulsar.schemas.listSchemas._(topic));
   }
 
-  console.log('CurrentView', currentView);
-
   return (
     <div className={s.Schema}>
       <div className={s.Schemas}>
