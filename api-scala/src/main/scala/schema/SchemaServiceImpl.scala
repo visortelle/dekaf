@@ -7,11 +7,12 @@ import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptor
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaInfoWithVersion, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetHumanReadableSchemaRequest, GetHumanReadableSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaInfoWithVersion, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
-import scala.concurrent.ExecutionContext
 
+import scala.concurrent.ExecutionContext
+import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
 import scala.jdk.CollectionConverters.*
 import scala.jdk.FutureConverters.*
 import org.apache.pulsar.client.api.{Producer, ProducerAccessMode}
@@ -185,3 +186,16 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 logger.info(s"Failed to test schema compatibility for topic ${request.topic}. Reason: ${err}")
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err)
                 Future.successful(TestCompatibilityResponse(status = Some(status)))
+
+    override def getHumanReadableSchema(request: GetHumanReadableSchemaRequest): Future[GetHumanReadableSchemaResponse] =
+        request.schemaType match
+            case SchemaTypePb.SCHEMA_TYPE_PROTOBUF_NATIVE =>
+                val descriptor = ProtobufNativeSchemaUtils.deserialize(request.rawSchema.toByteArray)
+                val status = Status(code = Code.OK.index)
+                Future.successful(GetHumanReadableSchemaResponse(
+                    status = Some(status),
+                    humanReadableSchema = Some(descriptor.toProto.toString)
+                ))
+            case _ =>
+                val status = Status(code = Code.OK.index)
+                Future.successful(GetHumanReadableSchemaResponse(status = Some(status), humanReadableSchema = None))

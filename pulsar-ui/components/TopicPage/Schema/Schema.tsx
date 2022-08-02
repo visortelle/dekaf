@@ -18,7 +18,7 @@ export type SchemaProps = {
   topicType: 'persistent' | 'non-persistent'
 };
 
-type CurrentView = { type: 'create-schema' } | { type: 'schema-entry', topic: string, schemaVersion: number };
+type CurrentView = { type: 'create-schema' } | { type: 'schema-entry', topic: string, schemaVersion: number, schemaInfo: SchemaInfo };
 
 const Schema: React.FC<SchemaProps> = (props) => {
   const [currentView, setCurrentView] = useState<CurrentView>({ type: 'create-schema' });
@@ -127,7 +127,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 schemaInfo={schemaInfo}
                 version={schemaVersion}
                 isSelected={currentView.type === 'schema-entry' && currentView.schemaVersion === schemaVersion}
-                onClick={() => setCurrentView({ type: 'schema-entry', topic, schemaVersion })}
+                onClick={() => setCurrentView({ type: 'schema-entry', topic, schemaVersion, schemaInfo })}
               />
             );
           })}
@@ -152,12 +152,22 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 return;
               }
 
-              setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: res.getSchemaVersion() });
+              const schemaInfo = res.getSchemaInfo();
+              if (schemaInfo === undefined) {
+                return;
+              }
+
+              setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: res.getSchemaVersion(), schemaInfo });
             }}
           />
         )}
         {currentView.type === 'schema-entry' && (
-          <SchemaEntry topic={currentView.topic} schemaVersion={currentView.schemaVersion} />
+          <SchemaEntry
+            key={`${currentView.topic}/${currentView.schemaVersion}`}
+            topic={currentView.topic}
+            schemaVersion={currentView.schemaVersion}
+            schemaInfo={currentView.schemaInfo}
+          />
         )}
       </div>
     </div>
