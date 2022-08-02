@@ -1,11 +1,8 @@
-.SchemaDefinition {
-  margin: 0;
-  padding: 12rem;
-  max-height: 50ch;
+.Header {
+  margin-bottom: 36rem;
 }
 
-.SchemaDefinitionContainer {
-  overflow: hidden;
-  border-radius: 8rem;
-  border: 1px solid #ddd;
+.FormControl {
+  margin-bottom: 12rem;
+  max-width: 480rem;
 }

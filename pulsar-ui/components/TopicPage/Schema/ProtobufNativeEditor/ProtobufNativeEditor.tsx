@@ -7,7 +7,6 @@ import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import Upload from 'rc-upload';
 import Select from '../../../ui/Select/Select';
 import { CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry as FileEntryPb } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
-import { H3 } from '../../../ui/H/H';
 import Pre from '../../../ui/Pre/Pre';
 
 export type ProtobufNativeEditorProps = {
@@ -106,7 +105,6 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
 
   return (
     <div className={s.ProtobufNativeEditor}>
-      <H3>Create protobuf native schema</H3>
       <div className={s.FormControl}>
         <Select<CreateFrom>
           list={[

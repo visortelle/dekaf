@@ -5,6 +5,7 @@ import * as Notifications from '../../../app/contexts/Notifications';
 import s from './SchemaEntry.module.css'
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import Pre from '../../../ui/Pre/Pre';
+import { H1 } from '../../../ui/H/H';
 
 export type SchemaEntryProps = {
   topic: string,
@@ -41,21 +42,24 @@ const SchemaEntry: React.FC<SchemaEntryProps> = (props) => {
 
   return (
     <div className={s.SchemaEntry}>
-      <div className={s.Stat}>
+      <div className={s.Header}>
+        <H1>View schema</H1>
+      </div>
+      <div className={s.FormControl}>
         <strong>Topic:</strong> {props.topic}
       </div>
-      <div className={s.Stat}>
+      <div className={s.FormControl}>
         <strong>Version:</strong> {props.schemaVersion}
       </div>
-      <div className={s.Stat}>
+      <div className={s.FormControl}>
         <strong>Type:</strong> {((Object.entries(SchemaType).find(([_, i]) => i === props.schemaInfo.getType()) || [])[0] || '').replace('SCHEMA_TYPE_', ' ')}
       </div>
       {humanReadableSchema !== undefined && humanReadableSchema.length > 0 && (
-        <div className={s.Stat}>
+        <div className={s.FormControl}>
           <strong>Schema definition:</strong>
 
           <Pre>
-              {humanReadableSchema}
+            {humanReadableSchema}
           </Pre>
         </div>
       )}
