@@ -68,8 +68,9 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
     }
 
     const compilationError = file.getCompilationError();
+    setCompilationError(compilationError);
+
     if (compilationError !== undefined && compilationError.length > 0) {
-      setCompilationError(compilationError);
       props.onCompilationError(compilationError);
       setSelectedMessage(undefined);
     }
@@ -88,7 +89,6 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
       return;
     }
 
-    console.log('HELLO');
     const file = files.get(selectedFile);
     if (file === undefined) {
       return;
@@ -106,6 +106,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
   return (
     <div className={s.ProtobufNativeEditor}>
       <div className={s.FormControl}>
+        <strong>Upload method</strong>
         <Select<CreateFrom>
           list={[
             { type: 'item', title: 'Single .proto file', value: 'single-file' },

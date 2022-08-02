@@ -109,7 +109,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
         <div className={s.SchemaList}>
           {schemas?.getSchemasList().length === 0 && (
             <div style={{ padding: '8rem 12rem' }}>
-              No schemas found.
+              No schemas registered for this topic.
             </div>
           )}
           {schemas?.getSchemasList().sort((a, b) => b.getSchemaVersion() - a.getSchemaVersion()).map((schema) => {
