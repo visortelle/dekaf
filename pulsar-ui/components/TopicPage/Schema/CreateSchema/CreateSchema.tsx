@@ -36,14 +36,18 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const checkSchemaCompatibility = async () => {
     console.log('wtf', schemaType, SchemaType[schemaType])
     if (schemaShouldHaveDefinition && schemaDefinition === undefined) {
+      console.log('a', schemaShouldHaveDefinition);
       return;
     }
 
+    console.log('b');
     const schemaInfo = new SchemaInfo();
 
     if (schemaShouldHaveDefinition && schemaDefinition !== undefined) {
+      console.log('c');
       schemaInfo.setSchema(schemaDefinition);
     }
+    console.log('d');
     schemaInfo.setType(SchemaType[schemaType]);
 
     const req = new TestCompatibilityRequest();
@@ -68,16 +72,23 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   }
 
   useEffect(() => {
+    setSchemaDefinition(undefined);
+    setSchemaCompatibility(undefined);
+
     checkSchemaCompatibility();
-  }, [schemaDefinition, schemaType])
+  }, [schemaType])
 
-
-  console.log('asdf', schemaShouldHaveDefinition, schemaDefinition);
+  useEffect(() => {
+    setSchemaCompatibility(undefined);
+    checkSchemaCompatibility();
+  }, [schemaDefinition]);
 
   return (
     <div>
       <div className={s.CreateSchema}>
-        <H1>Create schema</H1>
+        <div className={s.Header}>
+          <H1>Create schema</H1>
+        </div>
 
         <div className={s.FormControl}>
           <strong>Schema type</strong>
@@ -112,9 +123,9 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
             <div>
               <strong>Compatibility: </strong>
               {schemaCompatibility.isCompatible ? (
-                <span style={{ color: 'var(--accent-color-green)', fontWeight: 'bold'}}>Compatible</span>
+                <span style={{ color: 'var(--accent-color-green)', fontWeight: 'bold' }}>Compatible</span>
               ) : (
-                <span style={{ color: 'var(--accent-color-red)', fontWeight: 'bold'}}>Incompatible</span>
+                <span style={{ color: 'var(--accent-color-red)', fontWeight: 'bold' }}>Incompatible</span>
               )}
             </div>
             {schemaCompatibility.strategy && <div><strong>Strategy:</strong> {schemaCompatibility.strategy}</div>}
@@ -127,7 +138,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
             text='Create'
             type='primary'
             disabled={
-              (schemaShouldHaveDefinition && schemaDefinition === undefined)
+              (schemaShouldHaveDefinition && (schemaDefinition === undefined))
                 ? true :
                 (props.isTopicHasAnySchema ? !schemaCompatibility?.isCompatible : false)}
             onClick={async () => {
