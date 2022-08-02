@@ -18,7 +18,7 @@ export type CreateSchemaProps = {
   onCreateSuccess: () => void;
 };
 
-type SchemaCompatibiity = {
+type SchemaCompatibility = {
   isCompatible: boolean,
   strategy: string,
   incompatibleReason: string
@@ -30,7 +30,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
 
   const [schemaType, setSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_PROTOBUF_NATIVE');
   const [schemaDefinition, setSchemaDefinition] = useState<Uint8Array | undefined>(undefined);
-  const [schemaCompatibility, setSchemaCompatibility] = useState<SchemaCompatibiity | undefined>(undefined);
+  const [schemaCompatibility, setSchemaCompatibility] = useState<SchemaCompatibility | undefined>(undefined);
 
   const schemaShouldHaveDefinition = isSchemaShouldHaveDefinition(schemaType);
 
