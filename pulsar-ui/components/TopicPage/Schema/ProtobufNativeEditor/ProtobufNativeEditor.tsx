@@ -7,6 +7,8 @@ import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import Upload from 'rc-upload';
 import Select from '../../../ui/Select/Select';
 import { CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry as FileEntryPb } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
+import { H3 } from '../../../ui/H/H';
+import Pre from '../../../ui/Pre/Pre';
 
 export type ProtobufNativeEditorProps = {
   onSchemaCompiled: (schema: Uint8Array) => void;
@@ -67,7 +69,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
     }
 
     const compilationError = file.getCompilationError();
-    if (compilationError !== undefined) {
+    if (compilationError !== undefined && compilationError.length > 0) {
       setCompilationError(compilationError);
       props.onCompilationError(compilationError);
       setSelectedMessage(undefined);
@@ -104,7 +106,8 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
 
   return (
     <div className={s.ProtobufNativeEditor}>
-      <div>
+      <H3>Create protobuf native schema</H3>
+      <div className={s.FormControl}>
         <Select<CreateFrom>
           list={[
             { type: 'item', title: 'Single .proto file', value: 'single-file' },
@@ -116,17 +119,19 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
       </div>
 
       {(createFrom === 'single-file' || createFrom === 'directory') && (
-        <UploadZone isDirectory={createFrom === 'directory'} onFiles={(files) => submitFiles(files)}>
-          <div className={s.UploadZoneIcon}>
-            <SvgIcon svg={uploadIcon} />
-          </div>
-          {createFrom === 'single-file' && "Click here or drag'n'drop a .proto file"}
-          {createFrom === 'directory' && "Click here or drag'n'drop a directory with .proto files"}
-        </UploadZone>
+        <div className={s.FormControl}>
+          <UploadZone isDirectory={createFrom === 'directory'} onFiles={(files) => submitFiles(files)}>
+            <div className={s.UploadZoneIcon}>
+              <SvgIcon svg={uploadIcon} />
+            </div>
+            {createFrom === 'single-file' && "Click here or drag'n'drop a .proto file"}
+            {createFrom === 'directory' && "Click here or drag'n'drop a directory with .proto files"}
+          </UploadZone>
+        </div>
       )}
 
       {fileNames.length > 0 && selectedFile !== undefined && (
-        <div>
+        <div className={s.FormControl}>
           <strong>File</strong>
           <Select<string>
             list={sortFilePaths(fileNames).map(name => ({ type: 'item', title: name, value: name }))}
@@ -136,7 +141,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
         </div>
       )}
       {selectedFile !== undefined && selectedMessage !== undefined && (
-        <div>
+        <div className={s.FormControl}>
           <strong>Message</strong>
           <Select<string>
             list={files?.get(selectedFile)?.getSchemasMap().getEntryList().map(([k]) => k).map(message => ({ type: 'item', title: message, value: message })) || []}
@@ -152,16 +157,11 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
       )}
 
       {selectedFile !== undefined && selectedMessage !== undefined && (
-        <div>
+        <div className={s.FormControl}>
           <strong>Schema</strong>
-          <textarea
-            rows={20}
-            cols={80}
-            spellCheck={false}
-            style={{ display: 'block' }}
-            value={files?.get(selectedFile)?.getSchemasMap().get(selectedMessage)?.getHumanReadableSchema()}
-            onChange={(e) => { }}
-          />
+          <Pre>
+            {files?.get(selectedFile)?.getSchemasMap().get(selectedMessage)?.getHumanReadableSchema()}
+          </Pre>
         </div>
       )}
     </div>
