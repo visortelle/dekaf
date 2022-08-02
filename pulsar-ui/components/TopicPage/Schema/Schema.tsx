@@ -8,7 +8,8 @@ import { DeleteSchemaRequest, GetLatestSchemaInfoRequest, ListSchemasRequest, Sc
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import CreateSchema from './CreateSchema/CreateSchema';
 import { schemaTypes } from './types';
-import Button from '../../ui/Button/Button';
+import SmallButton from '../../ui/SmallButton/SmallButton';
+import SchemaEntry from './SchemaEntry/SchemaEntry';
 
 export type SchemaProps = {
   tenant: string,
@@ -17,7 +18,11 @@ export type SchemaProps = {
   topicType: 'persistent' | 'non-persistent'
 };
 
+type CurrentView = { type: 'create-schema' } | { type: 'schema-entry', topic: string, schemaVersion: number };
+
 const Schema: React.FC<SchemaProps> = (props) => {
+  const [currentView, setCurrentView] = useState<CurrentView>({ type: 'create-schema' });
+
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
 
@@ -62,20 +67,25 @@ const Schema: React.FC<SchemaProps> = (props) => {
     mutate(swrKeys.pulsar.schemas.listSchemas._(topic));
   }
 
-  // console.log('latest schema info', latestSchemaInfo);
-  // console.log('schemas', schemas);
+  console.log('CurrentView', currentView);
 
-  console.log('schemas', schemas?.getSchemaInfosList());
   return (
     <div className={s.Schema}>
       <div className={s.Schemas}>
-        {schemas?.getSchemaInfosList().map((schemaInfo, i) => {
-          return (
-            <SchemaListEntry
-              key={i}
-              schemaInfo={schemaInfo}
-              isLatestSchema={i === schemas?.getSchemaInfosList().length - 1}
-              onDeleteLatestSchema={async () => {
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8rem 12rem', borderBottom: '1px solid #ddd' }}>
+          <div style={{ display: 'flex', marginRight: '12rem', flex: '1 1 auto', justifyContent: 'center' }}>
+            <SmallButton
+              text='Create'
+              type='primary'
+              onClick={() => setCurrentView({ type: 'create-schema' })}
+            />
+          </div>
+          <div>
+            <SmallButton
+              text='Delete'
+              type='danger'
+              disabled={schemas === undefined ? true : schemas?.getSchemasList().length === 0}
+              onClick={async () => {
                 const req = new DeleteSchemaRequest();
                 req.setTopic(props.topic);
                 const res = await schemaServiceClient.deleteSchema(req, {}).catch(err => notifyError(err));
@@ -85,23 +95,70 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 }
 
                 if (res.getStatus()?.getCode() === Code.OK) {
-                  notifySuccess('Successfully deleted latest schema');
+                  notifySuccess('Successfully deleted the latest schema');
                 } else {
                   notifyError(res.getStatus()?.getMessage());
                 }
 
                 refetchData();
+
+                setCurrentView({ type: 'create-schema' });
               }}
             />
-          );
-        })}
+          </div>
+        </div>
+
+        <div className={s.SchemaList}>
+          {schemas?.getSchemasList().length === 0 && (
+            <div style={{ padding: '8rem 12rem' }}>
+              No schemas found.
+            </div>
+          )}
+          {schemas?.getSchemasList().map((schema) => {
+            const schemaInfo = schema.getSchemaInfo();
+            const schemaVersion = schema.getSchemaVersion();
+            if (schemaInfo === undefined) {
+              return null;
+            }
+
+            return (
+              <SchemaListEntry
+                key={schemaVersion}
+                schemaInfo={schemaInfo}
+                version={schemaVersion}
+                isSelected={currentView.type === 'schema-entry' && currentView.schemaVersion === schemaVersion}
+                onClick={() => setCurrentView({ type: 'schema-entry', topic, schemaVersion })}
+              />
+            );
+          })}
+        </div>
       </div>
       <div className={s.Content}>
-        <CreateSchema
-          topic={topic}
-          isTopicHasAnySchema={(schemas?.getSchemaInfosList().length || 0) > 0}
-          onCreateSuccess={refetchData}
-        />
+        {currentView.type === 'create-schema' && (
+          <CreateSchema
+            topic={topic}
+            isTopicHasAnySchema={(schemas?.getSchemasList().length || 0) > 0}
+            onCreateSuccess={async () => {
+              refetchData();
+
+              const req = new GetLatestSchemaInfoRequest();
+              req.setTopic(topic);
+              const res = await schemaServiceClient.getLatestSchemaInfo(req, {}).catch(err => notifyError(`Unable to get latest schema info. ${err}`));
+              if (res === undefined) {
+                return;
+              }
+              if (res.getStatus()?.getCode() !== Code.OK) {
+                notifyError(`Unable to get latest schema info. ${res.getStatus()?.getMessage()}`);
+                return;
+              }
+
+              setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: res.getSchemaVersion() });
+            }}
+          />
+        )}
+        {currentView.type === 'schema-entry' && (
+          <SchemaEntry topic={currentView.topic} schemaVersion={currentView.schemaVersion} />
+        )}
       </div>
     </div>
   );
@@ -109,24 +166,21 @@ const Schema: React.FC<SchemaProps> = (props) => {
 
 type SchemaListEntryProps = {
   schemaInfo: SchemaInfo;
-  isLatestSchema: boolean;
-  onDeleteLatestSchema: () => void;
+  version: number;
+  isSelected: boolean;
+  onClick: () => void;
 }
 const SchemaListEntry: React.FC<SchemaListEntryProps> = (props) => {
   return (
-    <div>
-      {props.isLatestSchema && (
-        <Button
-          text="Delete"
-          type='danger'
-          onClick={props.onDeleteLatestSchema}
-        />
-      )}
+    <div
+      className={`${s.SchemaListEntry} ${props.isSelected ? s.SchemaListEntrySelected : ''}`}
+      onClick={props.onClick}
+    >
       <div>
-        {props.schemaInfo.getName()}
+        <strong>Version:</strong> {props.version}
       </div>
       <div>
-        {schemaTypes[props.schemaInfo.getType()].replace('SCHEMA_TYPE_', '')}
+        <strong>Type:</strong> {schemaTypes[props.schemaInfo.getType()].replace('SCHEMA_TYPE_', '')}
       </div>
     </div>
   );

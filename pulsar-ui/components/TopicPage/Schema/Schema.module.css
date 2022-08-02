@@ -1,15 +1,42 @@
 .Schema {
+  background-color: #fff;
+  flex: 1 1 auto;
   display: flex;
+  overflow: hidden;
 }
 
 .Schemas {
-  width: 200rem;
+  width: 240rem;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+}
+
+.SchemaList {
+  overflow: auto;
+}
+
+.SchemaListEntry {
+  padding: 8rem 12rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.SchemaListEntry:hover {
+  cursor: pointer;
+  background-color: #f5f5f5;
+  transition: var(--transition-short);
+}
+
+.SchemaListEntrySelected {
+  background-color: #f5f5f5;
 }
 
 .Content {
   padding: 12rem;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  overflow: auto;
 }
 
 .FormControl {

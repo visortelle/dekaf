@@ -14,5 +14,6 @@
 .toastBody {
   padding: 0 !important;
   margin: 0 !important;
-  overflow: hidden !important;
+  overflow: auto !important;
+  max-height: 640rem !important;
 }
