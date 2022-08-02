@@ -1,0 +1,24 @@
+.Policies {
+  padding: 8rem 12rem;
+  border-radius: 8rem;
+  border: 1px solid #ddd;
+  position: relative;
+}
+
+.Header {
+  margin-bottom: 12rem;
+}
+
+.FormControl {
+  margin-bottom: 8rem;
+}
+
+.FormControl:last-child {
+  margin-bottom: 0;
+}
+
+.EditButton {
+  position: absolute;
+  right: 12rem;
+  top: 12rem;
+}

@@ -7,7 +7,7 @@ import { swrKeys } from "../../../swrKeys";
 import { GetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
-const policy = 'is-allow-auto-update-schema';
+const policy = 'isAllowAutoUpdateSchema';
 
 export type FieldInputProps = {
   tenant: string;
