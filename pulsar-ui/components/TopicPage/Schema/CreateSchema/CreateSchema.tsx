@@ -9,6 +9,7 @@ import * as Notifications from '../../../app/contexts/Notifications';
 import s from './CreateSchema.module.css'
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import SchemaTypeInput from '../SchemaTypeInput/SchemaTypeInput';
+import { H1 } from '../../../ui/H/H';
 
 export type CreateSchemaProps = {
   topic: string;
@@ -33,6 +34,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const schemaShouldHaveDefinition = isSchemaShouldHaveDefinition(schemaType);
 
   const checkSchemaCompatibility = async () => {
+    console.log('wtf', schemaType, SchemaType[schemaType])
     if (schemaShouldHaveDefinition && schemaDefinition === undefined) {
       return;
     }
@@ -42,7 +44,6 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
     if (schemaShouldHaveDefinition && schemaDefinition !== undefined) {
       schemaInfo.setSchema(schemaDefinition);
     }
-
     schemaInfo.setType(SchemaType[schemaType]);
 
     const req = new TestCompatibilityRequest();
@@ -67,7 +68,6 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   }
 
   useEffect(() => {
-    console.log('CreateSchema: useEffect');
     checkSchemaCompatibility();
   }, [schemaDefinition, schemaType])
 
@@ -77,46 +77,52 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   return (
     <div>
       <div className={s.CreateSchema}>
+        <H1>Create schema</H1>
+
         <div className={s.FormControl}>
           <strong>Schema type</strong>
           <SchemaTypeInput value={schemaType} onChange={setSchemaType} />
+        </div>
 
-          <div>
-            {/* {schemaType === 'SCHEMA_TYPE_PROTOBUF' && (
+        <div className={s.FormControl}>
+          {/* {schemaType === 'SCHEMA_TYPE_PROTOBUF' && (
             <div>
               <textarea value={schema} onChange={e => setSchema(e.target.value)}></textarea>
             </div>
           )} */}
-            {schemaType === 'SCHEMA_TYPE_PROTOBUF_NATIVE' && (
-              // https://github.com/apache/pulsar/blob/c01b1eeda3221bdbf863bf0f3f8373e93d90adef/pulsar-client/src/test/java/org/apache/pulsar/client/impl/schema/ProtobufNativeSchemaTest.java
-              // fileDescriptorSet: "CtMDCgpUZXN0LnByb3RvEgVwcm90bxoSRXh0ZXJuYWxUZXN0LnByb3RvImUKClN1Yk1lc3NhZ2USCwoDZm9vGAEgASgJEgsKA2JhchgCIAEoARo9Cg1OZXN0ZWRNZXNzYWdlEgsKA3VybBgBIAEoCRINCgV0aXRsZRgCIAEoCRIQCghzbmlwcGV0cxgDIAMoCSLlAQoLVGVzdE1lc3NhZ2USEwoLc3RyaW5nRmllbGQYASABKAkSEwoLZG91YmxlRmllbGQYAiABKAESEAoIaW50RmllbGQYBiABKAUSIQoIdGVzdEVudW0YBCABKA4yDy5wcm90by5UZXN0RW51bRImCgtuZXN0ZWRGaWVsZBgFIAEoCzIRLnByb3RvLlN1Yk1lc3NhZ2USFQoNcmVwZWF0ZWRGaWVsZBgKIAMoCRI4Cg9leHRlcm5hbE1lc3NhZ2UYCyABKAsyHy5wcm90by5leHRlcm5hbC5FeHRlcm5hbE1lc3NhZ2UqJAoIVGVzdEVudW0SCgoGU0hBUkVEEAASDAoIRkFJTE9WRVIQAUItCiVvcmcuYXBhY2hlLnB1bHNhci5jbGllbnQuc2NoZW1hLnByb3RvQgRUZXN0YgZwcm90bzMKoAEKEkV4dGVybmFsVGVzdC5wcm90bxIOcHJvdG8uZXh0ZXJuYWwiOwoPRXh0ZXJuYWxNZXNzYWdlEhMKC3N0cmluZ0ZpZWxkGAEgASgJEhMKC2RvdWJsZUZpZWxkGAIgASgBQjUKJW9yZy5hcGFjaGUucHVsc2FyLmNsaWVudC5zY2hlbWEucHJvdG9CDEV4dGVybmFsVGVzdGIGcHJvdG8z"
-              // rootFileDescriptorName: "Test.proto"
-              // rootMessageTypeName: "proto.TestMessage"
-              <div>
-                <ProtobufNativeEditor
-                  onSchemaCompiled={setSchemaDefinition}
-                  onCompilationError={() => {
-                    setSchemaDefinition(undefined);
-                    setSchemaCompatibility(undefined);
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          {schemaType === 'SCHEMA_TYPE_PROTOBUF_NATIVE' && (
+            // https://github.com/apache/pulsar/blob/c01b1eeda3221bdbf863bf0f3f8373e93d90adef/pulsar-client/src/test/java/org/apache/pulsar/client/impl/schema/ProtobufNativeSchemaTest.java
+            // fileDescriptorSet: "CtMDCgpUZXN0LnByb3RvEgVwcm90bxoSRXh0ZXJuYWxUZXN0LnByb3RvImUKClN1Yk1lc3NhZ2USCwoDZm9vGAEgASgJEgsKA2JhchgCIAEoARo9Cg1OZXN0ZWRNZXNzYWdlEgsKA3VybBgBIAEoCRINCgV0aXRsZRgCIAEoCRIQCghzbmlwcGV0cxgDIAMoCSLlAQoLVGVzdE1lc3NhZ2USEwoLc3RyaW5nRmllbGQYASABKAkSEwoLZG91YmxlRmllbGQYAiABKAESEAoIaW50RmllbGQYBiABKAUSIQoIdGVzdEVudW0YBCABKA4yDy5wcm90by5UZXN0RW51bRImCgtuZXN0ZWRGaWVsZBgFIAEoCzIRLnByb3RvLlN1Yk1lc3NhZ2USFQoNcmVwZWF0ZWRGaWVsZBgKIAMoCRI4Cg9leHRlcm5hbE1lc3NhZ2UYCyABKAsyHy5wcm90by5leHRlcm5hbC5FeHRlcm5hbE1lc3NhZ2UqJAoIVGVzdEVudW0SCgoGU0hBUkVEEAASDAoIRkFJTE9WRVIQAUItCiVvcmcuYXBhY2hlLnB1bHNhci5jbGllbnQuc2NoZW1hLnByb3RvQgRUZXN0YgZwcm90bzMKoAEKEkV4dGVybmFsVGVzdC5wcm90bxIOcHJvdG8uZXh0ZXJuYWwiOwoPRXh0ZXJuYWxNZXNzYWdlEhMKC3N0cmluZ0ZpZWxkGAEgASgJEhMKC2RvdWJsZUZpZWxkGAIgASgBQjUKJW9yZy5hcGFjaGUucHVsc2FyLmNsaWVudC5zY2hlbWEucHJvdG9CDEV4dGVybmFsVGVzdGIGcHJvdG8z"
+            // rootFileDescriptorName: "Test.proto"
+            // rootMessageTypeName: "proto.TestMessage"
+            <div className={s.FormControl}>
+              <ProtobufNativeEditor
+                onSchemaCompiled={setSchemaDefinition}
+                onCompilationError={() => {
+                  setSchemaDefinition(undefined);
+                  setSchemaCompatibility(undefined);
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {props.isTopicHasAnySchema && (schemaCompatibility !== undefined) && (
-          <div>
+          <div className={s.FormControl}>
             <div>
-              <strong>Schema compatibility: </strong>
-              {schemaCompatibility.isCompatible ? 'Compatible' : 'Incompatible'}
+              <strong>Compatibility: </strong>
+              {schemaCompatibility.isCompatible ? (
+                <span style={{ color: 'var(--accent-color-green)', fontWeight: 'bold'}}>Compatible</span>
+              ) : (
+                <span style={{ color: 'var(--accent-color-red)', fontWeight: 'bold'}}>Incompatible</span>
+              )}
             </div>
-            {schemaCompatibility.strategy && <div>Strategy: {schemaCompatibility.strategy}</div>}
+            {schemaCompatibility.strategy && <div><strong>Strategy:</strong> {schemaCompatibility.strategy}</div>}
             {schemaCompatibility.incompatibleReason && <div><strong>Reason:</strong> {schemaCompatibility.incompatibleReason}</div>}
           </div>
         )}
 
-        <div>
+        <div className={s.FormControl}>
           <Button
             text='Create'
             type='primary'
