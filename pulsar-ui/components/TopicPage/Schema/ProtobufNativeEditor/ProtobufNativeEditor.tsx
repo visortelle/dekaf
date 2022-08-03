@@ -138,25 +138,29 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
               height="320px"
               width=""
               defaultLanguage="proto"
-              theme='vs-dark'
               value={textEditorValue}
               onChange={(v) => setTextEditorValue(v || '')}
               options={{
                 minimap: { enabled: false },
-                scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false }
+                scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false },
+                theme: 'vs',
+                fontFamily: 'Fira Code',
+                fontSize: parseFloat(getComputedStyle(document.documentElement).fontSize) * 14
               }}
             />
           </div>
-          <Button
-            text="Upload"
-            type="regular"
-            svgIcon={uploadIcon}
-            onClick={() => {
-              submitFiles([{ relativePath: 'schema.proto', content: textEditorValue }]);
-            }}
-          />
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between'}}>
+            <Button
+              text="Upload"
+              type="regular"
+              svgIcon={uploadIcon}
+              onClick={() => {
+                submitFiles([{ relativePath: 'schema.proto', content: textEditorValue }]);
+              }}
+            />
+            <a className="A" href="https://developers.google.com/protocol-buffers/docs/proto3" target="__blank">Visit language reference</a>
+          </div>
         </div>
-
       )}
 
       {(createFrom === 'single-file' || createFrom === 'directory') && (

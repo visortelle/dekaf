@@ -93,7 +93,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 }
 
                 if (res.getStatus()?.getCode() === Code.OK) {
-                  notifySuccess('Successfully deleted the latest schema');
+                  notifySuccess('Successfully deleted the topic schema');
                 } else {
                   notifyError(res.getStatus()?.getMessage());
                 }

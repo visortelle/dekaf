@@ -20,7 +20,7 @@ import scala.reflect.ClassTag
 import java.io.OutputStream
 import java.io.PrintStream
 
-val logger: Logger = Logger("schema.protobufnative")
+val logger: Logger = Logger("schema.formats.protobuf")
 
 // Recursively build file descriptor and all it's dependencies.
 private def buildProtobufNativeFilesDescriptor(
@@ -64,7 +64,7 @@ case class CompiledFiles(files: Map[RelativePath, Either[String, CompiledFile]])
 def compileFiles(files: Seq[FileEntry]): CompiledFiles =
     // Write protobuf files to temp dir
     val tempDir = os.temp.dir(null, "__xray-protobuf-native_")
-    logger.info(s"Compiling PROTUBUF_NATIVE schema files. Temp dir: ${tempDir}" )
+    logger.info(s"Compiling PROTUBUF_NATIVE schema files. Temp dir: $tempDir")
 
     val srcDir = tempDir / "src"
     os.makeDir(srcDir)
@@ -83,34 +83,36 @@ def compileFiles(files: Seq[FileEntry]): CompiledFiles =
 
 private def compileFile(f: FileEntry, srcDir: os.Path, depsDir: os.Path): (String, Either[String, CompiledFile]) =
     val inputFile = srcDir / os.PathChunk.SeqPathChunk(f.relativePath.split("/"))
-        val descriptorSetOut = srcDir / os.PathChunk.SeqPathChunk((f.relativePath + ".pb").split("/"))
-        val protocLogFile = srcDir / s"${f.relativePath.replace(java.io.File.separator, "--")}-protoc.log"
-        val protocCommand = s"protoc --include_imports --descriptor_set_out=$descriptorSetOut -I $srcDir -I $depsDir $inputFile &> $protocLogFile"
+    val descriptorSetOut = srcDir / os.PathChunk.SeqPathChunk((f.relativePath + ".pb").split("/"))
+    val protocLogFile = srcDir / s"${f.relativePath.replace(java.io.File.separator, "--")}-protoc.log"
+    val protocCommand =
+        s"protoc --include_imports --descriptor_set_out=$descriptorSetOut -I $srcDir -I $depsDir $inputFile &> $protocLogFile"
 
-        val protocProcess = Seq("sh", "-c", s"set -e; $protocCommand").run
+    val protocProcess = Seq("sh", "-c", s"set -e; $protocCommand").run
 
-        if (protocProcess.exitValue != 0) {
-            val compilationError = os.read(protocLogFile)
-            return (f.relativePath, Left(s"Failed to compile $inputFile.\nError: $compilationError"))
-        }
+    if protocProcess.exitValue != 0 then
+        val compilationError = os.read(protocLogFile)
+        return (f.relativePath, Left(s"Failed to compile $inputFile.\nError: $compilationError"))
 
-        val descriptorSetOutContent = os.read.inputStream(descriptorSetOut)
-        val descriptorSet = FileDescriptorSet.parseFrom(descriptorSetOutContent)
+    val descriptorSetOutContent = os.read.inputStream(descriptorSetOut)
+    val descriptorSet = FileDescriptorSet.parseFrom(descriptorSetOutContent)
 
-        val currentProtoFile = descriptorSet.getFileList.asScala.find(fi => fi.getName == f.relativePath).get
-        val fileProtoCache = descriptorSet.getFileList.asScala.map(f => (f.getName, f)).toMap
-        val fileDescriptor = buildProtobufNativeFilesDescriptor(currentProtoFile, fileProtoCache)
-        val messageNames = fileDescriptor.getMessageTypes.asScala.map(t => t.getName).toSeq
+    val currentProtoFile = descriptorSet.getFileList.asScala.find(fi => fi.getName == f.relativePath).get
+    val fileProtoCache = descriptorSet.getFileList.asScala.map(f => (f.getName, f)).toMap
+    val fileDescriptor = buildProtobufNativeFilesDescriptor(currentProtoFile, fileProtoCache)
+    val messageNames = fileDescriptor.getMessageTypes.asScala.map(t => t.getName).toSeq
 
-        val schemas: Map[MessageName, Schema] = messageNames.map(m =>
+    val schemas: Map[MessageName, Schema] = messageNames
+        .map(m =>
             val messageDescriptor = fileDescriptor.findMessageTypeByName(m)
             val rawSchema = ProtobufNativeSchemaUtils.serialize(messageDescriptor)
             val humanReadableSchema = messageDescriptor.toProto.toString
             val schema = Schema(rawSchema, humanReadableSchema)
             (m, schema)
-        ).toMap
+        )
+        .toMap
 
-        (f.relativePath, Right(CompiledFile(schemas = schemas)))
+    (f.relativePath, Right(CompiledFile(schemas = schemas)))
 
 private def arrayBufferToJavaArray[A: ClassTag](list: collection.mutable.ArrayBuffer[A]) =
     val arr = new Array[A](list.size)
