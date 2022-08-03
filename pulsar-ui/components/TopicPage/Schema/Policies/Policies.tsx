@@ -95,13 +95,13 @@ const Policies: React.FC<PoliciesProps> = (props) => {
         <H3>Related policies</H3>
       </div>
       <div className={s.FormControl}>
-        <strong>Schema compatibility strategy:</strong> {strategy?.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '')}
+        <strong>Compatibility strategy:</strong> {strategy?.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '')}
       </div>
       <div className={s.FormControl}>
-        <strong>Allow schema auto update:</strong> {isAllowAutoUpdateSchema ? 'Allow' : 'Not allow'}
+        <strong>Allow auto update:</strong> {isAllowAutoUpdateSchema ? 'Allow' : 'Not allow'}
       </div>
       <div className={s.FormControl}>
-        <strong>Schema validation enforce:</strong> {schemaValidationEnforce ? 'Enforced' : 'Not enforced'}
+        <strong>Validation enforce:</strong> {schemaValidationEnforce ? 'Enforced' : 'Not enforced'}
       </div>
 
     </div>
