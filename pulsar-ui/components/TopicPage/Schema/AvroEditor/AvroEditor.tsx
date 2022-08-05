@@ -88,7 +88,7 @@ const AvroEditor: React.FC<AvroEditorProps> = (props) => {
               onChange={(v) => setSchemaDefinition(v || '')}
             />
           </div>
-          <a className="A" style={{ marginLeft: 'auto' }} href="https://avro.apache.org/docs/current/spec.html" target="__blank">Language reference</a>
+          <a className="A" style={{ marginLeft: 'auto' }} href="https://avro.apache.org/docs/current/spec.html" target="__blank">AVRO reference</a>
         </div>
       )}
 
