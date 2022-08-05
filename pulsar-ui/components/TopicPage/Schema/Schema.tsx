@@ -4,10 +4,10 @@ import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrp
 import * as Notifications from '../../app/contexts/Notifications';
 import useSWR, { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';
-import { DeleteSchemaRequest, GetLatestSchemaInfoRequest, ListSchemasRequest, SchemaInfo } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
+import { DeleteSchemaRequest, GetLatestSchemaInfoRequest, ListSchemasRequest, SchemaInfo, SchemaType } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import CreateSchema from './CreateSchema/CreateSchema';
-import { schemaTypes } from './types';
+import { schemaTypes, SchemaTypeT } from './types';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import SchemaEntry from './SchemaEntry/SchemaEntry';
 import { usePrevious } from '../../app/hooks/use-previous';
@@ -22,6 +22,7 @@ export type SchemaProps = {
 type CurrentView = { type: 'create-schema' } | { type: 'schema-entry', topic: string, schemaVersion: number, schemaInfo: SchemaInfo };
 
 const Schema: React.FC<SchemaProps> = (props) => {
+  const [defaultNewSchemaType, setDefaultNewSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_NONE');
   const [currentView, setCurrentView] = useState<CurrentView>({ type: 'create-schema' });
 
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
@@ -56,6 +57,10 @@ const Schema: React.FC<SchemaProps> = (props) => {
       const schemaInfo = latestSchemaInfo.getSchemaInfo();
       if (schemaInfo !== undefined) {
         setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: latestSchemaInfo.getSchemaVersion(), schemaInfo });
+        const schemaType = (Object.entries(SchemaType).find(([, i]) => i === schemaInfo.getType()) || [])[0] as SchemaTypeT;
+        if (schemaType !== undefined) {
+          setDefaultNewSchemaType(schemaType);
+        }
       }
     }
   }, [latestSchemaInfo]);
@@ -152,6 +157,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
             <CreateSchema
               topic={topic}
               isTopicHasAnySchema={(schemas.getSchemasList().length || 0) > 0}
+              defaultSchemaType={defaultNewSchemaType}
               onCreateSuccess={async () => {
                 refetchData();
 

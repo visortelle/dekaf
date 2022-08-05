@@ -15,6 +15,7 @@ import Policies from '../Policies/Policies';
 export type CreateSchemaProps = {
   topic: string;
   isTopicHasAnySchema: boolean;
+  defaultSchemaType: SchemaTypeT;
   onCreateSuccess: () => void;
 };
 
@@ -30,16 +31,14 @@ type Schema = {
   updateState: 'in-progress' | 'ready'
 }
 
-const defaultSchemaType: SchemaTypeT = 'SCHEMA_TYPE_AVRO';
-
 const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
 
   const [schema, setSchema] = useState<Schema>({
-    type: defaultSchemaType,
+    type: props.defaultSchemaType,
     definition: undefined,
-    updateState: isSchemaShouldHaveDefinition(defaultSchemaType) ? 'in-progress' : 'ready'
+    updateState: isSchemaShouldHaveDefinition(props.defaultSchemaType) ? 'in-progress' : 'ready'
   });
   const [schemaCompatibility, setSchemaCompatibility] = useState<SchemaCompatibility | undefined>(undefined);
 
