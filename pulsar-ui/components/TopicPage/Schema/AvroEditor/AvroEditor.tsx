@@ -31,9 +31,12 @@ const defaultCodeEditorValue = `{
          "type": "int"
       },
       {
-        "type": "array",
-        "items": "string",
-        "default": []
+        "name": "hamburgers",
+        "type": {
+          "type": "array",
+          "items": "string",
+          "default": []
+        }
       }
    ]
 }

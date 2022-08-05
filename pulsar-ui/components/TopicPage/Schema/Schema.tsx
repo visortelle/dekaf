@@ -62,9 +62,9 @@ const Schema: React.FC<SchemaProps> = (props) => {
     notifyError(`Unable to get schemas. ${schemas?.getStatus()?.getMessage()}`);
   }
 
-  const refetchData = () => {
-    mutate(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topic));
-    mutate(swrKeys.pulsar.schemas.listSchemas._(topic));
+  const refetchData = async () => {
+    await mutate(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topic));
+    await mutate(swrKeys.pulsar.schemas.listSchemas._(topic));
   }
 
   return (
@@ -98,7 +98,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
                   notifyError(res.getStatus()?.getMessage());
                 }
 
-                refetchData();
+                await refetchData();
 
                 setCurrentView({ type: 'create-schema' });
               }}
@@ -131,43 +131,45 @@ const Schema: React.FC<SchemaProps> = (props) => {
           })}
         </div>
       </div>
-      <div className={s.Content}>
-        {currentView.type === 'create-schema' && (
-          <CreateSchema
-            topic={topic}
-            isTopicHasAnySchema={(schemas?.getSchemasList().length || 0) > 0}
-            onCreateSuccess={async () => {
-              refetchData();
+      {schemas !== undefined && (
+        <div className={s.Content}>
+          {currentView.type === 'create-schema' && (
+            <CreateSchema
+              topic={topic}
+              isTopicHasAnySchema={(schemas.getSchemasList().length || 0) > 0}
+              onCreateSuccess={async () => {
+                refetchData();
 
-              const req = new GetLatestSchemaInfoRequest();
-              req.setTopic(topic);
-              const res = await schemaServiceClient.getLatestSchemaInfo(req, {}).catch(err => notifyError(`Unable to get latest schema info. ${err}`));
-              if (res === undefined) {
-                return;
-              }
-              if (res.getStatus()?.getCode() !== Code.OK) {
-                notifyError(`Unable to get latest schema info. ${res.getStatus()?.getMessage()}`);
-                return;
-              }
+                const req = new GetLatestSchemaInfoRequest();
+                req.setTopic(topic);
+                const res = await schemaServiceClient.getLatestSchemaInfo(req, {}).catch(err => notifyError(`Unable to get latest schema info. ${err}`));
+                if (res === undefined) {
+                  return;
+                }
+                if (res.getStatus()?.getCode() !== Code.OK) {
+                  notifyError(`Unable to get latest schema info. ${res.getStatus()?.getMessage()}`);
+                  return;
+                }
 
-              const schemaInfo = res.getSchemaInfo();
-              if (schemaInfo === undefined) {
-                return;
-              }
+                const schemaInfo = res.getSchemaInfo();
+                if (schemaInfo === undefined) {
+                  return;
+                }
 
-              setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: res.getSchemaVersion(), schemaInfo });
-            }}
-          />
-        )}
-        {currentView.type === 'schema-entry' && (
-          <SchemaEntry
-            key={`${currentView.topic}/${currentView.schemaVersion}`}
-            topic={currentView.topic}
-            schemaVersion={currentView.schemaVersion}
-            schemaInfo={currentView.schemaInfo}
-          />
-        )}
-      </div>
+                setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: res.getSchemaVersion(), schemaInfo });
+              }}
+            />
+          )}
+          {currentView.type === 'schema-entry' && (
+            <SchemaEntry
+              key={`${currentView.topic}/${currentView.schemaVersion}`}
+              topic={currentView.topic}
+              schemaVersion={currentView.schemaVersion}
+              schemaInfo={currentView.schemaInfo}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
