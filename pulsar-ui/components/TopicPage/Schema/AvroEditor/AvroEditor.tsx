@@ -8,6 +8,7 @@ import Select from '../../../ui/Select/Select';
 import Pre from '../../../ui/Pre/Pre';
 
 export type AvroEditorProps = {
+  defaultSchemaDefinition: string | undefined;
   onSchemaDefinition: (schema: Uint8Array | undefined) => void;
 };
 
@@ -40,7 +41,7 @@ const defaultSchemaDefinition = `{
 
 const AvroEditor: React.FC<AvroEditorProps> = (props) => {
   const [source, setSource] = React.useState<Source>('code-editor');
-  const [schemaDefinition, setSchemaDefinition] = React.useState<string | undefined>(defaultSchemaDefinition);
+  const [schemaDefinition, setSchemaDefinition] = React.useState<string | undefined>(props.defaultSchemaDefinition === undefined ? defaultSchemaDefinition : props.defaultSchemaDefinition);
   const [schemaDefinitionDebounced] = useDebounce(schemaDefinition, 400);
 
   const submitSchema = () => {

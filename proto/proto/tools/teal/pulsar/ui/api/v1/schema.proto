@@ -112,6 +112,7 @@ message TestCompatibilityResponse {
   bool is_compatible = 2;
   string strategy = 3;
   string incompatible_reason = 4;
+  string incompatible_full_reason = 5;
 }
 
 message GetHumanReadableSchemaRequest {
