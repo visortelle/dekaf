@@ -10,6 +10,7 @@ import Pre from '../../../ui/Pre/Pre';
 import CodeEditor from '../../../ui/CodeEditor/CodeEditor';
 import Button from '../../../ui/Button/Button';
 import UploadZone, { FileEntry } from '../../../ui/UploadZone/UploadZone';
+import { useDebounce } from 'use-debounce';
 
 export type ProtobufNativeEditorProps = {
   onSchemaDefinition: (schema: Uint8Array | undefined) => void;
@@ -31,7 +32,6 @@ message ExampleSchema {
 
 const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
   const { notifyError, notifySuccess } = Notifications.useContext();
-  const [uploadState, setUploadState] = React.useState<UploadState>('awaiting');
   const [source, setSource] = React.useState<Source>('code-editor');
   const [files, setFiles] = React.useState<ReturnType<CompileProtobufNativeResponse['getFilesMap']> | undefined>(undefined);
   const [codeEditorValue, setCodeEditorValue] = React.useState<string>(defaultCodeEditorValue);
@@ -41,6 +41,11 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
 
   const submitFiles = async (files: FileEntry[]) => {
+    setFiles(() => undefined);
+    setSelectedFile(() => undefined);
+    setSelectedMessage(() => undefined);
+    setCompilationError(() => undefined);
+
     const filesPb = files.map(file => {
       const filePb = new FileEntryPb();
       filePb.setRelativePath(file.relativePath);
@@ -60,8 +65,6 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
 
     const selectedFile = res.getFilesMap().getEntryList()[0][0];
     setSelectedFile(selectedFile);
-
-    setUploadState('awaiting');
   }
 
   useEffect(() => {
@@ -74,7 +77,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
       return;
     }
 
-    const compilationError = file.getCompilationError();
+    const compilationError = file.getCompilationError() || undefined;
     setCompilationError(compilationError);
 
     if (compilationError !== undefined && compilationError.length > 0) {
@@ -144,7 +147,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <Button
               text="Upload"
-              type="regular"
+              type={selectedFile === undefined ? "primary" : "regular"}
               svgIcon={uploadIcon}
               onClick={() => {
                 submitFiles([{ relativePath: 'schema.proto', content: codeEditorValue }]);
