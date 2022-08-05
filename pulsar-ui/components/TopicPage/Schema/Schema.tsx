@@ -10,6 +10,7 @@ import CreateSchema from './CreateSchema/CreateSchema';
 import { schemaTypes } from './types';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import SchemaEntry from './SchemaEntry/SchemaEntry';
+import { usePrevious } from '../../app/hooks/use-previous';
 
 export type SchemaProps = {
   tenant: string,
@@ -37,6 +38,8 @@ const Schema: React.FC<SchemaProps> = (props) => {
     },
   );
 
+  const prevLastestSchemaInfo = usePrevious(latestSchemaInfo);
+
   if (latestSchemaInfoError !== undefined) {
     notifyError(`Unable to get latest schema info. ${latestSchemaInfoError}`);
   }
@@ -44,6 +47,18 @@ const Schema: React.FC<SchemaProps> = (props) => {
   if (latestSchemaInfo !== undefined && latestSchemaInfo.getStatus()?.getCode() !== Code.OK) {
     notifyError(`Unable to get latest schema info. ${latestSchemaInfo?.getStatus()?.getMessage()}`);
   }
+
+  useEffect(() => {
+    if (latestSchemaInfo === undefined) {
+      setCurrentView({ type: 'create-schema' });
+    }
+    if (latestSchemaInfo !== undefined && latestSchemaInfo.getStatus()?.getCode() === Code.OK && prevLastestSchemaInfo === undefined) {
+      const schemaInfo = latestSchemaInfo.getSchemaInfo();
+      if (schemaInfo !== undefined) {
+        setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: latestSchemaInfo.getSchemaVersion(), schemaInfo });
+      }
+    }
+  }, [latestSchemaInfo]);
 
   const { data: schemas, error: schemasError } = useSWR(
     swrKeys.pulsar.schemas.listSchemas._(topic),

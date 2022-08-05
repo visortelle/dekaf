@@ -223,4 +223,9 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 )
             case _ =>
                 val status = Status(code = Code.OK.index)
-                Future.successful(GetHumanReadableSchemaResponse(status = Some(status), humanReadableSchema = None))
+                Future.successful(
+                  GetHumanReadableSchemaResponse(
+                    status = Some(status),
+                    humanReadableSchema = Some(request.rawSchema.toStringUtf8)
+                  )
+                )
