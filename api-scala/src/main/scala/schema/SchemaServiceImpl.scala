@@ -193,22 +193,20 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val status = Status(code = Code.INVALID_ARGUMENT.index)
                 return Future.successful(TestCompatibilityResponse(status = Some(status)))
 
-        protobufnative.testCompatibility(topic = request.topic, schemaInfo = schemaInfo) match
-            case Right(compatibilityTestResult) =>
-                logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
-                val status = Status(code = Code.OK.index)
-                Future.successful(
-                  TestCompatibilityResponse(
-                    status = Some(status),
-                    isCompatible = compatibilityTestResult.isCompatible,
-                    strategy = compatibilityTestResult.strategy,
-                    incompatibleReason = compatibilityTestResult.incompatibleReason
-                  )
-                )
-            case Left(err) =>
-                logger.info(s"Failed to test schema compatibility for topic ${request.topic}. Reason: $err")
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err)
-                Future.successful(TestCompatibilityResponse(status = Some(status)))
+        val compatibilityTestResult = protobufnative.testCompatibility(topic = request.topic, schemaInfo = schemaInfo)
+
+        logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
+
+        val status = Status(code = Code.OK.index)
+        Future.successful(
+          TestCompatibilityResponse(
+            status = Some(status),
+            isCompatible = compatibilityTestResult.isCompatible,
+            strategy = compatibilityTestResult.strategy,
+            incompatibleReason = compatibilityTestResult.incompatibleReason,
+            incompatibleFullReason = compatibilityTestResult.incompatibleFullReason
+          )
+        )
 
     override def getHumanReadableSchema(request: GetHumanReadableSchemaRequest): Future[GetHumanReadableSchemaResponse] =
         request.schemaType match

@@ -23,6 +23,7 @@ type CurrentView = { type: 'create-schema' } | { type: 'schema-entry', topic: st
 
 const Schema: React.FC<SchemaProps> = (props) => {
   const [defaultNewSchemaType, setDefaultNewSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_NONE');
+  const [defaultSchemaDefinition, setDefaultSchemaDefinition] = useState<string | undefined>(undefined);
   const [currentView, setCurrentView] = useState<CurrentView>({ type: 'create-schema' });
 
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
@@ -60,6 +61,9 @@ const Schema: React.FC<SchemaProps> = (props) => {
         const schemaType = (Object.entries(SchemaType).find(([, i]) => i === schemaInfo.getType()) || [])[0] as SchemaTypeT;
         if (schemaType !== undefined) {
           setDefaultNewSchemaType(schemaType);
+        }
+        if (schemaType === 'SCHEMA_TYPE_AVRO' || schemaType === 'SCHEMA_TYPE_JSON' || schemaType === 'SCHEMA_TYPE_PROTOBUF') {
+          setDefaultSchemaDefinition(() => Array.from(schemaInfo.getSchema_asU8()).map((b) => String.fromCharCode(b)).join(''));
         }
       }
     }
@@ -158,6 +162,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
               topic={topic}
               isTopicHasAnySchema={(schemas.getSchemasList().length || 0) > 0}
               defaultSchemaType={defaultNewSchemaType}
+              defaultSchemaDefinition={defaultSchemaDefinition}
               onCreateSuccess={async () => {
                 refetchData();
 

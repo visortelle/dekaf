@@ -11,18 +11,21 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import SchemaTypeInput from '../SchemaTypeInput/SchemaTypeInput';
 import { H1 } from '../../../ui/H/H';
 import Policies from '../Policies/Policies';
+import Pre from '../../../ui/Pre/Pre';
 
 export type CreateSchemaProps = {
   topic: string;
   isTopicHasAnySchema: boolean;
   defaultSchemaType: SchemaTypeT;
+  defaultSchemaDefinition: string | undefined;
   onCreateSuccess: () => void;
 };
 
 type SchemaCompatibility = {
   isCompatible: boolean,
   strategy: string,
-  incompatibleReason: string
+  incompatibleReason: string,
+  incompatibleReasonFull: string,
 }
 
 type Schema = {
@@ -73,7 +76,8 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
     setSchemaCompatibility({
       isCompatible: props.isTopicHasAnySchema ? res.getIsCompatible() : res.getIncompatibleReason().includes('not have existing schema'),
       strategy: res.getStrategy(),
-      incompatibleReason: res.getIncompatibleReason()
+      incompatibleReason: res.getIncompatibleReason(),
+      incompatibleReasonFull: res.getIncompatibleFullReason()
     });
   }
 
@@ -143,6 +147,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
             <div className={s.FormControl}>
               <AvroEditor
                 key={schema.type}
+                defaultSchemaDefinition={props.defaultSchemaDefinition}
                 onSchemaDefinition={v => {
                   if (v === undefined) {
                     setSchema(schema => ({ ...schema, definition: undefined, updateState: 'in-progress' }));
@@ -168,7 +173,16 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               )}
             </div>
             {schemaCompatibility.strategy && <div><strong>Strategy:</strong> {schemaCompatibility.strategy}</div>}
-            {schemaCompatibility.incompatibleReason && <div><strong>Reason:</strong> {schemaCompatibility.incompatibleReason}</div>}
+            {!schemaCompatibility.isCompatible && <div><strong>Reason:</strong><div>{schemaCompatibility.incompatibleReason.slice(0, 280)}{schemaCompatibility.incompatibleReason.length > 280 ? '...' : ''}</div></div>}
+          </div>
+        )}
+
+        {schemaCompatibility !== undefined && !schemaCompatibility.isCompatible && (
+          <div style={{ marginTop: '-8rem', marginBottom: '12rem' }}>
+            <strong>Error details:</strong>
+            <Pre>
+              {schemaCompatibility.incompatibleReasonFull}
+            </Pre>
           </div>
         )}
 
