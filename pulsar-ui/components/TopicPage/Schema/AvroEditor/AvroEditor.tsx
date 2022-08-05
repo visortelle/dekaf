@@ -1,23 +1,19 @@
 import React, { useEffect } from 'react';
 import s from './AvroEditor.module.css'
 import CodeEditor from '../../../ui/CodeEditor/CodeEditor';
-import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { useDebounce } from 'use-debounce'
-import uploadIcon from '!!raw-loader!./upload.svg';
 import UploadZone from '../../../ui/UploadZone/UploadZone';
-import { CreateSchemaRequest, SchemaInfo, SchemaType } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import _ from 'lodash';
+import Select from '../../../ui/Select/Select';
+import Pre from '../../../ui/Pre/Pre';
 
 export type AvroEditorProps = {
-  onSchemaDefinition: (schema: Uint8Array) => void;
+  onSchemaDefinition: (schema: Uint8Array | undefined) => void;
 };
 
-type UploadState = 'awaiting' | 'uploading' | 'done' | 'error';
+type Source = 'code-editor' | 'single-file';
 
-type CreateFrom = 'code-editor' | 'single-file';
-
-const defaultCodeEditorValue = `{
+const defaultSchemaDefinition = `{
    "type": "record",
    "name": "ExampleSchema",
    "namespace": "example.com",
@@ -31,7 +27,7 @@ const defaultCodeEditorValue = `{
          "type": "int"
       },
       {
-        "name": "hamburgers",
+        "name": "hobbies",
         "type": {
           "type": "array",
           "items": "string",
@@ -43,45 +39,79 @@ const defaultCodeEditorValue = `{
 `
 
 const AvroEditor: React.FC<AvroEditorProps> = (props) => {
-  const { notifyError, notifySuccess } = Notifications.useContext();
-  const [uploadState, setUploadState] = React.useState<UploadState>('awaiting');
-  const [createFrom, setCreateFrom] = React.useState<CreateFrom>('code-editor');
-  const [codeEditorValue, setCodeEditorValue] = React.useState<string>(defaultCodeEditorValue);
-  const [codeEditorValueDebounced] = useDebounce(codeEditorValue, 400);
-  const [selectedFile, setSelectedFile] = React.useState<string | undefined>(undefined);
-  const [selectedMessage, setSelectedMessage] = React.useState<string | undefined>(undefined);
-  const { schemaServiceClient } = PulsarGrpcClient.useContext();
+  const [source, setSource] = React.useState<Source>('code-editor');
+  const [schemaDefinition, setSchemaDefinition] = React.useState<string | undefined>(defaultSchemaDefinition);
+  const [schemaDefinitionDebounced] = useDebounce(schemaDefinition, 400);
 
-  const submit = () => {
-    props.onSchemaDefinition(new TextEncoder().encode(codeEditorValueDebounced));
+  const submitSchema = () => {
+    if (schemaDefinition === undefined) {
+      props.onSchemaDefinition(undefined);
+      return;
+    }
+
+    props.onSchemaDefinition(new TextEncoder().encode(schemaDefinitionDebounced));
   }
 
-  useEffect(submit, []);
-  useEffect(submit, [codeEditorValueDebounced]);
+  useEffect(submitSchema, []);
+  useEffect(submitSchema, [schemaDefinitionDebounced]);
+
+  useEffect(() => {
+    if (source === 'single-file') {
+      setSchemaDefinition(undefined);
+      props.onSchemaDefinition(undefined);
+    } else {
+      submitSchema();
+    }
+  }, [source]);
 
   return (
     <div className={s.AvroEditor}>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div className={s.CodeEditor}>
-          <CodeEditor
-            height="320rem"
-            defaultLanguage="json"
-            value={codeEditorValue}
-            onChange={(v) => setCodeEditorValue(v || '')}
-          />
-        </div>
-        <a className="A" style={{ marginLeft: 'auto' }} href="https://avro.apache.org/docs/current/spec.html" target="__blank">Language reference</a>
+      <div className={s.FormControl}>
+        <strong>Source</strong>
+        <Select<Source>
+          list={[
+            { type: 'item', title: 'Code', value: 'code-editor' },
+            { type: 'item', title: 'Single .avsc file', value: 'single-file' }
+          ]}
+          value={source}
+          onChange={setSource}
+        />
       </div>
 
-      {/* {(createFrom === 'single-file') && (
-        <div className={s.FormControl}>
-          <UploadZone isDirectory={false} onFiles={(files) => submitFiles(files)}>
-            {createFrom === 'single-file' && "Click here or drag'n'drop a .avsc file"}
-          </UploadZone>
+      {source === 'code-editor' && (
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div className={s.CodeEditor}>
+            <CodeEditor
+              height="320rem"
+              defaultLanguage="json"
+              value={schemaDefinition}
+              onChange={(v) => setSchemaDefinition(v || '')}
+            />
+          </div>
+          <a className="A" style={{ marginLeft: 'auto' }} href="https://avro.apache.org/docs/current/spec.html" target="__blank">Language reference</a>
         </div>
-      )} */}
+      )}
 
-
+      {source === 'single-file' && (
+        <>
+          <div className={s.FormControl}>
+            <UploadZone
+              isDirectory={false}
+              onFiles={(files) => setSchemaDefinition(files[0].content)}
+            >
+              {source === 'single-file' && "Click here or drag'n'drop a .avsc file"}
+            </UploadZone>
+          </div>
+          {schemaDefinition !== undefined && (
+            <div className={s.FormControl}>
+              <strong>Schema</strong>
+              <Pre>
+                {schemaDefinitionDebounced}
+              </Pre>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

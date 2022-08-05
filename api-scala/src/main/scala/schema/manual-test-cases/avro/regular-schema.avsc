@@ -1,0 +1,23 @@
+{
+   "type": "record",
+   "name": "ExampleSchema",
+   "namespace": "example.com",
+   "fields": [
+      {
+         "name": "name",
+         "type": "string"
+      },
+      {
+         "name": "age",
+         "type": "int"
+      },
+      {
+        "name": "hobbies",
+        "type": {
+          "type": "array",
+          "items": "string",
+          "default": []
+        }
+      }
+   ]
+}

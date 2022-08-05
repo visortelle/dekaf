@@ -79,7 +79,10 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   }
 
   useEffect(() => {
-    console.log('schema', schema);
+    if (schemaShouldHaveDefinition && schema.definition === undefined) {
+      setSchemaCompatibility(undefined);
+    }
+
     if (schema.updateState === 'ready') {
       checkSchemaCompatibility();
     }
@@ -104,7 +107,6 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
             value={schema.type}
             onChange={v => {
               setSchema(schema => {
-                console.log(v, isSchemaShouldHaveDefinition(v));
                 return {
                   ...schema,
                   type: v,
@@ -140,7 +142,17 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
 
           {schema.type === 'SCHEMA_TYPE_AVRO' && (
             <div className={s.FormControl}>
-              <AvroEditor onSchemaDefinition={v => setSchema(schema => ({ ...schema, definition: v, updateState: 'ready' }))} />
+              <AvroEditor
+                onSchemaDefinition={v => {
+                  if (v === undefined) {
+                    setSchema(schema => ({ ...schema, definition: undefined, updateState: 'in-progress' }));
+                    setSchemaCompatibility(undefined);
+                    return;
+                  }
+
+                  setSchema(schema => ({ ...schema, definition: v, updateState: 'ready' }))
+                }}
+              />
             </div>
           )}
         </div>
