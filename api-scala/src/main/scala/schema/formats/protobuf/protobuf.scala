@@ -1,1 +1,0 @@
-package schema.formats.protobuf
