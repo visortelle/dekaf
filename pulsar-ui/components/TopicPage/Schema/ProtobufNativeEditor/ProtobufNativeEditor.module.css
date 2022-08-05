@@ -7,35 +7,7 @@
 }
 
 .CodeEditor {
-  border-radius: 8rem;
-  border: 1px solid #ddd;
-  overflow: hidden;
   margin-bottom: 8rem;
-}
-
-.UploadZone {
-  background-color: #f5f5f5;
-  border-radius: 6rem;
-  padding: 36rem;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-}
-
-.UploadZone:hover {
-  cursor: pointer;
-  opacity: 0.5;
-  transition: var(--transition-short);
-}
-
-.UploadZoneIcon {
-  margin-bottom: 12rem;
-}
-.UploadZoneIcon svg {
-  fill: var(--text-color);
-  width: 36rem;
-  height: 36rem;
 }
 
 .CompilationError {

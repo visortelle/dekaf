@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { CreateSchemaRequest, SchemaInfo, SchemaType, TestCompatibilityRequest } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import Button from '../../../ui/Button/Button';
-import Input from '../../../ui/Input/Input';
 import ProtobufNativeEditor from '../ProtobufNativeEditor/ProtobufNativeEditor';
+import AvroEditor from '../AvroEditor/AvroEditor';
 import { SchemaTypeT } from '../types';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
@@ -24,27 +24,32 @@ type SchemaCompatibility = {
   incompatibleReason: string
 }
 
+type Schema = {
+  type: SchemaTypeT,
+  definition: Uint8Array | undefined,
+  updateState: 'in-progress' | 'ready'
+}
+
 const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
 
-  const [schemaType, setSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_PROTOBUF_NATIVE');
-  const [schemaDefinition, setSchemaDefinition] = useState<Uint8Array | undefined>(undefined);
+  const [schema, setSchema] = useState<Schema>({ type: 'SCHEMA_TYPE_AVRO', definition: undefined, updateState: 'ready' });
   const [schemaCompatibility, setSchemaCompatibility] = useState<SchemaCompatibility | undefined>(undefined);
 
-  const schemaShouldHaveDefinition = isSchemaShouldHaveDefinition(schemaType);
+  const schemaShouldHaveDefinition = isSchemaShouldHaveDefinition(schema.type);
 
   const checkSchemaCompatibility = async () => {
-    if (schemaShouldHaveDefinition && schemaDefinition === undefined) {
+    if (schemaShouldHaveDefinition && schema.definition === undefined) {
       return;
     }
 
     const schemaInfo = new SchemaInfo();
 
-    if (schemaShouldHaveDefinition && schemaDefinition !== undefined) {
-      schemaInfo.setSchema(schemaDefinition);
+    if (schemaShouldHaveDefinition && schema.definition !== undefined) {
+      schemaInfo.setSchema(schema.definition);
     }
-    schemaInfo.setType(SchemaType[schemaType]);
+    schemaInfo.setType(SchemaType[schema.type]);
 
     const req = new TestCompatibilityRequest();
     req.setTopic(props.topic);
@@ -61,23 +66,17 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
     }
 
     setSchemaCompatibility({
-      isCompatible: res.getIsCompatible(),
+      isCompatible: props.isTopicHasAnySchema ? res.getIsCompatible() : res.getIncompatibleReason().includes('not have existing schema'),
       strategy: res.getStrategy(),
       incompatibleReason: res.getIncompatibleReason()
     });
   }
 
   useEffect(() => {
-    setSchemaDefinition(undefined);
-    setSchemaCompatibility(undefined);
-
-    checkSchemaCompatibility();
-  }, [schemaType])
-
-  useEffect(() => {
-    setSchemaCompatibility(undefined);
-    checkSchemaCompatibility();
-  }, [schemaDefinition]);
+    if (schema.updateState === 'ready') {
+      checkSchemaCompatibility();
+    }
+  }, [schema]);
 
   return (
     <div>
@@ -94,7 +93,13 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
 
         <div className={s.FormControl}>
           <strong>Schema type</strong>
-          <SchemaTypeInput value={schemaType} onChange={setSchemaType} />
+          <SchemaTypeInput
+            value={schema.type}
+            onChange={v => {
+              setSchema(schema => ({ ...schema, type: v, updateState: isSchemaShouldHaveDefinition(v) ? 'in-progress' : 'ready' }));
+              setSchemaCompatibility(undefined);
+            }}
+          />
         </div>
 
         <div className={s.FormControl}>
@@ -103,24 +108,30 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               <textarea value={schema} onChange={e => setSchema(e.target.value)}></textarea>
             </div>
           )} */}
-          {schemaType === 'SCHEMA_TYPE_PROTOBUF_NATIVE' && (
+          {schema.type === 'SCHEMA_TYPE_PROTOBUF_NATIVE' && (
             // https://github.com/apache/pulsar/blob/c01b1eeda3221bdbf863bf0f3f8373e93d90adef/pulsar-client/src/test/java/org/apache/pulsar/client/impl/schema/ProtobufNativeSchemaTest.java
             // fileDescriptorSet: "CtMDCgpUZXN0LnByb3RvEgVwcm90bxoSRXh0ZXJuYWxUZXN0LnByb3RvImUKClN1Yk1lc3NhZ2USCwoDZm9vGAEgASgJEgsKA2JhchgCIAEoARo9Cg1OZXN0ZWRNZXNzYWdlEgsKA3VybBgBIAEoCRINCgV0aXRsZRgCIAEoCRIQCghzbmlwcGV0cxgDIAMoCSLlAQoLVGVzdE1lc3NhZ2USEwoLc3RyaW5nRmllbGQYASABKAkSEwoLZG91YmxlRmllbGQYAiABKAESEAoIaW50RmllbGQYBiABKAUSIQoIdGVzdEVudW0YBCABKA4yDy5wcm90by5UZXN0RW51bRImCgtuZXN0ZWRGaWVsZBgFIAEoCzIRLnByb3RvLlN1Yk1lc3NhZ2USFQoNcmVwZWF0ZWRGaWVsZBgKIAMoCRI4Cg9leHRlcm5hbE1lc3NhZ2UYCyABKAsyHy5wcm90by5leHRlcm5hbC5FeHRlcm5hbE1lc3NhZ2UqJAoIVGVzdEVudW0SCgoGU0hBUkVEEAASDAoIRkFJTE9WRVIQAUItCiVvcmcuYXBhY2hlLnB1bHNhci5jbGllbnQuc2NoZW1hLnByb3RvQgRUZXN0YgZwcm90bzMKoAEKEkV4dGVybmFsVGVzdC5wcm90bxIOcHJvdG8uZXh0ZXJuYWwiOwoPRXh0ZXJuYWxNZXNzYWdlEhMKC3N0cmluZ0ZpZWxkGAEgASgJEhMKC2RvdWJsZUZpZWxkGAIgASgBQjUKJW9yZy5hcGFjaGUucHVsc2FyLmNsaWVudC5zY2hlbWEucHJvdG9CDEV4dGVybmFsVGVzdGIGcHJvdG8z"
             // rootFileDescriptorName: "Test.proto"
             // rootMessageTypeName: "proto.TestMessage"
             <div className={s.FormControl}>
               <ProtobufNativeEditor
-                onSchemaCompiled={setSchemaDefinition}
-                onCompilationError={() => {
-                  setSchemaDefinition(undefined);
+                onSchemaDefinition={v => setSchema(schema => ({ ...schema, definition: v, updateState: 'ready' }))}
+                onSchemaDefinitionError={() => {
+                  setSchema(schema => ({ ...schema, definition: undefined, updateState: 'in-progress' }));
                   setSchemaCompatibility(undefined);
                 }}
               />
             </div>
           )}
+
+          {schema.type === 'SCHEMA_TYPE_AVRO' && (
+            <div className={s.FormControl}>
+              <AvroEditor onSchemaDefinition={v => setSchema(schema => ({ ...schema, definition: v, updateState: 'ready' }))} />
+            </div>
+          )}
         </div>
 
-        {props.isTopicHasAnySchema && (schemaCompatibility !== undefined) && (
+        {schemaCompatibility !== undefined && (
           <div className={s.FormControl}>
             <div>
               <strong>Compatibility: </strong>
@@ -139,20 +150,13 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
           <Button
             text='Create'
             type='primary'
-            disabled={
-              (schemaShouldHaveDefinition && (schemaDefinition === undefined))
-                ? true :
-                (props.isTopicHasAnySchema ? !schemaCompatibility?.isCompatible : false)}
+            disabled={!schemaCompatibility?.isCompatible}
             onClick={async () => {
-              if (schemaShouldHaveDefinition && schemaDefinition === undefined) {
-                return;
-              }
-
               const schemaInfo = new SchemaInfo();
-              schemaInfo.setType(SchemaType[schemaType]);
+              schemaInfo.setType(SchemaType[schema.type]);
 
-              if (schemaShouldHaveDefinition && schemaDefinition !== undefined) {
-                schemaInfo.setSchema(schemaDefinition);
+              if (schemaShouldHaveDefinition && schema.definition !== undefined) {
+                schemaInfo.setSchema(schema.definition);
               }
 
               const req = new CreateSchemaRequest();
