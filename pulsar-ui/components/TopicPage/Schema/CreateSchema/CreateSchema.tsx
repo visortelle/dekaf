@@ -173,13 +173,13 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               )}
             </div>
             {schemaCompatibility.strategy && <div><strong>Strategy:</strong> {schemaCompatibility.strategy}</div>}
-            {!schemaCompatibility.isCompatible && <div><strong>Reason:</strong><div>{schemaCompatibility.incompatibleReason.slice(0, 280)}{schemaCompatibility.incompatibleReason.length > 280 ? '...' : ''}</div></div>}
+            {!schemaCompatibility.isCompatible && <div><strong>Error:</strong><div>{schemaCompatibility.incompatibleReason.slice(0, 280)}{schemaCompatibility.incompatibleReason.length > 280 ? '...' : ''}</div></div>}
           </div>
         )}
 
         {schemaCompatibility !== undefined && !schemaCompatibility.isCompatible && (
           <div style={{ marginTop: '-8rem', marginBottom: '12rem' }}>
-            <strong>Error details:</strong>
+            <strong>Details:</strong>
             <Pre>
               {schemaCompatibility.incompatibleReasonFull}
             </Pre>
