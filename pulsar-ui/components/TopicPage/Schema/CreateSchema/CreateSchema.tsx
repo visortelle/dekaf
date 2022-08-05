@@ -30,11 +30,17 @@ type Schema = {
   updateState: 'in-progress' | 'ready'
 }
 
+const defaultSchemaType: SchemaTypeT = 'SCHEMA_TYPE_AVRO';
+
 const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
 
-  const [schema, setSchema] = useState<Schema>({ type: 'SCHEMA_TYPE_AVRO', definition: undefined, updateState: 'ready' });
+  const [schema, setSchema] = useState<Schema>({
+    type: defaultSchemaType,
+    definition: undefined,
+    updateState: isSchemaShouldHaveDefinition(defaultSchemaType) ? 'in-progress' : 'ready'
+  });
   const [schemaCompatibility, setSchemaCompatibility] = useState<SchemaCompatibility | undefined>(undefined);
 
   const schemaShouldHaveDefinition = isSchemaShouldHaveDefinition(schema.type);
@@ -73,6 +79,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   }
 
   useEffect(() => {
+    console.log('schema', schema);
     if (schema.updateState === 'ready') {
       checkSchemaCompatibility();
     }
@@ -96,7 +103,14 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
           <SchemaTypeInput
             value={schema.type}
             onChange={v => {
-              setSchema(schema => ({ ...schema, type: v, updateState: isSchemaShouldHaveDefinition(v) ? 'in-progress' : 'ready' }));
+              setSchema(schema => {
+                console.log(v, isSchemaShouldHaveDefinition(v));
+                return {
+                  ...schema,
+                  type: v,
+                  updateState: isSchemaShouldHaveDefinition(v) ? 'in-progress' : 'ready'
+                };
+              });
               setSchemaCompatibility(undefined);
             }}
           />
