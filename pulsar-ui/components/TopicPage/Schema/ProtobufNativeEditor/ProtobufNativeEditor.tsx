@@ -1,37 +1,31 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import s from './ProtobufNativeEditor.module.css'
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import uploadIcon from '!!raw-loader!./upload.svg';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
-import Upload from 'rc-upload';
 import Select from '../../../ui/Select/Select';
 import { CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry as FileEntryPb } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import Pre from '../../../ui/Pre/Pre';
-import Editor from "@monaco-editor/react";
+import CodeEditor from '../../../ui/CodeEditor/CodeEditor';
 import Button from '../../../ui/Button/Button';
+import UploadZone, { FileEntry } from '../../../ui/UploadZone/UploadZone';
 
 export type ProtobufNativeEditorProps = {
-  onSchemaCompiled: (schema: Uint8Array) => void;
-  onCompilationError: (error: string) => void;
+  onSchemaDefinition: (schema: Uint8Array) => void;
+  onSchemaDefinitionError: (error: string) => void;
 };
 
 type UploadState = 'awaiting' | 'uploading' | 'done' | 'error';
 
-type FileEntry = {
-  relativePath: string;
-  content: string;
-}
-
 type CreateFrom = 'code-editor' | 'single-file' | 'directory';
 
-const defaultProtoFileContent = `// This is example .proto file content.
+const defaultCodeEditorValue = `syntax = "proto3";
 
-syntax = "proto3";
-
-message Movie {
+message ExampleSchema {
   string name = 1;
-  int32 release_year = 2;
+  int32 age = 2;
+  bool items = 3;
 }
 `
 
@@ -40,7 +34,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
   const [uploadState, setUploadState] = React.useState<UploadState>('awaiting');
   const [createFrom, setCreateFrom] = React.useState<CreateFrom>('code-editor');
   const [files, setFiles] = React.useState<ReturnType<CompileProtobufNativeResponse['getFilesMap']> | undefined>(undefined);
-  const [textEditorValue, setTextEditorValue] = React.useState<string>(defaultProtoFileContent);
+  const [codeEditorValue, setCodeEditorValue] = React.useState<string>(defaultCodeEditorValue);
   const [selectedFile, setSelectedFile] = React.useState<string | undefined>(undefined);
   const [selectedMessage, setSelectedMessage] = React.useState<string | undefined>(undefined);
   const [compilationError, setCompilationError] = React.useState<string | undefined>(undefined);
@@ -84,7 +78,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
     setCompilationError(compilationError);
 
     if (compilationError !== undefined && compilationError.length > 0) {
-      props.onCompilationError(compilationError);
+      props.onSchemaDefinitionError(compilationError);
       setSelectedMessage(undefined);
     }
 
@@ -110,7 +104,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
     const messageSchema = file.getSchemasMap().get(selectedMessage);
     const rawSchema = messageSchema?.getRawSchema_asU8();
     if (rawSchema !== undefined) {
-      props.onSchemaCompiled(rawSchema);
+      props.onSchemaDefinition(rawSchema);
     }
   }, [selectedFile, selectedMessage]);
 
@@ -119,10 +113,10 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
   return (
     <div className={s.ProtobufNativeEditor}>
       <div className={s.FormControl}>
-        <strong>Upload .proto file</strong>
+        <strong>Source</strong>
         <Select<CreateFrom>
           list={[
-            { type: 'item', title: 'From code editor', value: 'code-editor' },
+            { type: 'item', title: 'Code', value: 'code-editor' },
             { type: 'item', title: 'Single .proto file', value: 'single-file' },
             { type: 'item', title: 'Directory with .proto files', value: 'directory' },
           ]}
@@ -134,28 +128,20 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
       {createFrom === 'code-editor' && (
         <div className={s.CodeEditorContainer}>
           <div className={s.CodeEditor}>
-            <Editor
-              height="320px"
-              width=""
+            <CodeEditor
+              height="320rem"
               defaultLanguage="proto"
-              value={textEditorValue}
-              onChange={(v) => setTextEditorValue(v || '')}
-              options={{
-                minimap: { enabled: false },
-                scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false },
-                theme: 'vs',
-                fontFamily: 'Fira Code',
-                fontSize: parseFloat(getComputedStyle(document.documentElement).fontSize) * 14
-              }}
+              value={codeEditorValue}
+              onChange={(v) => setCodeEditorValue(v || '')}
             />
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between'}}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <Button
               text="Upload"
               type="regular"
               svgIcon={uploadIcon}
               onClick={() => {
-                submitFiles([{ relativePath: 'schema.proto', content: textEditorValue }]);
+                submitFiles([{ relativePath: 'schema.proto', content: codeEditorValue }]);
               }}
             />
             <a className="A" href="https://developers.google.com/protocol-buffers/docs/proto3" target="__blank">Language reference</a>
@@ -166,9 +152,6 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
       {(createFrom === 'single-file' || createFrom === 'directory') && (
         <div className={s.FormControl}>
           <UploadZone isDirectory={createFrom === 'directory'} onFiles={(files) => submitFiles(files)}>
-            <div className={s.UploadZoneIcon}>
-              <SvgIcon svg={uploadIcon} />
-            </div>
             {createFrom === 'single-file' && "Click here or drag'n'drop a .proto file"}
             {createFrom === 'directory' && "Click here or drag'n'drop a directory with .proto files"}
           </UploadZone>
@@ -210,36 +193,6 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
         </div>
       )}
     </div>
-  );
-}
-
-type UploadZoneProps = {
-  children: React.ReactNode,
-  onFiles: (files: FileEntry[]) => void,
-  isDirectory: boolean,
-}
-
-export const UploadZone: React.FC<UploadZoneProps> = (props) => {
-  const filesBuffer = useRef<FileEntry[]>([]); // A simple way to hack a bit the <Upload /> component lifecycle.
-
-  return (
-    <Upload
-      directory={props.isDirectory}
-      beforeUpload={async (_file, _files) => {
-        const content = await _file.text();
-        filesBuffer.current.push({ relativePath: _file.webkitRelativePath || _file.name, content });
-
-        if (filesBuffer.current.length === _files.length) {
-          props.onFiles(filesBuffer.current);
-          filesBuffer.current = [];
-        }
-        return false;
-      }}
-    >
-      <div className={s.UploadZone}>
-        {props.children}
-      </div>
-    </Upload>
   );
 }
 

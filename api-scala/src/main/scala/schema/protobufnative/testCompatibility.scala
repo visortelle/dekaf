@@ -19,7 +19,8 @@ def testCompatibility(topic: String, schemaInfo: SchemaInfo): Either[String, Com
         ))
     } catch {
         case err =>
-            val betterErrorMessage = "(?m)(?<=IncompatibleSchemaException:)(.*$)".r.findFirstIn(err.getMessage)
+            val betterErrorMessage = "(?m)(?<=(IncompatibleSchemaException:|SchemaParseException:|UnrecognizedPropertyException:))(.*$)"
+                .r.findFirstIn(err.getMessage)
             betterErrorMessage match
                 case Some(msg) =>
                     Right(CompatibilityTestResult(
