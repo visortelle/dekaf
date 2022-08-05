@@ -54,7 +54,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
     if (latestSchemaInfo === undefined) {
       setCurrentView({ type: 'create-schema' });
     }
-    if (latestSchemaInfo !== undefined && latestSchemaInfo.getStatus()?.getCode() === Code.OK && prevLastestSchemaInfo === undefined) {
+    if (latestSchemaInfo !== undefined && latestSchemaInfo.getStatus()?.getCode() === Code.OK && (currentView.type === 'create-schema' || prevLastestSchemaInfo === undefined)) {
       const schemaInfo = latestSchemaInfo.getSchemaInfo();
       if (schemaInfo !== undefined) {
         setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: latestSchemaInfo.getSchemaVersion(), schemaInfo });
@@ -164,25 +164,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
               defaultSchemaType={defaultNewSchemaType}
               defaultSchemaDefinition={defaultSchemaDefinition}
               onCreateSuccess={async () => {
-                refetchData();
-
-                const req = new GetLatestSchemaInfoRequest();
-                req.setTopic(topic);
-                const res = await schemaServiceClient.getLatestSchemaInfo(req, {}).catch(err => notifyError(`Unable to get latest schema info. ${err}`));
-                if (res === undefined) {
-                  return;
-                }
-                if (res.getStatus()?.getCode() !== Code.OK) {
-                  notifyError(`Unable to get latest schema info. ${res.getStatus()?.getMessage()}`);
-                  return;
-                }
-
-                const schemaInfo = res.getSchemaInfo();
-                if (schemaInfo === undefined) {
-                  return;
-                }
-
-                setCurrentView({ type: 'schema-entry', topic: topic, schemaVersion: res.getSchemaVersion(), schemaInfo });
+                await refetchData();
               }}
             />
           )}
