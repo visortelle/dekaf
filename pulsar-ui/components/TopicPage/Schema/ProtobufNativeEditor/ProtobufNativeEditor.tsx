@@ -158,7 +158,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
                 submitFiles([{ relativePath: 'schema.proto', content: textEditorValue }]);
               }}
             />
-            <a className="A" href="https://developers.google.com/protocol-buffers/docs/proto3" target="__blank">Visit language reference</a>
+            <a className="A" href="https://developers.google.com/protocol-buffers/docs/proto3" target="__blank">Language reference</a>
           </div>
         </div>
       )}
