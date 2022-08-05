@@ -140,9 +140,10 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
             </div>
           )}
 
-          {schema.type === 'SCHEMA_TYPE_AVRO' && (
+          {(schema.type === 'SCHEMA_TYPE_AVRO' || schema.type === 'SCHEMA_TYPE_JSON' || schema.type === 'SCHEMA_TYPE_PROTOBUF') && (
             <div className={s.FormControl}>
               <AvroEditor
+                key={schema.type}
                 onSchemaDefinition={v => {
                   if (v === undefined) {
                     setSchema(schema => ({ ...schema, definition: undefined, updateState: 'in-progress' }));
