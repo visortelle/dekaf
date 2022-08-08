@@ -14,9 +14,8 @@ message MessageId {
 
 message Message {
   map<string, string> properties = 1;
-  optional bytes data = 2;
-  optional int64 size = 3;
-  optional string value = 4; // JSON string
+  optional bytes value = 4;
+  optional string json_value = 5;
 
   optional google.protobuf.Timestamp event_time = 7;
   optional google.protobuf.Timestamp publish_time = 6;
