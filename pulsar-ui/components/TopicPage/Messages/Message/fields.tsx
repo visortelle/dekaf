@@ -3,8 +3,8 @@ import s from './Message.module.css'
 
 export type FieldName =
   'messageId' |
-  'data' |
   'value' |
+  'jsonValue' |
   'brokerPublishTime' |
   'eventTime' |
   'isReplicated' |
@@ -21,7 +21,6 @@ export type FieldName =
   'topic';
 
 const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
-  data: <span>The data carried by the message. All Pulsar messages contain raw bytes, although message data can also conform to data schemas.</span>,
   key: <span>Messages are optionally tagged with keys, which is useful for things like topic compaction.</span>,
   propertiesMap: <span>An optional key/value map of user-defined properties.</span>,
   producerName: <span>The name of the producer who produces the message. If you do not specify a producer name, the default name is used.</span>,
@@ -46,6 +45,7 @@ const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
     </div>
   ),
   value: <span>The de-serialized value of the message, according the configured schema.</span>,
+  jsonValue: <span>The de-serialized value of the message, according the configured schema.</span>,
   isReplicated: <span>Check whether the message is replicated from other cluster.</span>, // TODO - geo replication
   orderingKey: <span>Ordering key of the message.</span>,
   redeliveryCount: (

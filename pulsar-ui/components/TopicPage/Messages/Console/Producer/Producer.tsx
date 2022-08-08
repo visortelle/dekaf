@@ -9,7 +9,7 @@ import Select from '../../../../ui/Select/Select';
 import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { nanoid } from 'nanoid';
-import { CreateProducerRequest, DeleteProducerRequest, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
+import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import * as I18n from '../../../../app/contexts/I18n/I18n';
 
@@ -39,6 +39,12 @@ const Producer: React.FC<ProducerProps> = (props) => {
     const sendReq: SendRequest = new SendRequest();
     sendReq.setProducerName(producerName);
     sendReq.setMessagesList([valueToBytes(value, valueType)]);
+
+    if (valueType === 'json') {
+      sendReq.setFormat(MessageFormat.MESSAGE_FORMAT_JSON);
+    } else {
+      sendReq.setFormat(MessageFormat.MESSAGE_FORMAT_BYTES);
+    }
 
     const res = await producerServiceClient.send(sendReq, {}).catch(err => notifyError(`Unable to send a message. ${err}`));
     if (res === undefined) {

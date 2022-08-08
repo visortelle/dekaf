@@ -21,9 +21,16 @@ message DeleteProducerResponse {
   google.rpc.Status status = 1;
 }
 
+enum MessageFormat {
+  MESSAGE_FORMAT_UNSPECIFIED = 0;
+  MESSAGE_FORMAT_BYTES = 1;
+  MESSAGE_FORMAT_JSON = 2;
+}
+
 message SendRequest {
   string producer_name = 1;
   repeated bytes messages = 2;
+  MessageFormat format = 3;
 }
 
 message SendResponse {
