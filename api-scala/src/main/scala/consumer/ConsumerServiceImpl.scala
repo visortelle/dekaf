@@ -32,6 +32,7 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import org.apache.pulsar.client.api.{Message, MessageId}
+import consumer.MessageFilter
 
 import java.util.UUID
 import java.time.Instant
@@ -43,6 +44,7 @@ class StreamDataHandler:
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     val logger: Logger = Logger(getClass.getName)
+    val messageFilter = MessageFilter()
     var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
     var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
     var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
@@ -71,7 +73,18 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
                     processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-                    val message = messageFromPb(msg)
+//                    val readerSchema = msg.getReaderSchema.toScala
+//                    val schemaType = readerSchema match
+//                        case Some(rs) => rs.getSchemaInfo.getType
+//                        case _ => throw "Unable to get message schema type."
+//
+//                    val schema = readerSchema match
+//                        case Some(rs) => rs.getSchemaInfo.getSchema
+//                        case _ => throw "Unable to get message schema."
+
+//                    messageFilter.test("js", "abc", msg)
+
+                    val message = messageToPb(msg)
 
                     consumers.get(consumerName) match
                         case Some(_) =>

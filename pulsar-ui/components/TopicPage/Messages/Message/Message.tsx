@@ -18,8 +18,8 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   const i18n = I18n.useContext();
 
   const messageId = message.getMessageId_asU8();
-  const data = message.getData_asU8();
-  const value = message.getValue();
+  const value = message.getValue_asU8();
+  const jsonValue = message.getJsonValue();
   const brokerPublishTime = message.getBrokerPublishTime();
   const eventTime = message.getEventTime();
   const isReplicated = message.getIsReplicated();
@@ -57,7 +57,8 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <Field isShowTooltips={props.isShowTooltips} name="orderingKey" title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.bytesToHexString(orderingKey, 'hex-with-space')} rawValue={i18n.bytesToHexString(orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
         <Field isShowTooltips={props.isShowTooltips} name="redeliveryCount" title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} rawValue={String(redeliveryCount)} tooltip={help.redeliveryCount} />
         <Field isShowTooltips={props.isShowTooltips} name="schemaVersion" title="Schema version" value={i18n.bytesToHexString(schemaVersion, 'hex-with-space') || undefined} rawValue={i18n.bytesToHexString(schemaVersion, 'hex-no-space')} tooltip={help.schemaVersion} />
-        <Field isShowTooltips={props.isShowTooltips} name="value" title="Value" value={value || undefined} rawValue={value} tooltip={help.value} />
+        <Field isShowTooltips={props.isShowTooltips} name="value" title="Value" value={value === undefined ? undefined : i18n.bytesToHexString(value, 'hex-with-space')} rawValue={i18n.bytesToHexString(value, 'hex-no-space')} tooltip={help.value} />
+        <Field isShowTooltips={props.isShowTooltips} name="value" title="JSON Value" value={jsonValue || undefined} rawValue={jsonValue} tooltip={help.jsonValue} />
       </div>
       <div className={s.RightSection}></div>
     </div >

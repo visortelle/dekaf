@@ -5,9 +5,11 @@ import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, Schema}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
+import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, MessageFormat, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
 import org.apache.pulsar.client.api.schema.SchemaInfoProvider
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
+import _root_.schema.avro
+import com.google.protobuf.ByteString
 
 import scala.concurrent.Future
 
@@ -66,22 +68,38 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
         val producerName: ProducerName = request.producerName
         logger.info(s"Sending message. Producer: $producerName")
 
-        producers.get(producerName) match
-            case Some(p) =>
-                request.messages.foreach(msg =>
-                    try {
-                        p.send(msg.toByteArray)
-                    } catch {
-                        case err =>
-                            val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                            return Future.successful(SendResponse(status = Some(status)))
-                    }
-                )
-                val status: Status = Status(code = Code.OK.index)
-                Future.successful(SendResponse(status = Some(status)))
+        val producer = producers.get(producerName) match
+            case Some(p) => p
             case _ =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"No such producer: $producerName")
-                Future.successful(SendResponse(status = Some(status)))
+                return Future.successful(SendResponse(status = Some(status)))
+
+        val messages = request.format match
+            case MessageFormat.MESSAGE_FORMAT_JSON =>
+                val schema = adminClient.schemas.getSchemaInfo(producer.getTopic).getSchema
+                request.messages.map(msg =>
+                    avro.fromJson(schema, msg.toByteArray) match
+                        case Right(v) => ByteString.copyFrom(v)
+                        case Left(err) =>
+                            val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Unable to send a message: $err")
+                            return Future.successful(SendResponse(status = Some(status)))
+                )
+            case _ => request.messages
+
+
+        messages.foreach(msg =>
+            try {
+                producer.send(msg.toByteArray)
+            } catch {
+                case err =>
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    return Future.successful(SendResponse(status = Some(status)))
+            }
+        )
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(SendResponse(status = Some(status)))
+
+
 
     override def getStats(request: GetStatsRequest): Future[GetStatsResponse] = ???
 
