@@ -74,8 +74,6 @@ def messageToJson(msg: Message[Array[Byte]]): Option[String] =
         case SchemaType.PROTOBUF => ???
         case SchemaType.PROTOBUF_NATIVE => ???
         case SchemaType.BOOLEAN => Some(if msgValue.head > 0 then "true" else "false")
-        case SchemaType.DOUBLE => Some(ByteBuffer.wrap(msgValue).getDouble.toString)
-        case SchemaType.FLOAT => Some(ByteBuffer.wrap(msgValue).getFloat.toString)
         case SchemaType.INT8 =>
             val buf = ByteBuffer.allocateDirect(4)
             buf.order(ByteOrder.BIG_ENDIAN)
@@ -111,6 +109,25 @@ def messageToJson(msg: Message[Array[Byte]]): Option[String] =
             buf.flip
 
             Some(buf.getLong.toString)
+
+        case SchemaType.FLOAT =>
+            val buf = ByteBuffer.allocateDirect(4)
+            buf.order(ByteOrder.BIG_ENDIAN)
+            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
+            msgValue.foreach(buf.put)
+            buf.flip
+
+            Some(buf.getFloat.toString)
+
+        case SchemaType.DOUBLE =>
+            val buf = ByteBuffer.allocateDirect(8)
+            buf.order(ByteOrder.BIG_ENDIAN)
+            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
+            msgValue.foreach(buf.put)
+            buf.flip
+
+            Some(buf.getDouble.toString)
+
         case SchemaType.STRING => Some(msgValue.map(_.toChar).mkString)
         case SchemaType.BYTES => None
         case _ => None
