@@ -67,7 +67,6 @@ def messageToPb(msg: Message[Array[Byte]]): consumerPb.Message =
 def messageToJson(msg: Message[Array[Byte]]): Option[String] =
     val schemaInfo = adminClient.schemas.getSchemaInfo(msg.getTopicName)
     val msgValue = msg.getValue
-    println(s"MSGVALUE ${convertBytesToHex(msgValue)}")
 
     val maybeJson: Option[String] = schemaInfo.getType match
         case SchemaType.AVRO => avro.toJson(schemaInfo.getSchema, msgValue).toOption.map(_.map(_.toChar).mkString)
@@ -80,38 +79,40 @@ def messageToJson(msg: Message[Array[Byte]]): Option[String] =
         case SchemaType.INT8 =>
             val buf = ByteBuffer.allocateDirect(4)
             buf.order(ByteOrder.BIG_ENDIAN)
-            buf.put(0x00.toByte)
-            buf.put(0x00.toByte)
-            buf.put(0x00.toByte)
-            buf.put(msgValue.head)
+            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
+            msgValue.foreach(buf.put)
             buf.flip
 
             val uint8 = buf.getInt
             val v = if uint8 > 127 then uint8 - 256 else uint8
 
-            println(s"VVVVVVVVVVVVVVVVVVV ${v}")
             Some(v.toString)
         case SchemaType.INT16 =>
             val buf = ByteBuffer.allocateDirect(4)
             buf.order(ByteOrder.BIG_ENDIAN)
-            buf.put(0x00.toByte)
-            buf.put(0x00.toByte)
-            buf.put(msgValue.tail.head)
-            buf.put(msgValue.head)
+            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
+            msgValue.foreach(buf.put)
             buf.flip
+
+            Some(buf.getInt.toShort.toString)
+        case SchemaType.INT32 =>
+            val buf = ByteBuffer.allocateDirect(4)
+            buf.order(ByteOrder.BIG_ENDIAN)
+            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
+            msgValue.foreach(buf.put)
+            buf.flip
+
             Some(buf.getInt.toString)
-        case SchemaType.INT32 => Some(ByteBuffer.wrap(msgValue).getInt.toString)
-        case SchemaType.INT64 => Some(ByteBuffer.wrap(msgValue).getLong.toString)
+        case SchemaType.INT64 =>
+            val buf = ByteBuffer.allocateDirect(8)
+            buf.order(ByteOrder.BIG_ENDIAN)
+            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
+            msgValue.foreach(buf.put)
+            buf.flip
+
+            Some(buf.getLong.toString)
         case SchemaType.STRING => Some(msgValue.map(_.toChar).mkString)
         case SchemaType.BYTES => None
         case _ => None
 
     maybeJson
-
-def convertBytesToHex(bytes: Seq[Byte]): String = {
-    val sb = new StringBuilder
-    for (b <- bytes) {
-        sb.append(String.format("%02x", Byte.box(b)))
-    }
-    sb.toString
-}
