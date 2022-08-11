@@ -12,13 +12,15 @@ import { nanoid } from 'nanoid';
 import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import * as I18n from '../../../../app/contexts/I18n/I18n';
+import * as Either from 'fp-ts/lib/Either';
+import { number } from 'fp-ts';
 
 export type ProducerPreset = {
   topic: string | undefined;
   key: string;
 }
 
-type ValueType = 'bytes-hex' | 'bytes-binary' | 'bytes-base64' | 'json' | 'utf-8-string';
+type ValueType = 'bytes-hex' | 'bytes-binary' | 'bytes-base64' | 'json';
 
 export type ProducerProps = {
   preset: ProducerPreset
@@ -28,7 +30,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
   const [topic, setTopic] = React.useState<string | undefined>(props.preset.topic);
   const [key, setKey] = React.useState<string>(props.preset.key);
   const [isStarted, setIsStarted] = React.useState<boolean>(false);
-  const [valueType, setValueType] = React.useState<ValueType>('bytes-hex');
+  const [valueType, setValueType] = React.useState<ValueType>('json');
   const [value, setValue] = React.useState<string>('');
   const [producerName, setProducerName] = React.useState<string>(`__xray_prod_` + nanoid());
   const { notifyError, notifySuccess } = Notifications.useContext();
@@ -38,7 +40,14 @@ const Producer: React.FC<ProducerProps> = (props) => {
   const sendMessage = async () => {
     const sendReq: SendRequest = new SendRequest();
     sendReq.setProducerName(producerName);
-    sendReq.setMessagesList([valueToBytes(value, valueType)]);
+
+    const message = valueToBytes(value, valueType);
+    if (Either.isRight(message)) {
+      sendReq.setMessagesList([message.right]);
+    } else {
+      notifyError(`Unable to send message: ${message.left}`);
+      return;
+    }
 
     if (valueType === 'json') {
       sendReq.setFormat(MessageFormat.MESSAGE_FORMAT_JSON);
@@ -125,7 +134,6 @@ const Producer: React.FC<ProducerProps> = (props) => {
               onChange={v => setValueType(v as ValueType)}
               list={[
                 { type: 'item', title: 'JSON', value: 'json' },
-                { type: 'item', title: 'String (UTF-8)', value: 'utf-8-string' },
                 { type: 'item', title: 'Bytes (hex)', value: 'bytes-hex' },
                 { type: 'item', title: 'Bytes (binary)', value: 'bytes-binary' },
                 { type: 'item', title: 'Bytes (base64)', value: 'bytes-base64' },
@@ -152,13 +160,24 @@ const Producer: React.FC<ProducerProps> = (props) => {
   );
 }
 
-function valueToBytes(value: string, valueType: ValueType): Uint8Array {
+function valueToBytes(value: string, valueType: ValueType): Either.Either<Error, Uint8Array> {
   switch (valueType) {
-    case 'utf-8-string': return Uint8Array.from(Buffer.from(value));
-    case 'json': return Uint8Array.from(Buffer.from(value));
-    case 'bytes-hex': return Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'hex'));
-    case 'bytes-binary': return Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'binary'));
-    case 'bytes-base64': return Uint8Array.from(Buffer.from(value, 'base64'));
+    case 'json': {
+      const bytes = Uint8Array.from(Buffer.from(value))
+      return Either.right(bytes);
+    };
+    case 'bytes-hex': {
+      const bytes = Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'hex'))
+      return Either.right(bytes);
+    };
+    case 'bytes-binary': {
+      const bytes = Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'binary'))
+      return Either.right(bytes);
+    };
+    case 'bytes-base64': {
+      const bytes = Uint8Array.from(Buffer.from(value, 'base64'));
+      return Either.right(bytes);
+    };
   }
 }
 
