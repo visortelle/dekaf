@@ -18,11 +18,10 @@ lazy val root = project
       "org.apache.pulsar" % "pulsar-client-original" % "2.10.1",
       "org.apache.pulsar" % "pulsar-client-admin-original" % "2.10.1",
       "io.netty" % "netty-all" % "4.1.78.Final", // Needed by pulsar-client-original
-      // Protobuf
+      // Uncategorized
       "com.google.protobuf" % "protobuf-java" % "3.21.3",
-      // Avro
       "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
-      // os
+      "com.google.guava" % "guava" % "31.1-jre",
       "com.lihaoyi" %% "os-lib" % "0.8.1"
     )
   )

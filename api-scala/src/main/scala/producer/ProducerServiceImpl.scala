@@ -5,12 +5,28 @@ import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, Schema}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, MessageFormat, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
+import com.tools.teal.pulsar.ui.api.v1.producer.{
+    CreateProducerRequest,
+    CreateProducerResponse,
+    DeleteProducerRequest,
+    DeleteProducerResponse,
+    GetStatsRequest,
+    GetStatsResponse,
+    MessageFormat,
+    ProducerServiceGrpc,
+    SendRequest,
+    SendResponse,
+    Stats
+}
 import org.apache.pulsar.client.api.schema.SchemaInfoProvider
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import _root_.schema.avro
+import com.google.protobuf
 import com.google.protobuf.ByteString
+import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
+import com.google.common.primitives
 
+import java.nio.{ByteBuffer, ByteOrder}
 import scala.concurrent.Future
 
 type ProducerName = String
@@ -74,33 +90,68 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"No such producer: $producerName")
                 return Future.successful(SendResponse(status = Some(status)))
 
-        val messages = request.format match
+        val messages: Seq[Either[String, Array[Byte]]] = request.format match
             case MessageFormat.MESSAGE_FORMAT_JSON =>
-                val schema = adminClient.schemas.getSchemaInfo(producer.getTopic).getSchema
-                request.messages.map(msg =>
-                    avro.fromJson(schema, msg.toByteArray) match
-                        case Right(v) => ByteString.copyFrom(v)
-                        case Left(err) =>
-                            val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Unable to send a message: $err")
-                            return Future.successful(SendResponse(status = Some(status)))
-                )
-            case _ => request.messages
-
+                val schemaInfo = adminClient.schemas.getSchemaInfo(producer.getTopic)
+                request.messages.map(msg => jsonToValue(schemaInfo, msg.toByteArray))
+            case _ => request.messages.map(msg => Right(msg.toByteArray))
 
         messages.foreach(msg =>
-            try {
-                producer.send(msg.toByteArray)
-            } catch {
-                case err =>
-                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+            msg match
+                case Right(bytes) =>
+                    try
+                        producer.send(bytes)
+                    catch {
+                        case err =>
+                            val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                            return Future.successful(SendResponse(status = Some(status)))
+                    }
+                case Left(err) =>
+                    val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = err)
                     return Future.successful(SendResponse(status = Some(status)))
-            }
         )
+
         val status: Status = Status(code = Code.OK.index)
         Future.successful(SendResponse(status = Some(status)))
 
-
-
     override def getStats(request: GetStatsRequest): Future[GetStatsResponse] = ???
 
+def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String, Array[Byte]] =
+    val result: Either[String, Array[Byte]] = schemaInfo.getType match
+        case SchemaType.AVRO =>
+            avro.fromJson(schemaInfo.getSchema, jsonAsBytes) match
+                case Right(v)  => Right(v)
+                case Left(err) => Left(err)
+        case SchemaType.JSON => Right(jsonAsBytes)
+        case SchemaType.INT8 =>
+            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val n = primitives.Ints.tryParse(jsonString)
+            if n == null then return Left(s"Unable to parse INT8 value from the given JSON: $jsonString")
 
+            val minValue = -128
+            val maxValue = 127
+
+            if (n > maxValue) || (n < minValue) then return Left(s"INT8 value should be in range from $minValue to $maxValue. Given: $n")
+
+            // https://www.simonv.fr/TypesConvert/?integers
+            Right(Array(primitives.SignedBytes.checkedCast(n.toLong)))
+        case SchemaType.INT16 =>
+            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val n = primitives.Ints.tryParse(jsonString)
+            if n == null then return Left(s"Unable to parse INT16 value from the given the JSON: $jsonString")
+            Right(primitives.Ints.toByteArray(n))
+        //                            val msgBytes = msg.toByteArray
+        //                            if msgBytes.length != 2 then
+        //                                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = s"INT16 should be size of 2. Given: ${msg.toByteArray.length}")
+        //                                return Future.successful(SendResponse(status = Some(status)))
+        //
+        //                            val buf = ByteBuffer.allocateDirect(2)
+        //                            buf.order(ByteOrder.BIG_ENDIAN)
+        //                            buf.put(msgBytes.head)
+        //                            buf.put(msgBytes.tail.head)
+        //                            buf.flip
+        //
+        //                            buf
+        case SchemaType.INT32 => Right(jsonAsBytes)
+        case SchemaType.INT64 => Right(jsonAsBytes)
+    result
