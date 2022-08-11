@@ -123,6 +123,14 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
                 case Right(v)  => Right(v)
                 case Left(err) => Left(err)
         case SchemaType.JSON => Right(jsonAsBytes)
+        case SchemaType.STRING => Right(jsonAsBytes)
+        case SchemaType.BOOLEAN =>
+            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val v: Byte = jsonString match
+                case "false" => 0x00.toByte
+                case "true" => 0x01.toByte
+                case _ => return Left(s"Unable to parse BOOLEAN value from the given JSON: $jsonString")
+            Right(Array(v))
         case SchemaType.INT8 =>
             val jsonString = jsonAsBytes.map(_.toChar).mkString
             val n = primitives.Ints.tryParse(jsonString)
