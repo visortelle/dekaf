@@ -13,7 +13,6 @@ import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, SendReques
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import * as I18n from '../../../../app/contexts/I18n/I18n';
 import * as Either from 'fp-ts/lib/Either';
-import { number } from 'fp-ts';
 
 export type ProducerPreset = {
   topic: string | undefined;
@@ -143,7 +142,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
 
           <div className={s.FormControl}>
             <strong>Value</strong>
-            <Input onChange={v => setValue(v)} value={value} placeholder="random string" />
+            <Input onChange={v => setValue(v)} value={value} placeholder={``} />
           </div>
         </div>
       </div>
