@@ -128,10 +128,9 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
             val n = primitives.Ints.tryParse(jsonString)
             if n == null then return Left(s"Unable to parse INT8 value from the given JSON: $jsonString")
 
-            val MinValue = -128
-            val MaxValue = 127
-
-            if (n > MaxValue) || (n < MinValue) then return Left(s"INT8 value should be in range from $MinValue to $MaxValue. Given: $n")
+            val MinValue = Byte.MinValue
+            val MaxValue = Byte.MaxValue
+            if n > MaxValue || n < MinValue then return Left(s"INT8 value should be in range from $MinValue to $MaxValue. Given: $n")
 
             // https://www.simonv.fr/TypesConvert/?integers
             Right(Array(primitives.SignedBytes.checkedCast(n.toLong)))
@@ -140,29 +139,48 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
             val n = primitives.Ints.tryParse(jsonString)
             if n == null then return Left(s"Unable to parse INT16 value from the given the JSON: $jsonString")
 
-            val MinValue = -32768
-            val MaxValue = 32767
+            val MinValue = Short.MinValue
+            val MaxValue = Short.MaxValue
+            if n > MaxValue || n < MinValue then return Left(s"INT16 value should be in range from $MinValue to $MaxValue. Given: $n")
 
-            if (n > MaxValue) || (n < MinValue) then return Left(s"INT16 value should be in range from $MinValue to $MaxValue. Given: $n")
             Right(primitives.Shorts.toByteArray(n.toShort))
         case SchemaType.INT32 =>
             val jsonString = jsonAsBytes.map(_.toChar).mkString
             val n = primitives.Ints.tryParse(jsonString)
             if n == null then return Left(s"Unable to parse INT32 value from the given the JSON: $jsonString")
 
-            val MinValue = -2147483648
-            val MaxValue = 2147483647
+            val MinValue = Int.MinValue
+            val MaxValue = Int.MaxValue
+            if n > MaxValue || n < MinValue then return Left(s"INT32 value should be in range from $MinValue to $MaxValue. Given: $n")
 
-            if (n > MaxValue) || (n < MinValue) then return Left(s"INT32 value should be in range from $MinValue to $MaxValue. Given: $n")
             Right(primitives.Ints.toByteArray(n))
         case SchemaType.INT64 =>
             val jsonString = jsonAsBytes.map(_.toChar).mkString
             val n = primitives.Longs.tryParse(jsonString)
             if n == null then return Left(s"Unable to parse INT64 value from the given the JSON: $jsonString")
 
-            val MinValue: Long = -9223372036854775808
-            val MaxValue: Long = 9223372036854775807
+            val MinValue: Long = Long.MinValue
+            val MaxValue: Long = Long.MaxValue
+            if n > MaxValue || n < MinValue then return Left(s"INT64 value should be in range from $MinValue to $MaxValue. Given: $n")
 
-            if (n > MaxValue) || (n < MinValue) then return Left(s"INT64 value should be in range from $MinValue to $MaxValue. Given: $n")
             Right(primitives.Longs.toByteArray(n))
+        case SchemaType.FLOAT =>
+            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val n = primitives.Floats.tryParse(jsonString)
+
+            val MinValue = Float.MinValue
+            val MaxValue = Float.MaxValue
+            if n > MaxValue || n < MinValue then return Left(s"FLOAT value should be in range from $MinValue to $MaxValue. Given: $n")
+
+            Right(ByteBuffer.allocate(4).putFloat(n).array)
+        case SchemaType.DOUBLE =>
+            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val n = primitives.Doubles.tryParse(jsonString)
+
+            val MinValue = Double.MinValue
+            val MaxValue = Double.MaxValue
+            if n > MaxValue || n < MinValue then return Left(s"DOUBLE value should be in range from $MinValue to $MaxValue. Given: $n")
+
+            Right(ByteBuffer.allocate(8).putDouble(n).array)
+
     result
