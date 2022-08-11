@@ -10,8 +10,9 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp
 import org.apache.pulsar.common.schema.SchemaType
-import java.nio.{ByteBuffer,ByteOrder}
 
+import java.nio.charset.StandardCharsets
+import java.nio.{ByteBuffer, ByteOrder}
 import java.time.Instant
 
 def messageToPb(msg: Message[Array[Byte]]): consumerPb.Message =
@@ -69,8 +70,8 @@ def messageToJson(msg: Message[Array[Byte]]): Option[String] =
     val msgValue = msg.getValue
 
     val maybeJson: Option[String] = schemaInfo.getType match
-        case SchemaType.AVRO => avro.toJson(schemaInfo.getSchema, msgValue).toOption.map(_.map(_.toChar).mkString)
-        case SchemaType.JSON => Some(msgValue.map(_.toChar).mkString)
+        case SchemaType.AVRO => avro.toJson(schemaInfo.getSchema, msgValue).toOption.map(String(_, StandardCharsets.UTF_8))
+        case SchemaType.JSON => Some(String(msgValue, StandardCharsets.UTF_8))
         case SchemaType.PROTOBUF => ???
         case SchemaType.PROTOBUF_NATIVE => ???
         case SchemaType.BOOLEAN => Some(if msgValue.head > 0 then "true" else "false")
@@ -128,7 +129,7 @@ def messageToJson(msg: Message[Array[Byte]]): Option[String] =
 
             Some(buf.getDouble.toString)
 
-        case SchemaType.STRING => Some(msgValue.map(_.toChar).mkString)
+        case SchemaType.STRING => Some(String(msgValue, StandardCharsets.UTF_8))
         case SchemaType.BYTES => None
         case _ => None
 
