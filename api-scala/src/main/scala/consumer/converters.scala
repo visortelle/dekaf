@@ -4,37 +4,42 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
 import _root_.client.adminClient
 import _root_.schema.avro
+import _root_.conversions.{
+    bytesToBoolean,
+    bytesToFloat32,
+    bytesToFloat64,
+    bytesToInt16,
+    bytesToInt32,
+    bytesToInt64,
+    bytesToInt8,
+    bytesToString
+}
 
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp
-import org.apache.pulsar.common.schema.SchemaType
+import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 
 import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 import java.time.Instant
 
-def messageToPb(msg: Message[Array[Byte]]): consumerPb.Message =
+def messageToPb(schemas: SchemasByTopic, msg: Message[Array[Byte]]): consumerPb.Message =
     val message = consumerPb.Message(
       properties = Option(msg.getProperties) match
           case Some(v) => v.asScala.toMap
           case _       => Map.empty
       ,
-      value = Option(msg.getValue).map(ByteString.copyFrom(_)),
-      jsonValue = messageToJson(msg),
-      size = Option(msg.getValue) match
-          case Some(v) => Some(v.length)
-          case _       => None
-      ,
+      value = Option(msg.getValue).map(ByteString.copyFrom),
+      jsonValue = messageToJson(schemas, msg),
       eventTime = Option(msg.getEventTime) match
           case Some(v) => if v > 0 then Some(timestamp.Timestamp(Instant.ofEpochMilli(v))) else None
           case _       => None
       ,
       publishTime = Option(msg.getPublishTime) match
-          case Some(v) =>
-              Some(timestamp.Timestamp(Instant.ofEpochMilli(v)))
-          case _ => None
+          case Some(v) => Some(timestamp.Timestamp(Instant.ofEpochMilli(v)))
+          case _       => None
       ,
       brokerPublishTime = Option(msg.getBrokerPublishTime) match
           case Some(v) =>
@@ -43,94 +48,49 @@ def messageToPb(msg: Message[Array[Byte]]): consumerPb.Message =
                   case _       => None
           case _ => None
       ,
-      messageId = Option(msg.getMessageId.toByteArray) match
-          case Some(v) => Some(ByteString.copyFrom(v))
-          case _       => None
-      ,
+      messageId = Option(msg.getMessageId.toByteArray).map(ByteString.copyFrom),
       sequenceId = Option(msg.getSequenceId),
       producerName = Option(msg.getProducerName),
       key = Option(msg.getKey),
-      orderingKey = Option(msg.getOrderingKey) match
-          case Some(v) => Some(ByteString.copyFrom(v))
-          case _       => None
-      ,
+      orderingKey = Option(msg.getOrderingKey).map(ByteString.copyFrom),
       topic = Option(msg.getTopicName),
       redeliveryCount = Option(msg.getRedeliveryCount),
-      schemaVersion = Option(msg.getSchemaVersion) match
-          case Some(v) => Some(ByteString.copyFrom(v))
-          case _       => None
-      ,
+      schemaVersion = Option(msg.getSchemaVersion).map(bytesToInt64),
       isReplicated = Option(msg.isReplicated),
       replicatedFrom = Option(msg.getReplicatedFrom)
     )
     message
 
-def messageToJson(msg: Message[Array[Byte]]): Option[String] =
-    val schemaInfo = adminClient.schemas.getSchemaInfo(msg.getTopicName)
+def messageToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[String] =
     val msgValue = msg.getValue
 
+    val topicName = partitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
+    val schemaInfo = schemas.get(topicName) match
+        case Some(schemasByVersion) =>
+            val schemaVersion = Option(msg.getSchemaVersion) match
+                case Some(v) => bytesToInt64(v)
+                case None => return Some(bytesToString(msgValue))
+
+            schemasByVersion.get(schemaVersion) match
+                case None     => return Some(bytesToString(msgValue))
+                case Some(si) => si
+        case None => return Some(bytesToString(msgValue))
+
     val maybeJson: Option[String] = schemaInfo.getType match
-        case SchemaType.AVRO => avro.toJson(schemaInfo.getSchema, msgValue).toOption.map(String(_, StandardCharsets.UTF_8))
-        case SchemaType.JSON => Some(String(msgValue, StandardCharsets.UTF_8))
-        case SchemaType.PROTOBUF => ???
+        case SchemaType.AVRO            => avro.toJson(schemaInfo.getSchema, msgValue).toOption.map(String(_, StandardCharsets.UTF_8))
+        case SchemaType.JSON            => Some(bytesToString(msgValue))
+        case SchemaType.PROTOBUF        => ???
         case SchemaType.PROTOBUF_NATIVE => ???
-        case SchemaType.BOOLEAN => Some(if msgValue.head > 0 then "true" else "false")
-        case SchemaType.INT8 =>
-            val buf = ByteBuffer.allocateDirect(4)
-            buf.order(ByteOrder.BIG_ENDIAN)
-            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
-            msgValue.foreach(buf.put)
-            buf.flip
-
-            val uint8 = buf.getInt
-            val v = if uint8 > 127 then uint8 - 256 else uint8
-
-            Some(v.toString)
-        case SchemaType.INT16 =>
-            val buf = ByteBuffer.allocateDirect(4)
-            buf.order(ByteOrder.BIG_ENDIAN)
-            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
-            msgValue.foreach(buf.put)
-            buf.flip
-
-            Some(buf.getInt.toShort.toString)
-        case SchemaType.INT32 =>
-            val buf = ByteBuffer.allocateDirect(4)
-            buf.order(ByteOrder.BIG_ENDIAN)
-            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
-            msgValue.foreach(buf.put)
-            buf.flip
-
-            Some(buf.getInt.toString)
-        case SchemaType.INT64 =>
-            val buf = ByteBuffer.allocateDirect(8)
-            buf.order(ByteOrder.BIG_ENDIAN)
-            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
-            msgValue.foreach(buf.put)
-            buf.flip
-
-            Some(buf.getLong.toString)
-
-        case SchemaType.FLOAT =>
-            val buf = ByteBuffer.allocateDirect(4)
-            buf.order(ByteOrder.BIG_ENDIAN)
-            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
-            msgValue.foreach(buf.put)
-            buf.flip
-
-            Some(buf.getFloat.toString)
-
-        case SchemaType.DOUBLE =>
-            val buf = ByteBuffer.allocateDirect(8)
-            buf.order(ByteOrder.BIG_ENDIAN)
-            for (_ <- 0 to (buf.capacity - msgValue.length - 1)) buf.put(0x00.toByte)
-            msgValue.foreach(buf.put)
-            buf.flip
-
-            Some(buf.getDouble.toString)
-
-        case SchemaType.STRING => Some(String(msgValue, StandardCharsets.UTF_8))
-        case SchemaType.BYTES => None
-        case _ => None
-
+        case SchemaType.BOOLEAN         => Some(if bytesToBoolean(msgValue) then "true" else "false")
+        case SchemaType.INT8            => Some(bytesToInt8(msgValue).toString)
+        case SchemaType.INT16           => Some(bytesToInt16(msgValue).toShort.toString)
+        case SchemaType.INT32           => Some(bytesToInt32(msgValue).toString)
+        case SchemaType.INT64           => Some(bytesToInt64(msgValue).toString)
+        case SchemaType.FLOAT           => Some(bytesToFloat32(msgValue).toString)
+        case SchemaType.DOUBLE          => Some(bytesToFloat64(msgValue).toString)
+        case SchemaType.STRING          => Some(bytesToString(msgValue))
+        case SchemaType.BYTES           => None
+        case _                          => None
     maybeJson
+
+private val partitionedTopicSuffixRegexp = "-partition-\\d+$".r

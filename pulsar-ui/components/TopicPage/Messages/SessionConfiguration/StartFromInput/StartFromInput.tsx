@@ -113,7 +113,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         {props.value.type === 'messageId' && (
           isHasPartitionedTopic ? (
             <div style={{ color: 'var(--accent-color-red)', marginTop: '2rem' }}>
-              <strong>Can only be applied on non-partitioned topics or individual partitions.</strong>
+              <strong>Can be only applied on non-partitioned topics or individual partitions.</strong>
             </div>
           ) : (
             <Input

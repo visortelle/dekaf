@@ -7,28 +7,7 @@ import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptor
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.api.v1.schema.{
-    CompiledProtobufNativeFile,
-    CompileProtobufNativeRequest,
-    CompileProtobufNativeResponse,
-    CreateSchemaRequest,
-    CreateSchemaResponse,
-    DeleteSchemaRequest,
-    DeleteSchemaResponse,
-    GetHumanReadableSchemaRequest,
-    GetHumanReadableSchemaResponse,
-    GetLatestSchemaInfoRequest,
-    GetLatestSchemaInfoResponse,
-    ListSchemasRequest,
-    ListSchemasResponse,
-    ProtobufNativeSchema,
-    SchemaInfo as SchemaInfoPb,
-    SchemaInfoWithVersion,
-    SchemaServiceGrpc,
-    SchemaType as SchemaTypePb,
-    TestCompatibilityRequest,
-    TestCompatibilityResponse
-}
+import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetHumanReadableSchemaRequest, GetHumanReadableSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaInfoWithVersion, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
 
@@ -43,7 +22,7 @@ import _root_.schema.protobufnative
 
 import scala.concurrent.{Await, Future}
 import java.util
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
 import schema.protobufnative.FileEntry
 
@@ -132,7 +111,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 .map(_.asScala)
 
             given ExecutionContext = ExecutionContext.global
-            val schemaVersions = Await.result(Future.sequence(getVersionFutures), Duration.Inf)
+            val schemaVersions = Await.result(Future.sequence(getVersionFutures), Duration(1, TimeUnit.MINUTES))
 
             val schemas = schemaInfos
                 .zip(schemaVersions)

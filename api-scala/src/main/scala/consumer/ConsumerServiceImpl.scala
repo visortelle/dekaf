@@ -50,6 +50,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
     var topics: Map[ConsumerName, Vector[String]] = Map.empty
     var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
+    var schemasByTopic: SchemasByTopic = Map.empty
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
         val consumerName: ConsumerName = request.consumerName
@@ -84,7 +85,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
 //                    messageFilter.test("js", "abc", msg)
 
-                    val message = messageToPb(msg)
+                    val message = messageToPb(schemasByTopic, msg)
 
                     consumers.get(consumerName) match
                         case Some(_) =>
@@ -130,10 +131,18 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
 
-        request.topicsSelector match
-            case Some(topicsSelector) =>
-                topics = topics + (consumerName -> topicsSelector.getByNames.topics.toVector)
-            case _ => ()
+        val topicsToConsume = request.topicsSelector match
+            case Some(ts) => ts.topicsSelector.byNames match
+                case Some(bn) => bn.topics.toVector
+            case _ =>
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
+                return Future.successful(CreateConsumerResponse(status = Some(status)))
+
+        getSchemasByTopic(topicsToConsume).foreach((topicName, schemasByVersion) =>
+            schemasByTopic = schemasByTopic + (topicName -> schemasByVersion)
+        )
+
+        topics = topics + (consumerName -> topicsToConsume)
 
         val consumerBuilder = buildConsumer(consumerName, request, logger, streamDataHandler) match
             case Right(consumer) => consumer

@@ -5,19 +5,7 @@ import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, Schema}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.api.v1.producer.{
-    CreateProducerRequest,
-    CreateProducerResponse,
-    DeleteProducerRequest,
-    DeleteProducerResponse,
-    GetStatsRequest,
-    GetStatsResponse,
-    MessageFormat,
-    ProducerServiceGrpc,
-    SendRequest,
-    SendResponse,
-    Stats
-}
+import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, MessageFormat, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
 import org.apache.pulsar.client.api.schema.SchemaInfoProvider
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import _root_.schema.avro
@@ -25,6 +13,7 @@ import com.google.protobuf
 import com.google.protobuf.ByteString
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import com.google.common.primitives
+import org.apache.pulsar.client.admin.PulsarAdminException
 
 import java.nio.{ByteBuffer, ByteOrder}
 import scala.concurrent.Future
@@ -92,8 +81,18 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
 
         val messages: Seq[Either[String, Array[Byte]]] = request.format match
             case MessageFormat.MESSAGE_FORMAT_JSON =>
-                val schemaInfo = adminClient.schemas.getSchemaInfo(producer.getTopic)
-                request.messages.map(msg => jsonToValue(schemaInfo, msg.toByteArray))
+                val schemaInfo: Option[SchemaInfo] = try {
+                    Some(adminClient.schemas.getSchemaInfo(producer.getTopic))
+                } catch {
+                    case _: PulsarAdminException.NotFoundException => None
+                    case err =>
+                        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                        return Future.successful(SendResponse(status = Some(status)))
+                }
+
+                schemaInfo match
+                    case None => request.messages.map(msg => Right(msg.toByteArray))
+                    case Some(si) => request.messages.map(msg => jsonToValue(si, msg.toByteArray))
             case _ => request.messages.map(msg => Right(msg.toByteArray))
 
         messages.foreach(msg =>
@@ -124,6 +123,7 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
                 case Left(err) => Left(err)
         case SchemaType.JSON => Right(jsonAsBytes)
         case SchemaType.STRING => Right(jsonAsBytes)
+        case SchemaType.NONE => Right(jsonAsBytes)
         case SchemaType.BOOLEAN =>
             val jsonString = jsonAsBytes.map(_.toChar).mkString
             val v: Byte = jsonString match
