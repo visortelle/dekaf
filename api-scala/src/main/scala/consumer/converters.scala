@@ -12,7 +12,8 @@ import _root_.conversions.{
     bytesToInt32,
     bytesToInt64,
     bytesToInt8,
-    bytesToString
+    bytesToString,
+    bytesToJsonString
 }
 
 import scala.jdk.CollectionConverters.*
@@ -25,14 +26,17 @@ import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 import java.time.Instant
 
-def messageToPb(schemas: SchemasByTopic, msg: Message[Array[Byte]]): consumerPb.Message =
+type JsonValue = Option[String]
+
+def messageToPb(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonValue) =
+    val jsonValue = messageToJson(schemas, msg)
     val message = consumerPb.Message(
       properties = Option(msg.getProperties) match
           case Some(v) => v.asScala.toMap
           case _       => Map.empty
       ,
       value = Option(msg.getValue).map(ByteString.copyFrom),
-      jsonValue = messageToJson(schemas, msg),
+      jsonValue,
       eventTime = Option(msg.getEventTime) match
           case Some(v) => if v > 0 then Some(timestamp.Timestamp(Instant.ofEpochMilli(v))) else None
           case _       => None
@@ -59,7 +63,7 @@ def messageToPb(schemas: SchemasByTopic, msg: Message[Array[Byte]]): consumerPb.
       isReplicated = Option(msg.isReplicated),
       replicatedFrom = Option(msg.getReplicatedFrom)
     )
-    message
+    (message, jsonValue)
 
 def messageToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[String] =
     val msgValue = msg.getValue
@@ -69,12 +73,13 @@ def messageToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[St
         case Some(schemasByVersion) =>
             val schemaVersion = Option(msg.getSchemaVersion) match
                 case Some(v) => bytesToInt64(v)
-                case None => return Some(bytesToString(msgValue))
+                case None    => return Some(bytesToJsonString(msgValue))
 
             schemasByVersion.get(schemaVersion) match
-                case None     => return Some(bytesToString(msgValue))
                 case Some(si) => si
-        case None => return Some(bytesToString(msgValue))
+                case None     => return Some(bytesToJsonString(msgValue))
+
+        case None => return Some(bytesToJsonString(msgValue))
 
     val maybeJson: Option[String] = schemaInfo.getType match
         case SchemaType.AVRO            => avro.toJson(schemaInfo.getSchema, msgValue).toOption.map(String(_, StandardCharsets.UTF_8))
@@ -88,7 +93,7 @@ def messageToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[St
         case SchemaType.INT64           => Some(bytesToInt64(msgValue).toString)
         case SchemaType.FLOAT           => Some(bytesToFloat32(msgValue).toString)
         case SchemaType.DOUBLE          => Some(bytesToFloat64(msgValue).toString)
-        case SchemaType.STRING          => Some(bytesToString(msgValue))
+        case SchemaType.STRING          => Some(bytesToJsonString(msgValue))
         case SchemaType.BYTES           => None
         case _                          => None
     maybeJson

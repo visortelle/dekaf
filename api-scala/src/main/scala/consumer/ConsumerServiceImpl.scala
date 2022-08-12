@@ -74,23 +74,20 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
                     processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-//                    val readerSchema = msg.getReaderSchema.toScala
-//                    val schemaType = readerSchema match
-//                        case Some(rs) => rs.getSchemaInfo.getType
-//                        case _ => throw "Unable to get message schema type."
-//
-//                    val schema = readerSchema match
-//                        case Some(rs) => rs.getSchemaInfo.getSchema
-//                        case _ => throw "Unable to get message schema."
+                    val (message, jsonMessageValue) = messageToPb(schemasByTopic, msg)
 
-//                    messageFilter.test("js", "abc", msg)
+                    val filterTestResult: Either[String, Boolean] = jsonMessageValue match
+                        case Some(json) => messageFilter.test("js", "abc", json)
+                        case _ => Right(true)
 
-                    val message = messageToPb(schemasByTopic, msg)
+                    val messages = filterTestResult match
+                        case Right(true) => Seq(message)
+                        case _ => Seq()
 
                     consumers.get(consumerName) match
                         case Some(_) =>
                             val resumeResponse = ResumeResponse(
-                              messages = Seq(message),
+                              messages = messages,
                               processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long)
                             )
                             responseObserver.onNext(resumeResponse)
