@@ -3,7 +3,7 @@
 }
 
 .Picker {
-
+  z-index: 999;
 }
 
 .SvgIcon svg {
