@@ -28,7 +28,7 @@ message Message {
   optional bytes ordering_key = 11;
   optional string topic = 12;
   optional int32 redelivery_count = 13;
-  optional bytes schema_version = 14;
+  optional int64 schema_version = 14;
 
   optional bool is_replicated = 20;
   optional string replicated_from = 21;
