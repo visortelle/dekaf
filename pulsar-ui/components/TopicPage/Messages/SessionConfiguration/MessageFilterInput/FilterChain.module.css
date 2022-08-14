@@ -1,0 +1,30 @@
+.FilterChain {
+  padding-bottom: 36rem;
+}
+
+.Entry {
+  padding: 12rem;
+  border: 1px solid #ddd;
+  margin-bottom: 12rem;
+  border-radius: 4rem;
+  display: flex;
+}
+
+.EntryFilter {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.EntryButtons {
+  padding-left: 12rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.EntryButton {
+  margin-bottom: 12rem;
+}
+
+.EntryButton:last-child {
+  margin-bottom: 0;
+}

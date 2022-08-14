@@ -77,6 +77,10 @@ message TopicsSelector {
   }
 }
 
+message MessageFilter {
+
+}
+
 message CreateConsumerRequest {
   TopicsSelector topics_selector = 100;
   optional string consumer_name = 1;
@@ -91,6 +95,7 @@ message CreateConsumerRequest {
   optional int64 expire_time_of_incomplete_chunked_message_ms = 10;
   optional int64 acknowledgment_group_time_ms = 11;
   optional int64 negative_ack_redelivery_delay_ms = 12;
+  optional MessageFilter message_filter = 13;
 }
 
 message CreateConsumerResponse {

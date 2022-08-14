@@ -85,6 +85,13 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             {props.config.startFrom.type === 'quickDate' && <div>{i18n.formatDate(quickDateToDate(props.config.startFrom.quickDate, props.config.startFrom.relativeTo))}</div>}
           </div>
         </div>
+        <div className={s.Control}>
+          <div className={s.ConfigParamName}>Filters</div>
+          <div style={{ display: 'flex' }}>
+            <div>{Object.keys(props.config.messageFilter.filters).length - props.config.messageFilter.disabledFilters.length}</div>
+            <div>&nbsp;</div>
+          </div>
+        </div>
       </div>
 
       <div className={s.ToolbarRight}>
