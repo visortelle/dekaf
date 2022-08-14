@@ -77,10 +77,6 @@ message TopicsSelector {
   }
 }
 
-message MessageFilter {
-
-}
-
 message CreateConsumerRequest {
   TopicsSelector topics_selector = 100;
   optional string consumer_name = 1;
@@ -95,7 +91,6 @@ message CreateConsumerRequest {
   optional int64 expire_time_of_incomplete_chunked_message_ms = 10;
   optional int64 acknowledgment_group_time_ms = 11;
   optional int64 negative_ack_redelivery_delay_ms = 12;
-  optional MessageFilter message_filter = 13;
 }
 
 message CreateConsumerResponse {
@@ -109,9 +104,33 @@ message DeleteConsumerRequest {
 message DeleteConsumerResponse {
   google.rpc.Status status = 1;
 }
+
+enum MessageFilterLanguage {
+  MESSAGE_FILTER_LANGUAGE_UNSPECIFIED = 0;
+  MESSAGE_FILTER_LANGUAGE_JS = 1;
+  MESSAGE_FILTER_LANGUAGE_PYTHON = 2;
+}
+
+message MessageFilter {
+  MessageFilterLanguage language = 1;
+  string value = 2;
+}
+
+enum MessageFilterChainMode {
+  MESSAGE_FILTER_CHAIN_MODE_UNSPECIFIED = 0;
+  MESSAGE_FILTER_CHAIN_MODE_ALL = 1;
+  MESSAGE_FILTER_CHAIN_MODE_ANY = 2;
+}
+
+message MessageFilterChain {
+  repeated MessageFilter filters = 1;
+  MessageFilterChainMode mode = 2;
+}
+
 message ResumeRequest {
   string consumer_name = 1;
   bool include_consumer_stats = 2;
+  optional MessageFilterChain message_filter_chain = 3;
 }
 
 message ConsumerStats {

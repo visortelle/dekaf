@@ -16,7 +16,11 @@ import {
   RegexSubscriptionMode,
   TopicsSelectorByNames,
   TopicsSelectorByRegex,
-  SubscriptionMode
+  SubscriptionMode,
+  MessageFilterChain,
+  MessageFilterChainMode,
+  MessageFilter,
+  MessageFilterLanguage
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { detect as detectBrowser } from 'detect-browser';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
@@ -343,8 +347,21 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState === 'running') {
       console.info(`%cRunning session: ${props.sessionKey}`, consoleCss);
 
+      const messageFilterChain = new MessageFilterChain();
+      messageFilterChain.setMode(props.config.messageFilter.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
+      const messageFilters = Object.entries(props.config.messageFilter.filters)
+        .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
+        .map(([_, filter]) => {
+          const filterPb = new MessageFilter();
+          filterPb.setLanguage(filter.filter.language === 'js' ? MessageFilterLanguage.MESSAGE_FILTER_LANGUAGE_JS : MessageFilterLanguage.MESSAGE_FILTER_LANGUAGE_PYTHON);
+          filterPb.setValue(filter.filter.value);
+          return filterPb;
+        });
+      messageFilterChain.setFiltersList(messageFilters);
+
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
+      resumeReq.setMessageFilterChain(messageFilterChain);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler);
       const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });

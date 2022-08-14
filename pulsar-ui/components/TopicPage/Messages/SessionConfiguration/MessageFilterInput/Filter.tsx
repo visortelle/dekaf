@@ -17,13 +17,13 @@ const Filter: React.FC<FilterProps> = (props) => {
   return (
     <div className={s.Filter}>
       <div className={s.FormControl}>
-        <Select<t.FilterSyntax>
+        <Select<t.FilterLanguage>
           list={[
             { type: 'item', title: 'JavaScript', value: 'js' },
             { type: 'item', title: 'Python', value: 'python' },
           ]}
-          onChange={v => props.onChange({ ...props.value, syntax: v, value: v === 'js' ? defaultJsValue : '' })}
-          value={props.value.syntax}
+          onChange={v => props.onChange({ ...props.value, language: v, value: v === 'js' ? defaultJsValue : '' })}
+          value={props.value.language}
         />
       </div>
 
@@ -32,7 +32,7 @@ const Filter: React.FC<FilterProps> = (props) => {
           value={props.value.value}
           onChange={v => props.onChange({ ...props.value, value: v || '' })}
           height="180rem"
-          language={props.value.syntax === 'js' ? 'javascript' : 'python'}
+          language={props.value.language === 'js' ? 'javascript' : 'python'}
         />
       </div>
     </div>
