@@ -1,4 +1,5 @@
 import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
+import * as messageFilter from '../Messages/SessionConfiguration/MessageFilterInput/types';
 
 export type SessionState = "running" | "paused" | "got-initial-cursor-positions" | "awaiting-initial-cursor-positions" | "initializing" | "new";
 
@@ -30,4 +31,5 @@ export type StartFrom =
 export type SessionConfig = {
   startFrom: StartFrom;
   topicsSelector: SessionTopicsSelector;
+  messageFilter: messageFilter.Chain;
 };
