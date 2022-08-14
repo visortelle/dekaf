@@ -63,7 +63,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
                     val (message, jsonMessageValue) = messageToPb(schemasByTopic, msg)
 
-                    val filterTestResult: Either[String, Boolean] = jsonMessageValue match
+                    def getFilterTestResult: Either[String, Boolean] = jsonMessageValue match
                         case Some(json) => request.messageFilterChain match
                             case Some(chain) =>
                                 val filterResults = chain.filters.map(f =>
@@ -93,13 +93,19 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                             case _ => Right(true)
                         case _ => Right(true)
 
+                    val filterTestResult = getFilterTestResult
+
                     val messages = filterTestResult match
                         case Right(true) => Seq(message)
                         case _ => Seq()
 
                     consumers.get(consumerName) match
                         case Some(_) =>
+                            val status: Status = filterTestResult match
+                                case Right(_) => Status(code = Code.OK.index)
+                                case Left(err) => Status(code = Code.INVALID_ARGUMENT.index, message = err)
                             val resumeResponse = ResumeResponse(
+                              status = Some(status),
                               messages = messages,
                               processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long)
                             )
