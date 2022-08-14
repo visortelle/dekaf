@@ -11,17 +11,17 @@ class MessageFilter():
     val context = Context.newBuilder("js", "python").build
 
     def test(lang: FilterLanguage, filterCode: String, json: String): Either[String, Boolean] =
-        testUsingJs(context, filterCodeExample, json)
+        testUsingJs(context, filterCode, json)
 
 def testUsingJs(context: Context, filterCode: String, json: String): Either[String, Boolean] =
     val evalCode =
         s"""
           | (() => {
-          |     const m = {
-          |       value: ${json},
+          |     const msg = {
+          |       v: ${json},
           |     }
           |
-          |    return (${filterCode})(m)
+          |    return (${filterCode})(msg)
           | })()
           |""".stripMargin
 
@@ -30,10 +30,3 @@ def testUsingJs(context: Context, filterCode: String, json: String): Either[Stri
     } catch {
         case err => Left(err.getMessage)
     }
-
-val filterCodeExample =
-    s"""
-      | (m) => {
-      |   return m.value.includes('a')
-      | }
-      |""".stripMargin
