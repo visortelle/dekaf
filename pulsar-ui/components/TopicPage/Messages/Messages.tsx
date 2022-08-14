@@ -188,6 +188,10 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     messagesProcessed.current = res.getProcessedMessages();
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`${res.getStatus()?.getMessage()}`);
+    }
   }, []);
 
   useEffect(() => {

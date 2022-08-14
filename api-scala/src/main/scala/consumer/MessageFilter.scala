@@ -11,7 +11,9 @@ class MessageFilter():
     val context = Context.newBuilder("js", "python").build
 
     def test(lang: FilterLanguage, filterCode: String, json: String): Either[String, Boolean] =
-        testUsingJs(context, filterCode, json)
+        lang match
+            case "js" => testUsingJs(context, filterCode, json)
+            case "python" => ???
 
 def testUsingJs(context: Context, filterCode: String, json: String): Either[String, Boolean] =
     val evalCode =
@@ -28,5 +30,5 @@ def testUsingJs(context: Context, filterCode: String, json: String): Either[Stri
     try {
         Right(context.eval("js", evalCode).asBoolean)
     } catch {
-        case err => Left(err.getMessage)
+        case err => Left(s"Message filter JS error: ${err.getMessage}")
     }
