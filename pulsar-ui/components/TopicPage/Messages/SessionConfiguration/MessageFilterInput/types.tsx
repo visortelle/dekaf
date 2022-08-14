@@ -1,8 +1,8 @@
 export type JsonType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null';
-export type FilterSyntax = 'js' | 'python';
+export type FilterLanguage = 'js' | 'python';
 
 export type Filter = {
-  syntax: FilterSyntax;
+  language: FilterLanguage;
   value: string;
 }
 

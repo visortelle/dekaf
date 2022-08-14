@@ -3,22 +3,7 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    PauseRequest,
-    PauseResponse,
-    ResumeRequest,
-    ResumeResponse,
-    SeekRequest,
-    SeekResponse,
-    SkipMessagesRequest,
-    SkipMessagesResponse,
-    TopicsSelector
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
@@ -30,6 +15,8 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
+import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
+import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterLanguage.{MESSAGE_FILTER_LANGUAGE_JS, MESSAGE_FILTER_LANGUAGE_PYTHON}
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import org.apache.pulsar.client.api.{Message, MessageId}
 import consumer.MessageFilter
@@ -77,7 +64,33 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     val (message, jsonMessageValue) = messageToPb(schemasByTopic, msg)
 
                     val filterTestResult: Either[String, Boolean] = jsonMessageValue match
-                        case Some(json) => messageFilter.test("js", "abc", json)
+                        case Some(json) => request.messageFilterChain match
+                            case Some(chain) =>
+                                val filterResults = chain.filters.map(f =>
+                                    val lang: FilterLanguage = f.language match
+                                        case MESSAGE_FILTER_LANGUAGE_JS => "js"
+                                        case MESSAGE_FILTER_LANGUAGE_PYTHON => "python"
+                                        case _ => "js"
+                                    messageFilter.test(lang, f.value, json)
+                                )
+
+                                filterResults.find(_.isLeft) match
+                                    case Some(Left(err)) => return Left(err)
+                                    case _ =>
+
+                                chain.mode match
+                                    case MESSAGE_FILTER_CHAIN_MODE_ALL =>
+                                        Right(filterResults.forall(r => r match
+                                            case Right(v) => v
+                                            case _ => false
+                                        ))
+                                    case MESSAGE_FILTER_CHAIN_MODE_ANY =>
+                                        Right(filterResults.exists(r => r match
+                                            case Right(v) => v
+                                            case _ => false
+                                        ))
+                                    case _ => Right(false)
+                            case _ => Right(true)
                         case _ => Right(true)
 
                     val messages = filterTestResult match
