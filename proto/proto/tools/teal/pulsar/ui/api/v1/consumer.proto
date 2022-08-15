@@ -22,7 +22,7 @@ message Message {
   optional google.protobuf.Timestamp broker_publish_time = 22;
 
   optional bytes message_id = 30;
-  optional double sequence_id = 8;
+  optional int64 sequence_id = 8;
   optional string producer_name = 9;
   optional string key = 10;
   optional bytes ordering_key = 11;

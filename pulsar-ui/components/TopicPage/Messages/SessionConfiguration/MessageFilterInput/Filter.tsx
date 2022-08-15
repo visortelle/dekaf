@@ -9,8 +9,9 @@ export type FilterProps = {
   onChange: (value: t.Filter) => void;
 };
 
-const defaultJsValue = `({ value, key, topic, redeliveryCount, schemaVersion, isReplicated, replicatedFrom }) => {
-  return value.includes('a');
+const defaultJsValue = `(msg) => {
+  throw new Error(JSON.stringify(msg.v));
+  return msg.v.includes('abc');
 }`;
 
 const Filter: React.FC<FilterProps> = (props) => {

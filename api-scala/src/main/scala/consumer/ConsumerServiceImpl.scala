@@ -3,7 +3,22 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{
+    ConsumerServiceGrpc,
+    CreateConsumerRequest,
+    CreateConsumerResponse,
+    DeleteConsumerRequest,
+    DeleteConsumerResponse,
+    PauseRequest,
+    PauseResponse,
+    ResumeRequest,
+    ResumeResponse,
+    SeekRequest,
+    SeekResponse,
+    SkipMessagesRequest,
+    SkipMessagesResponse,
+    TopicsSelector
+}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
@@ -59,50 +74,56 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 handler.onNext = (msg: Message[Array[Byte]]) =>
                     logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId}")
 
-                    processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
+                    processedMessagesCount =
+                        processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-                    val (message, jsonMessageValue) = messageToPb(schemasByTopic, msg)
+                    val (message, jsonMessage) = serializeMessage(schemasByTopic, msg)
 
-                    def getFilterTestResult: Either[String, Boolean] = jsonMessageValue match
-                        case Some(json) => request.messageFilterChain match
+                    def getFilterTestResult: Either[String, Boolean] =
+                        request.messageFilterChain match
                             case Some(chain) =>
                                 val filterResults = chain.filters.map(f =>
                                     val lang: FilterLanguage = f.language match
-                                        case MESSAGE_FILTER_LANGUAGE_JS => "js"
+                                        case MESSAGE_FILTER_LANGUAGE_JS     => "js"
                                         case MESSAGE_FILTER_LANGUAGE_PYTHON => "python"
-                                        case _ => "js"
-                                    messageFilter.test(lang, f.value, json)
+                                        case _                              => "js"
+                                    messageFilter.test(lang, f.value, jsonMessage)
                                 )
 
                                 filterResults.find(_.isLeft) match
                                     case Some(Left(err)) => return Left(err)
-                                    case _ =>
+                                    case _               =>
 
                                 chain.mode match
                                     case MESSAGE_FILTER_CHAIN_MODE_ALL =>
-                                        Right(filterResults.forall(r => r match
-                                            case Right(v) => v
-                                            case _ => false
-                                        ))
+                                        Right(
+                                          filterResults.forall(r =>
+                                              r match
+                                                  case Right(v) => v
+                                                  case _        => false
+                                          )
+                                        )
                                     case MESSAGE_FILTER_CHAIN_MODE_ANY =>
-                                        Right(filterResults.exists(r => r match
-                                            case Right(v) => v
-                                            case _ => false
-                                        ))
+                                        Right(
+                                          filterResults.exists(r =>
+                                              r match
+                                                  case Right(v) => v
+                                                  case _        => false
+                                          )
+                                        )
                                     case _ => Right(false)
                             case _ => Right(true)
-                        case _ => Right(true)
 
                     val filterTestResult = getFilterTestResult
 
                     val messages = filterTestResult match
                         case Right(true) => Seq(message)
-                        case _ => Seq()
+                        case _           => Seq()
 
                     consumers.get(consumerName) match
                         case Some(_) =>
                             val status: Status = filterTestResult match
-                                case Right(_) => Status(code = Code.OK.index)
+                                case Right(_)  => Status(code = Code.OK.index)
                                 case Left(err) => Status(code = Code.INVALID_ARGUMENT.index, message = err)
                             val resumeResponse = ResumeResponse(
                               status = Some(status),
@@ -148,10 +169,12 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
 
         val topicsToConsume = request.topicsSelector match
-            case Some(ts) => ts.topicsSelector.byNames match
-                case Some(bn) => bn.topics.toVector
+            case Some(ts) =>
+                ts.topicsSelector.byNames match
+                    case Some(bn) => bn.topics.toVector
             case _ =>
-                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
+                val status: Status =
+                    Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
 
         getSchemasByTopic(topicsToConsume).foreach((topicName, schemasByVersion) =>
@@ -180,9 +203,9 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         def tryUnsubscribe: Unit =
             consumers.get(consumerName) match
                 case Some(consumer) =>
-                    try {
+                    try
                         consumer.unsubscribe()
-                    } catch
+                    catch
                         // Unsubscribe fails on partitioned topics in most cases. Anyway we can' handle it meaningfully.
                         _ => ()
                     finally ()

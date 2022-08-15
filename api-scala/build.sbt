@@ -22,7 +22,9 @@ lazy val root = project
       "com.google.protobuf" % "protobuf-java" % "3.21.3",
       "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
       "com.google.guava" % "guava" % "31.1-jre",
-      "com.lihaoyi" %% "os-lib" % "0.8.1"
+      "com.lihaoyi" %% "os-lib" % "0.8.1",
+      "io.circe" %% "circe-core" % "0.15.0-M1",
+      "io.circe" %% "circe-generic" % "0.15.0-M1"
     )
   )
 
