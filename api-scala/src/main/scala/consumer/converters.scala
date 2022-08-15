@@ -12,8 +12,8 @@ import _root_.conversions.{
     bytesToInt32,
     bytesToInt64,
     bytesToInt8,
-    bytesToString,
-    bytesToJsonString
+    bytesToJsonString,
+    bytesToString
 }
 
 import scala.jdk.CollectionConverters.*
@@ -28,44 +28,84 @@ import java.time.Instant
 
 type JsonValue = Option[String]
 
-def messageToPb(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonValue) =
-    val jsonValue = messageToJson(schemas, msg)
-    val message = consumerPb.Message(
-      properties = Option(msg.getProperties) match
-          case Some(v) => v.asScala.toMap
-          case _       => Map.empty
-      ,
-      value = Option(msg.getValue).map(ByteString.copyFrom),
-      jsonValue,
-      eventTime = Option(msg.getEventTime) match
-          case Some(v) => if v > 0 then Some(timestamp.Timestamp(Instant.ofEpochMilli(v))) else None
-          case _       => None
-      ,
-      publishTime = Option(msg.getPublishTime) match
-          case Some(v) => Some(timestamp.Timestamp(Instant.ofEpochMilli(v)))
-          case _       => None
-      ,
-      brokerPublishTime = Option(msg.getBrokerPublishTime) match
-          case Some(v) =>
-              v.toScala match
-                  case Some(l) => Some(timestamp.Timestamp(Instant.ofEpochMilli(l)))
-                  case _       => None
-          case _ => None
-      ,
-      messageId = Option(msg.getMessageId.toByteArray).map(ByteString.copyFrom),
-      sequenceId = Option(msg.getSequenceId),
-      producerName = Option(msg.getProducerName),
-      key = Option(msg.getKey),
-      orderingKey = Option(msg.getOrderingKey).map(ByteString.copyFrom),
-      topic = Option(msg.getTopicName),
-      redeliveryCount = Option(msg.getRedeliveryCount),
-      schemaVersion = Option(msg.getSchemaVersion).map(bytesToInt64),
-      isReplicated = Option(msg.isReplicated),
+case class JsonMessage(
+    v: JsonValue,
+    properties: Map[String, String],
+    eventTime: Option[Long],
+    publishTime: Option[Long],
+    brokerPublishTime: Option[Long],
+    messageId: Option[Array[Byte]],
+    sequenceId: Option[Long],
+    producerName: Option[String],
+    key: Option[String],
+    orderingKey: Option[Array[Byte]],
+    topic: Option[String],
+    redeliveryCount: Option[Int],
+    schemaVersion: Option[Long],
+    isReplicated: Option[Boolean],
+    replicatedFrom: Option[String]
+)
+
+def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage) =
+    val jsonValue = messageValueToJson(schemas, msg)
+    val properties = Option(msg.getProperties) match
+        case Some(v) => v.asScala.toMap
+        case _       => Map.empty
+    val eventTime = Option(msg.getEventTime) match
+        case Some(v) => if v > 0 then Some(v) else None
+        case _       => None
+    val publishTime = Option(msg.getPublishTime)
+    val brokerPublishTime = msg.getBrokerPublishTime.toScala.map(_.toLong)
+    val messageId = Option(msg.getMessageId.toByteArray)
+    val sequenceId = Option(msg.getSequenceId)
+    val producerName = Option(msg.getProducerName)
+    val key = Option(msg.getKey)
+    val orderingKey = Option(msg.getOrderingKey)
+    val topic = Option(msg.getTopicName)
+    val redeliveryCount = Option(msg.getRedeliveryCount)
+    val schemaVersion = Option(msg.getSchemaVersion).map(bytesToInt64)
+    val isReplicated = Option(msg.isReplicated)
+    val replicatedFrom = Option(msg.getReplicatedFrom)
+
+    val jsonMessage = JsonMessage(
+      v = jsonValue,
+      properties = properties,
+      eventTime = eventTime,
+      publishTime = publishTime,
+      brokerPublishTime = brokerPublishTime,
+      messageId = messageId,
+      sequenceId = sequenceId,
+      producerName = producerName,
+      key = key,
+      orderingKey = orderingKey,
+      topic = topic,
+      redeliveryCount = redeliveryCount,
+      schemaVersion = schemaVersion,
+      isReplicated = isReplicated,
       replicatedFrom = Option(msg.getReplicatedFrom)
     )
-    (message, jsonValue)
 
-def messageToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[String] =
+    val message = consumerPb.Message(
+      properties = properties,
+      value = Option(msg.getValue).map(ByteString.copyFrom),
+      jsonValue,
+      eventTime = eventTime.map(v => timestamp.Timestamp(Instant.ofEpochMilli(v))),
+      publishTime = publishTime.map(v => timestamp.Timestamp(Instant.ofEpochMilli(v))),
+      brokerPublishTime = brokerPublishTime.map(v => timestamp.Timestamp(Instant.ofEpochMilli(v))),
+      messageId = messageId.map(ByteString.copyFrom),
+      sequenceId = sequenceId,
+      producerName = producerName,
+      key = key,
+      orderingKey = orderingKey.map(ByteString.copyFrom),
+      topic = topic,
+      redeliveryCount = redeliveryCount,
+      schemaVersion = schemaVersion,
+      isReplicated = isReplicated,
+      replicatedFrom = replicatedFrom
+    )
+    (message, jsonMessage)
+
+def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[String] =
     val msgValue = msg.getValue
 
     val topicName = partitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
