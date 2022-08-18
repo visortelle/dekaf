@@ -9,6 +9,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.{
     CreateConsumerResponse,
     DeleteConsumerRequest,
     DeleteConsumerResponse,
+    MessageFilterChain,
     PauseRequest,
     PauseResponse,
     ResumeRequest,
@@ -33,6 +34,7 @@ import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterLanguage.{MESSAGE_FILTER_LANGUAGE_JS, MESSAGE_FILTER_LANGUAGE_PYTHON}
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
+import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilter as MessageFilterPb
 import org.apache.pulsar.client.api.{Message, MessageId}
 import consumer.MessageFilter
 
@@ -46,7 +48,8 @@ class StreamDataHandler:
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     val logger: Logger = Logger(getClass.getName)
-    val messageFilter = MessageFilter()
+
+    var messageFilters: Map[ConsumerName, MessageFilter] = Map.empty
     var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
     var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
     var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
@@ -69,6 +72,15 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(PauseResponse(status = Some(status)))
 
         val streamDataHandler = streamDataHandlers.get(consumerName)
+        val messageFilter = messageFilters.get(consumerName) match
+            case Some(f) => f
+            case _ =>
+                val status: Status = Status(
+                  code = Code.FAILED_PRECONDITION.index,
+                  message = s"Message filter context isn't found for consumer: $consumerName"
+                )
+                return Future.successful(PauseResponse(status = Some(status)))
+
         streamDataHandler match
             case Some(handler) =>
                 handler.onNext = (msg: Message[Array[Byte]]) =>
@@ -77,58 +89,30 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     processedMessagesCount =
                         processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-                    val (message, jsonMessage) = serializeMessage(schemasByTopic, msg)
+                    val (message, jsonMessage, jsonValue) = serializeMessage(schemasByTopic, msg)
 
-                    def getFilterTestResult: Either[String, Boolean] =
-                        request.messageFilterChain match
-                            case Some(chain) =>
-                                val filterResults = chain.filters.map(f =>
-                                    val lang: FilterLanguage = f.language match
-                                        case MESSAGE_FILTER_LANGUAGE_JS     => "js"
-                                        case MESSAGE_FILTER_LANGUAGE_PYTHON => "python"
-                                        case _                              => "js"
-                                    messageFilter.test(lang, f.value, jsonMessage)
-                                )
+                    val (filterResult, foldLikeJsonAccumResult) =
+                        getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
 
-                                filterResults.find(_.isLeft) match
-                                    case Some(Left(err)) => return Left(err)
-                                    case _               =>
+                    val (foldLikeJsonAccum, foldLikeJsonAccumErr) = foldLikeJsonAccumResult match
+                        case Right(s)  => (s, "")
+                        case Left(err) => ("", err)
 
-                                chain.mode match
-                                    case MESSAGE_FILTER_CHAIN_MODE_ALL =>
-                                        Right(
-                                          filterResults.forall(r =>
-                                              r match
-                                                  case Right(v) => v
-                                                  case _        => false
-                                          )
-                                        )
-                                    case MESSAGE_FILTER_CHAIN_MODE_ANY =>
-                                        Right(
-                                          filterResults.exists(r =>
-                                              r match
-                                                  case Right(v) => v
-                                                  case _        => false
-                                          )
-                                        )
-                                    case _ => Right(false)
-                            case _ => Right(true)
-
-                    val filterTestResult = getFilterTestResult
-
-                    val messages = filterTestResult match
+                    val messages = filterResult match
                         case Right(true) => Seq(message)
                         case _           => Seq()
 
                     consumers.get(consumerName) match
                         case Some(_) =>
-                            val status: Status = filterTestResult match
+                            val status: Status = filterResult match
                                 case Right(_)  => Status(code = Code.OK.index)
                                 case Left(err) => Status(code = Code.INVALID_ARGUMENT.index, message = err)
                             val resumeResponse = ResumeResponse(
                               status = Some(status),
                               messages = messages,
-                              processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long)
+                              processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long),
+                              foldLikeJsonAccum = foldLikeJsonAccum,
+                              foldLikeJsonAccumErr = foldLikeJsonAccumErr
                             )
                             responseObserver.onNext(resumeResponse)
                         case _ => ()
@@ -167,6 +151,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandler.onNext = _ => ()
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
+        messageFilters = messageFilters + (consumerName -> MessageFilter())
 
         val topicsToConsume = request.topicsSelector match
             case Some(ts) =>
@@ -217,6 +202,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandlers = streamDataHandlers.removed(consumerName)
         processedMessagesCount = processedMessagesCount.removed(consumerName)
         responseObservers = responseObservers.removed(consumerName)
+        messageFilters = messageFilters.removed(consumerName)
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteConsumerResponse(status = Some(status)))

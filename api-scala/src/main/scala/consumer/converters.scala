@@ -29,7 +29,6 @@ import java.time.Instant
 type JsonValue = Option[String]
 
 case class JsonMessage(
-    v: JsonValue,
     properties: Map[String, String],
     eventTime: Option[Long],
     publishTime: Option[Long],
@@ -46,7 +45,7 @@ case class JsonMessage(
     replicatedFrom: Option[String]
 )
 
-def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage) =
+def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, JsonValue) =
     val jsonValue = messageValueToJson(schemas, msg)
     val properties = Option(msg.getProperties) match
         case Some(v) => v.asScala.toMap
@@ -68,7 +67,6 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
     val replicatedFrom = Option(msg.getReplicatedFrom)
 
     val jsonMessage = JsonMessage(
-      v = jsonValue,
       properties = properties,
       eventTime = eventTime,
       publishTime = publishTime,
@@ -103,7 +101,7 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
       isReplicated = isReplicated,
       replicatedFrom = replicatedFrom
     )
-    (message, jsonMessage)
+    (message, jsonMessage, jsonValue)
 
 def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[String] =
     val msgValue = msg.getValue
