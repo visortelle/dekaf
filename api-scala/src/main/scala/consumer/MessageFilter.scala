@@ -15,10 +15,12 @@ type FoldLikeAccum = Either[String, JsonString] // Cumulative state to produce u
 type FilterTestResult = (Either[String, Boolean], FoldLikeAccum)
 type FilterLanguage = "js" | "python"
 
+val FoldLikeAccumVarNameJs = "acc"
+
 class MessageFilter():
     val context = Context.newBuilder("js", "python").build
 
-    context.eval("js","globalThis.s = {}") // Create empty "state" variable.
+    context.eval("js",s"globalThis.${FoldLikeAccumVarNameJs} = {}") // Create empty fold-like accumulator variable.
 
     def test(lang: FilterLanguage, filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
         lang match
@@ -29,10 +31,10 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
     val evalCode =
         s"""
           | (() => {
-          |    const v = ${jsonValue.getOrElse("undefined")};
+          |    const val = ${jsonValue.getOrElse("undefined")};
           |    const msg = ${jsonMessage.asJson};
           |
-          |    return (${filterCode})(v, msg);
+          |    return (${filterCode})(val, msg, globalThis.${FoldLikeAccumVarNameJs});
           | })();
           |""".stripMargin
 
@@ -43,7 +45,7 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
     }
 
     val cumulativeJsonState = try {
-        Right(context.eval("js", "JSON.stringify(globalThis.s)").asString)
+        Right(context.eval("js", s"JSON.stringify(globalThis.${FoldLikeAccumVarNameJs})").asString)
     } catch {
         case err => Left(s"Unable to serialize cumulative JSON state ${err.getMessage}")
     }
@@ -71,5 +73,8 @@ def getFilterChainTestResult(filterChain: Option[MessageFilterChain], messageFil
                 case MESSAGE_FILTER_CHAIN_MODE_ALL => Right(filterResults.forall(fr => fr._1.getOrElse(false)))
                 case MESSAGE_FILTER_CHAIN_MODE_ANY => Right(filterResults.exists(fr => fr._1.getOrElse(false)))
 
-    val (_, lastCumulativeJsonState) = filterResults.last
-    (filterChainResult, lastCumulativeJsonState)
+    if filterResults.nonEmpty then
+        val (_, foldLikeAccum) = filterResults.last
+        (filterChainResult, foldLikeAccum)
+    else
+        (filterChainResult, Right("{}"))
