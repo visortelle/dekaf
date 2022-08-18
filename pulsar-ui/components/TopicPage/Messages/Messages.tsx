@@ -353,15 +353,15 @@ const Session: React.FC<SessionProps> = (props) => {
 
       const messageFilterChain = new MessageFilterChain();
       messageFilterChain.setMode(props.config.messageFilter.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
-      const messageFilters = Object.entries(props.config.messageFilter.filters)
+
+      Object.entries(props.config.messageFilter.filters)
         .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
-        .map(([_, filter]) => {
+        .forEach(([filterId, filter]) => {
           const filterPb = new MessageFilter();
           filterPb.setLanguage(filter.filter.language === 'js' ? MessageFilterLanguage.MESSAGE_FILTER_LANGUAGE_JS : MessageFilterLanguage.MESSAGE_FILTER_LANGUAGE_PYTHON);
-          filterPb.setValue(filter.filter.value);
-          return filterPb;
+          filterPb.setValue(filter.filter.value || '');
+          messageFilterChain.getFiltersMap().set(filterId, filterPb);
         });
-      messageFilterChain.setFiltersList(messageFilters);
 
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import s from './Filter.module.css'
 import * as t from './types';
 import Select from '../../../../ui/Select/Select';
@@ -9,12 +9,29 @@ export type FilterProps = {
   onChange: (value: t.Filter) => void;
 };
 
-const defaultJsValue = `(msg) => {
-  throw new Error(JSON.stringify(msg.v));
-  return msg.v.includes('abc');
+const defaultJsValue = `(v, msg) => {
+  return v !== undefined;
 }`;
 
+const defaultPythonValue = `def filter(msg):`
+
+const getDefaultValue = (language: t.FilterLanguage): string => {
+  if (language === 'js') {
+    return defaultJsValue;
+  } else if (language === 'python') {
+    return defaultPythonValue;
+  }
+  return '';
+}
+
 const Filter: React.FC<FilterProps> = (props) => {
+  useEffect(() => {
+    if (props.value.value !== undefined) {
+      return
+    }
+    props.onChange({ ...props.value, value: getDefaultValue(props.value.language) });
+  }, []);
+
   return (
     <div className={s.Filter}>
       <div className={s.FormControl}>
@@ -23,7 +40,11 @@ const Filter: React.FC<FilterProps> = (props) => {
             { type: 'item', title: 'JavaScript', value: 'js' },
             { type: 'item', title: 'Python', value: 'python' },
           ]}
-          onChange={v => props.onChange({ ...props.value, language: v, value: v === 'js' ? defaultJsValue : '' })}
+          onChange={v => props.onChange({
+            ...props.value,
+            language: v,
+            value: getDefaultValue(v),
+          })}
           value={props.value.language}
         />
       </div>
