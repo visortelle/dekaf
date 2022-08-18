@@ -123,7 +123,7 @@ enum MessageFilterChainMode {
 }
 
 message MessageFilterChain {
-  repeated MessageFilter filters = 1;
+  map<string, MessageFilter> filters = 1;
   MessageFilterChainMode mode = 2;
 }
 
@@ -139,6 +139,8 @@ message ConsumerStats {
 message ResumeResponse {
   optional google.rpc.Status status = 1;
   repeated Message messages = 2;
+  string fold_like_json_accum = 5;
+  string fold_like_json_accum_err = 6;
   int64 processed_messages = 3;
   optional ConsumerStats consumer_stats = 4;
 }

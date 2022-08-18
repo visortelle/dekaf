@@ -3,7 +3,7 @@ export type FilterLanguage = 'js' | 'python';
 
 export type Filter = {
   language: FilterLanguage;
-  value: string;
+  value: string | undefined;
 }
 
 export type ChainEntry = {
