@@ -33,6 +33,8 @@ message Message {
 
   optional bool is_replicated = 20;
   optional string replicated_from = 21;
+
+  string fold_like_json_accum = 50; // not a part of Pulsar message
 }
 
 enum SubscriptionMode {
@@ -133,8 +135,6 @@ message ConsumerStats {
 message ResumeResponse {
   optional google.rpc.Status status = 1;
   repeated Message messages = 2;
-  string fold_like_json_accum = 5;
-  string fold_like_json_accum_err = 6;
   int64 processed_messages = 3;
   optional ConsumerStats consumer_stats = 4;
 }

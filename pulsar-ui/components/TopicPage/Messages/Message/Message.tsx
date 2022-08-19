@@ -36,6 +36,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   const sequenceId = message.getSequenceId();
   const size = message.getSize();
   const topic = message.getTopic();
+  const foldLikeJsonAccum = message.getFoldLikeJsonAccum();
 
   const topicPath = parseTopic(topic);
   const topicHref = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
@@ -97,12 +98,15 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td width='10ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} rawValue={String(redeliveryCount)} tooltip={help.redeliveryCount} />
       </Td>
+      <Td width='50ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Aggregate" value={foldLikeJsonAccum} rawValue={foldLikeJsonAccum} tooltip={help.foldLikeJsonAccum} />
+      </Td>
     </>
   );
 }
 
 type FieldProps = {
-  value: string | undefined,
+  value: string | React.ReactElement | undefined,
   tooltip: string | undefined,
   isShowTooltips: boolean,
   rawValue?: string,
