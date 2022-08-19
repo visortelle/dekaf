@@ -48,7 +48,6 @@ import { swrKeys } from '../../swrKeys';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 const browser = detectBrowser();
-const isSlowBrowser = browser?.name === 'safari' || browser?.name === 'firefox';
 
 export type SessionProps = {
   sessionKey: number;
@@ -62,7 +61,7 @@ export type SessionProps = {
 type Content = 'messages' | 'configuration';
 type MessagesLoadedPerSecond = { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
 
-const displayMessagesLimit = 10000;
+const displayMessagesLimit = 5000;
 
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
@@ -112,26 +111,18 @@ const Session: React.FC<SessionProps> = (props) => {
   }
 
   useInterval(() => {
-    setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }));
-  }, 1000);
-
-  useInterval(() => {
-    if (messagesBuffer.current.length === 0) {
-      return;
-    }
-
     setMessages((messages) => {
       const newMessages = messages.concat(messagesBuffer.current);
       messagesBuffer.current = [];
       return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
     });
-  }, messagesLoadedPerSecond.messagesLoadedPerSecond > 0 ? (isSlowBrowser && messagesLoadedPerSecond.messagesLoadedPerSecond > 1000) ? 500 : (messagesLoadedPerSecond.messagesLoadedPerSecond > 3000 ? 500 : 32) : false);
 
-  useAnimationFrame(() => {
-    if (messagesLoadedPerSecond.messagesLoadedPerSecond > 0) {
+    setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }));
+
+    if (sessionState === 'running') {
       scrollToBottom();
     }
-  });
+  }, 1000);
 
   const applyConfig = async () => {
     if (startFrom.type === 'messageId') {
@@ -428,7 +419,6 @@ const Session: React.FC<SessionProps> = (props) => {
             data={messages}
             totalCount={messages.length}
             itemContent={itemContent}
-            followOutput={false}
           />
         </div>
       )}
