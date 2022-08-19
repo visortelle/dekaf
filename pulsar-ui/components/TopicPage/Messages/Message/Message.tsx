@@ -45,7 +45,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
 
   return (
     <>
-      <Td width="16ch" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
+      <Td width="20ch" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
         <Field isShowTooltips={props.isShowTooltips} title="Key" value={key || undefined} rawValue={key || undefined} tooltip={help.key} />
       </Td>
       <Td>

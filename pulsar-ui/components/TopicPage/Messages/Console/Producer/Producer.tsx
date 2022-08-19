@@ -2,8 +2,6 @@ import React, { useCallback, useEffect } from 'react';
 import Button from '../../../../ui/Button/Button';
 import Input from '../../../../ui/Input/Input';
 import s from './Producer.module.css'
-import startIcon from '!!raw-loader!./icons/start.svg';
-import stopIcon from '!!raw-loader!./icons/stop.svg';
 import sendIcon from '!!raw-loader!./icons/send.svg';
 import Select from '../../../../ui/Select/Select';
 import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
@@ -13,13 +11,14 @@ import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, ProducerMe
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import * as I18n from '../../../../app/contexts/I18n/I18n';
 import * as Either from 'fp-ts/lib/Either';
+import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 
 export type ProducerPreset = {
   topic: string | undefined;
   key: string;
 }
 
-type ValueType = 'bytes-hex' | 'bytes-binary' | 'bytes-base64' | 'json';
+type ValueType = 'bytes-hex' | 'json';
 
 export type ProducerProps = {
   preset: ProducerPreset
@@ -109,7 +108,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
     <div
       className={s.Producer}
       onKeyDown={e => {
-        if (e.key === 'Enter') {
+        if (e.ctrlKey && e.key === 'Enter') {
           sendMessage();
         }
       }}
@@ -124,29 +123,41 @@ const Producer: React.FC<ProducerProps> = (props) => {
             <Input onChange={v => setTopic(v)} value={topic || ''} placeholder="persistence://public/default" />
           </div>
           <div className={s.FormControl}>
-            <strong>Key</strong>
-            <Input onChange={v => setKey(v)} value={key || ''} placeholder="key-1" />
-          </div>
-        </div>
-
-        <div className={s.Value}>
-          <div className={s.FormControl}>
-            <strong>Value type</strong>
+            <strong>Value encoding</strong>
             <Select<ValueType>
               value={valueType}
               onChange={v => setValueType(v as ValueType)}
               list={[
                 { type: 'item', title: 'JSON', value: 'json' },
                 { type: 'item', title: 'Bytes (hex)', value: 'bytes-hex' },
-                { type: 'item', title: 'Bytes (binary)', value: 'bytes-binary' },
-                { type: 'item', title: 'Bytes (base64)', value: 'bytes-base64' },
               ]}
             />
           </div>
+          <div className={s.FormControl}>
+            <strong>Key</strong>
+            <Input onChange={v => setKey(v)} value={key || ''} placeholder="" />
+          </div>
+        </div>
+
+        <div className={s.Value}>
 
           <div className={s.FormControl}>
             <strong>Value</strong>
-            <Input onChange={v => setValue(v)} value={value} placeholder={``} />
+            {valueType === 'json' && (
+              <CodeEditor
+                value={value}
+                onChange={v => setValue(v || '')}
+                language="json"
+                height="320rem"
+              />
+            )}
+            {valueType === 'bytes-hex' && (
+              <CodeEditor
+                value={value}
+                onChange={v => setValue(v || '')}
+                height="320rem"
+              />
+            )}
           </div>
         </div>
       </div>
@@ -166,19 +177,22 @@ const Producer: React.FC<ProducerProps> = (props) => {
 function valueToBytes(value: string, valueType: ValueType): Either.Either<Error, Uint8Array> {
   switch (valueType) {
     case 'json': {
+      let validationError: Error | undefined = undefined;
+      try {
+        JSON.parse(value);
+      } catch(err) {
+        validationError = err as Error;
+      }
+
+      if (validationError !== undefined) {
+        return Either.left(validationError);
+      }
+
       const bytes = Uint8Array.from(Buffer.from(value))
       return Either.right(bytes);
     };
     case 'bytes-hex': {
       const bytes = Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'hex'))
-      return Either.right(bytes);
-    };
-    case 'bytes-binary': {
-      const bytes = Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'binary'))
-      return Either.right(bytes);
-    };
-    case 'bytes-base64': {
-      const bytes = Uint8Array.from(Buffer.from(value, 'base64'));
       return Either.right(bytes);
     };
   }
