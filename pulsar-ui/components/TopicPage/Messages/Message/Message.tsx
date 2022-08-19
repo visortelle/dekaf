@@ -34,7 +34,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   const replicatedFrom = message.getReplicatedFrom();
   const schemaVersion = message.getSchemaVersion();
   const sequenceId = message.getSequenceId();
-  const size = value.length;
+  const size = message.getSize();
   const topic = message.getTopic();
 
   const topicPath = parseTopic(topic);
@@ -69,7 +69,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td width='8ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Schema version" value={schemaVersion.toString()} rawValue={schemaVersion.toString()} tooltip={help.schemaVersion} />
       </Td>
-      <Td width='8ch'>
+      <Td width='12ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Size" value={i18n.formatBytes(size) || undefined} rawValue={String(size) || undefined} tooltip={help.size} />
       </Td>
       <Td width='30ch'>
