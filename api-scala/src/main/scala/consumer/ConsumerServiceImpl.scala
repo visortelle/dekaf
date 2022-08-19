@@ -90,15 +90,13 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
                     val (message, jsonMessage, jsonValue) = serializeMessage(schemasByTopic, msg)
 
-                    val (filterResult, foldLikeJsonAccumResult) =
+                    val (filterResult, foldLikeJsonAccum) =
                         getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
-
-                    val (foldLikeJsonAccum, foldLikeJsonAccumErr) = foldLikeJsonAccumResult match
-                        case Right(s)  => (s, "")
-                        case Left(err) => ("", err)
+                    
+                    val messageToSend = message.withFoldLikeJsonAccum(foldLikeJsonAccum)
 
                     val messages = filterResult match
-                        case Right(true) => Seq(message)
+                        case Right(true) => Seq(messageToSend)
                         case _           => Seq()
 
                     consumers.get(consumerName) match
@@ -109,9 +107,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                             val resumeResponse = ResumeResponse(
                               status = Some(status),
                               messages = messages,
-                              processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long),
-                              foldLikeJsonAccum = foldLikeJsonAccum,
-                              foldLikeJsonAccumErr = foldLikeJsonAccumErr
+                              processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long)
                             )
                             responseObserver.onNext(resumeResponse)
                         case _ => ()

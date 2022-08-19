@@ -10,7 +10,7 @@ import io.circe.syntax.*
 import io.circe.generic.auto.*
 
 type JsonString = String
-type FoldLikeAccum = Either[String, JsonString] // Cumulative state to produce user-defined calculations, preserved between messages.
+type FoldLikeAccum = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
 type FilterTestResult = (Either[String, Boolean], FoldLikeAccum)
 
 val FoldLikeAccumVarNameJs = "acc"
@@ -40,11 +40,7 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
         case err => Left(s"Message filter JS error: ${err.getMessage}")
     }
 
-    val cumulativeJsonState = try {
-        Right(context.eval("js", s"JSON.stringify(globalThis.${FoldLikeAccumVarNameJs})").asString)
-    } catch {
-        case err => Left(s"Unable to serialize cumulative JSON state ${err.getMessage}")
-    }
+    val cumulativeJsonState = context.eval("js", s"JSON.stringify(globalThis.${FoldLikeAccumVarNameJs})").asString
 
     (testResult, cumulativeJsonState)
 
@@ -68,4 +64,4 @@ def getFilterChainTestResult(filterChain: Option[MessageFilterChain], messageFil
         val (_, foldLikeAccum) = filterResults.last
         (filterChainResult, foldLikeAccum)
     else
-        (filterChainResult, Right("{}"))
+        (filterChainResult, "{}")
