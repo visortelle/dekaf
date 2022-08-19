@@ -18,6 +18,7 @@ export type FieldName =
   'schemaVersion' |
   'sequenceId' |
   'size' |
+  'foldLikeJsonAccum' |
   'topic';
 
 const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
@@ -56,6 +57,7 @@ const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
     </div>
   ),
   replicatedFrom: <span>Name of cluster, from which the message is replicated.</span>, // TODO - geo replication
+  foldLikeJsonAccum: <span>Aggregation</span>
 }
 export const help = Object.keys(helpJsx).reduce<Record<string, string | undefined>>((acc, curr) => {
   const tt = helpJsx[curr as FieldName];
