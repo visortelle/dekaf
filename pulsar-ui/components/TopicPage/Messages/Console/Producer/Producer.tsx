@@ -9,7 +9,7 @@ import Select from '../../../../ui/Select/Select';
 import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { nanoid } from 'nanoid';
-import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
+import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, ProducerMessage, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import * as I18n from '../../../../app/contexts/I18n/I18n';
 import * as Either from 'fp-ts/lib/Either';
@@ -40,11 +40,15 @@ const Producer: React.FC<ProducerProps> = (props) => {
     const sendReq: SendRequest = new SendRequest();
     sendReq.setProducerName(producerName);
 
-    const message = valueToBytes(value, valueType);
-    if (Either.isRight(message)) {
-      sendReq.setMessagesList([message.right]);
+    const messageValue = valueToBytes(value, valueType);
+    if (Either.isRight(messageValue)) {
+      const message = new ProducerMessage();
+      message.setValue(messageValue.right);
+      message.setKey(key);
+
+      sendReq.setMessagesList([message]);
     } else {
-      notifyError(`Unable to send message: ${message.left}`);
+      notifyError(`Unable to send message: ${messageValue.left}`);
       return;
     }
 
