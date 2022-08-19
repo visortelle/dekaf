@@ -24,7 +24,7 @@ def buildConsumer(
 
     var consumer = client.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(100) // Too big queue causes long time messages loading after consumer pause.
+        .receiverQueueSize(50) // Too big queue causes long time messages loading after consumer pause.
         .messageListener(listener)
         .startPaused(request.startPaused.getOrElse(true))
         .subscriptionName(request.subscriptionName.getOrElse(consumerName))
