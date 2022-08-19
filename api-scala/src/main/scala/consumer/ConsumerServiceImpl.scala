@@ -32,7 +32,6 @@ import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
-import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterLanguage.{MESSAGE_FILTER_LANGUAGE_JS, MESSAGE_FILTER_LANGUAGE_PYTHON}
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilter as MessageFilterPb
 import org.apache.pulsar.client.api.{Message, MessageId}

@@ -13,28 +13,17 @@ const defaultJsValue = `(val, msg, acc) => {
   return val !== undefined;
 }`;
 
-const defaultPythonValue = `def filter(msg):`
-
-const getDefaultValue = (language: t.FilterLanguage): string => {
-  if (language === 'js') {
-    return defaultJsValue;
-  } else if (language === 'python') {
-    return defaultPythonValue;
-  }
-  return '';
-}
-
 const Filter: React.FC<FilterProps> = (props) => {
   useEffect(() => {
     if (props.value.value !== undefined) {
       return
     }
-    props.onChange({ ...props.value, value: getDefaultValue(props.value.language) });
+    props.onChange({ ...props.value, value: defaultJsValue });
   }, []);
 
   return (
     <div className={s.Filter}>
-      <div className={s.FormControl}>
+      {/* <div className={s.FormControl}>
         <Select<t.FilterLanguage>
           list={[
             { type: 'item', title: 'JavaScript', value: 'js' },
@@ -47,14 +36,14 @@ const Filter: React.FC<FilterProps> = (props) => {
           })}
           value={props.value.language}
         />
-      </div>
+      </div> */}
 
       <div className={s.FormControl}>
         <CodeEditor
           value={props.value.value}
           onChange={v => props.onChange({ ...props.value, value: v || '' })}
           height="180rem"
-          language={props.value.language === 'js' ? 'javascript' : 'python'}
+          language="javascript"
         />
       </div>
     </div>
