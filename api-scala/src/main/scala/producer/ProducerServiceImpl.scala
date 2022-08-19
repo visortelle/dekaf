@@ -124,6 +124,7 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
                         var newMessage = producer.newMessage
                             .value(message.value)
                             .properties(message.properties.asJava)
+                        println(s"PROPERTIEDS, ${message.properties}")
                         message.eventTime match
                             case Some(t) => newMessage = newMessage.eventTime(t)
                             case None => // do nothing

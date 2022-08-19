@@ -9,9 +9,10 @@ import * as Notifications from '../../../../app/contexts/Notifications';
 import { nanoid } from 'nanoid';
 import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, ProducerMessage, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
-import * as I18n from '../../../../app/contexts/I18n/I18n';
+import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import * as Either from 'fp-ts/lib/Either';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
+import { isPlainObject } from 'lodash';
 
 export type ProducerPreset = {
   topic: string | undefined;
@@ -25,25 +26,54 @@ export type ProducerProps = {
 };
 
 const Producer: React.FC<ProducerProps> = (props) => {
-  const [topic, setTopic] = React.useState<string | undefined>(props.preset.topic);
   const [key, setKey] = React.useState<string>(props.preset.key);
-  const [isStarted, setIsStarted] = React.useState<boolean>(false);
   const [valueType, setValueType] = React.useState<ValueType>('json');
   const [value, setValue] = React.useState<string>('');
   const [producerName, setProducerName] = React.useState<string>(`__xray_prod_` + nanoid());
+  const [eventTime, setEventTime] = React.useState<Date | undefined>(undefined);
+  const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>("{}");
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { producerServiceClient } = PulsarGrpcClient.useContext();
-  const i18n = I18n.useContext();
 
   const sendMessage = async () => {
     const sendReq: SendRequest = new SendRequest();
     sendReq.setProducerName(producerName);
 
     const messageValue = valueToBytes(value, valueType);
+
+    let properties: undefined | Record<string, string> = undefined;
+    try {
+      const validationErr = `Properties must be a JSON object where all values are strings.`
+
+      properties = JSON.parse(propertiesJsonMap);
+      if (!isPlainObject(properties) || properties === undefined) {
+        notifyError(validationErr);
+        return;
+      }
+
+      const isValid = Object.entries(properties).every(([_, value]) => typeof value === 'string');
+      if (!isValid) {
+        notifyError(validationErr);
+        return;
+      }
+    } catch (err) {
+      notifyError(`Unable to parse message properties: ${err}`);
+      return;
+    }
+
     if (Either.isRight(messageValue)) {
       const message = new ProducerMessage();
       message.setValue(messageValue.right);
       message.setKey(key);
+
+      const propertiesMap = message.getPropertiesMap();
+      Object.entries(properties).forEach(([key, value]) => {
+        propertiesMap.set(key, value);
+      });
+
+      if (eventTime !== undefined) {
+        message.setEventTime(eventTime.getTime());
+      }
 
       sendReq.setMessagesList([message]);
     } else {
@@ -118,46 +148,65 @@ const Producer: React.FC<ProducerProps> = (props) => {
         </div>
 
         <div className={s.Config}>
-          <div className={s.FormControl}>
-            <strong>Topic</strong>
-            <Input onChange={v => setTopic(v)} value={topic || ''} placeholder="persistence://public/default" />
-          </div>
-          <div className={s.FormControl}>
-            <strong>Value encoding</strong>
-            <Select<ValueType>
-              value={valueType}
-              onChange={v => setValueType(v as ValueType)}
-              list={[
-                { type: 'item', title: 'JSON', value: 'json' },
-                { type: 'item', title: 'Bytes (hex)', value: 'bytes-hex' },
-              ]}
-            />
-          </div>
-          <div className={s.FormControl}>
-            <strong>Key</strong>
-            <Input onChange={v => setKey(v)} value={key || ''} placeholder="" />
-          </div>
-        </div>
-
-        <div className={s.Value}>
-
-          <div className={s.FormControl}>
-            <strong>Value</strong>
-            {valueType === 'json' && (
+          <div className={s.ConfigLeft}>
+            <div className={s.FormControl}>
+              <strong>Value encoding</strong>
+              <Select<ValueType>
+                value={valueType}
+                onChange={v => setValueType(v as ValueType)}
+                list={[
+                  { type: 'item', title: 'JSON', value: 'json' },
+                  { type: 'item', title: 'Bytes (hex)', value: 'bytes-hex' },
+                ]}
+              />
+            </div>
+            <div className={s.FormControl}>
+              <strong>Key</strong>
+              <Input onChange={v => setKey(v)} value={key || ''} placeholder="" />
+            </div>
+            <div className={s.FormControl}>
+              <strong>Event time</strong>
+              <DatetimePicker
+                value={eventTime}
+                onChange={v => setEventTime(v)}
+                clearable
+              />
+            </div>
+            <div className={s.FormControl}>
+              <strong>Properties</strong>
               <CodeEditor
-                value={value}
-                onChange={v => setValue(v || '')}
+                value={propertiesJsonMap}
+                onChange={v => setPropertiesJsonMap(v)}
                 language="json"
                 height="320rem"
               />
-            )}
-            {valueType === 'bytes-hex' && (
-              <CodeEditor
-                value={value}
-                onChange={v => setValue(v || '')}
-                height="320rem"
-              />
-            )}
+            </div>
+
+            <div style={{ height: '24rem' }}>
+              {/* There is some HTML/CSS mess I can't quickly figure out.
+              It's just a hack to make bottom padding work correctly. */}
+            </div>
+          </div>
+
+          <div className={s.ConfigRight}>
+            <div className={s.FormControl}>
+              <strong>Value</strong>
+              {valueType === 'json' && (
+                <CodeEditor
+                  value={value}
+                  onChange={v => setValue(v || '')}
+                  language="json"
+                  height="480rem"
+                />
+              )}
+              {valueType === 'bytes-hex' && (
+                <CodeEditor
+                  value={value}
+                  onChange={v => setValue(v || '')}
+                  height="100%"
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -180,7 +229,7 @@ function valueToBytes(value: string, valueType: ValueType): Either.Either<Error,
       let validationError: Error | undefined = undefined;
       try {
         JSON.parse(value);
-      } catch(err) {
+      } catch (err) {
         validationError = err as Error;
       }
 

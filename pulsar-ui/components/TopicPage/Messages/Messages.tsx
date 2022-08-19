@@ -28,7 +28,7 @@ import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
-import { ItemContent, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { ItemContent, TableVirtuoso, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
@@ -422,7 +422,7 @@ const Session: React.FC<SessionProps> = (props) => {
           ref={listRef}
           onWheel={onWheel}
         >
-          <Virtuoso
+          <TableVirtuoso
             className={s.Virtuoso}
             ref={virtuosoRef}
             data={messages}
