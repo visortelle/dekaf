@@ -27,9 +27,16 @@ enum MessageFormat {
   MESSAGE_FORMAT_JSON = 2;
 }
 
+message ProducerMessage {
+  optional string key = 1;
+  bytes value = 3;
+  optional int64 event_time = 10;
+  map<string, string> properties = 4;
+}
+
 message SendRequest {
   string producer_name = 1;
-  repeated bytes messages = 2;
+  repeated ProducerMessage messages = 2;
   MessageFormat format = 3;
 }
 

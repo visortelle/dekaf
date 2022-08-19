@@ -4,18 +4,6 @@
   border-bottom: 1px solid #ddd;
 }
 
-.LeftSection {
-  width: 40%;
-  display: flex;
-  flex-direction: column;
-}
-
-.RightSection {
-  width: 60%;
-  display: flex;
-  flex-direction: column;
-}
-
 .Field {
   display: flex;
   flex: 1 1 100%;
