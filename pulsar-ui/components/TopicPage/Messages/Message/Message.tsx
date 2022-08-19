@@ -27,7 +27,8 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   const key = message.getKey();
   const orderingKey = message.getOrderingKey_asU8();
   const producerName = message.getProducerName();
-  const propertiesMap = message.getPropertiesMap();
+  const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
+  const propertiesValue = JSON.stringify(propertiesMap);
   const publishTime = message.getPublishTime();
   const redeliveryCount = message.getRedeliveryCount();
   const replicatedFrom = message.getReplicatedFrom();
@@ -48,44 +49,53 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td width="20ch" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
         <Field isShowTooltips={props.isShowTooltips} title="Key" value={key || undefined} rawValue={key || undefined} tooltip={help.key} />
       </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} rawValue={publishTime?.toDate().toISOString()} tooltip={help.publishTime} />
+      <Td width='20ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Key" value={key || undefined} rawValue={key || undefined} tooltip={help.key} />
       </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Broker pub. time" value={brokerPublishTime === undefined ? undefined : i18n.formatDate(brokerPublishTime.toDate())} rawValue={brokerPublishTime?.toDate().toISOString()} tooltip={help.brokerPublishTime} />
-      </Td>
-      <Td>
+      <Td width='60ch'>
         <Field isShowTooltips={props.isShowTooltips} value={topic || undefined} valueHref={topicHref} tooltip={help.topic} />
       </Td>
-      <Td>
+
+      <Td width='50ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Producer name" value={producerName || undefined} rawValue={producerName || undefined} tooltip={help.producerName} />
       </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Size" value={i18n.formatBytes(size) || undefined} rawValue={String(size) || undefined} tooltip={help.size} />
+
+      {/* <Td width='30ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Value" value={value === undefined ? undefined : i18n.bytesToHexString(value, 'hex-with-space')} rawValue={i18n.bytesToHexString(value, 'hex-no-space')} tooltip={help.value} />
+      </Td> */}
+      <Td width='30ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="JSON Value" value={jsonValue || undefined} rawValue={jsonValue} tooltip={help.jsonValue} />
       </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Event time" value={eventTime === undefined ? undefined : i18n.formatDate(eventTime.toDate())} rawValue={eventTime?.toDate().toISOString()} tooltip={help.eventTime} />
-      </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Message id" value={messageId === undefined ? undefined : i18n.bytesToHexString(messageId, 'hex-with-space')} rawValue={i18n.bytesToHexString(messageId, 'hex-no-space')} tooltip={help.messageId} />
-      </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Sequence Id" value={sequenceId === undefined ? undefined : i18n.formatLongNumber(sequenceId)} rawValue={String(sequenceId)} tooltip={help.sequenceId} />
-      </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.bytesToHexString(orderingKey, 'hex-with-space')} rawValue={i18n.bytesToHexString(orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
-      </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} rawValue={String(redeliveryCount)} tooltip={help.redeliveryCount} />
-      </Td>
-      <Td>
+      <Td width='8ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Schema version" value={schemaVersion.toString()} rawValue={schemaVersion.toString()} tooltip={help.schemaVersion} />
       </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="Value" value={value === undefined ? undefined : i18n.bytesToHexString(value, 'hex-with-space')} rawValue={i18n.bytesToHexString(value, 'hex-no-space')} tooltip={help.value} />
+      <Td width='8ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Size" value={i18n.formatBytes(size) || undefined} rawValue={String(size) || undefined} tooltip={help.size} />
       </Td>
-      <Td>
-        <Field isShowTooltips={props.isShowTooltips} title="JSON Value" value={jsonValue || undefined} rawValue={jsonValue} tooltip={help.jsonValue} />
+      <Td width='30ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Properties" value={propertiesValue} rawValue={propertiesValue} tooltip={help.size} />
+      </Td>
+      <Td width='30ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} rawValue={publishTime?.toDate().toISOString()} tooltip={help.publishTime} />
+      </Td>
+      <Td width='30ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Event time" value={eventTime === undefined ? undefined : i18n.formatDate(eventTime.toDate())} rawValue={eventTime?.toDate().toISOString()} tooltip={help.eventTime} />
+      </Td>
+      <Td width='30ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Broker pub. time" value={brokerPublishTime === undefined ? undefined : i18n.formatDate(brokerPublishTime.toDate())} rawValue={brokerPublishTime?.toDate().toISOString()} tooltip={help.brokerPublishTime} />
+      </Td>
+
+      <Td width='40ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Message id" value={messageId === undefined ? undefined : i18n.bytesToHexString(messageId, 'hex-with-space')} rawValue={i18n.bytesToHexString(messageId, 'hex-no-space')} tooltip={help.messageId} />
+      </Td>
+      <Td width='10ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Sequence Id" value={sequenceId === undefined ? undefined : i18n.formatLongNumber(sequenceId)} rawValue={String(sequenceId)} tooltip={help.sequenceId} />
+      </Td>
+      <Td width='10ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Ordering key" value={orderingKey === undefined || orderingKey.length === 0 ? undefined : i18n.bytesToHexString(orderingKey, 'hex-with-space')} rawValue={i18n.bytesToHexString(orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
+      </Td>
+      <Td width='10ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} rawValue={String(redeliveryCount)} tooltip={help.redeliveryCount} />
       </Td>
     </>
   );

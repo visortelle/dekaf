@@ -26,7 +26,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
     <EnteringFromBottomDiv className={s.Console} isVisible={props.isShow} motionKey='consumer-console'>
       <div className={s.Tabs}>
         <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Producer</div>
-        <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div>
+        {/* <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div> */}
 
         <div className={s.CloseConsole} title="Close" onClick={props.onClose}>
           <SvgIcon svg={closeIcon} />
@@ -57,7 +57,7 @@ type TabContentProps = {
 }
 const TabContent: React.FC<TabContentProps> = (props) => {
   return (
-    <div style={{ display: props.isShow ? 'flex' : 'none', flex: '1' }}>
+    <div style={{ display: props.isShow ? 'flex' : 'none', flex: '1', overflow: 'hidden' }}>
       {props.children}
     </div>
   );
