@@ -176,7 +176,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
               <strong>Properties</strong>
               <CodeEditor
                 value={propertiesJsonMap}
-                onChange={v => setPropertiesJsonMap(v)}
+                onChange={v => setPropertiesJsonMap(v || '')}
                 language="json"
                 height="320rem"
               />
@@ -203,7 +203,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
                 <CodeEditor
                   value={value}
                   onChange={v => setValue(v || '')}
-                  height="100%"
+                  height="480rem"
                 />
               )}
             </div>

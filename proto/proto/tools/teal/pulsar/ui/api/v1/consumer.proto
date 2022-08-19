@@ -29,6 +29,7 @@ message Message {
   optional string topic = 12;
   optional int32 redelivery_count = 13;
   optional int64 schema_version = 14;
+  int32 size = 15;
 
   optional bool is_replicated = 20;
   optional string replicated_from = 21;
