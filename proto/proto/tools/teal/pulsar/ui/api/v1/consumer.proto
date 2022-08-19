@@ -106,15 +106,8 @@ message DeleteConsumerResponse {
   google.rpc.Status status = 1;
 }
 
-enum MessageFilterLanguage {
-  MESSAGE_FILTER_LANGUAGE_UNSPECIFIED = 0;
-  MESSAGE_FILTER_LANGUAGE_JS = 1;
-  MESSAGE_FILTER_LANGUAGE_PYTHON = 2;
-}
-
 message MessageFilter {
-  MessageFilterLanguage language = 1;
-  string value = 2;
+  string value = 1;
 }
 
 enum MessageFilterChainMode {
