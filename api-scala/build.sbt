@@ -24,7 +24,8 @@ lazy val root = project
       "com.google.guava" % "guava" % "31.1-jre",
       "com.lihaoyi" %% "os-lib" % "0.8.1",
       "io.circe" %% "circe-core" % "0.15.0-M1",
-      "io.circe" %% "circe-generic" % "0.15.0-M1"
+      "io.circe" %% "circe-generic" % "0.15.0-M1",
+      "io.circe" %% "circe-parser" % "0.15.0-M1"
     )
   )
 

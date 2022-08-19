@@ -5,29 +5,21 @@ import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, Schema}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.api.v1.producer.{
-    CreateProducerRequest,
-    CreateProducerResponse,
-    DeleteProducerRequest,
-    DeleteProducerResponse,
-    GetStatsRequest,
-    GetStatsResponse,
-    MessageFormat,
-    ProducerServiceGrpc,
-    SendRequest,
-    SendResponse,
-    Stats
-}
+import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, MessageFormat, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
 import org.apache.pulsar.client.api.schema.SchemaInfoProvider
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import _root_.schema.avro
 import com.google.protobuf
 import com.google.protobuf.ByteString
+
 import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import com.google.common.primitives
 import org.apache.pulsar.client.admin.PulsarAdminException
+import io.circe.*
+import io.circe.parser.parse as parseJson
 
+import java.nio.charset.Charset
 import java.nio.{ByteBuffer, ByteOrder}
 import scala.concurrent.Future
 
@@ -171,17 +163,24 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
                 case Right(v)  => Right(v)
                 case Left(err) => Left(err)
         case SchemaType.JSON   => Right(jsonAsBytes)
-        case SchemaType.STRING => Right(jsonAsBytes)
+        case SchemaType.STRING =>
+            parseJson(String(jsonAsBytes, "UTF-8")) match
+                case Left(err) => Left(err.getMessage)
+                case Right(json) if json.isString =>
+                    val str = json.asString.getOrElse("")
+                    Right(str.getBytes)
+                case _ => Left("Message should be formatted as JSON string.")
+
         case SchemaType.NONE   => Right(jsonAsBytes)
         case SchemaType.BOOLEAN =>
-            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val jsonString = String(jsonAsBytes, "UTF-8")
             val v: Byte = jsonString match
                 case "false" => 0x00.toByte
                 case "true"  => 0x01.toByte
                 case _       => return Left(s"Unable to parse BOOLEAN value from the given JSON: $jsonString")
             Right(Array(v))
         case SchemaType.INT8 =>
-            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val jsonString = String(jsonAsBytes, "UTF-8")
             val n = primitives.Ints.tryParse(jsonString)
             if n == null then return Left(s"Unable to parse INT8 value from the given JSON: $jsonString")
 
@@ -192,7 +191,7 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
             // https://www.simonv.fr/TypesConvert/?integers
             Right(Array(primitives.SignedBytes.checkedCast(n.toLong)))
         case SchemaType.INT16 =>
-            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val jsonString = String(jsonAsBytes, "UTF-8")
             val n = primitives.Ints.tryParse(jsonString)
             if n == null then return Left(s"Unable to parse INT16 value from the given the JSON: $jsonString")
 
@@ -202,7 +201,7 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
 
             Right(primitives.Shorts.toByteArray(n.toShort))
         case SchemaType.INT32 =>
-            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val jsonString = String(jsonAsBytes, "UTF-8")
             val n = primitives.Ints.tryParse(jsonString)
             if n == null then return Left(s"Unable to parse INT32 value from the given the JSON: $jsonString")
 
@@ -212,7 +211,7 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
 
             Right(primitives.Ints.toByteArray(n))
         case SchemaType.INT64 =>
-            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val jsonString = String(jsonAsBytes, "UTF-8")
             val n = primitives.Longs.tryParse(jsonString)
             if n == null then return Left(s"Unable to parse INT64 value from the given the JSON: $jsonString")
 
@@ -222,7 +221,7 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
 
             Right(primitives.Longs.toByteArray(n))
         case SchemaType.FLOAT =>
-            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val jsonString = String(jsonAsBytes, "UTF-8")
             val n = primitives.Floats.tryParse(jsonString)
 
             val MinValue = Float.MinValue
@@ -231,7 +230,7 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[String
 
             Right(ByteBuffer.allocate(4).putFloat(n).array)
         case SchemaType.DOUBLE =>
-            val jsonString = jsonAsBytes.map(_.toChar).mkString
+            val jsonString = String(jsonAsBytes, "UTF-8")
             val n = primitives.Doubles.tryParse(jsonString)
 
             val MinValue = Double.MinValue
