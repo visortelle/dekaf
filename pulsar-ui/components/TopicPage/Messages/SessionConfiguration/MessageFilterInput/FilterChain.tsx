@@ -71,7 +71,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       })}
       <SmallButton
         onClick={() => {
-          const newFilter: t.Filter = { language: 'js', value: undefined };
+          const newFilter: t.Filter = { value: undefined };
           const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [uuid()]: { filter: newFilter } } };
           props.onChange(newChain);
         }}

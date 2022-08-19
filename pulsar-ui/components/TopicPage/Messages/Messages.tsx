@@ -20,7 +20,6 @@ import {
   MessageFilterChain,
   MessageFilterChainMode,
   MessageFilter,
-  MessageFilterLanguage
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { detect as detectBrowser } from 'detect-browser';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
@@ -28,7 +27,7 @@ import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
-import { ItemContent, TableVirtuoso, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { ItemContent, TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
 import { createDeadline } from '../../../grpc/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
@@ -358,7 +357,6 @@ const Session: React.FC<SessionProps> = (props) => {
         .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
         .forEach(([filterId, filter]) => {
           const filterPb = new MessageFilter();
-          filterPb.setLanguage(filter.filter.language === 'js' ? MessageFilterLanguage.MESSAGE_FILTER_LANGUAGE_JS : MessageFilterLanguage.MESSAGE_FILTER_LANGUAGE_PYTHON);
           filterPb.setValue(filter.filter.value || '');
           messageFilterChain.getFiltersMap().set(filterId, filterPb);
         });
