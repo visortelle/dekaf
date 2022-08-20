@@ -17,7 +17,8 @@ export type ToolbarProps = {
   onStopSession: () => void;
   messagesLoaded: number;
   messagesProcessed: number;
-  messagesLoadedPerSecond: { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
+  messagesLoadedPerSecond: { prev: number, now: number };
+  messagesProcessedPerSecond: { prev: number, now: number };
   onToggleConsoleClick: () => void;
 };
 
@@ -100,6 +101,10 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesProcessed)}</strong>
             <span className={s.MessagesLoadedStatTitle}>&nbsp;processed</span>
           </div>
+          <div className={s.MessagesLoadedStat}>
+            <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesProcessedPerSecond.now)}</strong>
+            <span className={s.MessagesLoadedStatTitle}>&nbsp;per second</span>
+          </div>
         </div>
 
         <div className={s.MessagesLoadedStats}>
@@ -108,7 +113,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             <span className={s.MessagesLoadedStatTitle}>&nbsp; loaded</span>
           </div>
           <div className={s.MessagesLoadedStat}>
-            <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesLoadedPerSecond.messagesLoadedPerSecond)}</strong>
+            <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesLoadedPerSecond.now)}</strong>
             <span className={s.MessagesLoadedStatTitle}>&nbsp;per second</span>
           </div>
         </div>
