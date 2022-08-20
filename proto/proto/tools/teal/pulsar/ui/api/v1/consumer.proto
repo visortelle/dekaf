@@ -34,7 +34,7 @@ message Message {
   optional bool is_replicated = 20;
   optional string replicated_from = 21;
 
-  string fold_like_json_accum = 50; // not a part of Pulsar message
+  string json_aggregate = 50; // not a part of Pulsar message
 }
 
 enum SubscriptionMode {

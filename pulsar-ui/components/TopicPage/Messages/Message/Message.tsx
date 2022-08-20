@@ -36,7 +36,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   const sequenceId = message.getSequenceId();
   const size = message.getSize();
   const topic = message.getTopic();
-  const foldLikeJsonAccum = message.getFoldLikeJsonAccum();
+  const jsonAggregate = message.getJsonAggregate();
 
   const topicPath = parseTopic(topic);
   const topicHref = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
@@ -47,8 +47,8 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
 
   return (
     <>
-      <Td width="20ch" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
-        <Field isShowTooltips={props.isShowTooltips} title="Key" value={key || undefined} rawValue={key || undefined} tooltip={help.key} />
+      <Td width="30ch" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
+        <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} rawValue={publishTime?.toDate().toISOString()} tooltip={help.publishTime} />
       </Td>
       <Td width='20ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Key" value={key || undefined} rawValue={key || undefined} tooltip={help.key} />
@@ -58,14 +58,14 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td width='50ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="Producer name" value={producerName || undefined} rawValue={producerName || undefined} tooltip={help.producerName} />
+        <Field isShowTooltips={props.isShowTooltips} title="Producer" value={producerName || undefined} rawValue={producerName || undefined} tooltip={help.producerName} />
       </Td>
 
       {/* <Td width='30ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Value" value={value === undefined ? undefined : i18n.bytesToHexString(value, 'hex-with-space')} rawValue={i18n.bytesToHexString(value, 'hex-no-space')} tooltip={help.value} />
       </Td> */}
       <Td width='30ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="JSON Value" value={jsonValue || undefined} rawValue={jsonValue} tooltip={help.jsonValue} />
+        <Field isShowTooltips={props.isShowTooltips} title="JSON value" value={jsonValue || undefined} rawValue={jsonValue} tooltip={help.jsonValue} />
       </Td>
       <Td width='8ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Schema version" value={schemaVersion.toString()} rawValue={schemaVersion.toString()} tooltip={help.schemaVersion} />
@@ -77,9 +77,6 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <Field isShowTooltips={props.isShowTooltips} title="Properties" value={propertiesValue} rawValue={propertiesValue} tooltip={help.size} />
       </Td>
       <Td width='30ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={publishTime === undefined ? undefined : i18n.formatDate(publishTime.toDate())} rawValue={publishTime?.toDate().toISOString()} tooltip={help.publishTime} />
-      </Td>
-      <Td width='30ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Event time" value={eventTime === undefined ? undefined : i18n.formatDate(eventTime.toDate())} rawValue={eventTime?.toDate().toISOString()} tooltip={help.eventTime} />
       </Td>
       <Td width='30ch'>
@@ -87,7 +84,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td width='40ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="Message id" value={messageId === undefined ? undefined : i18n.bytesToHexString(messageId, 'hex-with-space')} rawValue={i18n.bytesToHexString(messageId, 'hex-no-space')} tooltip={help.messageId} />
+        <Field isShowTooltips={props.isShowTooltips} title="Message Id" value={messageId === undefined ? undefined : i18n.bytesToHexString(messageId, 'hex-with-space')} rawValue={i18n.bytesToHexString(messageId, 'hex-no-space')} tooltip={help.messageId} />
       </Td>
       <Td width='10ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Sequence Id" value={sequenceId === undefined ? undefined : i18n.formatLongNumber(sequenceId)} rawValue={String(sequenceId)} tooltip={help.sequenceId} />
@@ -99,7 +96,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={i18n.formatLongNumber(redeliveryCount) || undefined} rawValue={String(redeliveryCount)} tooltip={help.redeliveryCount} />
       </Td>
       <Td width='50ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="Aggregate" value={foldLikeJsonAccum} rawValue={foldLikeJsonAccum} tooltip={help.foldLikeJsonAccum} />
+        <Field isShowTooltips={props.isShowTooltips} title="Aggregate" value={jsonAggregate} rawValue={jsonAggregate} tooltip={help.jsonAggregate} />
       </Td>
     </>
   );
