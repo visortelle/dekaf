@@ -55,7 +55,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <Field isShowTooltips={props.isShowTooltips} title="Size" value={i18n.formatBytes(msg.size) || undefined} rawValue={String(msg.size) || undefined} tooltip={help.size} />
       </Td>
       <Td width='30ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="Properties" value={msg.propertiesValue} rawValue={msg.propertiesValue} tooltip={help.size} />
+        <Field isShowTooltips={props.isShowTooltips} title="Properties" value={msg.properties} rawValue={msg.properties} tooltip={help.size} />
       </Td>
       <Td width='30ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Event time" value={msg.eventTime === undefined ? undefined : i18n.formatDate(msg.eventTime)} rawValue={msg.eventTime?.toISOString()} tooltip={help.eventTime} />
@@ -77,7 +77,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={i18n.formatLongNumber(msg.redeliveryCount) || undefined} rawValue={String(msg.redeliveryCount)} tooltip={help.redeliveryCount} />
       </Td>
       <Td width='50ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="Aggregate" value={msg.jsonAggregate} rawValue={msg.jsonAggregate} tooltip={help.jsonAggregate} />
+        <Field isShowTooltips={props.isShowTooltips} title="Aggregate" value={msg.aggregate} rawValue={msg.aggregate} tooltip={help.jsonAggregate} />
       </Td>
     </>
   );

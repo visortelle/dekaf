@@ -16,8 +16,7 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
     key: message.getKey(),
     orderingKey: message.getOrderingKey_asU8(),
     producerName: message.getProducerName(),
-    propertiesMap,
-    propertiesValue: JSON.stringify(propertiesMap),
+    properties: JSON.stringify(propertiesMap),
     publishTime: message.getPublishTime()?.toDate(),
     redeliveryCount: message.getRedeliveryCount(),
     replicatedFrom: message.getReplicatedFrom(),
@@ -25,6 +24,6 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
     sequenceId: message.getSequenceId(),
     size: message.getSize(),
     topic: message.getTopic(),
-    jsonAggregate: message.getJsonAggregate(),
+    aggregate: message.getJsonAggregate(),
   };
 }
