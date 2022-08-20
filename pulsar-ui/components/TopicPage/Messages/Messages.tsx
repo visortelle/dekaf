@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
@@ -49,6 +49,7 @@ import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/puls
 import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { messageDescriptorFromPb } from './conversions';
+import { partition } from 'lodash';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 const browser = detectBrowser();
@@ -68,6 +69,7 @@ type SortKey =
   'key' |
   'topic' |
   'producerName' |
+  'value' |
   'jsonValue' |
   'schemaVersion' |
   'size' |
@@ -105,7 +107,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesProcessed = useRef<number>(0);
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
-  const [sort, setSort] = useState<Sort>({ key: 'topic', direction: 'asc' });
+  const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
   const { startFrom, topicsSelector } = props.config;
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
@@ -444,6 +446,7 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sort]);
 
   const content: Content = sessionState === 'new' ? 'configuration' : 'messages';
+  const sortedMessages = useMemo(() => sortMessages(messages, sort), [messages, sort]);
 
   return (
     <div className={s.Messages}>
@@ -475,8 +478,8 @@ const Session: React.FC<SessionProps> = (props) => {
           <TableVirtuoso
             className={s.Virtuoso}
             ref={virtuosoRef}
-            data={messages}
-            totalCount={messages.length}
+            data={sortedMessages}
+            totalCount={sortedMessages.length}
             itemContent={itemContent}
             followOutput={false}
             fixedHeaderContent={() => (
@@ -491,9 +494,9 @@ const Session: React.FC<SessionProps> = (props) => {
                 <Th title="Properties" sortKey="properties" />
                 <Th title="Event time" sortKey="eventTime" />
                 <Th title="Broker pub. time" sortKey="brokerPublishTime" />
-                <Th title="Message Id" sortKey="messageId" />
+                <Th title="Message Id" />
                 <Th title="Sequence Id" sortKey="sequenceId" />
-                <Th title="Ordering key" sortKey="orderingKey" />
+                <Th title="Ordering key" />
                 <Th title="Redelivery count" sortKey="redeliveryCount" />
                 <Th title="Aggregate" sortKey="aggregate" />
               </tr>
@@ -564,8 +567,82 @@ export function hexStringToByteArray(hexString: string): Uint8Array {
   return byteArray;
 }
 
-// const sortMessages =  (messages: Message[], sort: Sort): Message[] => {
-  // if (sort.key === 'publishTime') {
-    // return messages.sort((a, b) => a.getPublishTime() - b.publishTime);
-  // }
-// }
+const sortMessages = (messages: MessageDescriptor[], sort: Sort): MessageDescriptor[] => {
+  type SortFn = (a: MessageDescriptor, b: MessageDescriptor) => number
+
+  function s(defs: MessageDescriptor[], undefs: MessageDescriptor[], sortFn: SortFn): MessageDescriptor[] {
+    let result = defs.sort(sortFn);
+    result = sort.direction === 'asc' ? result : result.reverse();
+    return result.concat(undefs);
+  }
+
+  if (sort.key === 'publishTime') {
+    const [defs, undefs] = partition(messages, m => m.publishTime !== undefined);
+    const sortFn: SortFn = (a, b) => a.publishTime!.getTime() - b.publishTime!.getTime();
+    return s(defs, undefs, sortFn);
+  }
+
+  if (sort.key === 'key') {
+    const sortFn: SortFn = (a, b) => a.key.localeCompare(b.key, 'en', { numeric: true });
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'topic') {
+    const sortFn: SortFn = (a, b) => a.topic.localeCompare(b.topic, 'en', { numeric: true });
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'producerName') {
+    const sortFn: SortFn = (a, b) => a.producerName.localeCompare(b.producerName, 'en', { numeric: true });
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'jsonValue') {
+    const sortFn: SortFn = (a, b) => a.jsonValue.localeCompare(b.jsonValue, 'en', { numeric: true });
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'schemaVersion') {
+    const sortFn: SortFn = (a, b) => a.schemaVersion - b.schemaVersion;
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'size') {
+    const sortFn: SortFn = (a, b) => a.size - b.size;
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'properties') {
+    const sortFn: SortFn = (a, b) => a.properties.localeCompare(b.properties, 'en', { numeric: true });
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'eventTime') {
+    const [defs, undefs] = partition(messages, m => m.eventTime !== undefined);
+    const sortFn: SortFn = (a, b) => a.eventTime!.getTime() - b.eventTime!.getTime();
+    return s(defs, undefs, sortFn);
+  }
+
+  if (sort.key === 'brokerPublishTime') {
+    const [defs, undefs] = partition(messages, m => m.brokerPublishTime !== undefined);
+    const sortFn: SortFn = (a, b) => a.brokerPublishTime!.getTime() - b.brokerPublishTime!.getTime();
+    return s(defs, undefs, sortFn);
+  }
+
+  if (sort.key === 'sequenceId') {
+    const sortFn: SortFn = (a, b) => a.sequenceId - b.sequenceId;
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'redeliveryCount') {
+    const sortFn: SortFn = (a, b) => a.redeliveryCount - b.redeliveryCount;
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === 'aggregate') {
+    const sortFn: SortFn = (a, b) => a.properties.localeCompare(b.properties, 'en', { numeric: true });
+    return s(messages, [], sortFn);
+  }
+
+  return messages;
+}
