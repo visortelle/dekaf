@@ -24,7 +24,6 @@ import {
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
-import { detect as detectBrowser } from 'detect-browser';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
@@ -41,7 +40,6 @@ import { SessionState, SessionConfig, MessageDescriptor } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
-import { useAnimationFrame } from '../../app/hooks/use-animation-frame';
 import Console from './Console/Console';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
@@ -52,8 +50,6 @@ import { messageDescriptorFromPb } from './conversions';
 import { partition } from 'lodash';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
-const browser = detectBrowser();
-const isSlowBrowser = browser?.name === 'safari' || browser?.name === 'firefox';
 
 export type SessionProps = {
   sessionKey: number;
@@ -83,10 +79,11 @@ type SortKey =
   'aggregate';
 
 type Content = 'messages' | 'configuration';
-type MessagesLoadedPerSecond = { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
+type MessagesPerSecond = { prev: number, now: number };
 type Sort = { key: SortKey, direction: 'asc' | 'desc' };
 
 const displayMessagesLimit = 10000;
+const displayMessagesRunningLimit = 250; // too many items leads to table blinking.
 
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
@@ -103,7 +100,8 @@ const Session: React.FC<SessionProps> = (props) => {
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const [messagesLoaded, setMessagesLoaded] = useState<number>(0);
-  const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesLoadedPerSecond>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
+  const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
+  const [messagesProcessedPerSecond, setMessagesProcessedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
   const messagesProcessed = useRef<number>(0);
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
@@ -137,7 +135,8 @@ const Session: React.FC<SessionProps> = (props) => {
   }
 
   useInterval(() => {
-    setMessagesLoadedPerSecond(() => ({ prevMessagesLoaded: messagesLoaded, messagesLoadedPerSecond: messagesLoaded - messagesLoadedPerSecond.prevMessagesLoaded }));
+    setMessagesLoadedPerSecond(() => ({ prev: messagesLoaded, now: messagesLoaded - messagesLoadedPerSecond.prev }));
+    setMessagesProcessedPerSecond(() => ({ prev: messagesProcessed.current, now: messagesProcessed.current - messagesProcessedPerSecond.prev }));
   }, 1000);
 
   useInterval(() => {
@@ -150,13 +149,7 @@ const Session: React.FC<SessionProps> = (props) => {
       messagesBuffer.current = [];
       return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
     });
-  }, messagesLoadedPerSecond.messagesLoadedPerSecond > 0 ? (isSlowBrowser && messagesLoadedPerSecond.messagesLoadedPerSecond > 1000) ? 500 : (messagesLoadedPerSecond.messagesLoadedPerSecond > 3000 ? 500 : 32) : false);
-
-  useAnimationFrame(() => {
-    if (messagesLoadedPerSecond.messagesLoadedPerSecond > 0) {
-      scrollToBottom();
-    }
-  });
+  }, messagesLoadedPerSecond.now > 0 ? 500 : false);
 
   const applyConfig = async () => {
     if (startFrom.type === 'messageId') {
@@ -358,9 +351,6 @@ const Session: React.FC<SessionProps> = (props) => {
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
         .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
 
-      if (prevSessionState === 'running') {
-        scrollToBottom(); // Force scroll to bottom. Otherwise, scroll position sometimes left in a middle after pausing.
-      }
       return;
     }
 
@@ -446,7 +436,18 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sort]);
 
   const content: Content = sessionState === 'new' ? 'configuration' : 'messages';
-  const sortedMessages = useMemo(() => sortMessages(messages, sort), [messages, sort]);
+  const sortedMessages = useMemo(() => {
+    const msgs = sessionState === 'running' ? messages.slice(messages.length - displayMessagesRunningLimit) : messages;
+    return sortMessages(msgs, sort);
+  }, [messages, sort, sessionState]);
+
+  const pausingSession = useMemo(() => sessionState !== 'running' && (messagesLoadedPerSecond.now > 0), [messagesLoadedPerSecond, sessionState]);
+  const prevPausingSession = usePrevious(pausingSession);
+  useEffect(() => {
+    if (prevPausingSession && !pausingSession) {
+      scrollToBottom();
+    }
+  }, [pausingSession, prevPausingSession]);
 
   return (
     <div className={s.Messages}>
@@ -456,6 +457,7 @@ const Session: React.FC<SessionProps> = (props) => {
         onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded}
         messagesLoadedPerSecond={messagesLoadedPerSecond}
+        messagesProcessedPerSecond={messagesProcessedPerSecond}
         messagesProcessed={messagesProcessed.current}
         onStopSession={props.onStopSession}
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
@@ -472,16 +474,22 @@ const Session: React.FC<SessionProps> = (props) => {
       {content === 'messages' && messages.length > 0 && (
         <div
           className={cts.Table}
+          style={{ position: 'relative' }}
           ref={tableRef}
           onWheel={onWheel}
         >
+          {pausingSession && (
+            <div className={s.TableSpinner}>
+              <div className={s.TableSpinnerContent}>Pausing session...</div>
+            </div>
+          )}
           <TableVirtuoso
             className={s.Virtuoso}
             ref={virtuosoRef}
             data={sortedMessages}
             totalCount={sortedMessages.length}
             itemContent={itemContent}
-            followOutput={false}
+            followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
                 <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
