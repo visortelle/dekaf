@@ -33,3 +33,26 @@ export type SessionConfig = {
   topicsSelector: SessionTopicsSelector;
   messageFilter: messageFilter.Chain;
 };
+
+
+export type MessageDescriptor = {
+  messageId: Uint8Array;
+  value: Uint8Array;
+  jsonValue: string;
+  brokerPublishTime: Date | undefined;
+  eventTime: Date | undefined;
+  isReplicated: boolean;
+  key: string;
+  orderingKey: Uint8Array;
+  producerName: string;
+  propertiesMap: Record<string, string>;
+  propertiesValue: string;
+  publishTime: Date | undefined;
+  redeliveryCount: number;
+  replicatedFrom: string;
+  schemaVersion: number;
+  sequenceId: number;
+  size: number;
+  topic: string;
+  jsonAggregate: string;
+}
