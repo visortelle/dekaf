@@ -1,7 +1,13 @@
 import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
-import * as messageFilter from '../Messages/SessionConfiguration/MessageFilterInput/types';
+import * as messageFilter from "../Messages/SessionConfiguration/MessageFilterInput/types";
 
-export type SessionState = "running" | "paused" | "got-initial-cursor-positions" | "awaiting-initial-cursor-positions" | "initializing" | "new";
+export type SessionState =
+  | "running"
+  | "paused"
+  | "got-initial-cursor-positions"
+  | "awaiting-initial-cursor-positions"
+  | "initializing"
+  | "new";
 
 type RegexSubMode =
   | "unspecified"
@@ -34,7 +40,6 @@ export type SessionConfig = {
   messageFilter: messageFilter.Chain;
 };
 
-
 export type MessageDescriptor = {
   messageId: Uint8Array;
   value: Uint8Array;
@@ -45,8 +50,7 @@ export type MessageDescriptor = {
   key: string;
   orderingKey: Uint8Array;
   producerName: string;
-  propertiesMap: Record<string, string>;
-  propertiesValue: string;
+  properties: string;
   publishTime: Date | undefined;
   redeliveryCount: number;
   replicatedFrom: string;
@@ -54,5 +58,5 @@ export type MessageDescriptor = {
   sequenceId: number;
   size: number;
   topic: string;
-  jsonAggregate: string;
-}
+  aggregate: string;
+};
