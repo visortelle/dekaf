@@ -1,5 +1,5 @@
 .Namespaces {
-  padding: 24rem 12rem 8rem 12rem;
+  padding: 24rem 0 8rem 0;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -8,6 +8,7 @@
 
 .Toolbar {
   margin-bottom: 12rem;
+  padding: 0 12rem;
   display: flex;
   align-items: center;
 }

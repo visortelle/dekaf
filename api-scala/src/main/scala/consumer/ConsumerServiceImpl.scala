@@ -90,10 +90,10 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
                     val (message, jsonMessage, jsonValue) = serializeMessage(schemasByTopic, msg)
 
-                    val (filterResult, foldLikeJsonAccum) =
+                    val (filterResult, jsonAggregate) =
                         getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
                     
-                    val messageToSend = message.withFoldLikeJsonAccum(foldLikeJsonAccum)
+                    val messageToSend = message.withJsonAggregate(jsonAggregate)
 
                     val messages = filterResult match
                         case Right(true) => Seq(messageToSend)

@@ -10,15 +10,15 @@ import io.circe.syntax.*
 import io.circe.generic.auto.*
 
 type JsonString = String
-type FoldLikeAccum = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
-type FilterTestResult = (Either[String, Boolean], FoldLikeAccum)
+type JsonAggregate = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
+type FilterTestResult = (Either[String, Boolean], JsonAggregate)
 
-val FoldLikeAccumVarNameJs = "acc"
+val JsonAggregateVarName = "agg"
 
 class MessageFilter():
     val context = Context.newBuilder("js").build
 
-    context.eval("js",s"globalThis.${FoldLikeAccumVarNameJs} = {}") // Create empty fold-like accumulator variable.
+    context.eval("js",s"globalThis.${JsonAggregateVarName} = {}") // Create empty fold-like accumulator variable.
 
     def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)
@@ -30,7 +30,7 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
           |    const val = ${jsonValue.getOrElse("undefined")};
           |    const msg = ${jsonMessage.asJson};
           |
-          |    return (${filterCode})(val, msg, globalThis.${FoldLikeAccumVarNameJs});
+          |    return (${filterCode})(val, msg, globalThis.${JsonAggregateVarName});
           | })();
           |""".stripMargin
 
@@ -40,7 +40,7 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
         case err => Left(s"Message filter JS error: ${err.getMessage}")
     }
 
-    val cumulativeJsonState = context.eval("js", s"JSON.stringify(globalThis.${FoldLikeAccumVarNameJs})").asString
+    val cumulativeJsonState = context.eval("js", s"JSON.stringify(globalThis.${JsonAggregateVarName})").asString
 
     (testResult, cumulativeJsonState)
 
@@ -61,7 +61,7 @@ def getFilterChainTestResult(filterChain: Option[MessageFilterChain], messageFil
                 case MESSAGE_FILTER_CHAIN_MODE_ANY => Right(filterResults.exists(fr => fr._1.getOrElse(false)))
 
     if filterResults.nonEmpty then
-        val (_, foldLikeAccum) = filterResults.last
-        (filterChainResult, foldLikeAccum)
+        val (_, jsonAggregate) = filterResults.last
+        (filterChainResult, jsonAggregate)
     else
         (filterChainResult, "{}")

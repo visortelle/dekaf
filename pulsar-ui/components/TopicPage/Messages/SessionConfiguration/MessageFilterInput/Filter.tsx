@@ -9,8 +9,8 @@ export type FilterProps = {
   onChange: (value: t.Filter) => void;
 };
 
-const defaultJsValue = `(val, msg, acc) => {
-  return val !== undefined;
+const defaultJsValue = `(val, msg, agg) => {
+    return true;
 }`;
 
 const Filter: React.FC<FilterProps> = (props) => {

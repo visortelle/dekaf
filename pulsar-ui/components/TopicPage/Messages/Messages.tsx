@@ -21,6 +21,9 @@ import {
   MessageFilterChainMode,
   MessageFilter,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
+import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
+import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
 import { detect as detectBrowser } from 'detect-browser';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
@@ -44,6 +47,7 @@ import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
+import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 const browser = detectBrowser();
@@ -58,8 +62,11 @@ export type SessionProps = {
   onSetIsShowConsole: (v: boolean) => void;
 };
 
+type SortKey = any;
+
 type Content = 'messages' | 'configuration';
 type MessagesLoadedPerSecond = { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
+type Sort = { key: SortKey, direction: 'asc' | 'desc' };
 
 const displayMessagesLimit = 10000;
 
@@ -68,7 +75,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const i18n = I18n.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
   const { consumerServiceClient, topicServiceClient } = PulsarGrpcClient.useContext();
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
@@ -82,6 +89,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesProcessed = useRef<number>(0);
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [sort, setSort] = useState<Sort>({ key: 'topic', direction: 'asc' });
   const { startFrom, topicsSelector } = props.config;
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
@@ -106,7 +114,7 @@ const Session: React.FC<SessionProps> = (props) => {
   }
 
   const scrollToBottom = () => {
-    const scrollParent = listRef.current?.children[0];
+    const scrollParent = tableRef.current?.children[0];
     scrollParent?.scrollTo({ top: scrollParent.scrollHeight, behavior: 'auto' });
   }
 
@@ -391,6 +399,34 @@ const Session: React.FC<SessionProps> = (props) => {
     }
   }, []);
 
+  const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, style?: React.CSSProperties }) => {
+    const handleColumnHeaderClick = () => {
+      if (props.sortKey === undefined) {
+        return;
+      }
+
+      if (sort.key === props.sortKey) {
+        setSort({ key: props.sortKey, direction: sort.direction === 'asc' ? 'desc' : 'asc' });
+      } else {
+        setSort({ key: props.sortKey, direction: 'asc' });
+      }
+    }
+
+    return (
+      <th className={cts.Th} style={props.style} onClick={handleColumnHeaderClick}>
+        <div className={props.sortKey === undefined ? '' : cts.SortableTh}>
+          {props.title}
+
+          {sort.key === props.sortKey && (
+            <div className={cts.SortableThIcon}>
+              <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
+            </div>
+          )}
+        </div>
+      </th>
+    );
+  }, [sort]);
+
   const content: Content = sessionState === 'new' ? 'configuration' : 'messages';
 
   return (
@@ -416,8 +452,8 @@ const Session: React.FC<SessionProps> = (props) => {
       )}
       {content === 'messages' && messages.length > 0 && (
         <div
-          className={s.List}
-          ref={listRef}
+          className={cts.Table}
+          ref={tableRef}
           onWheel={onWheel}
         >
           <TableVirtuoso
@@ -427,6 +463,25 @@ const Session: React.FC<SessionProps> = (props) => {
             totalCount={messages.length}
             itemContent={itemContent}
             followOutput={false}
+            fixedHeaderContent={() => (
+              <tr>
+                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
+                <Th title="Key" sortKey="key" />
+                <Th title="Topic" sortKey="topic" />
+                <Th title="Producer" sortKey="producerName" />
+                <Th title="JSON value" sortKey="jsonValue" />
+                <Th title="Schema version" sortKey="schemaVersion" />
+                <Th title="Size" sortKey="size" />
+                <Th title="Properties" sortKey="properties" />
+                <Th title="Event time" sortKey="eventTime" />
+                <Th title="Broker pub. time" sortKey="brokerPublishTime" />
+                <Th title="Message Id" sortKey="messageId" />
+                <Th title="Sequence Id" sortKey="sequenceId" />
+                <Th title="Ordering key" sortKey="orderingKey" />
+                <Th title="Redelivery count" sortKey="redeliveryCount" />
+                <Th title="Aggregate" sortKey="aggregate" />
+              </tr>
+            )}
           />
         </div>
       )}
