@@ -37,7 +37,7 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
-import { SessionState, SessionConfig } from './types';
+import { SessionState, SessionConfig, MessageDescriptor } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
@@ -48,6 +48,7 @@ import useSWR from 'swr';
 import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
+import { messageDescriptorFromPb } from './conversions';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 const browser = detectBrowser();
@@ -62,7 +63,22 @@ export type SessionProps = {
   onSetIsShowConsole: (v: boolean) => void;
 };
 
-type SortKey = any;
+type SortKey =
+  'publishTime' |
+  'key' |
+  'topic' |
+  'producerName' |
+  'jsonValue' |
+  'schemaVersion' |
+  'size' |
+  'properties' |
+  'eventTime' |
+  'brokerPublishTime' |
+  'messageId' |
+  'sequenceId' |
+  'orderingKey' |
+  'redeliveryCount' |
+  'aggregate';
 
 type Content = 'messages' | 'configuration';
 type MessagesLoadedPerSecond = { prevMessagesLoaded: number, messagesLoadedPerSecond: number };
@@ -88,7 +104,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesLoadedPerSecond>({ prevMessagesLoaded: 0, messagesLoadedPerSecond: 0 });
   const messagesProcessed = useRef<number>(0);
   const messagesBuffer = useRef<Message[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'topic', direction: 'asc' });
   const { startFrom, topicsSelector } = props.config;
 
@@ -128,7 +144,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     setMessages((messages) => {
-      const newMessages = messages.concat(messagesBuffer.current);
+      const newMessages = messages.concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)));
       messagesBuffer.current = [];
       return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
     });
@@ -392,7 +408,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
   }, [sessionState]);
 
-  const itemContent = useCallback<ItemContent<Message, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
+  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0) {
       setSessionState('paused');
@@ -547,3 +563,9 @@ export function hexStringToByteArray(hexString: string): Uint8Array {
   }
   return byteArray;
 }
+
+// const sortMessages =  (messages: Message[], sort: Sort): Message[] => {
+  // if (sort.key === 'publishTime') {
+    // return messages.sort((a, b) => a.getPublishTime() - b.publishTime);
+  // }
+// }
