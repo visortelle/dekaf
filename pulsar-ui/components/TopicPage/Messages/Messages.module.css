@@ -8,12 +8,6 @@
   position: relative;
 }
 
-.List {
-  font-size: 14rem;
-  flex: 1 1 auto;
-  overflow: auto;
-}
-
 .NoMessages {
   flex: 1;
   padding: 12rem;
