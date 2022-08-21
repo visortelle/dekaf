@@ -47,7 +47,7 @@ import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/puls
 import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { messageDescriptorFromPb } from './conversions';
-import { partition } from 'lodash';
+import { SortKey, Sort, sortMessages } from './sort';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 
@@ -60,27 +60,8 @@ export type SessionProps = {
   onSetIsShowConsole: (v: boolean) => void;
 };
 
-type SortKey =
-  'publishTime' |
-  'key' |
-  'topic' |
-  'producerName' |
-  'value' |
-  'jsonValue' |
-  'schemaVersion' |
-  'size' |
-  'properties' |
-  'eventTime' |
-  'brokerPublishTime' |
-  'messageId' |
-  'sequenceId' |
-  'orderingKey' |
-  'redeliveryCount' |
-  'aggregate';
-
 type Content = 'messages' | 'configuration';
 type MessagesPerSecond = { prev: number, now: number };
-type Sort = { key: SortKey, direction: 'asc' | 'desc' };
 
 const displayMessagesLimit = 10000;
 const displayMessagesRunningLimit = 250; // too many items leads to table blinking.
@@ -147,6 +128,7 @@ const Session: React.FC<SessionProps> = (props) => {
     setMessages((messages) => {
       const newMessages = messages.concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)));
       messagesBuffer.current = [];
+      scrollToBottom();
       return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
     });
   }, messagesLoadedPerSecond.now > 0 ? 500 : false);
@@ -573,84 +555,4 @@ export function hexStringToByteArray(hexString: string): Uint8Array {
     byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
   }
   return byteArray;
-}
-
-const sortMessages = (messages: MessageDescriptor[], sort: Sort): MessageDescriptor[] => {
-  type SortFn = (a: MessageDescriptor, b: MessageDescriptor) => number
-
-  function s(defs: MessageDescriptor[], undefs: MessageDescriptor[], sortFn: SortFn): MessageDescriptor[] {
-    let result = defs.sort(sortFn);
-    result = sort.direction === 'asc' ? result : result.reverse();
-    return result.concat(undefs);
-  }
-
-  if (sort.key === 'publishTime') {
-    const [defs, undefs] = partition(messages, m => m.publishTime !== undefined);
-    const sortFn: SortFn = (a, b) => a.publishTime!.getTime() - b.publishTime!.getTime();
-    return s(defs, undefs, sortFn);
-  }
-
-  if (sort.key === 'key') {
-    const sortFn: SortFn = (a, b) => a.key.localeCompare(b.key, 'en', { numeric: true });
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'topic') {
-    const sortFn: SortFn = (a, b) => a.topic.localeCompare(b.topic, 'en', { numeric: true });
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'producerName') {
-    const sortFn: SortFn = (a, b) => a.producerName.localeCompare(b.producerName, 'en', { numeric: true });
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'jsonValue') {
-    const sortFn: SortFn = (a, b) => a.jsonValue.localeCompare(b.jsonValue, 'en', { numeric: true });
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'schemaVersion') {
-    const sortFn: SortFn = (a, b) => a.schemaVersion - b.schemaVersion;
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'size') {
-    const sortFn: SortFn = (a, b) => a.size - b.size;
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'properties') {
-    const sortFn: SortFn = (a, b) => a.properties.localeCompare(b.properties, 'en', { numeric: true });
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'eventTime') {
-    const [defs, undefs] = partition(messages, m => m.eventTime !== undefined);
-    const sortFn: SortFn = (a, b) => a.eventTime!.getTime() - b.eventTime!.getTime();
-    return s(defs, undefs, sortFn);
-  }
-
-  if (sort.key === 'brokerPublishTime') {
-    const [defs, undefs] = partition(messages, m => m.brokerPublishTime !== undefined);
-    const sortFn: SortFn = (a, b) => a.brokerPublishTime!.getTime() - b.brokerPublishTime!.getTime();
-    return s(defs, undefs, sortFn);
-  }
-
-  if (sort.key === 'sequenceId') {
-    const sortFn: SortFn = (a, b) => a.sequenceId - b.sequenceId;
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'redeliveryCount') {
-    const sortFn: SortFn = (a, b) => a.redeliveryCount - b.redeliveryCount;
-    return s(messages, [], sortFn);
-  }
-
-  if (sort.key === 'aggregate') {
-    const sortFn: SortFn = (a, b) => a.properties.localeCompare(b.properties, 'en', { numeric: true });
-    return s(messages, [], sortFn);
-  }
-
-  return messages;
 }
