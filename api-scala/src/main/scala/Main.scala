@@ -18,11 +18,12 @@ import _root_.schema.SchemaServiceImpl
 import _root_.namespace.NamespaceServiceImpl
 import com.tools.teal.pulsar.ui.api.v1.topic.TopicServiceGrpc
 
-@main def main: Unit =
-    val logger = Logger(getClass.getName)
-    logger.info("Starting Pulsar X-Ray server")
-    server.start
-    server.awaitTermination
+object Main:
+    def main(args: Array[String]): Unit =
+        val logger = Logger(getClass.getName)
+        logger.info("Starting Pulsar X-Ray server")
+        server.start
+        server.awaitTermination
 
 val server = ServerBuilder
     .forPort(config.grpcPort)

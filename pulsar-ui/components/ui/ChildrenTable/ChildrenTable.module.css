@@ -2,10 +2,6 @@
   position: relative;
   font-size: 14rem;
   border-spacing: 0;
-  border-radius: 4rem;
-  border: 1px solid #ddd;
-  border-left: none;
-  border-right: none;
   flex: 1 1 auto;
   overflow: auto;
 }
