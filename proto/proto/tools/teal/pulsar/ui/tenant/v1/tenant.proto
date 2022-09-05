@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.tenant.v1;
+
+import "google/rpc/status.proto";
+
+message TenantInfo {
+  repeated string admin_roles = 2;
+  repeated string allowed_clusters = 3;
+}
+
+message CreateTenantRequest {
+  string tenant_name = 1;
+  TenantInfo tenant_info = 2;
+}
+
+message CreateTenantResponse {
+  google.rpc.Status status = 1;
+}
+
+message UpdateTenantRequest {
+  string tenant_name = 1;
+  TenantInfo tenant_info = 2;
+}
+
+message UpdateTenantResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteTenantRequest {
+  string tenant_name = 1;
+  bool force = 2;
+}
+
+message DeleteTenantResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetTenantRequest {
+  string tenant_name = 1;
+}
+
+message GetTenantResponse {
+  google.rpc.Status status = 1;
+  Tenant tenant = 2;
+}
+
+message Tenant {
+  string tenant_name = 1;
+  TenantInfo tenant_info = 2;
+}
+
+message ListTenantsRequest {
+}
+
+message ListTenantsResponse {
+  google.rpc.Status status = 1;
+  repeated string tenants = 2;
+}
+
+service TenantService {
+  rpc CreateTenant(CreateTenantRequest) returns (CreateTenantResponse) {}
+  rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse) {}
+  rpc DeleteTenant(DeleteTenantRequest) returns (DeleteTenantResponse) {}
+  rpc GetTenant(GetTenantRequest) returns (GetTenantResponse) {}
+  rpc ListTenants(ListTenantsRequest) returns (ListTenantsResponse) {}
+}

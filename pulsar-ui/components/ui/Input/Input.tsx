@@ -4,14 +4,14 @@ import SvgIcon from '../SvgIcon/SvgIcon';
 import clearIcon from '!!raw-loader!./clear.svg';
 
 export type InputProps = {
-  placeholder: string,
   value: string,
   onChange: (v: string) => void,
   iconSvg?: string,
   focusOnMount?: boolean
   clearable?: boolean,
   type?: HTMLInputTypeAttribute,
-  inputProps?: InputHTMLAttributes<any>
+  inputProps?: InputHTMLAttributes<any>,
+  placeholder?: string
 }
 const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount, type, inputProps }) => {
   const inputRef = useRef<HTMLInputElement>(null);
