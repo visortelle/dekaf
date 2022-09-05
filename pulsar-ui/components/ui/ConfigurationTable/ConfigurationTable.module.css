@@ -2,7 +2,6 @@
   margin: 0;
   font-size: 24rem;
   font-weight: bold;
-  padding: 0 12rem;
   margin-bottom: 8rem;
 }
 
@@ -28,10 +27,23 @@
 .FieldDescription:first-child,
 .FieldInput:first-child {
   flex: 0 1 18%;
+  padding-left: 0;
 }
 /* XXX - set columns size more explicitly instead of rely on first/last child here. */
 .FieldTitle:last-child,
 .FieldDescription:last-child,
 .FieldInput:last-child {
   flex: 1 1 18%;
+  padding-right: 0;
+}
+
+.FieldTitleText {
+  position: relative;
+  display: inline-flex;
+}
+
+.RequiredFieldMark {
+  position: absolute;
+  top: -0.8ch;
+  right: -1.2ch;
 }

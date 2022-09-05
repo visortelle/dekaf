@@ -1,8 +1,12 @@
 .Policies {
-  padding: 24rem 0;
+}
+
+.Title {
+  padding: 24rem 12rem;
 }
 
 .ConfigurationTable {
   margin-bottom: 48rem;
+  padding: 24rem 12rem 0 12rem;
 }
 

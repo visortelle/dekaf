@@ -15,10 +15,11 @@ import * as Either from 'fp-ts/Either';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../routes';
 import { H1 } from '../../ui/H/H';
+import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 
 export type CreateTenantProps = {};
 
-const CreateTenant: React.FC<CreateTenantProps> = (props) => {
+const CreateTenant: React.FC<CreateTenantProps> = () => {
   const { notifyError } = Notifications.useContext();
   const { tenantServiceClient, clusterServiceClient } = PulsarGrpcClient.useContext();
   const [tenantName, setTenantName] = useState('');
@@ -62,20 +63,43 @@ const CreateTenant: React.FC<CreateTenantProps> = (props) => {
     const res = await tenantServiceClient.createTenant(req, null).catch(err => { `Unable to create tenant: ${err}` });
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to create tenant: ${res.getStatus()?.getMessage()}`);
+      return;
     }
 
     mutate(swrKeys.pulsar.tenants._());
     navigate(routes.tenants.tenant.namespaces._.get({ tenant: tenantName }));
   }
 
-  const isFormValid = tenantName.length > 0 && allowedClusters.length > 0;
+  const tenantNameInput = <Input value={tenantName} onChange={setTenantName} placeholder="tenant-1" />;
+
+  const allowedClustersInput = <ListInput<string>
+    value={allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
+    getId={(v) => v}
+    renderItem={(v) => <div>{v}</div>}
+    editor={allClusters?.every(ac => allowedClusters.includes(ac)) ? undefined : {
+      render: (v, onChange) => (
+        <SelectInput<string>
+          list={[
+            { type: 'empty', title: '' },
+            ...(allClusters?.filter(c => !allowedClusters.includes(c)) || []).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c }))
+          ]}
+          value={v}
+          onChange={onChange}
+          placeholder="Select cluster"
+        />),
+      initialValue: '',
+    }}
+    onRemove={(v) => setAllowedClusters(allowedClusters.filter(c => c !== v))}
+    onAdd={(v) => setAllowedClusters([...allowedClusters, v])}
+    isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
+  />
 
   const adminRolesInput = <ListInput<string>
     value={adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
     editor={{
-      render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="Enter new role" />,
+      render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="tenant-1-admin" />,
       initialValue: '',
     }}
     onRemove={(v) => setAdminRoles(adminRoles.filter(r => r !== v))}
@@ -83,32 +107,38 @@ const CreateTenant: React.FC<CreateTenantProps> = (props) => {
     isValid={() => Either.right(undefined)}
   />
 
+  const isFormValid = tenantName.length > 0 && allowedClusters.length > 0;
+
   return (
     <div className={s.CreateTenant} >
-      <H1>Create tenant</H1>
-      <Input value={tenantName} onChange={setTenantName} />
-      <ListInput<string>
-        value={allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
-        getId={(v) => v}
-        renderItem={(v) => <div>{v}</div>}
-        editor={allClusters?.every(ac => allowedClusters.includes(ac)) ? undefined : {
-          render: (v, onChange) => (
-            <SelectInput<string>
-              list={[
-                { type: 'empty', title: '' },
-                ...(allClusters?.filter(c => !allowedClusters.includes(c)) || []).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c }))
-              ]}
-              value={v}
-              onChange={(v) => onChange(v as string)}
-              placeholder="Select cluster"
-            />),
-          initialValue: '',
-        }}
-        onRemove={(v) => setAllowedClusters(allowedClusters.filter(c => c !== v))}
-        onAdd={(v) => setAllowedClusters([...allowedClusters, v])}
-        isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
+      <div className={s.Title}>
+        <H1>Create tenant</H1>
+      </div>
+
+      <ConfigurationTable
+        fields={[
+          {
+            id: "tenantName",
+            title: "Tenant name",
+            description: <span></span>,
+            input: tenantNameInput,
+            isRequired: true,
+          },
+          {
+            id: "allowedClusters",
+            title: "Allowed clusters",
+            description: <span>List of clusters that this tenant is restricted on.</span>,
+            input: allowedClustersInput,
+            isRequired: true,
+          },
+          {
+            id: "adminRoles",
+            title: "Admin roles",
+            description: <span>List of authenticated roles allowed to manage this tenant.</span>,
+            input: adminRolesInput,
+          }
+        ]}
       />
-      {adminRolesInput}
       <Button
         onClick={createTenant}
         type='primary'

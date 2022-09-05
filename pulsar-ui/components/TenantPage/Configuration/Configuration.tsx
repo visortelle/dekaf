@@ -108,17 +108,18 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
       <ConfigurationTable
         fields={[
           {
+            id: "allowedClusters",
+            title: "Allowed clusters",
+            description: <span>List of clusters that this tenant is restricted on.</span>,
+            input: allowedClustersInput,
+            isRequired: true
+          },
+          {
             id: "adminRoles",
             title: "Admin roles",
             description: <span>List of authenticated roles allowed to manage this tenant.</span>,
             input: adminRolesInput,
           },
-          {
-            id: "allowedClusters",
-            title: "Allowed clusters",
-            description: <span>List of clusters that this tenant is restricted on.</span>,
-            input: allowedClustersInput,
-          }
         ]}
       />
     </div >
