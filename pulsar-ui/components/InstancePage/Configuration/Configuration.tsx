@@ -12,7 +12,6 @@ import SmallButton from '../../ui/SmallButton/SmallButton';
 import Button from '../../ui/Button/Button';
 import { swrKeys } from '../../swrKeys';
 import Highlighter from "react-highlight-words";
-import sf from '../../ui/ConfigurationTable/form.module.css';
 import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
 
 const Configuration: React.FC = () => {

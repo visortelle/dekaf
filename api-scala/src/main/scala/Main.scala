@@ -4,7 +4,9 @@ import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import com.tools.teal.pulsar.ui.api.v1.consumer.ConsumerServiceGrpc
 import com.tools.teal.pulsar.ui.api.v1.producer.ProducerServiceGrpc
 import com.tools.teal.pulsar.ui.api.v1.schema.SchemaServiceGrpc
+import com.tools.teal.pulsar.ui.tenant.v1.tenant.TenantServiceGrpc
 import com.tools.teal.pulsar.ui.namespace.v1.namespace.NamespaceServiceGrpc
+import com.tools.teal.pulsar.ui.cluster.v1.cluster.ClusterServiceGrpc
 import io.grpc.{Server, ServerBuilder}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,7 +17,9 @@ import _root_.consumer.ConsumerServiceImpl
 import _root_.topic.TopicServiceImpl
 import _root_.producer.ProducerServiceImpl
 import _root_.schema.SchemaServiceImpl
+import _root_.tenant.TenantServiceImpl
 import _root_.namespace.NamespaceServiceImpl
+import _root_.cluster.ClusterServiceImpl
 import com.tools.teal.pulsar.ui.api.v1.topic.TopicServiceGrpc
 
 object Main:
@@ -31,6 +35,9 @@ val server = ServerBuilder
     .addService(ConsumerServiceGrpc.bindService(ConsumerServiceImpl(), ExecutionContext.global))
     .addService(TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
     .addService(SchemaServiceGrpc.bindService(SchemaServiceImpl(), ExecutionContext.global))
+
+    .addService(TenantServiceGrpc.bindService(TenantServiceImpl(), ExecutionContext.global))
     .addService(NamespaceServiceGrpc.bindService(NamespaceServiceImpl(), ExecutionContext.global))
+    .addService(ClusterServiceGrpc.bindService(ClusterServiceImpl(), ExecutionContext.global))
     .addService(ProtoReflectionService.newInstance)
     .build

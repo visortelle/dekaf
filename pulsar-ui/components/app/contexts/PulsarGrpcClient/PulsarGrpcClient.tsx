@@ -5,6 +5,8 @@ import * as _consumerServiceClient from '../../../../grpc-web/tools/teal/pulsar/
 import * as _topicServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/TopicServiceClientPb';
 import * as _schemaServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/SchemaServiceClientPb';
 import * as _namespaceServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/NamespaceServiceClientPb';
+import * as _tenantServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/TenantServiceClientPb';
+import * as _clusterServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/ClusterServiceClientPb';
 
 export type Value = {
   producerServiceClient: _producerServiceClient.ProducerServiceClient,
@@ -12,6 +14,8 @@ export type Value = {
   topicServiceClient: _topicServiceClient.TopicServiceClient,
   schemaServiceClient: _schemaServiceClient.SchemaServiceClient,
   namespaceServiceClient: _namespaceServiceClient.NamespaceServiceClient,
+  tenantServiceClient: _tenantServiceClient.TenantServiceClient,
+  clusterServiceClient: _clusterServiceClient.ClusterServiceClient,
 }
 
 const defaultValue: Value = {
@@ -20,6 +24,8 @@ const defaultValue: Value = {
   topicServiceClient: new _topicServiceClient.TopicServiceClient(''),
   schemaServiceClient: new _schemaServiceClient.SchemaServiceClient(''),
   namespaceServiceClient: new _namespaceServiceClient.NamespaceServiceClient(''),
+  tenantServiceClient: new _tenantServiceClient.TenantServiceClient(''),
+  clusterServiceClient: new _clusterServiceClient.ClusterServiceClient(''),
 };
 
 const Context = React.createContext<Value>(defaultValue);
@@ -30,20 +36,8 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient('http://localhost:10000'));
   const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient('http://localhost:10000'));
   const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient('http://localhost:10000'));
-
-  // GRPCWEB_DEVTOOLS extension is sometimes useful, but it has a lot of bugs it breaks the app.
-  // const isDevToolsInitiates = useRef<boolean>(false);
-  // if (!isDevToolsInitiates.current) {
-  //   const enableDevTools = (window as any).__GRPCWEB_DEVTOOLS__ || (() => { });
-  //   enableDevTools([
-  //     consumerServiceClient,
-  //     consumerServiceClient,
-  //     topicServiceClient,
-  //     schemaServiceClient,
-  //     namespaceServiceClient,
-  //   ]);
-  //   isDevToolsInitiates.current = true;
-  // }
+  const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient('http://localhost:10000'));
+  const [clusterServiceClient] = useState(new _clusterServiceClient.ClusterServiceClient('http://localhost:10000'));
 
   return (
     <>
@@ -53,7 +47,9 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           consumerServiceClient,
           topicServiceClient,
           schemaServiceClient,
-          namespaceServiceClient
+          namespaceServiceClient,
+          tenantServiceClient,
+          clusterServiceClient
         }}
       >
         {children}
