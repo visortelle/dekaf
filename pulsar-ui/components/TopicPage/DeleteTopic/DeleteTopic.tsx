@@ -83,7 +83,7 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
           <Button
             type="danger"
             text={`Yes. I know what I'm doing.`}
-            onClick={() => deleteTopic()}
+            onClick={deleteTopic}
           />
         </div>
       </div>
