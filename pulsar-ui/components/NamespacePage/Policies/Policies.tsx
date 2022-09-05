@@ -35,6 +35,7 @@ import schemaCompatibilityStrategyField from './fields/schema-compatibility-stra
 import isALlowAutoUpdateSchemaField from './fields/is-allow-auto-update-schema';
 import schemaValidationEnforceField from './fields/schema-validation-enforce';
 import offloadPoliciesField from './fields/offload-policies';
+import { H1 } from '../../ui/H/H';
 
 export type PoliciesProps = {
   tenant: string;
@@ -44,6 +45,9 @@ export type PoliciesProps = {
 const Policies: React.FC<PoliciesProps> = (props) => {
   return (
     <div className={s.Policies}>
+      <div className={s.Title}>
+        <H1>Namespace policies</H1>
+      </div>
       <div className={s.ConfigurationTable}>
         <ConfigurationTable
           title="Namespace"
