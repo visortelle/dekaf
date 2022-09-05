@@ -64,7 +64,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
       await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: [...configuration.adminRoles, v] }).catch(onUpdateError);
       await mutate(swrKey);
     }}
-    isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Admin roles cannot be empty'))}
+    isValid={() => Either.right(undefined)}
   />
 
   const clustersList = (clusters || []).filter(c => !configuration?.allowedClusters?.some(ac => ac === c)).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c }));
@@ -103,26 +103,22 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
   />
 
-  const adminRolesField: ConfigurationField = {
-    id: "adminRoles",
-    title: "Admin roles",
-    description: <span>List of authenticated roles allowed to manage this tenant.</span>,
-    input: adminRolesInput,
-  }
-
-  const allowedClustersField: ConfigurationField = {
-    id: "allowedClusters",
-    title: "Allowed clusters",
-    description: <span>List of clusters that this tenant is restricted on.</span>,
-    input: allowedClustersInput,
-  }
-
   return (
     <div className={s.Configuration} >
       <ConfigurationTable
         fields={[
-          adminRolesField,
-          allowedClustersField
+          {
+            id: "adminRoles",
+            title: "Admin roles",
+            description: <span>List of authenticated roles allowed to manage this tenant.</span>,
+            input: adminRolesInput,
+          },
+          {
+            id: "allowedClusters",
+            title: "Allowed clusters",
+            description: <span>List of clusters that this tenant is restricted on.</span>,
+            input: allowedClustersInput,
+          }
         ]}
       />
     </div >
