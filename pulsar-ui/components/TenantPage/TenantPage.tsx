@@ -69,7 +69,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
       {props.view === 'namespaces' && <Namespaces tenant={props.tenant} />}
       {props.view === 'configuration' && <Configuration tenant={props.tenant} />}
       {props.view === 'delete-tenant' && <DeleteTenant tenant={props.tenant} />}
-      {props.view === 'create-namespace' && <CreateNamespace />}
+      {props.view === 'create-namespace' && <CreateNamespace tenant={props.tenant} />}
     </div>
   );
 }

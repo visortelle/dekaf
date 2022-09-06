@@ -1,29 +1,50 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{
-    GetIsAllowAutoUpdateSchemaRequest,
-    GetIsAllowAutoUpdateSchemaResponse,
-    GetSchemaCompatibilityStrategyRequest,
-    GetSchemaCompatibilityStrategyResponse,
-    GetSchemaValidationEnforceRequest,
-    GetSchemaValidationEnforceResponse,
-    NamespaceServiceGrpc,
-    SetIsAllowAutoUpdateSchemaRequest,
-    SetIsAllowAutoUpdateSchemaResponse,
-    SetSchemaCompatibilityStrategyRequest,
-    SetSchemaCompatibilityStrategyResponse,
-    SetSchemaValidationEnforceRequest,
-    SetSchemaValidationEnforceResponse
-}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CreateNamespaceRequest, CreateNamespaceResponse, DeleteNamespaceRequest, DeleteNamespaceResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
+import org.apache.pulsar.common.policies.data.{BundlesData, Policies}
+import scala.jdk.CollectionConverters.*
 
 import scala.concurrent.Future
 
 class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     val logger: Logger = Logger(getClass.getName)
+
+    override def createNamespace(request: CreateNamespaceRequest): Future[CreateNamespaceResponse] =
+        logger.info(s"Creating namespace: ${request.namespaceName}")
+
+        val bundlesData = BundlesData.builder.numBundles(request.numBundles).build
+        val policies = new Policies
+        policies.bundles = bundlesData
+        policies.replication_clusters = request.replicationClusters.toSet.asJava
+        
+        try {
+            adminClient.namespaces.createNamespace(request.namespaceName)
+
+            val status = Status(code = Code.OK.index)
+            Future.successful(CreateNamespaceResponse(status = Some(status)))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(CreateNamespaceResponse(status = Some(status)))
+        }
+
+    override def deleteNamespace(request: DeleteNamespaceRequest): Future[DeleteNamespaceResponse] =
+        logger.info(s"Deleting namespace: ${request.namespaceName}")
+
+        try {
+            adminClient.namespaces.deleteNamespace(request.namespaceName, request.force)
+
+            val status = Status(code = Code.OK.index)
+            Future.successful(DeleteNamespaceResponse(status = Some(status)))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(DeleteNamespaceResponse(status = Some(status)))
+        }
 
     override def getIsAllowAutoUpdateSchema(request: GetIsAllowAutoUpdateSchemaRequest): Future[GetIsAllowAutoUpdateSchemaResponse] =
         logger.info(s"Getting is allow auto update schema for namespace: ${request.namespace}")
