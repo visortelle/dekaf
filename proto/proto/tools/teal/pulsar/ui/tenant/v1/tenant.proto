@@ -42,12 +42,8 @@ message GetTenantRequest {
 
 message GetTenantResponse {
   google.rpc.Status status = 1;
-  Tenant tenant = 2;
-}
-
-message Tenant {
-  string tenant_name = 1;
-  TenantInfo tenant_info = 2;
+  string tenant_name = 2;
+  TenantInfo tenant_info = 3;
 }
 
 message ListTenantsRequest {
