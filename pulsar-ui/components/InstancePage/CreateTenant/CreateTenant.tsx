@@ -110,7 +110,7 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
   const isFormValid = tenantName.length > 0 && allowedClusters.length > 0;
 
   return (
-    <div className={s.CreateTenant} >
+    <form className={s.CreateTenant} onSubmit={e => e.preventDefault()}>
       <div className={s.Title}>
         <H1>Create tenant</H1>
       </div>
@@ -144,8 +144,11 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
         type='primary'
         text='Create'
         disabled={!isFormValid}
+        buttonProps={{
+          type: 'submit'
+        }}
       />
-    </div >
+    </form>
   );
 }
 

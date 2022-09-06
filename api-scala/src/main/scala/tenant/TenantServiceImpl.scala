@@ -2,7 +2,7 @@ package tenant
 
 import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.tenant.v1.tenant as tenantPbLib
-import com.tools.teal.pulsar.ui.tenant.v1.tenant.{CreateTenantRequest, CreateTenantResponse, DeleteTenantRequest, DeleteTenantResponse, GetTenantRequest, GetTenantResponse, ListTenantsRequest, ListTenantsResponse, Tenant, TenantServiceGrpc, UpdateTenantRequest, UpdateTenantResponse}
+import com.tools.teal.pulsar.ui.tenant.v1.tenant.{CreateTenantRequest, CreateTenantResponse, DeleteTenantRequest, DeleteTenantResponse, GetTenantRequest, GetTenantResponse, ListTenantsRequest, ListTenantsResponse, TenantServiceGrpc, UpdateTenantRequest, UpdateTenantResponse}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
@@ -85,10 +85,13 @@ class TenantServiceImpl extends TenantServiceGrpc.TenantService:
             adminRoles = tenant.getAdminRoles().asScala.toSeq,
             allowedClusters = tenant.getAllowedClusters().asScala.toSeq
         )
-        val tenantPb = Tenant(tenantName = request.tenantName, tenantInfo = Some(tenantInfoPb))
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(GetTenantResponse(status = Some(status), tenant = Some(tenantPb)))
+        Future.successful(GetTenantResponse(
+            status = Some(status),
+            tenantName = request.tenantName,
+            tenantInfo = Some(tenantInfoPb)
+        ))
 
     override def listTenants(request: ListTenantsRequest): Future[ListTenantsResponse] =
         logger.info(s"Listing tenants")

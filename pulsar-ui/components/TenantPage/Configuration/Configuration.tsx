@@ -1,21 +1,25 @@
 import React from 'react';
 import s from './Configuration.module.css'
 import useSWR, { useSWRConfig } from 'swr';
-import ConfigurationTable, { ConfigurationField } from '../../ui/ConfigurationTable/ConfigurationTable';
+import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import * as Notifications from '../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Either from 'fp-ts/lib/Either';
 import Input from '../../ui/ConfigurationTable/Input/Input';
 import SelectInput, { ListItem } from '../../ui/ConfigurationTable/SelectInput/SelectInput';
 import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
 import { swrKeys } from '../../swrKeys';
+import { ListClustersRequest } from '../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/cluster_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import { GetTenantRequest, TenantInfo, UpdateTenantRequest } from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
+import { H1 } from '../../ui/H/H';
 
 export type ConfigurationProps = {
   tenant: string
 };
 
 const Configuration: React.FC<ConfigurationProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { clusterServiceClient, tenantServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -24,24 +28,47 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
   const { data: clusters, error: clustersError } = useSWR(
     swrKeys.pulsar.clusters._(),
-    async () => await adminClient.clusters.getClusters()
+    async () => {
+      const res = await clusterServiceClient.listClusters(new ListClustersRequest(), null);
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get clusters list. ${res.getStatus()?.getMessage()}`);
+        return [];
+      }
+
+      return res.getClustersList();
+    }
   );
 
   if (clustersError) {
     notifyError(`Unable to get clusters list. ${clustersError}`)
   }
 
-  const { data: configuration, error: configurationError } = useSWR(
+  const { data: tenantInfo, error: tenantInfoError } = useSWR(
     swrKey,
-    async () => await adminClient.tenants.getTenantAdmin(props.tenant) as unknown as { adminRoles: string[], allowedClusters: string[] }
+    async () => {
+      const req = new GetTenantRequest();
+      req.setTenantName(props.tenant);
+
+      const res = await tenantServiceClient.getTenant(req, null);
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get tenant. ${res.getStatus()?.getMessage()}`);
+        return null;
+      }
+
+      return {
+        allowedClusters: res.getTenantInfo()?.getAllowedClustersList() || [],
+        adminRoles: res.getTenantInfo()?.getAdminRolesList() || [],
+      }
+    }
   );
 
-  if (configurationError) {
-    notifyError(`Unable to get tenant admin roles. ${configurationError}`)
+  if (tenantInfoError) {
+    notifyError(`Unable to get tenant admin roles. ${tenantInfoError}`)
   }
 
   const adminRolesInput = <ListInput<string>
-    value={configuration?.adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
+    value={tenantInfo?.adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
     editor={{
@@ -49,29 +76,53 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
       initialValue: '',
     }}
     onRemove={async (roleId) => {
-      if (!configuration) {
+      if (!tenantInfo) {
         return
       }
 
-      await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: configuration.adminRoles.filter(r => r !== roleId) }).catch(onUpdateError);
+      const req = new UpdateTenantRequest();
+      req.setTenantName(props.tenant);
+      const tenantInfoPb = new TenantInfo();
+      tenantInfoPb.setAdminRolesList(tenantInfo.adminRoles.filter(r => r !== roleId));
+      tenantInfoPb.setAllowedClustersList(tenantInfo.allowedClusters);
+      req.setTenantInfo(tenantInfoPb)
+
+      const res = await tenantServiceClient.updateTenant(req, null).catch(onUpdateError);
+      if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to remove role. ${res?.getStatus()?.getMessage()}`);
+        return;
+      }
+
       await mutate(swrKey);
     }}
     onAdd={async (v) => {
-      if (!configuration) {
+      if (!tenantInfo) {
         return
       }
 
-      await adminClient.tenants.updateTenant(props.tenant, { ...configuration, adminRoles: [...configuration.adminRoles, v] }).catch(onUpdateError);
+      const req = new UpdateTenantRequest();
+      req.setTenantName(props.tenant);
+      const tenantInfoPb = new TenantInfo();
+      tenantInfoPb.setAdminRolesList([...tenantInfo.adminRoles, v]);
+      tenantInfoPb.setAllowedClustersList(tenantInfo.allowedClusters);
+      req.setTenantInfo(tenantInfoPb);
+
+      const res = await tenantServiceClient.updateTenant(req, null).catch(onUpdateError);
+      if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to add role. ${res?.getStatus()?.getMessage()}`);
+        return;
+      }
+
       await mutate(swrKey);
     }}
     isValid={() => Either.right(undefined)}
   />
 
-  const clustersList = (clusters || []).filter(c => !configuration?.allowedClusters?.some(ac => ac === c)).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c }));
+  const clustersList = (clusters || []).filter(c => !tenantInfo?.allowedClusters?.some(ac => ac === c)).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c }));
   const hideAddButton = clustersList.length === 0;
 
   const allowedClustersInput = <ListInput<string>
-    value={configuration?.allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
+    value={tenantInfo?.allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <div>{v}</div>}
     editor={hideAddButton ? undefined : {
@@ -85,26 +136,53 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
       initialValue: '',
     }}
     onRemove={clustersList.length <= 1 ? undefined : async (id) => {
-      if (!configuration) {
+      if (!tenantInfo) {
         return;
       }
 
-      await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: configuration.allowedClusters.filter(r => r !== id) }).catch(onUpdateError);
+      const req = new UpdateTenantRequest();
+      req.setTenantName(props.tenant);
+      const tenantInfoPb = new TenantInfo();
+      tenantInfoPb.setAdminRolesList(tenantInfo.adminRoles);
+      tenantInfoPb.setAllowedClustersList(tenantInfo.allowedClusters.filter(r => r !== id));
+      req.setTenantInfo(tenantInfoPb);
+
+      const res = await tenantServiceClient.updateTenant(req, null).catch(onUpdateError);
+      if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to remove allowed cluster. ${res?.getStatus()?.getMessage()}`);
+        return;
+      }
+
       await mutate(swrKey);
     }}
     onAdd={hideAddButton ? undefined : async (v) => {
-      if (!configuration) {
+      if (!tenantInfo) {
         return;
       }
 
-      await adminClient.tenants.updateTenant(props.tenant, { ...configuration, allowedClusters: [...configuration.allowedClusters, v] }).catch(onUpdateError);
+      const req = new UpdateTenantRequest();
+      req.setTenantName(props.tenant);
+      const tenantInfoPb = new TenantInfo();
+      tenantInfoPb.setAdminRolesList(tenantInfo.adminRoles);
+      tenantInfoPb.setAllowedClustersList([...tenantInfo.allowedClusters, v]);
+      req.setTenantInfo(tenantInfoPb);
+
+      const res = await tenantServiceClient.updateTenant(req, null).catch(onUpdateError);
+      if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to add allowed cluster. ${res?.getStatus()?.getMessage()}`);
+        return;
+      }
+
       await mutate(swrKey);
     }}
     isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
   />
 
   return (
-    <div className={s.Configuration} >
+    <div className={s.Configuration}>
+      <div className={s.Title}>
+        <H1>Tenant configuration</H1>
+      </div>
       <ConfigurationTable
         fields={[
           {

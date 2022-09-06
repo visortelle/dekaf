@@ -107,15 +107,15 @@
   background-color: #f5f5f5;
   border-radius: 6rem;
   padding: 1rem 6rem;
-  margin-bottom: 8rem;
-  max-width: 14ch;
+  margin-right: 8rem;
+  max-width: 32ch;
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-flex;
 }
 
 .Badge:last-child {
-  margin-bottom: 0;
+  margin-right: 0;
 }
 
 .NoData {
