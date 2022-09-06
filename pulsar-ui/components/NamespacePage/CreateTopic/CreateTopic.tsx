@@ -1,5 +1,6 @@
 import React from 'react';
 import { CreateNonPartitionedTopicRequest, CreatePartitionedTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
+import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import Button from '../../ui/Button/Button';
@@ -11,6 +12,7 @@ import { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../routes';
+import { H1 } from '../../ui/H/H';
 
 export type CreateTopicProps = {
   tenant: string;
@@ -92,10 +94,50 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
 
   return (
     <form className={s.CreateTopic} onSubmit={e => e.preventDefault()}>
-      {topicNameInput}
-      {topicPersistencyInput}
-      {topicPartitioningInput}
-      {topicPartitioning === 'partitioned' && numPartitionsInput}
+      <div className={s.Title}>
+        <H1>Create topic</H1>
+      </div>
+
+      <ConfigurationTable
+        fields={[
+          {
+            id: "topicName",
+            title: "Topic name",
+            description: <span>Each topic has a name, unique for a specific namespace. You may have a persistent topic with the name ABC and a non-persistent topic with the same name in the same namespace simultaneously.</span>,
+            input: topicNameInput,
+            isRequired: true,
+          },
+          {
+            id: "persistency",
+            title: "Persistency",
+            description: (
+              <span>
+                With <strong>persistent </strong>topics, all messages are durably persisted on disks (if the broker is not standalone, messages are durably persisted on multiple disks), whereas data for <strong>non-persistent</strong> topics is not persisted to storage disks.
+              </span>
+            ),
+            input: topicPersistencyInput,
+          },
+          {
+            id: "partitioning",
+            title: "Partitioning",
+            description: (
+              <span>
+                By default, Pulsar topics are served by a single broker. Using only a single broker limits a topic&apos;s maximum throughput. <strong>Partitioned </strong> topics are a special type of topic that can span multiple brokers and thus allow for much higher throughput.
+              </span>
+            ),
+            input: topicPartitioningInput,
+          },
+          ...topicPartitioning === 'partitioned' ? [
+            {
+              id: "numPartitions",
+              title: "Partitions count",
+              description: <span></span>,
+              input: numPartitionsInput,
+            }
+          ] : []
+        ]}
+      />
+
       <Button
         type='primary'
         onClick={() => {
