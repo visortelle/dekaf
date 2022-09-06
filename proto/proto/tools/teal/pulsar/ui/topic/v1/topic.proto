@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tools.teal.pulsar.ui.api.v1;
+package tools.teal.pulsar.ui.topic.v1;
 
 import "google/rpc/status.proto";
 
@@ -79,6 +79,27 @@ message GetTopicsInternalStatsResponse {
   map<string, TopicInternalStats> stats = 2;
 }
 
+message CreatePartitionedTopicRequest {
+  string topic = 1;
+  map<string, string> properties = 2;
+  int32 num_partitions = 3;
+}
+
+message CreatePartitionedTopicResponse {
+  google.rpc.Status status = 1;
+}
+
+message CreateNonPartitionedTopicRequest {
+  string topic = 1;
+  map<string, string> properties = 2;
+}
+
+message CreateNonPartitionedTopicResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicService {
+  rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
+  rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
   rpc GetTopicsInternalStats(GetTopicsInternalStatsRequest) returns (GetTopicsInternalStatsResponse);
 }

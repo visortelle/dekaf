@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import s from './SubscriptionsCursors.module.css'
-import { CursorStats, GetTopicsInternalStatsResponse, ManagedLedgerInternalStats, TopicInternalStats } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
+import { CursorStats, GetTopicsInternalStatsResponse, ManagedLedgerInternalStats, TopicInternalStats } from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { SessionConfig, SessionState } from '../../types';
 import SubscriptionCursor, { SubscriptionCursorProps, Cursor } from './SubscriptionCursor/SubscriptionCursor';
 
