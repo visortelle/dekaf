@@ -71,7 +71,29 @@ message GetSchemaValidationEnforceResponse {
   bool schema_validation_enforced = 2;
 }
 
+message CreateNamespaceRequest {
+  string namespace_name = 1;
+  int32 num_bundles = 2;
+  repeated string replication_clusters = 3;
+}
+
+message CreateNamespaceResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteNamespaceRequest {
+  string namespace_name = 1;
+  bool force = 2;
+}
+
+message DeleteNamespaceResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
+  rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
+  rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
+
   rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);
   rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
 
