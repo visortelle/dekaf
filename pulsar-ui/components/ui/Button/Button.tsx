@@ -7,7 +7,8 @@ export type ButtonProps = {
   svgIcon?: string,
   title?: string,
   type: 'primary' | 'regular' | 'danger',
-  disabled?: boolean
+  disabled?: boolean,
+  buttonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>,
 }
 const Button: React.FC<ButtonProps> = (props) => {
   let className = '';
@@ -24,6 +25,7 @@ const Button: React.FC<ButtonProps> = (props) => {
       onClick={props.onClick}
       disabled={props.disabled}
       title={props.title}
+      {...props.buttonProps}
     >
       {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
       {props.text}

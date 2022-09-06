@@ -270,7 +270,7 @@ const Tenant: React.FC<TenantProps> = (props) => {
       <Td width="4ch" title={`${props.namespacesCount?.toString()} namespaces`}>
         {props.namespacesCount !== undefined && <span className={cts.LazyContent}>{props.namespacesCount}</span>}
       </Td>
-      <Td width="12ch">
+      <Td width="24ch">
         {props.tenantInfo !== undefined && (
           <div className={cts.LazyContent}>
             {props.tenantInfo.allowedClusters.length === 0 ?
@@ -280,7 +280,7 @@ const Tenant: React.FC<TenantProps> = (props) => {
           </div>
         )}
       </Td>
-      <Td width="12ch">
+      <Td width="24ch">
         {props.tenantInfo !== undefined && (
           <div className={cts.LazyContent}>
             {props.tenantInfo.adminRoles.length === 0 ?
