@@ -3,7 +3,7 @@ package topic
 import _root_.client.{adminClient, client}
 import org.apache.pulsar.common.policies.data.ManagedLedgerInternalStats.{CursorStats, LedgerInfo}
 import org.apache.pulsar.common.policies.data.{ManagedLedgerInternalStats, PartitionedTopicInternalStats, PersistentTopicInternalStats}
-import com.tools.teal.pulsar.ui.api.v1.topic as topicPb
+import com.tools.teal.pulsar.ui.topic.v1.topic as topicPb
 import org.apache.pulsar.common.partition.PartitionedTopicMetadata
 
 import scala.jdk.CollectionConverters.*

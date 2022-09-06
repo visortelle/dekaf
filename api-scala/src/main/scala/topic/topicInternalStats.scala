@@ -2,7 +2,7 @@ package topic
 
 import _root_.client.{adminClient, client}
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
-import com.tools.teal.pulsar.ui.api.v1.topic as topicPb
+import com.tools.teal.pulsar.ui.topic.v1.topic as topicPb
 
 type TopicInternalStatsPb = topicPb.PersistentTopicInternalStats | topicPb.PartitionedTopicInternalStats
 def getTopicInternalStatsPb(topic: String): Either[String, TopicInternalStatsPb] =

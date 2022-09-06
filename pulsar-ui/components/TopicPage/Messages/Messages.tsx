@@ -43,7 +43,7 @@ import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp
 import Console from './Console/Console';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
-import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
+import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { messageDescriptorFromPb } from './conversions';
