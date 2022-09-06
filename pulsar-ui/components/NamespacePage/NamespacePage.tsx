@@ -6,6 +6,7 @@ import Topics from './Topics/Topics';
 import Policies from './Policies/Policies';
 import DeleteNamespace from './DeleteNamespace/DeleteNamespace';
 import { routes } from '../routes';
+import CreateTopic from './CreateTopic/CreateTopic';
 
 export type NamespacePageView = 'topics' | 'policies' | 'delete-namespace' | 'create-topic';
 export type NamespacePageProps = {
@@ -69,6 +70,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       {props.view === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'delete-namespace' && <DeleteNamespace tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
     </div>
   );
 }

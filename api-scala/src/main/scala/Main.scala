@@ -7,6 +7,7 @@ import com.tools.teal.pulsar.ui.api.v1.schema.SchemaServiceGrpc
 import com.tools.teal.pulsar.ui.tenant.v1.tenant.TenantServiceGrpc
 import com.tools.teal.pulsar.ui.namespace.v1.namespace.NamespaceServiceGrpc
 import com.tools.teal.pulsar.ui.cluster.v1.cluster.ClusterServiceGrpc
+import com.tools.teal.pulsar.ui.topic.v1.topic.TopicServiceGrpc
 import io.grpc.{Server, ServerBuilder}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,7 +21,6 @@ import _root_.schema.SchemaServiceImpl
 import _root_.tenant.TenantServiceImpl
 import _root_.namespace.NamespaceServiceImpl
 import _root_.cluster.ClusterServiceImpl
-import com.tools.teal.pulsar.ui.api.v1.topic.TopicServiceGrpc
 
 object Main:
     def main(args: Array[String]): Unit =
