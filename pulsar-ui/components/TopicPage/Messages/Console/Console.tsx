@@ -2,7 +2,7 @@ import React from 'react';
 import s from './Console.module.css'
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
 import { SessionConfig, SessionState } from '../types';
-import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
+import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Producer from './Producer/Producer';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import closeIcon from '!!raw-loader!./close.svg';
