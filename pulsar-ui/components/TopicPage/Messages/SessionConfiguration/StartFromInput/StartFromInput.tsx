@@ -7,8 +7,7 @@ import { QuickDate, quickDateToDate } from './quick-date';
 import Input from '../../../../ui/Input/Input';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { timestampToDate } from './timestamp-to-date';
-import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
-import { boolean } from 'fp-ts';
+import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 
 export type StartFromInputProps = {
   value: StartFrom;

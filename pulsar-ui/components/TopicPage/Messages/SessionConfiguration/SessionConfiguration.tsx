@@ -2,8 +2,7 @@ import React from 'react';
 import s from './SessionConfiguration.module.css'
 import StartFromInput from './StartFromInput/StartFromInput';
 import { SessionConfig } from '../types';
-import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/topic_pb';
-import { H1 } from '../../../ui/H/H';
+import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import FilterChain from './MessageFilterInput/FilterChain';
 
 export type SessionConfigurationProps = {
