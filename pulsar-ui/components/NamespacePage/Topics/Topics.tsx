@@ -21,8 +21,9 @@ import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { useRef } from 'react';
 import _ from 'lodash';
+import Table from '../../ui/Table/Table';
 
-type SortKey =
+type ColumnKey =
   'topic' |
   'topicType' |
   'producersCount' |
@@ -42,7 +43,7 @@ type SortKey =
   'producerCount' |
   'storageSize';
 
-type Sort = { key: SortKey, direction: 'asc' | 'desc' };
+type Sort = { key: ColumnKey, direction: 'asc' | 'desc' };
 
 const firstColumnWidth = '15ch';
 
@@ -64,7 +65,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
   const [sort, setSort] = useState<Sort>({ key: 'topic', direction: 'asc' });
   const i18n = I18n.useContext();
 
-  const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, style?: React.CSSProperties }) => {
+  const Th = useCallback((props: { title: React.ReactNode, sortKey?: ColumnKey, style?: React.CSSProperties }) => {
     const handleColumnHeaderClick = () => {
       if (props.sortKey === undefined) {
         return;
