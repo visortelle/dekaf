@@ -50,6 +50,9 @@
 .ConfigParamKeyCell {
   max-width: 200rem;
 }
+.ConfigParamKeyCell:hover {
+  cursor: help;
+}
 .RuntimeConfigCell,
 .DynamicConfigCell {
   max-width: 200rem;
