@@ -13,6 +13,8 @@ import Button from '../../ui/Button/Button';
 import { swrKeys } from '../../swrKeys';
 import Highlighter from "react-highlight-words";
 import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
+import { help } from './help';
+import ReactDOMServer from 'react-dom/server';
 
 const Configuration: React.FC = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
@@ -66,7 +68,7 @@ const Configuration: React.FC = () => {
             {allKeys.map((key) => {
               return (
                 <tr key={key} className={s.Row}>
-                  <td className={`${s.Cell} ${s.ConfigParamKeyCell}`}>
+                  <td className={`${s.Cell} ${s.ConfigParamKeyCell}`} data-tip={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}>
                     <Highlighter
                       highlightClassName="highlight-substring"
                       searchWords={[paramFilter]}

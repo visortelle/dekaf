@@ -1,7 +1,4 @@
-import { divide } from "lodash";
-import { ReactNode } from "react";
-
-export const help: Record<string, ReactNode> = {
+export const help: Record<string, React.ReactElement> = {
   acknowledgmentAtBatchIndexLevelEnabled: <div>Enable or disable the batch index acknowledgement.</div>,
   activeConsumerFailoverDelayTimeMillis: <div>How long to delay rewinding cursor and dispatching messages when active consumer is changed.</div>,
   additionalServletDirectory: <div>Location of broker additional servlet NAR directory</div>,

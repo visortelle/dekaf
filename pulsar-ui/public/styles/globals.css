@@ -143,3 +143,11 @@ code {
   background-color: var(--accent-color-yellow);
   border-radius: 2rem;
 }
+
+.__react_component_tooltip {
+  max-width: 640rem;
+}
+.__react_component_tooltip code {
+  background: rgba(255,255,255,1);
+  color: var(--text-color);
+}
