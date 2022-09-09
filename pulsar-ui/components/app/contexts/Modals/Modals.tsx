@@ -2,17 +2,22 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import s from './Modals.module.css'
 import { motion, AnimatePresence } from "framer-motion"
+import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
+import closeIcon from '!!raw-loader!./close.svg';
+import { H2 } from '../../../ui/H/H';
 
 type ModalStackEntry = {
   id: string,
-  element: ReactNode,
+  title: string,
+  content: ReactNode,
+  styleMode?: 'no-content-padding'
 }
 
 type ModalStack = ModalStackEntry[];
 
 export type Value = {
   stack: ModalStack,
-  push: (id: string, element: ReactNode) => void,
+  push: (entry: ModalStackEntry) => void,
   pop: () => void,
   clear: () => void,
 };
@@ -30,7 +35,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [value, setValue] = useState<Value>(defaultValue);
 
   const pop = () => setValue((value) => ({ ...value, stack: value.stack.slice(0, value.stack.length - 1) }));
-  const push = (id: string, element: ReactNode) => setValue((value) => ({ ...value, stack: [...value.stack, { id, element }] }));
+  const push = (entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: [...value.stack, entry] }));
   const clear = () => setValue((value) => ({ ...value, stack: [] }));
 
   const modalPortal = ReactDOM.createPortal(
@@ -62,23 +67,37 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
     rootRef.current?.focus();
   }, [props.stack]);
 
+  const currentModal = props.stack[props.stack.length - 1];
+
   return (
     <motion.div
       ref={rootRef}
       className={s.Root}
       key={'modal'}
       initial={{ y: '-100%' }}
-      animate={{ y: isVisible ? '0' : '-100%' }}
+      animate={{
+        y: isVisible ? '0' : '-100%',
+        opacity: isVisible ? 1 : 0
+      }}
       transition={{ duration: 0.33 }}
       tabIndex={0}
       onKeyDown={(e) => {
-        console.log('keydown', e.key);
         if (e.key === 'Escape') {
           props.onClose();
         }
       }}
     >
-      {isVisible && props.stack[props.stack.length - 1].element}
+      <div className={s.ContentContainer}>
+        <div className={s.TopBar}>
+          <div className={s.TopBarTitle}>
+            <H2>{currentModal?.title}</H2>
+          </div>
+          <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>
+        </div>
+        {isVisible && (
+          <div className={`${s.Content} ${currentModal.styleMode === 'no-content-padding' ? s.NoContentPadding : ''}`}>{currentModal.content}</div>
+        )}
+      </div>
     </motion.div>
   );
 }
