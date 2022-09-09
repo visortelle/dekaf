@@ -34,7 +34,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={msg.publishTime === undefined ? undefined : i18n.formatDate(msg.publishTime)} rawValue={msg.publishTime?.toISOString()} tooltip={help.publishTime} />
       </Td>
       <Td width="48rem" style={{ position: 'sticky', left: '290rem', zIndex: 1 }}>
-        <div><SmallButton onClick={() => modals.push('aaa', <div>ABC XYZ</div>)} text="Show" type='primary' /></div>
+        <div><SmallButton onClick={() => modals.push({ id: '', title: `abc!`, content: <div>ABC XYZ</div>})} text="Show" type='primary' /></div>
       </Td>
       <Td width='20ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Key" value={msg.key || undefined} rawValue={msg.key || undefined} tooltip={help.key} />
