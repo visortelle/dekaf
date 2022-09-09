@@ -14,3 +14,50 @@
 .Root:focus {
   outline: none;
 }
+
+.ContentContainer {
+  border-radius: 4rem;
+  overflow: hidden;
+  min-width: 480rem;
+  box-shadow: 4rem 4rem 8rem rgba(0, 0, 0, 0.27);
+  background-color: #fff;
+}
+
+.Content {
+  padding: 12rem 24rem;
+}
+
+.TopBar {
+  height: 48rem;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+}
+
+.Content.NoContentPadding {
+  padding: 0;
+}
+
+.TopBarTitle {
+  padding-left: 24rem;
+}
+
+.TopBarClose {
+  width: 32rem;
+  height: 32rem;
+  display: flex;
+  align-items: center;
+}
+
+.TopBarClose:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.TopBarClose svg {
+  width: 24rem;
+  height: 24rem;
+  fill: var(--text-color);
+}
