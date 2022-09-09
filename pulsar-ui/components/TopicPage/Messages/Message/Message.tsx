@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect } from 'react';
 import s from './Message.module.css'
-import { Message } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import * as Notifications from '../../../app/contexts/Notifications';
+import * as Modals from '../../../app/contexts/Modals/Modals';
 import { routes } from '../../../routes';
 import { parseTopic } from '../../../pulsar/parse-topic';
 import { help, FieldName } from './fields';
 import ReactTooltip from 'react-tooltip';
 import cts from "../../../ui/ChildrenTable/ChildrenTable.module.css";
 import { MessageDescriptor } from '../types';
+import SmallButton from '../../../ui/SmallButton/SmallButton';
 
 export type MessageProps = {
   isShowTooltips: boolean;
@@ -18,6 +19,7 @@ export type MessageProps = {
 const MessageComponent: React.FC<MessageProps> = (props) => {
   const msg = props.message;
   const i18n = I18n.useContext();
+  const modals = Modals.useContext();
 
   const topicPath = parseTopic(msg.topic);
   const topicHref = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
@@ -28,11 +30,17 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
 
   return (
     <>
-      <Td width="30ch" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
+      <Td width="265rem" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
         <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={msg.publishTime === undefined ? undefined : i18n.formatDate(msg.publishTime)} rawValue={msg.publishTime?.toISOString()} tooltip={help.publishTime} />
+      </Td>
+      <Td width="48rem" style={{ position: 'sticky', left: '290rem', zIndex: 1 }}>
+        <div><SmallButton onClick={() => modals.push('aaa', <div>ABC XYZ</div>)} text="Show" type='primary' /></div>
       </Td>
       <Td width='20ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Key" value={msg.key || undefined} rawValue={msg.key || undefined} tooltip={help.key} />
+      </Td>
+      <Td width='30ch'>
+        <Field isShowTooltips={props.isShowTooltips} title="Value as JSON" value={msg.jsonValue || undefined} rawValue={msg.jsonValue} tooltip={help.jsonValue} />
       </Td>
       <Td width='60ch'>
         <Field isShowTooltips={props.isShowTooltips} value={msg.topic || undefined} valueHref={topicHref} tooltip={help.topic} />
@@ -45,9 +53,6 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       {/* <Td width='30ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Value" value={value === undefined ? undefined : i18n.bytesToHexString(value, 'hex-with-space')} rawValue={i18n.bytesToHexString(value, 'hex-no-space')} tooltip={help.value} />
       </Td> */}
-      <Td width='30ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="JSON value" value={msg.jsonValue || undefined} rawValue={msg.jsonValue} tooltip={help.jsonValue} />
-      </Td>
       <Td width='8ch'>
         <Field isShowTooltips={props.isShowTooltips} title="Schema version" value={msg.schemaVersion.toString()} rawValue={msg.schemaVersion.toString()} tooltip={help.schemaVersion} />
       </Td>

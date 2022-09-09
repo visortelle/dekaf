@@ -10,7 +10,6 @@
   align-items: center;
   justify-content: space-between;
   overflow: hidden;
-  padding: 0 12rem;
 }
 
 .FieldName {
@@ -45,4 +44,8 @@
 
 .Tooltip {
   max-width: 480rem;
+}
+
+.ShowMoreButton {
+  display: none;
 }
