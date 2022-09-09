@@ -6,6 +6,7 @@ import * as PulsarAdminClient from '../components/app/contexts/PulsarAdminClient
 import * as PulsarAdminBatchClient from '../components/app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
 import * as PulsarCustomApiClient from '../components/app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
 import * as PulsarGrpcClient from '../components/app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as Modals from '../components/app/contexts/Modals/Modals';
 import * as BrokerConfig from '../components/app/contexts/BrokersConfig';
 import * as I18n from '../components/app/contexts/I18n/I18n';
 import ReactTooltip from 'react-tooltip';
@@ -63,24 +64,26 @@ const _MyApp = (props: AppProps) => {
       value={{
         shouldRetryOnError: false,
         focusThrottleInterval: 120,
-        // refreshInterval: appContext.performanceOptimizations.pulsarConsumerState === 'active' ? 0 : 15 * 1000
-        refreshInterval: 0,
+        refreshInterval: appContext.performanceOptimizations.pulsarConsumerState === 'active' ? 0 : 15_000,
         revalidateOnFocus: false,
       }}>
       <NoSsr>
         <ReactTooltip html={true} />
+
         <Notifications.DefaultProvider>
-          <PulsarGrpcClient.DefaultProvider>
-            <PulsarAdminClient.DefaultProvider>
-              <PulsarAdminBatchClient.DefaultProvider>
-                <PulsarCustomApiClient.DefaultProvider>
-                  <BrokerConfig.DefaultProvider>
-                    {typeof window === 'undefined' ? null : <props.Component />}
-                  </BrokerConfig.DefaultProvider>
-                </PulsarCustomApiClient.DefaultProvider>
-              </PulsarAdminBatchClient.DefaultProvider>
-            </PulsarAdminClient.DefaultProvider>
-          </PulsarGrpcClient.DefaultProvider>
+          <Modals.DefaultProvider>
+            <PulsarGrpcClient.DefaultProvider>
+              <PulsarAdminClient.DefaultProvider>
+                <PulsarAdminBatchClient.DefaultProvider>
+                  <PulsarCustomApiClient.DefaultProvider>
+                    <BrokerConfig.DefaultProvider>
+                      {typeof window === 'undefined' ? null : <props.Component />}
+                    </BrokerConfig.DefaultProvider>
+                  </PulsarCustomApiClient.DefaultProvider>
+                </PulsarAdminBatchClient.DefaultProvider>
+              </PulsarAdminClient.DefaultProvider>
+            </PulsarGrpcClient.DefaultProvider>
+          </Modals.DefaultProvider>
         </Notifications.DefaultProvider>
       </NoSsr >
     </SWRConfig>

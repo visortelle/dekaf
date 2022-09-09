@@ -32,17 +32,15 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <>
-      <Context.Provider
-        value={{
-          ...value,
-          startTask,
-          finishTask,
-        }}
-      >
-        {children}
-      </Context.Provider>
-    </>
+    <Context.Provider
+      value={{
+        ...value,
+        startTask,
+        finishTask,
+      }}
+    >
+      {children}
+    </Context.Provider>
   )
 };
 

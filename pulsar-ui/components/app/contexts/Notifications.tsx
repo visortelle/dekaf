@@ -23,26 +23,24 @@ const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   return (
-    <>
-      <Context.Provider value={defaultValue}>
-        <ToastContainer
-          enableMultiContainer
-          containerId={toastContainerId}
-          position="top-right"
-          autoClose={5000}
-          newestOnTop={true}
-          hideProgressBar={true}
-          closeOnClick={true}
-          draggable={false}
-          pauseOnHover={true}
-          pauseOnFocusLoss={true}
-          className={s.toastContainer}
-          toastClassName={s.toast}
-          bodyClassName={s.toastBody}
-        />
-        {children}
-      </Context.Provider>
-    </>
+    <Context.Provider value={defaultValue}>
+      <ToastContainer
+        enableMultiContainer
+        containerId={toastContainerId}
+        position="top-right"
+        autoClose={5000}
+        newestOnTop={true}
+        hideProgressBar={true}
+        closeOnClick={true}
+        draggable={false}
+        pauseOnHover={true}
+        pauseOnFocusLoss={true}
+        className={s.toastContainer}
+        toastClassName={s.toast}
+        bodyClassName={s.toastBody}
+      />
+      {children}
+    </Context.Provider>
   )
 };
 
