@@ -9,6 +9,7 @@ import * as I18n from '../../app/contexts/I18n/I18n';
 import { SessionState, SessionConfig } from './types';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
+import SmallButton from '../../ui/SmallButton/SmallButton';
 
 export type ToolbarProps = {
   sessionState: SessionState;
@@ -63,7 +64,9 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             title={"Toggle console"}
             svgIcon={consoleIcon}
             onClick={props.onToggleConsoleClick}
-            type={'regular'}
+            text="Tools"
+            type={'primary'}
+            size='small'
           />
         </div>
         <div className={s.Control}>

@@ -1,4 +1,7 @@
 import ReactDOMServer from 'react-dom/server';
+import { MessageDescriptor } from '../types';
+import * as I18n from '../../../app/contexts/I18n/I18n';
+import Field from './Field/Field';
 import s from './Message.module.css'
 
 export type FieldName =
@@ -64,3 +67,77 @@ export const help = Object.keys(helpJsx).reduce<Record<string, string | undefine
   return tt === undefined ? acc : { ...acc, [curr]: ReactDOMServer.renderToStaticMarkup(<div className={s.Tooltip}>{tt}</div>) };
 }, {});
 
+
+type FieldProps = {
+  isShowTooltips: boolean;
+  message: MessageDescriptor;
+}
+
+export const PublishTimeField: React.FC<FieldProps> = (props) => {
+  const i18n = I18n.useContext();
+  return <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={props.message.publishTime === undefined ? undefined : i18n.formatDate(props.message.publishTime)} rawValue={props.message.publishTime?.toISOString()} tooltip={help.publishTime} />
+}
+
+export const KeyField: React.FC<FieldProps> = (props) => {
+  return <Field isShowTooltips={props.isShowTooltips} title="Key" value={props.message.key || undefined} rawValue={props.message.key || undefined} tooltip={help.key} />
+}
+
+export const JsonValueField: React.FC<FieldProps> = (props) => {
+  return <Field isShowTooltips={props.isShowTooltips} title="Value as JSON" value={props.message.jsonValue || undefined} rawValue={props.message.jsonValue} tooltip={help.jsonValue} />
+}
+
+export const TopicField: React.FC<FieldProps & { topicHref: string }> = (props) => {
+  return <Field isShowTooltips={props.isShowTooltips} value={props.message.topic || undefined} valueHref={props.topicHref} tooltip={help.topic} />
+}
+
+export const ProducerNameField: React.FC<FieldProps> = (props) => {
+  return <Field isShowTooltips={props.isShowTooltips} title="Producer" value={props.message.producerName || undefined} rawValue={props.message.producerName || undefined} tooltip={help.producerName} />
+}
+
+export const SchemaVersionField: React.FC<FieldProps> = (props) => {
+  const schemaVersion = props.message.schemaVersion.toString();
+  return <Field isShowTooltips={props.isShowTooltips} title="Schema version" value={schemaVersion} rawValue={schemaVersion} tooltip={help.schemaVersion} />
+}
+
+export const SizeField: React.FC<FieldProps> = (props) => {
+  const i18n = I18n.useContext();
+  return <Field isShowTooltips={props.isShowTooltips} title="Size" value={i18n.formatBytes(props.message.size) || undefined} rawValue={String(props.message.size) || undefined} tooltip={help.size} />
+}
+
+export const PropertiesField: React.FC<FieldProps> = (props) => {
+  return <Field isShowTooltips={props.isShowTooltips} title="Properties" value={props.message.properties} rawValue={props.message.properties} tooltip={help.size} />
+}
+
+export const EventTimeField: React.FC<FieldProps> = (props) => {
+  const i18n = I18n.useContext();
+  return <Field isShowTooltips={props.isShowTooltips} title="Event time" value={props.message.eventTime === undefined ? undefined : i18n.formatDate(props.message.eventTime)} rawValue={props.message.eventTime?.toISOString()} tooltip={help.eventTime} />
+}
+
+export const BrokerPublishTimeField: React.FC<FieldProps> = (props) => {
+  const i18n = I18n.useContext();
+  return <Field isShowTooltips={props.isShowTooltips} title="Broker pub. time" value={props.message.brokerPublishTime === undefined ? undefined : i18n.formatDate(props.message.brokerPublishTime)} rawValue={props.message.brokerPublishTime?.toISOString()} tooltip={help.brokerPublishTime} />
+}
+
+export const MessageIdField: React.FC<FieldProps> = (props) => {
+  const i18n = I18n.useContext();
+  return <Field isShowTooltips={props.isShowTooltips} title="Message Id" value={props.message.messageId === undefined ? undefined : i18n.bytesToHexString(props.message.messageId, 'hex-with-space')} rawValue={i18n.bytesToHexString(props.message.messageId, 'hex-no-space')} tooltip={help.messageId} />
+}
+
+export const SequenceIdField: React.FC<FieldProps> = (props) => {
+  const i18n = I18n.useContext();
+  return <Field isShowTooltips={props.isShowTooltips} title="Sequence Id" value={props.message.sequenceId === undefined ? undefined : i18n.formatLongNumber(props.message.sequenceId)} rawValue={String(props.message.sequenceId)} tooltip={help.sequenceId} />
+}
+
+export const OrderingKeyField: React.FC<FieldProps> = (props) => {
+  const i18n = I18n.useContext();
+  return <Field isShowTooltips={props.isShowTooltips} title="Ordering key" value={props.message.orderingKey === undefined || props.message.orderingKey.length === 0 ? undefined : i18n.bytesToHexString(props.message.orderingKey, 'hex-with-space')} rawValue={i18n.bytesToHexString(props.message.orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
+}
+
+export const RedeliveryCountField: React.FC<FieldProps> = (props) => {
+  const i18n = I18n.useContext();
+  return <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={i18n.formatLongNumber(props.message.redeliveryCount) || undefined} rawValue={String(props.message.redeliveryCount)} tooltip={help.redeliveryCount} />
+}
+
+export const AggregateField: React.FC<FieldProps> = (props) => {
+  return <Field isShowTooltips={props.isShowTooltips} title="Aggregate" value={props.message.aggregate} rawValue={props.message.aggregate} tooltip={help.jsonAggregate} />
+}

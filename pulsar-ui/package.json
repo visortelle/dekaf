@@ -40,7 +40,6 @@
     "react-datetime-picker": "^3.5.0",
     "react-dom": "18.2.0",
     "react-highlight-words": "^0.18.0",
-    "react-json-view": "^1.21.3",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
     "react-toastify": "^8.1.0",
@@ -68,11 +67,5 @@
   },
   "optionalDependencies": {
     "pulsar-ui-grpc-web-client": "*"
-  },
-  "overrides": {
-    "react-json-view": {
-      "react": "18.x.x",
-      "react-dom": "18.x.x"
-    }
   }
 }

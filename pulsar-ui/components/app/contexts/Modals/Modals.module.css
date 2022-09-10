@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,10 +25,12 @@
 
 .Content {
   padding: 12rem 24rem;
+  max-height: calc(100vh - 96rem);
+  overflow: auto;
 }
 
 .TopBar {
-  height: 48rem;
+  height: 60rem;
   background-color: #fff;
   display: flex;
   align-items: center;
