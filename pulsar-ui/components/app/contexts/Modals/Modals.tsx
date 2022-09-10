@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import closeIcon from '!!raw-loader!./close.svg';
 import { H2 } from '../../../ui/H/H';
+import ReactTooltip from 'react-tooltip';
 
 type ModalStackEntry = {
   id: string,

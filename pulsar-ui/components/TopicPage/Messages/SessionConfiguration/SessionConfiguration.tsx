@@ -4,6 +4,7 @@ import StartFromInput from './StartFromInput/StartFromInput';
 import { SessionConfig } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import FilterChain from './MessageFilterInput/FilterChain';
+import { H1 } from '../../../ui/H/H';
 
 export type SessionConfigurationProps = {
   config: SessionConfig;

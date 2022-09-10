@@ -1,0 +1,21 @@
+.MessageDetails {
+  display: flex;
+}
+
+.LeftColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.LeftColumn,
+.RightColumn {
+  padding: 24rem;
+}
+
+.Field {
+  margin-bottom: 18rem;
+}
+
+.FieldTitle {
+  font-weight: bold;
+}
