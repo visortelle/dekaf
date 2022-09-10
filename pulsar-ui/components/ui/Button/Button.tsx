@@ -7,6 +7,7 @@ export type ButtonProps = {
   svgIcon?: string,
   title?: string,
   type: 'primary' | 'regular' | 'danger',
+  size?: 'regular' | 'small',
   disabled?: boolean,
   buttonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>,
 }
@@ -16,6 +17,10 @@ const Button: React.FC<ButtonProps> = (props) => {
     case 'regular': className = s.Regular; break;
     case 'primary': className = s.Primary; break;
     case 'danger': className = s.Danger; break;
+  }
+
+  switch (props.size) {
+    case 'small': className += ` ${s.SmallSize}`; break;
   }
 
   return (

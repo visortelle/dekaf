@@ -70,3 +70,14 @@
   cursor: default;
   opacity: 1;
 }
+
+.SmallSize {
+  padding: 2rem 12rem;
+  height: 26rem;
+  font-size: 12rem;
+}
+.SmallSize svg {
+  margin-right: 10rem;
+  width: 16rem;
+  height: 16rem;
+}

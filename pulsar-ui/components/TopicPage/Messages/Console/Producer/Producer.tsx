@@ -216,6 +216,8 @@ const Producer: React.FC<ProducerProps> = (props) => {
             onClick={sendMessage}
             type='primary'
             svgIcon={sendIcon}
+            text="Send"
+            size='small'
           />
         </div>
       </div>

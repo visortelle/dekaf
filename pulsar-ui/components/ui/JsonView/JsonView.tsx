@@ -1,15 +1,23 @@
 import React from 'react';
 import s from './JsonView.module.css'
-import ReactJson from 'react-json-view';
+import CodeEditor from '../CodeEditor/CodeEditor';
 
 export type JsonViewProps = {
   json: string;
+  height: string;
+  width: string;
 };
 
 const JsonView: React.FC<JsonViewProps> = (props) => {
   return (
     <div className={s.JsonView}>
-      <ReactJson src={JSON.parse(props.json)} />
+      <CodeEditor
+        value={props.json}
+        language={'json'}
+        height={props.height}
+        width={props.width}
+        options={{ readOnly: true }}
+      />
     </div>
   );
 }

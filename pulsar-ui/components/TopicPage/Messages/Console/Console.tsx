@@ -25,7 +25,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
   return (
     <EnteringFromBottomDiv className={s.Console} isVisible={props.isShow} motionKey='consumer-console'>
       <div className={s.Tabs}>
-        <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Producer</div>
+        <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Produce message</div>
         {/* <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div> */}
 
         <div className={s.CloseConsole} title="Close" onClick={props.onClose}>

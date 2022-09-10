@@ -48,6 +48,7 @@ import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
+import ReactTooltip from 'react-tooltip';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 
@@ -380,6 +381,8 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState === 'new' && prevSessionState !== undefined) {
       cleanup();
     }
+
+    ReactTooltip.rebuild();
   }, [sessionState]);
 
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
