@@ -137,7 +137,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
     <div className={s.Namespaces}>
       <div className={s.Toolbar}>
         <div className={s.FilterInput}>
-          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="namespace-name" focusOnMount={true} clearable={true} />
+          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="Namespace" focusOnMount={true} clearable={true} />
         </div>
         <div>
           <strong>{namespacesToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{namespaces?.length}</strong> namespaces.

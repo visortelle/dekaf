@@ -12,7 +12,7 @@ const JsonView: React.FC<JsonViewProps> = (props) => {
   return (
     <div className={s.JsonView}>
       <CodeEditor
-        value={props.json}
+        value={JSON.stringify(JSON.parse(props.json), null, 4)}
         language={'json'}
         height={props.height}
         width={props.width}
