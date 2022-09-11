@@ -36,7 +36,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
             content: <MessageDetails message={props.message} topicHref={topicHref} />,
             styleMode: 'no-content-padding'
           })}
-          text="More"
+          text="View"
           type='primary'
         />
       </Td>
