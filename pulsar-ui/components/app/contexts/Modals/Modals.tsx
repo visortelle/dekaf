@@ -76,10 +76,7 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
       className={s.Root}
       key={'modal'}
       initial={{ y: '-100%' }}
-      animate={{
-        y: isVisible ? '0' : '-100%',
-        opacity: isVisible ? 1 : 0
-      }}
+      animate={{ y: isVisible ? '0' : '-100%' }}
       transition={{ duration: 0.33 }}
       tabIndex={0}
       onKeyDown={(e) => {

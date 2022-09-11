@@ -1,4 +1,4 @@
-val scala3Version = "3.1.3"
+val scala3Version = "3.2.0"
 
 lazy val root = project
     .enablePlugins(JavaAppPackaging)
@@ -28,9 +28,9 @@ lazy val root = project
         "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
         "com.google.guava" % "guava" % "31.1-jre",
         "com.lihaoyi" %% "os-lib" % "0.8.1",
-        "io.circe" %% "circe-core" % "0.15.0-M1",
-        "io.circe" %% "circe-generic" % "0.15.0-M1",
-        "io.circe" %% "circe-parser" % "0.15.0-M1",
+        "io.circe" %% "circe-core" % "0.14.2",
+        "io.circe" %% "circe-generic" % "0.14.2",
+        "io.circe" %% "circe-parser" % "0.14.2"
       )
     )
 

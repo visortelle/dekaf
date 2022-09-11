@@ -22,12 +22,15 @@ const pulsarAdminClient = new pulsarAdmin.Client({
 });
 
 async function refreshState() {
+  const m = await pulsarAdminClient.brokerStats.getMetrics();
+  console.log(m);
   const metrics = await pulsarAdminClient.brokerStats
     .getTopics2()
     .catch((err) => console.log(err));
 
   if (metrics !== undefined) {
     state.metrics = metrics;
+    console.log(metrics);
   }
 
   const tenants = await pulsarAdminClient.tenants

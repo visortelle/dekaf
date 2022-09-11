@@ -8,7 +8,7 @@ const TealTools: React.FC<TealToolsProps> = (props) => {
   return (
     <div className={s.TealTools}>
       <div className={s.Text}>
-        X-Ray for Apache Pulsar v0.1.0
+        Teal Tool for Apache Pulsar v1.0.0-beta-1
       </div>
       <div className={s.Links}>
         <a href="#" target="__blank" className={`A ${s.Link}`}>

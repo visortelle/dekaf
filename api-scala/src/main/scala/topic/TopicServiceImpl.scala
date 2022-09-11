@@ -3,7 +3,16 @@ package topic
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.topic.v1.topic as topicPb
-import com.tools.teal.pulsar.ui.topic.v1.topic.{CreateNonPartitionedTopicRequest, CreateNonPartitionedTopicResponse, CreatePartitionedTopicRequest, CreatePartitionedTopicResponse, CursorStats, GetTopicsInternalStatsRequest, GetTopicsInternalStatsResponse, TopicServiceGrpc}
+import com.tools.teal.pulsar.ui.topic.v1.topic.{
+    CreateNonPartitionedTopicRequest,
+    CreateNonPartitionedTopicResponse,
+    CreatePartitionedTopicRequest,
+    CreatePartitionedTopicResponse,
+    CursorStats,
+    GetTopicsInternalStatsRequest,
+    GetTopicsInternalStatsResponse,
+    TopicServiceGrpc
+}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
@@ -18,7 +27,7 @@ import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, Pe
 
 class TopicServiceImpl extends TopicServiceGrpc.TopicService:
     val logger: Logger = Logger(getClass.getName)
-
+    
     override def createPartitionedTopic(request: CreatePartitionedTopicRequest): Future[CreatePartitionedTopicResponse] =
         logger.info(s"Creating partitioned topic ${request.topic}")
 
@@ -46,16 +55,17 @@ class TopicServiceImpl extends TopicServiceGrpc.TopicService:
         }
 
     override def getTopicsInternalStats(request: GetTopicsInternalStatsRequest): Future[GetTopicsInternalStatsResponse] =
-        val stats: Map[String, topicPb.TopicInternalStats] = request.topics.flatMap(topic => {
-                getTopicInternalStatsPb(topic) match
+        val stats: Map[String, topicPb.TopicInternalStats] = request.topics.flatMap { topic =>
+            getTopicInternalStatsPb(topic) match
                 case Right(ss: topicPb.PersistentTopicInternalStats) =>
                     val topicInternalStatsPb = topicPb.TopicInternalStats(stats = topicPb.TopicInternalStats.Stats.TopicStats(ss))
                     Some(topic, topicInternalStatsPb)
                 case Right(ss: topicPb.PartitionedTopicInternalStats) =>
-                    val topicInternalStatsPb = topicPb.TopicInternalStats(stats = topicPb.TopicInternalStats.Stats.PartitionedTopicStats(ss))
+                    val topicInternalStatsPb =
+                        topicPb.TopicInternalStats(stats = topicPb.TopicInternalStats.Stats.PartitionedTopicStats(ss))
                     Some(topic, topicInternalStatsPb)
                 case _ => None
-        }).toMap
+        }.toMap
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(GetTopicsInternalStatsResponse(status = Some(status),  stats = stats))
+        Future.successful(GetTopicsInternalStatsResponse(status = Some(status), stats = stats))

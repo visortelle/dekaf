@@ -8,7 +8,7 @@ import Policies from './Policies/Policies';
 import DeleteTopic from './DeleteTopic/DeleteTopic';
 import { routes } from '../routes';
 
-export type TopicPageView = 'messages' | 'overview' | 'schema' | 'policies' | 'delete-topic';
+export type TopicPageView = 'messages' | 'overview' | 'producers' | 'consumers' | 'schema' | 'policies' | 'delete-topic';
 export type TopicPageProps = {
   view: TopicPageView;
   tenant: string;
@@ -51,6 +51,18 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
             text: 'Messages',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+            text: 'Producers',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+            text: 'Consumers',
             onClick: () => { },
             type: 'regular'
           },
