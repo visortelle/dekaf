@@ -24,21 +24,28 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
     override def getNamespacesMetrics(request: GetNamespacesMetricsRequest): Future[GetNamespacesMetricsResponse] =
         try {
             val metricsJson = adminClient.brokerStats().getMetrics
+                .replaceAll("\"NaN\"", "0") // It's a dirty hack. TODO - Write a proper decoder.
+
             val eitherMetricsOrErr = decodeJson[MetricsEntries](metricsJson)
+            println(s"MJSON ${metricsJson}")
+
             eitherMetricsOrErr match
                 case Right(metrics) =>
                     val namespacesMetrics = request.namespaces.flatMap(ns =>
-                        findNamespaceMetrics(metrics, ns) match
-                            case Some(nm) => Some((ns, namespaceMetricsToPb(nm)))
-                            case None => None
+                        findNamespaceMetrics(metrics, ns)
+                            .map(nm => (ns, namespaceMetricsToPb(nm)))
                     ).toMap
+                    
                     val status: Status = Status(code = Code.OK.index)
                     Future.successful(GetNamespacesMetricsResponse(
                         status = Some(status),
                         namespacesMetrics = namespacesMetrics
                     ))
                 case Left(err) =>
-                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    val status: Status = Status(
+                        code = Code.FAILED_PRECONDITION.index,
+                        message = s"Metrics decoding failure. ${err.getMessage}"
+                    )
                     Future.successful(GetNamespacesMetricsResponse(status = Some(status)))
         } catch {
             case err =>

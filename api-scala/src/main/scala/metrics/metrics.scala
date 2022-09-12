@@ -23,8 +23,9 @@ package metrics
 ]
  */
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.Decoder.Result
+import io.circe.syntax.*
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 
 type DimensionKey = String
@@ -46,5 +47,5 @@ given metricsEntryDecoder: Decoder[MetricsEntry] = deriveDecoder[MetricsEntry]
 type MetricsEntries = List[MetricsEntry]
 
 def findMetricsEntryByDimensions(dimensions: Dimensions, metricsEntries: MetricsEntries): Option[MetricsEntry] =
-    metricsEntries.find(entry => entry.dimensions.eq(dimensions))
+    metricsEntries.find(entry => dimensions.forall({case (k, v) => entry.dimensions.get(k).contains(v) }))
 
