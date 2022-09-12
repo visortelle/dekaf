@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import s from './Namespaces.module.css'
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
@@ -6,7 +6,7 @@ import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import * as PulsarAdminBatchClient from '../../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
-import * as PulsarCustomApiClient from '../../app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
+import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
@@ -22,6 +22,9 @@ import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { useRef } from 'react';
 import _ from 'lodash';
+import { GetNamespacesMetricsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/metrics_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import { namespacesMetricsFromPb } from './converters';
 
 type SortKey =
   'namespace' |
@@ -50,7 +53,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const tableRef = useRef<HTMLDivElement>(null);
   const adminClient = PulsarAdminClient.useContext().client;
   const adminBatchClient = PulsarAdminBatchClient.useContext().client;
-  const customApiClient = PulsarCustomApiClient.useContext().client;
+  const { metricsServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
@@ -60,7 +63,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const [sort, setSort] = useState<Sort>({ key: 'namespace', direction: 'asc' });
   const i18n = I18n.useContext();
 
-  const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
+  const Th = useCallback((props: { title: ReactNode, sortKey?: SortKey, isSticky?: boolean }) => {
     const handleColumnHeaderClick = () => {
       if (props.sortKey === undefined) {
         return;
@@ -100,11 +103,24 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
 
   const { data: allNamespacesMetrics, error: allNamespacesMetricsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allTenantNamespaces._(props.tenant),
-    async () => await customApiClient.getAllTenantNamespacesMetrics(props.tenant),
+    async () => {
+      const req = new GetNamespacesMetricsRequest();
+      req.setNamespacesList(namespaces?.map(ns => `${props.tenant}/${ns}`) || []);
+      const res = await metricsServiceClient.getNamespacesMetrics(req, {}).catch(err => notifyError(`Unable to get namespaces metrics. ${err}`));
+      if (res === undefined) {
+        return;
+      }
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get namespaces metrics. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      return namespacesMetricsFromPb(res);
+    },
     { refreshInterval: 3 * 1000 }
   );
   if (allNamespacesMetricsError) {
-    notifyError(`Unable to get all namespaces metrics. ${allNamespacesMetricsError}`);
+    notifyError(`Unable to get namespaces metrics. ${allNamespacesMetricsError}`);
   }
 
   const { data: namespacesTopicsCount, error: namespacesTopicsCountError } = useSWR(
