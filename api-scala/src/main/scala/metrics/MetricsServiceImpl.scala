@@ -38,7 +38,7 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
                     val optionalNamespacesPersistentMetrics = request.namespaces.map(namespace =>
                         (namespace, getOptionalNamespacePersistentMetrics(metrics, namespace))
                     ).toMap
-                    
+
                     val status: Status = Status(code = Code.OK.index)
                     Future.successful(GetNamespacesMetricsResponse(
                         status = Some(status),

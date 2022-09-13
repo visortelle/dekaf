@@ -12,34 +12,33 @@ import * as I18n from '../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
 import { swrKeys } from '../../swrKeys';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
-import { NamespaceMetrics } from 'tealtools-pulsar-ui-api/metrics/types';
 import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
 import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
 import { routes } from '../../routes';
-import { TopicIcon } from '../../ui/Icons/Icons';
+import { TopicIcon, ProducerIcon, ConsumerIcon, SubscriptionIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { useRef } from 'react';
 import _ from 'lodash';
 import { GetNamespacesMetricsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/metrics_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import { namespacesMetricsFromPb } from './converters';
+import { metricsFromPb, NamespaceMetrics } from './converters';
 
 type SortKey =
   'namespace' |
-  'averageMsgSize' |
-  'backlogSize' |
-  'bytesInCount' |
-  'bytesOutCount' |
-  'msgInCount' |
-  'msgOutCount' |
-  'msgRateIn' |
-  'msgRateOut' |
-  'msgThroughputIn' |
-  'msgThroughputOut' |
-  'pendingAddEntriesCount' |
-  'storageSize';
+  'inRate' |
+  'inTpRate' |
+  'maxReplicationDelaySecond' |
+  'msgBacklog' |
+  'noOfConsumers' |
+  'noOfProducers' |
+  'noOrReplicators' |
+  'noOfSubscriptions' |
+  'outRate' |
+  'outTpRate' |
+  'replicationBacklog' |
+  'storageSize'
 
 type Sort = { key: SortKey, direction: 'asc' | 'desc' };
 
@@ -101,7 +100,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
     notifyError(`Unable to get namespaces list. ${namespacesError}`);
   }
 
-  const { data: allNamespacesMetrics, error: allNamespacesMetricsError } = useSWR(
+  const { data: metrics, error: metricsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allTenantNamespaces._(props.tenant),
     async () => {
       const req = new GetNamespacesMetricsRequest();
@@ -115,39 +114,42 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
         return;
       }
 
-      return namespacesMetricsFromPb(res);
+      return metricsFromPb(res);
     },
     { refreshInterval: 3 * 1000 }
   );
-  if (allNamespacesMetricsError) {
-    notifyError(`Unable to get namespaces metrics. ${allNamespacesMetricsError}`);
+  if (metricsError) {
+    notifyError(`Unable to get namespaces metrics. ${metricsError}`);
   }
 
-  const { data: namespacesTopicsCount, error: namespacesTopicsCountError } = useSWR(
+  const { data: topicsCount, error: topicsCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantNamespacesTopicsCount._(props.tenant, itemsRendered.map(item => item.data!)),
     async () => await adminBatchClient?.getTenantNamespacesTopicsCount(props.tenant, itemsRendered.map(item => item.data!)),
   );
 
-  if (namespacesTopicsCountError) {
-    notifyError(`Unable to get namespaces topics count. ${namespacesTopicsCountError}`);
+  if (topicsCountError) {
+    notifyError(`Unable to get namespaces topics count. ${topicsCountError}`);
   }
 
   useEffect(() => {
     // Avoid visual blinking after each namespace topics count update request.
-    setNamespaceTopicsCountCache(namespacesTopicsCountCache => ({ ...namespacesTopicsCountCache, ...namespacesTopicsCount }));
-  }, [namespacesTopicsCount]);
+    setNamespaceTopicsCountCache(namespacesTopicsCountCache => ({ ...namespacesTopicsCountCache, ...topicsCount }));
+  }, [topicsCount]);
 
   const sortedNamespaces = useMemo(() => sortNamespaces(
     namespaces || [],
     sort, {
-    namespacesTopicsCount: namespacesTopicsCount || {},
-    allNamespacesMetrics: allNamespacesMetrics || {},
+    namespacesTopicsCount: topicsCount || {},
+    metrics: metrics || {},
   }),
-    [namespaces, sort, namespacesTopicsCount, allNamespacesMetrics]
+    [namespaces, sort, topicsCount, metrics]
   );
 
   const namespacesToShow = sortedNamespaces?.filter((t) => t.includes(filterQueryDebounced));
-  const namespacesToShowMetrics = useMemo(() => _(allNamespacesMetrics).toPairs().filter(([k]) => namespacesToShow.includes(k)).fromPairs().value(), [allNamespacesMetrics, namespacesToShow]);
+  const namespacesToShowMetrics = useMemo(
+    () => _(metrics).toPairs().filter(([ns]) => namespacesToShow.includes(ns)).fromPairs().value(),
+    [metrics, namespacesToShow]
+  );
 
   return (
     <div className={s.Namespaces}>
@@ -176,40 +178,40 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
                   <Th title="Namespaces" sortKey="namespace" isSticky={true} />
                   <Th title={<TopicIcon topicType='persistent' />} />
                   <Th title={<TopicIcon topicType='non-persistent' />} />
-                  <Th title="Msg. rate in" sortKey="msgRateIn" />
-                  <Th title="Msg. rate out" sortKey="msgRateOut" />
-                  <Th title="Msg. throughput in" sortKey="msgThroughputIn" />
-                  <Th title="Msg. throughput out" sortKey="msgThroughputOut" />
-                  <Th title="Msg. in" sortKey="msgInCount" />
-                  <Th title="Msg. out" sortKey="msgOutCount" />
-                  <Th title="Avg. msg. size" sortKey="averageMsgSize" />
-                  <Th title="Bytes in" sortKey="bytesInCount" />
-                  <Th title="Bytes out" sortKey="bytesOutCount" />
-                  <Th title="Pending entries" sortKey="pendingAddEntriesCount" />
-                  <Th title="Backlog size" sortKey="backlogSize" />
+                  <Th title="Msg. rate in" sortKey="inRate" />
+                  <Th title="Msg. throughput in" sortKey="inTpRate" />
+                  <Th title="Msg. rate out" sortKey="outRate" />
+                  <Th title="Msg. throughput out" sortKey="outTpRate" />
+                  <Th title="Max replication delay sec." sortKey="maxReplicationDelaySecond" />
+                  <Th title="Msg. backlog" sortKey="msgBacklog" />
+                  <Th title={<ConsumerIcon />} sortKey="noOfConsumers" />
+                  <Th title={<ProducerIcon />} sortKey="noOfProducers" />
+                  <Th title={<SubscriptionIcon />} sortKey="noOfSubscriptions" />
                   <Th title="Storage size" sortKey="storageSize" />
+                  <Th title="Replicators" sortKey="noOrReplicators" />
+                  <Th title="Replication backlog" sortKey="replicationBacklog" />
                 </tr>
                 <tr>
                   <th className={cts.SummaryTh} style={{ position: 'sticky', left: 0, zIndex: 10 }}>Summary</th>
                   <th className={cts.SummaryTh}><NoData /></th>
                   <th className={cts.SummaryTh}><NoData /></th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgRateIn'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgRateOut'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgThroughputIn'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgThroughputOut'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'msgInCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'msgOutCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(Object.keys(namespacesToShowMetrics).length > 0 ? sum(namespacesToShowMetrics, 'averageMsgSize') / Object.keys(namespacesToShowMetrics).length : 0)}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'bytesInCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'bytesOutCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'pendingAddEntriesCount'))}</th>
-                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'backlogSize'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'inRate'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'inTpRate'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'outRate'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'outTpRate'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'maxReplicationDelaySecond'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCountRate(sum(namespacesToShowMetrics, 'msgBacklog'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'noOfConsumers'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatCount(sum(namespacesToShowMetrics, 'noOfProducers'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'noOfSubscriptions'))}</th>
                   <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'storageSize'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'noOfReplicators'))}</th>
+                  <th className={cts.SummaryTh}>{i18n.formatBytes(sum(namespacesToShowMetrics, 'replicationBacklog'))}</th>
                 </tr>
               </>
             )}
             itemContent={(_, namespace) => {
-              const namespaceMetrics = allNamespacesMetrics === undefined ? {} : allNamespacesMetrics[namespace] || {};
+              const namespaceMetrics = metrics === undefined ? undefined : metrics[`${props.tenant}/${namespace}`];
               return (
                 <Namespace
                   tenant={props.tenant}
@@ -249,7 +251,7 @@ const Td: React.FC<TdProps> = (props) => {
 type NamespaceProps = {
   tenant: string;
   namespace: string;
-  metrics: NamespaceMetrics;
+  metrics: NamespaceMetrics | undefined;
   persistentTopicsCount: number | undefined;
   nonPersistentTopicsCount: number | undefined;
   highlight: {
@@ -277,30 +279,31 @@ const Namespace: React.FC<NamespaceProps> = (props) => {
       <Td width="4ch" title={`${props.nonPersistentTopicsCount?.toString()} non-persistent topics`}>
         {props.nonPersistentTopicsCount !== undefined && <span className={cts.LazyContent}>{props.nonPersistentTopicsCount}</span>}
       </Td>
-      <Td width="12ch">{props.metrics?.msgRateIn === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgRateIn)}</Td>
-      <Td width="12ch">{props.metrics?.msgRateOut === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgRateOut)}</Td>
-      <Td width="18ch">{props.metrics?.msgThroughputIn === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgThroughputIn)}</Td>
-      <Td width="18ch">{props.metrics?.msgThroughputOut === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgThroughputOut)}</Td>
-      <Td width="12ch">{props.metrics?.msgInCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgInCount)}</Td>
-      <Td width="12ch">{props.metrics?.msgOutCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.msgOutCount)}</Td>
-      <Td width="12ch">{props.metrics?.averageMsgSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.averageMsgSize)}</Td>
-      <Td width="12ch">{props.metrics?.bytesInCount === undefined ? <NoData /> : i18n.formatBytes(props.metrics.bytesInCount)}</Td>
-      <Td width="12ch">{props.metrics?.bytesOutCount === undefined ? <NoData /> : i18n.formatBytes(props.metrics.bytesOutCount)}</Td>
-      <Td width="12ch">{props.metrics?.pendingAddEntriesCount === undefined ? <NoData /> : i18n.formatCount(props.metrics.pendingAddEntriesCount)}</Td>
-      <Td width="12ch">{props.metrics?.backlogSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.backlogSize)}</Td>
+      <Td width="12ch">{props.metrics?.inRate === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.inRate)}</Td>
+      <Td width="12ch">{props.metrics?.inTpRate === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.inTpRate)}</Td>
+      <Td width="12ch">{props.metrics?.outRate === undefined ? <NoData /> : i18n.formatBytes(props.metrics.outRate)}</Td>
+      <Td width="12ch">{props.metrics?.outTpRate === undefined ? <NoData /> : i18n.formatCount(props.metrics.outTpRate)}</Td>
+      <Td width="18ch">{props.metrics?.maxReplicationDelaySecond === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.maxReplicationDelaySecond)}</Td>
+      <Td width="18ch">{props.metrics?.msgBacklog === undefined ? <NoData /> : i18n.formatCountRate(props.metrics.msgBacklog)}</Td>
+      <Td width="12ch">{props.metrics?.noOfConsumers === undefined ? <NoData /> : i18n.formatCount(props.metrics.noOfConsumers)}</Td>
+      <Td width="12ch">{props.metrics?.noOfProducers === undefined ? <NoData /> : i18n.formatCount(props.metrics.noOfProducers)}</Td>
+      <Td width="12ch">{props.metrics?.noOfSubscriptions === undefined ? <NoData /> : i18n.formatBytes(props.metrics.noOfSubscriptions)}</Td>
       <Td width="12ch">{props.metrics?.storageSize === undefined ? <NoData /> : i18n.formatBytes(props.metrics.storageSize)}</Td>
+      <Td width="12ch">{props.metrics?.noOfReplicators === undefined ? <NoData /> : i18n.formatBytes(props.metrics.noOfReplicators)}</Td>
+      <Td width="12ch">{props.metrics?.replicationBacklog === undefined ? <NoData /> : i18n.formatBytes(props.metrics.replicationBacklog)}</Td>
     </>
   );
 }
 
 const sortNamespaces = (tenants: string[], sort: Sort, data: {
   namespacesTopicsCount: Record<string, { persistent: number, nonPersistent: number }>
-  allNamespacesMetrics: Record<string, NamespaceMetrics>
+  metrics: Record<string, NamespaceMetrics | undefined>
 }): string[] => {
-  function s(defs: string[], undefs: string[], getM: (m: NamespaceMetrics) => number): string[] {
+
+  function s(defs: string[], undefs: string[], getM: (m: NamespaceMetrics | undefined) => number): string[] {
     let result = defs.sort((a, b) => {
-      const aMetrics = data.allNamespacesMetrics[a];
-      const bMetrics = data.allNamespacesMetrics[b];
+      const aMetrics = data.metrics[a];
+      const bMetrics = data.metrics[b];
       return getM(aMetrics) - getM(bMetrics);
     });
     result = sort.direction === 'asc' ? result : result.reverse();
@@ -312,64 +315,64 @@ const sortNamespaces = (tenants: string[], sort: Sort, data: {
     return sort.direction === 'asc' ? t : t.reverse();
   }
 
-  if (sort.key === 'averageMsgSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.averageMsgSize !== undefined);
-    return s(defs, undefs, (m) => m.averageMsgSize!);
+  if (sort.key === 'inRate') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.inRate !== undefined);
+    return s(defs, undefs, (m) => m?.inRate!);
   }
 
-  if (sort.key === 'backlogSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.backlogSize !== undefined);
-    return s(defs, undefs, (m) => m.backlogSize!);
+  if (sort.key === 'inTpRate') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.inTpRate !== undefined);
+    return s(defs, undefs, (m) => m?.inTpRate!);
   }
 
-  if (sort.key === 'bytesInCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.bytesInCount !== undefined);
-    return s(defs, undefs, (m) => m.bytesInCount!);
+  if (sort.key === 'maxReplicationDelaySecond') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.maxReplicationDelaySecond !== undefined);
+    return s(defs, undefs, (m) => m?.maxReplicationDelaySecond!);
   }
 
-  if (sort.key === 'bytesOutCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.bytesOutCount !== undefined);
-    return s(defs, undefs, (m) => m.bytesOutCount!);
+  if (sort.key === 'msgBacklog') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.msgBacklog !== undefined);
+    return s(defs, undefs, (m) => m?.msgBacklog!);
   }
 
-  if (sort.key === 'msgInCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgInCount !== undefined);
-    return s(defs, undefs, (m) => m.msgInCount!);
+  if (sort.key === 'noOfConsumers') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.noOfConsumers !== undefined);
+    return s(defs, undefs, (m) => m?.noOfConsumers!);
   }
 
-  if (sort.key === 'msgOutCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgOutCount !== undefined);
-    return s(defs, undefs, (m) => m.msgOutCount!);
+  if (sort.key === 'noOfProducers') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.noOfProducers !== undefined);
+    return s(defs, undefs, (m) => m?.noOfProducers!);
   }
 
-  if (sort.key === 'msgRateIn') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgRateIn !== undefined);
-    return s(defs, undefs, (m) => m.msgRateIn!);
+  if (sort.key === 'noOrReplicators') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.noOfReplicators !== undefined);
+    return s(defs, undefs, (m) => m?.noOfReplicators!);
   }
 
-  if (sort.key === 'msgRateOut') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgRateOut !== undefined);
-    return s(defs, undefs, (m) => m.msgRateOut!);
+  if (sort.key === 'noOfSubscriptions') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.noOfSubscriptions !== undefined);
+    return s(defs, undefs, (m) => m?.noOfSubscriptions!);
   }
 
-  if (sort.key === 'msgThroughputIn') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgThroughputIn !== undefined);
-    return s(defs, undefs, (m) => m.msgThroughputIn!);
+  if (sort.key === 'outRate') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.outRate !== undefined);
+    return s(defs, undefs, (m) => m?.outRate!);
   }
 
-  if (sort.key === 'msgThroughputOut') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.msgThroughputOut !== undefined);
-    return s(defs, undefs, (m) => m.msgThroughputOut!);
+  if (sort.key === 'outTpRate') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.outTpRate !== undefined);
+    return s(defs, undefs, (m) => m?.outTpRate!);
   }
 
-  if (sort.key === 'pendingAddEntriesCount') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.pendingAddEntriesCount !== undefined);
-    return s(defs, undefs, (m) => m.pendingAddEntriesCount!);
+  if (sort.key === 'replicationBacklog') {
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.replicationBacklog !== undefined);
+    return s(defs, undefs, (m) => m?.replicationBacklog!);
   }
 
   if (sort.key === 'storageSize') {
-    const [defs, undefs] = partition(tenants, (t) => data.allNamespacesMetrics[t]?.storageSize !== undefined);
-    return s(defs, undefs, (m) => m.storageSize!);
+    const [defs, undefs] = partition(tenants, (t) => data.metrics[t]?.storageSize !== undefined);
+    return s(defs, undefs, (m) => m?.storageSize!);
   }
 
   return tenants;
@@ -379,8 +382,15 @@ const NoData = () => {
   return <div className={cts.NoData}>-</div>
 }
 
-function sum(metrics: Record<string, NamespaceMetrics>, key: keyof NamespaceMetrics): number {
-  return Object.values(metrics).reduce((summaryValue, nsMetric) => summaryValue + (nsMetric[key] || 0), 0);
-}
+function sum(metrics: Record<string, NamespaceMetrics | undefined>, key: keyof NamespaceMetrics): number {
+  return Object.values(metrics).reduce((summary, curr) => {
+    if (curr === undefined) {
+      return summary;
+    }
+
+    const val = curr[key];
+    return typeof val === 'number' ? summary + (val || 0) : summary;
+  }, 0);
+};
 
 export default Namespaces;

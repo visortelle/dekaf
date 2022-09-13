@@ -10,9 +10,6 @@ export type ClientConfig = {
 export type Client = {
   getTenantMetrics: (tenant: string) => Promise<metrics.TenantMetrics>;
   getAllTenantsMetrics: () => Promise<Record<string, metrics.TenantMetrics>>;
-  getAllTenantNamespacesMetrics: (
-    tenant: string
-  ) => Promise<Record<string, metrics.NamespaceMetrics>>;
   getAllNamespaceTopicsMetrics: (
     tenant: string,
     namespace: string
