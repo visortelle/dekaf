@@ -1,34 +1,37 @@
 package metrics
 
 import com.tools.teal.pulsar.ui.metrics.v1.metrics as metricsPb
-import com.tools.teal.pulsar.ui.metrics.v1.metrics.{
-    GetNamespacesMetricsRequest,
-    GetNamespacesMetricsResponse,
-    GetTenantsMetricsRequest,
-    GetTenantsMetricsResponse,
-    MetricsServiceGrpc,
-    NamespaceMetrics,
-    TenantMetrics
-}
+import com.tools.teal.pulsar.ui.metrics.v1.metrics.{GetNamespacesMetricsRequest, GetNamespacesMetricsResponse, GetTenantsMetricsRequest, GetTenantsMetricsResponse, MetricsServiceGrpc, NamespaceMetrics, TenantMetrics}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
+import io.circe
 import io.circe.parser.decode as decodeJson
 
+import java.util.TimerTask
+import java.util.concurrent.*
+
 class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
+    var metricsJson: String = "[]"
+    var eitherMetricsOrErr: Either[circe.Error, MetricsEntries] = Right(List.empty)
+
+    // Periodically re-fetch metrics
+    val updateMetricsTimer = new java.util.Timer()
+    val updateMetricsTimerTask = new TimerTask:
+        override def run(): Unit =
+            metricsJson = adminClient.brokerStats().getMetrics
+                .replaceAll("\"NaN\"", "0") // It's a dirty hack. TODO - Write a proper decoder.
+            eitherMetricsOrErr = decodeJson[MetricsEntries](metricsJson)
+    updateMetricsTimer.scheduleAtFixedRate(updateMetricsTimerTask, 0, 10000L)
+
     override def getNamespacesMetrics(request: GetNamespacesMetricsRequest): Future[GetNamespacesMetricsResponse] =
         try {
-            val metricsJson = adminClient.brokerStats().getMetrics
-                .replaceAll("\"NaN\"", "0") // It's a dirty hack. TODO - Write a proper decoder.
-
-            val eitherMetricsOrErr = decodeJson[MetricsEntries](metricsJson)
-            println(s"MJSON ${metricsJson}")
-
             eitherMetricsOrErr match
                 case Right(metrics) =>
                     val optionalNamespacesMetrics = request.namespaces.map(namespace =>
