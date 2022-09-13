@@ -42,13 +42,14 @@ export function metricsFromPb(
   res: metricsPb.GetNamespacesMetricsResponse
 ): Record<string, NamespaceMetrics | undefined> {
   let namespacesMetrics: Record<string, NamespaceMetrics> = {};
-  res.getNamespacesMetricsMap().forEach((nsMetrics, ns) => {
+  res.getNamespacesMetricsMap().forEach((nsMetrics, namespaceFqn) => {
     const metrics = nsMetrics.getMetrics();
     if (metrics === undefined) {
       return undefined;
     }
 
-    namespacesMetrics[ns] = namespaceMetricsFromPb(metrics);
+    const namespace = namespaceFqn.split("/")[1];
+    namespacesMetrics[namespace] = namespaceMetricsFromPb(metrics);
   });
   return namespacesMetrics;
 }

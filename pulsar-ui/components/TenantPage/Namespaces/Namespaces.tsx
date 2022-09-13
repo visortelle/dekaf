@@ -211,7 +211,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
               </>
             )}
             itemContent={(_, namespace) => {
-              const namespaceMetrics = metrics === undefined ? undefined : metrics[`${props.tenant}/${namespace}`];
+              const namespaceMetrics = metrics === undefined ? undefined : metrics[namespace];
               return (
                 <Namespace
                   tenant={props.tenant}
