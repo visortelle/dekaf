@@ -93,22 +93,6 @@ export type TopicMetrics = {
   pendingAddEntriesCount?: number; // +
 };
 
-export type NamespaceMetrics = {
-  producerCount?: number;
-  averageMsgSize?: number;
-  msgRateIn?: number;
-  msgRateOut?: number;
-  msgInCount?: number;
-  bytesInCount?: number;
-  msgOutCount?: number;
-  bytesOutCount?: number;
-  msgThroughputIn?: number;
-  msgThroughputOut?: number;
-  storageSize?: number;
-  backlogSize?: number;
-  pendingAddEntriesCount?: number;
-};
-
 export type TenantMetrics = {
   producerCount?: number;
   averageMsgSize?: number;

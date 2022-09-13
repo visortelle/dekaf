@@ -5,35 +5,35 @@ package tools.teal.pulsar.ui.metrics.v1;
 import "google/rpc/status.proto";
 
 message TenantMetrics {
-  double brk_add_entry_latency_buckets_overflow = 1;
-  double brk_in_rate = 2;
-  double brk_in_tp_rate = 3;
-  double brk_max_replication_delay_second = 4;
-  double brk_msg_backlog = 5;
-  double brk_no_of_consumers = 6;
-  double brk_no_of_producers = 7;
-  double brk_no_of_replicators = 8;
-  double brk_no_of_subscriptions = 9;
-  double brk_out_rate = 10;
-  double brk_out_tp_rate = 11;
-  double brk_replication_backlog = 12;
-  double brk_storage_size = 13;
+  double in_rate = 2;
+  double in_tp_rate = 3;
+  double max_replication_delay_second = 4;
+  double msg_backlog = 5;
+  double no_of_consumers = 6;
+  double no_of_producers = 7;
+  double no_of_replicators = 8;
+  double no_of_subscriptions = 9;
+  double out_rate = 10;
+  double out_tp_rate = 11;
+  double replication_backlog = 12;
+  double storage_size = 13;
+  map<string, double> add_entry_latency_buckets = 14;
 }
 
 message NamespaceMetrics {
-  double brk_in_rate = 2;
-  double brk_in_tp_rate = 3;
-  double brk_max_replication_delay_second = 4;
-  double brk_msg_backlog = 5;
-  double brk_no_of_consumers = 6;
-  double brk_no_of_producers = 7;
-  double brk_no_of_replicators = 8;
-  double brk_no_of_subscriptions = 9;
-  double brk_out_rate = 10;
-  double brk_out_tp_rate = 11;
-  double brk_replication_backlog = 12;
-  double brk_storage_size = 13;
-  map<string, double> brk_add_entry_latency_buckets = 14;
+  double in_rate = 2;
+  double in_tp_rate = 3;
+  double max_replication_delay_second = 4;
+  double msg_backlog = 5;
+  double no_of_consumers = 6;
+  double no_of_producers = 7;
+  double no_of_replicators = 8;
+  double no_of_subscriptions = 9;
+  double out_rate = 10;
+  double out_tp_rate = 11;
+  double replication_backlog = 12;
+  double storage_size = 13;
+  map<string, double> add_entry_latency_buckets = 14;
 }
 
 message OptionalNamespaceMetrics {
@@ -41,22 +41,22 @@ message OptionalNamespaceMetrics {
 }
 
 message NamespacePersistentMetrics {
-  double brk_ml_add_entry_bytes_rate = 1;
-  double brk_ml_add_entry_errors = 2;
-  map<string, double> brk_add_entry_latency_buckets = 3;
-  double brk_ml_add_entry_messages_rate = 4;
-  double brk_ml_add_entry_succeed = 5;
-  double brk_ml_add_entry_with_replicas_bytes_rate = 6;
-  map<string, double> brk_ml_entry_size_buckets = 7;
-  map<string, double> brk_ml_ledger_add_entry_latency_buckets = 8;
-  map<string, double> brk_ml_ledger_switch_latency_buckets = 9;
-  double brk_ml_mark_delete_rate = 10;
-  double brk_ml_number_of_messages_in_backlog = 11;
-  double brk_ml_read_entries_bytes_rate = 12;
-  double brk_ml_read_entries_errors = 13;
-  double brk_ml_read_entries_rate = 14;
-  double brk_ml_read_entries_succeeded = 15;
-  double brk_ml_stored_messages_size = 16;
+  double add_entry_bytes_rate = 1;
+  double add_entry_errors = 2;
+  map<string, double> add_entry_latency_buckets = 3;
+  double add_entry_messages_rate = 4;
+  double add_entry_succeed = 5;
+  double add_entry_with_replicas_bytes_rate = 6;
+  map<string, double> entry_size_buckets = 7;
+  map<string, double> ledger_add_entry_latency_buckets = 8;
+  map<string, double> ledger_switch_latency_buckets = 9;
+  double mark_delete_rate = 10;
+  double number_of_messages_in_backlog = 11;
+  double read_entries_bytes_rate = 12;
+  double read_entries_errors = 13;
+  double read_entries_rate = 14;
+  double read_entries_succeeded = 15;
+  double stored_messages_size = 16;
 }
 
 message OptionalNamespacePersistentMetrics {
