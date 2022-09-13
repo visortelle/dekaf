@@ -49,3 +49,8 @@ type MetricsEntries = List[MetricsEntry]
 def findMetricsEntryByDimensions(dimensions: Dimensions, metricsEntries: MetricsEntries): Option[MetricsEntry] =
     metricsEntries.find(entry => dimensions.forall({case (k, v) => entry.dimensions.get(k).contains(v) }))
 
+def groupMetricsByPrefix(metrics: Metrics, prefix: String): Map[MetricKey, MetricValue] =
+    metrics.foldLeft(Map.empty)((result, me) =>
+        val (metricKey, metricValue) = me
+        if metricKey.startsWith(prefix) then result + (metricKey.stripPrefix(prefix) -> metricValue) else result
+    )

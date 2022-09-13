@@ -31,15 +31,18 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
 
             eitherMetricsOrErr match
                 case Right(metrics) =>
-                    val namespacesMetrics = request.namespaces.flatMap(ns =>
-                        findNamespaceMetrics(metrics, ns)
-                            .map(nm => (ns, namespaceMetricsToPb(nm)))
+                    val optionalNamespacesMetrics = request.namespaces.map(namespace =>
+                        (namespace, getOptionalNamespaceMetrics(metrics, namespace))
+                    ).toMap
+
+                    val optionalNamespacesPersistentMetrics = request.namespaces.map(namespace =>
+                        (namespace, getOptionalNamespacePersistentMetrics(metrics, namespace))
                     ).toMap
                     
                     val status: Status = Status(code = Code.OK.index)
                     Future.successful(GetNamespacesMetricsResponse(
                         status = Some(status),
-                        namespacesMetrics = namespacesMetrics
+                        namespacesMetrics = optionalNamespacesMetrics
                     ))
                 case Left(err) =>
                     val status: Status = Status(

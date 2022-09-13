@@ -21,7 +21,6 @@ message TenantMetrics {
 }
 
 message NamespaceMetrics {
-  double brk_add_entry_latency_buckets_overflow = 1;
   double brk_in_rate = 2;
   double brk_in_tp_rate = 3;
   double brk_max_replication_delay_second = 4;
@@ -34,6 +33,34 @@ message NamespaceMetrics {
   double brk_out_tp_rate = 11;
   double brk_replication_backlog = 12;
   double brk_storage_size = 13;
+  map<string, double> brk_add_entry_latency_buckets = 14;
+}
+
+message OptionalNamespaceMetrics {
+  optional NamespaceMetrics metrics = 1;
+}
+
+message NamespacePersistentMetrics {
+  double brk_ml_add_entry_bytes_rate = 1;
+  double brk_ml_add_entry_errors = 2;
+  map<string, double> brk_add_entry_latency_buckets = 3;
+  double brk_ml_add_entry_messages_rate = 4;
+  double brk_ml_add_entry_succeed = 5;
+  double brk_ml_add_entry_with_replicas_bytes_rate = 6;
+  map<string, double> brk_ml_entry_size_buckets = 7;
+  map<string, double> brk_ml_ledger_add_entry_latency_buckets = 8;
+  map<string, double> brk_ml_ledger_switch_latency_buckets = 9;
+  double brk_ml_mark_delete_rate = 10;
+  double brk_ml_number_of_messages_in_backlog = 11;
+  double brk_ml_read_entries_bytes_rate = 12;
+  double brk_ml_read_entries_errors = 13;
+  double brk_ml_read_entries_rate = 14;
+  double brk_ml_read_entries_succeeded = 15;
+  double brk_ml_stored_messages_size = 16;
+}
+
+message OptionalNamespacePersistentMetrics {
+  optional NamespacePersistentMetrics metrics = 1;
 }
 
 message GetTenantsMetricsRequest {
@@ -51,7 +78,8 @@ message GetNamespacesMetricsRequest {
 
 message GetNamespacesMetricsResponse {
   google.rpc.Status status = 1;
-  map<string, NamespaceMetrics> namespaces_metrics = 2;
+  map<string, OptionalNamespaceMetrics> namespaces_metrics = 2;
+  map<string, OptionalNamespacePersistentMetrics> namespaces_persistent_metrics = 3;
 }
 
 service MetricsService {
