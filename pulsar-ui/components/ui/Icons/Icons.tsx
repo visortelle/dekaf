@@ -167,4 +167,24 @@ export const ProducerIcon: React.FC<ProducerIconProps> = (props) => {
   />
 }
 
+export type ConsumerIconProps = {
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
+  className?: string;
+  isGray?: boolean;
+}
+export const ConsumerIcon: React.FC<ProducerIconProps> = (props) => {
+  return <NodeIcon
+    title="co"
+    textColor='var(--text-color)'
+    backgroundColor='var(--accent-color-yellow)'
+    onClick={props.onClick}
+    isExpanded={props.isExpanded}
+    isExpandable={props.isExpandable}
+    className={props.className}
+    isGray={props.isGray}
+  />
+}
+
 
