@@ -20,6 +20,33 @@ message TenantMetrics {
   map<string, double> add_entry_latency_buckets = 14;
 }
 
+message OptionalTenantMetrics {
+  optional TenantMetrics metrics = 1;
+}
+
+message TenantPersistentMetrics {
+  double add_entry_bytes_rate = 1;
+  double add_entry_errors = 2;
+  map<string, double> add_entry_latency_buckets = 3;
+  double add_entry_messages_rate = 4;
+  double add_entry_succeed = 5;
+  double add_entry_with_replicas_bytes_rate = 6;
+  map<string, double> entry_size_buckets = 7;
+  map<string, double> ledger_add_entry_latency_buckets = 8;
+  map<string, double> ledger_switch_latency_buckets = 9;
+  double mark_delete_rate = 10;
+  double number_of_messages_in_backlog = 11;
+  double read_entries_bytes_rate = 12;
+  double read_entries_errors = 13;
+  double read_entries_rate = 14;
+  double read_entries_succeeded = 15;
+  double stored_messages_size = 16;
+}
+
+message OptionalTenantPersistentMetrics {
+  optional TenantPersistentMetrics metrics = 1;
+}
+
 message NamespaceMetrics {
   double in_rate = 2;
   double in_tp_rate = 3;
@@ -69,7 +96,16 @@ message GetTenantsMetricsRequest {
 
 message GetTenantsMetricsResponse {
   google.rpc.Status status = 1;
-  map<string, TenantMetrics> tenants_metrics = 2;
+  map<string, OptionalTenantMetrics> tenants_metrics = 2;
+}
+
+message GetTenantsPersistentMetricsRequest {
+  repeated string tenants = 1;
+}
+
+message GetTenantsPersistentMetricsResponse {
+  google.rpc.Status status = 1;
+  map<string, OptionalTenantPersistentMetrics> tenants_persistent_metrics = 2;
 }
 
 message GetNamespacesMetricsRequest {
@@ -79,10 +115,20 @@ message GetNamespacesMetricsRequest {
 message GetNamespacesMetricsResponse {
   google.rpc.Status status = 1;
   map<string, OptionalNamespaceMetrics> namespaces_metrics = 2;
+}
+
+message GetNamespacesPersistentMetricsRequest {
+  repeated string namespaces = 1;
+}
+
+message GetNamespacesPersistentMetricsResponse {
+  google.rpc.Status status = 1;
   map<string, OptionalNamespacePersistentMetrics> namespaces_persistent_metrics = 3;
 }
 
 service MetricsService {
   rpc GetTenantsMetrics(GetTenantsMetricsRequest) returns (GetTenantsMetricsResponse);
+  rpc GetTenantsPersistentMetrics(GetTenantsPersistentMetricsRequest) returns (GetTenantsPersistentMetricsResponse);
   rpc GetNamespacesMetrics(GetNamespacesMetricsRequest) returns (GetNamespacesMetricsResponse);
+  rpc GetNamespacesPersistentMetrics(GetNamespacesPersistentMetricsRequest) returns (GetNamespacesPersistentMetricsResponse);
 }
