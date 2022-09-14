@@ -36,7 +36,7 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
     override def getNamespacesMetrics(request: GetNamespacesMetricsRequest): Future[GetNamespacesMetricsResponse] =
         try {
             val optionalNamespacesMetrics = request.namespaces.map(namespace =>
-                (namespace, getOptionalNamespaceMetrics(metricsEntries, namespace))
+                (namespace, getOptionalNamespaceMetricsPb(metricsEntries, namespace))
             ).toMap
 
             val status: Status = Status(code = Code.OK.index)
@@ -53,7 +53,7 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
     override def getNamespacesPersistentMetrics(request: GetNamespacesPersistentMetricsRequest): Future[GetNamespacesPersistentMetricsResponse] =
         try {
             val optionalNamespacesPersistentMetrics = request.namespaces.map(namespace =>
-                (namespace, getOptionalNamespacePersistentMetrics(metricsEntries, namespace))
+                (namespace, getOptionalNamespacePersistentMetricsPb(metricsEntries, namespace))
             ).toMap
 
             val status: Status = Status(code = Code.OK.index)
