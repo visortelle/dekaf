@@ -46,8 +46,10 @@ given metricsEntryDecoder: Decoder[MetricsEntry] = deriveDecoder[MetricsEntry]
 
 type MetricsEntries = List[MetricsEntry]
 
-def findMetricsEntryByDimensions(dimensions: Dimensions, metricsEntries: MetricsEntries): Option[MetricsEntry] =
-    metricsEntries.find(entry => dimensions.forall({case (k, v) => entry.dimensions.get(k).contains(v) }))
+type MatchDimensions = (Dimensions) => Boolean
+
+def findMetricsEntryByDimensions(matchDimensions: MatchDimensions, metricsEntries: MetricsEntries): Option[MetricsEntry] =
+    metricsEntries.find(entry => matchDimensions(entry.dimensions))
 
 def groupMetricsByPrefix(metrics: Metrics, prefix: String): Map[MetricKey, MetricValue] =
     metrics.foldLeft(Map.empty)((result, me) =>

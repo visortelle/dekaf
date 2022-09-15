@@ -38,7 +38,9 @@ case class NamespacePersistentMetrics(
 )
 
 def getNamespaceMetrics(metricsEntries: MetricsEntries, namespace: String): Option[NamespaceMetrics] =
-    findMetricsEntryByDimensions(Map("namespace" -> namespace), metricsEntries) match
+    val matchDimensions: MatchDimensions = (dimensions) => dimensions.get("namespace").contains(namespace)
+
+    findMetricsEntryByDimensions(matchDimensions, metricsEntries) match
         case Some(metricsEntry) =>
             val m = metricsEntry.metrics
             val namespaceMetrics = NamespaceMetrics(
@@ -80,30 +82,30 @@ def getOptionalNamespaceMetricsPb(metricsEntries: MetricsEntries, namespace: Str
             pb.OptionalNamespaceMetrics(metrics = Some(namespaceMetricsPb))
         case None => pb.OptionalNamespaceMetrics(metrics = None)
 
-def getNamespacePersistentMetrics(metricsEntries: MetricsEntries, namespace: String): Option[NamespacePersistentMetrics] =
-    findMetricsEntryByDimensions(Map("namespace" -> s"$namespace/persistent"), metricsEntries) match
-        case Some(metricsEntry) =>
-            val m = metricsEntry.metrics
-            val namespaceMetrics = NamespacePersistentMetrics(
-              addEntryBytesRate = m.getOrElse("brk_ml_AddEntryBytesRate", 0),
-              addEntryErrors = m.getOrElse("brk_ml_AddEntryErrors", 0),
-              addEntryLatencyBuckets = groupMetricsByPrefix(m, "brk_ml_AddEntryLatencyBuckets_"),
-              addEntryMessagesRate = m.getOrElse("brk_ml_AddEntryMessagesRate", 0),
-              addEntrySucceed = m.getOrElse("brk_ml_AddEntrySucceed", 0),
-              addEntryWithReplicasBytesRate = m.getOrElse("brk_ml_AddEntryWithReplicasBytesRate", 0),
-              entrySizeBuckets = groupMetricsByPrefix(m, "brk_ml_EntrySizeBuckets_"),
-              ledgerAddEntryLatencyBuckets = groupMetricsByPrefix(m, "brk_ml_LedgerAddEntryLatencyBuckets_"),
-              ledgerSwitchLatencyBuckets = groupMetricsByPrefix(m, "brk_ml_LedgerSwitchLatencyBuckets_"),
-              markDeleteRate = m.getOrElse("brk_ml_MarkDeleteRate", 0),
-              numberOfMessagesInBacklog = m.getOrElse("brk_ml_NumberOfMessagesInBacklog", 0),
-              readEntriesBytesRate = m.getOrElse("brk_ml_ReadEntriesBytesRate", 0),
-              readEntriesErrors = m.getOrElse("brk_ml_ReadEntriesErrors", 0),
-              readEntriesRate = m.getOrElse("brk_ml_ReadEntriesRate", 0),
-              readEntriesSucceeded = m.getOrElse("brk_ml_ReadEntriesSucceeded", 0),
-              storedMessagesSize = m.getOrElse("brk_ml_StoredMessagesSize", 0)
-            )
-            Some(namespaceMetrics)
-        case None => None
+def getNamespacePersistentMetrics(metricsEntries: MetricsEntries, namespace: String): Option[NamespacePersistentMetrics] = ???
+//    findMetricsEntryByDimensions(Map("namespace" -> s"$namespace/persistent"), metricsEntries) match
+//        case Some(metricsEntry) =>
+//            val m = metricsEntry.metrics
+//            val namespaceMetrics = NamespacePersistentMetrics(
+//              addEntryBytesRate = m.getOrElse("brk_ml_AddEntryBytesRate", 0),
+//              addEntryErrors = m.getOrElse("brk_ml_AddEntryErrors", 0),
+//              addEntryLatencyBuckets = groupMetricsByPrefix(m, "brk_ml_AddEntryLatencyBuckets_"),
+//              addEntryMessagesRate = m.getOrElse("brk_ml_AddEntryMessagesRate", 0),
+//              addEntrySucceed = m.getOrElse("brk_ml_AddEntrySucceed", 0),
+//              addEntryWithReplicasBytesRate = m.getOrElse("brk_ml_AddEntryWithReplicasBytesRate", 0),
+//              entrySizeBuckets = groupMetricsByPrefix(m, "brk_ml_EntrySizeBuckets_"),
+//              ledgerAddEntryLatencyBuckets = groupMetricsByPrefix(m, "brk_ml_LedgerAddEntryLatencyBuckets_"),
+//              ledgerSwitchLatencyBuckets = groupMetricsByPrefix(m, "brk_ml_LedgerSwitchLatencyBuckets_"),
+//              markDeleteRate = m.getOrElse("brk_ml_MarkDeleteRate", 0),
+//              numberOfMessagesInBacklog = m.getOrElse("brk_ml_NumberOfMessagesInBacklog", 0),
+//              readEntriesBytesRate = m.getOrElse("brk_ml_ReadEntriesBytesRate", 0),
+//              readEntriesErrors = m.getOrElse("brk_ml_ReadEntriesErrors", 0),
+//              readEntriesRate = m.getOrElse("brk_ml_ReadEntriesRate", 0),
+//              readEntriesSucceeded = m.getOrElse("brk_ml_ReadEntriesSucceeded", 0),
+//              storedMessagesSize = m.getOrElse("brk_ml_StoredMessagesSize", 0)
+//            )
+//            Some(namespaceMetrics)
+//        case None => None
 
 def getOptionalNamespacePersistentMetricsPb(metricsEntries: MetricsEntries, namespace: String): pb.OptionalNamespacePersistentMetrics =
     getNamespacePersistentMetrics(metricsEntries, namespace) match
