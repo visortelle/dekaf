@@ -98,8 +98,18 @@ message CreateNonPartitionedTopicResponse {
   google.rpc.Status status = 1;
 }
 
+message DeleteTopicRequest {
+  string topic_name = 1;
+  bool force = 2;
+}
+
+message DeleteTopicResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
   rpc GetTopicsInternalStats(GetTopicsInternalStatsRequest) returns (GetTopicsInternalStatsResponse);
+  rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {};
 }
