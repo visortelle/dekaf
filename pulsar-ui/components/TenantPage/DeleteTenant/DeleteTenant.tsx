@@ -4,10 +4,12 @@ import { H1 } from '../../ui/H/H';
 import { TenantIcon } from '../../ui/Icons/Icons';
 import Button from '../../ui/Button/Button';
 import * as Notifications from '../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 import { swrKeys } from '../../swrKeys';
+import { DeleteTenantRequest } from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
 export type DeleteTenantProps = {
   tenant: string
@@ -16,20 +18,28 @@ export type DeleteTenantProps = {
 const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
   const navigate = useNavigate();
   const { mutate } = useSWRConfig()
-  const notification = Notifications.useContext();
-  const adminClient = PulsarAdminClient.useContext();
+  const {notifyError, notifySuccess} = Notifications.useContext();
+  const {tenantServiceClient} = PulsarGrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
   const deleteTenant = async () => {
     try {
-      await adminClient.client.tenants.deleteTenant(props.tenant, forceDelete);
-      notification.notifySuccess(`Tenant ${props.tenant} has been successfully deleted.`);
+      const req = new DeleteTenantRequest();
+      req.setTenantName(props.tenant);
+      req.setForce(forceDelete);
+      const res = await tenantServiceClient.deleteTenant(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to delete tenant: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      notifySuccess(`Tenant ${props.tenant} has been successfully deleted.`);
       navigate(`/`);
 
       await mutate(swrKeys.pulsar.tenants._());
       await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
     } catch (err) {
-      notification.notifyError(`Failed to delete tenant ${props.tenant}. ${err}`)
+      notifyError(`Failed to delete tenant ${props.tenant}. ${err}`)
     }
   };
 
