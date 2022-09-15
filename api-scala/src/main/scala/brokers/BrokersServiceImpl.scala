@@ -4,18 +4,7 @@ import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.brokers.v1.brokers as pb
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.brokers.v1.brokers.{
-    GetAllDynamicConfigurationsRequest,
-    GetAllDynamicConfigurationsResponse,
-    GetDynamicConfigurationNamesRequest,
-    GetDynamicConfigurationNamesResponse,
-    GetInternalConfigurationDataRequest,
-    GetInternalConfigurationDataResponse,
-    GetRuntimeConfigurationsRequest,
-    GetRuntimeConfigurationsResponse,
-    UpdateDynamicConfigurationRequest,
-    UpdateDynamicConfigurationResponse
-}
+import com.tools.teal.pulsar.ui.brokers.v1.brokers.{DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse}
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -98,5 +87,17 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(UpdateDynamicConfigurationResponse(status = Some(status)))
+        }
+
+    override def deleteDynamicConfiguration(request: DeleteDynamicConfigurationRequest): Future[DeleteDynamicConfigurationResponse] =
+        try {
+            adminClient.brokers.deleteDynamicConfiguration(request.name)
+            Future.successful(
+                DeleteDynamicConfigurationResponse(status = Some(Status(code = Code.OK.index)))
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(DeleteDynamicConfigurationResponse(status = Some(status)))
         }
 }
