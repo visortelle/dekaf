@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.brokers.v1;
+
+import "google/rpc/status.proto";
+
+message InternalConfigurationData {
+  string zookeeper_servers = 1;
+  string configuration_store_servers = 2;
+  string bookkeeper_metadata_service_uri = 3;
+  string state_storage_service_url = 4;
+}
+
+message GetRuntimeConfigurationsRequest {}
+
+message GetRuntimeConfigurationsResponse {
+  google.rpc.Status status = 1;
+  map<string, string> config = 2;
+}
+
+message GetInternalConfigurationDataRequest {}
+
+message GetInternalConfigurationDataResponse {
+  google.rpc.Status status = 1;
+  InternalConfigurationData config = 2;
+}
+
+message GetAllDynamicConfigurationsRequest {}
+message GetAllDynamicConfigurationsResponse {
+  google.rpc.Status status = 1;
+  map<string, string> config = 2;
+}
+
+message GetDynamicConfigurationNamesRequest {}
+message GetDynamicConfigurationNamesResponse {
+  google.rpc.Status status = 1;
+  repeated string names = 2;
+}
+
+message UpdateDynamicConfigurationRequest {
+  string name = 1;
+  string value = 2;
+}
+
+message UpdateDynamicConfigurationResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteDynamicConfigurationRequest {
+  string name = 1;
+}
+message DeleteDynamicConfigurationResponse {
+  google.rpc.Status status = 1;
+}
+
+service BrokersService {
+  rpc GetRuntimeConfigurations(GetRuntimeConfigurationsRequest) returns (GetRuntimeConfigurationsResponse) {}
+  rpc GetInternalConfigurationData(GetInternalConfigurationDataRequest) returns (GetInternalConfigurationDataResponse) {}
+  rpc GetAllDynamicConfigurations(GetAllDynamicConfigurationsRequest) returns (GetAllDynamicConfigurationsResponse) {}
+  rpc GetDynamicConfigurationNames(GetDynamicConfigurationNamesRequest) returns (GetDynamicConfigurationNamesResponse) {}
+  rpc UpdateDynamicConfiguration(UpdateDynamicConfigurationRequest) returns (UpdateDynamicConfigurationResponse) {}
+}
