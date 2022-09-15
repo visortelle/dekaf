@@ -1,8 +1,18 @@
 import React, { ReactNode } from 'react';
 import * as Notifications from './Notifications';
-import * as PulsarAdminClient from './PulsarAdminClient';
+import * as PulsarGrpcClient from './PulsarGrpcClient/PulsarGrpcClient';
 import useSWR from "swr";
 import { swrKeys } from '../../swrKeys';
+import { GetAllDynamicConfigurationsRequest, GetInternalConfigurationDataRequest, GetRuntimeConfigurationsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import * as pbUtils from '../../../pbUtils/pbUtils';
+
+type InternalConfigurationData = {
+  zookeeperServers?: string;
+  configurationStoreServers?: string;
+  bookkeeperMetadataServiceUri?: string;
+  stateStorageServiceUrl?: string;
+}
 
 type ConfigValue = undefined | { value: string, source: 'dynamic-config' | 'runtime-config' };
 export type Value = {
@@ -22,12 +32,23 @@ const defaultValue: Value = {
 const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { brokersServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
 
   const { data: runtimeConfig, error: runtimeConfigError } = useSWR(
     swrKeys.pulsar.brokers.runtimeConfig._(),
-    async () => await adminClient.brokers.getRuntimeConfiguration()
+    async () => {
+      const req = new GetRuntimeConfigurationsRequest();
+      const res = await brokersServiceClient.getRuntimeConfigurations(req, {}).catch(err => notifyError(`Failed to get runtime configurations: ${err}`));
+      if (res === undefined) {
+        return {};
+      }
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Failed to get runtime configurations: ${res.getStatus()?.getMessage()}`);
+        return {};
+      }
+      return pbUtils.mapToObject(res.getConfigMap());
+    }
   );
 
   if (runtimeConfigError) {
@@ -36,7 +57,25 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
 
   const { data: internalConfig, error: internalConfigError } = useSWR(
     swrKeys.pulsar.brokers.internalConfig._(),
-    async () => await adminClient.brokers.getInternalConfigurationData()
+    async () => {
+      const req = new GetInternalConfigurationDataRequest();
+      const res = await brokersServiceClient.getInternalConfigurationData(req, {}).catch(err => notifyError(`Failed to get internal configuration data: ${err}`));
+      if (res === undefined) {
+        return {};
+      }
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Failed to get internal configuration data: ${res.getStatus()?.getMessage()}`);
+        return {};
+      }
+      const config = res.getConfig();
+      const internalConfig: InternalConfigurationData = {
+        bookkeeperMetadataServiceUri: config?.getBookkeeperMetadataServiceUri(),
+        configurationStoreServers: config?.getConfigurationStoreServers(),
+        stateStorageServiceUrl: config?.getStateStorageServiceUrl(),
+        zookeeperServers: config?.getZookeeperServers(),
+      }
+      return internalConfig;
+    }
   );
 
   if (internalConfigError) {
@@ -45,7 +84,18 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
 
   const { data: dynamicConfig, error: dynamicConfigError } = useSWR(
     swrKeys.pulsar.brokers.dynamicConfig._(),
-    async () => await adminClient.brokers.getAllDynamicConfigurations()
+    async () => {
+      const req = new GetAllDynamicConfigurationsRequest();
+      const res = await brokersServiceClient.getAllDynamicConfigurations(req, {}).catch(err => notifyError(`Failed to get dynamic configurations: ${err}`));
+      if (res === undefined) {
+        return {};
+      }
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Failed to get dynamic configurations: ${res.getStatus()?.getMessage()}`);
+        return {};
+      }
+      return pbUtils.mapToObject(res.getConfigMap());
+    }
   );
 
   if (dynamicConfigError) {

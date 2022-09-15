@@ -8,6 +8,7 @@ import * as _namespaceServiceClient from '../../../../grpc-web/tools/teal/pulsar
 import * as _tenantServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/TenantServiceClientPb';
 import * as _clusterServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/ClusterServiceClientPb';
 import * as _metricsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/MetricsServiceClientPb';
+import * as _brokersServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/BrokersServiceClientPb';
 
 export type Value = {
   producerServiceClient: _producerServiceClient.ProducerServiceClient,
@@ -18,6 +19,7 @@ export type Value = {
   tenantServiceClient: _tenantServiceClient.TenantServiceClient,
   clusterServiceClient: _clusterServiceClient.ClusterServiceClient,
   metricsServiceClient: _metricsServiceClient.MetricsServiceClient,
+  brokersServiceClient: _brokersServiceClient.BrokersServiceClient,
 }
 
 const defaultValue: Value = {
@@ -29,6 +31,7 @@ const defaultValue: Value = {
   tenantServiceClient: new _tenantServiceClient.TenantServiceClient(''),
   clusterServiceClient: new _clusterServiceClient.ClusterServiceClient(''),
   metricsServiceClient: new _metricsServiceClient.MetricsServiceClient(''),
+  brokersServiceClient: new _brokersServiceClient.BrokersServiceClient(''),
 };
 
 const Context = React.createContext<Value>(defaultValue);
@@ -42,6 +45,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient('http://localhost:10000'));
   const [clusterServiceClient] = useState(new _clusterServiceClient.ClusterServiceClient('http://localhost:10000'));
   const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient('http://localhost:10000'));
+  const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient('http://localhost:10000'));
 
   return (
     <>
@@ -54,7 +58,8 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           namespaceServiceClient,
           tenantServiceClient,
           clusterServiceClient,
-          metricsServiceClient
+          metricsServiceClient,
+          brokersServiceClient
         }}
       >
         {children}
