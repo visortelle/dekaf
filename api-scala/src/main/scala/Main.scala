@@ -10,6 +10,7 @@ import com.tools.teal.pulsar.ui.cluster.v1.cluster.ClusterServiceGrpc
 import com.tools.teal.pulsar.ui.topic.v1.topic.TopicServiceGrpc
 import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
 import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
+import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats.BrokerStatsServiceGrpc
 
 import io.grpc.{Server, ServerBuilder}
 
@@ -26,6 +27,7 @@ import _root_.namespace.NamespaceServiceImpl
 import _root_.cluster.ClusterServiceImpl
 import _root_.metrics.MetricsServiceImpl
 import _root_.brokers.BrokersServiceImpl
+import _root_.brokerstats.BrokerStatsServiceImpl
 
 object Main:
     def main(args: Array[String]): Unit =
@@ -48,6 +50,7 @@ val server = ServerBuilder
     .addService(MetricsServiceGrpc.bindService(MetricsServiceImpl(), ExecutionContext.global))
 
     .addService(BrokersServiceGrpc.bindService(BrokersServiceImpl(), ExecutionContext.global))
+    .addService(BrokerStatsServiceGrpc.bindService(BrokerStatsServiceImpl(), ExecutionContext.global))
 
     .addService(ProtoReflectionService.newInstance)
     .build

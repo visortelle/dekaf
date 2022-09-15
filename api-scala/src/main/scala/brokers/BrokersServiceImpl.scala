@@ -4,7 +4,24 @@ import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.brokers.v1.brokers as pb
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.brokers.v1.brokers.{BacklogQuotaCheckRequest, BacklogQuotaCheckResponse, DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, HealthCheckRequest, HealthCheckResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse}
+import com.tools.teal.pulsar.ui.brokers.v1.brokers.{
+    BacklogQuotaCheckRequest,
+    BacklogQuotaCheckResponse,
+    DeleteDynamicConfigurationRequest,
+    DeleteDynamicConfigurationResponse,
+    GetAllDynamicConfigurationsRequest,
+    GetAllDynamicConfigurationsResponse,
+    GetDynamicConfigurationNamesRequest,
+    GetDynamicConfigurationNamesResponse,
+    GetInternalConfigurationDataRequest,
+    GetInternalConfigurationDataResponse,
+    GetRuntimeConfigurationsRequest,
+    GetRuntimeConfigurationsResponse,
+    HealthCheckRequest,
+    HealthCheckResponse,
+    UpdateDynamicConfigurationRequest,
+    UpdateDynamicConfigurationResponse
+}
 import org.apache.pulsar.common.naming.TopicVersion
 
 import scala.concurrent.Future
@@ -67,10 +84,10 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             val config = adminClient.brokers.getRuntimeConfigurations.asScala.toMap
             Future.successful(
-                GetRuntimeConfigurationsResponse(
-                    status = Some(Status(code = Code.OK.index)),
-                    config
-                )
+              GetRuntimeConfigurationsResponse(
+                status = Some(Status(code = Code.OK.index)),
+                config
+              )
             )
         } catch {
             case err =>
@@ -82,7 +99,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             adminClient.brokers.updateDynamicConfiguration(request.name, request.value)
             Future.successful(
-                UpdateDynamicConfigurationResponse(status = Some(Status(code = Code.OK.index)))
+              UpdateDynamicConfigurationResponse(status = Some(Status(code = Code.OK.index)))
             )
         } catch {
             case err =>
@@ -94,7 +111,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             adminClient.brokers.deleteDynamicConfiguration(request.name)
             Future.successful(
-                DeleteDynamicConfigurationResponse(status = Some(Status(code = Code.OK.index)))
+              DeleteDynamicConfigurationResponse(status = Some(Status(code = Code.OK.index)))
             )
         } catch {
             case err =>
@@ -104,9 +121,9 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
         try {
-            adminClient.brokers.healthcheck
+            adminClient.brokers.healthcheck(TopicVersion.V2)
             Future.successful(
-                HealthCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
+              HealthCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
             )
         } catch {
             case err =>
@@ -118,7 +135,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             adminClient.brokers.backlogQuotaCheck
             Future.successful(
-                BacklogQuotaCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
+              BacklogQuotaCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
             )
         } catch {
             case err =>

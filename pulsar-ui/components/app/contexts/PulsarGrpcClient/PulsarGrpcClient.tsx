@@ -9,6 +9,7 @@ import * as _tenantServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui
 import * as _clusterServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/ClusterServiceClientPb';
 import * as _metricsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/MetricsServiceClientPb';
 import * as _brokersServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/BrokersServiceClientPb';
+import * as _brokerstatsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokerstats/v1/BrokerstatsServiceClientPb';
 
 export type Value = {
   producerServiceClient: _producerServiceClient.ProducerServiceClient,
@@ -20,6 +21,7 @@ export type Value = {
   clusterServiceClient: _clusterServiceClient.ClusterServiceClient,
   metricsServiceClient: _metricsServiceClient.MetricsServiceClient,
   brokersServiceClient: _brokersServiceClient.BrokersServiceClient,
+  brokerstatsServiceClient: _brokerstatsServiceClient.BrokerStatsServiceClient,
 }
 
 const defaultValue: Value = {
@@ -32,6 +34,7 @@ const defaultValue: Value = {
   clusterServiceClient: new _clusterServiceClient.ClusterServiceClient(''),
   metricsServiceClient: new _metricsServiceClient.MetricsServiceClient(''),
   brokersServiceClient: new _brokersServiceClient.BrokersServiceClient(''),
+  brokerstatsServiceClient: new _brokerstatsServiceClient.BrokerStatsServiceClient(''),
 };
 
 const Context = React.createContext<Value>(defaultValue);
@@ -46,6 +49,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [clusterServiceClient] = useState(new _clusterServiceClient.ClusterServiceClient('http://localhost:10000'));
   const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient('http://localhost:10000'));
   const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient('http://localhost:10000'));
+  const [brokerstatsServiceClient] = useState(new _brokerstatsServiceClient.BrokerStatsServiceClient('http://localhost:10000'));
 
   return (
     <>
@@ -59,7 +63,8 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           tenantServiceClient,
           clusterServiceClient,
           metricsServiceClient,
-          brokersServiceClient
+          brokersServiceClient,
+          brokerstatsServiceClient
         }}
       >
         {children}

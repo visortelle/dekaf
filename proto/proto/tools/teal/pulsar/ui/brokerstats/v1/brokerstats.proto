@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.brokerstats.v1;
+
+import "google/rpc/status.proto";
+
+message GetBrokerStatsJsonRequest {}
+message GetBrokerStatsJsonResponse {
+  google.rpc.Status status = 1;
+  string stats_json = 2;
+}
+
+service BrokerStatsService {
+  rpc GetBrokerStatsJson(GetBrokerStatsJsonRequest) returns (GetBrokerStatsJsonResponse) {}
+}
