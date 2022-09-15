@@ -9,6 +9,7 @@ import com.tools.teal.pulsar.ui.namespace.v1.namespace.NamespaceServiceGrpc
 import com.tools.teal.pulsar.ui.cluster.v1.cluster.ClusterServiceGrpc
 import com.tools.teal.pulsar.ui.topic.v1.topic.TopicServiceGrpc
 import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
+import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
 
 import io.grpc.{Server, ServerBuilder}
 
@@ -24,6 +25,7 @@ import _root_.tenant.TenantServiceImpl
 import _root_.namespace.NamespaceServiceImpl
 import _root_.cluster.ClusterServiceImpl
 import _root_.metrics.MetricsServiceImpl
+import _root_.brokers.BrokersServiceImpl
 
 object Main:
     def main(args: Array[String]): Unit =
@@ -34,7 +36,7 @@ object Main:
 
 val server = ServerBuilder
     .forPort(config.grpcPort)
-    
+
     .addService(ProducerServiceGrpc.bindService(ProducerServiceImpl(), ExecutionContext.global))
     .addService(ConsumerServiceGrpc.bindService(ConsumerServiceImpl(), ExecutionContext.global))
     .addService(TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
@@ -44,6 +46,8 @@ val server = ServerBuilder
     .addService(NamespaceServiceGrpc.bindService(NamespaceServiceImpl(), ExecutionContext.global))
     .addService(ClusterServiceGrpc.bindService(ClusterServiceImpl(), ExecutionContext.global))
     .addService(MetricsServiceGrpc.bindService(MetricsServiceImpl(), ExecutionContext.global))
+
+    .addService(BrokersServiceGrpc.bindService(BrokersServiceImpl(), ExecutionContext.global))
 
     .addService(ProtoReflectionService.newInstance)
     .build
