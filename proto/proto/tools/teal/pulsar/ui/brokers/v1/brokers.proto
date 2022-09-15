@@ -59,4 +59,5 @@ service BrokersService {
   rpc GetAllDynamicConfigurations(GetAllDynamicConfigurationsRequest) returns (GetAllDynamicConfigurationsResponse) {}
   rpc GetDynamicConfigurationNames(GetDynamicConfigurationNamesRequest) returns (GetDynamicConfigurationNamesResponse) {}
   rpc UpdateDynamicConfiguration(UpdateDynamicConfigurationRequest) returns (UpdateDynamicConfigurationResponse) {}
+  rpc DeleteDynamicConfiguration(DeleteDynamicConfigurationRequest) returns (DeleteDynamicConfigurationResponse) {}
 }

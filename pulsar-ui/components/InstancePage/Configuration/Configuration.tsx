@@ -5,7 +5,7 @@ import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import editIcon from '!!raw-loader!./edit.svg';
 import closeIcon from '!!raw-loader!./close.svg';
 import useSWR, { mutate } from 'swr';
-import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import Input from '../../ui/Input/Input';
 import SmallButton from '../../ui/SmallButton/SmallButton';
@@ -15,17 +15,31 @@ import Highlighter from "react-highlight-words";
 import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
 import { help } from './help';
 import ReactDOMServer from 'react-dom/server';
+import { DeleteDynamicConfigurationRequest, GetDynamicConfigurationNamesRequest, UpdateDynamicConfigurationRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
+import { GetHumanReadableSchemaResponse } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
 const Configuration: React.FC = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { brokersServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [isShowDynamicOnly, setIsShowDynamicOnly] = useQueryParam('showDynamicOnly', withDefault(BooleanParam, false));
   const [paramFilter, setParamFilter] = useQueryParam('paramFilter', withDefault(StringParam, ''));
 
   const { data: availableDynamicConfigKeys, error: availableDynamicConfigKeysError } = useSWR(
     swrKeys.pulsar.brokers.availableDynamicConfigKeys._(),
-    async () => await adminClient.brokers.getDynamicConfigurationName() as unknown as string[], // TODO - report a bug about missing swagger definitions.
+    async () => {
+      const req = new GetDynamicConfigurationNamesRequest();
+      const res = await brokersServiceClient.getDynamicConfigurationNames(req, {}).catch(err => notifyError(`Failed to get available dynamic configuration keys: ${err}`));
+      if (res === undefined) {
+        return [];
+      }
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Failed to get available dynamic configuration keys: ${res.getStatus()?.getMessage()}`);
+        return [];
+      }
+      return res.getNamesList();
+    }
   );
 
   if (availableDynamicConfigKeysError) {
@@ -101,7 +115,7 @@ const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
   const [isShowEditor, setIsShowEditor] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(props.configValue || '');
   const ref = useRef<HTMLDivElement>(null);
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { brokersServiceClient } = PulsarGrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -124,26 +138,39 @@ const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
   }, []);
 
   const updateDynamicConfigValue = async () => {
-    try {
-      await adminClient.brokers.updateDynamicConfiguration(props.configKey, inputValue);
-      notifySuccess(`Dynamic configuration parameter ${props.configKey} has been successfully update.`);
-      setIsShowEditor(false);
-    } catch (err) {
-      notifyError(`Unable to update dynamic configuration parameter ${props.configKey}. ${err}`);
+    const req = new UpdateDynamicConfigurationRequest();
+    req.setName(props.configKey);
+    req.setValue(inputValue);
+    const res = await brokersServiceClient.updateDynamicConfiguration(req, {}).catch(err => notifyError(`Failed to update dynamic configuration value: ${err}`));
+    if (res === undefined) {
+      return;
     }
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Failed to update dynamic configuration value: ${res.getStatus()?.getMessage()}`);
+      return;
+    }
+
+    notifySuccess(`Dynamic configuration parameter ${props.configKey} has been successfully update.`);
+    setIsShowEditor(false);
 
     await mutate(swrKeys.pulsar.brokers.runtimeConfig._());
     await mutate(swrKeys.pulsar.brokers.dynamicConfig._());
   }
 
   const deleteDynamicConfigValue = async () => {
-    try {
-      await adminClient.brokers.deleteDynamicConfiguration(props.configKey);
-      notifySuccess(`Dynamic configuration parameter ${props.configKey} has been successfully deleted.`);
-      setIsShowEditor(false);
-    } catch (err) {
-      notifyError(`Unable to delete dynamic configuration parameter ${props.configKey}. ${err}`);
+    const req = new DeleteDynamicConfigurationRequest();
+    req.setName(props.configKey);
+    const res = await brokersServiceClient.deleteDynamicConfiguration(req, {}).catch(err => notifyError(`Failed to delete dynamic configuration value: ${err}`));
+    if (res === undefined) {
+      return;
     }
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Failed to delete dynamic configuration value: ${res.getStatus()?.getMessage()}`);
+      return;
+    }
+
+    notifySuccess(`Dynamic configuration parameter ${props.configKey} has been successfully deleted.`);
+    setIsShowEditor(false);
 
     await mutate(swrKeys.pulsar.brokers.runtimeConfig._());
     await mutate(swrKeys.pulsar.brokers.dynamicConfig._());
