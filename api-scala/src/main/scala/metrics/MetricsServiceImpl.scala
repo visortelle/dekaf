@@ -28,7 +28,7 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
         override def run(): Unit =
             metricsJson = adminClient.brokerStats().getMetrics
                 .replaceAll("\"NaN\"", "0") // It's a dirty hack. TODO - Write a proper decoder.
-            println(s"JSON ${metricsJson}")
+//            println(s"METRICS JSON DEBUG ${metricsJson}")
             decodeJson[MetricsEntries](metricsJson) match
                 case Right(v) => metricsEntries = v
                 case Left(err) => logger.error(s"Unable to decode metrics ${err.getMessage}")
