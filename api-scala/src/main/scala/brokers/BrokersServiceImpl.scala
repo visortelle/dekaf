@@ -4,7 +4,8 @@ import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.brokers.v1.brokers as pb
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.brokers.v1.brokers.{DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse}
+import com.tools.teal.pulsar.ui.brokers.v1.brokers.{BacklogQuotaCheckRequest, BacklogQuotaCheckResponse, DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, HealthCheckRequest, HealthCheckResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse}
+import org.apache.pulsar.common.naming.TopicVersion
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -99,5 +100,29 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(DeleteDynamicConfigurationResponse(status = Some(status)))
+        }
+
+    override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
+        try {
+            adminClient.brokers.healthcheck
+            Future.successful(
+                HealthCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(HealthCheckResponse(status = Some(status), isOk = false))
+        }
+
+    override def backlogQuotaCheck(request: BacklogQuotaCheckRequest): Future[BacklogQuotaCheckResponse] =
+        try {
+            adminClient.brokers.backlogQuotaCheck
+            Future.successful(
+                BacklogQuotaCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(BacklogQuotaCheckResponse(status = Some(status), isOk = false))
         }
 }
