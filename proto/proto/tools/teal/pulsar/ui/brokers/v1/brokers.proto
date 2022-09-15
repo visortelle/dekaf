@@ -53,6 +53,18 @@ message DeleteDynamicConfigurationResponse {
   google.rpc.Status status = 1;
 }
 
+message HealthCheckRequest {}
+message HealthCheckResponse {
+  google.rpc.Status status = 1;
+  bool is_ok = 2;
+}
+
+message BacklogQuotaCheckRequest {}
+message BacklogQuotaCheckResponse {
+  google.rpc.Status status = 1;
+  bool is_ok = 2;
+}
+
 service BrokersService {
   rpc GetRuntimeConfigurations(GetRuntimeConfigurationsRequest) returns (GetRuntimeConfigurationsResponse) {}
   rpc GetInternalConfigurationData(GetInternalConfigurationDataRequest) returns (GetInternalConfigurationDataResponse) {}
@@ -60,4 +72,6 @@ service BrokersService {
   rpc GetDynamicConfigurationNames(GetDynamicConfigurationNamesRequest) returns (GetDynamicConfigurationNamesResponse) {}
   rpc UpdateDynamicConfiguration(UpdateDynamicConfigurationRequest) returns (UpdateDynamicConfigurationResponse) {}
   rpc DeleteDynamicConfiguration(DeleteDynamicConfigurationRequest) returns (DeleteDynamicConfigurationResponse) {}
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+  rpc BacklogQuotaCheck(BacklogQuotaCheckRequest) returns (BacklogQuotaCheckResponse) {}
 }
