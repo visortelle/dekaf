@@ -60,7 +60,9 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   const postCreateTopic = () => {
     mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
     mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
-    navigate(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topicType: topicPersistency, topic: topicName }));
+    mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+
+    navigate(routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }));
   }
 
   const createPartitionedTopic = async () => {

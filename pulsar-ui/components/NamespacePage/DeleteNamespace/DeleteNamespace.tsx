@@ -4,34 +4,44 @@ import { H1 } from '../../ui/H/H';
 import { NamespaceIcon, TenantIcon } from '../../ui/Icons/Icons';
 import Button from '../../ui/Button/Button';
 import * as Notifications from '../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 import { swrKeys } from '../../swrKeys';
 import { routes } from '../../routes';
+import { DeleteNamespaceRequest } from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
 export type DeleteTopicProps = {
   tenant: string,
   namespace: string,
 };
 
-const DeleteTopic: React.FC<DeleteTopicProps> = (props) => {
+const DeleteNamespace: React.FC<DeleteTopicProps> = (props) => {
   const navigate = useNavigate();
   const { mutate } = useSWRConfig()
-  const notification = Notifications.useContext();
-  const adminClient = PulsarAdminClient.useContext();
+  const { notifyError, notifySuccess } = Notifications.useContext();
+  const {namespaceServiceClient } = PulsarGrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
   const deleteNamespace = async () => {
     try {
-      await adminClient.client.namespaces.deleteNamespace(props.tenant, props.namespace, forceDelete);
+      const req = new DeleteNamespaceRequest();
+      req.setNamespaceName(`${props.tenant}/${props.namespace}`);
+      req.setForce(forceDelete);
+      const res = await namespaceServiceClient.deleteNamespace(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to delete namespace: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
 
-      notification.notifySuccess(`Namespace ${props.tenant}/${props.namespace} has been successfully deleted.`);
+      notifySuccess(`Namespace ${props.tenant}/${props.namespace} has been successfully deleted.`);
       navigate(routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }));
 
       await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }));
+      await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
     } catch (err) {
-      notification.notifyError(`Failed to delete namespace ${props.tenant}/${props.namespace}. ${err}`)
+      notifyError(`Failed to delete namespace ${props.tenant}/${props.namespace}. ${err}`)
     }
   };
 
@@ -78,4 +88,4 @@ const DeleteTopic: React.FC<DeleteTopicProps> = (props) => {
   );
 }
 
-export default DeleteTopic;
+export default DeleteNamespace;
