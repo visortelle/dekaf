@@ -55,11 +55,12 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             val internalConfigurationData = adminClient.brokers.getInternalConfigurationData
             val config = pb.InternalConfigurationData(
-              zookeeperServers = internalConfigurationData.getZookeeperServers,
-              configurationStoreServers = internalConfigurationData.getConfigurationStoreServers,
-              bookkeeperMetadataServiceUri = internalConfigurationData.getBookkeeperMetadataServiceUri,
-              stateStorageServiceUrl = internalConfigurationData.getStateStorageServiceUrl
+              zookeeperServers = Option(internalConfigurationData.getZookeeperServers).getOrElse(""),
+              configurationStoreServers = Option(internalConfigurationData.getConfigurationStoreServers).getOrElse(""),
+              bookkeeperMetadataServiceUri = Option(internalConfigurationData.getBookkeeperMetadataServiceUri).getOrElse(""),
+              stateStorageServiceUrl = Option(internalConfigurationData.getStateStorageServiceUrl).getOrElse("")
             )
+
             Future.successful(
               GetInternalConfigurationDataResponse(
                 status = Some(Status(code = Code.OK.index)),
