@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import s from './Metrics.module.css'
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
@@ -13,12 +13,19 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce'
 import { TableVirtuoso } from 'react-virtuoso';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { GetBrokerStatsJsonRequest } from '../../../../grpc-web/tools/teal/pulsar/ui/brokerstats/v1/brokerstats_pb';
 
 const filterKvsAndOp = "&&";
 const filterKvSep = "=";
 
+type Metric = {
+  metrics?: Record<string, string>,
+  dimensions?: Record<string, string>,
+}
+
 const InternalConfig: React.FC = () => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { brokerstatsServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [dimensionsFilter, setDimensionsFilter] = useQueryParam('dimensionsFilter', withDefault(StringParam, ''));
   const [dimensionsFilterDebounced] = useDebounce(dimensionsFilter, 400)
@@ -27,7 +34,15 @@ const InternalConfig: React.FC = () => {
 
   const { data: metricsData, error: metricsError } = useSWR(
     swrKeys.pulsar.brokerStats.metrics,
-    async () => await adminClient.brokerStats.getMetrics(),
+    async () => {
+      const req = new GetBrokerStatsJsonRequest();
+      const res = await brokerstatsServiceClient.getBrokerStatsJson(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Failed to get broker stats: ${res.getStatus()?.getMessage()}`);
+        return [];
+      }
+      return JSON.parse(res.getStatsJson()) as Metric[];
+    },
   );
 
   if (metricsError) {
@@ -103,10 +118,6 @@ const InternalConfig: React.FC = () => {
   );
 }
 
-type Metric = {
-  metrics?: Record<string, string>,
-  dimensions?: Record<string, string>,
-}
 type MetricsTableProps = {
   title: string,
   highlightDimensions: string[],

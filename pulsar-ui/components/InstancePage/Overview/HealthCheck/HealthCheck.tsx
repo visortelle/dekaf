@@ -16,10 +16,7 @@ const HealthCheck: React.FC = () => {
     swrKeys.pulsar.brokers.healthCheck._(),
     async () => {
       const req = new HealthCheckRequest();
-      const res = await brokersServiceClient.healthCheck(req, {}).catch(err => console.log(`Failed to health check: ${err}`));
-      if (res === undefined) {
-        return false;
-      }
+      const res = await brokersServiceClient.healthCheck(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Failed to health check: ${res.getStatus()?.getMessage()}`);
         return false;
@@ -36,10 +33,7 @@ const HealthCheck: React.FC = () => {
     swrKeys.pulsar.brokers.backlogQuotaHealthCheck._(),
     async () => {
       const req = new HealthCheckRequest();
-      const res = await brokersServiceClient.backlogQuotaCheck(req, {}).catch(err => console.log(`Failed to backlog quota check: ${err}`));
-      if (res === undefined) {
-        return false;
-      }
+      const res = await brokersServiceClient.backlogQuotaCheck(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Failed to backlog quota check: ${res.getStatus()?.getMessage()}`);
         return false;
