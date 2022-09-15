@@ -20,7 +20,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         val policies = new Policies
         policies.bundles = bundlesData
         policies.replication_clusters = request.replicationClusters.toSet.asJava
-        
+
         try {
             adminClient.namespaces.createNamespace(request.namespaceName)
 
