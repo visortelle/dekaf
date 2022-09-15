@@ -28,6 +28,7 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
         override def run(): Unit =
             metricsJson = adminClient.brokerStats().getMetrics
                 .replaceAll("\"NaN\"", "0") // It's a dirty hack. TODO - Write a proper decoder.
+            println(s"JSON ${metricsJson}")
             decodeJson[MetricsEntries](metricsJson) match
                 case Right(v) => metricsEntries = v
                 case Left(err) => logger.error(s"Unable to decode metrics ${err.getMessage}")
@@ -69,5 +70,20 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
 
 
     override def getTenantsMetrics(request: GetTenantsMetricsRequest): Future[GetTenantsMetricsResponse] = ???
+//        try {
+//            val optionalNamespacesMetrics = request.tenants.map(namespace =>
+//                (namespace, getOptionalTenMetricsPb(metricsEntries, namespace))
+//            ).toMap
+//
+//            val status: Status = Status(code = Code.OK.index)
+//            Future.successful(GetTenantsMetricsResponse(
+//                status = Some(status),
+//                namespacesMetrics = optionalNamespacesMetrics
+//            ))
+//        } catch {
+//            case err =>
+//                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+//                Future.successful(GetTenantsMetricsResponse(status = Some(status)))
+//        }
 
     override def getTenantsPersistentMetrics(request: GetTenantsPersistentMetricsRequest): Future[GetTenantsPersistentMetricsResponse] = ???
