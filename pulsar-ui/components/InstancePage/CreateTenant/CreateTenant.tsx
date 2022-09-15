@@ -67,7 +67,9 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
     }
 
     mutate(swrKeys.pulsar.tenants._());
-    navigate(routes.tenants.tenant.namespaces._.get({ tenant: tenantName }));
+    mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+
+    navigate(routes.instance.tenants._.get());
   }
 
   const tenantNameInput = <Input value={tenantName} onChange={setTenantName} placeholder="tenant-1" />;

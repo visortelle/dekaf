@@ -57,11 +57,10 @@ export const swrKeys = {
     },
     batch: {
       getTreeNodesChildrenCount: {
-        _: (nodes: TreeNode[]) => [
+        _: () => [
           "pulsar",
           "batch",
-          "getTreeNodesChildrenCount",
-          stringify(nodes),
+          "getTreeNodesChildrenCount"
         ],
       },
       getTenantsNamespacesCount: {

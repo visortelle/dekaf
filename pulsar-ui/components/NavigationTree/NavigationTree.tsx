@@ -56,7 +56,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }
 
   const { data: childrenCount, error: childrenCountError } = useSWR(
-    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTreeNodesChildrenCount._(itemsRenderedDebounced.map(item => item.data!)),
+    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTreeNodesChildrenCount._(),
     async () => await adminBatchClient?.getTreeNodesChildrenCount(itemsRenderedDebounced.map(item => item?.data?.path || [])),
   );
 

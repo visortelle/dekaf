@@ -7,6 +7,7 @@ import * as Notifications from '../../app/contexts/Notifications';
 import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
+import { swrKeys } from '../../swrKeys';
 
 export type DeleteTenantProps = {
   tenant: string
@@ -24,7 +25,9 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
       await adminClient.client.tenants.deleteTenant(props.tenant, forceDelete);
       notification.notifySuccess(`Tenant ${props.tenant} has been successfully deleted.`);
       navigate(`/`);
-      await mutate(['pulsar', 'tenants']);
+
+      await mutate(swrKeys.pulsar.tenants._());
+      await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
     } catch (err) {
       notification.notifyError(`Failed to delete tenant ${props.tenant}. ${err}`)
     }
