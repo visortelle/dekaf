@@ -48,6 +48,7 @@ import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
+import org.apache.pulsar.common.policies.data.BacklogQuota.{builder as BacklogQuotaBuilder, BacklogQuotaType, RetentionPolicy}
 import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BundlesData, Policies}
 
 import scala.jdk.CollectionConverters.*
@@ -290,27 +291,122 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getBacklogQuotas(request: GetBacklogQuotasRequest): Future[GetBacklogQuotasResponse] =
+        def retentionPolicyToPb(policy: RetentionPolicy): pb.RetentionPolicy = policy match
+            case RetentionPolicy.consumer_backlog_eviction => pb.RetentionPolicy.RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION
+            case RetentionPolicy.producer_request_hold     => pb.RetentionPolicy.RETENTION_POLICY_PRODUCER_REQUEST_HOLD
+            case RetentionPolicy.producer_exception        => pb.RetentionPolicy.RETENTION_POLICY_EXCEPTION
+
         try {
             val backlogQuotaMap = adminClient.namespaces.getBacklogQuotaMap(request.namespace).asScala.toMap
-            Future.successful(GetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
+            val backlogQuotasPb = backlogQuotaMap.map { case (quotaType, quota) =>
+                quotaType match
+                    case BacklogQuotaType.destination_storage =>
+                        pb.BacklogQuota(
+                          limitSize = Option(quota.getLimitSize).getOrElse(-1),
+                          limitTime = Option(quota.getLimitTime).getOrElse(-1),
+                          retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy).getOrElse(RetentionPolicy.producer_exception)),
+                          backlogQuotaType = pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE
+                        )
+                    case BacklogQuotaType.message_age =>
+                        pb.BacklogQuota(
+                          limitSize = Option(quota.getLimitSize).getOrElse(-1),
+                          limitTime = Option(quota.getLimitTime).getOrElse(-1),
+                          retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy).getOrElse(RetentionPolicy.producer_exception)),
+                          backlogQuotaType = pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE
+                        )
+            }.toList
+
+            Future.successful(
+              GetBacklogQuotasResponse(
+                status = Some(Status(code = Code.OK.index)),
+                backlogQuotas = backlogQuotasPb
+              )
+            )
         } catch {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetBacklogQuotasResponse(status = Some(status)))
         }
 
-    override def setBacklogQuotas(request: SetBacklogQuotasRequest): Future[SetBacklogQuotasResponse] = ???
+    override def setBacklogQuotas(request: SetBacklogQuotasRequest): Future[SetBacklogQuotasResponse] =
+        def retentionPolicyFromPb(policyPb: pb.RetentionPolicy): RetentionPolicy = policyPb match
+            case pb.RetentionPolicy.RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION => RetentionPolicy.consumer_backlog_eviction
+            case pb.RetentionPolicy.RETENTION_POLICY_PRODUCER_REQUEST_HOLD     => RetentionPolicy.producer_request_hold
+            case pb.RetentionPolicy.RETENTION_POLICY_EXCEPTION                 => RetentionPolicy.producer_exception
+            case _                                                             => RetentionPolicy.producer_exception
 
-    override def removeBacklogQuota(request: RemoveBacklogQuotaRequest): Future[RemoveBacklogQuotaResponse] = ???
+        def quotaTypeFromPb(quotaTypePb: pb.BacklogQuotaType): BacklogQuotaType = quotaTypePb match
+            case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE         => BacklogQuotaType.message_age
+            case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE => BacklogQuotaType.destination_storage
+            case _                                                          => BacklogQuotaType.destination_storage
 
-    override def getNamespaceAntiAffinityGroup(
-        request: GetNamespaceAntiAffinityGroupRequest
-    ): Future[GetNamespaceAntiAffinityGroupResponse] = ???
+        try {
+            request.backlogQuotas.foreach(quotaPb =>
+                val backlogQuota = BacklogQuotaBuilder
+                    .limitSize(quotaPb.limitSize)
+                    .limitTime(quotaPb.limitTime)
+                    .retentionPolicy(retentionPolicyFromPb(quotaPb.retentionPolicy))
+                    .build()
+                val quotaType = quotaTypeFromPb(quotaPb.backlogQuotaType)
+                adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, quotaType)
+            )
+            Future.successful(SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetBacklogQuotasResponse(status = Some(status)))
+        }
 
-    override def setNamespaceAntiAffinityGroup(
-        request: SetNamespaceAntiAffinityGroupRequest
-    ): Future[SetNamespaceAntiAffinityGroupResponse] = ???
+    override def removeBacklogQuota(request: RemoveBacklogQuotaRequest): Future[RemoveBacklogQuotaResponse] =
+        try {
+            request.backlogQuotaType match
+                case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE =>
+                    adminClient.namespaces.removeBacklogQuota(request.namespace, BacklogQuotaType.destination_storage)
+                case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE =>
+                    adminClient.namespaces.removeBacklogQuota(request.namespace, BacklogQuotaType.message_age)
+                case _ =>
+                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Backlog quota type should be specified.")
+                    return Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
 
-    override def deleteNamespaceAntiAffinityGroup(
-        request: DeleteNamespaceAntiAffinityGroupRequest
-    ): Future[DeleteNamespaceAntiAffinityGroupResponse] = ???
+            Future.successful(RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
+        }
+
+    override def getNamespaceAntiAffinityGroup(request: GetNamespaceAntiAffinityGroupRequest): Future[GetNamespaceAntiAffinityGroupResponse] =
+        try {
+            val namespaceAntiAffinityGroup = adminClient.namespaces.getNamespaceAntiAffinityGroup(request.namespace)
+
+            Future.successful(
+              GetNamespaceAntiAffinityGroupResponse(
+                status = Some(Status(code = Code.OK.index)),
+                namespaceAntiAffinityGroup = namespaceAntiAffinityGroup
+              )
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetNamespaceAntiAffinityGroupResponse(status = Some(status)))
+        }
+
+    override def setNamespaceAntiAffinityGroup(request: SetNamespaceAntiAffinityGroupRequest): Future[SetNamespaceAntiAffinityGroupResponse] =
+        try
+            adminClient.namespaces.setNamespaceAntiAffinityGroup(request.namespace, request.namespaceAntiAffinityGroup)
+            Future.successful(SetNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+        catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetNamespaceAntiAffinityGroupResponse(status = Some(status)))
+        }
+
+    override def deleteNamespaceAntiAffinityGroup(request: DeleteNamespaceAntiAffinityGroupRequest): Future[DeleteNamespaceAntiAffinityGroupResponse] =
+        try
+            adminClient.namespaces.deleteNamespaceAntiAffinityGroup(request.namespace)
+            Future.successful(DeleteNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+        catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(DeleteNamespaceAntiAffinityGroupResponse(status = Some(status)))
+        }
