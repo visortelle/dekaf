@@ -4,73 +4,6 @@ package tools.teal.pulsar.ui.namespace.v1;
 
 import "google/rpc/status.proto";
 
-enum SchemaCompatibilityStrategy {
-  SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED = 0;
-  SCHEMA_COMPATIBILITY_STRATEGY_UNDEFINED = 100;
-  SCHEMA_COMPATIBILITY_STRATEGY_ALWAYS_INCOMPATIBLE = 1;
-  SCHEMA_COMPATIBILITY_STRATEGY_ALWAYS_COMPATIBLE = 2;
-  SCHEMA_COMPATIBILITY_STRATEGY_BACKWARD = 3;
-  SCHEMA_COMPATIBILITY_STRATEGY_FORWARD = 4;
-  SCHEMA_COMPATIBILITY_STRATEGY_FULL = 5;
-  SCHEMA_COMPATIBILITY_STRATEGY_BACKWARD_TRANSITIVE = 6;
-  SCHEMA_COMPATIBILITY_STRATEGY_FORWARD_TRANSITIVE = 7;
-  SCHEMA_COMPATIBILITY_STRATEGY_FULL_TRANSITIVE = 8;
-}
-
-message SetSchemaCompatibilityStrategyRequest {
-  string namespace = 1;
-  SchemaCompatibilityStrategy strategy = 2;
-}
-
-message SetSchemaCompatibilityStrategyResponse {
-  google.rpc.Status status = 1;
-}
-
-message GetSchemaCompatibilityStrategyRequest {
-  string namespace = 1;
-}
-
-message GetSchemaCompatibilityStrategyResponse {
-  google.rpc.Status status = 1;
-  SchemaCompatibilityStrategy strategy = 2;
-}
-
-message SetIsAllowAutoUpdateSchemaRequest {
-  string namespace = 1;
-  bool is_allow_auto_update_schema = 2;
-}
-
-message SetIsAllowAutoUpdateSchemaResponse {
-  google.rpc.Status status = 1;
-}
-
-message GetIsAllowAutoUpdateSchemaRequest {
-  string namespace = 1;
-}
-
-message GetIsAllowAutoUpdateSchemaResponse {
-  google.rpc.Status status = 1;
-  bool is_allow_auto_update_schema = 2;
-}
-
-message SetSchemaValidationEnforceRequest {
-  string namespace = 1;
-  bool schema_validation_enforced = 2;
-}
-
-message SetSchemaValidationEnforceResponse {
-  google.rpc.Status status = 1;
-}
-
-message GetSchemaValidationEnforceRequest {
-  string namespace = 1;
-}
-
-message GetSchemaValidationEnforceResponse {
-  google.rpc.Status status = 1;
-  bool schema_validation_enforced = 2;
-}
-
 message CreateNamespaceRequest {
   string namespace_name = 1;
   int32 num_bundles = 2;
@@ -90,16 +23,202 @@ message DeleteNamespaceResponse {
   google.rpc.Status status = 1;
 }
 
+enum SchemaCompatibilityStrategy {
+  SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED = 0;
+  SCHEMA_COMPATIBILITY_STRATEGY_UNDEFINED = 100;
+  SCHEMA_COMPATIBILITY_STRATEGY_ALWAYS_INCOMPATIBLE = 1;
+  SCHEMA_COMPATIBILITY_STRATEGY_ALWAYS_COMPATIBLE = 2;
+  SCHEMA_COMPATIBILITY_STRATEGY_BACKWARD = 3;
+  SCHEMA_COMPATIBILITY_STRATEGY_FORWARD = 4;
+  SCHEMA_COMPATIBILITY_STRATEGY_FULL = 5;
+  SCHEMA_COMPATIBILITY_STRATEGY_BACKWARD_TRANSITIVE = 6;
+  SCHEMA_COMPATIBILITY_STRATEGY_FORWARD_TRANSITIVE = 7;
+  SCHEMA_COMPATIBILITY_STRATEGY_FULL_TRANSITIVE = 8;
+}
+message GetSchemaCompatibilityStrategyRequest {
+  string namespace = 1;
+}
+message GetSchemaCompatibilityStrategyResponse {
+  google.rpc.Status status = 1;
+  SchemaCompatibilityStrategy strategy = 2;
+}
+message SetSchemaCompatibilityStrategyRequest {
+  string namespace = 1;
+  SchemaCompatibilityStrategy strategy = 2;
+}
+message SetSchemaCompatibilityStrategyResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetIsAllowAutoUpdateSchemaRequest {
+  string namespace = 1;
+}
+message GetIsAllowAutoUpdateSchemaResponse {
+  google.rpc.Status status = 1;
+  bool is_allow_auto_update_schema = 2;
+}
+message SetIsAllowAutoUpdateSchemaRequest {
+  string namespace = 1;
+  bool is_allow_auto_update_schema = 2;
+}
+message SetIsAllowAutoUpdateSchemaResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetSchemaValidationEnforceRequest {
+  string namespace = 1;
+}
+message GetSchemaValidationEnforceResponse {
+  google.rpc.Status status = 1;
+  bool schema_validation_enforced = 2;
+}
+message SetSchemaValidationEnforceRequest {
+  string namespace = 1;
+  bool schema_validation_enforced = 2;
+}
+message SetSchemaValidationEnforceResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetNamespaceAntiAffinityGroupRequest {
+  string namespace = 1;
+}
+message GetNamespaceAntiAffinityGroupResponse {
+  google.rpc.Status status = 1;
+  string namespace_anti_affinity_group = 2;
+}
+message SetNamespaceAntiAffinityGroupRequest {
+  string namespace = 1;
+  string namespace_anti_affinity_group = 2;
+}
+message SetNamespaceAntiAffinityGroupResponse {
+  google.rpc.Status status = 1;
+}
+message DeleteNamespaceAntiAffinityGroupRequest {
+  string namespace = 1;
+}
+message DeleteNamespaceAntiAffinityGroupResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetAutoSubscriptionCreationRequest {
+  string namespace = 1;
+}
+message GetAutoSubscriptionCreationResponse {
+  google.rpc.Status status = 1;
+  bool auto_subscription_creation = 2;
+}
+message SetAutoSubscriptionCreationRequest {
+  string namespace = 1;
+  bool auto_subscription_creation = 2;
+}
+message SetAutoSubscriptionCreationResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveAutoSubscriptionCreationRequest {
+  string namespace = 1;
+}
+message RemoveAutoSubscriptionCreationResponse {
+  google.rpc.Status status = 1;
+}
+
+enum TopicType {
+  TOPIC_TYPE_UNSPECIFIED = 0;
+  TOPIC_TYPE_PARTITIONED = 1;
+  TOPIC_TYPE_NON_PARTITIONED = 2;
+}
+message AutoTopicCreation {
+  bool allow_auto_topic_creation = 1;
+  TopicType topic_type = 2;
+  int32 default_num_partitions = 3;
+}
+message GetAutoTopicCreationRequest {
+  string namespace = 1;
+  TopicType topic_type = 2;
+}
+message GetAutoTopicCreationResponse {
+  google.rpc.Status status = 1;
+  AutoTopicCreation auto_topic_creation = 2;
+}
+message SetAutoTopicCreationRequest {
+  string namespace = 1;
+  AutoTopicCreation auto_topic_creation = 2;
+}
+message SetAutoTopicCreationResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveAutoTopicCreationRequest {
+  string namespace = 1;
+}
+message RemoveAutoTopicCreationResponse {
+  google.rpc.Status status = 1;
+}
+
+enum RetentionPolicy {
+  RETENTION_POLICY_UNSPECIFIED = 0;
+  RETENTION_POLICY_PRODUCER_REQUEST_HOLD = 1;
+  RETENTION_POLICY_EXCEPTION = 2;
+  RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION = 3;
+}
+enum BacklogQuotaType {
+  BACKLOG_QUOTA_TYPE_UNSPECIFIED = 0;
+  BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE = 1;
+  BACKLOG_QUOTA_TYPE_MESSAGE_AGE = 2;
+}
+message BacklogQuota {
+  int64 limit_size = 1;
+  int32 limit_time = 2;
+  RetentionPolicy retention_policy = 3;
+  BacklogQuotaType backlog_quota_type = 4;
+}
+message GetBacklogQuotasRequest {
+  string namespace = 1;
+}
+message GetBacklogQuotasResponse {
+  google.rpc.Status status = 1;
+  repeated BacklogQuota backlog_quotas = 2;
+}
+message SetBacklogQuotasRequest {
+  string namespace = 1;
+  repeated BacklogQuota backlog_quotas = 2;
+}
+message SetBacklogQuotasResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveBacklogQuotaRequest {
+  string namespace = 1;
+  BacklogQuotaType backlog_quota_type = 2;
+}
+message RemoveBacklogQuotaResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
 
-  rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);
   rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
+  rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);
 
-  rpc SetIsAllowAutoUpdateSchema(SetIsAllowAutoUpdateSchemaRequest) returns (SetIsAllowAutoUpdateSchemaResponse);
   rpc GetIsAllowAutoUpdateSchema(GetIsAllowAutoUpdateSchemaRequest) returns (GetIsAllowAutoUpdateSchemaResponse);
+  rpc SetIsAllowAutoUpdateSchema(SetIsAllowAutoUpdateSchemaRequest) returns (SetIsAllowAutoUpdateSchemaResponse);
 
-  rpc SetSchemaValidationEnforce(SetSchemaValidationEnforceRequest) returns (SetSchemaValidationEnforceResponse);
   rpc GetSchemaValidationEnforce(GetSchemaValidationEnforceRequest) returns (GetSchemaValidationEnforceResponse);
+  rpc SetSchemaValidationEnforce(SetSchemaValidationEnforceRequest) returns (SetSchemaValidationEnforceResponse);
+
+  rpc GetNamespaceAntiAffinityGroup(GetNamespaceAntiAffinityGroupRequest) returns (GetNamespaceAntiAffinityGroupResponse);
+  rpc SetNamespaceAntiAffinityGroup(SetNamespaceAntiAffinityGroupRequest) returns (SetNamespaceAntiAffinityGroupResponse);
+  rpc DeleteNamespaceAntiAffinityGroup(DeleteNamespaceAntiAffinityGroupRequest) returns (DeleteNamespaceAntiAffinityGroupResponse);
+
+  rpc GetAutoSubscriptionCreation(GetAutoSubscriptionCreationRequest) returns (GetAutoSubscriptionCreationResponse);
+  rpc SetAutoSubscriptionCreation(SetAutoSubscriptionCreationRequest) returns (SetAutoSubscriptionCreationResponse);
+  rpc RemoveAutoSubscriptionCreation(RemoveAutoSubscriptionCreationRequest) returns (RemoveAutoSubscriptionCreationResponse);
+
+  rpc GetAutoTopicCreation(GetAutoTopicCreationRequest) returns (GetAutoTopicCreationResponse);
+  rpc SetAutoTopicCreation(SetAutoTopicCreationRequest) returns (SetAutoTopicCreationResponse);
+  rpc RemoveAutoTopicCreation(RemoveAutoTopicCreationRequest) returns (RemoveAutoTopicCreationResponse);
+
+  rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
+  rpc SetBacklogQuotas(SetBacklogQuotasRequest) returns (SetBacklogQuotasResponse);
+  rpc RemoveBacklogQuota(RemoveBacklogQuotaRequest) returns (RemoveBacklogQuotaResponse);
 }
