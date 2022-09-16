@@ -1,13 +1,56 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CreateNamespaceRequest, CreateNamespaceResponse, DeleteNamespaceRequest, DeleteNamespaceResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{
+    CreateNamespaceRequest,
+    CreateNamespaceResponse,
+    DeleteNamespaceAntiAffinityGroupRequest,
+    DeleteNamespaceAntiAffinityGroupResponse,
+    DeleteNamespaceRequest,
+    DeleteNamespaceResponse,
+    GetAutoSubscriptionCreationRequest,
+    GetAutoSubscriptionCreationResponse,
+    GetAutoTopicCreationRequest,
+    GetAutoTopicCreationResponse,
+    GetBacklogQuotasRequest,
+    GetBacklogQuotasResponse,
+    GetIsAllowAutoUpdateSchemaRequest,
+    GetIsAllowAutoUpdateSchemaResponse,
+    GetNamespaceAntiAffinityGroupRequest,
+    GetNamespaceAntiAffinityGroupResponse,
+    GetSchemaCompatibilityStrategyRequest,
+    GetSchemaCompatibilityStrategyResponse,
+    GetSchemaValidationEnforceRequest,
+    GetSchemaValidationEnforceResponse,
+    NamespaceServiceGrpc,
+    RemoveAutoSubscriptionCreationRequest,
+    RemoveAutoSubscriptionCreationResponse,
+    RemoveAutoTopicCreationRequest,
+    RemoveAutoTopicCreationResponse,
+    RemoveBacklogQuotaRequest,
+    RemoveBacklogQuotaResponse,
+    SetAutoSubscriptionCreationRequest,
+    SetAutoSubscriptionCreationResponse,
+    SetAutoTopicCreationRequest,
+    SetAutoTopicCreationResponse,
+    SetBacklogQuotasRequest,
+    SetBacklogQuotasResponse,
+    SetIsAllowAutoUpdateSchemaRequest,
+    SetIsAllowAutoUpdateSchemaResponse,
+    SetNamespaceAntiAffinityGroupRequest,
+    SetNamespaceAntiAffinityGroupResponse,
+    SetSchemaCompatibilityStrategyRequest,
+    SetSchemaCompatibilityStrategyResponse,
+    SetSchemaValidationEnforceRequest,
+    SetSchemaValidationEnforceResponse
+}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import org.apache.pulsar.common.policies.data.{BundlesData, Policies}
-import scala.jdk.CollectionConverters.*
+import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BundlesData, Policies}
 
+import scala.jdk.CollectionConverters.*
 import scala.concurrent.Future
 
 class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
@@ -125,8 +168,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             val status = Status(code = Code.OK.index)
             Future.successful(
               GetSchemaValidationEnforceResponse(
-                  status = Some(status),
-                  schemaValidationEnforced = schemaValidationEnforced
+                status = Some(status),
+                schemaValidationEnforced = schemaValidationEnforced
               )
             )
         } catch {
@@ -146,3 +189,128 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(SetSchemaValidationEnforceResponse(status = Some(status)))
 
         }
+
+    override def getAutoSubscriptionCreation(request: GetAutoSubscriptionCreationRequest): Future[GetAutoSubscriptionCreationResponse] =
+        try {
+            val autoSubscriptionCreation =
+                adminClient.namespaces.getAutoSubscriptionCreation(request.namespace).isAllowAutoSubscriptionCreation
+            Future.successful(
+              GetAutoSubscriptionCreationResponse(
+                status = Some(Status(code = Code.OK.index)),
+                autoSubscriptionCreation
+              )
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetAutoSubscriptionCreationResponse(status = Some(status)))
+
+        }
+
+    override def setAutoSubscriptionCreation(request: SetAutoSubscriptionCreationRequest): Future[SetAutoSubscriptionCreationResponse] =
+        try {
+            val autoSubscriptionCreationOverride = AutoSubscriptionCreationOverride.builder
+                .allowAutoSubscriptionCreation(request.autoSubscriptionCreation)
+                .build()
+            adminClient.namespaces.setAutoSubscriptionCreation(request.namespace, autoSubscriptionCreationOverride)
+            Future.successful(SetAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetAutoSubscriptionCreationResponse(status = Some(status)))
+
+        }
+
+    override def removeAutoSubscriptionCreation(
+        request: RemoveAutoSubscriptionCreationRequest
+    ): Future[RemoveAutoSubscriptionCreationResponse] =
+        try {
+            adminClient.namespaces.removeAutoSubscriptionCreation(request.namespace)
+            Future.successful(RemoveAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveAutoSubscriptionCreationResponse(status = Some(status)))
+
+        }
+
+    override def getAutoTopicCreation(request: GetAutoTopicCreationRequest): Future[GetAutoTopicCreationResponse] =
+        try {
+            val autoTopicCreation = adminClient.namespaces.getAutoTopicCreation(request.namespace)
+            val autoTopicCreationPb = pb.AutoTopicCreation(
+              allowAutoTopicCreation = autoTopicCreation.isAllowAutoTopicCreation,
+              topicType = autoTopicCreation.getTopicType match
+                  case "partitioned"     => pb.TopicType.TOPIC_TYPE_PARTITIONED
+                  case "non-partitioned" => pb.TopicType.TOPIC_TYPE_NON_PARTITIONED
+                  case _                 => pb.TopicType.TOPIC_TYPE_UNSPECIFIED
+              ,
+              defaultNumPartitions = autoTopicCreation.getDefaultNumPartitions
+            )
+            Future.successful(
+              GetAutoTopicCreationResponse(
+                status = Some(Status(code = Code.OK.index)),
+                autoTopicCreation = Some(autoTopicCreationPb)
+              )
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetAutoTopicCreationResponse(status = Some(status)))
+        }
+
+    override def setAutoTopicCreation(request: SetAutoTopicCreationRequest): Future[SetAutoTopicCreationResponse] =
+        try {
+            val topicType = request.getAutoTopicCreation.topicType match
+                case pb.TopicType.TOPIC_TYPE_PARTITIONED     => "partitioned"
+                case pb.TopicType.TOPIC_TYPE_NON_PARTITIONED => "non-partitioned"
+                case _                                       => "non-partitioned"
+
+            val autoTopicCreation = AutoTopicCreationOverride.builder
+                .allowAutoTopicCreation(request.getAutoTopicCreation.allowAutoTopicCreation)
+                .topicType(topicType)
+                .defaultNumPartitions(request.getAutoTopicCreation.defaultNumPartitions)
+                .build
+
+            adminClient.namespaces.setAutoTopicCreation(request.namespace, autoTopicCreation)
+            Future.successful(SetAutoTopicCreationResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetAutoTopicCreationResponse(status = Some(status)))
+        }
+
+    override def removeAutoTopicCreation(request: RemoveAutoTopicCreationRequest): Future[RemoveAutoTopicCreationResponse] =
+        try {
+            adminClient.namespaces.removeAutoTopicCreation(request.namespace)
+            Future.successful(RemoveAutoTopicCreationResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveAutoTopicCreationResponse(status = Some(status)))
+        }
+
+    override def getBacklogQuotas(request: GetBacklogQuotasRequest): Future[GetBacklogQuotasResponse] =
+        try {
+            val backlogQuotaMap = adminClient.namespaces.getBacklogQuotaMap(request.namespace).asScala.toMap
+            Future.successful(GetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetBacklogQuotasResponse(status = Some(status)))
+        }
+
+    override def setBacklogQuotas(request: SetBacklogQuotasRequest): Future[SetBacklogQuotasResponse] = ???
+
+    override def removeBacklogQuota(request: RemoveBacklogQuotaRequest): Future[RemoveBacklogQuotaResponse] = ???
+
+    override def getNamespaceAntiAffinityGroup(
+        request: GetNamespaceAntiAffinityGroupRequest
+    ): Future[GetNamespaceAntiAffinityGroupResponse] = ???
+
+    override def setNamespaceAntiAffinityGroup(
+        request: SetNamespaceAntiAffinityGroupRequest
+    ): Future[SetNamespaceAntiAffinityGroupResponse] = ???
+
+    override def deleteNamespaceAntiAffinityGroup(
+        request: DeleteNamespaceAntiAffinityGroupRequest
+    ): Future[DeleteNamespaceAntiAffinityGroupResponse] = ???
