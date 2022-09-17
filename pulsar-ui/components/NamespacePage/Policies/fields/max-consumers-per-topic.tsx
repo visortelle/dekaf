@@ -52,7 +52,7 @@ const MaxConsumersPerTopicInput: React.FC<MaxConsumersPerTopicInputProps> = (pro
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(maxConsumersPerTopic)}
+          onConfirm={() => props.onChange(maxConsumersPerTopic)}
           onReset={() => setMaxConsumersPerTopic(props.value)}
         />
       )}

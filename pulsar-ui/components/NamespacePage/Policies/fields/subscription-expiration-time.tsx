@@ -64,7 +64,7 @@ const SubscriptionExpirationTimeInput: React.FC<SubscriptionExpirationTimeInputP
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(subscriptionExpirationTime)}
+          onConfirm={() => props.onChange(subscriptionExpirationTime)}
           onReset={() => setSubscriptionExpirationTime(props.value)}
         />
       )}

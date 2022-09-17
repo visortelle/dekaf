@@ -130,7 +130,7 @@ export const PersistenceInput: React.FC<PersistenceInputProps> = (props) => {
 
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(persistence)}
+          onConfirm={() => props.onChange(persistence)}
           onReset={() => setPersistence(props.value)}
         />
       )}

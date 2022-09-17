@@ -62,7 +62,7 @@ const BacklogQuotaInputWithUpdateConfirmation: React.FC<BacklogQuotaInputWithUpd
       />
       {!isEqual(props.value, value) && (
         <UpdateConfirmation
-          onUpdate={handleUpdate}
+          onConfirm={handleUpdate}
           onReset={() => setValue(props.value)}
         />
       )}

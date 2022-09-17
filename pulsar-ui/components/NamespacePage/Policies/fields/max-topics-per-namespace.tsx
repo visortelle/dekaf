@@ -52,7 +52,7 @@ const MaxTopicsPerNamespaceInput: React.FC<MaxTopicsPerNamespaceInputProps> = (p
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(maxTopicsPerNamespace)}
+          onConfirm={() => props.onChange(maxTopicsPerNamespace)}
           onReset={() => setMaxTopicsPerNamespace(props.value)}
         />
       )}

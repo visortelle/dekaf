@@ -91,7 +91,7 @@ export const DispatchRateInput: React.FC<DispatchRateInputProps> = (props) => {
 
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(dispatchRate)}
+          onConfirm={() => props.onChange(dispatchRate)}
           onReset={() => setDispatchRate(props.value)}
         />
       )}

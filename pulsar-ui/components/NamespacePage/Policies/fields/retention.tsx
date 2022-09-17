@@ -52,7 +52,7 @@ const RetentionInputWithUpdateConfirmation: React.FC<RetentionInputWithUpdateCon
       />
       {!isEqual(props.value, value) && (
         <UpdateConfirmation
-          onUpdate={handleUpdate}
+          onConfirm={handleUpdate}
           onReset={() => setValue(props.value)}
         />
       )}

@@ -52,7 +52,7 @@ const MaxSubscriptionsPerTopicInput: React.FC<MaxSubscriptionsPerTopicInputProps
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(maxSubscriptionsPerTopic)}
+          onConfirm={() => props.onChange(maxSubscriptionsPerTopic)}
           onReset={() => setMaxSubscriptionsPerTopic(props.value)}
         />
       )}

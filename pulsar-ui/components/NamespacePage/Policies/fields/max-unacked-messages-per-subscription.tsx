@@ -52,7 +52,7 @@ const MaxUnackedMessagesPerSubscriptionInput: React.FC<MaxUnackedMessagesPerSubs
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(maxUnackedMessagesPerSubscription)}
+          onConfirm={() => props.onChange(maxUnackedMessagesPerSubscription)}
           onReset={() => setMaxUnackedMessagesPerSubscription(props.value)}
         />
       )}
