@@ -8,6 +8,8 @@ import com.tools.teal.pulsar.ui.namespace.v1.namespace.{
     DeleteNamespaceAntiAffinityGroupResponse,
     DeleteNamespaceRequest,
     DeleteNamespaceResponse,
+    GetAntiAffinityNamespacesRequest,
+    GetAntiAffinityNamespacesResponse,
     GetAutoSubscriptionCreationRequest,
     GetAutoSubscriptionCreationResponse,
     GetAutoTopicCreationRequest,
@@ -194,9 +196,9 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     override def getAutoSubscriptionCreation(request: GetAutoSubscriptionCreationRequest): Future[GetAutoSubscriptionCreationResponse] =
         try {
             val autoSubscriptionCreationPb = Option(adminClient.namespaces.getAutoSubscriptionCreation(request.namespace)) match
-                case Some(v) if v.isAllowAutoSubscriptionCreation => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED
+                case Some(v) if v.isAllowAutoSubscriptionCreation  => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED
                 case Some(v) if !v.isAllowAutoSubscriptionCreation => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED
-                case None => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_INHERITED_FROM_BROKER_CONFIG
+                case None                                          => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_INHERITED_FROM_BROKER_CONFIG
 
             Future.successful(
               GetAutoSubscriptionCreationResponse(
@@ -415,4 +417,23 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(DeleteNamespaceAntiAffinityGroupResponse(status = Some(status)))
+        }
+
+    override def getAntiAffinityNamespaces(request: GetAntiAffinityNamespacesRequest): Future[GetAntiAffinityNamespacesResponse] =
+        try
+            val namespaces = adminClient.namespaces.getAntiAffinityNamespaces(
+              request.tenant,
+              request.cluster,
+              request.namespaceAntiAffinityGroup
+            ).asScala.toList
+            Future.successful(
+              GetAntiAffinityNamespacesResponse(
+                status = Some(Status(code = Code.OK.index)),
+                namespaces
+              )
+            )
+        catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetAntiAffinityNamespacesResponse(status = Some(status)))
         }
