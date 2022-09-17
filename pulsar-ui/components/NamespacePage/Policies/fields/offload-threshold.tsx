@@ -56,7 +56,7 @@ const OffloadThresholdInput: React.FC<OffloadThresholdInputProps> = (props) => {
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(offloadThreshold)}
+          onConfirm={() => props.onChange(offloadThreshold)}
           onReset={() => setOffloadThreshold(props.value)}
         />
       )}

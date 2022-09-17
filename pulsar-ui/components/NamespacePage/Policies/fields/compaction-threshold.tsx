@@ -56,7 +56,7 @@ const CompactionThresholdInput: React.FC<CompactionThresholdInputProps> = (props
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(compactionThreshold)}
+          onConfirm={() => props.onChange(compactionThreshold)}
           onReset={() => setCompactionThreshold(props.value)}
         />
       )}

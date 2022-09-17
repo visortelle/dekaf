@@ -100,17 +100,30 @@ message DeleteNamespaceAntiAffinityGroupRequest {
 message DeleteNamespaceAntiAffinityGroupResponse {
   google.rpc.Status status = 1;
 }
+message GetAntiAffinityNamespacesRequest {
+  string namespace_anti_affinity_group = 1;
+}
+message GetAntiAffinityNamespacesResponse {
+  google.rpc.Status status = 1;
+  repeated string namespaces = 2;
+}
 
+enum AutoSubscriptionCreation {
+  AUTO_SUBSCRIPTION_CREATION_UNSPECIFIED = 0;
+  AUTO_SUBSCRIPTION_CREATION_ENABLED = 1;
+  AUTO_SUBSCRIPTION_CREATION_DISABLED = 2;
+  AUTO_SUBSCRIPTION_CREATION_INHERITED_FROM_BROKER_CONFIG = 3;
+}
 message GetAutoSubscriptionCreationRequest {
   string namespace = 1;
 }
 message GetAutoSubscriptionCreationResponse {
   google.rpc.Status status = 1;
-  bool auto_subscription_creation = 2;
+  AutoSubscriptionCreation auto_subscription_creation = 2;
 }
 message SetAutoSubscriptionCreationRequest {
   string namespace = 1;
-  bool auto_subscription_creation = 2;
+  AutoSubscriptionCreation auto_subscription_creation = 2;
 }
 message SetAutoSubscriptionCreationResponse {
   google.rpc.Status status = 1;
@@ -209,6 +222,7 @@ service NamespaceService {
   rpc GetNamespaceAntiAffinityGroup(GetNamespaceAntiAffinityGroupRequest) returns (GetNamespaceAntiAffinityGroupResponse);
   rpc SetNamespaceAntiAffinityGroup(SetNamespaceAntiAffinityGroupRequest) returns (SetNamespaceAntiAffinityGroupResponse);
   rpc DeleteNamespaceAntiAffinityGroup(DeleteNamespaceAntiAffinityGroupRequest) returns (DeleteNamespaceAntiAffinityGroupResponse);
+  rpc GetAntiAffinityNamespaces(GetAntiAffinityNamespacesRequest) returns (GetAntiAffinityNamespacesResponse);
 
   rpc GetAutoSubscriptionCreation(GetAutoSubscriptionCreationRequest) returns (GetAutoSubscriptionCreationResponse);
   rpc SetAutoSubscriptionCreation(SetAutoSubscriptionCreationRequest) returns (SetAutoSubscriptionCreationResponse);

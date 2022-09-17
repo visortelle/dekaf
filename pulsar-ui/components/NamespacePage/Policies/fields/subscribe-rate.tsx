@@ -69,7 +69,7 @@ export const SubscribeRateInput: React.FC<SubscribeRateInputProps> = (props) => 
 
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(subscribeRate)}
+          onConfirm={() => props.onChange(subscribeRate)}
           onReset={() => setSubscribeRate(props.value)}
         />
       )}

@@ -56,7 +56,7 @@ const DeduplicationSnapshotIntervalInput: React.FC<DeduplicationSnapshotInterval
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(duplicationSnapshotInterval)}
+          onConfirm={() => props.onChange(duplicationSnapshotInterval)}
           onReset={() => setDeduplicationSnapshotInterval(props.value)}
         />
       )}

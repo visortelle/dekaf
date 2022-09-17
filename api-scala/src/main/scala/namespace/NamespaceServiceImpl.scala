@@ -193,12 +193,15 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def getAutoSubscriptionCreation(request: GetAutoSubscriptionCreationRequest): Future[GetAutoSubscriptionCreationResponse] =
         try {
-            val autoSubscriptionCreation =
-                adminClient.namespaces.getAutoSubscriptionCreation(request.namespace).isAllowAutoSubscriptionCreation
+            val autoSubscriptionCreationPb = Option(adminClient.namespaces.getAutoSubscriptionCreation(request.namespace)) match
+                case Some(v) if v.isAllowAutoSubscriptionCreation => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED
+                case Some(v) if !v.isAllowAutoSubscriptionCreation => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED
+                case None => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_INHERITED_FROM_BROKER_CONFIG
+
             Future.successful(
               GetAutoSubscriptionCreationResponse(
                 status = Some(Status(code = Code.OK.index)),
-                autoSubscriptionCreation
+                autoSubscriptionCreation = autoSubscriptionCreationPb
               )
             )
         } catch {
@@ -210,9 +213,15 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def setAutoSubscriptionCreation(request: SetAutoSubscriptionCreationRequest): Future[SetAutoSubscriptionCreationResponse] =
         try {
-            val autoSubscriptionCreationOverride = AutoSubscriptionCreationOverride.builder
-                .allowAutoSubscriptionCreation(request.autoSubscriptionCreation)
-                .build()
+            val autoSubscriptionCreationOverride = request.autoSubscriptionCreation match
+                case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED =>
+                    AutoSubscriptionCreationOverride.builder.allowAutoSubscriptionCreation(true).build()
+                case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED =>
+                    AutoSubscriptionCreationOverride.builder.allowAutoSubscriptionCreation(false).build()
+                case _ =>
+                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Wrong allow subscription creation argument received.")
+                    return Future.successful(SetAutoSubscriptionCreationResponse(status = Some(status)))
+
             adminClient.namespaces.setAutoSubscriptionCreation(request.namespace, autoSubscriptionCreationOverride)
             Future.successful(SetAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
@@ -222,9 +231,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
         }
 
-    override def removeAutoSubscriptionCreation(
-        request: RemoveAutoSubscriptionCreationRequest
-    ): Future[RemoveAutoSubscriptionCreationResponse] =
+    override def removeAutoSubscriptionCreation(request: RemoveAutoSubscriptionCreationRequest): Future[RemoveAutoSubscriptionCreationResponse] =
         try {
             adminClient.namespaces.removeAutoSubscriptionCreation(request.namespace)
             Future.successful(RemoveAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.index))))
@@ -232,7 +239,6 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveAutoSubscriptionCreationResponse(status = Some(status)))
-
         }
 
     override def getAutoTopicCreation(request: GetAutoTopicCreationRequest): Future[GetAutoTopicCreationResponse] =

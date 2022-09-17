@@ -1,9 +1,12 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
+import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 
 const policy = 'autoSubscriptionCreation';
 
@@ -12,39 +15,99 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type AutoSubscriptionCreation = 'enabled' | 'disabled';
+type AutoSubscriptionCreation = 'inherited-from-broker-config' | 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update auto subscription creation. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: autoSubscriptionCreation, error: autoSubscriptionCreationError } = useSWR(
     swrKey,
-    async () => Boolean(await adminClient.namespaces.getAutoSubscriptionCreation(props.tenant, props.namespace)) // XXX - see https://github.com/apache/pulsar/issues/16024
+    async () => {
+      const req = new pb.GetAutoSubscriptionCreationRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getAutoSubscriptionCreation(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to set auto subscription creation policy. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let v: AutoSubscriptionCreation = 'inherited-from-broker-config';
+      switch (res.getAutoSubscriptionCreation()) {
+        case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED: v = 'enabled'; break;
+        case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED: v = 'disabled'; break
+        case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_INHERITED_FROM_BROKER_CONFIG: v = 'inherited-from-broker-config'; break;
+      };
+      return v;
+    }
   );
 
   if (autoSubscriptionCreationError) {
     notifyError(`Unable to get deduplication: ${autoSubscriptionCreationError}`);
   }
 
+  if (autoSubscriptionCreation === undefined) {
+    return null;
+  }
+
   return (
-    <SelectInput<AutoSubscriptionCreation>
-      list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-      value={autoSubscriptionCreation ? 'enabled' : 'disabled'}
-      onChange={async (v) => {
-        if (v === 'enabled') {
-          await adminClient.namespaces.setAutoSubscriptionCreation(props.tenant, props.namespace, { allowAutoSubscriptionCreation: true }).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.removeAutoSubscriptionCreation(props.tenant, props.namespace).catch(onUpdateError);
+    <WithUpdateConfirmation<AutoSubscriptionCreation>
+      initialValue={autoSubscriptionCreation}
+      onConfirm={async (v) => {
+        if (v === 'enabled' || v === 'disabled') {
+          const req = new pb.SetAutoSubscriptionCreationRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          let vPb: pb.AutoSubscriptionCreation;
+          switch (v) {
+            case 'enabled': vPb = pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED; break;
+            case 'disabled': vPb = pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED; break;
+          }
+
+          req.setAutoSubscriptionCreation(vPb);
+
+          const res = await namespaceServiceClient.setAutoSubscriptionCreation(req, {}).catch(err => notifyError(`Unable to set auto subscription creation policy. ${err}`));
+          if (res === undefined) {
+            return;
+          }
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set auto subscription creation policy. ${res.getStatus()?.getMessage()}`);
+            return;
+          }
+        }
+
+        if (v === 'inherited-from-broker-config') {
+          const req = new pb.RemoveAutoSubscriptionCreationRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await namespaceServiceClient.removeAutoSubscriptionCreation(req, {}).catch(err => notifyError(`Unable to remove auto subscription creation policy. ${err}`));
+          if (res?.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to remove auto subscription creation policy. ${res?.getStatus()?.getMessage()}`);
+            return;
+          }
         }
 
         await mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <Select<AutoSubscriptionCreation>
+            list={[
+              { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+              { type: 'item', value: 'disabled', title: 'Disabled' },
+              { type: 'item', value: 'enabled', title: 'Enabled' }
+            ]}
+            value={value}
+            onChange={onChange}
+          />
+        );
+      }}
+    </WithUpdateConfirmation>
   );
 }
 

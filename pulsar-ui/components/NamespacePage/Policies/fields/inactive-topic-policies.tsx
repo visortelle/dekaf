@@ -56,7 +56,7 @@ const InputWithUpdateConfirmation: React.FC<InputWithUpdateConfirmationProps> = 
       />
       {!isEqual(props.value, value) && (
         <UpdateConfirmation
-          onUpdate={handleUpdate}
+          onConfirm={handleUpdate}
           onReset={() => setValue(props.value)}
         />
       )}
