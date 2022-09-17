@@ -15,7 +15,7 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type AutoSubscriptionCreation = 'inherited-from-broker-config' | 'enabled' | 'disabled';
+type PolicyValue = 'inherited-from-broker-config' | 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
@@ -36,7 +36,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         return;
       }
 
-      let v: AutoSubscriptionCreation = 'inherited-from-broker-config';
+      let v: PolicyValue = 'inherited-from-broker-config';
       switch (res.getAutoSubscriptionCreation()) {
         case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED: v = 'enabled'; break;
         case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED: v = 'disabled'; break
@@ -55,7 +55,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   return (
-    <WithUpdateConfirmation<AutoSubscriptionCreation>
+    <WithUpdateConfirmation<PolicyValue>
       initialValue={autoSubscriptionCreation}
       onConfirm={async (v) => {
         if (v === 'enabled' || v === 'disabled') {
@@ -96,7 +96,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     >
       {({ value, onChange }) => {
         return (
-          <Select<AutoSubscriptionCreation>
+          <Select<PolicyValue>
             list={[
               { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
               { type: 'item', value: 'disabled', title: 'Disabled' },

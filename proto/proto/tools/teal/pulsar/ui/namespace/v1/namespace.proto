@@ -102,6 +102,8 @@ message DeleteNamespaceAntiAffinityGroupResponse {
 }
 message GetAntiAffinityNamespacesRequest {
   string namespace_anti_affinity_group = 1;
+  string tenant = 2;
+  string cluster = 3;
 }
 message GetAntiAffinityNamespacesResponse {
   google.rpc.Status status = 1;
