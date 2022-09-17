@@ -91,7 +91,7 @@ export const SubscriptionDispatchRateInput: React.FC<SubscriptionDispatchRateInp
 
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(dispatchRate)}
+          onConfirm={() => props.onChange(dispatchRate)}
           onReset={() => setDispatchRate(props.value)}
         />
       )}

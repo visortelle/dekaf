@@ -52,7 +52,7 @@ const MaxConsumersPerSubscriptionInput: React.FC<MaxConsumersPerSubscriptionInpu
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(maxConsumersPerSubscription)}
+          onConfirm={() => props.onChange(maxConsumersPerSubscription)}
           onReset={() => setMaxConsumersPerSubscription(props.value)}
         />
       )}

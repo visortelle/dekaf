@@ -56,7 +56,7 @@ const OffloadDeletionLagInput: React.FC<OffloadDeletionLagInputProps> = (props) 
       )}
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(offloadDeletionLag)}
+          onConfirm={() => props.onChange(offloadDeletionLag)}
           onReset={() => setOffloadDeletionLag(props.value)}
         />
       )}

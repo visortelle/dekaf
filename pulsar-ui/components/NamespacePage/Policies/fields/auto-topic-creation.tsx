@@ -74,7 +74,7 @@ export const AutoTopicCreationInput: React.FC<AutoTopicCreationInputProps> = (pr
 
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(autoTopicCreation)}
+          onConfirm={() => props.onChange(autoTopicCreation)}
           onReset={() => setAutoTopicCreation(props.value)}
         />
       )}

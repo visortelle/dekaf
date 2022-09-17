@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Input, { InputProps } from './SelectInput';
+import SelectInput, { InputProps } from './SelectInput';
 import UpdateConfirmation from '../UpdateConfirmation/UpdateConfirmation';
 
 export type InputWithUpdateConfirmationProps<V> = InputProps<V>;
@@ -11,20 +11,20 @@ function InputWithUpdateConfirmation<V>(props: InputWithUpdateConfirmationProps<
     setValue(() => props.value);
   }, [props.value]);
 
-  const handleUpdate = () => props.onChange(value);
+  const handleConfirm = () => props.onChange(value);
 
   return (
     <div
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
-          handleUpdate();
+          handleConfirm();
         }
       }}
     >
-      <Input {...props} value={value} onChange={v => setValue(() => v)} />
+      <SelectInput {...props} value={value} onChange={v => setValue(() => v)} />
       {props.value !== value && (
         <UpdateConfirmation
-          onUpdate={handleUpdate}
+          onConfirm={handleConfirm}
           onReset={() => setValue(props.value)}
         />
       )}

@@ -79,7 +79,7 @@ const SubscriptionTypesEnabledInput: React.FC<SubscriptionTypesEnabledProps> = (
 
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(subscriptionTypesEnabled)}
+          onConfirm={() => props.onChange(subscriptionTypesEnabled)}
           onReset={() => setSubscriptionTypesEnabled(() => props.value)}
         />
       )}

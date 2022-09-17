@@ -59,7 +59,7 @@ const DelayedDeliveryInput: React.FC<DelayedDeliveryInputProps> = (props) => {
 
       {showUpdateConfirmation && (
         <UpdateConfirmation
-          onUpdate={() => props.onChange(delayedDelivery)}
+          onConfirm={() => props.onChange(delayedDelivery)}
           onReset={() => setDelayedDelivery(props.value)}
         />
       )}
