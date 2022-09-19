@@ -1,144 +1,188 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Input from "../../../ui/ConfigurationTable/Input/Input";
-import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
-import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
+import Select from '../../../ui/Select/Select';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 
 const policy = 'autoTopicCreation';
 
-const minNumPartitions = 1;
-
-export type AutoTopicCreation = {
-  enabled: 'true' | 'false';
-  numPartitions: number;
-  type: 'partitioned' | 'non-partitioned';
-}
-
-export type AutoTopicCreationInputProps = {
-  value: AutoTopicCreation;
-  onChange: (value: AutoTopicCreation) => void;
-};
-export const AutoTopicCreationInput: React.FC<AutoTopicCreationInputProps> = (props) => {
-  const [autoTopicCreation, setAutoTopicCreation] = useState<AutoTopicCreation>(props.value);
-
-  useEffect(() => {
-    setAutoTopicCreation(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, autoTopicCreation);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<AutoTopicCreation['enabled']>
-          onChange={(v) => setAutoTopicCreation({ ...autoTopicCreation, enabled: v })}
-          value={autoTopicCreation.enabled}
-          list={[{ type: 'item', value: 'false', title: 'Disabled' }, { type: 'item', value: 'true', title: 'Enabled' }]}
-        />
-      </div>
-
-      {autoTopicCreation.enabled === 'true' && (
-        <div className={sf.FormItem}>
-          <strong className={sf.FormLabel}>Type</strong>
-          <SelectInput<AutoTopicCreation['type']>
-            onChange={(v) => setAutoTopicCreation({ ...autoTopicCreation, type: v })}
-            value={autoTopicCreation.type}
-            list={[{ type: 'item', value: 'non-partitioned', title: 'Non-partitioned' }, { type: 'item', value: 'partitioned', title: 'Partitioned' }]}
-          />
-        </div>
-      )}
-
-      {autoTopicCreation.enabled === 'true' && autoTopicCreation.type === 'partitioned' && (
-        <div className={sf.FormItem}>
-          <strong className={sf.FormLabel}>Num partitions</strong>
-          <Input
-            type='number'
-            onChange={(v) => {
-              const int = parseInt(v, 10);
-              const n = int < minNumPartitions ? minNumPartitions : int;
-
-              setAutoTopicCreation({ ...autoTopicCreation, numPartitions: n });
-            }}
-            value={String(autoTopicCreation.numPartitions)}
-            inputProps={{ min: 1 }}
-          />
-        </div>
-      )
-      }
-
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(autoTopicCreation)}
-          onReset={() => setAutoTopicCreation(props.value)}
-        />
-      )}
-    </div>
-  );
-}
-
-// XXX - Missing response type in swagger definitions for this endpoint.
-type AutoTopicCreationData = {
-  allowAutoTopicCreation: boolean,
-  topicType: 'partitioned' | 'non-partitioned',
-  defaultNumPartitions: number
+type TopicType = 'partitioned' | 'non-partitioned';
+export type PolicyValue = { type: 'inherited-from-broker-config' } | {
+  type: 'specified',
+  isAllowAutoTopicCreation: boolean;
+  defaultNumPartitions: number;
+  topicType: TopicType;
 }
 
 export type FieldInputProps = {
   tenant: string;
   namespace: string;
-}
+};
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig();
+  const { mutate } = useSWRConfig()
 
-  const onUpdateError = (err: string) => notifyError(`Can't update auto topic creation. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: autoTopicCreationData, error: persistenceError } = useSWR(
+  const { data: autoTopicCreation, error: autoTopicCreationError } = useSWR(
     swrKey,
-    async () => (await adminClient.namespaces.getAutoTopicCreation(props.tenant, props.namespace)) as unknown as AutoTopicCreationData,
+    async () => {
+      const req = new pb.GetAutoTopicCreationRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getAutoTopicCreation(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to set auto topic creation policy. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let v: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getAutoTopicCreation()) {
+        case pb.AutoTopicCreation.AUTO_TOPIC_CREATION_SPECIFIED: {
+          const autoTopicCreationOverride = res.getAutoTopicCreationOverride();
+          if (autoTopicCreationOverride === undefined) {
+            break;
+          }
+
+          let topicType: TopicType = 'non-partitioned';
+          switch (autoTopicCreationOverride.getTopicType()) {
+            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED: topicType = 'partitioned'; break;
+            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED: topicType = 'non-partitioned'; break;
+          }
+
+          v = {
+            type: 'specified',
+            isAllowAutoTopicCreation: autoTopicCreationOverride.getIsAllowTopicCreation(),
+            defaultNumPartitions: autoTopicCreationOverride.getDefaultNumPartitions(),
+            topicType
+          }
+        }; break;
+      };
+      return v;
+    }
   );
 
-  if (persistenceError) {
-    notifyError(`Unable to get persistence policies. ${persistenceError}`);
+  if (autoTopicCreationError) {
+    notifyError(`Unable to get deduplication: ${autoTopicCreationError}`);
   }
 
-  const autoTopicCreation: AutoTopicCreation = {
-    enabled: autoTopicCreationData?.allowAutoTopicCreation ? 'true' : 'false',
-    numPartitions: autoTopicCreationData?.defaultNumPartitions || minNumPartitions,
-    type: autoTopicCreationData?.topicType || 'non-partitioned',
+  if (autoTopicCreation === undefined) {
+    return null;
   }
-
   return (
-    <AutoTopicCreationInput
-      value={autoTopicCreation}
-      onChange={async (value) => {
-        await adminClient.namespaces.setAutoTopicCreation(
-          props.tenant,
-          props.namespace,
-          {
-            allowAutoTopicCreation: value.enabled === 'true',
-            topicType: value.enabled === 'true' ? value.type : undefined,
-            defaultNumPartitions: (value.enabled === 'true' && value.type === 'partitioned') ? value.numPartitions : undefined,
-          }).catch(onUpdateError);
-        await mutate(swrKey);
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={autoTopicCreation}
+      onConfirm={async (v) => {
+        if (v.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveAutoTopicCreationRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+          const res = await namespaceServiceClient.removeAutoTopicCreation(req, {}).catch(err => notifyError(`Unable to set auto topic creation policy. ${err}`));
+          if (res?.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set auto topic creation policy. ${res?.getStatus()?.getMessage()}`);
+            return;
+          }
+        }
+
+        if (v.type === 'specified') {
+          const req = new pb.SetAutoTopicCreationRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+          req.setAutoTopicCreation(pb.AutoTopicCreation.AUTO_TOPIC_CREATION_SPECIFIED);
+
+          const autoTopicCreationOverride = new pb.AutoTopicCreationOverride();
+          autoTopicCreationOverride.setIsAllowTopicCreation(v.isAllowAutoTopicCreation);
+          autoTopicCreationOverride.setDefaultNumPartitions(v.defaultNumPartitions);
+
+          switch (v.topicType) {
+            case 'partitioned': autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED); break;
+            case 'non-partitioned': autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED); break;
+          }
+          req.setAutoTopicCreationOverride(autoTopicCreationOverride);
+
+          const res = await namespaceServiceClient.setAutoTopicCreation(req, {}).catch(err => notifyError(`Unable to set auto topic creation policy. ${err}`));
+          if (res === undefined) {
+            return;
+          }
+          if (res?.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set auto topic creation policy. ${res?.getStatus()?.getMessage()}`);
+            return;
+          }
+        }
+
+        mutate(swrKey);
       }}
-    />
-  )
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                onChange={(v) => {
+                  if (v === 'inherited-from-broker-config') {
+                    onChange({ 'type': 'inherited-from-broker-config' });
+                  }
+                  if (v === 'specified') {
+                    onChange({
+                      type: 'specified',
+                      isAllowAutoTopicCreation: false,
+                      defaultNumPartitions: 4,
+                      topicType: 'non-partitioned'
+                    });
+                  }
+                }}
+                value={value.type}
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified', title: 'Specified for this namespace' }
+                ]}
+              />
+            </div>
+
+            {value.type === 'specified' && (
+              <div className={sf.FormItem}>
+                <strong className={sf.FormLabel}>Topic type</strong>
+                <Select<TopicType>
+                  onChange={(v) => onChange({ ...value, topicType: v })}
+                  value={value.topicType}
+                  list={[{ type: 'item', value: 'non-partitioned', title: 'Non-partitioned' }, { type: 'item', value: 'partitioned', title: 'Partitioned' }]}
+                />
+              </div>
+            )}
+
+            {value.type === 'specified' && value.topicType === 'partitioned' && (
+              <div className={sf.FormItem}>
+                <strong className={sf.FormLabel}>Num partitions</strong>
+                <Input
+                  type='number'
+                  onChange={(v) => {
+                    const int = parseInt(v, 10);
+                    const defaultNumPartitions = int < 1 ? 1 : int;
+
+                    onChange({ ...value, defaultNumPartitions });
+                  }}
+                  value={String(value.defaultNumPartitions)}
+                  inputProps={{ min: 1 }}
+                />
+              </div>
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
+  );
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Auto topic creation',
-  description: <span>Enable or disable autoTopicCreation for a namespace, overriding broker settings.</span>,
+  description: <span>Enable or disable auto topic creation for this namespace, overriding broker settings.</span>,
   input: <FieldInput {...props} />
 });
 

@@ -32,7 +32,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const res = await namespaceServiceClient.getAutoSubscriptionCreation(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to set auto subscription creation policy. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get auto subscription creation policy. ${res.getStatus()?.getMessage()}`);
         return;
       }
 
@@ -47,7 +47,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (autoSubscriptionCreationError) {
-    notifyError(`Unable to get deduplication: ${autoSubscriptionCreationError}`);
+    notifyError(`Unable to get auto subscription creation policy. ${autoSubscriptionCreationError}`);
   }
 
   if (autoSubscriptionCreation === undefined) {
@@ -84,7 +84,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveAutoSubscriptionCreationRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeAutoSubscriptionCreation(req, {}).catch(err => notifyError(`Unable to remove auto subscription creation policy. ${err}`));
+          const res = await namespaceServiceClient.removeAutoSubscriptionCreation(req, {}).catch(err => notifyError(`Unable to set auto subscription creation policy. ${err}`));
           if (res?.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to remove auto subscription creation policy. ${res?.getStatus()?.getMessage()}`);
             return;
@@ -99,8 +99,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <Select<PolicyValue>
             list={[
               { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
-              { type: 'item', value: 'disabled', title: 'Disabled' },
-              { type: 'item', value: 'enabled', title: 'Enabled' }
+              { type: 'item', value: 'disabled', title: 'Disabled for this namespace' },
+              { type: 'item', value: 'enabled', title: 'Enabled for this namespace' }
             ]}
             value={value}
             onChange={onChange}
