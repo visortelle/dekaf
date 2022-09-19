@@ -137,27 +137,34 @@ message RemoveAutoSubscriptionCreationResponse {
   google.rpc.Status status = 1;
 }
 
-enum TopicType {
-  TOPIC_TYPE_UNSPECIFIED = 0;
-  TOPIC_TYPE_PARTITIONED = 1;
-  TOPIC_TYPE_NON_PARTITIONED = 2;
+enum AutoTopicCreation {
+  AUTO_TOPIC_CREATION_UNSPECIFIED = 0;
+  AUTO_TOPIC_CREATION_SPECIFIED = 1;
+  AUTO_TOPIC_CREATION_INHERITED_FROM_BROKER_CONFIG = 2;
 }
-message AutoTopicCreation {
-  bool allow_auto_topic_creation = 1;
-  TopicType topic_type = 2;
+enum AutoTopicCreationTopicType {
+  AUTO_TOPIC_CREATION_TOPIC_TYPE_UNSPECIFIED = 0;
+  AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED = 1;
+  AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED = 2;
+}
+message AutoTopicCreationOverride {
+  bool is_allow_topic_creation = 1;
+  AutoTopicCreationTopicType topic_type = 2;
   int32 default_num_partitions = 3;
 }
 message GetAutoTopicCreationRequest {
   string namespace = 1;
-  TopicType topic_type = 2;
+  AutoTopicCreationTopicType topic_type = 2;
 }
 message GetAutoTopicCreationResponse {
   google.rpc.Status status = 1;
   AutoTopicCreation auto_topic_creation = 2;
+  optional AutoTopicCreationOverride auto_topic_creation_override = 3;
 }
 message SetAutoTopicCreationRequest {
   string namespace = 1;
   AutoTopicCreation auto_topic_creation = 2;
+  optional AutoTopicCreationOverride auto_topic_creation_override = 3;
 }
 message SetAutoTopicCreationResponse {
   google.rpc.Status status = 1;

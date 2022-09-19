@@ -198,7 +198,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             val autoSubscriptionCreationPb = Option(adminClient.namespaces.getAutoSubscriptionCreation(request.namespace)) match
                 case Some(v) if v.isAllowAutoSubscriptionCreation  => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED
                 case Some(v) if !v.isAllowAutoSubscriptionCreation => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED
-                case None                                          => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_INHERITED_FROM_BROKER_CONFIG
+                case _                                             => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_INHERITED_FROM_BROKER_CONFIG
 
             Future.successful(
               GetAutoSubscriptionCreationResponse(
@@ -245,20 +245,30 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def getAutoTopicCreation(request: GetAutoTopicCreationRequest): Future[GetAutoTopicCreationResponse] =
         try {
-            val autoTopicCreation = adminClient.namespaces.getAutoTopicCreation(request.namespace)
-            val autoTopicCreationPb = pb.AutoTopicCreation(
-              allowAutoTopicCreation = autoTopicCreation.isAllowAutoTopicCreation,
-              topicType = autoTopicCreation.getTopicType match
-                  case "partitioned"     => pb.TopicType.TOPIC_TYPE_PARTITIONED
-                  case "non-partitioned" => pb.TopicType.TOPIC_TYPE_NON_PARTITIONED
-                  case _                 => pb.TopicType.TOPIC_TYPE_UNSPECIFIED
-              ,
-              defaultNumPartitions = autoTopicCreation.getDefaultNumPartitions
-            )
+            val autoTopicCreationOverride = Option(adminClient.namespaces.getAutoTopicCreation(request.namespace))
+            val autoTopicCreationOverridePb = autoTopicCreationOverride match
+                case Some(v) =>
+                    Some(
+                      pb.AutoTopicCreationOverride(
+                        isAllowTopicCreation = v.isAllowAutoTopicCreation,
+                        topicType = v.getTopicType match
+                            case "partitioned"     => pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED
+                            case "non-partitioned" => pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED
+                            case _                 => pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_UNSPECIFIED
+                        ,
+                        defaultNumPartitions = v.getDefaultNumPartitions
+                      )
+                    )
+                case _ => None
+            val autoTopicCreationPb = autoTopicCreationOverride match
+                case Some(_) => pb.AutoTopicCreation.AUTO_TOPIC_CREATION_SPECIFIED
+                case _       => pb.AutoTopicCreation.AUTO_TOPIC_CREATION_INHERITED_FROM_BROKER_CONFIG
+
             Future.successful(
               GetAutoTopicCreationResponse(
                 status = Some(Status(code = Code.OK.index)),
-                autoTopicCreation = Some(autoTopicCreationPb)
+                autoTopicCreation = autoTopicCreationPb,
+                autoTopicCreationOverride = autoTopicCreationOverridePb
               )
             )
         } catch {
@@ -268,16 +278,26 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setAutoTopicCreation(request: SetAutoTopicCreationRequest): Future[SetAutoTopicCreationResponse] =
+        if !request.autoTopicCreation.isAutoTopicCreationSpecified then
+            val status = Status(code = Code.FAILED_PRECONDITION.index)
+            return Future.successful(SetAutoTopicCreationResponse(status = Some(status)))
+
+        val autoTopicCreationOverridePb = request.autoTopicCreationOverride match
+            case Some(v) => v
+            case _ =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index)
+                return Future.successful(SetAutoTopicCreationResponse(status = Some(status)))
+
         try {
-            val topicType = request.getAutoTopicCreation.topicType match
-                case pb.TopicType.TOPIC_TYPE_PARTITIONED     => "partitioned"
-                case pb.TopicType.TOPIC_TYPE_NON_PARTITIONED => "non-partitioned"
-                case _                                       => "non-partitioned"
+            val topicType = autoTopicCreationOverridePb.topicType match
+                case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED     => "partitioned"
+                case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED => "non-partitioned"
+                case _                                                                            => "non-partitioned"
 
             val autoTopicCreation = AutoTopicCreationOverride.builder
-                .allowAutoTopicCreation(request.getAutoTopicCreation.allowAutoTopicCreation)
+                .allowAutoTopicCreation(autoTopicCreationOverridePb.isAllowTopicCreation)
                 .topicType(topicType)
-                .defaultNumPartitions(request.getAutoTopicCreation.defaultNumPartitions)
+                .defaultNumPartitions(autoTopicCreationOverridePb.defaultNumPartitions)
                 .build
 
             adminClient.namespaces.setAutoTopicCreation(request.namespace, autoTopicCreation)
@@ -421,11 +441,14 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def getAntiAffinityNamespaces(request: GetAntiAffinityNamespacesRequest): Future[GetAntiAffinityNamespacesResponse] =
         try
-            val namespaces = adminClient.namespaces.getAntiAffinityNamespaces(
-              request.tenant,
-              request.cluster,
-              request.namespaceAntiAffinityGroup
-            ).asScala.toList
+            val namespaces = adminClient.namespaces
+                .getAntiAffinityNamespaces(
+                  request.tenant,
+                  request.cluster,
+                  request.namespaceAntiAffinityGroup
+                )
+                .asScala
+                .toList
             Future.successful(
               GetAntiAffinityNamespacesResponse(
                 status = Some(Status(code = Code.OK.index)),

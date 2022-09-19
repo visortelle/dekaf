@@ -33,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const res = await namespaceServiceClient.getNamespaceAntiAffinityGroup(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Can't get anti-affinity group. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get anti-affinity group policy. ${res.getStatus()?.getMessage()}`);
         return { type: 'not-specified' };
       }
 
@@ -43,7 +43,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (antiAffinityGroupError) {
-    notifyError(`Unable to get message TTL. ${antiAffinityGroupError}`);
+    notifyError(`Unable to get anti-affinity group policy. ${antiAffinityGroupError}`);
   }
 
   if (antiAffinityGroup === undefined) {
@@ -86,7 +86,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <Select<PolicyValue['type']>
               list={[
                 { type: 'item', value: 'not-specified', title: 'Not specified' },
-                { type: 'item', value: 'specified', title: 'Group' }
+                { type: 'item', value: 'specified', title: 'Specified' }
               ]}
               value={value.type}
               onChange={(v) => onChange(v === 'specified' ? { type: v, group: '' } : { type: v })}
