@@ -9,7 +9,7 @@ topics_count=500
 for te in $(seq $tenants_count); do
   curl -X PUT \
     -H 'Content-Type: application/json' \
-    -d '{"allowedClusters": ["standalone"], "adminRoles": []}' \
+    -d '{"allowedClusters": ["pulsar-devenv"], "adminRoles": []}' \
     "${api_url}/tenants/tenant-${te}"
 done
 

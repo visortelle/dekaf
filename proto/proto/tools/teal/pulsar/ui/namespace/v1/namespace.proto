@@ -187,22 +187,26 @@ enum BacklogQuotaType {
   BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE = 1;
   BACKLOG_QUOTA_TYPE_MESSAGE_AGE = 2;
 }
-message BacklogQuota {
+message DestinationStroageBacklogQuota {
   int64 limit_size = 1;
-  int32 limit_time = 2;
-  RetentionPolicy retention_policy = 3;
-  BacklogQuotaType backlog_quota_type = 4;
+  optional RetentionPolicy retention_policy = 2;
+}
+message MessageAgeBacklogQuota {
+  int32 limit_time = 1;
+  optional RetentionPolicy retention_policy = 2;
 }
 message GetBacklogQuotasRequest {
   string namespace = 1;
 }
 message GetBacklogQuotasResponse {
   google.rpc.Status status = 1;
-  repeated BacklogQuota backlog_quotas = 2;
+  optional DestinationStroageBacklogQuota destination_storage = 2;
+  optional MessageAgeBacklogQuota message_age = 3;
 }
 message SetBacklogQuotasRequest {
   string namespace = 1;
-  repeated BacklogQuota backlog_quotas = 2;
+  optional DestinationStroageBacklogQuota destination_storage = 2;
+  optional MessageAgeBacklogQuota message_age = 3;
 }
 message SetBacklogQuotasResponse {
   google.rpc.Status status = 1;

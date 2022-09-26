@@ -9,4 +9,5 @@
 .FormLabel {
   display: block;
   margin-bottom: 4rem;
+  font-weight: bold;
 }

@@ -1,4 +1,4 @@
-export const memoryUnits = ["M", "G"] as const;
+export const memoryUnits = ["B", "KB", "MB", "GB"] as const;
 export type MemoryUnit = typeof memoryUnits[number];
 
 export type MemorySize = {

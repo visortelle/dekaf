@@ -1,6 +1,6 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
+import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
@@ -16,121 +16,24 @@ import { useEffect, useState } from "react";
 import * as Either from 'fp-ts/Either';
 import { swrKeys } from "../../../swrKeys";
 import { isEqual } from "lodash";
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import { GetBacklogQuotasRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 const policy = 'backlogQuota';
 
-export const backlogTypes = ['destination_storage', 'message_age'] as const;
-export type BacklogType = typeof backlogTypes[number];
-
-export const backlogPolicies = ['producer_request_hold', 'producer_exception', 'consumer_backlog_eviction'] as const;
-export type BacklogPolicy = typeof backlogPolicies[number];
-
-type BacklogQuota = {
-  sizeLimit: MemorySize;
-  limitTime: number;
-  policy: BacklogPolicy;
-  type: BacklogType;
-}
-
-type BacklogQuotaInputWithUpdateConfirmationProps = {
-  onChange: BacklogQuotaInputProps['onChange'];
-  value: BacklogQuotaInputProps['value'];
-}
-const BacklogQuotaInputWithUpdateConfirmation: React.FC<BacklogQuotaInputWithUpdateConfirmationProps> = (props) => {
-  const [value, setValue] = useState(props.value);
-
-  useEffect(() => {
-    setValue(() => props.value);
-  }, [props.value]);
-
-  const handleUpdate = () => props.onChange(value);
-
-  return (
-    <div
-      className={s.ListItem}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          handleUpdate();
-        }
-      }}
-    >
-      <BacklogQuotaInput
-        disabledInputs={['type']}
-        backlogTypes={[...backlogTypes]}
-        value={value}
-        onChange={(v) => setValue(() => v)}
-      />
-      {!isEqual(props.value, value) && (
-        <UpdateConfirmation
-          onConfirm={handleUpdate}
-          onReset={() => setValue(props.value)}
-        />
-      )}
-    </div>
-  )
-}
-
-type BacklogQuotaInputProps = {
-  value: BacklogQuota;
-  onChange: (backlogQuota: BacklogQuota) => void;
-  disabledInputs?: ('type')[]
-  backlogTypes: BacklogType[];
-}
-const BacklogQuotaInput: React.FC<BacklogQuotaInputProps> = (props) => {
-  return (
-    <div className={s.BacklogQuotaInput}>
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Type</strong>
-        <SelectInput<BacklogType>
-          list={props.backlogTypes.map(p => ({ type: 'item', value: p, title: p }))}
-          onChange={(type) => props.onChange({ ...props.value, type: type as BacklogType })}
-          value={props.value.type}
-          disabled={props.disabledInputs?.includes('type')}
-        />
-      </div>
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Size limit</strong>
-        <MemorySizeInput
-          value={props.value.sizeLimit}
-          onChange={(sizeLimit) => props.onChange({ ...props.value, sizeLimit })}
-        />
-      </div>
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Limit time (sec.)</strong>
-
-        <div className={sf.FormItem}>
-          <SelectInput<'enabled' | 'disabled'>
-            value={props.value.limitTime > 0 ? 'enabled' : 'disabled'}
-            list={[{ type: 'item', value: 'enabled', title: 'Enabled' }, { type: 'item', value: 'disabled', title: 'Disabled' }]}
-            onChange={(v) => {
-              switch (v) {
-                case 'enabled':
-                  props.onChange({ ...props.value, limitTime: props.value.limitTime > 0 ? props.value.limitTime : 1 });
-                  break;
-                case 'disabled':
-                  props.onChange({ ...props.value, limitTime: -1 });
-                  break;
-              }
-            }}
-          />
-        </div>
-        {props.value.limitTime > 0 && (
-          <DurationInput
-            value={secondsToDuration(props.value.limitTime)}
-            onChange={(limitTime) => props.onChange({ ...props.value, limitTime: durationToSeconds(limitTime) })}
-          />
-        )}
-      </div>
-      <div className={sf.FormItem}>
-        <strong className={sf.FormLabel}>Policy</strong>
-        <SelectInput<BacklogPolicy>
-          list={backlogPolicies.map(p => ({ type: 'item', value: p, title: p }))}
-          onChange={(policy) => props.onChange({ ...props.value, policy: policy as BacklogPolicy })}
-          value={props.value.policy}
-        />
-      </div>
-    </div>
-  );
+type BacklogQuotaPolicyType = 'destination_storage' | 'producer_request_hold' | 'producer_exception';
+type PolicyValue = {
+  destinationStorage: { type: 'inherited-from-broker-config' } | {
+    type: 'specified-for-this-namespace';
+    limit: { type: 'infinite' } | { type: 'specific', size: MemorySize };
+    policy: BacklogQuotaPolicyType;
+  },
+  messageAge: { type: 'inherited-from-broker-config' } | {
+    type: 'specified-for-this-namespace';
+    limitTime: { type: 'infinite' } | { type: 'specific', duration: number };
+    policy: BacklogQuotaPolicyType;
+  }
 }
 
 export type FieldInputProps = {
@@ -139,94 +42,122 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const onUpdateError = (err: string) => notifyError(`Can't update backlog quota. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: backlogQuota, error: backlogQuotaError } = useSWR(
+  const { data: backlogQuotas, error: backlogQuotasError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getBacklogQuotaMap(props.tenant, props.namespace)
+    async () => {
+      const req = new GetBacklogQuotasRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      const res = await namespaceServiceClient.getBacklogQuotas(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Failed to get backlog quotas for namespace. ${res.getStatus()?.getMessage()}`);
+      }
+
+      let v: PolicyValue = { destinationStorage: { type: 'inherited-from-broker-config' }, messageAge: { type: 'inherited-from-broker-config' } };
+
+      const destinationStorage = res.getDestinationStorage();
+      if (destinationStorage !== undefined) {
+        v.destinationStorage = {
+          type: 'specified-for-this-namespace',
+          limit: destinationStorage.getLimitSize() === -1 ? { type: 'infinite' } : { type: 'specific', size: bytesToMemorySize(destinationStorage.getLimitSize()) },
+          policy: 'destination_storage'
+        };
+      }
+
+      const messageAge = res.getMessageAge();
+      if (messageAge !== undefined) {
+        v.messageAge = {
+          type: 'specified-for-this-namespace',
+          limitTime: messageAge.getLimitTime() === -1 ? { type: 'infinite' } : { type: 'specific', duration: messageAge.getLimitTime() },
+          policy: 'producer_request_hold'
+        };
+      }
+      return v;
+    }
   );
 
-  if (backlogQuotaError) {
-    notifyError(`Unable to get backlog quota. ${backlogQuotaError}`);
+  if (backlogQuotasError) {
+    notifyError(`Unable to get backlog quota policy. ${backlogQuotasError}`);
   }
 
-  const hideAddButton = Object.keys(backlogQuota || {}).length === backlogTypes.length;
+  if (backlogQuotas === undefined) {
+    return null;
+  }
 
   return (
-    <ListInput<BacklogQuota>
-      getId={(v) => v.type}
-      isValid={_ => Either.right(undefined)}
-      value={Object.keys(backlogQuota || {}).map((type) => {
-        const quota = backlogQuota![type];
-
-        const q: BacklogQuota = {
-          type: type as BacklogType,
-          limitTime: quota.limitTime!,
-          policy: quota.policy || 'producer_request_hold',
-          sizeLimit: bytesToMemorySize(quota.limitSize || 0),
-        };
-
-        return q;
-      })}
-      renderItem={(quota) => {
-        return (
-          <div className={s.ListItem}>
-            <BacklogQuotaInputWithUpdateConfirmation
-              value={quota}
-              onChange={async (quota) => {
-                const limitSize = memoryToBytes(quota.sizeLimit);
-                await adminClient.namespaces.setBacklogQuota(props.tenant, props.namespace, quota.type, {
-                  limit: limitSize,
-                  limitSize,
-                  limitTime: quota.limitTime,
-                  policy: quota.policy,
-                }).catch(onUpdateError);
-                await mutate(swrKey);
-              }}
-            />
-          </div>
-        );
-      }}
-      onRemove={async (type) => {
-        await adminClient.namespaces.removeBacklogQuota(props.tenant, props.namespace, type as BacklogType).catch(onUpdateError);
-        await mutate(swrKey);
-      }}
-      editor={hideAddButton ? undefined : (() => {
-        const bt = [...backlogTypes.filter(t => !Object.keys(backlogQuota || {}).some(type => type === t))];
-        return {
-          render: (quota, onChange) => {
-            return (
-              <BacklogQuotaInput
-                backlogTypes={bt}
-                value={quota}
-                onChange={onChange}
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={backlogQuotas}
+      onConfirm={() => mutate(swrKey)}
+    >
+      {({ value, onChange }) => (
+        <>
+          <div>
+            <div className={sf.FormLabel}>Destination Storage</div>
+            <div className={sf.FormItem}>
+              <Select<'inherited-from-broker-config' | 'specified-for-this-namespace'>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
+                ]}
+                onChange={(v) => onChange({
+                  ...value,
+                  destinationStorage: v === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-namespace', limit: { type: 'infinite' }, policy: 'destination_storage' }
+                })}
+                value={value.destinationStorage.type}
               />
-            )
-          },
-          initialValue: {
-            sizeLimit: bytesToMemorySize(1024 * 1024 * 1024),
-            limitTime: -1,
-            policy: 'producer_request_hold',
-            type: bt[0],
-          }
-        }
-      })()}
-      onAdd={hideAddButton ? undefined : async (quota) => {
-        const limitSize = memoryToBytes(quota.sizeLimit);
-        await adminClient.namespaces.setBacklogQuota(props.tenant, props.namespace, quota.type, {
-          limit: limitSize,
-          limitSize,
-          limitTime: quota.limitTime,
-          policy: quota.policy,
-        }).catch(onUpdateError);
-        await mutate(swrKey);
-      }}
-    />
+            </div>
+
+            {value.destinationStorage.type === 'specified-for-this-namespace' && (
+              <div className={sf.FormItem}>
+                <Select<'infinite' | 'specific'>
+                  list={[
+                    { type: 'item', value: 'infinite', title: 'Infinite' },
+                    { type: 'item', value: 'specific', title: 'Specific size' }
+                  ]}
+                  onChange={(v) => onChange({
+                    ...value,
+                    destinationStorage: {
+                      ...value.destinationStorage,
+                      type: 'specified-for-this-namespace',
+                      limit: v === 'infinite' ? { type: 'infinite' } : { type: 'specific', size: { size: 1, unit: 'KB' } },
+                      policy: 'producer_request_hold'
+                    }
+                  })}
+                  value={value.destinationStorage.limit.type}
+                />
+              </div>
+            )}
+
+            {value.destinationStorage.type === 'specified-for-this-namespace' && value.destinationStorage.limit.type === 'specific' && (
+              <div className={sf.FormItem}>
+                <MemorySizeInput
+                  value={value.destinationStorage.limit.size}
+                  onChange={(v) => {
+                    if (value.destinationStorage.type === 'inherited-from-broker-config') {
+                      return;
+                    }
+
+                    onChange({
+                      ...value,
+                      destinationStorage: {
+                        ...value.destinationStorage,
+                        limit: { type: 'specific', size: v }
+                      }
+                    })
+                  }}
+                />
+              </div>
+            )}
+
+          </div>
+        </>
+      )}
+    </WithUpdateConfirmation>
   );
 }
 
