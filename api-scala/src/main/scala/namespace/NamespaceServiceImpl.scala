@@ -319,10 +319,13 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getBacklogQuotas(request: GetBacklogQuotasRequest): Future[GetBacklogQuotasResponse] =
-        def retentionPolicyToPb(policy: Option[RetentionPolicy]): Option[pb.RetentionPolicy] = policy match
-            case Some(RetentionPolicy.consumer_backlog_eviction) => Some(pb.RetentionPolicy.RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION)
-            case Some(RetentionPolicy.producer_request_hold)     => Some(pb.RetentionPolicy.RETENTION_POLICY_PRODUCER_REQUEST_HOLD)
-            case Some(RetentionPolicy.producer_exception)        => Some(pb.RetentionPolicy.RETENTION_POLICY_EXCEPTION)
+        def retentionPolicyToPb(policy: Option[RetentionPolicy]): Option[pb.BacklogQuotaRetentionPolicy] = policy match
+            case Some(RetentionPolicy.consumer_backlog_eviction) => 
+                Some(pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION)
+            case Some(RetentionPolicy.producer_request_hold)     => 
+                Some(pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD)
+            case Some(RetentionPolicy.producer_exception)        => 
+                Some(pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION)
             case _ => None
 
         try {
@@ -331,7 +334,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             val destinationStorageBacklogQuotaPb = backlogQuotaMap.get(BacklogQuotaType.destination_storage) match
                 case Some(quota) =>
                     Some(
-                      pb.DestinationStroageBacklogQuota(
+                      pb.DestinationStorageBacklogQuota(
                         limitSize = Option(quota.getLimitSize).getOrElse(-1),
                         retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy))
                       )
@@ -362,10 +365,10 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setBacklogQuotas(request: SetBacklogQuotasRequest): Future[SetBacklogQuotasResponse] =
-        def retentionPolicyFromPb(policyPb: pb.RetentionPolicy): RetentionPolicy = policyPb match
-            case pb.RetentionPolicy.RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION => RetentionPolicy.consumer_backlog_eviction
-            case pb.RetentionPolicy.RETENTION_POLICY_PRODUCER_REQUEST_HOLD => RetentionPolicy.producer_request_hold
-            case pb.RetentionPolicy.RETENTION_POLICY_EXCEPTION => RetentionPolicy.producer_exception
+        def retentionPolicyFromPb(policyPb: pb.BacklogQuotaRetentionPolicy): RetentionPolicy = policyPb match
+            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION => RetentionPolicy.consumer_backlog_eviction
+            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD => RetentionPolicy.producer_request_hold
+            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION => RetentionPolicy.producer_exception
             case _ => RetentionPolicy.producer_request_hold
 
         try {

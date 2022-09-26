@@ -5,7 +5,7 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import MemorySizeInput from "../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput";
-import { memoryToBytes, bytesToMemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/conversions";
+import { memorySizeToBytes, bytesToMemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/conversions";
 import { MemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/types";
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
 import { secondsToDuration, durationToSeconds } from "../../../ui/ConfigurationTable/DurationInput/conversions";
@@ -162,7 +162,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           await adminClient.namespaces.removeRetention(props.tenant, props.namespace);
         } else {
           await adminClient.namespaces.setRetention(props.tenant, props.namespace, {
-            retentionSizeInMB: v.size === 'infinite' ? -1 : memoryToBytes(v.size) / bytesInMegabyte,
+            retentionSizeInMB: v.size === 'infinite' ? -1 : memorySizeToBytes(v.size) / bytesInMegabyte,
             retentionTimeInMinutes: v.time === 'infinite' ? -1 : durationToSeconds(v.time) / secondsInMinute,
           }).catch(onUpdateError);
         }

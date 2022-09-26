@@ -176,36 +176,36 @@ message RemoveAutoTopicCreationResponse {
   google.rpc.Status status = 1;
 }
 
-enum RetentionPolicy {
-  RETENTION_POLICY_UNSPECIFIED = 0;
-  RETENTION_POLICY_PRODUCER_REQUEST_HOLD = 1;
-  RETENTION_POLICY_EXCEPTION = 2;
-  RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION = 3;
+enum BacklogQuotaRetentionPolicy {
+  BACKLOG_QUOTA_RETENTION_POLICY_UNSPECIFIED = 0;
+  BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD = 1;
+  BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION = 2;
+  BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION = 3;
 }
 enum BacklogQuotaType {
   BACKLOG_QUOTA_TYPE_UNSPECIFIED = 0;
   BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE = 1;
   BACKLOG_QUOTA_TYPE_MESSAGE_AGE = 2;
 }
-message DestinationStroageBacklogQuota {
+message DestinationStorageBacklogQuota {
   int64 limit_size = 1;
-  optional RetentionPolicy retention_policy = 2;
+  optional BacklogQuotaRetentionPolicy retention_policy = 2;
 }
 message MessageAgeBacklogQuota {
   int32 limit_time = 1;
-  optional RetentionPolicy retention_policy = 2;
+  optional BacklogQuotaRetentionPolicy retention_policy = 2;
 }
 message GetBacklogQuotasRequest {
   string namespace = 1;
 }
 message GetBacklogQuotasResponse {
   google.rpc.Status status = 1;
-  optional DestinationStroageBacklogQuota destination_storage = 2;
+  optional DestinationStorageBacklogQuota destination_storage = 2;
   optional MessageAgeBacklogQuota message_age = 3;
 }
 message SetBacklogQuotasRequest {
   string namespace = 1;
-  optional DestinationStroageBacklogQuota destination_storage = 2;
+  optional DestinationStorageBacklogQuota destination_storage = 2;
   optional MessageAgeBacklogQuota message_age = 3;
 }
 message SetBacklogQuotasResponse {
