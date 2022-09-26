@@ -319,35 +319,40 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getBacklogQuotas(request: GetBacklogQuotasRequest): Future[GetBacklogQuotasResponse] =
-        def retentionPolicyToPb(policy: RetentionPolicy): pb.RetentionPolicy = policy match
-            case RetentionPolicy.consumer_backlog_eviction => pb.RetentionPolicy.RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION
-            case RetentionPolicy.producer_request_hold     => pb.RetentionPolicy.RETENTION_POLICY_PRODUCER_REQUEST_HOLD
-            case RetentionPolicy.producer_exception        => pb.RetentionPolicy.RETENTION_POLICY_EXCEPTION
+        def retentionPolicyToPb(policy: Option[RetentionPolicy]): Option[pb.RetentionPolicy] = policy match
+            case Some(RetentionPolicy.consumer_backlog_eviction) => Some(pb.RetentionPolicy.RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION)
+            case Some(RetentionPolicy.producer_request_hold)     => Some(pb.RetentionPolicy.RETENTION_POLICY_PRODUCER_REQUEST_HOLD)
+            case Some(RetentionPolicy.producer_exception)        => Some(pb.RetentionPolicy.RETENTION_POLICY_EXCEPTION)
+            case _ => None
 
         try {
             val backlogQuotaMap = adminClient.namespaces.getBacklogQuotaMap(request.namespace).asScala.toMap
-            val backlogQuotasPb = backlogQuotaMap.map { case (quotaType, quota) =>
-                quotaType match
-                    case BacklogQuotaType.destination_storage =>
-                        pb.BacklogQuota(
-                          limitSize = Option(quota.getLimitSize).getOrElse(-1),
-                          limitTime = Option(quota.getLimitTime).getOrElse(-1),
-                          retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy).getOrElse(RetentionPolicy.producer_exception)),
-                          backlogQuotaType = pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE
-                        )
-                    case BacklogQuotaType.message_age =>
-                        pb.BacklogQuota(
-                          limitSize = Option(quota.getLimitSize).getOrElse(-1),
-                          limitTime = Option(quota.getLimitTime).getOrElse(-1),
-                          retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy).getOrElse(RetentionPolicy.producer_exception)),
-                          backlogQuotaType = pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE
-                        )
-            }.toList
+
+            val destinationStorageBacklogQuotaPb = backlogQuotaMap.get(BacklogQuotaType.destination_storage) match
+                case Some(quota) =>
+                    Some(
+                      pb.DestinationStroageBacklogQuota(
+                        limitSize = Option(quota.getLimitSize).getOrElse(-1),
+                        retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy))
+                      )
+                    )
+                case _ => None
+
+            val messageAgeBacklogQuotaPb = backlogQuotaMap.get(BacklogQuotaType.message_age) match
+                case Some(quota) =>
+                    Some(
+                      pb.MessageAgeBacklogQuota(
+                        limitTime = Option(quota.getLimitTime).getOrElse(-1),
+                        retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy))
+                      )
+                    )
+                case _ => None
 
             Future.successful(
               GetBacklogQuotasResponse(
                 status = Some(Status(code = Code.OK.index)),
-                backlogQuotas = backlogQuotasPb
+                destinationStorage = destinationStorageBacklogQuotaPb,
+                messageAge = messageAgeBacklogQuotaPb
               )
             )
         } catch {
@@ -359,25 +364,39 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     override def setBacklogQuotas(request: SetBacklogQuotasRequest): Future[SetBacklogQuotasResponse] =
         def retentionPolicyFromPb(policyPb: pb.RetentionPolicy): RetentionPolicy = policyPb match
             case pb.RetentionPolicy.RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION => RetentionPolicy.consumer_backlog_eviction
-            case pb.RetentionPolicy.RETENTION_POLICY_PRODUCER_REQUEST_HOLD     => RetentionPolicy.producer_request_hold
-            case pb.RetentionPolicy.RETENTION_POLICY_EXCEPTION                 => RetentionPolicy.producer_exception
-            case _                                                             => RetentionPolicy.producer_exception
-
-        def quotaTypeFromPb(quotaTypePb: pb.BacklogQuotaType): BacklogQuotaType = quotaTypePb match
-            case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE         => BacklogQuotaType.message_age
-            case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE => BacklogQuotaType.destination_storage
-            case _                                                          => BacklogQuotaType.destination_storage
+            case pb.RetentionPolicy.RETENTION_POLICY_PRODUCER_REQUEST_HOLD => RetentionPolicy.producer_request_hold
+            case pb.RetentionPolicy.RETENTION_POLICY_EXCEPTION => RetentionPolicy.producer_exception
+            case _ => RetentionPolicy.producer_request_hold
 
         try {
-            request.backlogQuotas.foreach(quotaPb =>
-                val backlogQuota = BacklogQuotaBuilder
-                    .limitSize(quotaPb.limitSize)
-                    .limitTime(quotaPb.limitTime)
-                    .retentionPolicy(retentionPolicyFromPb(quotaPb.retentionPolicy))
-                    .build()
-                val quotaType = quotaTypeFromPb(quotaPb.backlogQuotaType)
-                adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, quotaType)
-            )
+            request.destinationStorage match
+                case Some(quotaPb) =>
+                    var backlogQuotaBuilder = BacklogQuotaBuilder.limitSize(quotaPb.limitSize)
+
+                    quotaPb.retentionPolicy match
+                        case Some(retentionPolicy) =>
+                            backlogQuotaBuilder = backlogQuotaBuilder.retentionPolicy(retentionPolicyFromPb(retentionPolicy))
+                        case _ =>
+
+                    val backlogQuota = backlogQuotaBuilder.build
+
+                    adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.destination_storage)
+                case None =>
+
+            request.messageAge match
+                case Some(quotaPb) =>
+                    var backlogQuotaBuilder = BacklogQuotaBuilder.limitTime(quotaPb.limitTime)
+
+                    quotaPb.retentionPolicy match
+                        case Some(retentionPolicy) =>
+                            backlogQuotaBuilder = backlogQuotaBuilder.retentionPolicy(retentionPolicyFromPb(retentionPolicy))
+                        case _ =>
+
+                    val backlogQuota = backlogQuotaBuilder.build
+
+                    adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.message_age)
+                case None =>
+
             Future.successful(SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             case err =>
@@ -386,7 +405,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeBacklogQuota(request: RemoveBacklogQuotaRequest): Future[RemoveBacklogQuotaResponse] =
-        try {
+        try
             request.backlogQuotaType match
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE =>
                     adminClient.namespaces.removeBacklogQuota(request.namespace, BacklogQuotaType.destination_storage)
@@ -397,7 +416,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                     return Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
 
             Future.successful(RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.index))))
-        } catch {
+        catch {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
