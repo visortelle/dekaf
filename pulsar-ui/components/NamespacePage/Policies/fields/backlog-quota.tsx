@@ -19,10 +19,11 @@ import { isEqual } from "lodash";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { GetBacklogQuotasRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import { Duration } from "../../../ui/ConfigurationTable/DurationInput/types";
 
 const policy = 'backlogQuota';
 
-type BacklogQuotaPolicyType = 'destination_storage' | 'producer_request_hold' | 'producer_exception';
+type BacklogQuotaPolicyType = 'consumer_backlog_eviction' | 'producer_request_hold' | 'producer_exception';
 type PolicyValue = {
   destinationStorage: { type: 'inherited-from-broker-config' } | {
     type: 'specified-for-this-namespace';
@@ -31,7 +32,7 @@ type PolicyValue = {
   },
   messageAge: { type: 'inherited-from-broker-config' } | {
     type: 'specified-for-this-namespace';
-    limitTime: { type: 'infinite' } | { type: 'specific', duration: number };
+    limitTime: { type: 'infinite' } | { type: 'specific', duration: Duration };
     policy: BacklogQuotaPolicyType;
   }
 }
@@ -65,7 +66,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         v.destinationStorage = {
           type: 'specified-for-this-namespace',
           limit: destinationStorage.getLimitSize() === -1 ? { type: 'infinite' } : { type: 'specific', size: bytesToMemorySize(destinationStorage.getLimitSize()) },
-          policy: 'destination_storage'
+          policy: 'producer_request_hold'
         };
       }
 
@@ -73,7 +74,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       if (messageAge !== undefined) {
         v.messageAge = {
           type: 'specified-for-this-namespace',
-          limitTime: messageAge.getLimitTime() === -1 ? { type: 'infinite' } : { type: 'specific', duration: messageAge.getLimitTime() },
+          limitTime: messageAge.getLimitTime() === -1 ? { type: 'infinite' } : { type: 'specific', duration: secondsToDuration(messageAge.getLimitTime()) },
           policy: 'producer_request_hold'
         };
       }
@@ -96,8 +97,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     >
       {({ value, onChange }) => (
         <>
-          <div>
-            <div className={sf.FormLabel}>Destination Storage</div>
+          <div className={s.Quota}>
+            <div className={sf.FormLabel}>Destination storage</div>
             <div className={sf.FormItem}>
               <Select<'inherited-from-broker-config' | 'specified-for-this-namespace'>
                 list={[
@@ -106,7 +107,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 ]}
                 onChange={(v) => onChange({
                   ...value,
-                  destinationStorage: v === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-namespace', limit: { type: 'infinite' }, policy: 'destination_storage' }
+                  destinationStorage: v === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-namespace', limit: { type: 'infinite' }, policy: 'producer_request_hold' }
                 })}
                 value={value.destinationStorage.type}
               />
@@ -114,6 +115,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
             {value.destinationStorage.type === 'specified-for-this-namespace' && (
               <div className={sf.FormItem}>
+                <div className={sf.FormLabel}>Limit size</div>
                 <Select<'infinite' | 'specific'>
                   list={[
                     { type: 'item', value: 'infinite', title: 'Infinite' },
@@ -154,6 +156,117 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
 
+            {value.destinationStorage.type === 'specified-for-this-namespace' && (
+              <div className={sf.FormItem}>
+                <div className={sf.FormLabel}>Policy</div>
+                <Select<BacklogQuotaPolicyType>
+                  list={[
+                    { type: 'item', value: 'producer_request_hold', title: 'producer_request_hold' },
+                    { type: 'item', value: 'producer_exception', title: 'producer_exception' },
+                    { type: 'item', value: 'consumer_backlog_eviction', title: 'consumer_backlog_eviction' }
+                  ]}
+                  value={value.destinationStorage.policy}
+                  onChange={(v) => {
+                    if (value.destinationStorage.type === 'inherited-from-broker-config') {
+                      return;
+                    }
+                    onChange({
+                      ...value,
+                      destinationStorage: {
+                        ...value.destinationStorage,
+                        policy: v
+                      }
+                    })
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className={s.Quota}>
+            <div className={sf.FormLabel}>Message age</div>
+            <div className={sf.FormItem}>
+              <Select<'inherited-from-broker-config' | 'specified-for-this-namespace'>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
+                ]}
+                onChange={(v) => onChange({
+                  ...value,
+                  messageAge: v === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-namespace', limitTime: { type: 'infinite' }, policy: 'producer_request_hold' }
+                })}
+                value={value.messageAge.type}
+              />
+            </div>
+
+            {value.messageAge.type === 'specified-for-this-namespace' && (
+              <div className={sf.FormItem}>
+                <div className={sf.FormLabel}>Limit time</div>
+                <Select<'infinite' | 'specific'>
+                  list={[
+                    { type: 'item', value: 'infinite', title: 'Infinite' },
+                    { type: 'item', value: 'specific', title: 'Specific duration' }
+                  ]}
+                  onChange={(v) => onChange({
+                    ...value,
+                    messageAge: {
+                      ...value.messageAge,
+                      type: 'specified-for-this-namespace',
+                      limitTime: v === 'infinite' ? { type: 'infinite' } : { type: 'specific', duration: { value: 14, unit: 'd' } },
+                      policy: 'producer_request_hold'
+                    }
+                  })}
+                  value={value.messageAge.limitTime.type}
+                />
+              </div>
+            )}
+
+            {value.messageAge.type === 'specified-for-this-namespace' && value.messageAge.limitTime.type === 'specific' && (
+              <div className={sf.FormItem}>
+                <DurationInput
+                  value={value.messageAge.limitTime.duration}
+                  onChange={(v) => {
+                    if (value.messageAge.type === 'inherited-from-broker-config') {
+                      return;
+                    }
+
+                    onChange({
+                      ...value,
+                      messageAge: {
+                        ...value.messageAge,
+                        limitTime: { type: 'specific', duration: v }
+                      }
+                    })
+                  }}
+                />
+              </div>
+            )}
+
+            {value.messageAge.type === 'specified-for-this-namespace' && (
+              <div className={sf.FormItem}>
+                <div className={sf.FormLabel}>Policy</div>
+                <Select<BacklogQuotaPolicyType>
+                  list={[
+                    { type: 'item', value: 'producer_request_hold', title: 'producer_request_hold' },
+                    { type: 'item', value: 'producer_exception', title: 'producer_exception' },
+                    { type: 'item', value: 'consumer_backlog_eviction', title: 'consumer_backlog_eviction' }
+                  ]}
+                  value={value.messageAge.policy}
+                  onChange={(v) => {
+                    if (value.messageAge.type === 'inherited-from-broker-config') {
+                      return;
+                    }
+                    onChange({
+                      ...value,
+                      messageAge: {
+                        ...value.messageAge,
+                        policy: v
+                      }
+                    })
+                  }}
+                />
+              </div>
+            )}
           </div>
         </>
       )}
