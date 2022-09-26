@@ -7,7 +7,7 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { useEffect, useState } from 'react';
 import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import { MemorySize } from '../../../ui/ConfigurationTable/MemorySizeInput/types';
-import { bytesToMemorySize, memoryToBytes } from '../../../ui/ConfigurationTable/MemorySizeInput/conversions';
+import { bytesToMemorySize, memorySizeToBytes } from '../../../ui/ConfigurationTable/MemorySizeInput/conversions';
 import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import { swrKeys } from '../../../swrKeys';
 import { isEqual } from 'lodash';
@@ -96,7 +96,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           await adminClient.namespaces.setOffloadThreshold(
             props.tenant,
             props.namespace,
-            memoryToBytes(v.size)
+            memorySizeToBytes(v.size)
           ).catch(onUpdateError);
         }
 

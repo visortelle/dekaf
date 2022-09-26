@@ -7,7 +7,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import s from './backlog-quota.module.css';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import MemorySizeInput from "../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput";
-import { memoryToBytes, bytesToMemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/conversions";
+import { memorySizeToBytes, bytesToMemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/conversions";
 import { MemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/types";
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
 import { secondsToDuration, durationToSeconds } from "../../../ui/ConfigurationTable/DurationInput/conversions";
@@ -17,23 +17,23 @@ import * as Either from 'fp-ts/Either';
 import { swrKeys } from "../../../swrKeys";
 import { isEqual } from "lodash";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
-import { GetBacklogQuotasRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { Duration } from "../../../ui/ConfigurationTable/DurationInput/types";
 
 const policy = 'backlogQuota';
 
-type BacklogQuotaPolicyType = 'consumer_backlog_eviction' | 'producer_request_hold' | 'producer_exception';
+type RetentionPolicy = 'consumer_backlog_eviction' | 'producer_request_hold' | 'producer_exception';
 type PolicyValue = {
   destinationStorage: { type: 'inherited-from-broker-config' } | {
     type: 'specified-for-this-namespace';
     limit: { type: 'infinite' } | { type: 'specific', size: MemorySize };
-    policy: BacklogQuotaPolicyType;
+    policy: RetentionPolicy;
   },
   messageAge: { type: 'inherited-from-broker-config' } | {
     type: 'specified-for-this-namespace';
     limitTime: { type: 'infinite' } | { type: 'specific', duration: Duration };
-    policy: BacklogQuotaPolicyType;
+    policy: RetentionPolicy;
   }
 }
 
@@ -52,7 +52,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { data: backlogQuotas, error: backlogQuotasError } = useSWR(
     swrKey,
     async () => {
-      const req = new GetBacklogQuotasRequest();
+      const req = new pb.GetBacklogQuotasRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       const res = await namespaceServiceClient.getBacklogQuotas(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
@@ -90,10 +90,58 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     return null;
   }
 
+  const updatePolicy = async (v: PolicyValue): Promise<void> => {
+    const req = new pb.SetBacklogQuotasRequest();
+    req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+    let destinationStorageBacklogQuotaPb: pb.DestinationStorageBacklogQuota | undefined = undefined;
+    if (v.destinationStorage.type === 'specified-for-this-namespace') {
+      destinationStorageBacklogQuotaPb = new pb.DestinationStorageBacklogQuota();
+      destinationStorageBacklogQuotaPb.setLimitSize(v.destinationStorage.limit.type === 'infinite' ? -1 : memorySizeToBytes(v.destinationStorage.limit.size));
+      console.log('abc', v.destinationStorage.policy, retentionPolicyToPb(v.destinationStorage.policy));
+      destinationStorageBacklogQuotaPb.setRetentionPolicy(retentionPolicyToPb(v.destinationStorage.policy));
+    }
+    req.setDestinationStorage(destinationStorageBacklogQuotaPb)
+
+    let messageAgeBacklogQuotaPb: pb.MessageAgeBacklogQuota | undefined = undefined;
+    if (v.messageAge.type === 'specified-for-this-namespace') {
+      messageAgeBacklogQuotaPb = new pb.MessageAgeBacklogQuota();
+      messageAgeBacklogQuotaPb.setLimitTime(v.messageAge.limitTime.type === 'infinite' ? -1 : durationToSeconds(v.messageAge.limitTime.duration));
+      messageAgeBacklogQuotaPb.setRetentionPolicy(retentionPolicyToPb(v.messageAge.policy));
+    }
+
+    const res = await namespaceServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Failed to set backlog quota policy. ${err}`));
+    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Failed to set backlog quota policy. ${res.getStatus()?.getMessage()}`);
+    }
+
+    if (v.destinationStorage.type === 'inherited-from-broker-config') {
+      const req = new pb.RemoveBacklogQuotaRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
+      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Failed to remove backlog quota policy. ${err}`));
+      if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Failed to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
+      }
+    }
+
+    if (v.messageAge.type === 'inherited-from-broker-config') {
+      const req = new pb.RemoveBacklogQuotaRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
+      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Failed to remove backlog quota policy. ${err}`));
+      if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Failed to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
+      }
+    }
+
+    mutate(swrKey);
+  }
+
   return (
     <WithUpdateConfirmation<PolicyValue>
       initialValue={backlogQuotas}
-      onConfirm={() => mutate(swrKey)}
+      onConfirm={updatePolicy}
     >
       {({ value, onChange }) => (
         <>
@@ -159,7 +207,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             {value.destinationStorage.type === 'specified-for-this-namespace' && (
               <div className={sf.FormItem}>
                 <div className={sf.FormLabel}>Policy</div>
-                <Select<BacklogQuotaPolicyType>
+                <Select<RetentionPolicy>
                   list={[
                     { type: 'item', value: 'producer_request_hold', title: 'producer_request_hold' },
                     { type: 'item', value: 'producer_exception', title: 'producer_exception' },
@@ -245,7 +293,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             {value.messageAge.type === 'specified-for-this-namespace' && (
               <div className={sf.FormItem}>
                 <div className={sf.FormLabel}>Policy</div>
-                <Select<BacklogQuotaPolicyType>
+                <Select<RetentionPolicy>
                   list={[
                     { type: 'item', value: 'producer_request_hold', title: 'producer_request_hold' },
                     { type: 'item', value: 'producer_exception', title: 'producer_exception' },
@@ -280,5 +328,18 @@ const field = (props: FieldInputProps): ConfigurationField => ({
   description: <span>Backlogs are sets of unacknowledged messages for a topic that have been stored by bookies. <br />Pulsar stores all unacknowledged messages in backlogs until they are processed and acknowledged.</span>,
   input: <FieldInput {...props} />
 });
+
+function retentionPolicyToPb(value: RetentionPolicy): pb.BacklogQuotaRetentionPolicy {
+  console.log('v', value);
+  switch (value) {
+    case 'producer_request_hold':
+      return pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD;
+    case 'producer_exception':
+      console.log('WTF!!!');
+      return pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION;
+    case 'consumer_backlog_eviction':
+      return pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION;
+  }
+}
 
 export default field;
