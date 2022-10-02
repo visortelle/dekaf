@@ -24,6 +24,16 @@ import { Duration } from "../../../ui/ConfigurationTable/DurationInput/types";
 const policy = 'backlogQuota';
 
 type RetentionPolicy = 'consumer_backlog_eviction' | 'producer_request_hold' | 'producer_exception';
+
+function retentionPolicyFromPb(policyPb: pb.BacklogQuotaRetentionPolicy): RetentionPolicy {
+  switch (policyPb) {
+    case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION: return 'consumer_backlog_eviction';
+    case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION: return 'producer_exception';
+    case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD: return 'producer_request_hold';
+    default: throw new Error(`Unknown retention policy: ${policyPb}`);
+  }
+}
+
 type PolicyValue = {
   destinationStorage: { type: 'inherited-from-broker-config' } | {
     type: 'specified-for-this-namespace';
@@ -66,7 +76,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         v.destinationStorage = {
           type: 'specified-for-this-namespace',
           limit: destinationStorage.getLimitSize() === -1 ? { type: 'infinite' } : { type: 'specific', size: bytesToMemorySize(destinationStorage.getLimitSize()) },
-          policy: 'producer_request_hold'
+          policy: retentionPolicyFromPb(destinationStorage.getRetentionPolicy())
         };
       }
 
@@ -75,7 +85,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         v.messageAge = {
           type: 'specified-for-this-namespace',
           limitTime: messageAge.getLimitTime() === -1 ? { type: 'infinite' } : { type: 'specific', duration: secondsToDuration(messageAge.getLimitTime()) },
-          policy: 'producer_request_hold'
+          policy: retentionPolicyFromPb(messageAge.getRetentionPolicy())
         };
       }
       return v;
@@ -110,9 +120,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       messageAgeBacklogQuotaPb.setRetentionPolicy(retentionPolicyToPb(v.messageAge.policy));
     }
 
-    const res = await namespaceServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Failed to set backlog quota policy. ${err}`));
+    const res = await namespaceServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Failed to update backlog quota policy. ${err}`));
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Failed to set backlog quota policy. ${res.getStatus()?.getMessage()}`);
+      notifyError(`Failed to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
     }
 
     if (v.destinationStorage.type === 'inherited-from-broker-config') {
