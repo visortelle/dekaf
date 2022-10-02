@@ -1,57 +1,13 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{
-    CreateNamespaceRequest,
-    CreateNamespaceResponse,
-    DeleteNamespaceAntiAffinityGroupRequest,
-    DeleteNamespaceAntiAffinityGroupResponse,
-    DeleteNamespaceRequest,
-    DeleteNamespaceResponse,
-    GetAntiAffinityNamespacesRequest,
-    GetAntiAffinityNamespacesResponse,
-    GetAutoSubscriptionCreationRequest,
-    GetAutoSubscriptionCreationResponse,
-    GetAutoTopicCreationRequest,
-    GetAutoTopicCreationResponse,
-    GetBacklogQuotasRequest,
-    GetBacklogQuotasResponse,
-    GetIsAllowAutoUpdateSchemaRequest,
-    GetIsAllowAutoUpdateSchemaResponse,
-    GetNamespaceAntiAffinityGroupRequest,
-    GetNamespaceAntiAffinityGroupResponse,
-    GetSchemaCompatibilityStrategyRequest,
-    GetSchemaCompatibilityStrategyResponse,
-    GetSchemaValidationEnforceRequest,
-    GetSchemaValidationEnforceResponse,
-    NamespaceServiceGrpc,
-    RemoveAutoSubscriptionCreationRequest,
-    RemoveAutoSubscriptionCreationResponse,
-    RemoveAutoTopicCreationRequest,
-    RemoveAutoTopicCreationResponse,
-    RemoveBacklogQuotaRequest,
-    RemoveBacklogQuotaResponse,
-    SetAutoSubscriptionCreationRequest,
-    SetAutoSubscriptionCreationResponse,
-    SetAutoTopicCreationRequest,
-    SetAutoTopicCreationResponse,
-    SetBacklogQuotasRequest,
-    SetBacklogQuotasResponse,
-    SetIsAllowAutoUpdateSchemaRequest,
-    SetIsAllowAutoUpdateSchemaResponse,
-    SetNamespaceAntiAffinityGroupRequest,
-    SetNamespaceAntiAffinityGroupResponse,
-    SetSchemaCompatibilityStrategyRequest,
-    SetSchemaCompatibilityStrategyResponse,
-    SetSchemaValidationEnforceRequest,
-    SetSchemaValidationEnforceResponse
-}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CreateNamespaceRequest, CreateNamespaceResponse, DeleteBookieAffinityGroupRequest, DeleteBookieAffinityGroupResponse, DeleteNamespaceAntiAffinityGroupRequest, DeleteNamespaceAntiAffinityGroupResponse, DeleteNamespaceRequest, DeleteNamespaceResponse, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
 import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import org.apache.pulsar.common.policies.data.BacklogQuota.{builder as BacklogQuotaBuilder, BacklogQuotaType, RetentionPolicy}
-import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BundlesData, Policies}
+import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
+import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, Policies}
 
 import scala.jdk.CollectionConverters.*
 import scala.concurrent.Future
@@ -373,7 +329,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION =>
                 RetentionPolicy.producer_exception
             case _ => RetentionPolicy.producer_request_hold
-        
+
         try {
             request.destinationStorage match
                 case Some(quotaPb) =>
@@ -488,4 +444,53 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetAntiAffinityNamespacesResponse(status = Some(status)))
+        }
+
+    override def getBookieAffinityGroup(request: GetBookieAffinityGroupRequest): Future[GetBookieAffinityGroupResponse] =
+        try {
+            val groupData = Option(adminClient.namespaces.getBookieAffinityGroup(request.namespace)) match
+                case Some(gd) => Some(pb.BookieAffinityGroupData(
+                    primary = gd.getBookkeeperAffinityGroupPrimary.split(","),
+                    secondary = gd.getBookkeeperAffinityGroupSecondary.split(",")
+                ))
+                case None => None
+            Future.successful(
+              GetBookieAffinityGroupResponse(
+                status = Some(Status(code = Code.OK.index)),
+                groupData = groupData
+              )
+            )
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetBookieAffinityGroupResponse(status = Some(status)))
+        }
+
+    override def setBookieAffinityGroup(request: SetBookieAffinityGroupRequest): Future[SetBookieAffinityGroupResponse] =
+        try {
+            val groupData: BookieAffinityGroupData = request.groupData match
+                case Some(gd) => BookieAffinityGroupData.builder
+                    .bookkeeperAffinityGroupPrimary(gd.primary.mkString(","))
+                    .bookkeeperAffinityGroupSecondary(gd.secondary.mkString(","))
+                    .build
+                case None => BookieAffinityGroupData.builder.build
+
+            logger.info(s"Setting bookie affinity group for namespace ${request.namespace}. ${groupData}")
+            adminClient.namespaces.setBookieAffinityGroup(request.namespace, groupData)
+            Future.successful(SetBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetBookieAffinityGroupResponse(status = Some(status)))
+        }
+
+    override def deleteBookieAffinityGroup(request: DeleteBookieAffinityGroupRequest): Future[DeleteBookieAffinityGroupResponse] =
+        try {
+            logger.info(s"Deleting bookie affinity group for namespace ${request.namespace}")
+            adminClient.namespaces.deleteBookieAffinityGroup(request.namespace)
+            Future.successful(DeleteBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(DeleteBookieAffinityGroupResponse(status = Some(status)))
         }
