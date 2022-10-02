@@ -219,6 +219,33 @@ message RemoveBacklogQuotaResponse {
   google.rpc.Status status = 1;
 }
 
+message BookieAffinityGroupData {
+  repeated string primary = 1;
+  repeated string secondary = 2;
+}
+message GetBookieAffinityGroupRequest {
+  string namespace = 1;
+}
+message GetBookieAffinityGroupResponse {
+  google.rpc.Status status = 1;
+  BookieAffinityGroupData group_data = 2;
+}
+
+message SetBookieAffinityGroupRequest {
+  string namespace = 1;
+  BookieAffinityGroupData group_data = 2;
+}
+message SetBookieAffinityGroupResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteBookieAffinityGroupRequest {
+  string namespace = 1;
+}
+message DeleteBookieAffinityGroupResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -248,4 +275,8 @@ service NamespaceService {
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
   rpc SetBacklogQuotas(SetBacklogQuotasRequest) returns (SetBacklogQuotasResponse);
   rpc RemoveBacklogQuota(RemoveBacklogQuotaRequest) returns (RemoveBacklogQuotaResponse);
+
+  rpc GetBookieAffinityGroup(GetBookieAffinityGroupRequest) returns (GetBookieAffinityGroupResponse);
+  rpc SetBookieAffinityGroup(SetBookieAffinityGroupRequest) returns (SetBookieAffinityGroupResponse);
+  rpc DeleteBookieAffinityGroup(DeleteBookieAffinityGroupRequest) returns (DeleteBookieAffinityGroupResponse);
 }
