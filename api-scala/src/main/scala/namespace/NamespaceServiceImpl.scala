@@ -350,7 +350,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                       )
                     )
                 case _ => None
-            
+
             Future.successful(
               GetBacklogQuotasResponse(
                 status = Some(Status(code = Code.OK.index)),
@@ -373,7 +373,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION =>
                 RetentionPolicy.producer_exception
             case _ => RetentionPolicy.producer_request_hold
-
+        
         try {
             request.destinationStorage match
                 case Some(quotaPb) =>
