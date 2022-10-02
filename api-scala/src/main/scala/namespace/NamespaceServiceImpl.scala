@@ -320,11 +320,11 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def getBacklogQuotas(request: GetBacklogQuotasRequest): Future[GetBacklogQuotasResponse] =
         def retentionPolicyToPb(policy: Option[RetentionPolicy]): Option[pb.BacklogQuotaRetentionPolicy] = policy match
-            case Some(RetentionPolicy.consumer_backlog_eviction) => 
+            case Some(RetentionPolicy.consumer_backlog_eviction) =>
                 Some(pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION)
-            case Some(RetentionPolicy.producer_request_hold)     => 
+            case Some(RetentionPolicy.producer_request_hold)     =>
                 Some(pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD)
-            case Some(RetentionPolicy.producer_exception)        => 
+            case Some(RetentionPolicy.producer_exception)        =>
                 Some(pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION)
             case _ => None
 
@@ -350,7 +350,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                       )
                     )
                 case _ => None
-
+            
             Future.successful(
               GetBacklogQuotasResponse(
                 status = Some(Status(code = Code.OK.index)),
@@ -366,9 +366,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def setBacklogQuotas(request: SetBacklogQuotasRequest): Future[SetBacklogQuotasResponse] =
         def retentionPolicyFromPb(policyPb: pb.BacklogQuotaRetentionPolicy): RetentionPolicy = policyPb match
-            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION => RetentionPolicy.consumer_backlog_eviction
-            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD => RetentionPolicy.producer_request_hold
-            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION => RetentionPolicy.producer_exception
+            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION =>
+                RetentionPolicy.consumer_backlog_eviction
+            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD =>
+                RetentionPolicy.producer_request_hold
+            case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION =>
+                RetentionPolicy.producer_exception
             case _ => RetentionPolicy.producer_request_hold
 
         try {
@@ -383,6 +386,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
                     val backlogQuota = backlogQuotaBuilder.build
 
+                    logger.info(s"Setting destination storage backlog quota on namespace ${request.namespace} to ${backlogQuota}")
                     adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.destination_storage)
                 case None =>
 
@@ -397,6 +401,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
                     val backlogQuota = backlogQuotaBuilder.build
 
+                    logger.info(s"Setting message age backlog quota on namespace ${request.namespace} to ${backlogQuota}")
                     adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
@@ -411,8 +416,10 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try
             request.backlogQuotaType match
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE =>
+                    logger.info(s"Removing destination storage backlog quota on namespace ${request.namespace}")
                     adminClient.namespaces.removeBacklogQuota(request.namespace, BacklogQuotaType.destination_storage)
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE =>
+                    logger.info(s"Removing message age backlog quota on namespace ${request.namespace}")
                     adminClient.namespaces.removeBacklogQuota(request.namespace, BacklogQuotaType.message_age)
                 case _ =>
                     val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Backlog quota type should be specified.")
