@@ -2,7 +2,6 @@ import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
-import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import s from './backlog-quota.module.css';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
@@ -11,11 +10,7 @@ import { memorySizeToBytes, bytesToMemorySize } from "../../../ui/ConfigurationT
 import { MemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/types";
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
 import { secondsToDuration, durationToSeconds } from "../../../ui/ConfigurationTable/DurationInput/conversions";
-import UpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
-import { useEffect, useState } from "react";
-import * as Either from 'fp-ts/Either';
 import { swrKeys } from "../../../swrKeys";
-import { isEqual } from "lodash";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
@@ -108,7 +103,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     if (v.destinationStorage.type === 'specified-for-this-namespace') {
       destinationStorageBacklogQuotaPb = new pb.DestinationStorageBacklogQuota();
       destinationStorageBacklogQuotaPb.setLimitSize(v.destinationStorage.limit.type === 'infinite' ? -1 : memorySizeToBytes(v.destinationStorage.limit.size));
-      console.log('abc', v.destinationStorage.policy, retentionPolicyToPb(v.destinationStorage.policy));
       destinationStorageBacklogQuotaPb.setRetentionPolicy(retentionPolicyToPb(v.destinationStorage.policy));
     }
     req.setDestinationStorage(destinationStorageBacklogQuotaPb)
@@ -119,6 +113,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       messageAgeBacklogQuotaPb.setLimitTime(v.messageAge.limitTime.type === 'infinite' ? -1 : durationToSeconds(v.messageAge.limitTime.duration));
       messageAgeBacklogQuotaPb.setRetentionPolicy(retentionPolicyToPb(v.messageAge.policy));
     }
+    req.setMessageAge(messageAgeBacklogQuotaPb)
 
     const res = await namespaceServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Failed to update backlog quota policy. ${err}`));
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
@@ -340,12 +335,10 @@ const field = (props: FieldInputProps): ConfigurationField => ({
 });
 
 function retentionPolicyToPb(value: RetentionPolicy): pb.BacklogQuotaRetentionPolicy {
-  console.log('v', value);
   switch (value) {
     case 'producer_request_hold':
       return pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD;
     case 'producer_exception':
-      console.log('WTF!!!');
       return pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION;
     case 'consumer_backlog_eviction':
       return pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION;
