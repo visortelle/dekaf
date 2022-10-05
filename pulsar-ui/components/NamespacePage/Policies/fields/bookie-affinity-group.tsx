@@ -20,8 +20,8 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type PolicyValue = { type: 'disabled' } | {
-  type: 'specific-groups';
+type PolicyValue = { type: 'not-specified' } | {
+  type: 'specified';
   primary: string[];
   secondary: string[];
 }
@@ -45,10 +45,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
 
       const bookieAffinityGroupData: PolicyValue = res.getGroupData() ? {
-        type: 'specific-groups',
+        type: 'specified',
         primary: res.getGroupData()?.getPrimaryList().filter(g => g !== '') || [],
         secondary: res.getGroupData()?.getSecondaryList().filter(g => g !== '') || [],
-      } : { type: 'disabled' };
+      } : { type: 'not-specified' };
 
       return bookieAffinityGroupData;
     }
@@ -66,7 +66,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     <WithUpdateConfirmation<PolicyValue>
       initialValue={bookieAffinityGroupData}
       onConfirm={async (value) => {
-        if (value.type === 'disabled') {
+        if (value.type === 'not-specified') {
           const req = new pb.DeleteBookieAffinityGroupRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           const res = await namespaceServiceClient.deleteBookieAffinityGroup(req, {}).catch((err) => notifyError(`Unable to disable bookie affinity group policy. ${err}`));
@@ -75,7 +75,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
-        if (value.type === 'specific-groups') {
+        if (value.type === 'specified') {
           const req = new pb.SetBookieAffinityGroupRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           const groupDataPb =  new pb.BookieAffinityGroupData();
@@ -100,13 +100,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <>
             <div className={sf.FormItem}>
               <Select<PolicyValue['type']>
-                list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'specific-groups', title: 'Specified groups' }]}
-                onChange={(v) => onChange(v === 'specific-groups' ? { type: 'specific-groups', primary: [], secondary: [] } : { type: 'disabled' })}
+                list={[{ type: 'item', value: 'not-specified', title: 'Not specified' }, { type: 'item', value: 'specified', title: 'Specified' }]}
+                onChange={(v) => onChange(v === 'specified' ? { type: 'specified', primary: [], secondary: [] } : { type: 'not-specified' })}
                 value={value.type}
               />
             </div>
 
-            {value.type === 'specific-groups' && (
+            {value.type === 'specified' && (
               <div className={sf.FormItem}>
                 <strong className={sf.FormLabel}>Primary groups</strong>
 
@@ -119,14 +119,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                     initialValue: '',
                   }}
                   onRemove={async (roleId) => {
-                    if (value.type !== 'specific-groups') {
+                    if (value.type !== 'specified') {
                       return;
                     }
 
                     onChange({ ...value, primary: value.primary.filter((v) => v !== roleId) });
                   }}
                   onAdd={async (v) => {
-                    if (value.type !== 'specific-groups') {
+                    if (value.type !== 'specified') {
                       return;
                     }
 
@@ -137,7 +137,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
 
-            {value.type === 'specific-groups' && (
+            {value.type === 'specified' && (
               <div className={sf.FormItem}>
                 <strong className={sf.FormLabel}>Secondary groups</strong>
                 <ListInput<string>
@@ -149,14 +149,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                     initialValue: '',
                   }}
                   onRemove={async (roleId) => {
-                    if (value.type !== 'specific-groups') {
+                    if (value.type !== 'specified') {
                       return;
                     }
 
                     onChange({ ...value, secondary: value.secondary.filter((v) => v !== roleId) });
                   }}
                   onAdd={async (v) => {
-                    if (value.type !== 'specific-groups') {
+                    if (value.type !== 'specified') {
                       return;
                     }
 

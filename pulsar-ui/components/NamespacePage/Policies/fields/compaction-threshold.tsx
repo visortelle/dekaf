@@ -21,7 +21,7 @@ type CompactionThreshold = 'disabled' | {
 const defaultCompactionThreshold: CompactionThreshold = {
   size: {
     size: 0,
-    unit: 'M'
+    unit: 'MB'
   }
 };
 
