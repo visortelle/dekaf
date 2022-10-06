@@ -246,6 +246,29 @@ message DeleteBookieAffinityGroupResponse {
   google.rpc.Status status = 1;
 }
 
+message GetCompactionThresholdRequest {
+  string namespace = 1;
+}
+message GetCompactionThresholdResponse {
+  google.rpc.Status status = 1;
+  optional int64 threshold = 2;
+}
+
+message SetCompactionThresholdRequest {
+  string namespace = 1;
+  int64 threshold = 2;
+}
+message SetCompactionThresholdResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteCompactionThresholdRequest {
+  string namespace = 1;
+}
+message DeleteCompactionThresholdResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -279,4 +302,8 @@ service NamespaceService {
   rpc GetBookieAffinityGroup(GetBookieAffinityGroupRequest) returns (GetBookieAffinityGroupResponse);
   rpc SetBookieAffinityGroup(SetBookieAffinityGroupRequest) returns (SetBookieAffinityGroupResponse);
   rpc DeleteBookieAffinityGroup(DeleteBookieAffinityGroupRequest) returns (DeleteBookieAffinityGroupResponse);
+
+  rpc GetCompactionThreshold(GetCompactionThresholdRequest) returns (GetCompactionThresholdResponse);
+  rpc SetCompactionThreshold(SetCompactionThresholdRequest) returns (SetCompactionThresholdResponse);
+  rpc DeleteCompactionThreshold(DeleteCompactionThresholdRequest) returns (DeleteCompactionThresholdResponse);
 }
