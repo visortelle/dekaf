@@ -249,9 +249,17 @@ message DeleteBookieAffinityGroupResponse {
 message GetCompactionThresholdRequest {
   string namespace = 1;
 }
+message CompactionThresholdDisabled {
+}
+message CompactionThresholdEnabled {
+  int64 threshold = 1;
+}
 message GetCompactionThresholdResponse {
   google.rpc.Status status = 1;
-  optional int64 threshold = 2;
+  oneof threshold {
+    CompactionThresholdDisabled disabled = 2;
+    CompactionThresholdEnabled enabled = 3;
+  }
 }
 
 message SetCompactionThresholdRequest {
