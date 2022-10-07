@@ -1,68 +1,23 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
+import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import { MemorySize } from '../../../ui/ConfigurationTable/MemorySizeInput/types';
 import { bytesToMemorySize, memorySizeToBytes } from '../../../ui/ConfigurationTable/MemorySizeInput/conversions';
 import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 
 const policy = 'compactionThreshold';
 
-type CompactionThreshold = 'disabled' | {
+type PolicyValue = { type: 'disabled' } | {
+  type: 'enabled',
   size: MemorySize;
 };
-
-const defaultCompactionThreshold: CompactionThreshold = {
-  size: {
-    size: 0,
-    unit: 'MB'
-  }
-};
-
-type CompactionThresholdInputProps = {
-  value: CompactionThreshold;
-  onChange: (value: CompactionThreshold) => void;
-}
-
-const CompactionThresholdInput: React.FC<CompactionThresholdInputProps> = (props) => {
-  const [compactionThreshold, setCompactionThreshold] = useState<CompactionThreshold>(props.value);
-
-  useEffect(() => {
-    setCompactionThreshold(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, compactionThreshold);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<'enabled' | 'disabled'>
-          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-          value={compactionThreshold === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => v === 'disabled' ? setCompactionThreshold('disabled') : setCompactionThreshold(defaultCompactionThreshold)}
-        />
-      </div>
-      {compactionThreshold !== 'disabled' && (
-        <MemorySizeInput
-          value={compactionThreshold.size}
-          onChange={(v) => setCompactionThreshold({ size: v })}
-        />
-      )}
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(compactionThreshold)}
-          onReset={() => setCompactionThreshold(props.value)}
-        />
-      )}
-    </div>
-  );
-}
 
 export type FieldInputProps = {
   tenant: string;
@@ -70,39 +25,115 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext()
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const onUpdateError = (err: string) => notifyError(`Can't update compaction threshold. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: compactionThreshold, error: compactionThresholdError } = useSWR(
+  const { data: policyValue, error: setPolicyValue } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getCompactionThreshold(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetCompactionThresholdRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      const res = await namespaceServiceClient.getCompactionThreshold(req, {});
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(res.getStatus()?.getMessage());
+        return;
+      }
+
+      let value: PolicyValue = { type: 'disabled' };
+      switch (res.getThresholdCase()) {
+        case pb.GetCompactionThresholdResponse.ThresholdCase.DISABLED: {
+          value = { type: 'disabled' };
+          break;
+        }
+        case pb.GetCompactionThresholdResponse.ThresholdCase.ENABLED: {
+          value = { type: 'enabled', size: bytesToMemorySize(res.getEnabled()?.getThreshold() || 0) };
+          break;
+        }
+      }
+
+      return value;
+    }
   );
 
-  if (compactionThresholdError) {
-    notifyError(`Unable to get compaction threshold. ${compactionThresholdError}`);
+  if (setPolicyValue) {
+    notifyError(`Unable to get compaction threshold policy. ${setPolicyValue}`);
+  }
+
+  if (policyValue === undefined) {
+    return null;
   }
 
   return (
-    <CompactionThresholdInput
-      value={compactionThreshold === undefined ? 'disabled' : { size: bytesToMemorySize(compactionThreshold) }}
-      onChange={async (v) => {
-        if (v === 'disabled') {
-          await adminClient.namespaces.deleteCompactionThreshold(props.tenant, props.namespace).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setCompactionThreshold(
-            props.tenant,
-            props.namespace,
-            memorySizeToBytes(v.size)
-          ).catch(onUpdateError);
+    <WithUpdateConfirmation
+      initialValue={policyValue}
+      onConfirm={async (value) => {
+        switch (value.type) {
+          case 'disabled': {
+            const req = new pb.DeleteCompactionThresholdRequest();
+            req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+            const res = await namespaceServiceClient.deleteCompactionThreshold(req, {})
+              .catch((err) => notifyError(`Unable to disable compaction threshold policy. ${err}`));
+
+            if (res === undefined) {
+              return;
+            }
+            if (res.getStatus()?.getCode() !== Code.OK) {
+              notifyError(res.getStatus()?.getMessage());
+              return;
+            }
+
+            break;
+          }
+          case 'enabled': {
+            const req = new pb.SetCompactionThresholdRequest();
+            req.setNamespace(`${props.tenant}/${props.namespace}`);
+            req.setThreshold(memorySizeToBytes(value.size));
+
+            const res = await namespaceServiceClient.setCompactionThreshold(req, {});
+            if (res === undefined) {
+              return;
+            }
+            if (res.getStatus()?.getCode() !== Code.OK) {
+              notifyError(res.getStatus()?.getMessage());
+              return;
+            }
+
+            break;
+          }
         }
 
-        await mutate(swrKey);
+        mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => (
+        <>
+          <div className={sf.FormItem}>
+            <Select<PolicyValue['type']>
+              list={[
+                { type: 'item', title: 'Disabled', value: 'disabled' },
+                { type: 'item', title: 'Enabled', value: 'enabled' },
+              ]}
+              value={value.type}
+              onChange={(type) => onChange(type === 'disabled' ? { type: 'disabled' } : { type: 'enabled', size: { size: 0, unit: 'B' } })}
+            />
+          </div>
+          {value.type === 'enabled' && (
+            <MemorySizeInput
+              value={value.size}
+              onChange={(size) => onChange({ ...value, size })}
+            />
+          )}
+        </>
+      )}
+    </WithUpdateConfirmation>
   )
 }
 
