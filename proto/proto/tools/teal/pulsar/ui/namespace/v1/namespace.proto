@@ -94,10 +94,10 @@ message SetNamespaceAntiAffinityGroupRequest {
 message SetNamespaceAntiAffinityGroupResponse {
   google.rpc.Status status = 1;
 }
-message DeleteNamespaceAntiAffinityGroupRequest {
+message RemoveNamespaceAntiAffinityGroupRequest {
   string namespace = 1;
 }
-message DeleteNamespaceAntiAffinityGroupResponse {
+message RemoveNamespaceAntiAffinityGroupResponse {
   google.rpc.Status status = 1;
 }
 message GetAntiAffinityNamespacesRequest {
@@ -239,10 +239,10 @@ message SetBookieAffinityGroupResponse {
   google.rpc.Status status = 1;
 }
 
-message DeleteBookieAffinityGroupRequest {
+message RemoveBookieAffinityGroupRequest {
   string namespace = 1;
 }
-message DeleteBookieAffinityGroupResponse {
+message RemoveBookieAffinityGroupResponse {
   google.rpc.Status status = 1;
 }
 
@@ -270,10 +270,41 @@ message SetCompactionThresholdResponse {
   google.rpc.Status status = 1;
 }
 
-message DeleteCompactionThresholdRequest {
+message RemoveCompactionThresholdRequest {
   string namespace = 1;
 }
-message DeleteCompactionThresholdResponse {
+message RemoveCompactionThresholdResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetDeduplicationSnapshotIntervalRequest {
+  string namespace = 1;
+}
+message DeduplicationSnapshotIntervalDisabled {
+}
+message DeduplicationSnapshotIntervalEnabled {
+  int32 interval = 1;
+}
+message GetDeduplicationSnapshotIntervalResponse {
+  google.rpc.Status status = 1;
+  oneof interval {
+    DeduplicationSnapshotIntervalDisabled disabled = 2;
+    DeduplicationSnapshotIntervalEnabled enabled = 3;
+  }
+}
+
+message SetDeduplicationSnapshotIntervalRequest {
+  string namespace = 1;
+  int32 interval = 2;
+}
+message SetDeduplicationSnapshotIntervalResponse {
+  google.rpc.Status status = 1;
+}
+
+message RemoveDeduplicationSnapshotIntervalRequest {
+  string namespace = 1;
+}
+message RemoveDeduplicationSnapshotIntervalResponse {
   google.rpc.Status status = 1;
 }
 
@@ -292,7 +323,7 @@ service NamespaceService {
 
   rpc GetNamespaceAntiAffinityGroup(GetNamespaceAntiAffinityGroupRequest) returns (GetNamespaceAntiAffinityGroupResponse);
   rpc SetNamespaceAntiAffinityGroup(SetNamespaceAntiAffinityGroupRequest) returns (SetNamespaceAntiAffinityGroupResponse);
-  rpc DeleteNamespaceAntiAffinityGroup(DeleteNamespaceAntiAffinityGroupRequest) returns (DeleteNamespaceAntiAffinityGroupResponse);
+  rpc RemoveNamespaceAntiAffinityGroup(RemoveNamespaceAntiAffinityGroupRequest) returns (RemoveNamespaceAntiAffinityGroupResponse);
   rpc GetAntiAffinityNamespaces(GetAntiAffinityNamespacesRequest) returns (GetAntiAffinityNamespacesResponse);
 
   rpc GetAutoSubscriptionCreation(GetAutoSubscriptionCreationRequest) returns (GetAutoSubscriptionCreationResponse);
@@ -309,9 +340,13 @@ service NamespaceService {
 
   rpc GetBookieAffinityGroup(GetBookieAffinityGroupRequest) returns (GetBookieAffinityGroupResponse);
   rpc SetBookieAffinityGroup(SetBookieAffinityGroupRequest) returns (SetBookieAffinityGroupResponse);
-  rpc DeleteBookieAffinityGroup(DeleteBookieAffinityGroupRequest) returns (DeleteBookieAffinityGroupResponse);
+  rpc RemoveBookieAffinityGroup(RemoveBookieAffinityGroupRequest) returns (RemoveBookieAffinityGroupResponse);
 
   rpc GetCompactionThreshold(GetCompactionThresholdRequest) returns (GetCompactionThresholdResponse);
   rpc SetCompactionThreshold(SetCompactionThresholdRequest) returns (SetCompactionThresholdResponse);
-  rpc DeleteCompactionThreshold(DeleteCompactionThresholdRequest) returns (DeleteCompactionThresholdResponse);
+  rpc RemoveCompactionThreshold(RemoveCompactionThresholdRequest) returns (RemoveCompactionThresholdResponse);
+
+  rpc GetDeduplicationSnapshotInterval(GetDeduplicationSnapshotIntervalRequest) returns (GetDeduplicationSnapshotIntervalResponse);
+  rpc SetDeduplicationSnapshotInterval(SetDeduplicationSnapshotIntervalRequest) returns (SetDeduplicationSnapshotIntervalResponse);
+  rpc RemoveDeduplicationSnapshotInterval(RemoveDeduplicationSnapshotIntervalRequest) returns (RemoveDeduplicationSnapshotIntervalResponse);
 }

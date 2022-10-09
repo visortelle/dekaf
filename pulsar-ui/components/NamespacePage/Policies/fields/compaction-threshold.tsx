@@ -71,15 +71,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   return (
-    <WithUpdateConfirmation
+    <WithUpdateConfirmation<PolicyValue>
       initialValue={policyValue}
       onConfirm={async (value) => {
         switch (value.type) {
           case 'disabled': {
-            const req = new pb.DeleteCompactionThresholdRequest();
+            const req = new pb.RemoveCompactionThresholdRequest();
             req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-            const res = await namespaceServiceClient.deleteCompactionThreshold(req, {})
+            const res = await namespaceServiceClient.removeCompactionThreshold(req, {})
               .catch((err) => notifyError(`Unable to disable compaction threshold policy. ${err}`));
 
             if (res === undefined) {
