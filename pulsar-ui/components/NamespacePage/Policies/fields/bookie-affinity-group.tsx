@@ -67,9 +67,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       initialValue={bookieAffinityGroupData}
       onConfirm={async (value) => {
         if (value.type === 'not-specified') {
-          const req = new pb.DeleteBookieAffinityGroupRequest();
+          const req = new pb.RemoveBookieAffinityGroupRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-          const res = await namespaceServiceClient.deleteBookieAffinityGroup(req, {}).catch((err) => notifyError(`Unable to disable bookie affinity group policy. ${err}`));
+          const res = await namespaceServiceClient.removeBookieAffinityGroup(req, {}).catch((err) => notifyError(`Unable to disable bookie affinity group policy. ${err}`));
           if (res?.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to disable bookie affinity group policy. ${res?.getStatus()?.getMessage()}`);
           }

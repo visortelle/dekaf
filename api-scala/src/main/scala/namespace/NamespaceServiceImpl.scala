@@ -1,7 +1,7 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeleteBookieAffinityGroupRequest, DeleteBookieAffinityGroupResponse, DeleteCompactionThresholdRequest, DeleteCompactionThresholdResponse, DeleteNamespaceAntiAffinityGroupRequest, DeleteNamespaceAntiAffinityGroupResponse, DeleteNamespaceRequest, DeleteNamespaceResponse, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, DeleteNamespaceRequest, DeleteNamespaceResponse, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
 import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
@@ -16,7 +16,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     val logger: Logger = Logger(getClass.getName)
 
     override def createNamespace(request: CreateNamespaceRequest): Future[CreateNamespaceResponse] =
-        logger.info(s"Creating namespace: ${request.namespaceName}")
+        logger.info(s"Creating namespace ${request.namespaceName}")
 
         val bundlesData = BundlesData.builder.numBundles(request.numBundles).build
         val policies = new Policies
@@ -35,7 +35,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def deleteNamespace(request: DeleteNamespaceRequest): Future[DeleteNamespaceResponse] =
-        logger.info(s"Deleting namespace: ${request.namespaceName}")
+        logger.info(s"Deleting namespace ${request.namespaceName}")
 
         try {
             adminClient.namespaces.deleteNamespace(request.namespaceName, request.force)
@@ -49,8 +49,6 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getIsAllowAutoUpdateSchema(request: GetIsAllowAutoUpdateSchemaRequest): Future[GetIsAllowAutoUpdateSchemaResponse] =
-        logger.info(s"Getting is allow auto update schema for namespace: ${request.namespace}")
-
         try {
             val isAllowAutoUpdateSchema = adminClient.namespaces.getIsAllowAutoUpdateSchema(request.namespace)
             val status = Status(code = Code.OK.index)
@@ -68,7 +66,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setIsAllowAutoUpdateSchema(request: SetIsAllowAutoUpdateSchemaRequest): Future[SetIsAllowAutoUpdateSchemaResponse] =
-        logger.info(s"Setting is allow auto update schema for namespace: ${request.namespace}. Value: ${request.isAllowAutoUpdateSchema}")
+        logger.info(s"Setting is allow auto update schema policy for namespace ${request.namespace}")
 
         try {
             adminClient.namespaces.setIsAllowAutoUpdateSchema(request.namespace, request.isAllowAutoUpdateSchema)
@@ -84,8 +82,6 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     override def getSchemaCompatibilityStrategy(
         request: GetSchemaCompatibilityStrategyRequest
     ): Future[GetSchemaCompatibilityStrategyResponse] =
-        logger.info(s"Getting schema compatibility strategy for namespace: ${request.namespace}")
-
         try {
             val strategy = adminClient.namespaces.getSchemaCompatibilityStrategy(request.namespace)
             val status = Status(code = Code.OK.index)
@@ -105,7 +101,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     override def setSchemaCompatibilityStrategy(
         request: SetSchemaCompatibilityStrategyRequest
     ): Future[SetSchemaCompatibilityStrategyResponse] =
-        logger.info(s"Setting schema compatibility strategy for namespace: ${request.namespace}")
+        logger.info(s"Setting schema compatibility strategy policy for namespace ${request.namespace}")
 
         try {
             adminClient.namespaces.setSchemaCompatibilityStrategy(
@@ -139,6 +135,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def setSchemaValidationEnforce(request: SetSchemaValidationEnforceRequest): Future[SetSchemaValidationEnforceResponse] =
         try {
+            logger.info(s"Setting schema validation enforce policy for namespace ${request.namespace}")
             adminClient.namespaces.setSchemaValidationEnforced(request.namespace, request.schemaValidationEnforced)
             val status = Status(code = Code.OK.index)
             Future.successful(SetSchemaValidationEnforceResponse(status = Some(status)))
@@ -171,13 +168,14 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def setAutoSubscriptionCreation(request: SetAutoSubscriptionCreationRequest): Future[SetAutoSubscriptionCreationResponse] =
         try {
+            logger.info(s"Setting auto subscription creation policy for namespace ${request.namespace}")
             val autoSubscriptionCreationOverride = request.autoSubscriptionCreation match
                 case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED =>
                     AutoSubscriptionCreationOverride.builder.allowAutoSubscriptionCreation(true).build()
                 case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED =>
                     AutoSubscriptionCreationOverride.builder.allowAutoSubscriptionCreation(false).build()
                 case _ =>
-                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Wrong allow subscription creation argument received.")
+                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Wrong allow subscription creation argument received")
                     return Future.successful(SetAutoSubscriptionCreationResponse(status = Some(status)))
 
             adminClient.namespaces.setAutoSubscriptionCreation(request.namespace, autoSubscriptionCreationOverride)
@@ -191,6 +189,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def removeAutoSubscriptionCreation(request: RemoveAutoSubscriptionCreationRequest): Future[RemoveAutoSubscriptionCreationResponse] =
         try {
+            logger.info(s"Removing auto subscription creation policy for namespace ${request.namespace}")
             adminClient.namespaces.removeAutoSubscriptionCreation(request.namespace)
             Future.successful(RemoveAutoSubscriptionCreationResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
@@ -234,6 +233,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setAutoTopicCreation(request: SetAutoTopicCreationRequest): Future[SetAutoTopicCreationResponse] =
+        logger.info(s"Setting auto topic creation policy for namespace ${request.namespace}")
+
         if !request.autoTopicCreation.isAutoTopicCreationSpecified then
             val status = Status(code = Code.FAILED_PRECONDITION.index)
             return Future.successful(SetAutoTopicCreationResponse(status = Some(status)))
@@ -265,6 +266,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeAutoTopicCreation(request: RemoveAutoTopicCreationRequest): Future[RemoveAutoTopicCreationResponse] =
+        logger.info(s"Removing auto topic creation policy for namespace ${request.namespace}")
+
         try {
             adminClient.namespaces.removeAutoTopicCreation(request.namespace)
             Future.successful(RemoveAutoTopicCreationResponse(status = Some(Status(code = Code.OK.index))))
@@ -342,7 +345,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
                     val backlogQuota = backlogQuotaBuilder.build
 
-                    logger.info(s"Setting destination storage backlog quota on namespace ${request.namespace} to ${backlogQuota}")
+                    logger.info(s"Setting backlog quota policy (destination storage) on namespace ${request.namespace} to ${backlogQuota}")
                     adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.destination_storage)
                 case None =>
 
@@ -357,7 +360,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
                     val backlogQuota = backlogQuotaBuilder.build
 
-                    logger.info(s"Setting message age backlog quota on namespace ${request.namespace} to ${backlogQuota}")
+                    logger.info(s"Setting backlog quota (message age) on namespace ${request.namespace} to ${backlogQuota}")
                     adminClient.namespaces.setBacklogQuota(request.namespace, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
@@ -372,13 +375,13 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try
             request.backlogQuotaType match
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE =>
-                    logger.info(s"Removing destination storage backlog quota on namespace ${request.namespace}")
+                    logger.info(s"Removing backlog quota (destination storage) on namespace ${request.namespace}")
                     adminClient.namespaces.removeBacklogQuota(request.namespace, BacklogQuotaType.destination_storage)
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE =>
-                    logger.info(s"Removing message age backlog quota on namespace ${request.namespace}")
+                    logger.info(s"Removing backlog quota (message age) on namespace ${request.namespace}")
                     adminClient.namespaces.removeBacklogQuota(request.namespace, BacklogQuotaType.message_age)
                 case _ =>
-                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Backlog quota type should be specified.")
+                    val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Backlog quota type should be specified")
                     return Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
 
             Future.successful(RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.index))))
@@ -414,14 +417,14 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(SetNamespaceAntiAffinityGroupResponse(status = Some(status)))
         }
 
-    override def deleteNamespaceAntiAffinityGroup(request: DeleteNamespaceAntiAffinityGroupRequest): Future[DeleteNamespaceAntiAffinityGroupResponse] =
+    override def removeNamespaceAntiAffinityGroup(request: RemoveNamespaceAntiAffinityGroupRequest): Future[RemoveNamespaceAntiAffinityGroupResponse] =
         try
             adminClient.namespaces.deleteNamespaceAntiAffinityGroup(request.namespace)
-            Future.successful(DeleteNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
         catch {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(DeleteNamespaceAntiAffinityGroupResponse(status = Some(status)))
+                Future.successful(RemoveNamespaceAntiAffinityGroupResponse(status = Some(status)))
         }
 
     override def getAntiAffinityNamespaces(request: GetAntiAffinityNamespacesRequest): Future[GetAntiAffinityNamespacesResponse] =
@@ -484,15 +487,15 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(SetBookieAffinityGroupResponse(status = Some(status)))
         }
 
-    override def deleteBookieAffinityGroup(request: DeleteBookieAffinityGroupRequest): Future[DeleteBookieAffinityGroupResponse] =
+    override def removeBookieAffinityGroup(request: RemoveBookieAffinityGroupRequest): Future[RemoveBookieAffinityGroupResponse] =
         try {
-            logger.info(s"Deleting bookie affinity group for namespace ${request.namespace}")
+            logger.info(s"Removing bookie affinity group policy for namespace ${request.namespace}")
             adminClient.namespaces.deleteBookieAffinityGroup(request.namespace)
-            Future.successful(DeleteBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveBookieAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(DeleteBookieAffinityGroupResponse(status = Some(status)))
+                Future.successful(RemoveBookieAffinityGroupResponse(status = Some(status)))
         }
 
     override def getCompactionThreshold(request: GetCompactionThresholdRequest): Future[GetCompactionThresholdResponse] =
@@ -521,15 +524,53 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(SetCompactionThresholdResponse(status = Some(status)))
         }
 
-    override def deleteCompactionThreshold(request: DeleteCompactionThresholdRequest): Future[DeleteCompactionThresholdResponse] =
+    override def removeCompactionThreshold(request: RemoveCompactionThresholdRequest): Future[RemoveCompactionThresholdResponse] =
         try {
-            logger.info(s"Deleting compaction threshold policy for namespace ${request.namespace}")
+            logger.info(s"Removing compaction threshold policy for namespace ${request.namespace}")
             adminClient.namespaces.removeCompactionThreshold(request.namespace)
-            Future.successful(DeleteCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
+            Future.successful(RemoveCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(DeleteCompactionThresholdResponse(status = Some(status)))
+                Future.successful(RemoveCompactionThresholdResponse(status = Some(status)))
         }
 
-//adminClient.namespaces.compactiont
+    override def getDeduplicationSnapshotInterval(request: GetDeduplicationSnapshotIntervalRequest): Future[GetDeduplicationSnapshotIntervalResponse] =
+        try {
+            val interval = Option(adminClient.namespaces.getDeduplicationSnapshotInterval(request.namespace)) match
+                case None =>
+                    pb.GetDeduplicationSnapshotIntervalResponse.Interval.Disabled(new pb.DeduplicationSnapshotIntervalDisabled())
+                case Some(v) =>
+                    pb.GetDeduplicationSnapshotIntervalResponse.Interval.Enabled(new DeduplicationSnapshotIntervalEnabled(interval = v))
+
+            Future.successful(GetDeduplicationSnapshotIntervalResponse(
+                status = Some(Status(code = Code.OK.index)),
+                interval
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetDeduplicationSnapshotIntervalResponse(status = Some(status)))
+        }
+
+    override def setDeduplicationSnapshotInterval(request: SetDeduplicationSnapshotIntervalRequest): Future[SetDeduplicationSnapshotIntervalResponse] =
+        try {
+            logger.info(s"Setting deduplication snapshot interval policy for namespace ${request.namespace}. ${request.interval}")
+            adminClient.namespaces.setDeduplicationSnapshotInterval(request.namespace, request.interval)
+            Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(status)))
+        }
+
+    override def removeDeduplicationSnapshotInterval(request: RemoveDeduplicationSnapshotIntervalRequest): Future[RemoveDeduplicationSnapshotIntervalResponse] =
+        try {
+            logger.info(s"Removing deduplication snapshot interval policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeDeduplicationSnapshotIntervalAsync(request.namespace)
+            Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(status)))
+        }
