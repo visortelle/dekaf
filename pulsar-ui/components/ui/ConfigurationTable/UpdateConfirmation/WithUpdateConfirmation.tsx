@@ -6,13 +6,14 @@ export type WithUpdateConfirmationProps<V> = {
   initialValue: V,
   onConfirm: (value: V) => Promise<void>,
   children: (props: { value: V, onChange: (v: V) => void }) => React.ReactNode,
-  isEqual?: (a: V, b: V) => boolean,
 };
 
 function WithUpdateConfirmation<V>(props: WithUpdateConfirmationProps<V>): React.ReactElement {
   const [value, setValue] = React.useState<V>(props.initialValue);
 
-  const isShowConfirmation = props.isEqual ? !props.isEqual(props.initialValue, value) : !isEqual(props.initialValue, value);
+  console.log('value', props.initialValue, value);
+
+  const isShowConfirmation = !isEqual(props.initialValue, value);
   const handleConfirm = () => props.onConfirm(value);
 
   return (
