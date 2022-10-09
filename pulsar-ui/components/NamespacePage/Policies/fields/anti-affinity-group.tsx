@@ -67,10 +67,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         }
 
         if (v.type === 'not-specified') {
-          const req = new pb.DeleteNamespaceAntiAffinityGroupRequest();
+          const req = new pb.RemoveNamespaceAntiAffinityGroupRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.deleteNamespaceAntiAffinityGroup(req, {});
+          const res = await namespaceServiceClient.removeNamespaceAntiAffinityGroup(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to delete anti-affinity group. ${res.getStatus()?.getMessage()}`);
             return;
