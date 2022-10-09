@@ -3,13 +3,14 @@ import s from './DurationInput.module.css'
 import SelectInput from '../SelectInput/SelectInput';
 import Input from '../Input/Input';
 import { Duration, DurationUnit, durationUnits } from './types';
+import { durationToSeconds, secondsToDuration } from './conversions';
 
-export type DurationInputProps = {
+export type _DurationInputProps = {
   value: Duration;
   onChange: (duration: Duration) => void;
 };
 
-const DurationInput: React.FC<DurationInputProps> = (props) => {
+const _DurationInput: React.FC<_DurationInputProps> = (props) => {
   return (
     <div className={s.DurationInput}>
       <div className={s.Value}>
@@ -35,6 +36,22 @@ const DurationInput: React.FC<DurationInputProps> = (props) => {
       </div>
     </div>
   );
+}
+
+type DurationInputProps = {
+  // Seconds
+  value: number;
+  onChange: (seconds: number) => void;
+}
+
+const DurationInput: React.FC<DurationInputProps> = (props) => {
+  return (
+    <_DurationInput
+      value={secondsToDuration(props.value)}
+      onChange={(duration) => props.onChange(durationToSeconds(duration))}
+    />
+  );
+
 }
 
 export default DurationInput;

@@ -4,19 +4,20 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { MemorySize } from '../../../ui/ConfigurationTable/MemorySizeInput/types';
-import { bytesToMemorySize, memorySizeToBytes } from '../../../ui/ConfigurationTable/MemorySizeInput/conversions';
 import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import stringify from 'safe-stable-stringify';
 
 const policy = 'compactionThreshold';
 
-type PolicyValue = { type: 'disabled' } | {
-  type: 'enabled',
-  size: MemorySize;
+type PolicyValue = { type: 'inherited-from-broker-config' } | {
+  type: 'specified-for-this-namespace',
+  sizeBytes: number;
+} | {
+  type: 'automatic-compaction-disabled'
 };
 
 export type FieldInputProps = {
@@ -31,7 +32,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: policyValue, error: setPolicyValue } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetCompactionThresholdRequest();
@@ -46,14 +47,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         return;
       }
 
-      let value: PolicyValue = { type: 'disabled' };
+      let value: PolicyValue = { type: 'inherited-from-broker-config' };
       switch (res.getThresholdCase()) {
         case pb.GetCompactionThresholdResponse.ThresholdCase.DISABLED: {
-          value = { type: 'disabled' };
+          value = { type: 'inherited-from-broker-config' };
           break;
         }
         case pb.GetCompactionThresholdResponse.ThresholdCase.ENABLED: {
-          value = { type: 'enabled', size: bytesToMemorySize(res.getEnabled()?.getThreshold() || 0) };
+          const threshold = res.getEnabled()?.getThreshold() || 0;
+          value = threshold === 0 ? { type: 'automatic-compaction-disabled' } : { type: 'specified-for-this-namespace', sizeBytes: threshold };
           break;
         }
       }
@@ -62,20 +64,21 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
   );
 
-  if (setPolicyValue) {
-    notifyError(`Unable to get compaction threshold policy. ${setPolicyValue}`);
+  if (initialValueError) {
+    notifyError(`Unable to get compaction threshold policy. ${initialValueError}`);
   }
 
-  if (policyValue === undefined) {
+  if (initialValue === undefined) {
     return null;
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      initialValue={policyValue}
+      key={stringify(initialValue)}
+      initialValue={initialValue}
       onConfirm={async (value) => {
         switch (value.type) {
-          case 'disabled': {
+          case 'inherited-from-broker-config': {
             const req = new pb.RemoveCompactionThresholdRequest();
             req.setNamespace(`${props.tenant}/${props.namespace}`);
 
@@ -92,10 +95,26 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
             break;
           }
-          case 'enabled': {
+          case 'specified-for-this-namespace': {
             const req = new pb.SetCompactionThresholdRequest();
             req.setNamespace(`${props.tenant}/${props.namespace}`);
-            req.setThreshold(memorySizeToBytes(value.size));
+            req.setThreshold(Math.floor(value.sizeBytes));
+
+            const res = await namespaceServiceClient.setCompactionThreshold(req, {});
+            if (res === undefined) {
+              return;
+            }
+            if (res.getStatus()?.getCode() !== Code.OK) {
+              notifyError(res.getStatus()?.getMessage());
+              return;
+            }
+
+            break;
+          }
+          case 'automatic-compaction-disabled': {
+            const req = new pb.SetCompactionThresholdRequest();
+            req.setNamespace(`${props.tenant}/${props.namespace}`);
+            req.setThreshold(0);
 
             const res = await namespaceServiceClient.setCompactionThreshold(req, {});
             if (res === undefined) {
@@ -109,8 +128,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             break;
           }
         }
-
-        mutate(swrKey);
+        await mutate(swrKey);
       }}
     >
       {({ value, onChange }) => (
@@ -118,17 +136,31 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <div className={sf.FormItem}>
             <Select<PolicyValue['type']>
               list={[
-                { type: 'item', title: 'Disabled', value: 'disabled' },
-                { type: 'item', title: 'Enabled', value: 'enabled' },
+                { type: 'item', title: 'Inherited from broker config', value: 'inherited-from-broker-config' },
+                { type: 'item', title: 'Automatic compaction disabled', value: 'automatic-compaction-disabled' },
+                { type: 'item', title: 'Specified for this namespace', value: 'specified-for-this-namespace' },
               ]}
               value={value.type}
-              onChange={(type) => onChange(type === 'disabled' ? { type: 'disabled' } : { type: 'enabled', size: { size: 0, unit: 'B' } })}
+              onChange={(type) => {
+                if (type === 'specified-for-this-namespace') {
+                  onChange({
+                    type: 'specified-for-this-namespace', sizeBytes: 1024
+                  });
+                  return;
+                }
+
+                onChange({ type });
+              }}
             />
           </div>
-          {value.type === 'enabled' && (
+          {value.type === 'specified-for-this-namespace' && (
             <MemorySizeInput
-              value={value.size}
-              onChange={(size) => onChange({ ...value, size })}
+              value={value.sizeBytes}
+              onChange={(size) => {
+                if (size > 0) {
+                  onChange({ ...value, sizeBytes: size })
+                }
+              }}
             />
           )}
         </>

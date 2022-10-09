@@ -4,20 +4,18 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Select from '../../../ui/Select/Select';
-import { durationToSeconds, secondsToDuration } from '../../../ui/ConfigurationTable/DurationInput/conversions';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import { Duration } from '../../../ui/ConfigurationTable/DurationInput/types';
 import stringify from 'safe-stable-stringify';
 
 const policy = 'deduplicationSnapshotInterval';
 
-type PolicyValue = { type: 'disabled' } | {
-  type: 'enabled',
-  interval: Duration;
+type PolicyValue = { type: 'inherited-from-broker-config' } | {
+  type: 'specified-for-this-namespace',
+  intervalSeconds: number;
 };
 
 export type FieldInputProps = {
@@ -43,14 +41,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         notifyError(`Unable to get deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
       }
 
-      let value: PolicyValue = { type: 'disabled' };
+      let value: PolicyValue = { type: 'inherited-from-broker-config' };
       switch (res.getIntervalCase()) {
         case pb.GetDeduplicationSnapshotIntervalResponse.IntervalCase.DISABLED: {
-          value = { type: 'disabled' };
+          value = { type: 'inherited-from-broker-config' };
           break;
         }
         case pb.GetDeduplicationSnapshotIntervalResponse.IntervalCase.ENABLED: {
-          value = { type: 'enabled', interval: secondsToDuration(res.getEnabled()?.getInterval() || 0) };
+          value = { type: 'specified-for-this-namespace', intervalSeconds: res.getEnabled()?.getInterval() || 0 };
         }
       }
 
@@ -69,9 +67,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <WithUpdateConfirmation<PolicyValue>
+      key={stringify(initialValue)}
       initialValue={initialValue}
       onConfirm={async (value) => {
-        if (value.type === 'disabled') {
+        if (value.type === 'inherited-from-broker-config') {
           const req = new pb.RemoveDeduplicationSnapshotIntervalRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           const res = await namespaceServiceClient.removeDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to remove deduplication snapshot interval: ${err}`));
@@ -80,16 +79,16 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
-        if (value.type === 'enabled') {
+        if (value.type === 'specified-for-this-namespace') {
           const maxInt32 = 2_147_483_647;
-          if(durationToSeconds(value.interval) > maxInt32) {
+          if (value.intervalSeconds > maxInt32) {
             notifyError(`Unable to set deduplication snapshot interval. It should be less than ${new Intl.NumberFormat('en-US').format(maxInt32)} seconds`);
             return;
           }
 
           const req = new pb.SetDeduplicationSnapshotIntervalRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-          req.setInterval(parseInt(durationToSeconds(value.interval).toString(), 10));
+          req.setInterval(Math.floor(value.intervalSeconds));
           const res = await namespaceServiceClient.setDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to set deduplication snapshot interval: ${err}`));
           if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
@@ -98,20 +97,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         mutate(swrKey);
       }}
-      isEqual={(a, b) => {
-        if (a.type !== b.type) {
-          return false;
-        }
-        if (a.type === 'disabled' && b.type === 'disabled') {
-          return true;
-        }
-
-        if (a.type === 'enabled' && b.type === 'enabled') {
-          return durationToSeconds(a.interval) === durationToSeconds(b.interval);
-        }
-
-        return false;
-      }}
     >
       {({ value, onChange }) => {
         return (
@@ -119,14 +104,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <div className={sf.FormItem}>
               <Select<PolicyValue['type']>
                 value={value.type}
-                onChange={(type) => onChange(type === 'disabled' ? { type: 'disabled' } : { type: 'enabled', interval: secondsToDuration(0) })}
-                list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
+                onChange={(type) => onChange(type === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-namespace', intervalSeconds: 0 })}
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
+                ]}
               />
             </div>
-            {value.type === 'enabled' && (
+            {value.type === 'specified-for-this-namespace' && (
               <DurationInput
-                value={value.interval}
-                onChange={(duration) => onChange({ ...value, interval: duration })}
+                value={value.intervalSeconds}
+                onChange={(duration) => onChange({ ...value, intervalSeconds: duration })}
               />
             )}
           </>
