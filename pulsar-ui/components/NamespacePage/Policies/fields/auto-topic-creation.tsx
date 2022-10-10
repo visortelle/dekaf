@@ -32,7 +32,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: autoTopicCreation, error: autoTopicCreationError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetAutoTopicCreationRequest();
@@ -40,7 +40,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const res = await namespaceServiceClient.getAutoTopicCreation(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to set auto topic creation policy. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get auto topic creation policy. ${res.getStatus()?.getMessage()}`);
         return;
       }
 
@@ -70,16 +70,16 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
   );
 
-  if (autoTopicCreationError) {
-    notifyError(`Unable to get deduplication: ${autoTopicCreationError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get deduplication: ${initialValueError}`);
   }
 
-  if (autoTopicCreation === undefined) {
+  if (initialValue === undefined) {
     return null;
   }
   return (
     <WithUpdateConfirmation<PolicyValue>
-      initialValue={autoTopicCreation}
+      initialValue={initialValue}
       onConfirm={async (v) => {
         if (v.type === 'inherited-from-broker-config') {
           const req = new pb.RemoveAutoTopicCreationRequest();

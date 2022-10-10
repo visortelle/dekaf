@@ -1,7 +1,7 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, DeleteNamespaceRequest, DeleteNamespaceResponse, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
 import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
@@ -567,10 +567,50 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     override def removeDeduplicationSnapshotInterval(request: RemoveDeduplicationSnapshotIntervalRequest): Future[RemoveDeduplicationSnapshotIntervalResponse] =
         try {
             logger.info(s"Removing deduplication snapshot interval policy for namespace ${request.namespace}")
-            adminClient.namespaces.removeDeduplicationSnapshotIntervalAsync(request.namespace)
+            adminClient.namespaces.removeDeduplicationSnapshotInterval(request.namespace)
             Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(status)))
+        }
+
+    override def getDeduplication(request: GetDeduplicationRequest): Future[GetDeduplicationResponse] =
+        try {
+            val deduplication = Option(adminClient.namespaces.getDeduplicationStatus(request.namespace)) match
+                case None =>
+                    pb.GetDeduplicationResponse.Deduplication.Unspecified(new DeduplicationUnspecified())
+                case Some(v) =>
+                    pb.GetDeduplicationResponse.Deduplication.Specified(new DeduplicationSpecified(enabled = v))
+
+            Future.successful(GetDeduplicationResponse(
+                status = Some(Status(code = Code.OK.index)),
+                deduplication
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetDeduplicationResponse(status = Some(status)))
+        }
+
+    override def setDeduplication(request: SetDeduplicationRequest): Future[SetDeduplicationResponse] =
+        try {
+            logger.info(s"Setting deduplication policy for namespace ${request.namespace}")
+            adminClient.namespaces.setDeduplicationStatus(request.namespace, request.enabled)
+            Future.successful(SetDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetDeduplicationResponse(status = Some(status)))
+        }
+
+    override def removeDeduplication(request: RemoveDeduplicationRequest): Future[RemoveDeduplicationResponse] =
+        try {
+            logger.info(s"Removing deduplication policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeDeduplicationStatus(request.namespace)
+            Future.successful(RemoveDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveDeduplicationResponse(status = Some(status)))
         }
