@@ -396,6 +396,21 @@ message RemoveDispatchRateResponse {
   google.rpc.Status status = 1;
 }
 
+message GetEncryptionRequiredRequest {
+  string namespace = 1;
+}
+message GetEncryptionRequiredResponse {
+  google.rpc.Status status = 1;
+  bool encryption_required = 2;
+}
+message SetEncryptionRequiredRequest {
+  string namespace = 1;
+  bool encryption_required = 2;
+}
+message SetEncryptionRequiredResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -449,4 +464,7 @@ service NamespaceService {
   rpc GetDispatchRate(GetDispatchRateRequest) returns (GetDispatchRateResponse);
   rpc SetDispatchRate(SetDispatchRateRequest) returns (SetDispatchRateResponse);
   rpc RemoveDispatchRate(RemoveDispatchRateRequest) returns (RemoveDispatchRateResponse);
+
+  rpc GetEncryptionRequired(GetEncryptionRequiredRequest) returns (GetEncryptionRequiredResponse);
+  rpc SetEncryptionRequired(SetEncryptionRequiredRequest) returns (SetEncryptionRequiredResponse);
 }
