@@ -324,11 +324,41 @@ message SetDeduplicationRequest {
 message SetDeduplicationResponse {
   google.rpc.Status status = 1;
 }
-
 message RemoveDeduplicationRequest {
   string namespace = 1;
 }
 message RemoveDeduplicationResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetDelayedDeliveryRequest {
+  string namespace = 1;
+}
+message DelayedDeliveryUnspecified {
+}
+message DelayedDeliverySpecified {
+  bool enabled = 1;
+  int64 tick_time_ms = 2;
+}
+message GetDelayedDeliveryResponse {
+  google.rpc.Status status = 1;
+  oneof delayed_delivery {
+    DelayedDeliveryUnspecified unspecified = 2;
+    DelayedDeliverySpecified specified = 3;
+  }
+}
+message SetDelayedDeliveryRequest {
+  string namespace = 1;
+  bool enabled = 2;
+  int64 tick_time_ms = 3;
+}
+message SetDelayedDeliveryResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveDelayedDeliveryRequest {
+  string namespace = 1;
+}
+message RemoveDelayedDeliveryResponse {
   google.rpc.Status status = 1;
 }
 
@@ -377,4 +407,8 @@ service NamespaceService {
   rpc GetDeduplication(GetDeduplicationRequest) returns (GetDeduplicationResponse);
   rpc SetDeduplication(SetDeduplicationRequest) returns (SetDeduplicationResponse);
   rpc RemoveDeduplication(RemoveDeduplicationRequest) returns (RemoveDeduplicationResponse);
+
+  rpc GetDelayedDelivery(GetDelayedDeliveryRequest) returns (GetDelayedDeliveryResponse);
+  rpc SetDelayedDelivery(SetDelayedDeliveryRequest) returns (SetDelayedDeliveryResponse);
+  rpc RemoveDelayedDelivery(RemoveDelayedDeliveryRequest) returns (RemoveDelayedDeliveryResponse);
 }

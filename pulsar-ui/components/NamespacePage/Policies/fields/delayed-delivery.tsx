@@ -1,16 +1,14 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
+import Select from '../../../ui/Select/Select';
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
-import { Duration } from "../../../ui/ConfigurationTable/DurationInput/types";
-import { secondsToDuration, durationToSeconds } from "../../../ui/ConfigurationTable/DurationInput/conversions";
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useEffect, useState } from "react";
 import { swrKeys } from "../../../swrKeys";
-import { isEqual } from "lodash";
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 const policy = 'delayedDelivery';
 
@@ -19,79 +17,138 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type DelayedDelivery = {
-  enabled: 'enabled' | 'disabled';
-  time: Duration
+type PolicyValue = {
+  type: 'inherited-from-broker-config'
+} | {
+  type: 'enabled',
+  tickTimeMs: number;
+} | {
+  type: 'disabled'
 };
 
 type DelayedDeliveryInputProps = {
-  value: DelayedDelivery;
-  onChange: (value: DelayedDelivery) => void;
-}
-
-const DelayedDeliveryInput: React.FC<DelayedDeliveryInputProps> = (props) => {
-  const [delayedDelivery, setDelayedDelivery] = useState<DelayedDelivery>(props.value);
-
-  useEffect(() => {
-    setDelayedDelivery(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, delayedDelivery);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<DelayedDelivery['enabled']>
-          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-          value={delayedDelivery.enabled}
-          onChange={(v) => setDelayedDelivery({ ...delayedDelivery, enabled: v })}
-        />
-      </div>
-      {delayedDelivery.enabled === 'enabled' && (
-        <div className={sf.FormItem}>
-          <strong className={sf.FormLabel}>Tick time</strong>
-          <DurationInput
-            value={delayedDelivery.time}
-            onChange={async (v) => setDelayedDelivery({ ...delayedDelivery, time: v })}
-          />
-        </div>
-      )}
-
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(delayedDelivery)}
-          onReset={() => setDelayedDelivery(props.value)}
-        />
-      )}
-    </div >
-  );
+  value: PolicyValue;
+  onChange: (value: PolicyValue) => void;
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update delayed delivery. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: delayedDelivery, error: delayedDeliveryError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getDelayedDeliveryPolicies(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetDelayedDeliveryRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getDelayedDelivery(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get delayed delivery policy. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let value: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getDelayedDeliveryCase()) {
+        case pb.GetDelayedDeliveryResponse.DelayedDeliveryCase.UNSPECIFIED: {
+          value = { type: 'inherited-from-broker-config' };
+          break;
+        }
+        case pb.GetDelayedDeliveryResponse.DelayedDeliveryCase.SPECIFIED: {
+          if (res.getSpecified()?.getEnabled()) {
+            value = { type: 'enabled', tickTimeMs: res.getSpecified()?.getTickTimeMs() ?? 0 };
+          } else {
+            value = { type: 'disabled' };
+          }
+
+          break;
+        }
+      }
+
+      return value;
+    }
   );
 
-  if (delayedDeliveryError) {
-    notifyError(`Unable to get delayed delivery: ${delayedDeliveryError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get delayed delivery: ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <DelayedDeliveryInput
-      value={{ enabled: delayedDelivery?.active ? 'enabled' : 'disabled', time: secondsToDuration(delayedDelivery?.tickTime || 0) }}
-      onChange={async (v) => {
-        await adminClient.namespaces.setDelayedDeliveryPolicies(props.tenant, props.namespace, { active: v.enabled === 'enabled', tickTime: durationToSeconds(v.time) }).catch(onUpdateError);
-        await mutate(swrKey);
+    <WithUpdateConfirmation
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveDelayedDeliveryRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await namespaceServiceClient.removeDelayedDelivery(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to remove delayed delivery policy. ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        if (value.type === 'enabled' || value.type === 'disabled') {
+          const req = new pb.SetDelayedDeliveryRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          if (value.type === 'enabled') {
+            req.setEnabled(true);
+            req.setTickTimeMs(Math.floor(value.tickTimeMs));
+          }
+
+          if (value.type === 'disabled') {
+            req.setEnabled(false);
+          }
+
+          const res = await namespaceServiceClient.setDelayedDelivery(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set delayed delivery policy. ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'enabled', title: 'Enabled' },
+                  { type: 'item', value: 'disabled', title: 'Disabled' },
+                ]}
+                value={value.type}
+                onChange={(type) => {
+                  if (type === 'inherited-from-broker-config') {
+                    onChange({ type });
+                  }
+                  if (type === 'disabled') {
+                    onChange({ type });
+                  }
+                  if (type === 'enabled') {
+                    onChange({ type, tickTimeMs: 1000 });
+                  }
+                }}
+              />
+            </div>
+            {value.type === 'enabled' && (
+              <DurationInput
+                value={value.tickTimeMs / 1000}
+                onChange={(seconds) => onChange({ ...value, tickTimeMs: seconds * 1000 })}
+              />
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
   );
 }
 
