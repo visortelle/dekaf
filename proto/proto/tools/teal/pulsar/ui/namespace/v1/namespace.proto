@@ -362,6 +362,40 @@ message RemoveDelayedDeliveryResponse {
   google.rpc.Status status = 1;
 }
 
+message GetDispatchRateRequest {
+  string namespace = 1;
+}
+message DispatchRateUnspecified {}
+message DispatchRateSpecified {
+  int32 rate_in_msg = 1;
+  int64 rate_in_byte = 2;
+  int32 period_in_second = 3;
+  bool is_relative_to_publish_rate = 4;
+}
+message GetDispatchRateResponse {
+  google.rpc.Status status = 1;
+  oneof dispatch_rate {
+    DispatchRateUnspecified unspecified = 2;
+    DispatchRateSpecified specified = 3;
+  }
+}
+message SetDispatchRateRequest {
+  string namespace = 1;
+  int32 rate_in_msg = 2;
+  int64 rate_in_byte = 3;
+  int32 period_in_second = 4;
+  bool is_relative_to_publish_rate = 5;
+}
+message SetDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveDispatchRateRequest {
+  string namespace = 1;
+}
+message RemoveDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -411,4 +445,8 @@ service NamespaceService {
   rpc GetDelayedDelivery(GetDelayedDeliveryRequest) returns (GetDelayedDeliveryResponse);
   rpc SetDelayedDelivery(SetDelayedDeliveryRequest) returns (SetDelayedDeliveryResponse);
   rpc RemoveDelayedDelivery(RemoveDelayedDeliveryRequest) returns (RemoveDelayedDeliveryResponse);
+
+  rpc GetDispatchRate(GetDispatchRateRequest) returns (GetDispatchRateResponse);
+  rpc SetDispatchRate(SetDispatchRateRequest) returns (SetDispatchRateResponse);
+  rpc RemoveDispatchRate(RemoveDispatchRateRequest) returns (RemoveDispatchRateResponse);
 }

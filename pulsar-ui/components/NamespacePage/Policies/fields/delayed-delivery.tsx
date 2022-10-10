@@ -26,11 +26,6 @@ type PolicyValue = {
   type: 'disabled'
 };
 
-type DelayedDeliveryInputProps = {
-  value: PolicyValue;
-  onChange: (value: PolicyValue) => void;
-}
-
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
