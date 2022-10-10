@@ -1,9 +1,12 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
+import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 const policy = 'deduplication';
 
@@ -12,39 +15,95 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type Deduplication = 'enabled' | 'disabled';
+type PolicyValue = 'inherited-from-broker-config' | 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const adminClient = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update deduplication. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: deduplication, error: deduplicationError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => Boolean(await adminClient.namespaces.getDeduplication(props.tenant, props.namespace)) // XXX - see https://github.com/apache/pulsar/issues/16024
+    async () => {
+      const req = new pb.GetDeduplicationRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await adminClient.namespaceServiceClient.getDeduplication(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get deduplication policy. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let initialValue: PolicyValue = 'inherited-from-broker-config';
+      switch (res.getDeduplicationCase()) {
+        case pb.GetDeduplicationResponse.DeduplicationCase.UNSPECIFIED: initialValue = 'inherited-from-broker-config'; break;
+        case pb.GetDeduplicationResponse.DeduplicationCase.SPECIFIED: {
+          initialValue = res.getSpecified()?.getEnabled() ? 'enabled' : 'disabled';
+          break;
+        }
+      }
+
+      return initialValue;
+    }
   );
 
-  if (deduplicationError) {
-    notifyError(`Unable to get deduplication: ${deduplicationError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get deduplication: ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <SelectInput<Deduplication>
-      list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-      value={deduplication ? 'enabled' : 'disabled'}
-      onChange={async (v) => {
-        if (v === 'enabled') {
-          await adminClient.namespaces.modifyDeduplication(props.tenant, props.namespace, true).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.removeDeduplication(props.tenant, props.namespace).catch(onUpdateError);
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (v) => {
+        console.log('v', v)
+        if (v === 'inherited-from-broker-config') {
+          const req = new pb.RemoveDeduplicationRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await adminClient.namespaceServiceClient.removeDeduplication(req, {})
+            .catch(err => notifyError(`Unable to remove deduplication policy: ${err}`));
+
+          if (res?.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to remove deduplication policy. ${res?.getStatus()?.getMessage()}`);
+          }
         }
 
-        await mutate(swrKey);
+        if (v === 'enabled' || v === 'disabled') {
+          const req = new pb.SetDeduplicationRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+          req.setEnabled(v === 'enabled');
+
+          const res = await adminClient.namespaceServiceClient.setDeduplication(req, {})
+            .catch(err => notifyError(`Unable to set deduplication policy: ${err}`));
+
+          if (res?.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set deduplication policy. ${res?.getStatus()?.getMessage()}`);
+          }
+        }
+
+        mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <Select<PolicyValue>
+            list={[
+              { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+              { type: 'item', value: 'enabled', title: 'Enabled' },
+              { type: 'item', value: 'disabled', title: 'Disabled' },
+            ]}
+            value={value}
+            onChange={(v) => onChange(v)}
+          />
+        );
+      }}
+    </WithUpdateConfirmation>
   );
 }
 

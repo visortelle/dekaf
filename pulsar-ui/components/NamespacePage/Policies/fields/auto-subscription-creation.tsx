@@ -24,7 +24,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: autoSubscriptionCreation, error: autoSubscriptionCreationError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetAutoSubscriptionCreationRequest();
@@ -46,17 +46,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
   );
 
-  if (autoSubscriptionCreationError) {
-    notifyError(`Unable to get auto subscription creation policy. ${autoSubscriptionCreationError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get auto subscription creation policy. ${initialValueError}`);
   }
 
-  if (autoSubscriptionCreation === undefined) {
+  if (initialValue === undefined) {
     return null;
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      initialValue={autoSubscriptionCreation}
+      initialValue={initialValue}
       onConfirm={async (v) => {
         if (v === 'enabled' || v === 'disabled') {
           const req = new pb.SetAutoSubscriptionCreationRequest();

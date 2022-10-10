@@ -33,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: bookieAffinityGroupData, error: bookieAffinityGroupError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetBookieAffinityGroupRequest();
@@ -54,17 +54,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
   );
 
-  if (bookieAffinityGroupError) {
-    notifyError(`Unable to get bookie affinity group. ${bookieAffinityGroupError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get bookie affinity group. ${initialValueError}`);
   }
 
-  if (bookieAffinityGroupData === undefined) {
+  if (initialValue === undefined) {
     return null;
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      initialValue={bookieAffinityGroupData}
+      initialValue={initialValue}
       onConfirm={async (value) => {
         if (value.type === 'not-specified') {
           const req = new pb.RemoveBookieAffinityGroupRequest();

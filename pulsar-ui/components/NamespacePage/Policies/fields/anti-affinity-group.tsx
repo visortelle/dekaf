@@ -25,7 +25,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: antiAffinityGroup, error: antiAffinityGroupError } = useSWR<PolicyValue>(
+  const { data: initialValue, error: initialValueError } = useSWR<PolicyValue>(
     swrKey,
     async () => {
       const req = new pb.GetNamespaceAntiAffinityGroupRequest();
@@ -42,17 +42,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
   );
 
-  if (antiAffinityGroupError) {
-    notifyError(`Unable to get anti-affinity group policy. ${antiAffinityGroupError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get anti-affinity group policy. ${initialValueError}`);
   }
 
-  if (antiAffinityGroup === undefined) {
+  if (initialValue === undefined) {
     return null;
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      initialValue={antiAffinityGroup}
+      initialValue={initialValue}
       onConfirm={async (v) => {
         if (v.type === 'specified') {
           const req = new pb.SetNamespaceAntiAffinityGroupRequest();
