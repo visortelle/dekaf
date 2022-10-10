@@ -1,9 +1,13 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
+import Select from '../../../ui/Select/Select';
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 const policy = 'encryptionRequired';
 
@@ -12,34 +16,75 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type EncryptionRequired = 'enabled' | 'disabled';
+type PolicyValue = 'required' | 'not-required';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update encryption required. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: encryptionRequired, error: encryptionRequiredError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getEncryptionRequired(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetEncryptionRequiredRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getEncryptionRequired(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(res.getStatus()?.getMessage());
+        return;
+      }
+
+      const v: PolicyValue = res.getEncryptionRequired() ? 'required' : 'not-required';
+      return v;
+    }
   );
 
-  if (encryptionRequiredError) {
-    notifyError(`Unable to get encryption required: ${encryptionRequiredError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get encryption required: ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <SelectInput<EncryptionRequired>
-      list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-      value={encryptionRequired ? 'enabled' : 'disabled'}
-      onChange={async (v) => {
-        await adminClient.namespaces.modifyEncryptionRequired(props.tenant, props.namespace, v === 'enabled').catch(onUpdateError);
-        await mutate(swrKey);
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        const req = new pb.SetEncryptionRequiredRequest();
+        req.setNamespace(`${props.tenant}/${props.namespace}`);
+        req.setEncryptionRequired(value === 'required');
+
+        const res = await namespaceServiceClient.setEncryptionRequired(req, {}).catch(err => notifyError(`Unable to set encryption required policy: ${err}`));
+        if (res === undefined) {
+          return;
+        }
+
+        if (res.getStatus()?.getCode() !== Code.OK) {
+          notifyError(res.getStatus()?.getMessage());
+        }
+
+        mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <div className={sf.FormItem}>
+            <Select<PolicyValue>
+              list={[
+                { type: 'item', value: 'required', title: 'Required' },
+                { type: 'item', value: 'not-required', title: 'Not required' },
+              ]}
+              value={value}
+              onChange={onChange}
+            />
+          </div>
+        );
+      }}
+    </WithUpdateConfirmation>
   );
 }
 

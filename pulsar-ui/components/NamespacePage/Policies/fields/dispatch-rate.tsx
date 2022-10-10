@@ -5,14 +5,10 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Select from '../../../ui/Select/Select';
 import Input from "../../../ui/Input/Input";
-import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
-import { ResumeRequest } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import stringify from 'safe-stable-stringify';
 
 const policy = 'dispatchRate';
