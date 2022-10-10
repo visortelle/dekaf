@@ -51,7 +51,6 @@ const DurationInput: React.FC<DurationInputProps> = (props) => {
       onChange={(duration) => props.onChange(durationToSeconds(duration))}
     />
   );
-
 }
 
 export default DurationInput;

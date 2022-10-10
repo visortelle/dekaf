@@ -1,13 +1,13 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, NamespaceServiceGrpc, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse}
 import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, Policies}
+import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, Policies}
 
 import scala.jdk.CollectionConverters.*
 import scala.concurrent.Future
@@ -613,4 +613,52 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveDeduplicationResponse(status = Some(status)))
+        }
+
+    override def getDelayedDelivery(request: GetDelayedDeliveryRequest): Future[GetDelayedDeliveryResponse] =
+        try {
+            val delayedDeliveryPb = Option(adminClient.namespaces.getDelayedDelivery(request.namespace)) match
+                case None =>
+                    pb.GetDelayedDeliveryResponse.DelayedDelivery.Unspecified(new DelayedDeliveryUnspecified())
+                case Some(v) =>
+                    pb.GetDelayedDeliveryResponse.DelayedDelivery.Specified(new DelayedDeliverySpecified(
+                        enabled = Option(v.isActive).getOrElse(false),
+                        tickTimeMs = Option(v.getTickTime).getOrElse(0)
+                    ))
+
+            Future.successful(GetDelayedDeliveryResponse(
+                status = Some(Status(code = Code.OK.index)),
+                delayedDelivery = delayedDeliveryPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetDelayedDeliveryResponse(status = Some(status)))
+        }
+
+    override def setDelayedDelivery(request: SetDelayedDeliveryRequest): Future[SetDelayedDeliveryResponse] =
+        try {
+            logger.info(s"Setting delayed delivery policy for namespace ${request.namespace}")
+            val delayedDeliveryPolicies = DelayedDeliveryPolicies.builder
+                .active(request.enabled)
+                .tickTime(request.tickTimeMs)
+                .build()
+
+            adminClient.namespaces.setDelayedDeliveryMessages(request.namespace, delayedDeliveryPolicies)
+            Future.successful(SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetDelayedDeliveryResponse(status = Some(status)))
+        }
+
+    override def removeDelayedDelivery(request: RemoveDelayedDeliveryRequest): Future[RemoveDelayedDeliveryResponse] =
+        try {
+            logger.info(s"Removing delayed delivery policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeDelayedDeliveryMessages(request.namespace)
+            Future.successful(RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveDelayedDeliveryResponse(status = Some(status)))
         }
