@@ -230,7 +230,6 @@ message GetBookieAffinityGroupResponse {
   google.rpc.Status status = 1;
   BookieAffinityGroupData group_data = 2;
 }
-
 message SetBookieAffinityGroupRequest {
   string namespace = 1;
   BookieAffinityGroupData group_data = 2;
@@ -238,7 +237,6 @@ message SetBookieAffinityGroupRequest {
 message SetBookieAffinityGroupResponse {
   google.rpc.Status status = 1;
 }
-
 message RemoveBookieAffinityGroupRequest {
   string namespace = 1;
 }
@@ -261,7 +259,6 @@ message GetCompactionThresholdResponse {
     CompactionThresholdEnabled enabled = 3;
   }
 }
-
 message SetCompactionThresholdRequest {
   string namespace = 1;
   int64 threshold = 2;
@@ -269,7 +266,6 @@ message SetCompactionThresholdRequest {
 message SetCompactionThresholdResponse {
   google.rpc.Status status = 1;
 }
-
 message RemoveCompactionThresholdRequest {
   string namespace = 1;
 }
@@ -292,7 +288,6 @@ message GetDeduplicationSnapshotIntervalResponse {
     DeduplicationSnapshotIntervalEnabled enabled = 3;
   }
 }
-
 message SetDeduplicationSnapshotIntervalRequest {
   string namespace = 1;
   int32 interval = 2;
@@ -300,11 +295,40 @@ message SetDeduplicationSnapshotIntervalRequest {
 message SetDeduplicationSnapshotIntervalResponse {
   google.rpc.Status status = 1;
 }
-
 message RemoveDeduplicationSnapshotIntervalRequest {
   string namespace = 1;
 }
 message RemoveDeduplicationSnapshotIntervalResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetDeduplicationRequest {
+  string namespace = 1;
+}
+message DeduplicationUnspecified {
+}
+message DeduplicationSpecified {
+  bool enabled = 1;
+}
+message GetDeduplicationResponse {
+  google.rpc.Status status = 1;
+  oneof deduplication {
+    DeduplicationUnspecified unspecified = 2;
+    DeduplicationSpecified specified = 3;
+  }
+}
+message SetDeduplicationRequest {
+  string namespace = 1;
+  bool enabled = 2;
+}
+message SetDeduplicationResponse {
+  google.rpc.Status status = 1;
+}
+
+message RemoveDeduplicationRequest {
+  string namespace = 1;
+}
+message RemoveDeduplicationResponse {
   google.rpc.Status status = 1;
 }
 
@@ -349,4 +373,8 @@ service NamespaceService {
   rpc GetDeduplicationSnapshotInterval(GetDeduplicationSnapshotIntervalRequest) returns (GetDeduplicationSnapshotIntervalResponse);
   rpc SetDeduplicationSnapshotInterval(SetDeduplicationSnapshotIntervalRequest) returns (SetDeduplicationSnapshotIntervalResponse);
   rpc RemoveDeduplicationSnapshotInterval(RemoveDeduplicationSnapshotIntervalRequest) returns (RemoveDeduplicationSnapshotIntervalResponse);
+
+  rpc GetDeduplication(GetDeduplicationRequest) returns (GetDeduplicationResponse);
+  rpc SetDeduplication(SetDeduplicationRequest) returns (SetDeduplicationResponse);
+  rpc RemoveDeduplication(RemoveDeduplicationRequest) returns (RemoveDeduplicationResponse);
 }
