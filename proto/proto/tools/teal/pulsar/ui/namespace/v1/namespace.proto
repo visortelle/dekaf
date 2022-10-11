@@ -448,6 +448,34 @@ message RemoveInactiveTopicPoliciesResponse {
   google.rpc.Status status = 1;
 }
 
+message GetMaxConsumersPerSubscriptionRequest {
+  string namespace = 1;
+}
+message MaxConsumersPerSubscriptionUnspecified {}
+message MaxConsumersPerSubscriptionSpecified {
+  int32 max_consumers_per_subscription = 1;
+}
+message GetMaxConsumersPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+  oneof max_consumers_per_subscription {
+    MaxConsumersPerSubscriptionUnspecified unspecified = 2;
+    MaxConsumersPerSubscriptionSpecified specified = 3;
+  }
+}
+message SetMaxConsumersPerSubscriptionRequest {
+  string namespace = 1;
+  int32 max_consumers_per_subscription = 2;
+}
+message SetMaxConsumersPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxConsumersPerSubscriptionRequest {
+  string namespace = 1;
+}
+message RemoveMaxConsumersPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -508,4 +536,8 @@ service NamespaceService {
   rpc GetInactiveTopicPolicies(GetInactiveTopicPoliciesRequest) returns (GetInactiveTopicPoliciesResponse);
   rpc SetInactiveTopicPolicies(SetInactiveTopicPoliciesRequest) returns (SetInactiveTopicPoliciesResponse);
   rpc RemoveInactiveTopicPolicies(RemoveInactiveTopicPoliciesRequest) returns (RemoveInactiveTopicPoliciesResponse);
+
+  rpc GetMaxConsumersPerSubscription(GetMaxConsumersPerSubscriptionRequest) returns (GetMaxConsumersPerSubscriptionResponse);
+  rpc SetMaxConsumersPerSubscription(SetMaxConsumersPerSubscriptionRequest) returns (SetMaxConsumersPerSubscriptionResponse);
+  rpc RemoveMaxConsumersPerSubscription(RemoveMaxConsumersPerSubscriptionRequest) returns (RemoveMaxConsumersPerSubscriptionResponse);
 }
