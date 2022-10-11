@@ -12,8 +12,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 const policy = 'maxProducersPerTopic';
 
-type PolicyValue = { type: 'inherited-from-broker-config' } |
-{ type: 'unlimited' } | {
+type PolicyValue = { type: 'inherited-from-broker-config' } | { type: 'unlimited' } | {
   type: 'specified-for-this-namespace',
   maxProducersPerTopic: number,
 };
@@ -83,7 +82,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.removeMaxProducersPerTopic(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(res.getStatus()?.getMessage());
+            notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
         }
 
@@ -101,7 +100,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.setMaxProducersPerTopic(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(res.getStatus()?.getMessage());
+            notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
         }
 

@@ -1,149 +1,13 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{
-    CompactionThresholdEnabled,
-    CreateNamespaceRequest,
-    CreateNamespaceResponse,
-    DeduplicationSnapshotIntervalDisabled,
-    DeduplicationSnapshotIntervalEnabled,
-    DeduplicationSpecified,
-    DeduplicationUnspecified,
-    DelayedDeliverySpecified,
-    DelayedDeliveryUnspecified,
-    DeleteNamespaceRequest,
-    DeleteNamespaceResponse,
-    DispatchRateSpecified,
-    DispatchRateUnspecified,
-    GetAntiAffinityNamespacesRequest,
-    GetAntiAffinityNamespacesResponse,
-    GetAutoSubscriptionCreationRequest,
-    GetAutoSubscriptionCreationResponse,
-    GetAutoTopicCreationRequest,
-    GetAutoTopicCreationResponse,
-    GetBacklogQuotasRequest,
-    GetBacklogQuotasResponse,
-    GetBookieAffinityGroupRequest,
-    GetBookieAffinityGroupResponse,
-    GetCompactionThresholdRequest,
-    GetCompactionThresholdResponse,
-    GetDeduplicationRequest,
-    GetDeduplicationResponse,
-    GetDeduplicationSnapshotIntervalRequest,
-    GetDeduplicationSnapshotIntervalResponse,
-    GetDelayedDeliveryRequest,
-    GetDelayedDeliveryResponse,
-    GetDispatchRateRequest,
-    GetDispatchRateResponse,
-    GetEncryptionRequiredRequest,
-    GetEncryptionRequiredResponse,
-    GetInactiveTopicPoliciesRequest,
-    GetInactiveTopicPoliciesResponse,
-    GetIsAllowAutoUpdateSchemaRequest,
-    GetIsAllowAutoUpdateSchemaResponse,
-    GetMaxConsumersPerSubscriptionRequest,
-    GetMaxConsumersPerSubscriptionResponse,
-    GetMaxConsumersPerTopicRequest,
-    GetMaxConsumersPerTopicResponse,
-    GetMaxProducersPerTopicRequest,
-    GetMaxProducersPerTopicResponse,
-    GetNamespaceAntiAffinityGroupRequest,
-    GetNamespaceAntiAffinityGroupResponse,
-    GetSchemaCompatibilityStrategyRequest,
-    GetSchemaCompatibilityStrategyResponse,
-    GetSchemaValidationEnforceRequest,
-    GetSchemaValidationEnforceResponse,
-    InactiveTopicPoliciesDeleteMode,
-    InactiveTopicPoliciesSpecified,
-    InactiveTopicPoliciesUnspecified,
-    MaxConsumersPerSubscriptionSpecified,
-    MaxConsumersPerSubscriptionUnspecified,
-    MaxConsumersPerTopicSpecified,
-    MaxConsumersPerTopicUnspecified,
-    MaxProducersPerTopicSpecified,
-    MaxProducersPerTopicUnspecified,
-    NamespaceServiceGrpc,
-    RemoveAutoSubscriptionCreationRequest,
-    RemoveAutoSubscriptionCreationResponse,
-    RemoveAutoTopicCreationRequest,
-    RemoveAutoTopicCreationResponse,
-    RemoveBacklogQuotaRequest,
-    RemoveBacklogQuotaResponse,
-    RemoveBookieAffinityGroupRequest,
-    RemoveBookieAffinityGroupResponse,
-    RemoveCompactionThresholdRequest,
-    RemoveCompactionThresholdResponse,
-    RemoveDeduplicationRequest,
-    RemoveDeduplicationResponse,
-    RemoveDeduplicationSnapshotIntervalRequest,
-    RemoveDeduplicationSnapshotIntervalResponse,
-    RemoveDelayedDeliveryRequest,
-    RemoveDelayedDeliveryResponse,
-    RemoveDispatchRateRequest,
-    RemoveDispatchRateResponse,
-    RemoveInactiveTopicPoliciesRequest,
-    RemoveInactiveTopicPoliciesResponse,
-    RemoveMaxConsumersPerSubscriptionRequest,
-    RemoveMaxConsumersPerSubscriptionResponse,
-    RemoveMaxConsumersPerTopicRequest,
-    RemoveMaxConsumersPerTopicResponse,
-    RemoveMaxProducersPerTopicRequest,
-    RemoveMaxProducersPerTopicResponse,
-    RemoveNamespaceAntiAffinityGroupRequest,
-    RemoveNamespaceAntiAffinityGroupResponse,
-    SetAutoSubscriptionCreationRequest,
-    SetAutoSubscriptionCreationResponse,
-    SetAutoTopicCreationRequest,
-    SetAutoTopicCreationResponse,
-    SetBacklogQuotasRequest,
-    SetBacklogQuotasResponse,
-    SetBookieAffinityGroupRequest,
-    SetBookieAffinityGroupResponse,
-    SetCompactionThresholdRequest,
-    SetCompactionThresholdResponse,
-    SetDeduplicationRequest,
-    SetDeduplicationResponse,
-    SetDeduplicationSnapshotIntervalRequest,
-    SetDeduplicationSnapshotIntervalResponse,
-    SetDelayedDeliveryRequest,
-    SetDelayedDeliveryResponse,
-    SetDispatchRateRequest,
-    SetDispatchRateResponse,
-    SetEncryptionRequiredRequest,
-    SetEncryptionRequiredResponse,
-    SetInactiveTopicPoliciesRequest,
-    SetInactiveTopicPoliciesResponse,
-    SetIsAllowAutoUpdateSchemaRequest,
-    SetIsAllowAutoUpdateSchemaResponse,
-    SetMaxConsumersPerSubscriptionRequest,
-    SetMaxConsumersPerSubscriptionResponse,
-    SetMaxConsumersPerTopicRequest,
-    SetMaxConsumersPerTopicResponse,
-    SetMaxProducersPerTopicRequest,
-    SetMaxProducersPerTopicResponse,
-    SetNamespaceAntiAffinityGroupRequest,
-    SetNamespaceAntiAffinityGroupResponse,
-    SetSchemaCompatibilityStrategyRequest,
-    SetSchemaCompatibilityStrategyResponse,
-    SetSchemaValidationEnforceRequest,
-    SetSchemaValidationEnforceResponse
-}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, DispatchRateSpecified, DispatchRateUnspecified, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetEncryptionRequiredRequest, GetEncryptionRequiredResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersPerTopicRequest, GetMaxConsumersPerTopicResponse, GetMaxProducersPerTopicRequest, GetMaxProducersPerTopicResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersPerTopicSpecified, MaxConsumersPerTopicUnspecified, MaxProducersPerTopicSpecified, MaxProducersPerTopicUnspecified, NamespaceServiceGrpc, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersPerTopicRequest, RemoveMaxConsumersPerTopicResponse, RemoveMaxProducersPerTopicRequest, RemoveMaxProducersPerTopicResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetEncryptionRequiredRequest, SetEncryptionRequiredResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersPerTopicRequest, SetMaxConsumersPerTopicResponse, SetMaxProducersPerTopicRequest, SetMaxProducersPerTopicResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse, MaxSubscriptionsPerTopicUnspecified, MaxSubscriptionsPerTopicSpecified}
 import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{
-    AutoSubscriptionCreationOverride,
-    AutoTopicCreationOverride,
-    BookieAffinityGroupData,
-    BundlesData,
-    DelayedDeliveryPolicies,
-    DispatchRate,
-    InactiveTopicDeleteMode,
-    InactiveTopicPolicies,
-    Policies
-}
+import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, Policies}
 
 import scala.jdk.CollectionConverters.*
 import scala.concurrent.Future
@@ -1064,4 +928,46 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxProducersPerTopicResponse(status = Some(status)))
+        }
+
+    override def getMaxSubscriptionsPerTopic(request: GetMaxSubscriptionsPerTopicRequest): Future[GetMaxSubscriptionsPerTopicResponse] =
+        try {
+            val maxSubscriptionsPerTopicPb = Option(adminClient.namespaces.getMaxSubscriptionsPerTopic(request.namespace)) match
+                case None =>
+                    pb.GetMaxSubscriptionsPerTopicResponse.MaxSubscriptionsPerTopic.Unspecified(new MaxSubscriptionsPerTopicUnspecified())
+                case Some(v) =>
+                    pb.GetMaxSubscriptionsPerTopicResponse.MaxSubscriptionsPerTopic.Specified(new MaxSubscriptionsPerTopicSpecified(
+                        maxSubscriptionsPerTopic = v
+                    ))
+
+            Future.successful(GetMaxSubscriptionsPerTopicResponse(
+                status = Some(Status(code = Code.OK.index)),
+                maxSubscriptionsPerTopic = maxSubscriptionsPerTopicPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMaxSubscriptionsPerTopicResponse(status = Some(status)))
+        }
+
+    override def setMaxSubscriptionsPerTopic(request: SetMaxSubscriptionsPerTopicRequest): Future[SetMaxSubscriptionsPerTopicResponse] =
+        try {
+            logger.info(s"Setting max subscriptions per topic policy for namespace ${request.namespace}")
+            adminClient.namespaces.setMaxSubscriptionsPerTopic(request.namespace, request.maxSubscriptionsPerTopic)
+            Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(status)))
+        }
+
+    override def removeMaxSubscriptionsPerTopic(request: RemoveMaxSubscriptionsPerTopicRequest): Future[RemoveMaxSubscriptionsPerTopicResponse] =
+        try {
+            logger.info(s"Removing max subscriptions per topic policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeMaxSubscriptionsPerTopic(request.namespace)
+            Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
