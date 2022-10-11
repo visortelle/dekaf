@@ -37,8 +37,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         return;
       }
 
-      const v: PolicyValue = res.getEncryptionRequired() ? 'required' : 'not-required';
-      return v;
+      const initialValue: PolicyValue = res.getEncryptionRequired() ? 'required' : 'not-required';
+      return initialValue;
     }
   );
 
