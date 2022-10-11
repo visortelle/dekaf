@@ -1,64 +1,22 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import Input from '../../../ui/ConfigurationTable/Input/Input';
-import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
+import Input from '../../../ui/Input/Input';
+import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 const policy = 'maxConsumersPerSubscription';
 
-type MaxConsumersPerSubscription = 'disabled' | {
-  amount: number
+type PolicyValue = { type: 'inherited-from-broker-config' } |
+{ type: 'unlimited' } | {
+  type: 'specified-for-this-namespace',
+  maxConsumersPerSubscription: number,
 };
-
-const defaultMaxConsumersPerSubscription: MaxConsumersPerSubscription = {
-  amount: 0
-};
-
-type MaxConsumersPerSubscriptionInputProps = {
-  value: MaxConsumersPerSubscription;
-  onChange: (value: MaxConsumersPerSubscription) => void;
-}
-
-const MaxConsumersPerSubscriptionInput: React.FC<MaxConsumersPerSubscriptionInputProps> = (props) => {
-  const [maxConsumersPerSubscription, setMaxConsumersPerSubscription] = useState<MaxConsumersPerSubscription>(props.value);
-
-  useEffect(() => {
-    setMaxConsumersPerSubscription(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, maxConsumersPerSubscription);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<'enabled' | 'disabled'>
-          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-          value={maxConsumersPerSubscription === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => v === 'disabled' ? setMaxConsumersPerSubscription('disabled') : setMaxConsumersPerSubscription(defaultMaxConsumersPerSubscription)}
-        />
-      </div>
-      {maxConsumersPerSubscription !== 'disabled' && (
-        <Input
-          type='number'
-          value={String(maxConsumersPerSubscription.amount)}
-          onChange={(v) => setMaxConsumersPerSubscription({ amount: Number(v) })}
-        />
-      )}
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(maxConsumersPerSubscription)}
-          onReset={() => setMaxConsumersPerSubscription(props.value)}
-        />
-      )}
-    </div>
-  );
-}
 
 export type FieldInputProps = {
   tenant: string;
@@ -66,39 +24,121 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig()
+  const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update max consumers per subscription. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: maxConsumersPerSubscription, error: maxConsumersPerSubscriptionError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getMaxConsumersPerSubscription(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetMaxConsumersPerSubscriptionRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getMaxConsumersPerSubscription(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(res.getStatus()?.getMessage());
+        return;
+      }
+
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getMaxConsumersPerSubscriptionCase()) {
+        case pb.GetMaxConsumersPerSubscriptionResponse.MaxConsumersPerSubscriptionCase.UNSPECIFIED: {
+          initialValue = { type: 'inherited-from-broker-config' };
+          break;
+        }
+        case pb.GetMaxConsumersPerSubscriptionResponse.MaxConsumersPerSubscriptionCase.SPECIFIED: {
+          const maxConsumersPerSubscription = res.getSpecified()?.getMaxConsumersPerSubscription() ?? 0;
+
+          if (maxConsumersPerSubscription === 0) {
+            initialValue = { type: 'unlimited' };
+          } else {
+            initialValue = { type: 'specified-for-this-namespace', maxConsumersPerSubscription };
+          }
+
+          break;
+        }
+      }
+
+      return initialValue;
+    }
   );
 
-  if (maxConsumersPerSubscriptionError) {
-    notifyError(`Unable to get max consumers per subscription. ${maxConsumersPerSubscriptionError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get max consumers per subscription. ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <MaxConsumersPerSubscriptionInput
-      value={maxConsumersPerSubscription === undefined ? 'disabled' : { amount: maxConsumersPerSubscription }}
-      onChange={async (v) => {
-        if (v === 'disabled') {
-          await adminClient.namespaces.removeMaxConsumersPerSubscription(props.tenant, props.namespace).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setMaxConsumersPerSubscription(
-            props.tenant,
-            props.namespace,
-            v.amount
-          ).catch(onUpdateError);
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveMaxConsumersPerSubscriptionRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await namespaceServiceClient.removeMaxConsumersPerSubscription(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(res.getStatus()?.getMessage());
+          }
         }
 
-        await mutate(swrKey);
+        if (value.type === 'unlimited' || value.type === 'specified-for-this-namespace') {
+          const req = new pb.SetMaxConsumersPerSubscriptionRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          if (value.type === 'unlimited') {
+            req.setMaxConsumersPerSubscription(0);
+          }
+
+          if (value.type === 'specified-for-this-namespace') {
+            req.setMaxConsumersPerSubscription(value.maxConsumersPerSubscription);
+          }
+
+          const res = await namespaceServiceClient.setMaxConsumersPerSubscription(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(res.getStatus()?.getMessage());
+          }
+        }
+
+        mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'unlimited', title: 'Unlimited' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' },
+                ]}
+                onChange={(v) => {
+                  switch (v) {
+                    case 'inherited-from-broker-config': onChange({ type: 'inherited-from-broker-config' }); break;
+                    case 'unlimited': onChange({ type: 'unlimited' }); break;
+                    case 'specified-for-this-namespace': onChange({ type: 'specified-for-this-namespace', maxConsumersPerSubscription: 1 }); break;
+                  }
+                }}
+                value={value.type}
+              />
+            </div>
+            {value.type === 'specified-for-this-namespace' && (
+              <Input
+                type="number"
+                value={value.maxConsumersPerSubscription.toString()}
+                onChange={v => onChange({ type: 'specified-for-this-namespace', maxConsumersPerSubscription: parseInt(v) })}
+              />
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
   )
 }
 
