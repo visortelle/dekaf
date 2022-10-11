@@ -38,7 +38,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const res = await namespaceServiceClient.getMaxConsumersPerTopic(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(res.getStatus()?.getMessage());
+        notifyError(`Unable to get max consumers per topic: ${res.getStatus()?.getMessage()}`);
         return;
       }
 
