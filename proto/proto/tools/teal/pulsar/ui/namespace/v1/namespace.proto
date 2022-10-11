@@ -588,6 +588,34 @@ message RemoveMaxTopicsPerNamespaceResponse {
   google.rpc.Status status = 1;
 }
 
+message GetMaxUnackedMessagesPerConsumerRequest {
+  string namespace = 1;
+}
+message MaxUnackedMessagesPerConsumerUnspecified {}
+message MaxUnackedMessagesPerConsumerSpecified {
+  int32 max_unacked_messages_per_consumer = 1;
+}
+message GetMaxUnackedMessagesPerConsumerResponse {
+  google.rpc.Status status = 1;
+  oneof max_unacked_messages_per_consumer {
+    MaxUnackedMessagesPerConsumerUnspecified unspecified = 2;
+    MaxUnackedMessagesPerConsumerSpecified specified = 3;
+  }
+}
+message SetMaxUnackedMessagesPerConsumerRequest {
+  string namespace = 1;
+  int32 max_unacked_messages_per_consumer = 2;
+}
+message SetMaxUnackedMessagesPerConsumerResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxUnackedMessagesPerConsumerRequest {
+  string namespace = 1;
+}
+message RemoveMaxUnackedMessagesPerConsumerResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -668,4 +696,8 @@ service NamespaceService {
   rpc GetMaxTopicsPerNamespace(GetMaxTopicsPerNamespaceRequest) returns (GetMaxTopicsPerNamespaceResponse);
   rpc SetMaxTopicsPerNamespace(SetMaxTopicsPerNamespaceRequest) returns (SetMaxTopicsPerNamespaceResponse);
   rpc RemoveMaxTopicsPerNamespace(RemoveMaxTopicsPerNamespaceRequest) returns (RemoveMaxTopicsPerNamespaceResponse);
+
+  rpc GetMaxUnackedMessagesPerConsumer(GetMaxUnackedMessagesPerConsumerRequest) returns (GetMaxUnackedMessagesPerConsumerResponse);
+  rpc SetMaxUnackedMessagesPerConsumer(SetMaxUnackedMessagesPerConsumerRequest) returns (SetMaxUnackedMessagesPerConsumerResponse);
+  rpc RemoveMaxUnackedMessagesPerConsumer(RemoveMaxUnackedMessagesPerConsumerRequest) returns (RemoveMaxUnackedMessagesPerConsumerResponse);
 }
