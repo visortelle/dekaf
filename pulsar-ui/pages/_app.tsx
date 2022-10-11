@@ -34,7 +34,6 @@ export const hideShowProgressIndicatorHeader = 'x-hide-show-progress-indicator';
 
 const _MyApp = (props: AppProps) => {
   const { startTask, finishTask } = AsyncTasks.useContext();
-  const appContext = AppContext.useContext();
 
   useInterval(() => ReactTooltip.rebuild(), 2000); // Fix for case when tooltip doesn't hide.
 
