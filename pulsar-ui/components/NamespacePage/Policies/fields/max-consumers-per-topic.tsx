@@ -83,7 +83,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.removeMaxConsumersPerTopic(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(res.getStatus()?.getMessage());
+            notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
         }
 
@@ -101,7 +101,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.setMaxConsumersPerTopic(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(res.getStatus()?.getMessage());
+            notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
         }
 
