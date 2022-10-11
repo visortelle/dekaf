@@ -1,64 +1,21 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import Input from '../../../ui/ConfigurationTable/Input/Input';
-import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
+import Input from '../../../ui/Input/Input';
+import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 const policy = 'maxUnackedMessagesPerConsumer';
 
-type MaxUnackedMessagesPerConsumer = 'disabled' | {
-  amount: number
+type PolicyValue = { type: 'inherited-from-broker-config' } | { type: 'unlimited' } | {
+  type: 'specified-for-this-namespace',
+  maxUnackedMessagesPerConsumer: number,
 };
-
-const defaultMaxUnackedMessagesPerConsumer: MaxUnackedMessagesPerConsumer = {
-  amount: 0
-};
-
-type MaxUnackedMessagesPerConsumerInputProps = {
-  value: MaxUnackedMessagesPerConsumer;
-  onChange: (value: MaxUnackedMessagesPerConsumer) => void;
-}
-
-const MaxUnackedMessagesPerConsumerInput: React.FC<MaxUnackedMessagesPerConsumerInputProps> = (props) => {
-  const [maxUnackedMessagesPerConsumer, setMaxUnackedMessagesPerConsumer] = useState<MaxUnackedMessagesPerConsumer>(props.value);
-
-  useEffect(() => {
-    setMaxUnackedMessagesPerConsumer(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, maxUnackedMessagesPerConsumer);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<'enabled' | 'disabled'>
-          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-          value={maxUnackedMessagesPerConsumer === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => v === 'disabled' ? setMaxUnackedMessagesPerConsumer('disabled') : setMaxUnackedMessagesPerConsumer(defaultMaxUnackedMessagesPerConsumer)}
-        />
-      </div>
-      {maxUnackedMessagesPerConsumer !== 'disabled' && (
-        <Input
-          type='number'
-          value={String(maxUnackedMessagesPerConsumer.amount)}
-          onChange={(v) => setMaxUnackedMessagesPerConsumer({ amount: Number(v) })}
-        />
-      )}
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(maxUnackedMessagesPerConsumer)}
-          onReset={() => setMaxUnackedMessagesPerConsumer(props.value)}
-        />
-      )}
-    </div>
-  );
-}
 
 export type FieldInputProps = {
   tenant: string;
@@ -66,45 +23,127 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig()
+  const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update max unacked messages per consumer. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: maxUnackedMessagesPerConsumer, error: maxUnackedMessagesPerConsumerError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getMaxUnackedMessagesPerConsumer(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetMaxUnackedMessagesPerConsumerRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getMaxUnackedMessagesPerConsumer(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get max unacked messages per consumer: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getMaxUnackedMessagesPerConsumerCase()) {
+        case pb.GetMaxUnackedMessagesPerConsumerResponse.MaxUnackedMessagesPerConsumerCase.UNSPECIFIED: {
+          initialValue = { type: 'inherited-from-broker-config' };
+          break;
+        }
+        case pb.GetMaxUnackedMessagesPerConsumerResponse.MaxUnackedMessagesPerConsumerCase.SPECIFIED: {
+          const maxUnackedMessagesPerConsumer = res.getSpecified()?.getMaxUnackedMessagesPerConsumer() ?? 0;
+
+          if (maxUnackedMessagesPerConsumer === 0) {
+            initialValue = { type: 'unlimited' };
+          } else {
+            initialValue = { type: 'specified-for-this-namespace', maxUnackedMessagesPerConsumer };
+          }
+
+          break;
+        }
+      }
+
+      return initialValue;
+    }
   );
 
-  if (maxUnackedMessagesPerConsumerError) {
-    notifyError(`Unable to get max unacked messages per consumer. ${maxUnackedMessagesPerConsumerError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get max unacked messages per consumer. ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <MaxUnackedMessagesPerConsumerInput
-      value={maxUnackedMessagesPerConsumer === undefined ? 'disabled' : { amount: maxUnackedMessagesPerConsumer }}
-      onChange={async (v) => {
-        if (v === 'disabled') {
-          await adminClient.namespaces.removeMaxUnackedmessagesPerConsumer(props.tenant, props.namespace).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setMaxUnackedMessagesPerConsumer(
-            props.tenant,
-            props.namespace,
-            v.amount
-          ).catch(onUpdateError);
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveMaxUnackedMessagesPerConsumerRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await namespaceServiceClient.removeMaxUnackedMessagesPerConsumer(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set max unacked messages per consumer: ${res.getStatus()?.getMessage()}`);
+          }
         }
 
-        await mutate(swrKey);
+        if (value.type === 'unlimited' || value.type === 'specified-for-this-namespace') {
+          const req = new pb.SetMaxUnackedMessagesPerConsumerRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          if (value.type === 'unlimited') {
+            req.setMaxUnackedMessagesPerConsumer(0);
+          }
+
+          if (value.type === 'specified-for-this-namespace') {
+            req.setMaxUnackedMessagesPerConsumer(value.maxUnackedMessagesPerConsumer);
+          }
+
+          const res = await namespaceServiceClient.setMaxUnackedMessagesPerConsumer(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set max unacked messages per consumer: ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'unlimited', title: 'Unlimited' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' },
+                ]}
+                onChange={(v) => {
+                  switch (v) {
+                    case 'inherited-from-broker-config': onChange({ type: 'inherited-from-broker-config' }); break;
+                    case 'unlimited': onChange({ type: 'unlimited' }); break;
+                    case 'specified-for-this-namespace': onChange({ type: 'specified-for-this-namespace', maxUnackedMessagesPerConsumer: 1 }); break;
+                  }
+                }}
+                value={value.type}
+              />
+            </div>
+            {value.type === 'specified-for-this-namespace' && (
+              <Input
+                type="number"
+                value={value.maxUnackedMessagesPerConsumer.toString()}
+                onChange={v => onChange({ type: 'specified-for-this-namespace', maxUnackedMessagesPerConsumer: parseInt(v) })}
+              />
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
   )
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Max unacked messages per consumer',
+  title: 'Max unacked messages per consumer.',
   description: <span>Max unacked messages per consumer.</span>,
   input: <FieldInput {...props} />
 });
