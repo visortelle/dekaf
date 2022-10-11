@@ -1,64 +1,22 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import Input from '../../../ui/ConfigurationTable/Input/Input';
-import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
+import Input from '../../../ui/Input/Input';
+import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 const policy = 'maxProducersPerTopic';
 
-type MaxProducersPerTopic = 'disabled' | {
-  amount: number
+type PolicyValue = { type: 'inherited-from-broker-config' } |
+{ type: 'unlimited' } | {
+  type: 'specified-for-this-namespace',
+  maxProducersPerTopic: number,
 };
-
-const defaultMaxProducersPerTopic: MaxProducersPerTopic = {
-  amount: 0
-};
-
-type MaxProducersPerTopicInputProps = {
-  value: MaxProducersPerTopic;
-  onChange: (value: MaxProducersPerTopic) => void;
-}
-
-const MaxProducersPerTopicInput: React.FC<MaxProducersPerTopicInputProps> = (props) => {
-  const [maxProducersPerTopic, setMaxProducersPerTopic] = useState<MaxProducersPerTopic>(props.value);
-
-  useEffect(() => {
-    setMaxProducersPerTopic(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, maxProducersPerTopic);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<'enabled' | 'disabled'>
-          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-          value={maxProducersPerTopic === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => v === 'disabled' ? setMaxProducersPerTopic('disabled') : setMaxProducersPerTopic(defaultMaxProducersPerTopic)}
-        />
-      </div>
-      {maxProducersPerTopic !== 'disabled' && (
-        <Input
-          type='number'
-          value={String(maxProducersPerTopic.amount)}
-          onChange={(v) => setMaxProducersPerTopic({ amount: Number(v) })}
-        />
-      )}
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(maxProducersPerTopic)}
-          onReset={() => setMaxProducersPerTopic(props.value)}
-        />
-      )}
-    </div>
-  );
-}
 
 export type FieldInputProps = {
   tenant: string;
@@ -66,39 +24,121 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig()
+  const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update max producers per topic. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: maxProducersPerTopic, error: maxProducersPerTopicError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getMaxProducersPerTopic(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetMaxProducersPerTopicRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getMaxProducersPerTopic(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(res.getStatus()?.getMessage());
+        return;
+      }
+
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getMaxProducersPerTopicCase()) {
+        case pb.GetMaxProducersPerTopicResponse.MaxProducersPerTopicCase.UNSPECIFIED: {
+          initialValue = { type: 'inherited-from-broker-config' };
+          break;
+        }
+        case pb.GetMaxProducersPerTopicResponse.MaxProducersPerTopicCase.SPECIFIED: {
+          const maxProducersPerTopic = res.getSpecified()?.getMaxProducersPerTopic() ?? 0;
+
+          if (maxProducersPerTopic === 0) {
+            initialValue = { type: 'unlimited' };
+          } else {
+            initialValue = { type: 'specified-for-this-namespace', maxProducersPerTopic };
+          }
+
+          break;
+        }
+      }
+
+      return initialValue;
+    }
   );
 
-  if (maxProducersPerTopicError) {
-    notifyError(`Unable to get max producers per topic. ${maxProducersPerTopicError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get max producers per topic. ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <MaxProducersPerTopicInput
-      value={maxProducersPerTopic === undefined ? 'disabled' : { amount: maxProducersPerTopic }}
-      onChange={async (v) => {
-        if (v === 'disabled') {
-          await adminClient.namespaces.removeMaxProducersPerTopic(props.tenant, props.namespace).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setMaxProducersPerTopic(
-            props.tenant,
-            props.namespace,
-            v.amount
-          ).catch(onUpdateError);
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveMaxProducersPerTopicRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await namespaceServiceClient.removeMaxProducersPerTopic(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(res.getStatus()?.getMessage());
+          }
         }
 
-        await mutate(swrKey);
+        if (value.type === 'unlimited' || value.type === 'specified-for-this-namespace') {
+          const req = new pb.SetMaxProducersPerTopicRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          if (value.type === 'unlimited') {
+            req.setMaxProducersPerTopic(0);
+          }
+
+          if (value.type === 'specified-for-this-namespace') {
+            req.setMaxProducersPerTopic(value.maxProducersPerTopic);
+          }
+
+          const res = await namespaceServiceClient.setMaxProducersPerTopic(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(res.getStatus()?.getMessage());
+          }
+        }
+
+        mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'unlimited', title: 'Unlimited' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' },
+                ]}
+                onChange={(v) => {
+                  switch (v) {
+                    case 'inherited-from-broker-config': onChange({ type: 'inherited-from-broker-config' }); break;
+                    case 'unlimited': onChange({ type: 'unlimited' }); break;
+                    case 'specified-for-this-namespace': onChange({ type: 'specified-for-this-namespace', maxProducersPerTopic: 1 }); break;
+                  }
+                }}
+                value={value.type}
+              />
+            </div>
+            {value.type === 'specified-for-this-namespace' && (
+              <Input
+                type="number"
+                value={value.maxProducersPerTopic.toString()}
+                onChange={v => onChange({ type: 'specified-for-this-namespace', maxProducersPerTopic: parseInt(v) })}
+              />
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
   )
 }
 
