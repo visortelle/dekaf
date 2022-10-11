@@ -38,7 +38,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const res = await namespaceServiceClient.getMaxConsumersPerSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(res.getStatus()?.getMessage());
+        notifyError(`Unable to get max consumers per subscriptions: ${res.getStatus()?.getMessage()}`);
         return;
       }
 
