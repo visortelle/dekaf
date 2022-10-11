@@ -37,7 +37,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const res = await namespaceServiceClient.getMaxSubscriptionsPerTopic(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(res.getStatus()?.getMessage());
+        notifyError(`Unable to get max topics per namespace: ${res.getStatus()?.getMessage()}`);
         return;
       }
 

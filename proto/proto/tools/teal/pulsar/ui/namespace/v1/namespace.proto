@@ -560,6 +560,34 @@ message RemoveMaxSubscriptionsPerTopicResponse {
   google.rpc.Status status = 1;
 }
 
+message GetMaxTopicsPerNamespaceRequest {
+  string namespace = 1;
+}
+message MaxTopicsPerNamespaceUnspecified {}
+message MaxTopicsPerNamespaceSpecified {
+  int32 max_topics_per_namespace = 1;
+}
+message GetMaxTopicsPerNamespaceResponse {
+  google.rpc.Status status = 1;
+  oneof max_topics_per_namespace {
+    MaxTopicsPerNamespaceUnspecified unspecified = 2;
+    MaxTopicsPerNamespaceSpecified specified = 3;
+  }
+}
+message SetMaxTopicsPerNamespaceRequest {
+  string namespace = 1;
+  int32 max_topics_per_namespace = 2;
+}
+message SetMaxTopicsPerNamespaceResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxTopicsPerNamespaceRequest {
+  string namespace = 1;
+}
+message RemoveMaxTopicsPerNamespaceResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -636,4 +664,8 @@ service NamespaceService {
   rpc GetMaxSubscriptionsPerTopic(GetMaxSubscriptionsPerTopicRequest) returns (GetMaxSubscriptionsPerTopicResponse);
   rpc SetMaxSubscriptionsPerTopic(SetMaxSubscriptionsPerTopicRequest) returns (SetMaxSubscriptionsPerTopicResponse);
   rpc RemoveMaxSubscriptionsPerTopic(RemoveMaxSubscriptionsPerTopicRequest) returns (RemoveMaxSubscriptionsPerTopicResponse);
+
+  rpc GetMaxTopicsPerNamespace(GetMaxTopicsPerNamespaceRequest) returns (GetMaxTopicsPerNamespaceResponse);
+  rpc SetMaxTopicsPerNamespace(SetMaxTopicsPerNamespaceRequest) returns (SetMaxTopicsPerNamespaceResponse);
+  rpc RemoveMaxTopicsPerNamespace(RemoveMaxTopicsPerNamespaceRequest) returns (RemoveMaxTopicsPerNamespaceResponse);
 }

@@ -24,6 +24,7 @@ import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
 import inactiveTopicPoliciesField from './fields/inactive-topic-policies';
 import maxProducersPerTopicField from './fields/max-producers-per-topic';
 import maxConsumersPerTopicField from './fields/max-consumers-per-topic';
+import maxTopicsPerNamespaceField from './fields/max-topics-per-namespace';
 import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscription';
 import maxUnackedMessagesPerSubscriptionField from './fields/max-unacked-messages-per-subscription';
 import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-per-consumer';
@@ -54,6 +55,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           fields={[
             replicationClustersField,
             persistenceField,
+            maxTopicsPerNamespaceField,
             compactionThresholdField,
             delayedDeliveryField,
           ].map(field => field(props))}
@@ -161,8 +163,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           ].map(field => field(props))}
         />
       </div>
-
-
     </div>
   );
 }
