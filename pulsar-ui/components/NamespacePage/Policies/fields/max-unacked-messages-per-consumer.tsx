@@ -143,7 +143,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Max unacked messages per consumer.',
+  title: 'Max unacked messages per consumer',
   description: <span>Max unacked messages per consumer.</span>,
   input: <FieldInput {...props} />
 });

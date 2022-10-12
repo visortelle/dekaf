@@ -143,7 +143,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Max topics per namespace.',
+  title: 'Max topics per namespace',
   description: <span>Max topics per namespace.</span>,
   input: <FieldInput {...props} />
 });
