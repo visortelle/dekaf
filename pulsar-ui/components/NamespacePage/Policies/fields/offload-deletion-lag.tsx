@@ -13,15 +13,16 @@ import { useState } from 'react';
 
 const policy = 'offloadDeletionLag';
 
-type PolicyValue = { type: 'inherited-from-broker-config' } |
-{
-  // Some info about -1 value: https://github.com/apache/pulsar/pull/5872
-  type: 'disabled'
-} |
-{
-  type: 'specified-for-this-namespace',
-  offloadDeletionLagSeconds: number,
-};
+type PolicyValue =
+  { type: 'inherited-from-broker-config' } |
+  {
+    // Some info about -1 value: https://github.com/apache/pulsar/pull/5872
+    type: 'disabled'
+  } |
+  {
+    type: 'specified-for-this-namespace',
+    offloadDeletionLagSeconds: number,
+  };
 
 export type FieldInputProps = {
   tenant: string;
@@ -44,7 +45,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const res = await namespaceServiceClient.getOffloadDeletionLag(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get message TTL: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get offload deletion lag: ${res.getStatus()?.getMessage()}`);
         return;
       }
 
@@ -72,7 +73,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (initialValueError) {
-    notifyError(`Unable to get message TTL. ${initialValueError}`);
+    notifyError(`Unable to get offload deletion lag: ${initialValueError}`);
   }
 
   if (initialValue === undefined) {
@@ -90,7 +91,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.removeOffloadDeletionLag(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set offload deletion lag: ${res.getStatus()?.getMessage()}`);
           }
         }
 
@@ -108,7 +109,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.setOffloadDeletionLag(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set offload deletion lag: ${res.getStatus()?.getMessage()}`);
           }
         }
 

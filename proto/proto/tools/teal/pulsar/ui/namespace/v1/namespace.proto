@@ -700,6 +700,26 @@ message RemoveOffloadDeletionLagResponse {
   google.rpc.Status status = 1;
 }
 
+message GetOffloadThresholdRequest {
+  string namespace = 1;
+}
+message OffloadThresholdSpecified {
+  int64 offload_threshold_bytes = 1;
+}
+message GetOffloadThresholdResponse {
+  google.rpc.Status status = 1;
+  oneof offload_threshold {
+    OffloadThresholdSpecified specified = 3;
+  }
+}
+message SetOffloadThresholdRequest {
+  string namespace = 1;
+  int32 offload_threshold_bytes = 2;
+}
+message SetOffloadThresholdResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -796,4 +816,7 @@ service NamespaceService {
   rpc GetOffloadDeletionLag(GetOffloadDeletionLagRequest) returns (GetOffloadDeletionLagResponse);
   rpc SetOffloadDeletionLag(SetOffloadDeletionLagRequest) returns (SetOffloadDeletionLagResponse);
   rpc RemoveOffloadDeletionLag(RemoveOffloadDeletionLagRequest) returns (RemoveOffloadDeletionLagResponse);
+
+  rpc GetOffloadThreshold(GetOffloadThresholdRequest) returns (GetOffloadThresholdResponse);
+  rpc SetOffloadThreshold(SetOffloadThresholdRequest) returns (SetOffloadThresholdResponse);
 }

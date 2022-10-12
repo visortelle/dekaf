@@ -1,68 +1,26 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
-import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
-import { MemorySize } from '../../../ui/ConfigurationTable/MemorySizeInput/types';
-import { bytesToMemorySize, memorySizeToBytes } from '../../../ui/ConfigurationTable/MemorySizeInput/conversions';
 import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
+import Select from '../../../ui/Select/Select';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { useState } from 'react';
 
 const policy = 'offloadThreshold';
 
-type OffloadThreshold = 'disabled' | {
-  size: MemorySize;
-};
-
-const defaultOffloadThreshold: OffloadThreshold = {
-  size: {
-    size: 0,
-    unit: 'M'
-  }
-};
-
-type OffloadThresholdInputProps = {
-  value: OffloadThreshold;
-  onChange: (value: OffloadThreshold) => void;
-}
-
-const OffloadThresholdInput: React.FC<OffloadThresholdInputProps> = (props) => {
-  const [offloadThreshold, setOffloadThreshold] = useState<OffloadThreshold>(props.value);
-
-  useEffect(() => {
-    setOffloadThreshold(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, offloadThreshold);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<'enabled' | 'disabled'>
-          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-          value={offloadThreshold === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => v === 'disabled' ? setOffloadThreshold('disabled') : setOffloadThreshold(defaultOffloadThreshold)}
-        />
-      </div>
-      {offloadThreshold !== 'disabled' && (
-        <MemorySizeInput
-          value={offloadThreshold.size}
-          onChange={(v) => setOffloadThreshold({ size: v })}
-        />
-      )}
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(offloadThreshold)}
-          onReset={() => setOffloadThreshold(props.value)}
-        />
-      )}
-    </div>
-  );
-}
+type PolicyValue =
+  {
+    type: 'disabled'
+  } |
+  {
+    type: 'specified-for-this-namespace',
+    offloadThresholdBytes: number,
+  };
 
 export type FieldInputProps = {
   tenant: string;
@@ -70,39 +28,107 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig()
+  const { mutate } = useSWRConfig();
+  const [key, setKey] = useState(0);
 
-  const onUpdateError = (err: string) => notifyError(`Can't update offload threshold. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: offloadThreshold, error: offloadThresholdError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getOffloadThreshold(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetOffloadThresholdRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getOffloadThreshold(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get offload threshold: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let initialValue: PolicyValue = { type: 'disabled' };
+      switch (res.getOffloadThresholdCase()) {
+        case pb.GetOffloadThresholdResponse.OffloadThresholdCase.SPECIFIED: {
+          const offloadThresholdBytes = res.getSpecified()?.getOffloadThresholdBytes() ?? 0
+
+          if (offloadThresholdBytes < 0) {
+            initialValue = { type: 'disabled' };
+          } else {
+            initialValue = { type: 'specified-for-this-namespace', offloadThresholdBytes: offloadThresholdBytes };
+          }
+
+          break;
+        }
+      }
+
+      return initialValue;
+    }
   );
 
-  if (offloadThresholdError) {
-    notifyError(`Unable to get offload threshold. ${offloadThresholdError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get offload threshold ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <OffloadThresholdInput
-      value={(offloadThreshold === undefined || offloadThreshold < 0) ? 'disabled' : { size: bytesToMemorySize(offloadThreshold) }}
-      onChange={async (v) => {
-        if (v === 'disabled') {
-          await adminClient.namespaces.setOffloadThreshold(props.tenant, props.namespace, -1).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setOffloadThreshold(
-            props.tenant,
-            props.namespace,
-            memorySizeToBytes(v.size)
-          ).catch(onUpdateError);
+    <WithUpdateConfirmation<PolicyValue>
+      key={key}
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'disabled' || value.type === 'specified-for-this-namespace') {
+          const req = new pb.SetOffloadThresholdRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          if (value.type === 'disabled') {
+            req.setOffloadThresholdBytes(-1);
+          }
+
+          if (value.type === 'specified-for-this-namespace') {
+            req.setOffloadThresholdBytes(value.offloadThresholdBytes);
+          }
+
+          const res = await namespaceServiceClient.setOffloadThreshold(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set offload threshold: ${res.getStatus()?.getMessage()}`);
+          }
         }
 
         await mutate(swrKey);
+        setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'disabled', title: 'Disabled' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' },
+                ]}
+                onChange={(v) => {
+                  switch (v) {
+                    case 'disabled': onChange({ type: 'disabled' }); break;
+                    case 'specified-for-this-namespace': onChange({ type: 'specified-for-this-namespace', offloadThresholdBytes: 1 }); break;
+                  }
+                }}
+                value={value.type}
+              />
+            </div>
+            {value.type === 'specified-for-this-namespace' && (
+              <MemorySizeInput
+                value={value.offloadThresholdBytes}
+                onChange={v => onChange({ type: 'specified-for-this-namespace', offloadThresholdBytes: v })}
+              />
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
   )
 }
 
