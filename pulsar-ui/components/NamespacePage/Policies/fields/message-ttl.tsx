@@ -67,7 +67,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (initialValueError) {
-    notifyError(`Unable to get message TTL. ${initialValueError}`);
+    notifyError(`Unable to get message TTL: ${initialValueError}`);
   }
 
   if (initialValue === undefined) {
