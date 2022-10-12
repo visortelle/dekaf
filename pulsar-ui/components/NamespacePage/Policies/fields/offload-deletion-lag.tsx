@@ -1,68 +1,27 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
-import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useEffect, useState } from 'react';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
-import { Duration } from '../../../ui/ConfigurationTable/DurationInput/types';
-import { durationToSeconds, secondsToDuration } from '../../../ui/ConfigurationTable/DurationInput/conversions';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
+import Select from '../../../ui/Select/Select';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { useState } from 'react';
 
 const policy = 'offloadDeletionLag';
 
-type OffloadDeletionLag = 'disabled' | {
-  duration: Duration;
+type PolicyValue = { type: 'inherited-from-broker-config' } |
+{
+  // Some info about -1 value: https://github.com/apache/pulsar/pull/5872
+  type: 'disabled'
+} |
+{
+  type: 'specified-for-this-namespace',
+  offloadDeletionLagSeconds: number,
 };
-
-const defaultOffloadDeletionLag: OffloadDeletionLag = {
-  duration: {
-    value: 14,
-    unit: 'd'
-  }
-};
-
-type OffloadDeletionLagInputProps = {
-  value: OffloadDeletionLag;
-  onChange: (value: OffloadDeletionLag) => void;
-}
-
-const OffloadDeletionLagInput: React.FC<OffloadDeletionLagInputProps> = (props) => {
-  const [offloadDeletionLag, setOffloadDeletionLag] = useState<OffloadDeletionLag>(props.value);
-
-  useEffect(() => {
-    setOffloadDeletionLag(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, offloadDeletionLag);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<'enabled' | 'disabled'>
-          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-          value={offloadDeletionLag === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => v === 'disabled' ? setOffloadDeletionLag('disabled') : setOffloadDeletionLag(defaultOffloadDeletionLag)}
-        />
-      </div>
-      {offloadDeletionLag !== 'disabled' && (
-        <DurationInput
-          value={offloadDeletionLag.duration}
-          onChange={(v) => setOffloadDeletionLag({ duration: v })}
-        />
-      )}
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(offloadDeletionLag)}
-          onReset={() => setOffloadDeletionLag(props.value)}
-        />
-      )}
-    </div>
-  );
-}
 
 export type FieldInputProps = {
   tenant: string;
@@ -70,39 +29,123 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig()
+  const { mutate } = useSWRConfig();
+  const [key, setKey] = useState(0);
 
-  const onUpdateError = (err: string) => notifyError(`Can't update offload deletion lag. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: offloadDeletionLag, error: offloadDeletionLagError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getOffloadDeletionLag(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetOffloadDeletionLagRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getOffloadDeletionLag(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get message TTL: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getOffloadDeletionLagCase()) {
+        case pb.GetOffloadDeletionLagResponse.OffloadDeletionLagCase.UNSPECIFIED: {
+          initialValue = { type: 'inherited-from-broker-config' };
+          break;
+        }
+        case pb.GetOffloadDeletionLagResponse.OffloadDeletionLagCase.SPECIFIED: {
+          const offloadDeletionLagSeconds = (res.getSpecified()?.getOffloadDeletionLagMs() ?? 0) / 1000;
+
+          if (offloadDeletionLagSeconds < 0) {
+            initialValue = { type: 'disabled' };
+          } else {
+            initialValue = { type: 'specified-for-this-namespace', offloadDeletionLagSeconds };
+          }
+
+          break;
+        }
+      }
+
+      return initialValue;
+    }
   );
 
-  if (offloadDeletionLagError) {
-    notifyError(`Unable to get offload deletion lag. ${offloadDeletionLagError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get message TTL. ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <OffloadDeletionLagInput
-      value={(offloadDeletionLag === undefined || offloadDeletionLag < 0) ? 'disabled' : { duration: secondsToDuration(offloadDeletionLag) }}
-      onChange={async (v) => {
-        if (v === 'disabled') {
-          await adminClient.namespaces.setOffloadDeletionLag(props.tenant, props.namespace, -1).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setOffloadDeletionLag(
-            props.tenant,
-            props.namespace,
-            durationToSeconds(v.duration)
-          ).catch(onUpdateError);
+    <WithUpdateConfirmation<PolicyValue>
+      key={key}
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveOffloadDeletionLagRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await namespaceServiceClient.removeOffloadDeletionLag(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        if (value.type === 'disabled' || value.type === 'specified-for-this-namespace') {
+          const req = new pb.SetOffloadDeletionLagRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          if (value.type === 'disabled') {
+            req.setOffloadDeletionLagMs(-1);
+          }
+
+          if (value.type === 'specified-for-this-namespace') {
+            req.setOffloadDeletionLagMs(value.offloadDeletionLagSeconds * 1000);
+          }
+
+          const res = await namespaceServiceClient.setOffloadDeletionLag(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
+          }
         }
 
         await mutate(swrKey);
+        setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'disabled', title: 'Disabled' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' },
+                ]}
+                onChange={(v) => {
+                  switch (v) {
+                    case 'inherited-from-broker-config': onChange({ type: 'inherited-from-broker-config' }); break;
+                    case 'disabled': onChange({ type: 'disabled' }); break;
+                    case 'specified-for-this-namespace': onChange({ type: 'specified-for-this-namespace', offloadDeletionLagSeconds: 1 }); break;
+                  }
+                }}
+                value={value.type}
+              />
+            </div>
+            {value.type === 'specified-for-this-namespace' && (
+              <DurationInput
+                value={value.offloadDeletionLagSeconds}
+                onChange={v => onChange({ type: 'specified-for-this-namespace', offloadDeletionLagSeconds: v })}
+              />
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
   )
 }
 

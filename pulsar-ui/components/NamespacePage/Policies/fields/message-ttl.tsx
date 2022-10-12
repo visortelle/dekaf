@@ -9,12 +9,13 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { useState } from 'react';
 
 const policy = 'messageTtl';
 
 type PolicyValue = { type: 'inherited-from-broker-config' } | { type: 'unlimited' } | {
   type: 'specified-for-this-namespace',
-  messageTtl: number,
+  messageTtlSeconds: number,
 };
 
 export type FieldInputProps = {
@@ -26,6 +27,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
+  const [key, setKey] = useState(0);
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
@@ -48,12 +50,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           break;
         }
         case pb.GetMessageTtlResponse.MessageTtlCase.SPECIFIED: {
-          const messageTtl = res.getSpecified()?.getMessageTtl() ?? 0;
+          const messageTtlSeconds = res.getSpecified()?.getMessageTtlSeconds() ?? 0;
 
-          if (messageTtl === 0) {
+          if (messageTtlSeconds === 0) {
             initialValue = { type: 'unlimited' };
           } else {
-            initialValue = { type: 'specified-for-this-namespace', messageTtl };
+            initialValue = { type: 'specified-for-this-namespace', messageTtlSeconds: messageTtlSeconds };
           }
 
           break;
@@ -74,6 +76,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <WithUpdateConfirmation<PolicyValue>
+      key={key}
       initialValue={initialValue}
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-broker-config') {
@@ -91,11 +94,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
           if (value.type === 'unlimited') {
-            req.setMessageTtl(0);
+            req.setMessageTtlSeconds(0);
           }
 
           if (value.type === 'specified-for-this-namespace') {
-            req.setMessageTtl(value.messageTtl);
+            req.setMessageTtlSeconds(Math.floor(value.messageTtlSeconds));
           }
 
           const res = await namespaceServiceClient.setMessageTtl(req, {});
@@ -104,7 +107,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
-        mutate(swrKey);
+        await mutate(swrKey);
+        setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
       }}
     >
       {({ value, onChange }) => {
@@ -121,7 +125,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   switch (v) {
                     case 'inherited-from-broker-config': onChange({ type: 'inherited-from-broker-config' }); break;
                     case 'unlimited': onChange({ type: 'unlimited' }); break;
-                    case 'specified-for-this-namespace': onChange({ type: 'specified-for-this-namespace', messageTtl: 1 }); break;
+                    case 'specified-for-this-namespace': onChange({ type: 'specified-for-this-namespace', messageTtlSeconds: 1 }); break;
                   }
                 }}
                 value={value.type}
@@ -129,8 +133,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             </div>
             {value.type === 'specified-for-this-namespace' && (
               <DurationInput
-                value={value.messageTtl}
-                onChange={v => onChange({ type: 'specified-for-this-namespace', messageTtl: v })}
+                value={value.messageTtlSeconds}
+                onChange={v => onChange({ type: 'specified-for-this-namespace', messageTtlSeconds: v })}
               />
             )}
           </>

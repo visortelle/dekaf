@@ -649,7 +649,7 @@ message GetMessageTtlRequest {
 }
 message MessageTtlUnspecified {}
 message MessageTtlSpecified {
-  int32 message_ttl = 1;
+  int32 message_ttl_seconds = 1;
 }
 message GetMessageTtlResponse {
   google.rpc.Status status = 1;
@@ -660,7 +660,7 @@ message GetMessageTtlResponse {
 }
 message SetMessageTtlRequest {
   string namespace = 1;
-  int32 message_ttl = 2;
+  int32 message_ttl_seconds = 2;
 }
 message SetMessageTtlResponse {
   google.rpc.Status status = 1;
@@ -669,6 +669,34 @@ message RemoveMessageTtlRequest {
   string namespace = 1;
 }
 message RemoveMessageTtlResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetOffloadDeletionLagRequest {
+  string namespace = 1;
+}
+message OffloadDeletionLagUnspecified {}
+message OffloadDeletionLagSpecified {
+  int64 offload_deletion_lag_ms = 1;
+}
+message GetOffloadDeletionLagResponse {
+  google.rpc.Status status = 1;
+  oneof offload_deletion_lag {
+    OffloadDeletionLagUnspecified unspecified = 2;
+    OffloadDeletionLagSpecified specified = 3;
+  }
+}
+message SetOffloadDeletionLagRequest {
+  string namespace = 1;
+  int32 offload_deletion_lag_ms = 2;
+}
+message SetOffloadDeletionLagResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveOffloadDeletionLagRequest {
+  string namespace = 1;
+}
+message RemoveOffloadDeletionLagResponse {
   google.rpc.Status status = 1;
 }
 
@@ -764,4 +792,8 @@ service NamespaceService {
   rpc GetMessageTtl(GetMessageTtlRequest) returns (GetMessageTtlResponse);
   rpc SetMessageTtl(SetMessageTtlRequest) returns (SetMessageTtlResponse);
   rpc RemoveMessageTtl(RemoveMessageTtlRequest) returns (RemoveMessageTtlResponse);
+
+  rpc GetOffloadDeletionLag(GetOffloadDeletionLagRequest) returns (GetOffloadDeletionLagResponse);
+  rpc SetOffloadDeletionLag(SetOffloadDeletionLagRequest) returns (SetOffloadDeletionLagResponse);
+  rpc RemoveOffloadDeletionLag(RemoveOffloadDeletionLagRequest) returns (RemoveOffloadDeletionLagResponse);
 }
