@@ -616,6 +616,34 @@ message RemoveMaxUnackedMessagesPerConsumerResponse {
   google.rpc.Status status = 1;
 }
 
+message GetMaxUnackedMessagesPerSubscriptionRequest {
+  string namespace = 1;
+}
+message MaxUnackedMessagesPerSubscriptionUnspecified {}
+message MaxUnackedMessagesPerSubscriptionSpecified {
+  int32 max_unacked_messages_per_subscription = 1;
+}
+message GetMaxUnackedMessagesPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+  oneof max_unacked_messages_per_subscription {
+    MaxUnackedMessagesPerSubscriptionUnspecified unspecified = 2;
+    MaxUnackedMessagesPerSubscriptionSpecified specified = 3;
+  }
+}
+message SetMaxUnackedMessagesPerSubscriptionRequest {
+  string namespace = 1;
+  int32 max_unacked_messages_per_subscription = 2;
+}
+message SetMaxUnackedMessagesPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxUnackedMessagesPerSubscriptionRequest {
+  string namespace = 1;
+}
+message RemoveMaxUnackedMessagesPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -700,4 +728,8 @@ service NamespaceService {
   rpc GetMaxUnackedMessagesPerConsumer(GetMaxUnackedMessagesPerConsumerRequest) returns (GetMaxUnackedMessagesPerConsumerResponse);
   rpc SetMaxUnackedMessagesPerConsumer(SetMaxUnackedMessagesPerConsumerRequest) returns (SetMaxUnackedMessagesPerConsumerResponse);
   rpc RemoveMaxUnackedMessagesPerConsumer(RemoveMaxUnackedMessagesPerConsumerRequest) returns (RemoveMaxUnackedMessagesPerConsumerResponse);
+
+  rpc GetMaxUnackedMessagesPerSubscription(GetMaxUnackedMessagesPerSubscriptionRequest) returns (GetMaxUnackedMessagesPerSubscriptionResponse);
+  rpc SetMaxUnackedMessagesPerSubscription(SetMaxUnackedMessagesPerSubscriptionRequest) returns (SetMaxUnackedMessagesPerSubscriptionResponse);
+  rpc RemoveMaxUnackedMessagesPerSubscription(RemoveMaxUnackedMessagesPerSubscriptionRequest) returns (RemoveMaxUnackedMessagesPerSubscriptionResponse);
 }
