@@ -35,7 +35,6 @@ import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-
 import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
 import isALlowAutoUpdateSchemaField from './fields/is-allow-auto-update-schema';
 import schemaValidationEnforceField from './fields/schema-validation-enforce';
-import offloadPoliciesField from './fields/offload-policies';
 import { H1 } from '../../ui/H/H';
 
 export type PoliciesProps = {
@@ -159,7 +158,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           fields={[
             offloadThresholdField,
             offloadDeletionLagField,
-            offloadPoliciesField
           ].map(field => field(props))}
         />
       </div>

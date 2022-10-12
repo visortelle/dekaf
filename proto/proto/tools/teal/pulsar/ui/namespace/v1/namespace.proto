@@ -644,6 +644,34 @@ message RemoveMaxUnackedMessagesPerSubscriptionResponse {
   google.rpc.Status status = 1;
 }
 
+message GetMessageTtlRequest {
+  string namespace = 1;
+}
+message MessageTtlUnspecified {}
+message MessageTtlSpecified {
+  int32 message_ttl = 1;
+}
+message GetMessageTtlResponse {
+  google.rpc.Status status = 1;
+  oneof message_ttl {
+    MessageTtlUnspecified unspecified = 2;
+    MessageTtlSpecified specified = 3;
+  }
+}
+message SetMessageTtlRequest {
+  string namespace = 1;
+  int32 message_ttl = 2;
+}
+message SetMessageTtlResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMessageTtlRequest {
+  string namespace = 1;
+}
+message RemoveMessageTtlResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -732,4 +760,8 @@ service NamespaceService {
   rpc GetMaxUnackedMessagesPerSubscription(GetMaxUnackedMessagesPerSubscriptionRequest) returns (GetMaxUnackedMessagesPerSubscriptionResponse);
   rpc SetMaxUnackedMessagesPerSubscription(SetMaxUnackedMessagesPerSubscriptionRequest) returns (SetMaxUnackedMessagesPerSubscriptionResponse);
   rpc RemoveMaxUnackedMessagesPerSubscription(RemoveMaxUnackedMessagesPerSubscriptionRequest) returns (RemoveMaxUnackedMessagesPerSubscriptionResponse);
+
+  rpc GetMessageTtl(GetMessageTtlRequest) returns (GetMessageTtlResponse);
+  rpc SetMessageTtl(SetMessageTtlRequest) returns (SetMessageTtlResponse);
+  rpc RemoveMessageTtl(RemoveMessageTtlRequest) returns (RemoveMessageTtlResponse);
 }
