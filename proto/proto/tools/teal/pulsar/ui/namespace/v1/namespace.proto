@@ -754,6 +754,21 @@ message RemovePersistenceResponse {
   google.rpc.Status status = 1;
 }
 
+message GetReplicationClustersRequest {
+  string namespace = 1;
+}
+message GetReplicationClustersResponse {
+  google.rpc.Status status = 1;
+  repeated string replication_clusters = 2;
+}
+message SetReplicationClustersRequest {
+  string namespace = 1;
+  repeated string replication_clusters = 2;
+}
+message SetReplicationClustersResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -857,4 +872,7 @@ service NamespaceService {
   rpc GetPersistence(GetPersistenceRequest) returns (GetPersistenceResponse);
   rpc SetPersistence(SetPersistenceRequest) returns (SetPersistenceResponse);
   rpc RemovePersistence(RemovePersistenceRequest) returns (RemovePersistenceResponse);
+
+  rpc GetReplicationClusters(GetReplicationClustersRequest) returns (GetReplicationClustersResponse);
+  rpc SetReplicationClusters(SetReplicationClustersRequest) returns (SetReplicationClustersResponse);
 }
