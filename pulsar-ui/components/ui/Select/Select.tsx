@@ -2,7 +2,6 @@ import React from 'react'
 import s from './Select.module.css';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
-import { nanoid } from 'nanoid';
 
 export type ListItem<V> = {
   type: 'item',
@@ -32,7 +31,7 @@ function Input<V extends string>(props: InputProps<V>): React.ReactElement {
 
   return (
     <div className={s.Container}>
-      {typeof props.value === 'undefined' && <div className={s.Placeholder}>{props.placeholder}</div>}
+      {props.value === undefined && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={`${s.Select} ${props.disabled ? s.DisabledSelect : ''}`}
         onChange={(v) => props.onChange(v.target.value as V)}
@@ -41,7 +40,7 @@ function Input<V extends string>(props: InputProps<V>): React.ReactElement {
       >
         {props.list.map(item => {
           if (item.type === 'empty') {
-            return <option key={nanoid()} value={undefined}></option>
+            return <option key={`select-empty-value-f5da5543-e672-4d1f-bc66-28d04ea17354`} value={undefined}></option>
           }
 
           if (item.type === 'item') {

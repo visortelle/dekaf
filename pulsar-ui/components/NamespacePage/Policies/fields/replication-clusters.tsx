@@ -1,11 +1,18 @@
-import SelectInput, { ListItem } from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
+import Select, { ListItem } from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Either from 'fp-ts/lib/Either';
 import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as cpb from '../../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/cluster_pb';
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import { difference } from "lodash";
+import stringify from "safe-stable-stringify";
+import { useState } from "react";
 
 const policy = 'replication-clusters';
 
@@ -14,66 +21,115 @@ export type FieldInputProps = {
   namespace: string;
 }
 
+type PolicyValue = {
+  replicationClusters: string[];
+  availableClusters: string[];
+};
+
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient, clusterServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
+  const [key, setKey] = useState(0);
 
-  const onUpdateError = (err: string) => notifyError(`Can't update replication clusters. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: clusters, error: clustersError } = useSWR(
-    ['pulsar', 'clusters'],
-    async () => await adminClient.clusters.getClusters()
-  );
-
-  if (clustersError) {
-    notifyError(`Unable to get clusters list: ${clustersError}`)
-  }
-
-  const { data: replicationClusters, error: replicationClustersError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getNamespaceReplicationClusters(props.tenant, props.namespace)
-  );
+    async () => {
+      const replicationClustersReq = new pb.GetReplicationClustersRequest();
+      replicationClustersReq.setNamespace(`${props.tenant}/${props.namespace}`);
 
-  if (replicationClustersError) {
-    notifyError(`Unable to get replication clusters list: ${replicationClustersError}`);
-  }
-
-  const hideAddButton = replicationClusters?.length === clusters?.length;
-
-  return <ListInput<string>
-    value={replicationClusters || []}
-    getId={(v) => v}
-    renderItem={(v) => <div>{v}</div>}
-    editor={hideAddButton ? undefined : {
-      render: (v, onChange) => {
-        const list = (clusters || []).filter(c => !replicationClusters?.some(ac => ac === c)).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c || '' }));
-        return (
-          <SelectInput<string>
-            list={[{ type: 'empty', title: '' }, ...list]}
-            value={v}
-            onChange={(v) => onChange(v as string)}
-            placeholder="Select cluster"
-          />
-        )
-      },
-      initialValue: undefined,
-    }}
-    onRemove={async (id) => {
-      if (typeof replicationClusters === 'undefined') {
-        return <></>;
+      const replicationClustersRes = await namespaceServiceClient.getReplicationClusters(replicationClustersReq, {});
+      if (replicationClustersRes.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get replication clusters: ${replicationClustersRes.getStatus()?.getMessage()}`);
       }
 
-      await adminClient.namespaces.setNamespaceReplicationClusters(props.tenant, props.namespace, replicationClusters.filter(r => r !== id)).catch(onUpdateError);
-      await mutate(swrKey);
-    }}
-    onAdd={hideAddButton ? undefined : async (v) => {
-      await adminClient.namespaces.setNamespaceReplicationClusters(props.tenant, props.namespace, [...replicationClusters || [], v]).catch(onUpdateError);
-      await mutate(swrKey);
-    }}
-    isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
-  />
+      const replicationClusters = replicationClustersRes.getReplicationClustersList();
+
+      const availableClustersReq = new cpb.ListClustersRequest();
+      const availableClustersRes = await clusterServiceClient.listClusters(availableClustersReq, {});
+      if (availableClustersRes.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get available clusters: ${availableClustersRes.getStatus()?.getMessage()}`);
+      }
+
+      const availableClusters = availableClustersRes.getClustersList();
+
+      const v: PolicyValue = {
+        replicationClusters,
+        availableClusters
+      }
+
+      return v;
+    }
+  );
+
+  if (initialValueError) {
+    notifyError(`Unable to get replication clusters: ${initialValueError}`)
+  }
+
+  if (initialValue === undefined) {
+    return <></>;
+  }
+
+  return (
+    <WithUpdateConfirmation<PolicyValue>
+      key={stringify(initialValue)}
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        const req = new pb.SetReplicationClustersRequest();
+        req.setNamespace(`${props.tenant}/${props.namespace}`);
+        req.setReplicationClustersList(value.replicationClusters);
+
+        const res = await namespaceServiceClient.setReplicationClusters(req, {});
+        if (res.getStatus()?.getCode() !== Code.OK) {
+          notifyError(`Unable to set replication clusters: ${res.getStatus()?.getMessage()}`);
+          return;
+        }
+
+        await mutate(swrKey);
+        setKey(key + 1);
+      }}
+    >
+      {({ value, onChange }) => {
+        const replicationClusters = value?.replicationClusters ?? [];
+        const availableClusters = value?.availableClusters ?? [];
+
+        const hideAddButton = replicationClusters?.length === availableClusters?.length;
+
+        return (
+          <ListInput<string>
+            value={value.replicationClusters}
+            getId={(v) => v}
+            renderItem={(v) => <div>{v}</div>}
+            editor={hideAddButton ? undefined : {
+              render: (v, onChange) => {
+                const list = difference(availableClusters, replicationClusters)
+                  .map<ListItem<string>>(c => ({ type: 'item', value: c, title: c || '' }));
+
+                return (
+                  <Select<string>
+                    list={[{ type: 'empty', title: '' }, ...list]}
+                    value={v}
+                    onChange={(v) => onChange(v as string)}
+                    placeholder="Select cluster"
+                  />
+                )
+              },
+              initialValue: undefined,
+            }}
+            onRemove={async (id) => {
+              onChange({ ...value, replicationClusters: value.replicationClusters.filter(c => c !== id) })
+            }}
+            onAdd={hideAddButton ? undefined : (v) => {
+              onChange({ ...value, replicationClusters: [...value.replicationClusters, v] });
+            }}
+            isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
+          />
+        );
+      }}
+    </WithUpdateConfirmation>
+  );
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
