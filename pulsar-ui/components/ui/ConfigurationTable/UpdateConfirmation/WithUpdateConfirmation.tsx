@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import UpdateConfirmation from "./UpdateConfirmation";
+import UpdateConfirmation, { ValidationError } from "./UpdateConfirmation";
 import { isEqual } from 'lodash';
 
 export type WithUpdateConfirmationProps<V> = {
   initialValue: V,
   onConfirm: (value: V) => Promise<void>,
+  validationError?: ValidationError,
   children: (props: { value: V, onChange: (v: V) => void }) => React.ReactNode,
 };
 
@@ -30,6 +31,7 @@ function WithUpdateConfirmation<V>(props: WithUpdateConfirmationProps<V>): React
         <UpdateConfirmation
           onConfirm={handleConfirm}
           onReset={() => setValue(props.initialValue)}
+          validationError={props.validationError}
         />
       )}
     </div>
