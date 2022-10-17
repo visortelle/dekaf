@@ -11,3 +11,7 @@
 .Buttons > *:last-child {
   margin-right: 0;
 }
+
+.ValidationError {
+  margin-top: 12rem;
+}

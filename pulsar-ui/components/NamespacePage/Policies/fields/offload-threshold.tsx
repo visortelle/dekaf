@@ -88,7 +88,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
 
           if (value.type === 'specified-for-this-namespace') {
-            req.setOffloadThresholdBytes(value.offloadThresholdBytes);
+            req.setOffloadThresholdBytes(Math.floor(value.offloadThresholdBytes));
           }
 
           const res = await namespaceServiceClient.setOffloadThreshold(req, {});
