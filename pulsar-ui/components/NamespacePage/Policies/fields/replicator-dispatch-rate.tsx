@@ -11,7 +11,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
 
-const policy = 'replicatorReplicatorDispatchRate';
+const policy = 'replicatorDispatchRate';
 
 type PolicyValue = {
   type: 'inherited-from-broker-config'
