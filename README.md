@@ -33,7 +33,11 @@ OpenJDK 64-Bit Server VM GraalVM CE 22.2.0 (build 17.0.4+8-jvmci-22.2-b06, mixed
 
 - [ ] Install latest Scala 3 using <https://sdkman.io/>
 
+- [ ] Install SBT <https://www.scala-sbt.org/download.html>
+
 - [ ] Install latest Maven using <https://sdkman.io/>
+
+- [ ] Setup your editor. IntelliJ Idea Community Edition + Scala plugin is preferable. VSCode + Scala Metals is also ok if you don't touch Scala code a lot.
 
 ### Other
 
