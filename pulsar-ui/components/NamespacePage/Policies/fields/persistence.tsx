@@ -5,11 +5,9 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Input from "../../../ui/ConfigurationTable/Input/Input";
-import { useEffect, useState } from 'react';
-import * as Either from 'fp-ts/Either';
+import { useState } from 'react';
 import Select from '../../../ui/Select/Select';
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 

@@ -769,6 +769,40 @@ message SetReplicationClustersResponse {
   google.rpc.Status status = 1;
 }
 
+message GetReplicatorDispatchRateRequest {
+  string namespace = 1;
+}
+message ReplicatorDispatchRateUnspecified {}
+message ReplicatorDispatchRateSpecified {
+  int32 rate_in_msg = 1;
+  int64 rate_in_byte = 2;
+  bool is_relative_to_publish_rate = 3;
+  int32 period_in_second = 4;
+}
+message GetReplicatorDispatchRateResponse {
+  google.rpc.Status status = 1;
+  oneof replicator_dispatch_rate {
+    ReplicatorDispatchRateUnspecified unspecified = 3;
+    ReplicatorDispatchRateSpecified specified = 4;
+  }
+}
+message SetReplicatorDispatchRateRequest {
+  string namespace = 1;
+  int32 rate_in_msg = 2;
+  int64 rate_in_byte = 3;
+  bool is_relative_to_publish_rate = 4;
+  int32 period_in_second = 5;
+}
+message SetReplicatorDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveReplicatorDispatchRateRequest {
+  string namespace = 1;
+}
+message RemoveReplicatorDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -875,4 +909,8 @@ service NamespaceService {
 
   rpc GetReplicationClusters(GetReplicationClustersRequest) returns (GetReplicationClustersResponse);
   rpc SetReplicationClusters(SetReplicationClustersRequest) returns (SetReplicationClustersResponse);
+
+  rpc GetReplicatorDispatchRate(GetReplicatorDispatchRateRequest) returns (GetReplicatorDispatchRateResponse);
+  rpc SetReplicatorDispatchRate(SetReplicatorDispatchRateRequest) returns (SetReplicatorDispatchRateResponse);
+  rpc RemoveReplicatorDispatchRate(RemoveReplicatorDispatchRateRequest) returns (RemoveReplicatorDispatchRateResponse);
 }
