@@ -56,3 +56,7 @@ libprotoc 3.19.4
 ```
 
 - [ ] grpc-web <https://github.com/grpc/grpc-web/releases>
+
+- [ ] Google Cloud CLI https://cloud.google.com/sdk/gcloud
+
+- [ ] kubectl https://kubernetes.io/docs/tasks/tools/
