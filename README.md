@@ -1,4 +1,4 @@
-# DevTools for Apache Pulsar
+# Teal Tool for Apache Pulsar
 
 **Teal Tool for Apache Pulsar** helps developers and system administrators to manage and debug Apache Pulsar instances.
 
@@ -33,7 +33,11 @@ OpenJDK 64-Bit Server VM GraalVM CE 22.2.0 (build 17.0.4+8-jvmci-22.2-b06, mixed
 
 - [ ] Install latest Scala 3 using <https://sdkman.io/>
 
+- [ ] Install SBT <https://www.scala-sbt.org/download.html>
+
 - [ ] Install latest Maven using <https://sdkman.io/>
+
+- [ ] Setup your editor. IntelliJ Idea Community Edition + Scala plugin is preferable. VSCode + Scala Metals is also ok if you don't touch Scala code a lot.
 
 ### Other
 
@@ -52,3 +56,45 @@ libprotoc 3.19.4
 ```
 
 - [ ] grpc-web <https://github.com/grpc/grpc-web/releases>
+
+- [ ] Google Cloud CLI https://cloud.google.com/sdk/gcloud
+
+- [ ] Ask administartor for cloud account to have access to dev Pulsar deployment
+
+- [ ] kubectl https://kubernetes.io/docs/tasks/tools/
+
+
+## Development
+
+- To build proto files, go to `./proto` and run `make build`. VSCode TypeScript server sometimes doesn't see files changes, so press `CMD+Shift+P` and run `Restart TS Server` command.
+- `pkill kubectl; make port-forward` in the `./devenv` directory to "make the remote Pulsar available" at the localhost.
+
+## Start
+
+- [ ] At first, you need to Kubernetes cluster. We don't provide instructions for now, just ask an administrator. It's a one-time action.
+
+Everything in different terminals.
+
+### Run Envoy proxy
+
+Currently it's needed for grpc-web.
+
+- `cd ./devenv`
+- `make dev`
+
+### Frontend
+
+- `cd ./pulsar-ui`
+- `npm i`
+- `npm run dev`
+
+## API Node (we'll get rid of it soon)
+
+- `cd ./api`
+- `npm i`
+- `npm start`
+
+### API
+
+- `cd ./api`
+- `sbt`, then `~reStart` in the SBT shell
