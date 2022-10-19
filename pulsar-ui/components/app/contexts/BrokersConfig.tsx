@@ -39,12 +39,12 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
     swrKeys.pulsar.brokers.runtimeConfig._(),
     async () => {
       const req = new GetRuntimeConfigurationsRequest();
-      const res = await brokersServiceClient.getRuntimeConfigurations(req, {}).catch(err => notifyError(`Failed to get runtime configurations: ${err}`));
+      const res = await brokersServiceClient.getRuntimeConfigurations(req, {}).catch(err => notifyError(`Unable to get runtime configurations: ${err}`));
       if (res === undefined) {
         return {};
       }
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to get runtime configurations: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get runtime configurations: ${res.getStatus()?.getMessage()}`);
         return {};
       }
       return pbUtils.mapToObject(res.getConfigMap());
@@ -59,12 +59,12 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
     swrKeys.pulsar.brokers.internalConfig._(),
     async () => {
       const req = new GetInternalConfigurationDataRequest();
-      const res = await brokersServiceClient.getInternalConfigurationData(req, {}).catch(err => notifyError(`Failed to get internal configuration data: ${err}`));
+      const res = await brokersServiceClient.getInternalConfigurationData(req, {}).catch(err => notifyError(`Unable to get internal configuration data: ${err}`));
       if (res === undefined) {
         return {};
       }
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to get internal configuration data: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get internal configuration data: ${res.getStatus()?.getMessage()}`);
         return {};
       }
       const config = res.getConfig();
@@ -86,12 +86,12 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
     swrKeys.pulsar.brokers.dynamicConfig._(),
     async () => {
       const req = new GetAllDynamicConfigurationsRequest();
-      const res = await brokersServiceClient.getAllDynamicConfigurations(req, {}).catch(err => notifyError(`Failed to get dynamic configurations: ${err}`));
+      const res = await brokersServiceClient.getAllDynamicConfigurations(req, {}).catch(err => notifyError(`Unable to get dynamic configurations: ${err}`));
       if (res === undefined) {
         return {};
       }
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to get dynamic configurations: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get dynamic configurations: ${res.getStatus()?.getMessage()}`);
         return {};
       }
       return pbUtils.mapToObject(res.getConfigMap());

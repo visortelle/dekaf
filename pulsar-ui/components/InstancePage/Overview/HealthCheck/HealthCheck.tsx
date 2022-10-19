@@ -18,7 +18,7 @@ const HealthCheck: React.FC = () => {
       const req = new HealthCheckRequest();
       const res = await brokersServiceClient.healthCheck(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to health check: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to health check: ${res.getStatus()?.getMessage()}`);
         return false;
       }
       return res.getIsOk();
@@ -35,7 +35,7 @@ const HealthCheck: React.FC = () => {
       const req = new HealthCheckRequest();
       const res = await brokersServiceClient.backlogQuotaCheck(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to backlog quota check: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to backlog quota check: ${res.getStatus()?.getMessage()}`);
         return false;
       }
       return res.getIsOk();

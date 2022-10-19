@@ -67,10 +67,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
           const res = await adminClient.namespaceServiceClient.removeDeduplication(req, {})
-            .catch(err => notifyError(`Unable to remove deduplication policy: ${err}`));
+            .catch(err => notifyError(`Unable to set deduplication policy: ${err}`));
 
           if (res?.getStatus()?.getCode() !== Code.OK) {
-            notifyError(`Unable to remove deduplication policy. ${res?.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set deduplication policy. ${res?.getStatus()?.getMessage()}`);
           }
         }
 

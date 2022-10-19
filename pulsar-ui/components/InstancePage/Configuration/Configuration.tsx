@@ -30,12 +30,12 @@ const Configuration: React.FC = () => {
     swrKeys.pulsar.brokers.availableDynamicConfigKeys._(),
     async () => {
       const req = new GetDynamicConfigurationNamesRequest();
-      const res = await brokersServiceClient.getDynamicConfigurationNames(req, {}).catch(err => notifyError(`Failed to get available dynamic configuration keys: ${err}`));
+      const res = await brokersServiceClient.getDynamicConfigurationNames(req, {}).catch(err => notifyError(`Unable to get available dynamic configuration keys: ${err}`));
       if (res === undefined) {
         return [];
       }
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to get available dynamic configuration keys: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get available dynamic configuration keys: ${res.getStatus()?.getMessage()}`);
         return [];
       }
       return res.getNamesList();
@@ -141,12 +141,12 @@ const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
     const req = new UpdateDynamicConfigurationRequest();
     req.setName(props.configKey);
     req.setValue(inputValue);
-    const res = await brokersServiceClient.updateDynamicConfiguration(req, {}).catch(err => notifyError(`Failed to update dynamic configuration value: ${err}`));
+    const res = await brokersServiceClient.updateDynamicConfiguration(req, {}).catch(err => notifyError(`Unable to update dynamic configuration value: ${err}`));
     if (res === undefined) {
       return;
     }
     if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Failed to update dynamic configuration value: ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to update dynamic configuration value: ${res.getStatus()?.getMessage()}`);
       return;
     }
 
@@ -160,12 +160,12 @@ const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
   const deleteDynamicConfigValue = async () => {
     const req = new DeleteDynamicConfigurationRequest();
     req.setName(props.configKey);
-    const res = await brokersServiceClient.deleteDynamicConfiguration(req, {}).catch(err => notifyError(`Failed to delete dynamic configuration value: ${err}`));
+    const res = await brokersServiceClient.deleteDynamicConfiguration(req, {}).catch(err => notifyError(`Unable to delete dynamic configuration value: ${err}`));
     if (res === undefined) {
       return;
     }
     if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Failed to delete dynamic configuration value: ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to delete dynamic configuration value: ${res.getStatus()?.getMessage()}`);
       return;
     }
 

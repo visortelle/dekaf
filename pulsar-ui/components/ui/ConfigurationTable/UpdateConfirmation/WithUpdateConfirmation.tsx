@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import UpdateConfirmation, { ValidationError } from "./UpdateConfirmation";
+import UpdateConfirmation, { ValidationError as _ValidationError } from "./UpdateConfirmation";
 import { isEqual } from 'lodash';
 
 export type WithUpdateConfirmationProps<V> = {
@@ -38,4 +38,5 @@ function WithUpdateConfirmation<V>(props: WithUpdateConfirmationProps<V>): React
   );
 }
 
+export type ValidationError = _ValidationError;
 export default WithUpdateConfirmation;

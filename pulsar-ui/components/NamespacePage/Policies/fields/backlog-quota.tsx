@@ -58,7 +58,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       const res = await namespaceServiceClient.getBacklogQuotas(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to get backlog quotas for namespace. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get backlog quotas for namespace. ${res.getStatus()?.getMessage()}`);
       }
 
       let v: PolicyValue = { destinationStorage: { type: 'inherited-from-broker-config' }, messageAge: { type: 'inherited-from-broker-config' } };
@@ -112,18 +112,18 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
     req.setMessageAge(messageAgeBacklogQuotaPb)
 
-    const res = await namespaceServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Failed to update backlog quota policy. ${err}`));
+    const res = await namespaceServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Failed to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
     }
 
     if (v.destinationStorage.type === 'inherited-from-broker-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
-      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Failed to remove backlog quota policy. ${err}`));
+      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }
     }
 
@@ -131,9 +131,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
-      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Failed to remove backlog quota policy. ${err}`));
+      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }
     }
 
