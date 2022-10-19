@@ -1,4 +1,4 @@
-# DevTools for Apache Pulsar
+# Teal Tool for Apache Pulsar
 
 **Teal Tool for Apache Pulsar** helps developers and system administrators to manage and debug Apache Pulsar instances.
 
