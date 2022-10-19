@@ -59,4 +59,38 @@ libprotoc 3.19.4
 
 - [ ] Google Cloud CLI https://cloud.google.com/sdk/gcloud
 
+- [ ] Ask administartor for cloud account to have access to dev Pulsar deployment
+
 - [ ] kubectl https://kubernetes.io/docs/tasks/tools/
+
+## Start
+
+Everything in different terminals.
+
+### Run Envoy proxy
+
+Currently it's needed for grpc-web.
+
+- `cd ./devenv`
+- `make dev`
+
+### Frontend
+
+- `cd ./pulsar-ui`
+- `npm i`
+- `npm run dev`
+
+## API Node (we'll get rid of it soon)
+
+- `cd ./api`
+- `npm i`
+- `npm start`
+
+### API
+
+- `cd ./api`
+- `sbt`, then `~reStart` in the SBT shell
+
+## Development
+
+- To build proto files, go to `./proto` and run `make build`. VSCode TypeScript server sometimes doesn't see files changes, so press `CMD+Shift+P` and run `Restart TS Server` command.
