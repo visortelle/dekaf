@@ -73,9 +73,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         if (value.type === 'inherited-from-broker-config') {
           const req = new pb.RemoveDeduplicationSnapshotIntervalRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-          const res = await namespaceServiceClient.removeDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to remove deduplication snapshot interval: ${err}`));
+          const res = await namespaceServiceClient.removeDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to set deduplication snapshot interval: ${err}`));
           if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(`Unable to remove deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
           }
         }
 

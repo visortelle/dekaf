@@ -93,10 +93,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveInactiveTopicPoliciesRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeInactiveTopicPolicies(req, {}).catch(err => notifyError(`Unable to remove inactive topic policies: ${err}`));
+          const res = await namespaceServiceClient.removeInactiveTopicPolicies(req, {}).catch(err => notifyError(`Unable to set inactive topic policies: ${err}`));
 
           if (res !== undefined && (res.getStatus()?.getCode() !== Code.OK)) {
-            notifyError(`Unable to remove inactive topic policies: ${res.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set inactive topic policies: ${res.getStatus()?.getMessage()}`);
           }
         }
 

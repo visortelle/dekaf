@@ -30,15 +30,12 @@ export const dummyClient: Client = {
     persistent: {},
     nonPersistent: {},
   }),
-  getAllTenantNamespacesMetrics: async () => ({}),
 };
 
 export function createClient(config: ClientConfig): Client {
   return {
     getTenantMetrics: (tenant) => getTenantMetrics(config, tenant),
     getAllTenantsMetrics: () => getAllTenantsMetrics(config),
-    getAllTenantNamespacesMetrics: (tenant) =>
-      getAllTenantNamespacesMetrics(config, tenant),
     getAllNamespaceTopicsMetrics: (tenant, namespace) =>
       getAllTopicsMetrics(config, tenant, namespace),
     getMetrics: (filter) => getMetrics(config, filter),
@@ -57,16 +54,6 @@ async function getAllTenantsMetrics(
   config: ClientConfig
 ): Promise<Record<string, metrics.TenantMetrics>> {
   const res = await fetch(`${config.apiUrl}/metrics/allTenants`);
-  return res.json();
-}
-
-async function getAllTenantNamespacesMetrics(
-  config: ClientConfig,
-  tenant: string
-): Promise<Record<string, metrics.NamespaceMetrics>> {
-  const res = await fetch(
-    `${config.apiUrl}/metrics/tenants/${tenant}/allNamespaces`
-  );
   return res.json();
 }
 

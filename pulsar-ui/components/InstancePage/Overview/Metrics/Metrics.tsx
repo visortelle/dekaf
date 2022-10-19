@@ -38,7 +38,7 @@ const InternalConfig: React.FC = () => {
       const req = new GetBrokerStatsJsonRequest();
       const res = await brokerstatsServiceClient.getBrokerStatsJson(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Failed to get broker stats: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get broker stats: ${res.getStatus()?.getMessage()}`);
         return [];
       }
       return JSON.parse(res.getStatsJson()) as Metric[];

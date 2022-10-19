@@ -16,6 +16,7 @@ const _MemorySizeInput: React.FC<_MemorySizeInputProps> = (props) => {
       <div className={s.Size}>
         <Input
           type='number'
+          inputProps={{ min: 0 }}
           value={props.value.size.toString()}
           onChange={(size) => {
             if (props.value.unit === 'B' && size.toString().includes('.')) {

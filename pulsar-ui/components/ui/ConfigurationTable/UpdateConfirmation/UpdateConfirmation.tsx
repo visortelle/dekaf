@@ -7,7 +7,7 @@ export type ValidationError = React.ReactElement | undefined;
 export type UpdateConfirmationProps = {
   onReset: () => void,
   onConfirm: () => void,
-  validationError: ValidationError,
+  validationError?: ValidationError,
 };
 
 const UpdateConfirmation: React.FC<UpdateConfirmationProps> = (props) => {

@@ -21,7 +21,6 @@ import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { useRef } from 'react';
 import _ from 'lodash';
-import Table from '../../ui/Table/Table';
 
 type ColumnKey =
   'topic' |

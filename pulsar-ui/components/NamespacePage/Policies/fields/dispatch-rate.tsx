@@ -89,7 +89,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.removeDispatchRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(`Unable to remove dispatch rate. ${res.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set dispatch rate. ${res.getStatus()?.getMessage()}`);
           }
         }
 

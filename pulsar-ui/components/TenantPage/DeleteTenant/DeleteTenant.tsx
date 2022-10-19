@@ -18,8 +18,8 @@ export type DeleteTenantProps = {
 const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
   const navigate = useNavigate();
   const { mutate } = useSWRConfig()
-  const {notifyError, notifySuccess} = Notifications.useContext();
-  const {tenantServiceClient} = PulsarGrpcClient.useContext();
+  const { notifyError, notifySuccess } = Notifications.useContext();
+  const { tenantServiceClient } = PulsarGrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
   const deleteTenant = async () => {
@@ -39,7 +39,7 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
       await mutate(swrKeys.pulsar.tenants._());
       await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
     } catch (err) {
-      notifyError(`Failed to delete tenant ${props.tenant}. ${err}`)
+      notifyError(`Unable to delete tenant ${props.tenant}. ${err}`)
     }
   };
 

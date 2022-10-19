@@ -45,7 +45,7 @@ const DeleteTopic: React.FC<DeleteTopicProps> = (props) => {
       await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
       await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
     } catch (err) {
-      notifyError(`Failed to delete topic: ${props.topicType === 'persistent' ? 'persistent' : 'non-persistent'}://${props.tenant}/${props.namespace}/${props.topic}. ${err}`)
+      notifyError(`Unable to delete topic: ${props.topicType === 'persistent' ? 'persistent' : 'non-persistent'}://${props.tenant}/${props.namespace}/${props.topic}. ${err}`)
     }
   };
 
