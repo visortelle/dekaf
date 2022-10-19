@@ -63,7 +63,15 @@ libprotoc 3.19.4
 
 - [ ] kubectl https://kubernetes.io/docs/tasks/tools/
 
+
+## Development
+
+- To build proto files, go to `./proto` and run `make build`. VSCode TypeScript server sometimes doesn't see files changes, so press `CMD+Shift+P` and run `Restart TS Server` command.
+- `pkill kubectl; make port-forward` in the `./devenv` directory to "make the remote Pulsar available" at the localhost.
+
 ## Start
+
+- [ ] At first, you need to Kubernetes cluster. We don't provide instructions for now, just ask an administrator. It's a one-time action.
 
 Everything in different terminals.
 
@@ -90,7 +98,3 @@ Currently it's needed for grpc-web.
 
 - `cd ./api`
 - `sbt`, then `~reStart` in the SBT shell
-
-## Development
-
-- To build proto files, go to `./proto` and run `make build`. VSCode TypeScript server sometimes doesn't see files changes, so press `CMD+Shift+P` and run `Restart TS Server` command.
