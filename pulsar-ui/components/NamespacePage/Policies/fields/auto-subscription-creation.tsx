@@ -86,7 +86,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.removeAutoSubscriptionCreation(req, {}).catch(err => notifyError(`Unable to set auto subscription creation policy. ${err}`));
           if (res?.getStatus()?.getCode() !== Code.OK) {
-            notifyError(`Unable to remove auto subscription creation policy. ${res?.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set auto subscription creation policy. ${res?.getStatus()?.getMessage()}`);
             return;
           }
         }

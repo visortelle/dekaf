@@ -21,7 +21,7 @@ const DeleteNamespace: React.FC<DeleteTopicProps> = (props) => {
   const navigate = useNavigate();
   const { mutate } = useSWRConfig()
   const { notifyError, notifySuccess } = Notifications.useContext();
-  const {namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
   const deleteNamespace = async () => {
@@ -41,7 +41,7 @@ const DeleteNamespace: React.FC<DeleteTopicProps> = (props) => {
       await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }));
       await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
     } catch (err) {
-      notifyError(`Failed to delete namespace ${props.tenant}/${props.namespace}. ${err}`)
+      notifyError(`Unable to delete namespace ${props.tenant}/${props.namespace}. ${err}`)
     }
   };
 

@@ -16,6 +16,7 @@ const _DurationInput: React.FC<_DurationInputProps> = (props) => {
       <div className={s.Value}>
         <Input
           type='number'
+          inputProps={{ min: 0 }}
           value={props.value.value.toString()}
           onChange={(size) => {
             const duration: Duration = { ...props.value, value: Number(size) };

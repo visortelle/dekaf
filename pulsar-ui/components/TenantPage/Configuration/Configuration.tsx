@@ -89,7 +89,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
       const res = await tenantServiceClient.updateTenant(req, null).catch(onUpdateError);
       if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to remove role. ${res?.getStatus()?.getMessage()}`);
+        notifyError(`Unable to set role. ${res?.getStatus()?.getMessage()}`);
         return;
       }
 
@@ -149,7 +149,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
       const res = await tenantServiceClient.updateTenant(req, null).catch(onUpdateError);
       if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to remove allowed cluster. ${res?.getStatus()?.getMessage()}`);
+        notifyError(`Unable to set allowed cluster. ${res?.getStatus()?.getMessage()}`);
         return;
       }
 

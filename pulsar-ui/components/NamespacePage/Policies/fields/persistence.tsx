@@ -8,12 +8,10 @@ import Input from "../../../ui/ConfigurationTable/Input/Input";
 import { useState } from 'react';
 import Select from '../../../ui/Select/Select';
 import { swrKeys } from '../../../swrKeys';
-import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import WithUpdateConfirmation, { ValidationError } from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 const policy = 'persistence';
-
-type ValidationResult = React.ReactElement | undefined;
 
 export type PolicyValue =
   { type: 'disabled' } | {
@@ -33,7 +31,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
-  const [validationError, setValidationError] = useState<ValidationResult>(undefined);
+  const [validationError, setValidationError] = useState<ValidationError>(undefined);
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
@@ -89,7 +87,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           const res = await namespaceServiceClient.removePersistence(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(`Unable to remove persistence policy: ${res.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set persistence policy: ${res.getStatus()?.getMessage()}`);
           }
         }
 
@@ -113,7 +111,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       validationError={validationError}
     >
       {({ value, onChange: _onChange }) => {
-        const validate = (v: PolicyValue): ValidationResult => {
+        const validate = (v: PolicyValue): ValidationError => {
           if (v.type !== 'enabled') {
             return undefined;
           }

@@ -84,7 +84,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const res = await namespaceServiceClient.removeDelayedDelivery(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
-            notifyError(`Unable to remove delayed delivery policy. ${res.getStatus()?.getMessage()}`);
+            notifyError(`Unable to set delayed delivery policy. ${res.getStatus()?.getMessage()}`);
           }
         }
 

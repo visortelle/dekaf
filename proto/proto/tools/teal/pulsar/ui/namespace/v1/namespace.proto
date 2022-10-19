@@ -837,6 +837,36 @@ message RemoveSubscriptionDispatchRateResponse {
   google.rpc.Status status = 1;
 }
 
+message GetRetentionRequest {
+  string namespace = 1;
+}
+message RetentionUnspecified {}
+message RetentionSpecified {
+  int32 retention_time_in_minutes = 1;
+  int32 retention_size_in_mb = 2;
+}
+message GetRetentionResponse {
+  google.rpc.Status status = 1;
+  oneof retention {
+    RetentionUnspecified unspecified = 3;
+    RetentionSpecified specified = 4;
+  }
+}
+message SetRetentionRequest {
+  string namespace = 1;
+  int32 retention_time_in_minutes = 2;
+  int32 retention_size_in_mb = 3;
+}
+message SetRetentionResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveRetentionRequest {
+  string namespace = 1;
+}
+message RemoveRetentionResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -951,4 +981,8 @@ service NamespaceService {
   rpc GetSubscriptionDispatchRate(GetSubscriptionDispatchRateRequest) returns (GetSubscriptionDispatchRateResponse);
   rpc SetSubscriptionDispatchRate(SetSubscriptionDispatchRateRequest) returns (SetSubscriptionDispatchRateResponse);
   rpc RemoveSubscriptionDispatchRate(RemoveSubscriptionDispatchRateRequest) returns (RemoveSubscriptionDispatchRateResponse);
+
+  rpc GetRetention(GetRetentionRequest) returns (GetRetentionResponse);
+  rpc SetRetention(SetRetentionRequest) returns (SetRetentionResponse);
+  rpc RemoveRetention(RemoveRetentionRequest) returns (RemoveRetentionResponse);
 }

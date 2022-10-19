@@ -48,7 +48,7 @@ const SubscriptionExpirationTimeInput: React.FC<SubscriptionExpirationTimeInputP
           onChange={(v) => v === 'disabled' ? setSubscriptionExpirationTime('disabled') : setSubscriptionExpirationTime(defaultSubscriptionExpirationTime)}
         />
       </div>
-      {subscriptionExpirationTime !== 'disabled' && (
+      {/* {subscriptionExpirationTime !== 'disabled' && (
         <DurationInput
           value={subscriptionExpirationTime.duration}
           onChange={(v) => {
@@ -61,7 +61,7 @@ const SubscriptionExpirationTimeInput: React.FC<SubscriptionExpirationTimeInputP
             setSubscriptionExpirationTime({ duration: v });
           }}
         />
-      )}
+      )} */}
       {showUpdateConfirmation && (
         <UpdateConfirmation
           onConfirm={() => props.onChange(subscriptionExpirationTime)}
