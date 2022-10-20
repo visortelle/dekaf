@@ -4,7 +4,7 @@ deps:
   - remote: buf.build
     owner: cncf
     repository: xds
-    commit: 0492166643854ea08814f4349286f9cb
+    commit: f6f9b109ae2f445e9c1c00bb765b5373
   - remote: buf.build
     owner: envoyproxy
     repository: envoy
@@ -16,11 +16,11 @@ deps:
   - remote: buf.build
     owner: googleapis
     repository: googleapis
-    commit: 0173a713ae734ba4ad55a7f32f63326d
+    commit: d1263fe26f8e430a967dc22a4d0cad18
   - remote: buf.build
     owner: grpc
     repository: grpc
-    commit: 40b550c256324a8f85ba933e92479f95
+    commit: 428bdb303f1c4bb9b33364ed61df516a
   - remote: buf.build
     owner: opencensus
     repository: opencensus
