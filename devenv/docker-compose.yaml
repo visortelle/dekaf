@@ -27,7 +27,7 @@ services:
   #   volumes:
   #     - $PWD/pulsar-manager/application.properties:/pulsar-manager/pulsar-manager/application.properties
   envoy:
-    image: envoyproxy/envoy-dev:e19476d62956b60688de2b6109de1cf4dea6ae19
+    image: envoyproxy/envoy:v1.24-latest
     ports:
       - 10000:10000
       - 10001:10001
