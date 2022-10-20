@@ -6,6 +6,12 @@ dev: ## Start development using docker-compose
 	docker volume ls -q | xargs -I {} docker volume rm {}
 	docker-compose up -d
 
+.PHONY: dev-local
+dev-local: ## Start development using docker-compose with Pulsar running locally
+	docker ps -a -q | xargs -I {} docker container rm -f {}
+	docker volume ls -q | xargs -I {} docker volume rm {}
+	docker-compose -f ./docker-compose-local.yaml up -d
+
 .PHONY: devtools-pulsar-manager
 dev-pulsar-manager: ## Perepare pulsar-manager.
 	./pulsar-manager/create-default-user.sh
