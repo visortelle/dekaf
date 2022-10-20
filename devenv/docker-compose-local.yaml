@@ -1,0 +1,22 @@
+version: '2.4'
+
+services:
+  pulsar:
+    image: apachepulsar/pulsar:2.10.1
+    command: /entrypoint.sh topic-level-policies-enabled
+    restart: always
+    ports:
+      - 6650:6650
+      - 8080:8080
+      - 2181:2181 # Zookeeper
+    volumes:
+      - $PWD/cases:/cases
+      - $PWD/entrypoint.sh:/entrypoint.sh
+
+  envoy:
+    image: envoyproxy/envoy:v1.24-latest
+    ports:
+      - 10000:10000
+      - 10001:10001
+    volumes:
+      - $PWD/envoy/envoy.yaml:/etc/envoy/envoy.yaml
