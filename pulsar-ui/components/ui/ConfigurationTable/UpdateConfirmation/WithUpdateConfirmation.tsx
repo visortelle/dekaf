@@ -12,8 +12,6 @@ export type WithUpdateConfirmationProps<V> = {
 function WithUpdateConfirmation<V>(props: WithUpdateConfirmationProps<V>): React.ReactElement {
   const [value, setValue] = React.useState<V>(props.initialValue);
 
-  console.log('value', props.initialValue, value);
-
   const isShowConfirmation = !isEqual(props.initialValue, value);
   const handleConfirm = () => props.onConfirm(value);
 

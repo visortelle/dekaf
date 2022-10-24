@@ -11,3 +11,8 @@
   margin-bottom: 4rem;
   font-weight: bold;
 }
+
+.ValidationError {
+  color: var(--accent-color-red);
+  font-weight: bold;
+}
