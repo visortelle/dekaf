@@ -19,8 +19,8 @@ lazy val root = project
         "ch.qos.logback" % "logback-classic" % "1.2.11",
         "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
         // Pulsar
-        "org.apache.pulsar" % "pulsar-client-original" % "2.10.1",
-        "org.apache.pulsar" % "pulsar-client-admin-original" % "2.10.1",
+        "org.apache.pulsar" % "pulsar-client-original" % "2.10.2",
+        "org.apache.pulsar" % "pulsar-client-admin-original" % "2.10.2",
         "io.netty" % "netty-all" % "4.1.79.Final", // Needed by pulsar-client-original
 
         // Uncategorized
