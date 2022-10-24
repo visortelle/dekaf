@@ -174,7 +174,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <strong className={sf.FormLabel}>Max inactive duration</strong>
                 <div className={sf.FormItem}>
                   <DurationInput
-                    value={value.maxInactiveDurationSeconds}
+                    initialValue={value.maxInactiveDurationSeconds}
                     onChange={(v) => onChange({ ...value, maxInactiveDurationSeconds: v })}
                   />
                 </div>
