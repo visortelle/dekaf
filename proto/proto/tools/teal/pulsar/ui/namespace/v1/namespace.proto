@@ -918,6 +918,33 @@ message SetSubscriptionAuthModeResponse {
   google.rpc.Status status = 1;
 }
 
+message GetSubscriptionExpirationTimeRequest {
+  string namespace = 1;
+}
+message SubscriptionExpirationTimeUnspecified {}
+message SubscriptionExpirationTimeSpecified {
+  int32 subscription_expiration_time_in_minutes = 1;
+}
+message GetSubscriptionExpirationTimeResponse {
+  google.rpc.Status status = 1;
+  oneof subscription_expiration_time {
+    SubscriptionExpirationTimeUnspecified unspecified = 3;
+    SubscriptionExpirationTimeSpecified specified = 4;
+  }
+}
+message SetSubscriptionExpirationTimeRequest {
+  string namespace = 1;
+  int32 subscription_expiration_time_in_minutes = 2;
+}
+message SetSubscriptionExpirationTimeResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscriptionExpirationTimeRequest {
+  string namespace = 1;
+}
+message RemoveSubscriptionExpirationTimeResponse {
+  google.rpc.Status status = 1;
+}
 
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
@@ -1044,4 +1071,8 @@ service NamespaceService {
 
   rpc GetSubscriptionAuthMode(GetSubscriptionAuthModeRequest) returns (GetSubscriptionAuthModeResponse);
   rpc SetSubscriptionAuthMode(SetSubscriptionAuthModeRequest) returns (SetSubscriptionAuthModeResponse);
+
+  rpc GetSubscriptionExpirationTime(GetSubscriptionExpirationTimeRequest) returns (GetSubscriptionExpirationTimeResponse);
+  rpc SetSubscriptionExpirationTime(SetSubscriptionExpirationTimeRequest) returns (SetSubscriptionExpirationTimeResponse);
+  rpc RemoveSubscriptionExpirationTime(RemoveSubscriptionExpirationTimeRequest) returns (RemoveSubscriptionExpirationTimeResponse);
 }
