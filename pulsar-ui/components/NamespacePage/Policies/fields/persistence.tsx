@@ -123,7 +123,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           );
 
           const validationError = isValid ? undefined : (
-            <div style={{ color: `var(--accent-color-red)`, marginBottom: '12rem' }}>
+            <div className={sf.ValidationError} style={{ marginBottom: '12rem' }}>
               <span><strong>Ensemble</strong> must be &gt;= <strong>Write quorum</strong>.</span>
               <br />
               <span><strong>Write quorum</strong> must be &gt;= <strong>Ack quorum</strong>.</span>
@@ -209,7 +209,22 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Persistence',
-  description: <span>List of clusters that will be used for replication.</span>,
+  description: <div>Determines how BookKeeper handles persistent storage of messages. Policies determine four things:
+    <ul>
+      <li>
+        Ensemble (E) size: number of bookies to use for storing entries in a ledger.
+      </li>
+      <li>
+        Write quorum (Q<sub>w</sub>) size: replication factor for storing entries (messages) in a ledger.
+      </li>
+      <li>
+        Ack quorum (Q<sub>a</sub>) size: number of guaranteed copies (acks to wait for before a write is considered completed).
+      </li>
+      <li>
+        The throttling rate for mark-delete operations.
+      </li>
+    </ul>
+  </div>,
   input: <FieldInput {...props} />
 });
 
