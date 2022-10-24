@@ -867,6 +867,36 @@ message RemoveRetentionResponse {
   google.rpc.Status status = 1;
 }
 
+message GetSubscribeRateRequest {
+  string namespace = 1;
+}
+message SubscribeRateUnspecified {}
+message SubscribeRateSpecified {
+  int32 subscribe_throttling_rate_per_consumer = 1;
+  int32 rate_period_in_seconds = 2;
+}
+message GetSubscribeRateResponse {
+  google.rpc.Status status = 1;
+  oneof subscribe_rate {
+    SubscribeRateUnspecified unspecified = 3;
+    SubscribeRateSpecified specified = 4;
+  }
+}
+message SetSubscribeRateRequest {
+  string namespace = 1;
+  int32 subscribe_throttling_rate_per_consumer = 2;
+  int32 rate_period_in_seconds = 3;
+}
+message SetSubscribeRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscribeRateRequest {
+  string namespace = 1;
+}
+message RemoveSubscribeRateResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -985,4 +1015,8 @@ service NamespaceService {
   rpc GetRetention(GetRetentionRequest) returns (GetRetentionResponse);
   rpc SetRetention(SetRetentionRequest) returns (SetRetentionResponse);
   rpc RemoveRetention(RemoveRetentionRequest) returns (RemoveRetentionResponse);
+
+  rpc GetSubscribeRate(GetSubscribeRateRequest) returns (GetSubscribeRateResponse);
+  rpc SetSubscribeRate(SetSubscribeRateRequest) returns (SetSubscribeRateResponse);
+  rpc RemoveSubscribeRate(RemoveSubscribeRateRequest) returns (RemoveSubscribeRateResponse);
 }
