@@ -897,6 +897,28 @@ message RemoveSubscribeRateResponse {
   google.rpc.Status status = 1;
 }
 
+message GetSubscriptionAuthModeRequest {
+  string namespace = 1;
+}
+enum SubscriptionAuthMode {
+  SUBSCRIPTION_AUTH_MODE_UNSPECIFIED = 0;
+  SUBSCRIPTION_AUTH_MODE_NONE = 1;
+  SUBSCRIPTION_AUTH_MODE_PREFIX = 2;
+}
+
+message GetSubscriptionAuthModeResponse {
+  google.rpc.Status status = 1;
+  SubscriptionAuthMode subscription_auth_mode = 2;
+}
+message SetSubscriptionAuthModeRequest {
+  string namespace = 1;
+  SubscriptionAuthMode subscription_auth_mode = 2;
+}
+message SetSubscriptionAuthModeResponse {
+  google.rpc.Status status = 1;
+}
+
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -1019,4 +1041,7 @@ service NamespaceService {
   rpc GetSubscribeRate(GetSubscribeRateRequest) returns (GetSubscribeRateResponse);
   rpc SetSubscribeRate(SetSubscribeRateRequest) returns (SetSubscribeRateResponse);
   rpc RemoveSubscribeRate(RemoveSubscribeRateRequest) returns (RemoveSubscribeRateResponse);
+
+  rpc GetSubscriptionAuthMode(GetSubscriptionAuthModeRequest) returns (GetSubscriptionAuthModeResponse);
+  rpc SetSubscriptionAuthMode(SetSubscriptionAuthModeRequest) returns (SetSubscriptionAuthModeResponse);
 }
