@@ -121,7 +121,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             </div>
             {value.type === 'specified-for-this-namespace' && (
               <MemorySizeInput
-                value={value.offloadThresholdBytes}
+                initialValue={value.offloadThresholdBytes}
                 onChange={v => onChange({ type: 'specified-for-this-namespace', offloadThresholdBytes: v })}
               />
             )}
