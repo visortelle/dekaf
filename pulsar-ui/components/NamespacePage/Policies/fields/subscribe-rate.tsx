@@ -131,7 +131,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             {value.type === 'specified' && (
               <div>
                 <div className={sf.FormItem}>
-                  <div className={sf.FormLabel}>Rate period (sec.)</div>
+                  <div className={sf.FormLabel}>Rate period in seconds</div>
                   <Input value={String(value.ratePeriodInSeconds)} onChange={v => onChange({ ...value, ratePeriodInSeconds: Math.floor(Number(v)) })} type='number' />
                 </div>
                 <div className={sf.FormItem}>

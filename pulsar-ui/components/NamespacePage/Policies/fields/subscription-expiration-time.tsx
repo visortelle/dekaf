@@ -1,77 +1,26 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import { Duration } from '../../../ui/ConfigurationTable/DurationInput/types';
-import { useEffect, useState } from 'react';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import SelectInput from '../../../ui/ConfigurationTable/SelectInput/SelectInput';
-import { durationToSeconds, secondsToDuration } from '../../../ui/ConfigurationTable/DurationInput/conversions';
-import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
-import UpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation';
+import Select from '../../../ui/Select/Select';
+import Input from "../../../ui/Input/Input";
 import { swrKeys } from '../../../swrKeys';
-import { isEqual } from 'lodash';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
+import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import stringify from 'safe-stable-stringify';
+import { useState } from 'react';
 
 const policy = 'subscriptionExpirationTime';
 
-type SubscriptionExpirationTime = 'disabled' | {
-  duration: Duration;
+type PolicyValue = {
+  type: 'inherited-from-broker-config'
+} | {
+  type: 'specified',
+  subscriptionExpirationTimeInSeconds: number;
 };
-
-const defaultSubscriptionExpirationTime: SubscriptionExpirationTime = {
-  duration: {
-    unit: 'm',
-    value: 1,
-  }
-};
-
-type SubscriptionExpirationTimeInputProps = {
-  value: SubscriptionExpirationTime;
-  onChange: (value: SubscriptionExpirationTime) => void;
-}
-
-const SubscriptionExpirationTimeInput: React.FC<SubscriptionExpirationTimeInputProps> = (props) => {
-  const [subscriptionExpirationTime, setSubscriptionExpirationTime] = useState<SubscriptionExpirationTime>(props.value);
-
-  useEffect(() => {
-    setSubscriptionExpirationTime(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, subscriptionExpirationTime);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<'enabled' | 'disabled'>
-          list={[{ type: 'item', value: 'disabled', title: 'Disabled' }, { type: 'item', value: 'enabled', title: 'Enabled' }]}
-          value={subscriptionExpirationTime === 'disabled' ? 'disabled' : 'enabled'}
-          onChange={(v) => v === 'disabled' ? setSubscriptionExpirationTime('disabled') : setSubscriptionExpirationTime(defaultSubscriptionExpirationTime)}
-        />
-      </div>
-      {/* {subscriptionExpirationTime !== 'disabled' && (
-        <DurationInput
-          value={subscriptionExpirationTime.duration}
-          onChange={(v) => {
-            // Minutes are use as units for the subscription expiration time.
-            if (v.unit === 's') {
-              setSubscriptionExpirationTime({ duration: { value: v.value, unit: 'm' } });
-              return;
-            }
-
-            setSubscriptionExpirationTime({ duration: v });
-          }}
-        />
-      )} */}
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(subscriptionExpirationTime)}
-          onReset={() => setSubscriptionExpirationTime(props.value)}
-        />
-      )}
-    </div>
-  );
-
-}
 
 export type FieldInputProps = {
   tenant: string;
@@ -79,48 +28,127 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const [key, setKey] = useState(0);
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig()
+  const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update message TTL. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: subscriptionExpirationTimeInMinutes, error: subscriptionExpirationTimeError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getSubscriptionExpirationTime(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetSubscriptionExpirationTimeRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getSubscriptionExpirationTime(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get subscribe rate. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getSubscriptionExpirationTimeCase()) {
+        case pb.GetSubscriptionExpirationTimeResponse.SubscriptionExpirationTimeCase.UNSPECIFIED: {
+          initialValue = { type: 'inherited-from-broker-config' };
+          break;
+        }
+        case pb.GetSubscriptionExpirationTimeResponse.SubscriptionExpirationTimeCase.SPECIFIED: {
+          const subscriptionExpirationTime = res.getSpecified()!;
+          initialValue = {
+            type: 'specified',
+            subscriptionExpirationTimeInSeconds: subscriptionExpirationTime.getSubscriptionExpirationTimeInMinutes() * 60,
+          }
+          break;
+        }
+      }
+
+      return initialValue;
+    }
   );
 
-  if (subscriptionExpirationTimeError) {
-    notifyError(`Unable to get subscription expiration time. ${subscriptionExpirationTimeError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get subscribe rate. ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return null;
   }
 
   return (
-    <SubscriptionExpirationTimeInput
-      value={subscriptionExpirationTimeInMinutes === undefined ? 'disabled' : {
-        duration: secondsToDuration(subscriptionExpirationTimeInMinutes * 60)
-      }}
-      onChange={async (v) => {
-        if (v === 'disabled') {
-          await adminClient.namespaces.removeSubscriptionExpirationTime(props.tenant, props.namespace).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setSubscriptionExpirationTime(
-            props.tenant,
-            props.namespace,
-            durationToSeconds(v.duration) / 60
-          ).catch(onUpdateError);
+    <WithUpdateConfirmation<PolicyValue>
+      key={key}
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveSubscriptionExpirationTimeRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await namespaceServiceClient.removeSubscriptionExpirationTime(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set subscribe rate. ${res.getStatus()?.getMessage()}`);
+          }
+        }
+
+        if (value.type === 'specified') {
+          const req = new pb.SetSubscriptionExpirationTimeRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+          req.setSubscriptionExpirationTimeInMinutes(Math.floor(value.subscriptionExpirationTimeInSeconds / 60));
+
+          const res = await namespaceServiceClient.setSubscriptionExpirationTime(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set subscribe rate. ${res.getStatus()?.getMessage()}`);
+          }
         }
 
         await mutate(swrKey);
+        setKey(key + 1);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified', title: 'Specified' },
+                ]}
+                value={value.type}
+                onChange={(type) => {
+                  if (type === 'inherited-from-broker-config') {
+                    onChange({ type });
+                  }
+                  if (type === 'specified') {
+                    onChange({
+                      type,
+                      subscriptionExpirationTimeInSeconds: 0,
+                    });
+                  }
+                }}
+              />
+            </div>
+            {value.type === 'specified' && (
+              <div>
+                <div className={sf.FormLabel}>Expiration time (rounded to minutes)</div>
+                <DurationInput
+                  initialValue={value.subscriptionExpirationTimeInSeconds}
+                  onChange={v => onChange({ ...value, subscriptionExpirationTimeInSeconds: v })}
+                />
+              </div>
+
+            )}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
   )
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription expiration time',
-  description: <span>Subscription expiration time.</span>,
+  description: <span>Set subscription expiration time for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
 
