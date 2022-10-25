@@ -1,91 +1,54 @@
-import SelectInput, { ListItem } from "../../../ui/ConfigurationTable/SelectInput/SelectInput";
-import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import Select, { ListItem } from "../../../ui/Select/Select"; import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Either from 'fp-ts/lib/Either';
 import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useEffect, useState } from "react";
-import UpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
+import { useState } from "react";
 import { swrKeys } from "../../../swrKeys";
-import { isEqual } from "lodash";
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+
+function subscriptionTypeFromPb(pbType: pb.SubscriptionType): SubscriptionType {
+  switch (pbType) {
+    case pb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED:
+      return 'Shared';
+    case pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE:
+      return 'Exclusive';
+    case pb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER:
+      return 'Failover';
+    case pb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED:
+      return 'Key_Shared';
+    default:
+      throw new Error(`Unknown subscription type: ${pbType}`);
+  }
+}
+
+function subscriptionTypeToPb(type: SubscriptionType): pb.SubscriptionType {
+  switch (type) {
+    case 'Shared':
+      return pb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED;
+    case 'Exclusive':
+      return pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE;
+    case 'Failover':
+      return pb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER;
+    case 'Key_Shared':
+      return pb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED;
+    default:
+      throw new Error(`Unknown subscription type: ${type}`);
+  }
+}
 
 const policy = 'subscriptionTypesEnabled';
 
 const subscriptionTypes = ["Exclusive", "Shared", "Failover", "Key_Shared"] as const;
 export type SubscriptionType = typeof subscriptionTypes[number];
 
-type SubscriptionTypesEnabled = 'all' | { customList: SubscriptionType[] };
-
-type SubscriptionTypesEnabledProps = {
-  value: SubscriptionTypesEnabled;
-  onChange: (value: SubscriptionTypesEnabled) => void;
-}
-
-const SubscriptionTypesEnabledInput: React.FC<SubscriptionTypesEnabledProps> = (props) => {
-  const [subscriptionTypesEnabled, setSubscriptionTypesEnabled] = useState<SubscriptionTypesEnabled>(props.value);
-
-  useEffect(() => {
-    setSubscriptionTypesEnabled(() => props.value);
-  }, [props.value]);
-
-  const showUpdateConfirmation = !isEqual(props.value, subscriptionTypesEnabled);
-
-  return (
-    <div>
-      <div className={sf.FormItem}>
-        <SelectInput<'all' | 'customList'>
-          list={[{ type: 'item', value: 'all', title: 'All' }, { type: 'item', value: 'customList', title: 'Custom list' }]}
-          onChange={(v) => v === 'all' ? setSubscriptionTypesEnabled(() => 'all') : setSubscriptionTypesEnabled(() => ({ customList: [...subscriptionTypes] }))}
-          value={subscriptionTypesEnabled === 'all' ? 'all' : 'customList'}
-        />
-      </div>
-      {subscriptionTypesEnabled !== 'all' && (() => {
-        const list = subscriptionTypes.filter(t => !subscriptionTypesEnabled.customList.some(ste => ste === t)).map<ListItem<SubscriptionType>>(c => ({ type: 'item', value: c, title: c })).sort((a, b) => a.title.localeCompare(b.title, 'en', { numeric: true }));
-        return (
-          <div className={sf.FormItem}>
-            <ListInput<SubscriptionType>
-              value={subscriptionTypesEnabled.customList.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))}
-              getId={(v) => v}
-              renderItem={(v) => <div>{v}</div>}
-              editor={(subscriptionTypes.length === subscriptionTypesEnabled.customList.length) ? undefined : {
-                render: (v, onChange) => {
-                  return (
-                    <SelectInput<SubscriptionType>
-                      list={list}
-                      value={v}
-                      onChange={(id) => onChange(id)}
-                    />
-                  )
-                },
-                initialValue: list[0].type === 'item' ? list[0].value : undefined,
-              }}
-              onRemove={async (id) => {
-                setSubscriptionTypesEnabled(() => ({
-                  customList: subscriptionTypesEnabled.customList.filter(r => r !== id)
-                }));
-              }}
-              onAdd={(subscriptionTypes.length === subscriptionTypesEnabled.customList.length) ? undefined : async (v) => {
-                setSubscriptionTypesEnabled(() => ({
-                  customList: [...subscriptionTypesEnabled.customList, v]
-                }));
-              }}
-              isValid={(_) => Either.right(undefined)}
-            />
-          </div>
-        );
-      })()}
-
-      {showUpdateConfirmation && (
-        <UpdateConfirmation
-          onConfirm={() => props.onChange(subscriptionTypesEnabled)}
-          onReset={() => setSubscriptionTypesEnabled(() => props.value)}
-        />
-      )}
-    </div >
-  );
-}
+type PolicyValue =
+  { type: 'inherited-from-broker-config' } |
+  { type: 'specified-for-this-namespace', subscriptionTypes: SubscriptionType[] };
 
 export type FieldInputProps = {
   tenant: string;
@@ -93,35 +56,148 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const [key, setKey] = useState(0);
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const onUpdateError = (err: string) => notifyError(`Can't update subscription types enabled. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: subscriptionTypesEnabled, error: subscriptionTypesEnabledError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getSubscriptionTypesEnabled(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetSubscriptionTypesEnabledRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getSubscriptionTypesEnabled(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get subscription types enabled. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
+      switch (res.getSubscriptionTypesEnabledCase()) {
+        case pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabledCase.INHERITED: {
+          initialValue = { type: 'inherited-from-broker-config' };
+          break;
+        }
+        case pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabledCase.SPECIFIED: {
+          initialValue = {
+            type: 'specified-for-this-namespace',
+            subscriptionTypes: res.getSpecified()?.getTypesList().map(subscriptionTypeFromPb) || []
+          }
+          break;
+        }
+      }
+
+      return initialValue;
+    }
   );
 
-  if (subscriptionTypesEnabledError) {
-    notifyError(`Unable to get subscription types enabled. ${subscriptionTypesEnabledError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get subscription types enabled. ${initialValueError}`);
+  }
+
+  if (initialValue === undefined) {
+    return <></>
   }
 
   return (
-    <SubscriptionTypesEnabledInput
-      value={(subscriptionTypesEnabled === undefined || subscriptionTypesEnabled.length === 0) ? 'all' : { customList: subscriptionTypesEnabled }}
-      onChange={async (v) => {
-        if (v === 'all') {
-          await adminClient.namespaces.removeSubscriptionTypesEnabled(props.tenant, props.namespace).catch(onUpdateError);
-        } else {
-          await adminClient.namespaces.setSubscriptionTypesEnabled(props.tenant, props.namespace, v.customList).catch(onUpdateError);
+    <WithUpdateConfirmation<PolicyValue>
+      key={key}
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-broker-config') {
+          const req = new pb.RemoveSubscriptionTypesEnabledRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+          const res = await namespaceServiceClient.removeSubscriptionTypesEnabled(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
+            return;
+          }
+        }
+
+        if (value.type === 'specified-for-this-namespace') {
+          const req = new pb.SetSubscriptionTypesEnabledRequest();
+          req.setNamespace(`${props.tenant}/${props.namespace}`);
+          req.setTypesList(value.subscriptionTypes.map(subscriptionTypeToPb));
+
+          const res = await namespaceServiceClient.setSubscriptionTypesEnabled(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
+            return;
+          }
         }
 
         await mutate(swrKey);
+        setKey(key + 1);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
+                ]}
+                onChange={v => {
+                  switch (v) {
+                    case 'inherited-from-broker-config':
+                      onChange({ type: 'inherited-from-broker-config' });
+                      break;
+                    case 'specified-for-this-namespace':
+                      onChange({
+                        type: 'specified-for-this-namespace',
+                        subscriptionTypes: ['Exclusive', 'Failover', 'Shared', 'Key_Shared']
+                      });
+                      break;
+                  }
+                }}
+                value={value.type}
+              />
+            </div>
+            {value.type === 'specified-for-this-namespace' && (() => {
+              const list = subscriptionTypes
+                .filter(t => !value.subscriptionTypes.some(ste => ste === t))
+                .map<ListItem<SubscriptionType>>(c => ({ type: 'item', value: c, title: c }))
+                .sort((a, b) => a.title.localeCompare(b.title, 'en', { numeric: true }))
+
+              return (
+                <div className={sf.FormItem}>
+                  <ListInput<SubscriptionType>
+                    value={value.subscriptionTypes.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))}
+                    getId={(v) => v}
+                    renderItem={(v) => <div>{v}</div>}
+                    editor={(subscriptionTypes.length === value.subscriptionTypes.length) ? undefined : {
+                      render: (v, onChange) => {
+                        return (
+                          <Select<SubscriptionType>
+                            list={list}
+                            value={v}
+                            onChange={(v) => onChange(v)}
+                          />
+                        )
+                      },
+                      initialValue: list[0].type === 'item' ? list[0].value : undefined,
+                    }}
+                    onRemove={(id) => {
+                      onChange({ ...value, subscriptionTypes: value.subscriptionTypes.filter(v => v !== id) });
+                    }}
+                    onAdd={value.subscriptionTypes.length === subscriptionTypes.length ? undefined : (id) => {
+                      onChange({ ...value, subscriptionTypes: [...value.subscriptionTypes, id] })
+                    }}
+                    validate={(_) => Either.right(undefined)}
+                  />
+                </div>
+              )
+            })()}
+          </>
+        );
+      }}
+    </WithUpdateConfirmation>
   );
 }
 

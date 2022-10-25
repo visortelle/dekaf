@@ -4,13 +4,11 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Select from '../../../ui/Select/Select';
-import Input from "../../../ui/Input/Input";
 import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
-import stringify from 'safe-stable-stringify';
 import { useState } from 'react';
 
 const policy = 'subscriptionExpirationTime';

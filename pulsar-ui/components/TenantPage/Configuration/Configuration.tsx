@@ -115,7 +115,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
       await mutate(swrKey);
     }}
-    isValid={() => Either.right(undefined)}
+    validate={() => Either.right(undefined)}
   />
 
   const clustersList = (clusters || []).filter(c => !tenantInfo?.allowedClusters?.some(ac => ac === c)).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c }));
@@ -175,7 +175,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
       await mutate(swrKey);
     }}
-    isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
+    validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
   />
 
   return (
