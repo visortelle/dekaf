@@ -14,8 +14,8 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 const policy = 'persistence';
 
 export type PolicyValue =
-  { type: 'disabled' } | {
-    type: 'enabled',
+  { type: 'inherited-from-broker-config' } | {
+    type: 'specified-for-this-namespace',
     bookkeeperAckQuorum: number;
     bookkeeperEnsemble: number;
     bookkeeperWriteQuorum: number;
@@ -46,10 +46,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         return;
       }
 
-      let initialValue: PolicyValue = { type: 'disabled' };
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
       switch (res.getPersistenceCase()) {
         case pb.GetPersistenceResponse.PersistenceCase.UNSPECIFIED: {
-          initialValue = { type: 'disabled' }; break;
+          initialValue = { type: 'inherited-from-broker-config' }; break;
         }
         case pb.GetPersistenceResponse.PersistenceCase.SPECIFIED: {
           const v = res.getSpecified();
@@ -58,7 +58,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
 
           initialValue = {
-            type: 'enabled',
+            type: 'specified-for-this-namespace',
             bookkeeperAckQuorum: v.getBookkeeperAckQuorum(),
             bookkeeperEnsemble: v.getBookkeeperEnsemble(),
             bookkeeperWriteQuorum: v.getBookkeeperWriteQuorum(),
@@ -82,7 +82,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     <WithUpdateConfirmation<PolicyValue>
       initialValue={initialValue}
       onConfirm={async (value) => {
-        if (value.type === 'disabled') {
+        if (value.type === 'inherited-from-broker-config') {
           const req = new pb.RemovePersistenceRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           const res = await namespaceServiceClient.removePersistence(req, {});
@@ -91,7 +91,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
-        if (value.type === 'enabled') {
+        if (value.type === 'specified-for-this-namespace') {
           const req = new pb.SetPersistenceRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
@@ -112,7 +112,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     >
       {({ value, onChange: _onChange }) => {
         const validate = (v: PolicyValue): ValidationError => {
-          if (v.type !== 'enabled') {
+          if (v.type !== 'specified-for-this-namespace') {
             return undefined;
           }
 
@@ -143,15 +143,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <div className={sf.FormItem}>
               <Select<PolicyValue['type']>
                 list={[
-                  { type: 'item', value: 'disabled', title: 'Disabled' },
-                  { type: 'item', value: 'enabled', title: 'Enabled' }
+                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
                 ]}
                 value={value.type}
                 onChange={v => {
-                  onChange(v === 'disabled' ?
-                    { type: 'disabled' } :
+                  onChange(v === 'inherited-from-broker-config' ?
+                    { type: 'inherited-from-broker-config' } :
                     {
-                      type: 'enabled',
+                      type: 'specified-for-this-namespace',
                       bookkeeperAckQuorum: 0,
                       bookkeeperEnsemble: 0,
                       bookkeeperWriteQuorum: 0,
@@ -160,7 +160,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 }}
               />
             </div>
-            {value.type === 'enabled' && (
+            {value.type === 'specified-for-this-namespace' && (
               <div>
                 <div className={sf.FormItem}>
                   <strong className={sf.FormLabel}>Ensemble</strong>
