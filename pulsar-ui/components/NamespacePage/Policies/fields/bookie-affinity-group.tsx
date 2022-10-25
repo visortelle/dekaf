@@ -78,7 +78,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         if (value.type === 'specified') {
           const req = new pb.SetBookieAffinityGroupRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-          const groupDataPb =  new pb.BookieAffinityGroupData();
+          const groupDataPb = new pb.BookieAffinityGroupData();
           groupDataPb.setPrimaryList(value.primary);
           groupDataPb.setSecondaryList(value.secondary);
           req.setGroupData(groupDataPb);
@@ -132,7 +132,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
                     onChange({ ...value, primary: uniq([...value.primary, v]) });
                   }}
-                  isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Group name is required'))}
+                  validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Group name is required'))}
                 />
               </div>
             )}
@@ -162,7 +162,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
                     onChange({ ...value, secondary: uniq([...value.secondary, v]) });
                   }}
-                  isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Group name is required'))}
+                  validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Group name is required'))}
                 />
               </div>
             )}
