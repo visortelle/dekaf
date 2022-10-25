@@ -946,6 +946,41 @@ message RemoveSubscriptionExpirationTimeResponse {
   google.rpc.Status status = 1;
 }
 
+message GetSubscriptionTypesEnabledRequest {
+  string namespace = 1;
+}
+enum SubscriptionType {
+  SUBSCRIPTION_TYPE_UNSPECIFIED = 0;
+  SUBSCRIPTION_TYPE_EXCLUSIVE = 1;
+  SUBSCRIPTION_TYPE_SHARED = 2;
+  SUBSCRIPTION_TYPE_FAILOVER = 3;
+  SUBSCRIPTION_TYPE_KEY_SHARED = 4;
+}
+message SubscriptionTypesEnabledInherited {}
+message SubscriptionTypesEnabledSpecified {
+  repeated SubscriptionType types = 1;
+}
+message GetSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+  oneof subscription_types_enabled {
+    SubscriptionTypesEnabledInherited inherited = 3;
+    SubscriptionTypesEnabledSpecified specified = 4;
+  }
+}
+message SetSubscriptionTypesEnabledRequest {
+  string namespace = 1;
+  repeated SubscriptionType types = 2;
+}
+message SetSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscriptionTypesEnabledRequest {
+  string namespace = 1;
+}
+message RemoveSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -1075,4 +1110,8 @@ service NamespaceService {
   rpc GetSubscriptionExpirationTime(GetSubscriptionExpirationTimeRequest) returns (GetSubscriptionExpirationTimeResponse);
   rpc SetSubscriptionExpirationTime(SetSubscriptionExpirationTimeRequest) returns (SetSubscriptionExpirationTimeResponse);
   rpc RemoveSubscriptionExpirationTime(RemoveSubscriptionExpirationTimeRequest) returns (RemoveSubscriptionExpirationTimeResponse);
+
+  rpc GetSubscriptionTypesEnabled(GetSubscriptionTypesEnabledRequest) returns (GetSubscriptionTypesEnabledResponse);
+  rpc SetSubscriptionTypesEnabled(SetSubscriptionTypesEnabledRequest) returns (SetSubscriptionTypesEnabledResponse);
+  rpc RemoveSubscriptionTypesEnabled(RemoveSubscriptionTypesEnabledRequest) returns (RemoveSubscriptionTypesEnabledResponse);
 }

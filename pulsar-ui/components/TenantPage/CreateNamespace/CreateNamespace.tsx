@@ -94,7 +94,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
     }}
     onRemove={(v) => setReplicationClusters(replicationClusters.filter(c => c !== v))}
     onAdd={(v) => setReplicationClusters([...replicationClusters, v])}
-    isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Replication clusters cannot be empty'))}
+    validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Replication clusters cannot be empty'))}
   />
 
   const numBundlesInput = <Input type="number" value={numBundles.toString()} onChange={(v) => setNumBundles(parseInt(v))} placeholder="4" />;
