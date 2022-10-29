@@ -57,12 +57,19 @@ libprotoc 3.19.4
 
 - [ ] grpc-web <https://github.com/grpc/grpc-web/releases>
 
-- [ ] Google Cloud CLI https://cloud.google.com/sdk/gcloud
-
-- [ ] Ask administartor for cloud account to have access to dev Pulsar deployment
-
 - [ ] kubectl https://kubernetes.io/docs/tasks/tools/
 
+
+## Get access to development Kubernetes cluster
+
+- [ ] Ensure you have AWS CLI installed https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+- [ ] Login to AWS using your Microsoft account https://tealtools.awsapps.com/start
+- [ ] Run `aws configure sso --profile pulsar-developer` command
+  - [ ] SSO Start URL: https://tealtools.awsapps.com/start
+  - [ ] SSO Region: `eu-central-1`
+  - [ ] Role: `pulsarDeveloper`. If you don't have such role, ask an administrator.
+  - [ ] CLI default client region: `eu-central-1`
+- [ ] Add this string to your `~/.zshrc` or `~/.bashrc` file: `export AWS_PROFILE="pulsar-developer"`
 
 ## Development
 
