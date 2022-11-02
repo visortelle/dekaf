@@ -1,9 +1,56 @@
 syntax = "proto3";
 
-package tools.teal.pulsar.ui.namespace.v1;
+package tools.teal.pulsar.ui.topicpolicies.v1;
 
 import "google/rpc/status.proto";
 
+enum BacklogQuotaRetentionPolicy {
+  BACKLOG_QUOTA_RETENTION_POLICY_UNSPECIFIED = 0;
+  BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD = 1;
+  BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION = 2;
+  BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION = 3;
+}
+enum BacklogQuotaType {
+  BACKLOG_QUOTA_TYPE_UNSPECIFIED = 0;
+  BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE = 1;
+  BACKLOG_QUOTA_TYPE_MESSAGE_AGE = 2;
+}
+message DestinationStorageBacklogQuota {
+  int64 limit_size = 1;
+  optional BacklogQuotaRetentionPolicy retention_policy = 2;
+}
+message MessageAgeBacklogQuota {
+  int32 limit_time = 1;
+  optional BacklogQuotaRetentionPolicy retention_policy = 2;
+}
+message GetBacklogQuotasRequest {
+  string topic = 1;
+}
+message GetBacklogQuotasResponse {
+  google.rpc.Status status = 1;
+  optional DestinationStorageBacklogQuota destination_storage = 2;
+  optional MessageAgeBacklogQuota message_age = 3;
+}
+message SetBacklogQuotasRequest {
+  string topic = 1;
+  optional DestinationStorageBacklogQuota destination_storage = 2;
+  optional MessageAgeBacklogQuota message_age = 3;
+}
+message SetBacklogQuotasResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveBacklogQuotaRequest {
+  string topic = 1;
+  BacklogQuotaType backlog_quota_type = 2;
+}
+message RemoveBacklogQuotaResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
+
+  rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
+  rpc SetBacklogQuotas(SetBacklogQuotasRequest) returns (SetBacklogQuotasResponse);
+  rpc RemoveBacklogQuota(RemoveBacklogQuotaRequest) returns (RemoveBacklogQuotaResponse);
 
 }

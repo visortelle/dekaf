@@ -173,6 +173,51 @@ export const swrKeys = {
             },
           },
         },
+        topicpolicies: {
+          _: (props: { tenant: string }) => [
+            "pulsar",
+            "tenants",
+            props.tenant,
+            "topicpolicies",
+          ],
+          topicpolicy: {
+            persistentTopics: {
+              _: (props: { tenant: string; topicpolicy: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "topicpolicies",
+                props.topicpolicy,
+                "persistentTopics",
+              ],
+            },
+            nonPersistentTopics: {
+              _: (props: { tenant: string; topicpolicy: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "topicpolicies",
+                props.topicpolicy,
+                "nonPersistentTopics",
+              ],
+            },
+            policies: {
+              policy: (props: {
+                tenant: string;
+                topicpolicy: string;
+                policy: string;
+              }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "topicpolicies",
+                props.topicpolicy,
+                "policies",
+                props.policy,
+              ],
+            },
+          },
+        }
       },
     },
   },
