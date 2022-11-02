@@ -191,7 +191,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             {value.destinationStorage.type === 'specified-for-this-topicpolicy' && value.destinationStorage.limit.type === 'specific' && (
               <div className={sf.FormItem}>
                 <MemorySizeInput
-                  value={value.destinationStorage.limit.sizeBytes}
+                  initialValue={value.destinationStorage.limit.sizeBytes}
                   onChange={(v) => {
                     if (value.destinationStorage.type === 'inherited-from-broker-config') {
                       return;
@@ -277,7 +277,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             {value.messageAge.type === 'specified-for-this-topicpolicy' && value.messageAge.limitTime.type === 'specific' && (
               <div className={sf.FormItem}>
                 <DurationInput
-                  value={value.messageAge.limitTime.durationSeconds}
+                  initialValue={value.messageAge.limitTime.durationSeconds}
                   onChange={(v) => {
                     if (value.messageAge.type === 'inherited-from-broker-config') {
                       return;
