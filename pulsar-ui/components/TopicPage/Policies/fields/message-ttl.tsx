@@ -38,7 +38,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <div>
-      <strong className={sf.FormLabel}>Message TTL (sec.)</strong>
+      <strong className={sf.FormLabel}>Message TTL in seconds</strong>
       <Input
         type='number'
         value={String(messageTtl || 0)}

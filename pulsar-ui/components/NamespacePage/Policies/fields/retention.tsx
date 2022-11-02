@@ -6,13 +6,8 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import MemorySizeInput from "../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput";
-import { memorySizeToBytes, bytesToMemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/conversions";
-import { MemorySize } from "../../../ui/ConfigurationTable/MemorySizeInput/types";
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
-import { secondsToDuration, durationToSeconds } from "../../../ui/ConfigurationTable/DurationInput/conversions";
-import UpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/UpdateConfirmation";
-import { useEffect, useState } from "react";
-import { Duration } from "../../../ui/ConfigurationTable/DurationInput/types";
+import { useState } from "react";
 import { swrKeys } from "../../../swrKeys";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation, { ValidationError } from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
@@ -59,6 +54,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
+  const [key, setKey] = useState(0);
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
@@ -125,6 +121,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <WithUpdateConfirmation<PolicyValue>
+      key={key}
       initialValue={initialValue}
       validationError={validationError}
       onConfirm={async (value) => {
@@ -170,13 +167,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           if (value.retentionSizeInMb.type === 'infinite') {
             req.setRetentionSizeInMb(-1);
           } else {
-            req.setRetentionSizeInMb(Math.floor(value.retentionSizeInMb.value));
+            req.setRetentionSizeInMb(Math.max(Math.floor(value.retentionSizeInMb.value), 1));
           }
 
           if (value.retentionTimeInMinutes.type === 'infinite') {
             req.setRetentionTimeInMinutes(-1);
           } else {
-            req.setRetentionTimeInMinutes(Math.floor(value.retentionTimeInMinutes.value));
+            req.setRetentionTimeInMinutes(Math.max(Math.floor(value.retentionTimeInMinutes.value), 1));
           }
 
           const res = await namespaceServiceClient.setRetention(req, {});
@@ -185,7 +182,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
-        mutate(swrKey);
+        await mutate(swrKey);
+        setKey(key + 1);
       }}
     >
       {({ value, onChange: _onChange }) => {
@@ -195,7 +193,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             const timeIsZero = value.retentionTimeInMinutes.type === 'limit' && value.retentionTimeInMinutes.value === 0;
 
             if (xor(sizeIsZero, timeIsZero)) {
-              setValidationError(<>Invalid!</>)
+              setValidationError(<div className={sf.ValidationError}>Setting a single time or size limit to 0 is invalid when one of the limits has a non-zero value.</div>)
               return;
             }
           }
@@ -259,7 +257,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   {value.retentionTimeInMinutes.type === 'limit' && (
                     <div className={sf.FormItem}>
                       <DurationInput
-                        value={value.retentionTimeInMinutes.value * secondsInMinute}
+                        initialValue={value.retentionTimeInMinutes.value * secondsInMinute}
                         onChange={(v) => {
                           onChange({ ...value, retentionTimeInMinutes: { type: 'limit', value: v / secondsInMinute } });
                         }}
@@ -288,7 +286,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   {value.retentionSizeInMb.type === 'limit' && (
                     <div className={sf.FormItem}>
                       <MemorySizeInput
-                        value={value.retentionSizeInMb.value * bytesInMegabyte}
+                        initialValue={value.retentionSizeInMb.value * bytesInMegabyte}
                         onChange={(v) => {
                           onChange({ ...value, retentionSizeInMb: { type: 'limit', value: v / bytesInMegabyte } });
                         }}

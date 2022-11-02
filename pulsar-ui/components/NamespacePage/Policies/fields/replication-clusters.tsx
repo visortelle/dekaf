@@ -124,7 +124,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             onAdd={hideAddButton ? undefined : (v) => {
               onChange({ ...value, replicationClusters: [...value.replicationClusters, v] });
             }}
-            isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
+            validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
           />
         );
       }}

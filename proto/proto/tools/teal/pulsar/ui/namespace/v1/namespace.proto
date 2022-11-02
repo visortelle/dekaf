@@ -867,6 +867,120 @@ message RemoveRetentionResponse {
   google.rpc.Status status = 1;
 }
 
+message GetSubscribeRateRequest {
+  string namespace = 1;
+}
+message SubscribeRateUnspecified {}
+message SubscribeRateSpecified {
+  int32 subscribe_throttling_rate_per_consumer = 1;
+  int32 rate_period_in_seconds = 2;
+}
+message GetSubscribeRateResponse {
+  google.rpc.Status status = 1;
+  oneof subscribe_rate {
+    SubscribeRateUnspecified unspecified = 3;
+    SubscribeRateSpecified specified = 4;
+  }
+}
+message SetSubscribeRateRequest {
+  string namespace = 1;
+  int32 subscribe_throttling_rate_per_consumer = 2;
+  int32 rate_period_in_seconds = 3;
+}
+message SetSubscribeRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscribeRateRequest {
+  string namespace = 1;
+}
+message RemoveSubscribeRateResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetSubscriptionAuthModeRequest {
+  string namespace = 1;
+}
+enum SubscriptionAuthMode {
+  SUBSCRIPTION_AUTH_MODE_UNSPECIFIED = 0;
+  SUBSCRIPTION_AUTH_MODE_NONE = 1;
+  SUBSCRIPTION_AUTH_MODE_PREFIX = 2;
+}
+
+message GetSubscriptionAuthModeResponse {
+  google.rpc.Status status = 1;
+  SubscriptionAuthMode subscription_auth_mode = 2;
+}
+message SetSubscriptionAuthModeRequest {
+  string namespace = 1;
+  SubscriptionAuthMode subscription_auth_mode = 2;
+}
+message SetSubscriptionAuthModeResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetSubscriptionExpirationTimeRequest {
+  string namespace = 1;
+}
+message SubscriptionExpirationTimeUnspecified {}
+message SubscriptionExpirationTimeSpecified {
+  int32 subscription_expiration_time_in_minutes = 1;
+}
+message GetSubscriptionExpirationTimeResponse {
+  google.rpc.Status status = 1;
+  oneof subscription_expiration_time {
+    SubscriptionExpirationTimeUnspecified unspecified = 3;
+    SubscriptionExpirationTimeSpecified specified = 4;
+  }
+}
+message SetSubscriptionExpirationTimeRequest {
+  string namespace = 1;
+  int32 subscription_expiration_time_in_minutes = 2;
+}
+message SetSubscriptionExpirationTimeResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscriptionExpirationTimeRequest {
+  string namespace = 1;
+}
+message RemoveSubscriptionExpirationTimeResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetSubscriptionTypesEnabledRequest {
+  string namespace = 1;
+}
+enum SubscriptionType {
+  SUBSCRIPTION_TYPE_UNSPECIFIED = 0;
+  SUBSCRIPTION_TYPE_EXCLUSIVE = 1;
+  SUBSCRIPTION_TYPE_SHARED = 2;
+  SUBSCRIPTION_TYPE_FAILOVER = 3;
+  SUBSCRIPTION_TYPE_KEY_SHARED = 4;
+}
+message SubscriptionTypesEnabledInherited {}
+message SubscriptionTypesEnabledSpecified {
+  repeated SubscriptionType types = 1;
+}
+message GetSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+  oneof subscription_types_enabled {
+    SubscriptionTypesEnabledInherited inherited = 3;
+    SubscriptionTypesEnabledSpecified specified = 4;
+  }
+}
+message SetSubscriptionTypesEnabledRequest {
+  string namespace = 1;
+  repeated SubscriptionType types = 2;
+}
+message SetSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscriptionTypesEnabledRequest {
+  string namespace = 1;
+}
+message RemoveSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -985,4 +1099,19 @@ service NamespaceService {
   rpc GetRetention(GetRetentionRequest) returns (GetRetentionResponse);
   rpc SetRetention(SetRetentionRequest) returns (SetRetentionResponse);
   rpc RemoveRetention(RemoveRetentionRequest) returns (RemoveRetentionResponse);
+
+  rpc GetSubscribeRate(GetSubscribeRateRequest) returns (GetSubscribeRateResponse);
+  rpc SetSubscribeRate(SetSubscribeRateRequest) returns (SetSubscribeRateResponse);
+  rpc RemoveSubscribeRate(RemoveSubscribeRateRequest) returns (RemoveSubscribeRateResponse);
+
+  rpc GetSubscriptionAuthMode(GetSubscriptionAuthModeRequest) returns (GetSubscriptionAuthModeResponse);
+  rpc SetSubscriptionAuthMode(SetSubscriptionAuthModeRequest) returns (SetSubscriptionAuthModeResponse);
+
+  rpc GetSubscriptionExpirationTime(GetSubscriptionExpirationTimeRequest) returns (GetSubscriptionExpirationTimeResponse);
+  rpc SetSubscriptionExpirationTime(SetSubscriptionExpirationTimeRequest) returns (SetSubscriptionExpirationTimeResponse);
+  rpc RemoveSubscriptionExpirationTime(RemoveSubscriptionExpirationTimeRequest) returns (RemoveSubscriptionExpirationTimeResponse);
+
+  rpc GetSubscriptionTypesEnabled(GetSubscriptionTypesEnabledRequest) returns (GetSubscriptionTypesEnabledResponse);
+  rpc SetSubscriptionTypesEnabled(SetSubscriptionTypesEnabledRequest) returns (SetSubscriptionTypesEnabledResponse);
+  rpc RemoveSubscriptionTypesEnabled(RemoveSubscriptionTypesEnabledRequest) returns (RemoveSubscriptionTypesEnabledResponse);
 }

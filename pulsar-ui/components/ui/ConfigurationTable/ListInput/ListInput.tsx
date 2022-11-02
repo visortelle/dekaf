@@ -1,7 +1,7 @@
 import s from './ListInput.module.css'
 import SvgIcon from '../../SvgIcon/SvgIcon';
 import removeIcon from '!!raw-loader!./remove.svg';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Either from 'fp-ts/Either';
 
 type Id = string;
@@ -17,7 +17,7 @@ export type ListValue<T> = {
   renderItem: (value: T) => React.ReactElement;
   editor?: Editor<T>;
   getId: (value: T) => Id;
-  isValid: (value: T) => Either.Either<Error, void>;
+  validate: (value: T) => Either.Either<Error, void>;
   onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
 };
@@ -26,12 +26,16 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
   const [editorValue, setEditorValue] = useState<EditorValue<T>>(props.editor?.initialValue);
   const isRenderEditor = typeof props.editor?.render !== 'undefined';
 
-  const valid: Either.Either<Error, void> = typeof editorValue === 'undefined' ?
+  useEffect(() => {
+    setEditorValue(props.editor?.initialValue);
+  }, [props.editor?.initialValue])
+
+  const validationResult: Either.Either<Error, void> = typeof editorValue === 'undefined' ?
     Either.left(new Error('The value is undefined')) :
-    props.isValid(editorValue);
+    props.validate(editorValue);
 
   const add = () => {
-    if (Either.isLeft(valid)) {
+    if (Either.isLeft(validationResult)) {
       return
     }
     props.onAdd && props.onAdd(editorValue!)
@@ -58,7 +62,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
       )}
       {isRenderEditor && (
         <div className={s.Editor} onKeyDown={(e) => {
-          if (e.key === 'Enter' && Either.isRight(valid)) {
+          if (e.key === 'Enter' && Either.isRight(validationResult)) {
             add();
           }
         }}>
@@ -67,7 +71,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
       )}
       {props.onAdd && (
         <button
-          className={`${s.AddButton} ${Either.isRight(valid) ? s.AddButtonEnabled : s.AddButtonDisabled}`}
+          className={`${s.AddButton} ${Either.isRight(validationResult) ? s.AddButtonEnabled : s.AddButtonDisabled}`}
           type="button"
           onClick={add}
         >

@@ -155,7 +155,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           </div>
           {value.type === 'specified-for-this-namespace' && (
             <MemorySizeInput
-              value={value.sizeBytes}
+              initialValue={value.sizeBytes}
               onChange={(size) => {
                 if (size > 0) {
                   onChange({ ...value, sizeBytes: size })

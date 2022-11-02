@@ -1,9 +1,12 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
+import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 
 const policy = 'subscriptionAuthMode';
 
@@ -12,38 +15,77 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type SubscriptionAuthMode = 'None' | 'Prefix';
+type PolicyValue = 'None' | 'Prefix';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update subscription auth mode. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: subscriptionAuthMode, error: subscriptionAuthModeError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
-    async () => await adminClient.namespaces.getSubscriptionAuthMode(props.tenant, props.namespace)
+    async () => {
+      const req = new pb.GetSubscriptionAuthModeRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+      const res = await namespaceServiceClient.getSubscriptionAuthMode(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get subscription auth mode: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      let v: PolicyValue = 'None';
+      switch (res.getSubscriptionAuthMode()) {
+        case pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_NONE: v = 'None'; break;
+        case pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_PREFIX: v = 'Prefix'; break;
+      }
+
+      return v;
+    }
   );
 
-  if (subscriptionAuthModeError) {
-    notifyError(`Unable to get subscription auth mode: ${subscriptionAuthModeError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get subscription auth mode: ${initialValueError}`);
   }
 
-  if (typeof subscriptionAuthMode === 'undefined') {
+  if (initialValue === undefined) {
     return <></>;
   }
 
   return (
-    <SelectInput<SubscriptionAuthMode>
-      list={[{ type: 'item', value: 'None', title: 'None' }, { type: 'item', value: 'Prefix', title: 'Prefix' }]}
-      value={subscriptionAuthMode}
-      onChange={async (v) => {
-        await adminClient.namespaces.setSubscriptionAuthMode(props.tenant, props.namespace, v).catch(onUpdateError);
-        await mutate(swrKey);
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        const req = new pb.SetSubscriptionAuthModeRequest();
+        req.setNamespace(`${props.tenant}/${props.namespace}`);
+
+        switch (value) {
+          case 'None': req.setSubscriptionAuthMode(pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_NONE); break;
+          case 'Prefix': req.setSubscriptionAuthMode(pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_PREFIX); break;
+        }
+
+        const res = await namespaceServiceClient.setSubscriptionAuthMode(req, {}).catch((err) => notifyError(`Unable to set subscription auth mode: ${err}`));
+        if (res?.getStatus()?.getCode() !== Code.OK) {
+          throw new Error(`Unable to set subscription auth mode: ${res?.getStatus()?.getMessage()}`);
+        }
+
+        mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <Select<PolicyValue>
+            list={[{ type: 'item', value: 'None', title: 'None' }, { type: 'item', value: 'Prefix', title: 'Prefix' }]}
+            value={value}
+            onChange={async (v) => {
+              onChange(v)
+            }}
+          />
+        );
+      }}
+    </WithUpdateConfirmation>
   );
 }
 

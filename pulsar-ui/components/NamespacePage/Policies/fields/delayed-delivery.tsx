@@ -136,7 +136,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             </div>
             {value.type === 'enabled' && (
               <DurationInput
-                value={value.tickTimeMs / 1000}
+                initialValue={value.tickTimeMs / 1000}
                 onChange={(seconds) => onChange({ ...value, tickTimeMs: seconds * 1000 })}
               />
             )}

@@ -133,7 +133,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             </div>
             {value.type === 'specified-for-this-namespace' && (
               <DurationInput
-                value={value.messageTtlSeconds}
+                initialValue={value.messageTtlSeconds}
                 onChange={v => onChange({ type: 'specified-for-this-namespace', messageTtlSeconds: v })}
               />
             )}

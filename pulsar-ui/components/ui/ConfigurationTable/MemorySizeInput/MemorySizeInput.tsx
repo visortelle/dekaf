@@ -5,26 +5,30 @@ import Input from '../Input/Input';
 import { MemorySize, MemoryUnit, memoryUnits } from './types';
 import { bytesToMemorySize, memorySizeToBytes } from './conversions';
 
-export type _MemorySizeInputProps = {
-  value: MemorySize;
-  onChange: (memorySize: MemorySize) => void;
+export type MemorySizeInputProps = {
+  // Bytes
+  initialValue: number;
+  onChange: (value: number) => void;
 };
 
-const _MemorySizeInput: React.FC<_MemorySizeInputProps> = (props) => {
+const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
+  const [value, setValue] = React.useState<MemorySize>(bytesToMemorySize(props.initialValue));
+
   return (
     <div className={s.MemorySizeInput}>
       <div className={s.Size}>
         <Input
           type='number'
           inputProps={{ min: 0 }}
-          value={props.value.size.toString()}
+          value={value.size.toString()}
           onChange={(size) => {
-            if (props.value.unit === 'B' && size.toString().includes('.')) {
+            if (value.unit === 'B' && size.toString().includes('.')) {
               return;
             }
 
-            const memorySize: MemorySize = { ...props.value, size: Number(size) };
-            props.onChange(memorySize)
+            const newValue: MemorySize = { ...value, size: Number(size) };
+            setValue(newValue);
+            props.onChange(memorySizeToBytes(newValue));
           }}
         />
       </div>
@@ -33,28 +37,14 @@ const _MemorySizeInput: React.FC<_MemorySizeInputProps> = (props) => {
         <SelectInput<MemoryUnit>
           list={memoryUnits.map(u => ({ type: 'item', value: u, title: u }))}
           onChange={(unit) => {
-            const memorySize: MemorySize = { ...props.value, unit: unit as MemoryUnit };
-            props.onChange(memorySize)
+            const newValue: MemorySize = { ...value, unit: unit as MemoryUnit };
+            setValue(newValue);
+            props.onChange(memorySizeToBytes(newValue))
           }}
-          value={props.value.unit}
+          value={value.unit}
         />
       </div>
     </div>
-  );
-}
-
-type MemorySizeInput = {
-  // Bytes
-  value: number;
-  onChange: (bytes: number) => void;
-}
-
-const MemorySizeInput: React.FC<MemorySizeInput> = (props) => {
-  return (
-  <_MemorySizeInput
-    value={bytesToMemorySize(props.value)}
-    onChange={(memorySize) => props.onChange(memorySizeToBytes(memorySize))}
-  />
   );
 }
 

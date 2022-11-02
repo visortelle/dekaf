@@ -93,7 +93,7 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
     }}
     onRemove={(v) => setAllowedClusters(allowedClusters.filter(c => c !== v))}
     onAdd={(v) => setAllowedClusters([...allowedClusters, v])}
-    isValid={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
+    validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
   />
 
   const adminRolesInput = <ListInput<string>
@@ -106,7 +106,7 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
     }}
     onRemove={(v) => setAdminRoles(adminRoles.filter(r => r !== v))}
     onAdd={(v) => setAdminRoles([...adminRoles, v])}
-    isValid={() => Either.right(undefined)}
+    validate={() => Either.right(undefined)}
   />
 
   const isFormValid = tenantName.length > 0 && allowedClusters.length > 0;

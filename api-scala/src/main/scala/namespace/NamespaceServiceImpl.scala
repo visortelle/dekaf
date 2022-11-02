@@ -1,13 +1,14 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, DispatchRateSpecified, DispatchRateUnspecified, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetEncryptionRequiredRequest, GetEncryptionRequiredResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersPerTopicRequest, GetMaxConsumersPerTopicResponse, GetMaxProducersPerTopicRequest, GetMaxProducersPerTopicResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetMaxTopicsPerNamespaceRequest, GetMaxTopicsPerNamespaceResponse, GetMaxUnackedMessagesPerConsumerRequest, GetMaxUnackedMessagesPerConsumerResponse, GetMaxUnackedMessagesPerSubscriptionRequest, GetMaxUnackedMessagesPerSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetOffloadDeletionLagRequest, GetOffloadDeletionLagResponse, GetOffloadThresholdRequest, GetOffloadThresholdResponse, GetPersistenceRequest, GetPersistenceResponse, GetReplicationClustersRequest, GetReplicationClustersResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersPerTopicSpecified, MaxConsumersPerTopicUnspecified, MaxProducersPerTopicSpecified, MaxProducersPerTopicUnspecified, MaxSubscriptionsPerTopicSpecified, MaxSubscriptionsPerTopicUnspecified, MaxTopicsPerNamespaceSpecified, MaxTopicsPerNamespaceUnspecified, MaxUnackedMessagesPerConsumerSpecified, MaxUnackedMessagesPerConsumerUnspecified, MaxUnackedMessagesPerSubscriptionSpecified, MaxUnackedMessagesPerSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, NamespaceServiceGrpc, OffloadDeletionLagSpecified, OffloadDeletionLagUnspecified, OffloadThresholdSpecified, PersistenceSpecified, PersistenceUnspecified, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersPerTopicRequest, RemoveMaxConsumersPerTopicResponse, RemoveMaxProducersPerTopicRequest, RemoveMaxProducersPerTopicResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveMaxTopicsPerNamespaceRequest, RemoveMaxTopicsPerNamespaceResponse, RemoveMaxUnackedMessagesPerConsumerRequest, RemoveMaxUnackedMessagesPerConsumerResponse, RemoveMaxUnackedMessagesPerSubscriptionRequest, RemoveMaxUnackedMessagesPerSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, RemoveOffloadDeletionLagRequest, RemoveOffloadDeletionLagResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetEncryptionRequiredRequest, SetEncryptionRequiredResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersPerTopicRequest, SetMaxConsumersPerTopicResponse, SetMaxProducersPerTopicRequest, SetMaxProducersPerTopicResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetMaxTopicsPerNamespaceRequest, SetMaxTopicsPerNamespaceResponse, SetMaxUnackedMessagesPerConsumerRequest, SetMaxUnackedMessagesPerConsumerResponse, SetMaxUnackedMessagesPerSubscriptionRequest, SetMaxUnackedMessagesPerSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetOffloadDeletionLagRequest, SetOffloadDeletionLagResponse, SetOffloadThresholdRequest, SetOffloadThresholdResponse, SetPersistenceRequest, SetPersistenceResponse, SetReplicationClustersRequest, SetReplicationClustersResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{SubscriptionTypesEnabledInherited, SubscriptionTypesEnabledSpecified, CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, DispatchRateSpecified, DispatchRateUnspecified, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetEncryptionRequiredRequest, GetEncryptionRequiredResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersPerTopicRequest, GetMaxConsumersPerTopicResponse, GetMaxProducersPerTopicRequest, GetMaxProducersPerTopicResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetMaxTopicsPerNamespaceRequest, GetMaxTopicsPerNamespaceResponse, GetMaxUnackedMessagesPerConsumerRequest, GetMaxUnackedMessagesPerConsumerResponse, GetMaxUnackedMessagesPerSubscriptionRequest, GetMaxUnackedMessagesPerSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetOffloadDeletionLagRequest, GetOffloadDeletionLagResponse, GetOffloadThresholdRequest, GetOffloadThresholdResponse, GetPersistenceRequest, GetPersistenceResponse, GetReplicationClustersRequest, GetReplicationClustersResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, GetSubscribeRateRequest, GetSubscribeRateResponse, GetSubscriptionAuthModeRequest, GetSubscriptionAuthModeResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, GetSubscriptionExpirationTimeRequest, GetSubscriptionExpirationTimeResponse, GetSubscriptionTypesEnabledRequest, GetSubscriptionTypesEnabledResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersPerTopicSpecified, MaxConsumersPerTopicUnspecified, MaxProducersPerTopicSpecified, MaxProducersPerTopicUnspecified, MaxSubscriptionsPerTopicSpecified, MaxSubscriptionsPerTopicUnspecified, MaxTopicsPerNamespaceSpecified, MaxTopicsPerNamespaceUnspecified, MaxUnackedMessagesPerConsumerSpecified, MaxUnackedMessagesPerConsumerUnspecified, MaxUnackedMessagesPerSubscriptionSpecified, MaxUnackedMessagesPerSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, NamespaceServiceGrpc, OffloadDeletionLagSpecified, OffloadDeletionLagUnspecified, OffloadThresholdSpecified, PersistenceSpecified, PersistenceUnspecified, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersPerTopicRequest, RemoveMaxConsumersPerTopicResponse, RemoveMaxProducersPerTopicRequest, RemoveMaxProducersPerTopicResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveMaxTopicsPerNamespaceRequest, RemoveMaxTopicsPerNamespaceResponse, RemoveMaxUnackedMessagesPerConsumerRequest, RemoveMaxUnackedMessagesPerConsumerResponse, RemoveMaxUnackedMessagesPerSubscriptionRequest, RemoveMaxUnackedMessagesPerSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, RemoveOffloadDeletionLagRequest, RemoveOffloadDeletionLagResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSubscribeRateRequest, RemoveSubscribeRateResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, RemoveSubscriptionExpirationTimeRequest, RemoveSubscriptionExpirationTimeResponse, RemoveSubscriptionTypesEnabledRequest, RemoveSubscriptionTypesEnabledResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetEncryptionRequiredRequest, SetEncryptionRequiredResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersPerTopicRequest, SetMaxConsumersPerTopicResponse, SetMaxProducersPerTopicRequest, SetMaxProducersPerTopicResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetMaxTopicsPerNamespaceRequest, SetMaxTopicsPerNamespaceResponse, SetMaxUnackedMessagesPerConsumerRequest, SetMaxUnackedMessagesPerConsumerResponse, SetMaxUnackedMessagesPerSubscriptionRequest, SetMaxUnackedMessagesPerSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetOffloadDeletionLagRequest, SetOffloadDeletionLagResponse, SetOffloadThresholdRequest, SetOffloadThresholdResponse, SetPersistenceRequest, SetPersistenceResponse, SetReplicationClustersRequest, SetReplicationClustersResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse, SetSubscribeRateRequest, SetSubscribeRateResponse, SetSubscriptionAuthModeRequest, SetSubscriptionAuthModeResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SetSubscriptionExpirationTimeRequest, SetSubscriptionExpirationTimeResponse, SetSubscriptionTypesEnabledRequest, SetSubscriptionTypesEnabledResponse, SubscribeRateSpecified, SubscribeRateUnspecified, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, SubscriptionExpirationTimeSpecified, SubscriptionExpirationTimeUnspecified}
 import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
+import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, RetentionPolicies}
+import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, RetentionPolicies, SubscribeRate, SubscriptionAuthMode}
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
@@ -1435,4 +1436,185 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveRetentionResponse(status = Some(status)))
+        }
+
+    override def getSubscribeRate(request: GetSubscribeRateRequest): Future[GetSubscribeRateResponse] =
+        try {
+            val subscribeRatePb = Option(adminClient.namespaces.getSubscribeRate(request.namespace)) match
+                case None =>
+                    pb.GetSubscribeRateResponse.SubscribeRate.Unspecified(new SubscribeRateUnspecified())
+                case Some(v) =>
+                    pb.GetSubscribeRateResponse.SubscribeRate.Specified(new SubscribeRateSpecified(
+                        subscribeThrottlingRatePerConsumer = Option(v.subscribeThrottlingRatePerConsumer).getOrElse(0),
+                        ratePeriodInSeconds = Option(v.ratePeriodInSecond).getOrElse(0)
+                    ))
+
+            Future.successful(GetSubscribeRateResponse(
+                status = Some(Status(code = Code.OK.index)),
+                subscribeRate = subscribeRatePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetSubscribeRateResponse(status = Some(status)))
+        }
+
+    override def setSubscribeRate(request: SetSubscribeRateRequest): Future[SetSubscribeRateResponse] =
+        try {
+            logger.info(s"Setting subscribe rate policy for namespace ${request.namespace}")
+            val subscribeRate = new SubscribeRate(request.subscribeThrottlingRatePerConsumer, request.ratePeriodInSeconds)
+
+            adminClient.namespaces.setSubscribeRate(request.namespace, subscribeRate)
+            Future.successful(SetSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetSubscribeRateResponse(status = Some(status)))
+        }
+
+    override def removeSubscribeRate(request: RemoveSubscribeRateRequest): Future[RemoveSubscribeRateResponse] =
+        try {
+            logger.info(s"Removing subscribe rate policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeSubscribeRate(request.namespace)
+            Future.successful(RemoveSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveSubscribeRateResponse(status = Some(status)))
+        }
+
+    override def getSubscriptionAuthMode(request: GetSubscriptionAuthModeRequest): Future[GetSubscriptionAuthModeResponse] =
+        try {
+            val subscriptionAuthModePb = adminClient.namespaces.getSubscriptionAuthMode(request.namespace) match
+                case SubscriptionAuthMode.None => pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_NONE
+                case SubscriptionAuthMode.Prefix => pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_PREFIX
+
+            Future.successful(GetSubscriptionAuthModeResponse(
+                status = Some(Status(code = Code.OK.index)),
+                subscriptionAuthMode = subscriptionAuthModePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetSubscriptionAuthModeResponse(status = Some(status)))
+        }
+
+    override def setSubscriptionAuthMode(request: SetSubscriptionAuthModeRequest): Future[SetSubscriptionAuthModeResponse] =
+        try {
+            logger.info(s"Setting subscription auth mode policy for namespace ${request.namespace}")
+            val subscriptionAuthMode = request.subscriptionAuthMode match
+                case pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_NONE => SubscriptionAuthMode.None
+                case pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_PREFIX => SubscriptionAuthMode.Prefix
+                case _ =>
+                    return Future.successful(SetSubscriptionAuthModeResponse(status = Some(Status(code = Code.INVALID_ARGUMENT.index, message = "Invalid subscription auth mode"))))
+
+            adminClient.namespaces.setSubscriptionAuthMode(request.namespace, subscriptionAuthMode)
+            Future.successful(SetSubscriptionAuthModeResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetSubscriptionAuthModeResponse(status = Some(status)))
+        }
+
+    override def getSubscriptionExpirationTime(request: GetSubscriptionExpirationTimeRequest): Future[GetSubscriptionExpirationTimeResponse] =
+        try {
+            val subscriptionExpirationTimePb = Option(adminClient.namespaces.getSubscriptionExpirationTime(request.namespace)) match
+                case None =>
+                    pb.GetSubscriptionExpirationTimeResponse.SubscriptionExpirationTime.Unspecified(new SubscriptionExpirationTimeUnspecified())
+                case Some(v) =>
+                    pb.GetSubscriptionExpirationTimeResponse.SubscriptionExpirationTime.Specified(new SubscriptionExpirationTimeSpecified(
+                        subscriptionExpirationTimeInMinutes = v
+                    ))
+
+            Future.successful(GetSubscriptionExpirationTimeResponse(
+                status = Some(Status(code = Code.OK.index)),
+                subscriptionExpirationTime = subscriptionExpirationTimePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetSubscriptionExpirationTimeResponse(status = Some(status)))
+        }
+
+    override def setSubscriptionExpirationTime(request: SetSubscriptionExpirationTimeRequest): Future[SetSubscriptionExpirationTimeResponse] =
+        try {
+            logger.info(s"Setting subscription expiration time policy for namespace ${request.namespace}")
+            adminClient.namespaces.setSubscriptionExpirationTime(request.namespace, request.subscriptionExpirationTimeInMinutes)
+            Future.successful(SetSubscriptionExpirationTimeResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetSubscriptionExpirationTimeResponse(status = Some(status)))
+        }
+
+    override def removeSubscriptionExpirationTime(request: RemoveSubscriptionExpirationTimeRequest): Future[RemoveSubscriptionExpirationTimeResponse] =
+        try {
+            logger.info(s"Removing subscription expiration time policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeSubscriptionExpirationTime(request.namespace)
+            Future.successful(RemoveSubscriptionExpirationTimeResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveSubscriptionExpirationTimeResponse(status = Some(status)))
+        }
+
+    override def getSubscriptionTypesEnabled(request: GetSubscriptionTypesEnabledRequest): Future[GetSubscriptionTypesEnabledResponse] =
+        def subscriptionTypeToPb(subscriptionType: SubscriptionType): pb.SubscriptionType =
+            subscriptionType match
+                case SubscriptionType.Exclusive => pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE
+                case SubscriptionType.Failover => pb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER
+                case SubscriptionType.Shared => pb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED
+                case SubscriptionType.Key_Shared => pb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED
+
+        try {
+            val subscriptionTypesEnabledPb = Option(adminClient.namespaces.getSubscriptionTypesEnabled(request.namespace)) match
+                case None =>
+                    val status = Status(code = Code.FAILED_PRECONDITION.index, message = "Subscription types enabled can't be null. Looks like a Pulsar error.")
+                    return Future.successful(GetSubscriptionTypesEnabledResponse(status = Some(status)))
+                case Some(v) if v.size() == 0 =>
+                    pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Inherited(new SubscriptionTypesEnabledInherited())
+                case Some(v) =>
+                    pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Specified(new SubscriptionTypesEnabledSpecified(
+                      types = v.asScala.map(subscriptionTypeToPb).toSeq
+                    ))
+
+            Future.successful(GetSubscriptionTypesEnabledResponse(
+                status = Some(Status(code = Code.OK.index)),
+                subscriptionTypesEnabled = subscriptionTypesEnabledPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetSubscriptionTypesEnabledResponse(status = Some(status)))
+        }
+
+    override def setSubscriptionTypesEnabled(request: SetSubscriptionTypesEnabledRequest): Future[SetSubscriptionTypesEnabledResponse] =
+        def pbToSubscriptionType(subscriptionTypePb: pb.SubscriptionType): SubscriptionType =
+            subscriptionTypePb match
+                case pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE => SubscriptionType.Exclusive
+                case pb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER => SubscriptionType.Failover
+                case pb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED => SubscriptionType.Shared
+                case pb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED => SubscriptionType.Key_Shared
+
+        try {
+            logger.info(s"Setting subscription types enabled policy for namespace ${request.namespace}")
+
+            val subscriptionTypesEnabled = request.types.map(pbToSubscriptionType).toSet.asJava
+            adminClient.namespaces.setSubscriptionTypesEnabled(request.namespace, subscriptionTypesEnabled)
+            Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(status)))
+        }
+
+    override def removeSubscriptionTypesEnabled(request: RemoveSubscriptionTypesEnabledRequest): Future[RemoveSubscriptionTypesEnabledResponse] =
+        try {
+            logger.info(s"Removing subscription types enabled policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeSubscriptionTypesEnabled(request.namespace)
+            Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(status)))
         }

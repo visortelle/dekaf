@@ -5,22 +5,26 @@ import Input from '../Input/Input';
 import { Duration, DurationUnit, durationUnits } from './types';
 import { durationToSeconds, secondsToDuration } from './conversions';
 
-export type _DurationInputProps = {
-  value: Duration;
-  onChange: (duration: Duration) => void;
+export type DurationInputProps = {
+  // Seconds
+  initialValue: number;
+  onChange: (seconds: number) => void;
 };
 
-const _DurationInput: React.FC<_DurationInputProps> = (props) => {
+const DurationInput: React.FC<DurationInputProps> = (props) => {
+  const [value, setValue] = React.useState<Duration>(secondsToDuration(props.initialValue));
+
   return (
     <div className={s.DurationInput}>
       <div className={s.Value}>
         <Input
           type='number'
           inputProps={{ min: 0 }}
-          value={props.value.value.toString()}
+          value={value.value.toString()}
           onChange={(size) => {
-            const duration: Duration = { ...props.value, value: Number(size) };
-            props.onChange(duration)
+            const newValue: Duration = { ...value, value: Number(size) };
+            setValue(newValue);
+            props.onChange(durationToSeconds(newValue))
           }}
         />
       </div>
@@ -29,28 +33,14 @@ const _DurationInput: React.FC<_DurationInputProps> = (props) => {
         <SelectInput<DurationUnit>
           list={durationUnits.map(u => ({ type: 'item', value: u, title: u }))}
           onChange={(unit) => {
-            const duration: Duration = { ...props.value, unit: unit as DurationUnit };
-            props.onChange(duration)
+            const newValue: Duration = { ...value, unit: unit as DurationUnit };
+            setValue(newValue);
+            props.onChange(durationToSeconds(newValue))
           }}
-          value={props.value.unit}
+          value={value.unit}
         />
       </div>
     </div>
-  );
-}
-
-type DurationInputProps = {
-  // Seconds
-  value: number;
-  onChange: (seconds: number) => void;
-}
-
-const DurationInput: React.FC<DurationInputProps> = (props) => {
-  return (
-    <_DurationInput
-      value={secondsToDuration(props.value)}
-      onChange={(duration) => props.onChange(durationToSeconds(duration))}
-    />
   );
 }
 
