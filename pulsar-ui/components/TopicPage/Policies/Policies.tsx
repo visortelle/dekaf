@@ -3,7 +3,7 @@ import React from 'react';
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 import messageTtlField from './fields/message-ttl';
-// import backlogQuotaField from './fields/backlog-quota';
+import backlogQuotaField from './fields/backlog-quota';
 
 import s from './Policies.module.css'
 
@@ -30,10 +30,10 @@ const Policies: React.FC<PoliciesProps> = (props) => {
     <div className={s.Policies}>
       <div className={s.ConfigurationTable}>
         <ConfigurationTable
-          title="All"
+          title="Retention"
           fields={[
             messageTtlField,
-            // backlogQuotaField
+            backlogQuotaField,
           ].map(field => field(props))}
         />
       </div>

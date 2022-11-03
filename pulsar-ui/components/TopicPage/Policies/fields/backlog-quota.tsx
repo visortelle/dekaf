@@ -29,12 +29,12 @@ function retentionPolicyFromPb(policyPb: pb.BacklogQuotaRetentionPolicy): Retent
 }
 
 type PolicyValue = {
-  destinationStorage: { type: 'inherited-from-broker-config' } | {
+  destinationStorage: { type: 'inherited-from-namespace-config' } | {
     type: 'specified-for-this-topic';
     limit: { type: 'infinite' } | { type: 'specific', sizeBytes: number };
     policy: RetentionPolicy;
   },
-  messageAge: { type: 'inherited-from-broker-config' } | {
+  messageAge: { type: 'inherited-from-namespace-config' } | {
     type: 'specified-for-this-topic';
     limitTime: { type: 'infinite' } | { type: 'specific', durationSeconds: number };
     policy: RetentionPolicy;
@@ -42,7 +42,9 @@ type PolicyValue = {
 }
 
 export type FieldInputProps = {
+  topicType: 'persistent' | 'nonPersistent';
   tenant: string;
+  namespace: string;
   topic: string;
 }
 
@@ -51,19 +53,21 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const swrKey = swrKeys.pulsar.tenants.tenant.topics.topic.policies.policy({ tenant: props.tenant, topic: props.topic, policy });
+  const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace[`${props.topicType}Topics`].topic.policies.policy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy });
 
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetBacklogQuotasRequest();
-      req.setTopic(`${props.tenant}/${props.topic}`);
+      req.setTopic(`${props.tenant}/${props.namespace}/${props.topic}`);
+      
       const res = await topicpoliciesServiceClient.getBacklogQuotas(req, {});
+
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get backlog quotas for topic. ${res.getStatus()?.getMessage()}`);
       }
 
-      let v: PolicyValue = { destinationStorage: { type: 'inherited-from-broker-config' }, messageAge: { type: 'inherited-from-broker-config' } };
+      let v: PolicyValue = { destinationStorage: { type: 'inherited-from-namespace-config' }, messageAge: { type: 'inherited-from-namespace-config' } };
 
       const destinationStorage = res.getDestinationStorage();
       if (destinationStorage !== undefined) {
@@ -119,7 +123,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       notifyError(`Unable to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
     }
 
-    if (v.destinationStorage.type === 'inherited-from-broker-config') {
+    if (v.destinationStorage.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setTopic(`${props.tenant}/${props.topic}`);
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
@@ -129,7 +133,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
     }
 
-    if (v.messageAge.type === 'inherited-from-broker-config') {
+    if (v.messageAge.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setTopic(`${props.tenant}/${props.topic}`);
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
@@ -153,14 +157,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <div className={s.Quota}>
             <div className={sf.FormLabel}>Destination storage</div>
             <div className={sf.FormItem}>
-              <Select<'inherited-from-broker-config' | 'specified-for-this-topic'>
+              <Select<'inherited-from-namespace-config' | 'specified-for-this-topic'>
                 list={[
-                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from broker config' },
                   { type: 'item', value: 'specified-for-this-topic', title: 'Specified for this topic' }
                 ]}
                 onChange={(v) => onChange({
                   ...value,
-                  destinationStorage: v === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-topic', limit: { type: 'infinite' }, policy: 'producer_request_hold' }
+                  destinationStorage: v === 'inherited-from-namespace-config' ? { type: 'inherited-from-namespace-config' } : { type: 'specified-for-this-topic', limit: { type: 'infinite' }, policy: 'producer_request_hold' }
                 })}
                 value={value.destinationStorage.type}
               />
@@ -193,7 +197,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <MemorySizeInput
                   initialValue={value.destinationStorage.limit.sizeBytes}
                   onChange={(v) => {
-                    if (value.destinationStorage.type === 'inherited-from-broker-config') {
+                    if (value.destinationStorage.type === 'inherited-from-namespace-config') {
                       return;
                     }
 
@@ -220,7 +224,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   ]}
                   value={value.destinationStorage.policy}
                   onChange={(v) => {
-                    if (value.destinationStorage.type === 'inherited-from-broker-config') {
+                    if (value.destinationStorage.type === 'inherited-from-namespace-config') {
                       return;
                     }
                     onChange({
@@ -239,14 +243,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <div className={s.Quota}>
             <div className={sf.FormLabel}>Message age</div>
             <div className={sf.FormItem}>
-              <Select<'inherited-from-broker-config' | 'specified-for-this-topic'>
+              <Select<'inherited-from-namespace-config' | 'specified-for-this-topic'>
                 list={[
-                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from broker config' },
                   { type: 'item', value: 'specified-for-this-topic', title: 'Specified for this topic' }
                 ]}
                 onChange={(v) => onChange({
                   ...value,
-                  messageAge: v === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-topic', limitTime: { type: 'infinite' }, policy: 'producer_request_hold' }
+                  messageAge: v === 'inherited-from-namespace-config' ? { type: 'inherited-from-namespace-config' } : { type: 'specified-for-this-topic', limitTime: { type: 'infinite' }, policy: 'producer_request_hold' }
                 })}
                 value={value.messageAge.type}
               />
@@ -279,7 +283,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <DurationInput
                   initialValue={value.messageAge.limitTime.durationSeconds}
                   onChange={(v) => {
-                    if (value.messageAge.type === 'inherited-from-broker-config') {
+                    if (value.messageAge.type === 'inherited-from-namespace-config') {
                       return;
                     }
 
@@ -306,7 +310,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   ]}
                   value={value.messageAge.policy}
                   onChange={(v) => {
-                    if (value.messageAge.type === 'inherited-from-broker-config') {
+                    if (value.messageAge.type === 'inherited-from-namespace-config') {
                       return;
                     }
                     onChange({
