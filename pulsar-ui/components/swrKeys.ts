@@ -146,15 +146,6 @@ export const swrKeys = {
                 "nonPersistentTopics",
               ],
               topic: {
-                // _: (props: { tenant: string; namespace: string }) => [
-                //   "pulsar",
-                //   "tenants",
-                //   props.tenant,
-                //   "namespaces",
-                //   props.namespace,
-                //   "nonPersistentTopics",
-                //   props.topic
-                // ],
                 policies: {
                   policy: (props: {
                     tenant: string;
@@ -185,15 +176,6 @@ export const swrKeys = {
                 "persistentTopics",
               ],
               topic: {
-                // _: (props: { tenant: string; namespace: string }) => [
-                //   "pulsar",
-                //   "tenants",
-                //   props.tenant,
-                //   "namespaces",
-                //   props.namespace,
-                //   "persistentTopics",
-                //   props.topic
-                // ],
                 policies: {
                   policy: (props: {
                     tenant: string;

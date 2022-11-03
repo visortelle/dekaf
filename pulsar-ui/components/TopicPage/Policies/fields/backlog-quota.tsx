@@ -42,7 +42,7 @@ type PolicyValue = {
 }
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'nonPersistent';
+  topicType: 'persistent' | 'non-persistent';
   tenant: string;
   namespace: string;
   topic: string;
@@ -60,7 +60,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     async () => {
       const req = new pb.GetBacklogQuotasRequest();
       req.setTopic(`${props.tenant}/${props.namespace}/${props.topic}`);
-      
       const res = await topicpoliciesServiceClient.getBacklogQuotas(req, {});
 
       if (res.getStatus()?.getCode() !== Code.OK) {
@@ -93,14 +92,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   if (initialValueError) {
     notifyError(`Unable to get backlog quota policy. ${initialValueError}`);
   }
-
+  
   if (initialValue === undefined) {
     return null;
   }
-
+  
   const updatePolicy = async (v: PolicyValue): Promise<void> => {
     const req = new pb.SetBacklogQuotasRequest();
-    req.setTopic(`${props.tenant}/${props.topic}`);
+    req.setTopic(`${props.tenant}/${props.namespace}/${props.topic}`);
 
     let destinationStorageBacklogQuotaPb: pb.DestinationStorageBacklogQuota | undefined = undefined;
     if (v.destinationStorage.type === 'specified-for-this-topic') {
@@ -117,25 +116,27 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       messageAgeBacklogQuotaPb.setRetentionPolicy(retentionPolicyToPb(v.messageAge.policy));
     }
     req.setMessageAge(messageAgeBacklogQuotaPb)
-
+    console.log(req, 'pusto')
     const res = await topicpoliciesServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
+      console.log(res, 1)
     }
 
     if (v.destinationStorage.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
-      req.setTopic(`${props.tenant}/${props.topic}`);
+      req.setTopic(`${props.tenant}/${props.namespace}/${props.topic}`);
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
       const res = await topicpoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
+        console.log(res, 2)
       }
     }
 
     if (v.messageAge.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
-      req.setTopic(`${props.tenant}/${props.topic}`);
+      req.setTopic(`${props.tenant}/${props.namespace}/${props.topic}`);
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
       const res = await topicpoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {

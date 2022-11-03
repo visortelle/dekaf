@@ -57,6 +57,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetBacklogQuotasRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       const res = await namespaceServiceClient.getBacklogQuotas(req, {});
+    
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get backlog quotas for namespace. ${res.getStatus()?.getMessage()}`);
       }

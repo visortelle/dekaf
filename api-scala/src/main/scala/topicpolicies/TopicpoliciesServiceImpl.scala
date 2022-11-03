@@ -85,7 +85,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
                     val backlogQuota = backlogQuotaBuilder.build
 
-                    logger.info(s"Setting backlog quota policy (destination storage) on namespace ${request.topic} to ${backlogQuota}")
+                    logger.info(s"Setting backlog quota policy (destination storage) on topic ${request.topic} to ${backlogQuota}")
                     adminClient.topicPolicies.setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.destination_storage)
                 case None =>
 
@@ -100,7 +100,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
                     val backlogQuota = backlogQuotaBuilder.build
 
-                    logger.info(s"Setting backlog quota (message age) on namespace ${request.topic} to ${backlogQuota}")
+                    logger.info(s"Setting backlog quota (message age) on topic ${request.topic} to ${backlogQuota}")
                     adminClient.topicPolicies.setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
@@ -115,10 +115,10 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
         try
             request.backlogQuotaType match
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE =>
-                    logger.info(s"Removing backlog quota (destination storage) on namespace ${request.topic}")
+                    logger.info(s"Removing backlog quota (destination storage) on topic ${request.topic}")
                     adminClient.topicPolicies.removeBacklogQuota(request.topic, BacklogQuotaType.destination_storage)
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE =>
-                    logger.info(s"Removing backlog quota (message age) on namespace ${request.topic}")
+                    logger.info(s"Removing backlog quota (message age) on topic ${request.topic}")
                     adminClient.topicPolicies.removeBacklogQuota(request.topic, BacklogQuotaType.message_age)
                 case _ =>
                     val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Backlog quota type should be specified")
