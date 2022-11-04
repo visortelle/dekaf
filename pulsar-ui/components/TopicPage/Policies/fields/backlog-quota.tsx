@@ -38,7 +38,8 @@ type PolicyValue = {
     type: 'specified-for-this-topic';
     limitTime: { type: 'infinite' } | { type: 'specific', durationSeconds: number };
     policy: RetentionPolicy;
-  }
+  },
+  // isGlobal: boolean
 }
 
 export type FieldInputProps = {
@@ -58,7 +59,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   if (props.topicType === 'non-persistent') {
     persistence = 'nonPersistentTopics'
   };
-  console.log(props.topicType === 'non-persistent')
+
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace[persistence].policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: initialValue, error: initialValueError } = useSWR(
@@ -66,14 +67,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     async () => {
       const req = new pb.GetBacklogQuotasRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-      
       const res = await topicpoliciesServiceClient.getBacklogQuotas(req, {});
-      console.log(req)
+
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get backlog quotas for topic. ${res.getStatus()?.getMessage()}`);
       }
 
-      let v: PolicyValue = { destinationStorage: { type: 'inherited-from-namespace-config' }, messageAge: { type: 'inherited-from-namespace-config' } };
+      let v: PolicyValue = {
+        destinationStorage: { type: 'inherited-from-namespace-config' },
+        messageAge: { type: 'inherited-from-namespace-config' },
+        // isGlobal: false
+      };
 
       const destinationStorage = res.getDestinationStorage();
       if (destinationStorage !== undefined) {
@@ -91,6 +95,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           policy: retentionPolicyFromPb(messageAge.getRetentionPolicy())
         };
       }
+      // const isGlobal = res.getIsGlobal();
+      // if (isGlobal !== undefined) {
+      //   v.isGlobal = isGlobal.get
+      // }
+
       return v;
     }
   );
@@ -331,6 +340,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 />
               </div>
             )}
+          </div>
+          <div>
+            <label htmlFor="isGlobal" value="isGlobal">
+              global
+            </label>
+            <input
+              onChange={() => (value.isGlobal = !value.isGlobal, console.log(value))}
+              id="isGlobal" type="checkbox" /> 
           </div>
         </>
       )}

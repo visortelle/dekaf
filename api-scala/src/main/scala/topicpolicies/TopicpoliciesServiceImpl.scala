@@ -6,7 +6,6 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{GetBacklogQuotasRequest, GetBacklogQuotasResponse}
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
 import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, RetentionPolicies}
 
@@ -28,14 +27,14 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             case _ => None
 
         try {
-            val backlogQuotaMap = adminClient.topicPolicies.getBacklogQuotaMap(request.topic).asScala.toMap
+            val backlogQuotaMap = adminClient.topicPolicies.getBacklogQuotaMap(request.topic, false).asScala.toMap
 
             val destinationStorageBacklogQuotaPb = backlogQuotaMap.get(BacklogQuotaType.destination_storage) match
                 case Some(quota) =>
                     Some(
                         pb.DestinationStorageBacklogQuota(
                             limitSize = Option(quota.getLimitSize).getOrElse(-1),
-                            retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy))
+                            retentionPolicy = retentionPolicyToPb(Option(quota.getPolicy)),
                         )
                     )
                 case _ => None
@@ -54,7 +53,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 GetBacklogQuotasResponse(
                     status = Some(Status(code = Code.OK.index)),
                     destinationStorage = destinationStorageBacklogQuotaPb,
-                    messageAge = messageAgeBacklogQuotaPb
+                    messageAge = messageAgeBacklogQuotaPb,
                 )
             )
         } catch {

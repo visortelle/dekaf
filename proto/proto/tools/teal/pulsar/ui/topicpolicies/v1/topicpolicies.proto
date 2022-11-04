@@ -14,6 +14,7 @@ enum BacklogQuotaType {
   BACKLOG_QUOTA_TYPE_UNSPECIFIED = 0;
   BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE = 1;
   BACKLOG_QUOTA_TYPE_MESSAGE_AGE = 2;
+  BACKLOG_QUOTA_TYPE_IS_GLOBAL = 3;
 }
 message DestinationStorageBacklogQuota {
   int64 limit_size = 1;
@@ -30,11 +31,13 @@ message GetBacklogQuotasResponse {
   google.rpc.Status status = 1;
   optional DestinationStorageBacklogQuota destination_storage = 2;
   optional MessageAgeBacklogQuota message_age = 3;
+  optional bool is_global = 4;
 }
 message SetBacklogQuotasRequest {
   string topic = 1;
   optional DestinationStorageBacklogQuota destination_storage = 2;
   optional MessageAgeBacklogQuota message_age = 3;
+  optional bool is_global = 4;
 }
 message SetBacklogQuotasResponse {
   google.rpc.Status status = 1;
