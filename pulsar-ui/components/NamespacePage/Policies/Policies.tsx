@@ -29,12 +29,11 @@ import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscri
 import maxUnackedMessagesPerSubscriptionField from './fields/max-unacked-messages-per-subscription';
 import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-per-consumer';
 import compactionThresholdField from './fields/compaction-threshold';
-import offloadThresholdField from './fields/offload-threshold';
-import offloadDeletionLagField from './fields/offload-deletion-lag';
 import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
 import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
 import isALlowAutoUpdateSchemaField from './fields/is-allow-auto-update-schema';
 import schemaValidationEnforceField from './fields/schema-validation-enforce';
+import offloadPoliciesField from './fields/offload-policies/offload-policies';
 import { H1 } from '../../ui/H/H';
 
 export type PoliciesProps = {
@@ -156,8 +155,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
         <ConfigurationTable
           title="Tiered storage"
           fields={[
-            offloadThresholdField,
-            offloadDeletionLagField,
+            offloadPoliciesField
           ].map(field => field(props))}
         />
       </div>

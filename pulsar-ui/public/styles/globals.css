@@ -62,6 +62,11 @@ a {
   text-decoration: underline;
 }
 
+ul {
+  margin: 8rem;
+  padding-left: 1.4ch;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -99,7 +104,6 @@ hr {
 code {
   background-color: #f5f5f5;
   padding: 0rem 8rem;
-  display: inline-flex;
   border-radius: 4rem;
 }
 
@@ -146,8 +150,13 @@ code {
 
 .__react_component_tooltip {
   max-width: 640rem;
+  z-index: 999;
+  pointer-events: initial !important;
+  box-shadow: 8rem 8rem 36rem rgb(0 0 0 / 15%) !important;
+  opacity: 1 !important;
 }
+
 .__react_component_tooltip code {
-  background: rgba(255,255,255,1);
+  background: #eee;
   color: var(--text-color);
 }
