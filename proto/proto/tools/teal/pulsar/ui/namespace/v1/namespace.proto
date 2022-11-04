@@ -3,6 +3,7 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.namespace.v1;
 
 import "google/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
 
 message CreateNamespaceRequest {
   string namespace_name = 1;
@@ -981,6 +982,66 @@ message RemoveSubscriptionTypesEnabledResponse {
   google.rpc.Status status = 1;
 }
 
+message GetOffloadPoliciesRequest {
+  string namespace = 1;
+}
+enum OffloadedReadPriority {
+  OFFLOADED_READ_PRIORITY_UNSPECIFIED = 0;
+  OFFLOADED_READ_PRIORITY_BOOKKEEPER_FIRST = 1;
+  OFFLOADED_READ_PRIORITY_TIERED_STORAGE_FIRST = 2;
+}
+message OffloadPoliciesInherited {}
+message OffloadPoliciesSpecified {
+  string managed_ledger_offload_driver = 2;
+  int64 managed_ledger_offload_threshold_in_bytes = 5;
+  google.protobuf.StringValue offloaders_directory = 1;
+  google.protobuf.Int32Value managed_ledger_max_threads = 3;
+  google.protobuf.Int32Value managed_ledger_offload_prefetch_rounds = 4;
+  google.protobuf.Int64Value managed_ledger_offload_deletion_lag_in_millis = 6;
+  optional OffloadedReadPriority offloaded_read_priority = 7;
+  google.protobuf.StringValue s3_managed_ledger_offload_region = 8;
+  google.protobuf.StringValue s3_managed_ledger_offload_bucket = 9;
+  google.protobuf.StringValue s3_managed_ledger_offload_service_endpoint = 10;
+  google.protobuf.Int32Value s3_managed_ledger_offload_max_block_size_in_bytes = 11;
+  google.protobuf.Int32Value s3_managed_ledger_offload_read_buffer_size_in_bytes = 12;
+  google.protobuf.StringValue s3_managed_ledger_offload_credential_id = 13;
+  google.protobuf.StringValue s3_managed_ledger_offload_credential_secret = 14;
+  google.protobuf.StringValue s3_managed_ledger_offload_role = 15;
+  google.protobuf.StringValue s3_managed_ledger_offload_role_session_name = 16;
+  google.protobuf.StringValue gcs_managed_ledger_offload_region = 17;
+  google.protobuf.StringValue gcs_managed_ledger_offload_bucket = 18;
+  google.protobuf.Int32Value gcs_managed_ledger_offload_max_block_size_in_bytes = 19;
+  google.protobuf.Int32Value gcs_managed_ledger_offload_read_buffer_size_in_bytes = 20;
+  google.protobuf.StringValue gcs_managed_ledger_offload_service_account_key_file = 21;
+  google.protobuf.StringValue file_system_profile_path = 22;
+  google.protobuf.StringValue file_system_uri = 23;
+  google.protobuf.StringValue managed_ledger_offload_bucket = 24;
+  google.protobuf.StringValue managed_ledger_offload_region = 25;
+  google.protobuf.StringValue managed_ledger_offload_service_endpoint = 26;
+  google.protobuf.Int32Value managed_ledger_offload_max_block_size_in_bytes = 27;
+  google.protobuf.Int32Value managed_ledger_offload_read_buffer_size_in_bytes = 28;
+}
+message GetOffloadPoliciesResponse {
+  google.rpc.Status status = 1;
+  oneof offload_policies {
+    OffloadPoliciesInherited inherited = 3;
+    OffloadPoliciesSpecified specified = 4;
+  }
+}
+message SetOffloadPoliciesRequest {
+  string namespace = 1;
+  OffloadPoliciesSpecified offload_policies = 2;
+}
+message SetOffloadPoliciesResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveOffloadPoliciesRequest {
+  string namespace = 1;
+}
+message RemoveOffloadPoliciesResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -1114,4 +1175,8 @@ service NamespaceService {
   rpc GetSubscriptionTypesEnabled(GetSubscriptionTypesEnabledRequest) returns (GetSubscriptionTypesEnabledResponse);
   rpc SetSubscriptionTypesEnabled(SetSubscriptionTypesEnabledRequest) returns (SetSubscriptionTypesEnabledResponse);
   rpc RemoveSubscriptionTypesEnabled(RemoveSubscriptionTypesEnabledRequest) returns (RemoveSubscriptionTypesEnabledResponse);
+
+  rpc GetOffloadPolicies(GetOffloadPoliciesRequest) returns (GetOffloadPoliciesResponse);
+  rpc SetOffloadPolicies(SetOffloadPoliciesRequest) returns (SetOffloadPoliciesResponse);
+  rpc RemoveOffloadPolicies(RemoveOffloadPoliciesRequest) returns (RemoveOffloadPoliciesResponse);
 }

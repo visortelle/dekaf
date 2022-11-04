@@ -62,6 +62,7 @@ broker:
     autoSkipNonRecoverableData: "true"
     # Dev customizations
     brokerDeleteInactiveTopicsEnabled: "false"
+    topicLevelPoliciesEnabled: "true"
   securityContext:
     runAsUser: 0
     runAsGroup: 0

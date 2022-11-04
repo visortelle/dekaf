@@ -1,14 +1,14 @@
 package namespace
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.namespace.v1.namespace.{SubscriptionTypesEnabledInherited, SubscriptionTypesEnabledSpecified, CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, DispatchRateSpecified, DispatchRateUnspecified, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetEncryptionRequiredRequest, GetEncryptionRequiredResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersPerTopicRequest, GetMaxConsumersPerTopicResponse, GetMaxProducersPerTopicRequest, GetMaxProducersPerTopicResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetMaxTopicsPerNamespaceRequest, GetMaxTopicsPerNamespaceResponse, GetMaxUnackedMessagesPerConsumerRequest, GetMaxUnackedMessagesPerConsumerResponse, GetMaxUnackedMessagesPerSubscriptionRequest, GetMaxUnackedMessagesPerSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetOffloadDeletionLagRequest, GetOffloadDeletionLagResponse, GetOffloadThresholdRequest, GetOffloadThresholdResponse, GetPersistenceRequest, GetPersistenceResponse, GetReplicationClustersRequest, GetReplicationClustersResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, GetSubscribeRateRequest, GetSubscribeRateResponse, GetSubscriptionAuthModeRequest, GetSubscriptionAuthModeResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, GetSubscriptionExpirationTimeRequest, GetSubscriptionExpirationTimeResponse, GetSubscriptionTypesEnabledRequest, GetSubscriptionTypesEnabledResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersPerTopicSpecified, MaxConsumersPerTopicUnspecified, MaxProducersPerTopicSpecified, MaxProducersPerTopicUnspecified, MaxSubscriptionsPerTopicSpecified, MaxSubscriptionsPerTopicUnspecified, MaxTopicsPerNamespaceSpecified, MaxTopicsPerNamespaceUnspecified, MaxUnackedMessagesPerConsumerSpecified, MaxUnackedMessagesPerConsumerUnspecified, MaxUnackedMessagesPerSubscriptionSpecified, MaxUnackedMessagesPerSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, NamespaceServiceGrpc, OffloadDeletionLagSpecified, OffloadDeletionLagUnspecified, OffloadThresholdSpecified, PersistenceSpecified, PersistenceUnspecified, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersPerTopicRequest, RemoveMaxConsumersPerTopicResponse, RemoveMaxProducersPerTopicRequest, RemoveMaxProducersPerTopicResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveMaxTopicsPerNamespaceRequest, RemoveMaxTopicsPerNamespaceResponse, RemoveMaxUnackedMessagesPerConsumerRequest, RemoveMaxUnackedMessagesPerConsumerResponse, RemoveMaxUnackedMessagesPerSubscriptionRequest, RemoveMaxUnackedMessagesPerSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, RemoveOffloadDeletionLagRequest, RemoveOffloadDeletionLagResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSubscribeRateRequest, RemoveSubscribeRateResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, RemoveSubscriptionExpirationTimeRequest, RemoveSubscriptionExpirationTimeResponse, RemoveSubscriptionTypesEnabledRequest, RemoveSubscriptionTypesEnabledResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetEncryptionRequiredRequest, SetEncryptionRequiredResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersPerTopicRequest, SetMaxConsumersPerTopicResponse, SetMaxProducersPerTopicRequest, SetMaxProducersPerTopicResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetMaxTopicsPerNamespaceRequest, SetMaxTopicsPerNamespaceResponse, SetMaxUnackedMessagesPerConsumerRequest, SetMaxUnackedMessagesPerConsumerResponse, SetMaxUnackedMessagesPerSubscriptionRequest, SetMaxUnackedMessagesPerSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetOffloadDeletionLagRequest, SetOffloadDeletionLagResponse, SetOffloadThresholdRequest, SetOffloadThresholdResponse, SetPersistenceRequest, SetPersistenceResponse, SetReplicationClustersRequest, SetReplicationClustersResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse, SetSubscribeRateRequest, SetSubscribeRateResponse, SetSubscriptionAuthModeRequest, SetSubscriptionAuthModeResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SetSubscriptionExpirationTimeRequest, SetSubscriptionExpirationTimeResponse, SetSubscriptionTypesEnabledRequest, SetSubscriptionTypesEnabledResponse, SubscribeRateSpecified, SubscribeRateUnspecified, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, SubscriptionExpirationTimeSpecified, SubscriptionExpirationTimeUnspecified}
+import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, DispatchRateSpecified, DispatchRateUnspecified, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetEncryptionRequiredRequest, GetEncryptionRequiredResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersPerTopicRequest, GetMaxConsumersPerTopicResponse, GetMaxProducersPerTopicRequest, GetMaxProducersPerTopicResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetMaxTopicsPerNamespaceRequest, GetMaxTopicsPerNamespaceResponse, GetMaxUnackedMessagesPerConsumerRequest, GetMaxUnackedMessagesPerConsumerResponse, GetMaxUnackedMessagesPerSubscriptionRequest, GetMaxUnackedMessagesPerSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetOffloadDeletionLagRequest, GetOffloadDeletionLagResponse, GetOffloadPoliciesRequest, GetOffloadPoliciesResponse, GetOffloadThresholdRequest, GetOffloadThresholdResponse, GetPersistenceRequest, GetPersistenceResponse, GetReplicationClustersRequest, GetReplicationClustersResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, GetSubscribeRateRequest, GetSubscribeRateResponse, GetSubscriptionAuthModeRequest, GetSubscriptionAuthModeResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, GetSubscriptionExpirationTimeRequest, GetSubscriptionExpirationTimeResponse, GetSubscriptionTypesEnabledRequest, GetSubscriptionTypesEnabledResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersPerTopicSpecified, MaxConsumersPerTopicUnspecified, MaxProducersPerTopicSpecified, MaxProducersPerTopicUnspecified, MaxSubscriptionsPerTopicSpecified, MaxSubscriptionsPerTopicUnspecified, MaxTopicsPerNamespaceSpecified, MaxTopicsPerNamespaceUnspecified, MaxUnackedMessagesPerConsumerSpecified, MaxUnackedMessagesPerConsumerUnspecified, MaxUnackedMessagesPerSubscriptionSpecified, MaxUnackedMessagesPerSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, NamespaceServiceGrpc, OffloadDeletionLagSpecified, OffloadDeletionLagUnspecified, OffloadThresholdSpecified, PersistenceSpecified, PersistenceUnspecified, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersPerTopicRequest, RemoveMaxConsumersPerTopicResponse, RemoveMaxProducersPerTopicRequest, RemoveMaxProducersPerTopicResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveMaxTopicsPerNamespaceRequest, RemoveMaxTopicsPerNamespaceResponse, RemoveMaxUnackedMessagesPerConsumerRequest, RemoveMaxUnackedMessagesPerConsumerResponse, RemoveMaxUnackedMessagesPerSubscriptionRequest, RemoveMaxUnackedMessagesPerSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, RemoveOffloadDeletionLagRequest, RemoveOffloadDeletionLagResponse, RemoveOffloadPoliciesRequest, RemoveOffloadPoliciesResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSubscribeRateRequest, RemoveSubscribeRateResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, RemoveSubscriptionExpirationTimeRequest, RemoveSubscriptionExpirationTimeResponse, RemoveSubscriptionTypesEnabledRequest, RemoveSubscriptionTypesEnabledResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetEncryptionRequiredRequest, SetEncryptionRequiredResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersPerTopicRequest, SetMaxConsumersPerTopicResponse, SetMaxProducersPerTopicRequest, SetMaxProducersPerTopicResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetMaxTopicsPerNamespaceRequest, SetMaxTopicsPerNamespaceResponse, SetMaxUnackedMessagesPerConsumerRequest, SetMaxUnackedMessagesPerConsumerResponse, SetMaxUnackedMessagesPerSubscriptionRequest, SetMaxUnackedMessagesPerSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetOffloadDeletionLagRequest, SetOffloadDeletionLagResponse, SetOffloadPoliciesRequest, SetOffloadPoliciesResponse, SetOffloadThresholdRequest, SetOffloadThresholdResponse, SetPersistenceRequest, SetPersistenceResponse, SetReplicationClustersRequest, SetReplicationClustersResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse, SetSubscribeRateRequest, SetSubscribeRateResponse, SetSubscriptionAuthModeRequest, SetSubscriptionAuthModeResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SetSubscriptionExpirationTimeRequest, SetSubscriptionExpirationTimeResponse, SetSubscriptionTypesEnabledRequest, SetSubscriptionTypesEnabledResponse, SubscribeRateSpecified, SubscribeRateUnspecified, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, SubscriptionExpirationTimeSpecified, SubscriptionExpirationTimeUnspecified, SubscriptionTypesEnabledInherited, SubscriptionTypesEnabledSpecified}
 import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, RetentionPolicies, SubscribeRate, SubscriptionAuthMode}
+import org.apache.pulsar.common.policies.data.{OffloadedReadPriority, OffloadPolicies, AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, RetentionPolicies, SubscribeRate, SubscriptionAuthMode}
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
@@ -1617,4 +1617,128 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(status)))
+        }
+
+    override def getOffloadPolicies(request: GetOffloadPoliciesRequest): Future[GetOffloadPoliciesResponse] =
+        def offloadedReadPriorityToPb(offloadedReadPriority: OffloadedReadPriority): pb.OffloadedReadPriority =
+            offloadedReadPriority match
+                case OffloadedReadPriority.BOOKKEEPER_FIRST => pb.OffloadedReadPriority.OFFLOADED_READ_PRIORITY_BOOKKEEPER_FIRST
+                case OffloadedReadPriority.TIERED_STORAGE_FIRST => pb.OffloadedReadPriority.OFFLOADED_READ_PRIORITY_TIERED_STORAGE_FIRST
+
+        def offloadPoliciesToPb(p: OffloadPolicies): pb.OffloadPoliciesSpecified =
+            pb.OffloadPoliciesSpecified(
+                offloadersDirectory = Option(p.getOffloadersDirectory),
+                managedLedgerOffloadDriver = Option(p.getManagedLedgerOffloadDriver),
+                managedLedgerMaxThreads = Option(p.getManagedLedgerOffloadMaxThreads),
+                managedLedgerOffloadPrefetchRounds = Option(p.getManagedLedgerOffloadPrefetchRounds),
+                managedLedgerOffloadThresholdInBytes = Option(p.getManagedLedgerOffloadThresholdInBytes),
+                managedLedgerOffloadDeletionLagInMillis = Option(p.getManagedLedgerOffloadDeletionLagInMillis),
+                offloadedReadPriority = Option(offloadedReadPriorityToPb(p.getManagedLedgerOffloadedReadPriority)),
+                s3ManagedLedgerOffloadRegion = Option(p.getS3ManagedLedgerOffloadRegion),
+                s3ManagedLedgerOffloadBucket = Option(p.getS3ManagedLedgerOffloadBucket),
+                s3ManagedLedgerOffloadServiceEndpoint = Option(p.getS3ManagedLedgerOffloadServiceEndpoint),
+                s3ManagedLedgerOffloadMaxBlockSizeInBytes = Option(p.getS3ManagedLedgerOffloadMaxBlockSizeInBytes),
+                s3ManagedLedgerOffloadReadBufferSizeInBytes = Option(p.getS3ManagedLedgerOffloadReadBufferSizeInBytes),
+                s3ManagedLedgerOffloadCredentialId = Option(p.getS3ManagedLedgerOffloadCredentialId),
+                s3ManagedLedgerOffloadCredentialSecret = Option(p.getS3ManagedLedgerOffloadCredentialSecret),
+                s3ManagedLedgerOffloadRole = Option(p.getS3ManagedLedgerOffloadRole),
+                s3ManagedLedgerOffloadRoleSessionName = Option(p.getS3ManagedLedgerOffloadRoleSessionName),
+                gcsManagedLedgerOffloadRegion = Option(p.getGcsManagedLedgerOffloadRegion),
+                gcsManagedLedgerOffloadBucket = Option(p.getGcsManagedLedgerOffloadBucket),
+                gcsManagedLedgerOffloadMaxBlockSizeInBytes = Option(p.getGcsManagedLedgerOffloadMaxBlockSizeInBytes),
+                gcsManagedLedgerOffloadReadBufferSizeInBytes = Option(p.getGcsManagedLedgerOffloadReadBufferSizeInBytes),
+                gcsManagedLedgerOffloadServiceAccountKeyFile = Option(p.getGcsManagedLedgerOffloadServiceAccountKeyFile),
+                fileSystemProfilePath = Option(p.getFileSystemProfilePath),
+                fileSystemUri = Option(p.getFileSystemURI),
+                managedLedgerOffloadBucket = Option(p.getManagedLedgerOffloadBucket),
+                managedLedgerOffloadRegion = Option(p.getManagedLedgerOffloadRegion),
+                managedLedgerOffloadServiceEndpoint = Option(p.getManagedLedgerOffloadServiceEndpoint),
+                managedLedgerOffloadMaxBlockSizeInBytes = Option(p.getManagedLedgerOffloadMaxBlockSizeInBytes),
+                managedLedgerOffloadReadBufferSizeInBytes = Option(p.getManagedLedgerOffloadReadBufferSizeInBytes),
+            )
+
+        try {
+            val offloadPoliciesPb = Option(adminClient.namespaces.getOffloadPolicies(request.namespace)) match
+                case None =>
+                    pb.GetOffloadPoliciesResponse.OffloadPolicies.Inherited(new pb.OffloadPoliciesInherited())
+                case Some(v) =>
+                    pb.GetOffloadPoliciesResponse.OffloadPolicies.Specified(offloadPoliciesToPb(v))
+
+            Future.successful(GetOffloadPoliciesResponse(
+                status = Some(Status(code = Code.OK.index)),
+                offloadPolicies = offloadPoliciesPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetOffloadPoliciesResponse(status = Some(status)))
+        }
+
+    override def setOffloadPolicies(request: SetOffloadPoliciesRequest): Future[SetOffloadPoliciesResponse] =
+        def offloadedReadPriorityFromPb(offloadedReadPriority: pb.OffloadedReadPriority): OffloadedReadPriority =
+            offloadedReadPriority match
+                case pb.OffloadedReadPriority.OFFLOADED_READ_PRIORITY_BOOKKEEPER_FIRST => OffloadedReadPriority.BOOKKEEPER_FIRST
+                case pb.OffloadedReadPriority.OFFLOADED_READ_PRIORITY_TIERED_STORAGE_FIRST => OffloadedReadPriority.TIERED_STORAGE_FIRST
+                case _ => throw new IllegalArgumentException("Unknown OffloadedReadPriority: " + offloadedReadPriority)
+
+        def offloadPoliciesFromPb(p: pb.OffloadPoliciesSpecified): OffloadPolicies =
+            val policies = OffloadPolicies.builder()
+
+            p.offloadersDirectory.foreach(v => policies.offloadersDirectory(v))
+            p.managedLedgerOffloadDriver.foreach(v => policies.managedLedgerOffloadDriver(v))
+            p.managedLedgerMaxThreads.foreach(v => policies.managedLedgerOffloadMaxThreads(v))
+            p.managedLedgerOffloadPrefetchRounds.foreach(v => policies.managedLedgerOffloadPrefetchRounds(v))
+            p.managedLedgerOffloadThresholdInBytes.foreach(v => policies.managedLedgerOffloadThresholdInBytes(v))
+            p.managedLedgerOffloadDeletionLagInMillis.foreach(v => policies.managedLedgerOffloadDeletionLagInMillis(v))
+            p.offloadedReadPriority.foreach(v => policies.managedLedgerOffloadedReadPriority(offloadedReadPriorityFromPb(v)))
+            p.s3ManagedLedgerOffloadRegion.foreach(v => policies.s3ManagedLedgerOffloadRegion(v))
+            p.s3ManagedLedgerOffloadBucket.foreach(v => policies.s3ManagedLedgerOffloadBucket(v))
+            p.s3ManagedLedgerOffloadServiceEndpoint.foreach(v => policies.s3ManagedLedgerOffloadServiceEndpoint(v))
+            p.s3ManagedLedgerOffloadMaxBlockSizeInBytes.foreach(v => policies.s3ManagedLedgerOffloadMaxBlockSizeInBytes(v))
+            p.s3ManagedLedgerOffloadReadBufferSizeInBytes.foreach(v => policies.s3ManagedLedgerOffloadReadBufferSizeInBytes(v))
+            p.s3ManagedLedgerOffloadCredentialId.foreach(v => policies.s3ManagedLedgerOffloadCredentialId(v))
+            p.s3ManagedLedgerOffloadCredentialSecret.foreach(v => policies.s3ManagedLedgerOffloadCredentialSecret(v))
+            p.s3ManagedLedgerOffloadRole.foreach(v => policies.s3ManagedLedgerOffloadRole(v))
+            p.s3ManagedLedgerOffloadRoleSessionName.foreach(v => policies.setS3ManagedLedgerOffloadRoleSessionName(v))
+            p.gcsManagedLedgerOffloadRegion.foreach(v => policies.gcsManagedLedgerOffloadRegion(v))
+            p.gcsManagedLedgerOffloadBucket.foreach(v => policies.gcsManagedLedgerOffloadBucket(v))
+            p.gcsManagedLedgerOffloadMaxBlockSizeInBytes.foreach(v => policies.gcsManagedLedgerOffloadMaxBlockSizeInBytes(v))
+            p.gcsManagedLedgerOffloadReadBufferSizeInBytes.foreach(v => policies.gcsManagedLedgerOffloadReadBufferSizeInBytes(v))
+            p.gcsManagedLedgerOffloadServiceAccountKeyFile.foreach(v => policies.gcsManagedLedgerOffloadServiceAccountKeyFile(v))
+            p.fileSystemProfilePath.foreach(v => policies.fileSystemProfilePath(v))
+            p.fileSystemUri.foreach(v => policies.fileSystemURI(v))
+            p.managedLedgerOffloadBucket.foreach(v => policies.managedLedgerOffloadBucket(v))
+            p.managedLedgerOffloadRegion.foreach(v => policies.managedLedgerOffloadRegion(v))
+            p.managedLedgerOffloadServiceEndpoint.foreach(v => policies.managedLedgerOffloadServiceEndpoint(v))
+            p.managedLedgerOffloadMaxBlockSizeInBytes.foreach(v => policies.managedLedgerOffloadMaxBlockSizeInBytes(v))
+            p.managedLedgerOffloadReadBufferSizeInBytes.foreach(v => policies.managedLedgerOffloadReadBufferSizeInBytes(v))
+
+            policies.build
+
+        try {
+            logger.info(s"Setting offload policies policy for namespace ${request.namespace}")
+
+            request.offloadPolicies match
+                case None =>
+                    val status = Status(code = Code.INVALID_ARGUMENT.index, "Offload policies should be specified")
+                    Future.successful(SetOffloadPoliciesResponse(status = Some(status)))
+                case Some(v) =>
+                    val offloadPolicies = offloadPoliciesFromPb(v)
+                    adminClient.namespaces.setOffloadPolicies(request.namespace, offloadPolicies)
+                    Future.successful(SetOffloadPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetOffloadPoliciesResponse(status = Some(status)))
+        }
+
+    override def removeOffloadPolicies(request: RemoveOffloadPoliciesRequest): Future[RemoveOffloadPoliciesResponse] =
+        try {
+            logger.info(s"Removing offload policies policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeOffloadPolicies(request.namespace)
+            Future.successful(RemoveOffloadPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveOffloadPoliciesResponse(status = Some(status)))
         }
