@@ -385,7 +385,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               defaultItemHeight={remToPx(40)}
               fixedItemHeight={remToPx(40)}
               components={{
-                EmptyPlaceholder: () => <div className={s.Loading}>
+                EmptyPlaceholder: () => <div className={s.Loading} style={{ width: 'calc(100% - 24rem)' }}>
                   <span>No items found. <br />Try another filter query.</span>
                 </div>
               }}
