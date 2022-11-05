@@ -1627,11 +1627,11 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
         def offloadPoliciesToPb(p: OffloadPolicies): pb.OffloadPoliciesSpecified =
             pb.OffloadPoliciesSpecified(
+                managedLedgerOffloadDriver = p.getManagedLedgerOffloadDriver,
+                managedLedgerOffloadThresholdInBytes = p.getManagedLedgerOffloadThresholdInBytes,
                 offloadersDirectory = Option(p.getOffloadersDirectory),
-                managedLedgerOffloadDriver = Option(p.getManagedLedgerOffloadDriver),
                 managedLedgerMaxThreads = Option(p.getManagedLedgerOffloadMaxThreads),
                 managedLedgerOffloadPrefetchRounds = Option(p.getManagedLedgerOffloadPrefetchRounds),
-                managedLedgerOffloadThresholdInBytes = Option(p.getManagedLedgerOffloadThresholdInBytes),
                 managedLedgerOffloadDeletionLagInMillis = Option(p.getManagedLedgerOffloadDeletionLagInMillis),
                 offloadedReadPriority = Option(offloadedReadPriorityToPb(p.getManagedLedgerOffloadedReadPriority)),
                 s3ManagedLedgerOffloadRegion = Option(p.getS3ManagedLedgerOffloadRegion),
@@ -1684,11 +1684,11 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         def offloadPoliciesFromPb(p: pb.OffloadPoliciesSpecified): OffloadPolicies =
             val policies = OffloadPolicies.builder()
 
+            policies.managedLedgerOffloadDriver(p.managedLedgerOffloadDriver)
+            policies.managedLedgerOffloadThresholdInBytes(p.managedLedgerOffloadThresholdInBytes)
             p.offloadersDirectory.foreach(v => policies.offloadersDirectory(v))
-            p.managedLedgerOffloadDriver.foreach(v => policies.managedLedgerOffloadDriver(v))
             p.managedLedgerMaxThreads.foreach(v => policies.managedLedgerOffloadMaxThreads(v))
             p.managedLedgerOffloadPrefetchRounds.foreach(v => policies.managedLedgerOffloadPrefetchRounds(v))
-            p.managedLedgerOffloadThresholdInBytes.foreach(v => policies.managedLedgerOffloadThresholdInBytes(v))
             p.managedLedgerOffloadDeletionLagInMillis.foreach(v => policies.managedLedgerOffloadDeletionLagInMillis(v))
             p.offloadedReadPriority.foreach(v => policies.managedLedgerOffloadedReadPriority(offloadedReadPriorityFromPb(v)))
             p.s3ManagedLedgerOffloadRegion.foreach(v => policies.s3ManagedLedgerOffloadRegion(v))

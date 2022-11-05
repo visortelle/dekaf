@@ -68,7 +68,10 @@ const _MyApp = (props: AppProps) => {
         revalidateOnFocus: false,
       }}>
       <NoSsr>
-        <ReactTooltip html={true} />
+        <ReactTooltip
+          html={true}
+          event="click"
+        />
 
         <Notifications.DefaultProvider>
           <Modals.DefaultProvider>

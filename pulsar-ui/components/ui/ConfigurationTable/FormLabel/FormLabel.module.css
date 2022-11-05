@@ -1,0 +1,26 @@
+.FormLabel {
+  display: block;
+  margin-bottom: 4rem;
+  font-weight: bold;
+  position: relative;
+  display: flex;
+}
+
+.FormLabelWithHelp:hover {
+  cursor: pointer;
+  position: relative;
+}
+
+.HelpIcon {
+  margin-left: 1ch;
+}
+
+.HelpIcon svg {
+  width: 18rem;
+  height: 18rem;
+  fill: var(--accent-color-blue);
+}
+
+.Required {
+  transform: translate(0.2ch, -0.8ch);
+}

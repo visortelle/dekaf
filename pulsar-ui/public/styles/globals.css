@@ -146,6 +146,12 @@ code {
 
 .__react_component_tooltip {
   max-width: 640rem;
+  z-index: 999;
+  pointer-events: initial !important;
+}
+.__react_component_tooltip a {
+  color: #fff;
+  text-decoration: underline;
 }
 .__react_component_tooltip code {
   background: rgba(255,255,255,1);

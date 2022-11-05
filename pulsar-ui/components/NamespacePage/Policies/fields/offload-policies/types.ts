@@ -1,39 +1,56 @@
-export type AliyunOssOffloadPolicy = {
-  type: "aliyun-oss";
+export type AnyOffloadPolicy =
+  AliyunOssOffloadPolicy |
+  AwsS3OffloadPolicy |
+  AzureBlobOffloadPolicy |
+  FilesystemOffloadPolicy |
+  GoogleCloudStorageOffloadPolicy |
+  S3OffloadPolicy;
+
+export type PolicyValue = { type: 'inherited-from-broker-config' } | AnyOffloadPolicy;
+
+export type OffloadThreshold =
+  { type: 'disable-offload' } | // < 0
+  { type: 'offload-as-soon-as-possible' } | // == 0
+  { type: 'offload-when-topic-storage-reaches-threshold', bytes: number } // > 0
+
+
+export type CommonOffloadPolicy = {
   offloadersDirectory: string;
+  managedLedgerOffloadThreshold: OffloadThreshold;
+  managedLedgerOffloadDeletionLagInMillis?: number;
+}
+
+export type AliyunOssOffloadPolicy = CommonOffloadPolicy & {
+  type: "aliyun-oss";
   managedLedgerOffloadBucket: string;
   managedLedgerOffloadServiceEndpoint: string;
   managedLedgerOffloadReadBufferSizeInBytes?: number;
   managedLedgerOffloadMaxBlockSizeInBytes?: number;
 };
 
-export type AwsS3OffloadPolicy = {
+export type AwsS3OffloadPolicy = CommonOffloadPolicy & {
   type: "aws-s3";
-  offloadersDirectory: string;
   s3ManagedLedgerOffloadBucket: string;
   s3ManagedLedgerOffloadRegion?: string;
   s3ManagedLedgerOffloadReadBufferSizeInBytes?: number;
   s3ManagedLedgerOffloadMaxBlockSizeInBytes?: number;
 };
 
-export type AzureBlobOffloadPolicy = {
+export type AzureBlobOffloadPolicy = CommonOffloadPolicy & {
   type: "azureblob";
-  offloadersDirectory: string;
   managedLedgerOffloadBucket: string;
   managedLedgerOffloadReadBufferSizeInBytes?: number;
   managedLedgerOffloadMaxBlockSizeInBytes?: number;
 };
 
-export type FilesystemOffloadPolicy = {
+export type FilesystemOffloadPolicy = CommonOffloadPolicy & {
   type: "filesystem";
-  offloadersDirectory: string;
   fileSystemProfilePath: string;
   fileSystemUri?: string; // required for HDFS
 };
 
-export type GoogleCloudStorageOffloadPolicy = {
+export type GoogleCloudStorageOffloadPolicy = CommonOffloadPolicy & {
   type: "google-cloud-storage";
-  offloadersDirectory: string;
   gcsManagedLedgerOffloadBucket: string;
   gcsManagedLedgerOffloadRegion: string;
   gcsManagedLedgerOffloadServiceAccountKeyFile: string;
@@ -41,9 +58,8 @@ export type GoogleCloudStorageOffloadPolicy = {
   gcsManagedLedgerOffloadMaxBlockSizeInBytes?: number;
 };
 
-export type S3OffloadPolicy = {
+export type S3OffloadPolicy = CommonOffloadPolicy & {
   type: "S3";
-  offloadersDirectory: string;
   managedLedgerOffloadBucket: string;
   managedLedgerOffloadServiceEndpoint: string;
   managedLedgerOffloadReadBufferSizeInBytes?: number;
