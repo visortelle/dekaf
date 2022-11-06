@@ -4,15 +4,30 @@ import SelectInput from '../SelectInput/SelectInput';
 import Input from '../Input/Input';
 import { MemorySize, MemoryUnit, memoryUnits } from './types';
 import { bytesToMemorySize, memorySizeToBytes } from './conversions';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as I18n from '../../../app/contexts/I18n/I18n';
 
 export type MemorySizeInputProps = {
-  // Bytes
   initialValue: number;
   onChange: (value: number) => void;
+  maxLimitBytes?: number;
 };
 
 const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
+  const { notifyError } = Notifications.useContext();
+  const { formatLongNumber } = I18n.useContext();
+
   const [value, setValue] = React.useState<MemorySize>(bytesToMemorySize(props.initialValue));
+
+  const onChange = (newValue: MemorySize) => {
+    if (props.maxLimitBytes !== undefined && memorySizeToBytes(newValue) > props.maxLimitBytes) {
+      notifyError(`The maximum value should be less than ${formatLongNumber(props.maxLimitBytes)} bytes`);
+      return;
+    }
+
+    setValue(newValue);
+    props.onChange(memorySizeToBytes(newValue));
+  };
 
   return (
     <div className={s.MemorySizeInput}>
@@ -27,8 +42,7 @@ const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
             }
 
             const newValue: MemorySize = { ...value, size: Number(size) };
-            setValue(newValue);
-            props.onChange(memorySizeToBytes(newValue));
+            onChange(newValue);
           }}
         />
       </div>
@@ -38,8 +52,7 @@ const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
           list={memoryUnits.map(u => ({ type: 'item', value: u, title: u }))}
           onChange={(unit) => {
             const newValue: MemorySize = { ...value, unit: unit as MemoryUnit };
-            setValue(newValue);
-            props.onChange(memorySizeToBytes(newValue))
+            onChange(newValue);
           }}
           value={value.unit}
         />
@@ -47,5 +60,8 @@ const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
     </div>
   );
 }
+
+export const maxInt32 = 2_147_483_647;
+export const maxInt64 = 9_223_372_036_854_775_807;
 
 export default MemorySizeInput;

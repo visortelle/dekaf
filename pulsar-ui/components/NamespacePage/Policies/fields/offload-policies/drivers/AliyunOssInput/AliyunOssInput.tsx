@@ -14,8 +14,8 @@ export type AliyunOssInputProps = {
 };
 
 const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
-  const isReadBufferSizeSpecified = props.value.managedLedgerOffloadReadBufferSizeInBytes !== undefined && props.value.managedLedgerOffloadReadBufferSizeInBytes !== 0;
-  const isMaxBlockSizeSpecified = props.value.managedLedgerOffloadMaxBlockSizeInBytes !== undefined && props.value.managedLedgerOffloadMaxBlockSizeInBytes !== 0;
+  const isReadBufferSizeSpecified = props.value.managedLedgerOffloadReadBufferSizeInBytes !== undefined;
+  const isMaxBlockSizeSpecified = props.value.managedLedgerOffloadMaxBlockSizeInBytes !== undefined;
 
   return (
     <div className={s.AliyunOssInput}>
@@ -71,7 +71,7 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
             list={[{ type: 'item', value: 'not-specified', title: 'Not specified' }, { type: 'item', value: 'specified', title: 'Specified' }]}
             onChange={v => {
               if (v === 'not-specified') {
-                props.onChange({ ...props.value, managedLedgerOffloadReadBufferSizeInBytes: undefined });
+                props.onChange({ ...props.value, managedLedgerOffloadReadBufferSizeInBytes: 0 });
               } else {
                 props.onChange({ ...props.value, managedLedgerOffloadReadBufferSizeInBytes: 1024 * 1024 });
               }
@@ -98,7 +98,7 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
             list={[{ type: 'item', value: 'not-specified', title: 'Not specified' }, { type: 'item', value: 'specified', title: 'Specified' }]}
             onChange={v => {
               if (v === 'not-specified') {
-                props.onChange({ ...props.value, managedLedgerOffloadMaxBlockSizeInBytes: undefined });
+                props.onChange({ ...props.value, managedLedgerOffloadMaxBlockSizeInBytes: 0 });
               } else {
                 props.onChange({ ...props.value, managedLedgerOffloadMaxBlockSizeInBytes: 1024 * 1024 * 64 });
               }

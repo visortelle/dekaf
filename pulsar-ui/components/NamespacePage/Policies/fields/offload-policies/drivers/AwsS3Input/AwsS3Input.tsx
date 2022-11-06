@@ -2,7 +2,7 @@ import React from 'react';
 import s from './AwsS3Input.module.css'
 import { AwsS3OffloadPolicy } from '../../types';
 import Input from '../../../../../../ui/Input/Input';
-import MemorySizeInput from '../../../../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
+import MemorySizeInput, { maxInt32 } from '../../../../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import FormLabel from '../../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import Select from '../../../../../../ui/Select/Select';
 import FormItem from '../../../../../../ui/ConfigurationTable/FormItem/FormItem';
@@ -14,8 +14,8 @@ export type AwsS3InputProps = {
 };
 
 const AwsS3Input: React.FC<AwsS3InputProps> = (props) => {
-  const isReadBufferSizeSpecified = props.value.s3ManagedLedgerOffloadReadBufferSizeInBytes !== undefined && props.value.s3ManagedLedgerOffloadReadBufferSizeInBytes !== 0;
-  const isMaxBlockSizeSpecified = props.value.s3ManagedLedgerOffloadMaxBlockSizeInBytes !== undefined && props.value.s3ManagedLedgerOffloadMaxBlockSizeInBytes !== 0;
+  const isReadBufferSizeSpecified = props.value.s3ManagedLedgerOffloadReadBufferSizeInBytes !== undefined;
+  const isMaxBlockSizeSpecified = props.value.s3ManagedLedgerOffloadMaxBlockSizeInBytes !== undefined;
 
   return (
     <div className={s.AwsS3Input}>
@@ -121,6 +121,7 @@ const AwsS3Input: React.FC<AwsS3InputProps> = (props) => {
           <MemorySizeInput
             initialValue={props.value.s3ManagedLedgerOffloadReadBufferSizeInBytes || 0}
             onChange={v => props.onChange({ ...props.value, s3ManagedLedgerOffloadReadBufferSizeInBytes: v })}
+            maxLimitBytes={maxInt32}
           />
         )}
       </FormItem>
@@ -148,6 +149,7 @@ const AwsS3Input: React.FC<AwsS3InputProps> = (props) => {
           <MemorySizeInput
             initialValue={props.value.s3ManagedLedgerOffloadMaxBlockSizeInBytes || 0}
             onChange={v => props.onChange({ ...props.value, s3ManagedLedgerOffloadMaxBlockSizeInBytes: v })}
+            maxLimitBytes={maxInt32}
           />
         )}
       </FormItem>

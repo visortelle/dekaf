@@ -88,7 +88,7 @@ export function policyValueToReq(
           ? undefined
           : new StringValue().setValue(p.s3ManagedLedgerOffloadRegion)
       );
-      ppb.setManagedLedgerOffloadServiceEndpoint(
+      ppb.setS3ManagedLedgerOffloadServiceEndpoint(
         p.s3ManagedLedgerOffloadServiceEndpoint === undefined
           ? undefined
           : new StringValue().setValue(p.s3ManagedLedgerOffloadServiceEndpoint)
@@ -490,36 +490,22 @@ export function defaultPolicyValueByType(
     case "aliyun-oss": {
       newValue = {
         type: "aliyun-oss",
+        offloadersDirectory:
+          policiesRes?.getSpecified()?.getOffloadersDirectory()?.toObject()
+            .value ?? "",
         managedLedgerOffloadThreshold: offloadThresholdFromBytes(
           policiesRes
             ?.getSpecified()
             ?.getManagedLedgerOffloadThresholdInBytes() ?? 0
         ),
-        managedLedgerOffloadBucket:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadBucket()
-            ?.toObject().value ?? "",
-        managedLedgerOffloadServiceEndpoint:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadServiceEndpoint()
-            ?.toObject().value ?? "",
-        offloadersDirectory:
-          policiesRes?.getSpecified()?.getOffloadersDirectory()?.toObject()
-            .value ?? "",
         managedLedgerOffloadDeletionLagInMillis: policiesRes
           ?.getSpecified()
           ?.getManagedLedgerOffloadDeletionLagInMillis()
           ?.toObject().value,
-        managedLedgerOffloadMaxBlockSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadMaxBlockSizeInBytes()
-          ?.toObject().value,
-        managedLedgerOffloadReadBufferSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadReadBufferSizeInBytes()
-          ?.toObject().value,
+        managedLedgerOffloadBucket: "",
+        managedLedgerOffloadServiceEndpoint: "",
+        managedLedgerOffloadMaxBlockSizeInBytes: undefined,
+        managedLedgerOffloadReadBufferSizeInBytes: undefined,
       };
       break;
     }
@@ -534,32 +520,15 @@ export function defaultPolicyValueByType(
             ?.getSpecified()
             ?.getManagedLedgerOffloadThresholdInBytes() ?? 0
         ),
-        s3ManagedLedgerOffloadBucket:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadBucket()
-            ?.toObject().value ?? "",
-        s3ManagedLedgerOffloadServiceEndpoint:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadServiceEndpoint()
-            ?.toObject().value ?? "",
-        s3ManagedLedgerOffloadRegion: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadRegion()
-          ?.toObject().value,
-        s3ManagedLedgerOffloadReadBufferSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadReadBufferSizeInBytes()
-          ?.toObject().value,
-        s3ManagedLedgerOffloadMaxBlockSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadMaxBlockSizeInBytes()
-          ?.toObject().value,
         managedLedgerOffloadDeletionLagInMillis: policiesRes
           ?.getSpecified()
           ?.getManagedLedgerOffloadDeletionLagInMillis()
           ?.toObject().value,
+        s3ManagedLedgerOffloadBucket: "",
+        s3ManagedLedgerOffloadServiceEndpoint: "",
+        s3ManagedLedgerOffloadRegion: undefined,
+        s3ManagedLedgerOffloadReadBufferSizeInBytes: undefined,
+        s3ManagedLedgerOffloadMaxBlockSizeInBytes: undefined,
       };
       break;
     }
@@ -574,23 +543,13 @@ export function defaultPolicyValueByType(
             ?.getSpecified()
             ?.getManagedLedgerOffloadThresholdInBytes() ?? 0
         ),
-        managedLedgerOffloadBucket:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadBucket()
-            ?.toObject().value ?? "",
         managedLedgerOffloadDeletionLagInMillis: policiesRes
           ?.getSpecified()
           ?.getManagedLedgerOffloadDeletionLagInMillis()
           ?.toObject().value,
-        managedLedgerOffloadMaxBlockSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadMaxBlockSizeInBytes()
-          ?.toObject().value,
-        managedLedgerOffloadReadBufferSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadReadBufferSizeInBytes()
-          ?.toObject().value,
+        managedLedgerOffloadBucket: "",
+        managedLedgerOffloadMaxBlockSizeInBytes: undefined,
+        managedLedgerOffloadReadBufferSizeInBytes: undefined,
       };
       break;
     }
@@ -605,17 +564,12 @@ export function defaultPolicyValueByType(
             ?.getSpecified()
             ?.getManagedLedgerOffloadThresholdInBytes() ?? 0
         ),
-        fileSystemProfilePath:
-          policiesRes?.getSpecified()?.getFileSystemProfilePath()?.toObject()
-            .value ?? "",
-        fileSystemUri: policiesRes
-          ?.getSpecified()
-          ?.getFileSystemUri()
-          ?.toObject().value,
         managedLedgerOffloadDeletionLagInMillis: policiesRes
           ?.getSpecified()
           ?.getManagedLedgerOffloadDeletionLagInMillis()
           ?.toObject().value,
+        fileSystemProfilePath: "",
+        fileSystemUri: "",
       };
       break;
     }
@@ -630,33 +584,15 @@ export function defaultPolicyValueByType(
             ?.getSpecified()
             ?.getManagedLedgerOffloadThresholdInBytes() ?? 0
         ),
-        gcsManagedLedgerOffloadBucket:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadBucket()
-            ?.toObject().value ?? "",
-        gcsManagedLedgerOffloadRegion:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadRegion()
-            ?.toObject().value ?? "",
-        gcsManagedLedgerOffloadServiceAccountKeyFile:
-          policiesRes
-            ?.getSpecified()
-            ?.getGcsManagedLedgerOffloadServiceAccountKeyFile()
-            ?.toObject().value ?? "",
-        gcsManagedLedgerOffloadMaxBlockSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadMaxBlockSizeInBytes()
-          ?.toObject().value,
-        gcsManagedLedgerOffloadReadBufferSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadReadBufferSizeInBytes()
-          ?.toObject().value,
         managedLedgerOffloadDeletionLagInMillis: policiesRes
           ?.getSpecified()
           ?.getManagedLedgerOffloadDeletionLagInMillis()
           ?.toObject().value,
+        gcsManagedLedgerOffloadBucket: "",
+        gcsManagedLedgerOffloadRegion: "",
+        gcsManagedLedgerOffloadServiceAccountKeyFile: "",
+        gcsManagedLedgerOffloadMaxBlockSizeInBytes: undefined,
+        gcsManagedLedgerOffloadReadBufferSizeInBytes: undefined,
       };
       break;
     }
@@ -671,28 +607,14 @@ export function defaultPolicyValueByType(
             ?.getSpecified()
             ?.getManagedLedgerOffloadThresholdInBytes() ?? 0
         ),
-        managedLedgerOffloadBucket:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadBucket()
-            ?.toObject().value ?? "",
-        managedLedgerOffloadServiceEndpoint:
-          policiesRes
-            ?.getSpecified()
-            ?.getManagedLedgerOffloadServiceEndpoint()
-            ?.toObject().value ?? "",
         managedLedgerOffloadDeletionLagInMillis: policiesRes
           ?.getSpecified()
           ?.getManagedLedgerOffloadDeletionLagInMillis()
           ?.toObject().value,
-        managedLedgerOffloadMaxBlockSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadMaxBlockSizeInBytes()
-          ?.toObject().value,
-        managedLedgerOffloadReadBufferSizeInBytes: policiesRes
-          ?.getSpecified()
-          ?.getManagedLedgerOffloadReadBufferSizeInBytes()
-          ?.toObject().value,
+        managedLedgerOffloadBucket: "",
+        managedLedgerOffloadServiceEndpoint: "",
+        managedLedgerOffloadMaxBlockSizeInBytes: undefined,
+        managedLedgerOffloadReadBufferSizeInBytes: undefined,
       };
     }
   }
