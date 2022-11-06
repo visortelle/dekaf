@@ -13,11 +13,12 @@
 
 .HelpIcon {
   margin-left: 1ch;
+  margin-top: 2rem;
 }
 
 .HelpIcon svg {
-  width: 18rem;
-  height: 18rem;
+  width: 16rem;
+  height: 16rem;
   fill: var(--accent-color-blue);
 }
 

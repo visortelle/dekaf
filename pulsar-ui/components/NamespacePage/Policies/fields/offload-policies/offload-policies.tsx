@@ -15,6 +15,7 @@ import { defaultPolicyValueByType, offloadThresholdFromBytes, policyValueToReq, 
 import Input from '../../../../ui/Input/Input';
 import OffloadThresholdInput from './inputs/OffloadThresholdInput';
 import AliyunOssInput from './drivers/AliyunOssInput';
+import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 const policy = 'offloadPolicies';
 
@@ -91,7 +92,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         return (
           <>
             <div className={sf.FormItem}>
-              <div className={sf.FormLabel}>Driver</div>
+              <FormLabel
+                content="Offload driver"
+                help={<span>Driver to use to offload old data to long term storage.</span>}
+              />
               <Select<PolicyValue['type']>
                 value={value.type}
                 list={[
@@ -117,7 +121,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 
                 <div className={sf.FormItem}>
-                  <div className={sf.FormLabel}>Offloaders directory</div>
+                  <FormLabel
+                    content="Offloaders directory"
+                    help={(
+                      <>
+                        If you are running Pulsar in a bare metal cluster, make sure that offloaders tarball is unzipped in every broker&apos;s pulsar directory.
+                        <br />
+                        <br />
+                        If you are running Pulsar in Docker or deploying Pulsar using a docker image (e.g. K8S), you can use the <code>apachepulsar/pulsar-all</code> image instead of the <code>apachepulsar/pulsar</code> image. <code>apachepulsar/pulsar-all</code> image has already bundled tiered storage offloaders.
+                      </>
+                    )}
+                  />
                   <Input
                     value={value.offloadersDirectory}
                     onChange={v => onChange({ ...value, offloadersDirectory: v })}
@@ -126,7 +140,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 </div>
 
                 <div className={sf.FormItem}>
-                  <div className={sf.FormLabel}>Deletion lag</div>
+                  <FormLabel
+                    content="Deletion lag"
+                    help="Duration to wait after offloading a ledger segment, before deleting the copy of that segment from cluster local storage."
+                  />
                   <DurationInput
                     initialValue={Math.floor((value.managedLedgerOffloadDeletionLagInMillis || 0) / 1000)}
                     onChange={v => onChange({ ...value, managedLedgerOffloadDeletionLagInMillis: v * 1000 })}
@@ -141,8 +158,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 onChange={onChange}
               />
             )}
-
-            <div>NOTE! We assume that authentication is configured by Pulsar administrator.</div>
           </>
         );
       }}

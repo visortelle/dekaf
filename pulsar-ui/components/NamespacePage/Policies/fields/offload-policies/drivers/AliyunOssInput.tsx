@@ -4,9 +4,9 @@ import sf from '../../../../../ui/ConfigurationTable/form.module.css';
 import { AliyunOssOffloadPolicy } from '../types';
 import Input from '../../../../../ui/Input/Input';
 import MemorySizeInput from '../../../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
-import OffloadThresholdInput from '../inputs/OffloadThresholdInput';
 import FormLabel from '../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
-import { divide } from 'lodash';
+import Select from '../../../../../ui/Select/Select';
+import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 
 export type AliyunOssInputProps = {
   value: AliyunOssOffloadPolicy,
@@ -14,6 +14,11 @@ export type AliyunOssInputProps = {
 };
 
 const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
+  console.log('props', props.value);
+
+  const isReadBufferSizeSpecified = props.value.managedLedgerOffloadReadBufferSizeInBytes !== undefined && props.value.managedLedgerOffloadReadBufferSizeInBytes !== 0;
+  const isMaxBlockSizeSpecified = props.value.managedLedgerOffloadMaxBlockSizeInBytes !== undefined && props.value.managedLedgerOffloadMaxBlockSizeInBytes !== 0;
+
   return (
     <div className={s.AliyunOssInput}>
       <div className={sf.FormItem}>
@@ -49,8 +54,59 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
         />
       </div>
 
+      <div className={sf.FormItem}>
+        <FormLabel
+          content="Read buffer size"
+          help="Block size for each individual read when reading back data from S3-compatible storage."
+        />
+        <FormItem>
+          <Select<'not-specified' | 'specified'>
+            value={isReadBufferSizeSpecified ? 'specified' : 'non-specified'}
+            list={[{ type: 'item', value: 'not-specified', title: 'Not specified' }, { type: 'item', value: 'specified', title: 'Specified' }]}
+            onChange={v => {
+              if (v === 'not-specified') {
+                props.onChange({ ...props.value, managedLedgerOffloadReadBufferSizeInBytes: undefined });
+              } else {
+                props.onChange({ ...props.value, managedLedgerOffloadReadBufferSizeInBytes: 1024 * 1024 });
+              }
+            }}
+          />
+        </FormItem>
 
+        {isReadBufferSizeSpecified && (
+          <MemorySizeInput
+            initialValue={props.value.managedLedgerOffloadReadBufferSizeInBytes || 0}
+            onChange={v => props.onChange({ ...props.value, managedLedgerOffloadReadBufferSizeInBytes: v })}
+          />
+        )}
+      </div>
 
+      <div className={sf.FormItem}>
+        <FormLabel
+          content="Block size"
+          help={<div>Maximum block size sent during a multi-part upload to S3-compatible storage. It <strong>cannot</strong> be smaller than 5 MB.</div>}
+        />
+        <FormItem>
+          <Select<'not-specified' | 'specified'>
+            value={isMaxBlockSizeSpecified ? 'specified' : 'not-specified'}
+            list={[{ type: 'item', value: 'not-specified', title: 'Not specified' }, { type: 'item', value: 'specified', title: 'Specified' }]}
+            onChange={v => {
+              if (v === 'not-specified') {
+                props.onChange({ ...props.value, managedLedgerOffloadMaxBlockSizeInBytes: undefined });
+              } else {
+                props.onChange({ ...props.value, managedLedgerOffloadMaxBlockSizeInBytes: 1024 * 1024 * 64 });
+              }
+            }}
+          />
+        </FormItem>
+
+        {isMaxBlockSizeSpecified && (
+          <MemorySizeInput
+            initialValue={props.value.managedLedgerOffloadMaxBlockSizeInBytes || 0}
+            onChange={v => props.onChange({ ...props.value, managedLedgerOffloadMaxBlockSizeInBytes: v })}
+          />
+        )}
+      </div>
     </div>
   );
 }

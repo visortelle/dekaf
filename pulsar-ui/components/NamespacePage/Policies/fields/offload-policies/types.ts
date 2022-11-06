@@ -9,7 +9,7 @@ export type AnyOffloadPolicy =
 export type PolicyValue = { type: 'inherited-from-broker-config' } | AnyOffloadPolicy;
 
 export type OffloadThreshold =
-  { type: 'disable-offload' } | // < 0
+  { type: 'disabled-automatic-offloading' } | // < 0
   { type: 'offload-as-soon-as-possible' } | // == 0
   { type: 'offload-when-topic-storage-reaches-threshold', bytes: number } // > 0
 
