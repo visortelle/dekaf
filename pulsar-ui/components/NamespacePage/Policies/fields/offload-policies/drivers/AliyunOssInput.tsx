@@ -1,6 +1,5 @@
 import React from 'react';
 import s from './AliyunOssInput.module.css'
-import sf from '../../../../../ui/ConfigurationTable/form.module.css';
 import { AliyunOssOffloadPolicy } from '../types';
 import Input from '../../../../../ui/Input/Input';
 import MemorySizeInput from '../../../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
@@ -21,7 +20,7 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
 
   return (
     <div className={s.AliyunOssInput}>
-      <div className={sf.FormItem}>
+      <FormItem>
         <FormLabel
           content="Bucket"
           isRequired
@@ -32,9 +31,9 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
           onChange={v => props.onChange({ ...props.value, managedLedgerOffloadBucket: v })}
           placeholder="pulsar-topic-offload"
         />
-      </div>
+      </FormItem>
 
-      <div className={sf.FormItem}>
+      <FormItem>
         <FormLabel
           content="Service endpoint"
           isRequired
@@ -52,9 +51,9 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
           onChange={v => props.onChange({ ...props.value, managedLedgerOffloadServiceEndpoint: v })}
           placeholder="http://oss-us-west-1-internal.aliyuncs.com"
         />
-      </div>
+      </FormItem>
 
-      <div className={sf.FormItem}>
+      <FormItem>
         <FormLabel
           content="Read buffer size"
           help="Block size for each individual read when reading back data from S3-compatible storage."
@@ -79,9 +78,9 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
             onChange={v => props.onChange({ ...props.value, managedLedgerOffloadReadBufferSizeInBytes: v })}
           />
         )}
-      </div>
+      </FormItem>
 
-      <div className={sf.FormItem}>
+      <FormItem>
         <FormLabel
           content="Block size"
           help={<div>Maximum block size sent during a multi-part upload to S3-compatible storage. It <strong>cannot</strong> be smaller than 5 MB.</div>}
@@ -106,7 +105,7 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
             onChange={v => props.onChange({ ...props.value, managedLedgerOffloadMaxBlockSizeInBytes: v })}
           />
         )}
-      </div>
+      </FormItem>
     </div>
   );
 }

@@ -16,6 +16,9 @@ import Input from '../../../../ui/Input/Input';
 import OffloadThresholdInput from './inputs/OffloadThresholdInput';
 import AliyunOssInput from './drivers/AliyunOssInput';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import A from '../../../../ui/A/A';
+import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
+import DriverDocs from './drivers/DriverDocs';
 
 const policy = 'offloadPolicies';
 
@@ -91,7 +94,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       {({ value, onChange }) => {
         return (
           <>
-            <div className={sf.FormItem}>
+            <FormItem>
               <FormLabel
                 content="Offload driver"
                 help={<span>Driver to use to offload old data to long term storage.</span>}
@@ -108,19 +111,23 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 ]}
                 onChange={(type) => onChange(defaultPolicyValueByType(type, policiesRes))}
               />
-            </div>
+              <div style={{ marginTop: '4rem' }}>
+                <DriverDocs driverType={value.type} />
+              </div>
+            </FormItem>
+
 
             {value.type !== 'inherited-from-broker-config' && (
               <>
-                <div className={sf.FormItem}>
+                <FormItem>
                   <OffloadThresholdInput
                     value={value.managedLedgerOffloadThreshold}
                     onChange={v => onChange({ ...value, managedLedgerOffloadThreshold: v })}
                   />
-                </div>
+                </FormItem>
 
 
-                <div className={sf.FormItem}>
+                <FormItem>
                   <FormLabel
                     content="Offloaders directory"
                     help={(
@@ -135,11 +142,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   <Input
                     value={value.offloadersDirectory}
                     onChange={v => onChange({ ...value, offloadersDirectory: v })}
-                    placeholder="offloaders"
+                    placeholder="./offloaders"
                   />
-                </div>
+                </FormItem>
 
-                <div className={sf.FormItem}>
+                <FormItem>
                   <FormLabel
                     content="Deletion lag"
                     help="Duration to wait after offloading a ledger segment, before deleting the copy of that segment from cluster local storage."
@@ -148,9 +155,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                     initialValue={Math.floor((value.managedLedgerOffloadDeletionLagInMillis || 0) / 1000)}
                     onChange={v => onChange({ ...value, managedLedgerOffloadDeletionLagInMillis: v * 1000 })}
                   />
-                </div>
+                </FormItem>
               </>
-            )}
+            )
+            }
 
             {value.type === 'aliyun-oss' && (
               <AliyunOssInput
@@ -161,14 +169,28 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           </>
         );
       }}
-    </WithUpdateConfirmation>
+    </WithUpdateConfirmation >
   )
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Offload policies',
-  description: <span></span>,
+  description: (
+    <>
+      <div>Tiered Storage feature allows older backlog data to be offloaded to long term storage, thereby freeing up space in BookKeeper and reducing storage costs. </div>
+      <br />
+      More info:
+      <ul>
+        <li>
+          <A isExternalLink href="https://pulsar.apache.org/docs/tiered-storage-overview/">Overview of Tiered Storage</A>
+        </li>
+        <li>
+          <A isExternalLink href="https://pulsar.apache.org/docs/cookbooks-tiered-storage/">Tiered Storage cookbook</A>
+        </li>
+      </ul>
+    </>
+  ),
   input: <FieldInput {...props} />
 });
 
