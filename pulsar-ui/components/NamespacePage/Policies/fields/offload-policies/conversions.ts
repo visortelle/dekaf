@@ -88,6 +88,11 @@ export function policyValueToReq(
           ? undefined
           : new StringValue().setValue(p.s3ManagedLedgerOffloadRegion)
       );
+      ppb.setManagedLedgerOffloadServiceEndpoint(
+        p.s3ManagedLedgerOffloadServiceEndpoint === undefined
+          ? undefined
+          : new StringValue().setValue(p.s3ManagedLedgerOffloadServiceEndpoint)
+      );
       ppb.setS3ManagedLedgerOffloadReadBufferSizeInBytes(
         p.s3ManagedLedgerOffloadReadBufferSizeInBytes === undefined
           ? undefined
@@ -327,6 +332,9 @@ export function resToPolicyValue(
           s3ManagedLedgerOffloadRegion: p
             .getS3ManagedLedgerOffloadRegion()
             ?.toObject().value,
+          s3ManagedLedgerOffloadServiceEndpoint: p
+            .getS3ManagedLedgerOffloadServiceEndpoint()
+            ?.toObject().value,
           s3ManagedLedgerOffloadReadBufferSizeInBytes: p
             .getS3ManagedLedgerOffloadReadBufferSizeInBytes()
             ?.toObject().value,
@@ -446,23 +454,23 @@ export function resToPolicyValue(
 
 export function offloadThresholdToBytes(threshold: OffloadThreshold): number {
   switch (threshold.type) {
-    case "disable-offload":
+    case "disabled-automatic-offloading":
       return -1;
     case "offload-as-soon-as-possible":
       return 0;
-    case "offload-if-topic-storage-reaches-threshold":
+    case "offload-when-topic-storage-reaches-threshold":
       return threshold.bytes;
   }
 }
 
 export function offloadThresholdFromBytes(bytes: number): OffloadThreshold {
   if (bytes < 0) {
-    return { type: "disable-offload" };
+    return { type: "disabled-automatic-offloading" };
   } else if (bytes === 0) {
     return { type: "offload-as-soon-as-possible" };
   } else {
     return {
-      type: "offload-if-topic-storage-reaches-threshold",
+      type: "offload-when-topic-storage-reaches-threshold",
       bytes,
     };
   }
@@ -530,6 +538,11 @@ export function defaultPolicyValueByType(
           policiesRes
             ?.getSpecified()
             ?.getManagedLedgerOffloadBucket()
+            ?.toObject().value ?? "",
+        s3ManagedLedgerOffloadServiceEndpoint:
+          policiesRes
+            ?.getSpecified()
+            ?.getManagedLedgerOffloadServiceEndpoint()
             ?.toObject().value ?? "",
         s3ManagedLedgerOffloadRegion: policiesRes
           ?.getSpecified()

@@ -32,6 +32,7 @@ export type AwsS3OffloadPolicy = CommonOffloadPolicy & {
   type: "aws-s3";
   s3ManagedLedgerOffloadBucket: string;
   s3ManagedLedgerOffloadRegion?: string;
+  s3ManagedLedgerOffloadServiceEndpoint?: string;
   s3ManagedLedgerOffloadReadBufferSizeInBytes?: number;
   s3ManagedLedgerOffloadMaxBlockSizeInBytes?: number;
 };

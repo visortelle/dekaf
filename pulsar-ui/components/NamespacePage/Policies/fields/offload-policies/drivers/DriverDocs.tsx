@@ -1,6 +1,5 @@
 import React from 'react';
 import A from '../../../../../ui/A/A';
-import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import { PolicyValue } from '../types';
 import s from './DriverDocs.module.css'
 
@@ -23,6 +22,15 @@ const DriverDocs: React.FC<DriverDocsProps> = (props) => {
       )}
       {props.driverType === 'aws-s3' && (
         <A isExternalLink href="https://pulsar.apache.org/docs/tiered-storage-aws">AWS S3 offloader documentation</A>
+      )}
+      {props.driverType === 'azureblob' && (
+        <A isExternalLink href="https://pulsar.apache.org/docs/tiered-storage-azure">Azure BlobStore offloader documentation</A>
+      )}
+      {props.driverType === 'filesystem' && (
+        <A isExternalLink href="https://pulsar.apache.org/docs/tiered-storage-filesystem">Filesystem offloader documentation</A>
+      )}
+      {props.driverType === 'google-cloud-storage' && (
+        <A isExternalLink href="https://pulsar.apache.org/docs/tiered-storage-gcs">GCS offloader documentation</A>
       )}
     </div>
   );

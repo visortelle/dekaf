@@ -152,12 +152,11 @@ code {
   max-width: 640rem;
   z-index: 999;
   pointer-events: initial !important;
+  box-shadow: 8rem 8rem 36rem rgb(0 0 0 / 15%) !important;
+  opacity: 1 !important;
 }
-.__react_component_tooltip a {
-  color: #fff;
-  text-decoration: underline;
-}
+
 .__react_component_tooltip code {
-  background: rgba(255, 255, 255, 1);
+  background: #eee;
   color: var(--text-color);
 }

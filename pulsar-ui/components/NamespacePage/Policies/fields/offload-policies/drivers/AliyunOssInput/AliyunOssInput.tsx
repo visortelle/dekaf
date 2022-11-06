@@ -1,11 +1,12 @@
 import React from 'react';
 import s from './AliyunOssInput.module.css'
-import { AliyunOssOffloadPolicy } from '../types';
-import Input from '../../../../../ui/Input/Input';
-import MemorySizeInput from '../../../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
-import FormLabel from '../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
-import Select from '../../../../../ui/Select/Select';
-import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
+import { AliyunOssOffloadPolicy } from '../../types';
+import Input from '../../../../../../ui/Input/Input';
+import MemorySizeInput from '../../../../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
+import FormLabel from '../../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import Select from '../../../../../../ui/Select/Select';
+import FormItem from '../../../../../../ui/ConfigurationTable/FormItem/FormItem';
+import A from '../../../../../../ui/A/A';
 
 export type AliyunOssInputProps = {
   value: AliyunOssOffloadPolicy,
@@ -13,8 +14,6 @@ export type AliyunOssInputProps = {
 };
 
 const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
-  console.log('props', props.value);
-
   const isReadBufferSizeSpecified = props.value.managedLedgerOffloadReadBufferSizeInBytes !== undefined && props.value.managedLedgerOffloadReadBufferSizeInBytes !== 0;
   const isMaxBlockSizeSpecified = props.value.managedLedgerOffloadMaxBlockSizeInBytes !== undefined && props.value.managedLedgerOffloadMaxBlockSizeInBytes !== 0;
 
@@ -41,8 +40,16 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
             <div>
               The endpoint is the region where a bucket is located.
               <br />
-              For more information about Aliyun OSS regions and endpoints,
-              see <a target="__blank" href="https://www.alibabacloud.com/help/doc-detail/31837.htm">International website</a> or <a target="__blank" href='https://help.aliyun.com/document_detail/31837.html'>Chinese website</a>.
+              <br />
+              More info:
+              <ul>
+                <li>
+                  <A isExternalLink href="https://www.alibabacloud.com/help/doc-detail/31837.htm">International website</A>
+                </li>
+                <li>
+                  <A isExternalLink href='https://help.aliyun.com/document_detail/31837.html'>Chinese website</A>
+                </li>
+              </ul>
             </div>
           }
         />
@@ -83,7 +90,7 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
       <FormItem>
         <FormLabel
           content="Block size"
-          help={<div>Maximum block size sent during a multi-part upload to S3-compatible storage. It <strong>cannot</strong> be smaller than 5 MB.</div>}
+          help={<div>Maximum block size sent during a multi-part upload to AWS S3. <br /><strong>It cannot be smaller than 5 MB.</strong></div>}
         />
         <FormItem>
           <Select<'not-specified' | 'specified'>

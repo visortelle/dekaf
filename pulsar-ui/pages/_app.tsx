@@ -71,6 +71,11 @@ const _MyApp = (props: AppProps) => {
         <ReactTooltip
           html={true}
           event="click"
+          arrowColor='#fff'
+          backgroundColor='#fff'
+          textColor='var(--text-color)'
+          border={true}
+          borderColor="#ddd"
         />
 
         <Notifications.DefaultProvider>

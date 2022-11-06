@@ -14,7 +14,8 @@ import { PolicyValue } from './types';
 import { defaultPolicyValueByType, offloadThresholdFromBytes, policyValueToReq, resToPolicyValue } from './conversions';
 import Input from '../../../../ui/Input/Input';
 import OffloadThresholdInput from './inputs/OffloadThresholdInput';
-import AliyunOssInput from './drivers/AliyunOssInput';
+import AliyunOssInput from './drivers/AliyunOssInput/AliyunOssInput';
+import AwsS3Input from './drivers/AwsS3Input/AwsS3Input';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import A from '../../../../ui/A/A';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
@@ -96,7 +97,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <>
             <FormItem>
               <FormLabel
-                content="Offload driver"
+                content="Offloader driver"
                 help={<span>Driver to use to offload old data to long term storage.</span>}
               />
               <Select<PolicyValue['type']>
@@ -162,6 +163,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
             {value.type === 'aliyun-oss' && (
               <AliyunOssInput
+                value={value}
+                onChange={onChange}
+              />
+            )}
+            {value.type === 'aws-s3' && (
+              <AwsS3Input
                 value={value}
                 onChange={onChange}
               />
