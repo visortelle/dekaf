@@ -1,5 +1,4 @@
 import stringify from "safe-stable-stringify";
-import { TreeNode } from "./NavigationTree/TreeView";
 
 export const swrKeys = {
   pulsar: {

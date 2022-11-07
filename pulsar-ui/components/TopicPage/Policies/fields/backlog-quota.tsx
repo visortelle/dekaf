@@ -219,6 +219,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <MemorySizeInput
                   initialValue={value.destinationStorage.limit.sizeBytes}
                   onChange={(v) => {
+                    if (value.destinationStorage.type === 'inherited-from-namespace-config') {
+                      return;
+                    }
                     onChange({
                       ...value,
                       destinationStorage: {
@@ -301,6 +304,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <DurationInput
                   initialValue={value.messageAge.limitTime.durationSeconds}
                   onChange={(v) => {
+                    if (value.messageAge.type === 'inherited-from-namespace-config') {
+                      return;
+                    }
                     onChange({
                       ...value,
                       messageAge: {
@@ -324,6 +330,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   ]}
                   value={value.messageAge.policy}
                   onChange={(v) => {
+                    if (value.messageAge.type === 'inherited-from-namespace-config') {
+                      return;
+                    }
+
                     onChange({
                       ...value,
                       messageAge: {
@@ -337,7 +347,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             )}
           </div>
 
-          <div className={s.Quota}>
+          {/* <div className={s.Quota}>
             <div className={sf.FormLabel}>is Global?</div>
             <div className={sf.FormItem}>
               <Checkbox
@@ -348,7 +358,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 })}
               />
             </div>
-          </div>
+          </div> */}
 
         </>
       )}
