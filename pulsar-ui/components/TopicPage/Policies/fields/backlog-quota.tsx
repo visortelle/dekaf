@@ -4,6 +4,7 @@ import stringify from "safe-stable-stringify";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import Select from "../../../ui/Select/Select";
+import Checkbox from "../../../ui/Checkbox/Checkbox";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import MemorySizeInput from "../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput";
@@ -39,7 +40,7 @@ type PolicyValue = {
     limitTime: { type: 'infinite' } | { type: 'specific', durationSeconds: number };
     policy: RetentionPolicy;
   },
-  // isGlobal: boolean
+  isGlobal: boolean
 }
 
 export type FieldInputProps = {
@@ -76,7 +77,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       let v: PolicyValue = {
         destinationStorage: { type: 'inherited-from-namespace-config' },
         messageAge: { type: 'inherited-from-namespace-config' },
-        // isGlobal: false
+        isGlobal: false
       };
 
       const destinationStorage = res.getDestinationStorage();
@@ -95,11 +96,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           policy: retentionPolicyFromPb(messageAge.getRetentionPolicy())
         };
       }
-      // const isGlobal = res.getIsGlobal();
-      // if (isGlobal !== undefined) {
-      //   v.isGlobal = isGlobal.get
-      // }
+      const isGlobal = res.getIsGlobal();
+      if (isGlobal !== undefined) {
+        v.isGlobal = isGlobal
+      }
 
+      console.log(res)
       return v;
     }
   );
@@ -116,6 +118,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     const req = new pb.SetBacklogQuotasRequest();
     req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
     let destinationStorageBacklogQuotaPb: pb.DestinationStorageBacklogQuota | undefined = undefined;
+
+    console.log(req)
     
     if (v.destinationStorage.type === 'specified-for-this-topic') {
       destinationStorageBacklogQuotaPb = new pb.DestinationStorageBacklogQuota();
@@ -133,8 +137,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
 
     req.setMessageAge(messageAgeBacklogQuotaPb)
+
+    req.setIsGlobal(v.isGlobal)
     const res = await topicpoliciesServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
-    
+
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
     }
@@ -213,10 +219,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <MemorySizeInput
                   initialValue={value.destinationStorage.limit.sizeBytes}
                   onChange={(v) => {
-                    if (value.destinationStorage.type === 'inherited-from-namespace-config') {
-                      return;
-                    }
-
                     onChange({
                       ...value,
                       destinationStorage: {
@@ -299,10 +301,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <DurationInput
                   initialValue={value.messageAge.limitTime.durationSeconds}
                   onChange={(v) => {
-                    if (value.messageAge.type === 'inherited-from-namespace-config') {
-                      return;
-                    }
-
                     onChange({
                       ...value,
                       messageAge: {
@@ -326,9 +324,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   ]}
                   value={value.messageAge.policy}
                   onChange={(v) => {
-                    if (value.messageAge.type === 'inherited-from-namespace-config') {
-                      return;
-                    }
                     onChange({
                       ...value,
                       messageAge: {
@@ -341,14 +336,20 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
           </div>
-          <div>
-            <label htmlFor="isGlobal" value="isGlobal">
-              global
-            </label>
-            <input
-              onChange={() => (value.isGlobal = !value.isGlobal, console.log(value))}
-              id="isGlobal" type="checkbox" /> 
+
+          <div className={s.Quota}>
+            <div className={sf.FormLabel}>is Global?</div>
+            <div className={sf.FormItem}>
+              <Checkbox
+                checked={value.isGlobal}
+                onChange={(v) => onChange({
+                  ...value,
+                  isGlobal: v
+                })}
+              />
+            </div>
           </div>
+
         </>
       )}
     </WithUpdateConfirmation>

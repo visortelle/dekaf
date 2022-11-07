@@ -28,7 +28,6 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
         try {
             val backlogQuotaMap = adminClient.topicPolicies.getBacklogQuotaMap(request.topic, false).asScala.toMap
-
             val destinationStorageBacklogQuotaPb = backlogQuotaMap.get(BacklogQuotaType.destination_storage) match
                 case Some(quota) =>
                     Some(
@@ -73,6 +72,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             case _ => RetentionPolicy.producer_request_hold
 
         try {
+            var isGlobal = request.isGlobal.get
+
             request.destinationStorage match
                 case Some(quotaPb) =>
                     var backlogQuotaBuilder = BacklogQuotaBuilder.limitSize(quotaPb.limitSize)
@@ -85,7 +86,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                     val backlogQuota = backlogQuotaBuilder.build
 
                     logger.info(s"Setting backlog quota policy (destination storage) on topic ${request.topic} to ${backlogQuota}")
-                    adminClient.topicPolicies.setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.destination_storage)
+                    adminClient.topicPolicies(isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.destination_storage)
                 case None =>
 
             request.messageAge match
@@ -100,7 +101,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                     val backlogQuota = backlogQuotaBuilder.build
 
                     logger.info(s"Setting backlog quota (message age) on topic ${request.topic} to ${backlogQuota}")
-                    adminClient.topicPolicies.setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.message_age)
+                    adminClient.topicPolicies(isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
             Future.successful(SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
