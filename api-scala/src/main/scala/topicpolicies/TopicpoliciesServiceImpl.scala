@@ -1,13 +1,32 @@
 package topicpolicies
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{GetBacklogQuotasRequest, GetBacklogQuotasResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, TopicpoliciesServiceGrpc}
+import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
+    TopicpoliciesServiceGrpc,
+
+    GetBacklogQuotasRequest,
+    GetBacklogQuotasResponse,
+    SetBacklogQuotasRequest,
+    SetBacklogQuotasResponse,
+    RemoveBacklogQuotaRequest,
+    RemoveBacklogQuotaResponse,
+
+    GetDelayedDeliveryRequest,
+    GetDelayedDeliveryResponse,
+    SetDelayedDeliveryRequest,
+    SetDelayedDeliveryResponse,
+    RemoveDelayedDeliveryRequest,
+    RemoveDelayedDeliveryResponse,
+    DelayedDeliverySpecified,
+    DelayedDeliveryUnspecified,
+
+}
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, RetentionPolicies}
+import org.apache.pulsar.common.policies.data.BacklogQuota.{ BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder }
+import org.apache.pulsar.common.policies.data.{ AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, RetentionPolicies }
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
@@ -127,6 +146,54 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
+        }
+
+    override def getDelayedDelivery(request: GetDelayedDeliveryRequest): Future[GetDelayedDeliveryResponse] =
+        try {
+            val delayedDeliveryPb = Option(adminClient.topicPolicies().getDelayedDeliveryPolicy(request.namespace, false)) match
+                case None =>
+                    pb.GetDelayedDeliveryResponse.DelayedDelivery.Unspecified(new DelayedDeliveryUnspecified())
+                case Some(v) =>
+                    pb.GetDelayedDeliveryResponse.DelayedDelivery.Specified(new DelayedDeliverySpecified(
+                        enabled = Option(v.isActive).getOrElse(false),
+                        tickTimeMs = Option(v.getTickTime).getOrElse(0)
+                    ))
+
+            Future.successful(GetDelayedDeliveryResponse(
+                status = Some(Status(code = Code.OK.index)),
+                delayedDelivery = delayedDeliveryPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetDelayedDeliveryResponse(status = Some(status)))
+        }
+
+    override def setDelayedDelivery(request: SetDelayedDeliveryRequest): Future[SetDelayedDeliveryResponse] =
+        try {
+            logger.info(s"Setting delayed delivery policy for namespace ${request.namespace}")
+            val delayedDeliveryPolicies = DelayedDeliveryPolicies.builder
+                .active(request.enabled)
+                .tickTime(request.tickTimeMs)
+                .build()
+
+            adminClient.namespaces.setDelayedDeliveryMessages(request.namespace, delayedDeliveryPolicies)
+            Future.successful(SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetDelayedDeliveryResponse(status = Some(status)))
+        }
+
+    override def removeDelayedDelivery(request: RemoveDelayedDeliveryRequest): Future[RemoveDelayedDeliveryResponse] =
+        try {
+            logger.info(s"Removing delayed delivery policy for namespace ${request.namespace}")
+            adminClient.namespaces.removeDelayedDeliveryMessages(request.namespace)
+            Future.successful(RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveDelayedDeliveryResponse(status = Some(status)))
         }
 
 
