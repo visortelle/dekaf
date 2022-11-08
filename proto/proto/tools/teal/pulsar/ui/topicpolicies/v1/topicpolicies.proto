@@ -57,7 +57,8 @@ message DelayedDeliverySpecified {
   int64 tick_time_ms = 2;
 }
 message GetDelayedDeliveryRequest {
-  string namespace = 1;
+  string topic = 1;
+  bool is_global = 2;
 }
 message GetDelayedDeliveryResponse {
   google.rpc.Status status = 1;
@@ -67,15 +68,17 @@ message GetDelayedDeliveryResponse {
   }
 }
 message SetDelayedDeliveryRequest {
-  string namespace = 1;
+  string topic = 1;
   bool enabled = 2;
   int64 tick_time_ms = 3;
+  bool is_global = 4;
 }
 message SetDelayedDeliveryResponse {
   google.rpc.Status status = 1;
 }
 message RemoveDelayedDeliveryRequest {
-  string namespace = 1;
+  string topic = 1;
+  bool is_global = 2;
 }
 message RemoveDelayedDeliveryResponse {
   google.rpc.Status status = 1;

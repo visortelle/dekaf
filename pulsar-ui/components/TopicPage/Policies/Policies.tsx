@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useQueryParam, withDefault, BooleanParam } from 'use-query-params';
 
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import Checkbox from '../../ui/Checkbox/Checkbox';
 import * as BrokersConfig from '../../app/contexts/BrokersConfig';
+
 import messageTtlField from './fields/message-ttl';
 import backlogQuotaField from './fields/backlog-quota';
+import delayedDelivery from './fields/delayed-delivery';
 
 import s from './Policies.module.css'
-import { useQueryParam, withDefault, BooleanParam } from 'use-query-params';
 
 export type PoliciesProps = {
   tenant: string;
@@ -46,6 +48,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           fields={[
             messageTtlField,
             backlogQuotaField,
+            delayedDelivery
           ].map(field => field({ ...props, isGlobal }))}
         />
       </div>

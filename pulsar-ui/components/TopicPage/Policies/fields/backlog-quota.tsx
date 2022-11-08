@@ -64,8 +64,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetBacklogQuotasRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
+      
       const res = await topicpoliciesServiceClient.getBacklogQuotas(req, {});
-
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get backlog quotas for topic. ${res.getStatus()?.getMessage()}`);
       }

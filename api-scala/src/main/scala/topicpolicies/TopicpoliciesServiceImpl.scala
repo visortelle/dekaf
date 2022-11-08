@@ -150,7 +150,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
     override def getDelayedDelivery(request: GetDelayedDeliveryRequest): Future[GetDelayedDeliveryResponse] =
         try {
-            val delayedDeliveryPb = Option(adminClient.topicPolicies().getDelayedDeliveryPolicy(request.namespace, false)) match
+            val delayedDeliveryPb = Option(adminClient.topicPolicies(request.isGlobal).getDelayedDeliveryPolicy(request.topic, false)) match
                 case None =>
                     pb.GetDelayedDeliveryResponse.DelayedDelivery.Unspecified(new DelayedDeliveryUnspecified())
                 case Some(v) =>
@@ -171,13 +171,13 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
     override def setDelayedDelivery(request: SetDelayedDeliveryRequest): Future[SetDelayedDeliveryResponse] =
         try {
-            logger.info(s"Setting delayed delivery policy for namespace ${request.namespace}")
+            logger.info(s"Setting delayed delivery policy for topic ${request.topic}")
             val delayedDeliveryPolicies = DelayedDeliveryPolicies.builder
                 .active(request.enabled)
                 .tickTime(request.tickTimeMs)
                 .build()
 
-            adminClient.namespaces.setDelayedDeliveryMessages(request.namespace, delayedDeliveryPolicies)
+            adminClient.topicPolicies(request.isGlobal).setDelayedDeliveryPolicy(request.topic, delayedDeliveryPolicies)
             Future.successful(SetDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             err =>
@@ -187,8 +187,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
     override def removeDelayedDelivery(request: RemoveDelayedDeliveryRequest): Future[RemoveDelayedDeliveryResponse] =
         try {
-            logger.info(s"Removing delayed delivery policy for namespace ${request.namespace}")
-            adminClient.namespaces.removeDelayedDeliveryMessages(request.namespace)
+            logger.info(s"Removing delayed delivery policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeDelayedDeliveryPolicy(request.topic)
             Future.successful(RemoveDelayedDeliveryResponse(status = Some(Status(code = Code.OK.index))))
         } catch {
             err =>
