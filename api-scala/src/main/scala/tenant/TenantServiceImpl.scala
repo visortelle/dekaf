@@ -96,7 +96,7 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
         logger.debug(s"Getting tenants")
 
         val tenants = try {
-            adminClient.tenants.getTenants
+            adminClient.tenants.getTenants.asScala
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
@@ -104,4 +104,4 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
         }
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(pb.GetTenantsResponse(status = Some(status), tenants = tenants.asScala.toSeq))
+        Future.successful(pb.GetTenantsResponse(status = Some(status), tenants = tenants.toSeq))

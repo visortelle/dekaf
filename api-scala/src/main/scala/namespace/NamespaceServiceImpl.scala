@@ -54,7 +54,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         logger.debug(s"Getting namespaces for tenant: ${request.tenant}")
 
         val namespaces = try {
-            adminClient.namespaces.getNamespaces(request.tenant)
+            adminClient.namespaces.getNamespaces(request.tenant).asScala
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
@@ -62,7 +62,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(pb.GetNamespacesResponse(status = Some(status), namespaces = namespaces.asScala.toSeq))
+        Future.successful(pb.GetNamespacesResponse(status = Some(status), namespaces = namespaces.toSeq))
 
 
     override def getIsAllowAutoUpdateSchema(request: GetIsAllowAutoUpdateSchemaRequest): Future[GetIsAllowAutoUpdateSchemaResponse] =
