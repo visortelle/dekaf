@@ -23,6 +23,7 @@ import DriverDocs from './drivers/DriverDocs';
 import AzureBlobInput from './drivers/AzureBlobInput/AzureBlobInput';
 import GoogleCloudStorageInput from './drivers/GoogleCloudStorageInput/GoogleCloudStorageInput';
 import S3Input from './drivers/S3Input/S3Input';
+import FilesystemInput from './drivers/FilesystemInput/FilesystemInput';
 
 const policy = 'offloadPolicies';
 
@@ -135,6 +136,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <FormItem>
                   <FormLabel
                     content="Offloaders directory"
+                    isRequired
                     help={(
                       <>
                         If you are running Pulsar in a bare metal cluster, make sure that offloaders tarball is unzipped in every broker&apos;s pulsar directory.
@@ -147,7 +149,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   <Input
                     value={value.offloadersDirectory}
                     onChange={v => onChange({ ...value, offloadersDirectory: v })}
-                    placeholder="./offloaders"
+                    placeholder="offloaders"
                   />
                 </FormItem>
 
@@ -179,6 +181,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             )}
             {value.type === 'azureblob' && (
               <AzureBlobInput
+                value={value}
+                onChange={onChange}
+              />
+            )}
+            {value.type === 'filesystem' && (
+              <FilesystemInput
                 value={value}
                 onChange={onChange}
               />

@@ -14,7 +14,7 @@ const DriverDocs: React.FC<DriverDocsProps> = (props) => {
 
   return (
     <div className={s.DriverDocs}>
-      <strong>Please read this first:</strong>
+      <strong>Please read it first:</strong>
       <br />
 
       {props.driverType === 'aliyun-oss' && (

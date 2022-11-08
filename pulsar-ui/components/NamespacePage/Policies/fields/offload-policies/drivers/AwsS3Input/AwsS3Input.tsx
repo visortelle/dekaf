@@ -82,7 +82,10 @@ const AwsS3Input: React.FC<AwsS3InputProps> = (props) => {
         />
         <Input
           value={props.value.s3ManagedLedgerOffloadRegion || ''}
-          onChange={v => props.onChange({ ...props.value, s3ManagedLedgerOffloadRegion: v })}
+          onChange={v => props.onChange({
+            ...props.value,
+            s3ManagedLedgerOffloadRegion: v === '' ? undefined : v,
+          })}
           placeholder="eu-west-3"
         />
       </FormItem>
@@ -106,7 +109,10 @@ const AwsS3Input: React.FC<AwsS3InputProps> = (props) => {
         />
         <Input
           value={props.value.s3ManagedLedgerOffloadServiceEndpoint || ''}
-          onChange={v => props.onChange({ ...props.value, s3ManagedLedgerOffloadServiceEndpoint: v })}
+          onChange={v => props.onChange({
+            ...props.value,
+            s3ManagedLedgerOffloadServiceEndpoint: v === '' ? undefined : v,
+          })}
           placeholder="https://s3.YOUR_REGION.amazonaws.com"
         />
       </FormItem>
