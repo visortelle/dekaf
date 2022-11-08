@@ -66,9 +66,18 @@ const _MyApp = (props: AppProps) => {
         // refreshInterval: appContext.performanceOptimizations.pulsarConsumerState === 'active' ? 0 : 15_000, // XXX - check on schema editor tab (or any other) before uncomment. It shouldn't reset react component state.
         refreshInterval: 0,
         revalidateOnFocus: false,
+        revalidateOnMount: true,
       }}>
       <NoSsr>
-        <ReactTooltip html={true} />
+        <ReactTooltip
+          html={true}
+          event="click"
+          arrowColor='#fff'
+          backgroundColor='#fff'
+          textColor='var(--text-color)'
+          border={true}
+          borderColor="#ddd"
+        />
 
         <Notifications.DefaultProvider>
           <Modals.DefaultProvider>

@@ -3,22 +3,18 @@ import React from 'react'
 import s from './Checkbox.module.css';
 
 export type CheckboxProps = {
-  title: string;
-  checked: boolean;
+  value: boolean;
   onChange: (value: boolean) => void;
 }
 
-function Checkbox(props: CheckboxProps) {
-
+const Checkbox: React.FC<CheckboxProps> = (props) => {
   return (
-    <div className={s.Container}>
-      <span>{props.title}</span>
-      <input
-        className={s.Input}
-        onChange={(v) => props.onChange(v.target.checked)}
-        type="checkbox"
-      /> 
-    </div>
+    <input
+      className={s.Checkbox}
+      onChange={() => props.onChange(!props.value)}
+      type="checkbox"
+      checked={props.value}
+    />
   )
 }
 
