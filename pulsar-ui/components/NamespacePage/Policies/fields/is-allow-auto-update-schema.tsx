@@ -1,4 +1,4 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
+import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
@@ -6,6 +6,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import { swrKeys } from "../../../swrKeys";
 import { GetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 
 const policy = 'isAllowAutoUpdateSchema';
 
@@ -14,7 +15,7 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type IsAllowAutoUpdateSchema = 'enabled' | 'disabled';
+type PolicyValue = 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
@@ -24,7 +25,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const onUpdateError = (err: string) => notifyError(`Can't update is allow auto update schema. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: isAllowAutoUpdateSchema, error: isAllowAutoUpdateSchemaError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new GetIsAllowAutoUpdateSchemaRequest();
@@ -38,19 +39,18 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
   );
 
-  if (isAllowAutoUpdateSchemaError) {
-    notifyError(`Unable to get deduplication: ${isAllowAutoUpdateSchemaError}`);
+  if (initialValueError) {
+    notifyError(`Unable to get is allow update schema policy: ${initialValueError}`);
   }
 
-  if (isAllowAutoUpdateSchema === undefined) {
+  if (initialValue === undefined) {
     return null;
   }
 
   return (
-    <SelectInput<IsAllowAutoUpdateSchema>
-      list={[{ type: 'item', value: 'disabled', title: 'Not allow' }, { type: 'item', value: 'enabled', title: 'Allow' }]}
-      value={isAllowAutoUpdateSchema}
-      onChange={async (v) => {
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (v) => {
         const req = new SetIsAllowAutoUpdateSchemaRequest();
         req.setIsAllowAutoUpdateSchema(v === 'enabled');
         req.setNamespace(`${props.tenant}/${props.namespace}`);
@@ -65,7 +65,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         await mutate(swrKey);
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <Select<PolicyValue>
+            list={[{ type: 'item', value: 'disabled', title: 'Not allow' }, { type: 'item', value: 'enabled', title: 'Allow' }]}
+            value={value}
+            onChange={onChange}
+          />
+        );
+      }}
+    </WithUpdateConfirmation>
   );
 }
 

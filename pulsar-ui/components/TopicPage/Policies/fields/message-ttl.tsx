@@ -2,7 +2,7 @@ import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import Input from '../../../ui/ConfigurationTable/Input/InputWithUpdateConfirmation';
+import Input from '../../../ui/ConfigurationTable/Input/Input';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 
 const policyId = 'messageTtl';
