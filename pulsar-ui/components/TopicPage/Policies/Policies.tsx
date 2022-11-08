@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
+import Checkbox from '../../ui/Checkbox/Checkbox';
 import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 import messageTtlField from './fields/message-ttl';
 import backlogQuotaField from './fields/backlog-quota';
@@ -15,6 +16,8 @@ export type PoliciesProps = {
 };
 
 const Policies: React.FC<PoliciesProps> = (props) => {
+  const [isGlobal, setIsGlobal] = useState(false)
+
   const brokersConfig = BrokersConfig.useContext();
   const isTopicLevelPoliciesEnabled = brokersConfig.get('topicLevelPoliciesEnabled')?.value;
 
@@ -29,12 +32,17 @@ const Policies: React.FC<PoliciesProps> = (props) => {
   return (
     <div className={s.Policies}>
       <div className={s.ConfigurationTable}>
+        <Checkbox
+          title='isGlobal'
+          checked={isGlobal}
+          onChange={() => setIsGlobal(!isGlobal)}
+        />
         <ConfigurationTable
           title="Retention"
           fields={[
             messageTtlField,
             backlogQuotaField,
-          ].map(field => field(props))}
+          ].map(field => field({...props, isGlobal}))}
         />
       </div>
     </div>

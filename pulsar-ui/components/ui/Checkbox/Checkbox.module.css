@@ -1,7 +1,10 @@
 .Container {
   background-color: #fff;
   display: flex;
-  flex-direction: column;
   position: relative;
   flex: 1 1 auto;
+  justify-content: center;
+}
+.Input {
+  width: 50px;
 }

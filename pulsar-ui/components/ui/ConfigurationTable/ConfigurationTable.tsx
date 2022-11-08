@@ -28,12 +28,16 @@ const ConfigurationTable: React.FC<ConfigurationTableProps> = (props) => {
               {field.isRequired && <div className={s.RequiredFieldMark}>*</div>}
             </div>
           </div>
-          <div className={s.FieldDescription}>{field.description}</div>
-          <div className={s.FieldInput}>{field.input}</div>
+          <div className={s.FieldDescription}>
+            {field.description}
+          </div>
+          <div className={s.FieldInput}>
+            {field.input}
+          </div>
         </div>
       ))}
     </div>
   );
-}
+};
 
 export default ConfigurationTable;

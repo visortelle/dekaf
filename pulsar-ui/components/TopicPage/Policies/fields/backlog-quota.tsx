@@ -4,7 +4,6 @@ import stringify from "safe-stable-stringify";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import Select from "../../../ui/Select/Select";
-import Checkbox from "../../../ui/Checkbox/Checkbox";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import MemorySizeInput from "../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput";
@@ -39,8 +38,7 @@ type PolicyValue = {
     type: 'specified-for-this-topic';
     limitTime: { type: 'infinite' } | { type: 'specific', durationSeconds: number };
     policy: RetentionPolicy;
-  },
-  isGlobal: boolean
+  }
 }
 
 export type FieldInputProps = {
@@ -48,26 +46,25 @@ export type FieldInputProps = {
   tenant: string;
   namespace: string;
   topic: string;
+  isGlobal: boolean;
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
+
   const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  let persistence = 'persistentTopics';
-
-  if (props.topicType === 'non-persistent') {
-    persistence = 'nonPersistentTopics'
-  };
-
-  const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace[persistence].policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
+  const swrKey = props.topicType === 'persistent' ?
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy }) :
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy })
 
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetBacklogQuotasRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setIsGlobal(props.isGlobal);
       const res = await topicpoliciesServiceClient.getBacklogQuotas(req, {});
 
       if (res.getStatus()?.getCode() !== Code.OK) {
@@ -77,7 +74,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       let v: PolicyValue = {
         destinationStorage: { type: 'inherited-from-namespace-config' },
         messageAge: { type: 'inherited-from-namespace-config' },
-        isGlobal: false
       };
 
       const destinationStorage = res.getDestinationStorage();
@@ -96,12 +92,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           policy: retentionPolicyFromPb(messageAge.getRetentionPolicy())
         };
       }
-      const isGlobal = res.getIsGlobal();
-      if (isGlobal !== undefined) {
-        v.isGlobal = isGlobal
-      }
-
-      console.log(res)
       return v;
     }
   );
@@ -117,9 +107,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const updatePolicy = async (v: PolicyValue): Promise<void> => {
     const req = new pb.SetBacklogQuotasRequest();
     req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+    req.setIsGlobal(props.isGlobal)
     let destinationStorageBacklogQuotaPb: pb.DestinationStorageBacklogQuota | undefined = undefined;
-
-    console.log(req)
     
     if (v.destinationStorage.type === 'specified-for-this-topic') {
       destinationStorageBacklogQuotaPb = new pb.DestinationStorageBacklogQuota();
@@ -137,8 +126,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
 
     req.setMessageAge(messageAgeBacklogQuotaPb)
-
-    req.setIsGlobal(v.isGlobal)
     const res = await topicpoliciesServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
 
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
@@ -148,6 +135,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     if (v.destinationStorage.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setIsGlobal(props.isGlobal)
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
       const res = await topicpoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
@@ -158,6 +146,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     if (v.messageAge.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setIsGlobal(props.isGlobal)
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
       const res = await topicpoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
@@ -181,7 +170,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <div className={sf.FormItem}>
               <Select<'inherited-from-namespace-config' | 'specified-for-this-topic'>
                 list={[
-                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from namespace config' },
                   { type: 'item', value: 'specified-for-this-topic', title: 'Specified for this topic' }
                 ]}
                 onChange={(v) => onChange({
@@ -266,7 +255,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <div className={sf.FormItem}>
               <Select<'inherited-from-namespace-config' | 'specified-for-this-topic'>
                 list={[
-                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from broker config' },
+                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from namespace config' },
                   { type: 'item', value: 'specified-for-this-topic', title: 'Specified for this topic' }
                 ]}
                 onChange={(v) => onChange({
@@ -346,20 +335,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
           </div>
-
-          {/* <div className={s.Quota}>
-            <div className={sf.FormLabel}>is Global?</div>
-            <div className={sf.FormItem}>
-              <Checkbox
-                checked={value.isGlobal}
-                onChange={(v) => onChange({
-                  ...value,
-                  isGlobal: v
-                })}
-              />
-            </div>
-          </div> */}
-
         </>
       )}
     </WithUpdateConfirmation>

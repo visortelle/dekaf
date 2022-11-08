@@ -148,7 +148,6 @@ export const swrKeys = {
                 policy: (props: {
                   tenant: string;
                   namespace: string;
-                  topic: string;
                   policy: string;
                 }) => [
                   "pulsar",
@@ -157,7 +156,6 @@ export const swrKeys = {
                   "namespaces",
                   props.namespace,
                   "nonPersistentTopics",
-                  props.topic,
                   "policies",
                   props.policy,
                 ],
@@ -176,7 +174,6 @@ export const swrKeys = {
                 policy: (props: {
                   tenant: string;
                   namespace: string;
-                  topic: string;
                   policy: string;
                 }) => [
                   "pulsar",
@@ -185,7 +182,6 @@ export const swrKeys = {
                   "namespaces",
                   props.namespace,
                   "persistentTopics",
-                  props.topic,
                   "policies",
                   props.policy,
                 ],

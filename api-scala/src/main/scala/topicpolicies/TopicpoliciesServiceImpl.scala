@@ -27,7 +27,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             case _ => None
 
         try {
-            val backlogQuotaMap = adminClient.topicPolicies.getBacklogQuotaMap(request.topic, false).asScala.toMap
+            val backlogQuotaMap = adminClient.topicPolicies(request.isGlobal).getBacklogQuotaMap(request.topic, false).asScala.toMap
             val destinationStorageBacklogQuotaPb = backlogQuotaMap.get(BacklogQuotaType.destination_storage) match
                 case Some(quota) =>
                     Some(
@@ -72,8 +72,6 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             case _ => RetentionPolicy.producer_request_hold
 
         try {
-            var isGlobal = request.isGlobal.get
-
             request.destinationStorage match
                 case Some(quotaPb) =>
                     var backlogQuotaBuilder = BacklogQuotaBuilder.limitSize(quotaPb.limitSize)
@@ -86,7 +84,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                     val backlogQuota = backlogQuotaBuilder.build
 
                     logger.info(s"Setting backlog quota policy (destination storage) on topic ${request.topic} to ${backlogQuota}")
-                    adminClient.topicPolicies(isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.destination_storage)
+                    adminClient.topicPolicies(request.isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.destination_storage)
                 case None =>
 
             request.messageAge match
@@ -101,7 +99,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                     val backlogQuota = backlogQuotaBuilder.build
 
                     logger.info(s"Setting backlog quota (message age) on topic ${request.topic} to ${backlogQuota}")
-                    adminClient.topicPolicies(isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.message_age)
+                    adminClient.topicPolicies(request.isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.message_age)
                 case None =>
 
             Future.successful(SetBacklogQuotasResponse(status = Some(Status(code = Code.OK.index))))
@@ -112,20 +110,20 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
         }
 
     override def removeBacklogQuota(request: RemoveBacklogQuotaRequest): Future[RemoveBacklogQuotaResponse] =
-        try
+        try {
             request.backlogQuotaType match
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE =>
                     logger.info(s"Removing backlog quota (destination storage) on topic ${request.topic}")
-                    adminClient.topicPolicies.removeBacklogQuota(request.topic, BacklogQuotaType.destination_storage)
+                    adminClient.topicPolicies(request.isGlobal).removeBacklogQuota(request.topic, BacklogQuotaType.destination_storage)
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE =>
                     logger.info(s"Removing backlog quota (message age) on topic ${request.topic}")
-                    adminClient.topicPolicies.removeBacklogQuota(request.topic, BacklogQuotaType.message_age)
+                    adminClient.topicPolicies(request.isGlobal).removeBacklogQuota(request.topic, BacklogQuotaType.message_age)
                 case _ =>
                     val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Backlog quota type should be specified")
                     return Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
 
             Future.successful(RemoveBacklogQuotaResponse(status = Some(Status(code = Code.OK.index))))
-        catch {
+        } catch {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
