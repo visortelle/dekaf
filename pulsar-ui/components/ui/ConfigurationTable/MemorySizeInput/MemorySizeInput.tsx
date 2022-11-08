@@ -26,7 +26,7 @@ const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
     }
 
     setValue(newValue);
-    props.onChange(memorySizeToBytes(newValue));
+    props.onChange(Math.floor(memorySizeToBytes(newValue)));
   };
 
   return (

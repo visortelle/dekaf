@@ -14,6 +14,9 @@ const DriverDocs: React.FC<DriverDocsProps> = (props) => {
 
   return (
     <div className={s.DriverDocs}>
+      <strong>Please read this first:</strong>
+      <br />
+
       {props.driverType === 'aliyun-oss' && (
         <A isExternalLink href="https://pulsar.apache.org/docs/tiered-storage-aliyun">Aliyun OSS offloader documentation</A>
       )}

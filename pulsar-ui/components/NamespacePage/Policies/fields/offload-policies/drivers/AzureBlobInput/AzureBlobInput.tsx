@@ -1,6 +1,6 @@
 import React from 'react';
-import s from './AliyunOssInput.module.css'
-import { AliyunOssOffloadPolicy } from '../../types';
+import s from './AzureBlobInput.module.css'
+import { AzureBlobOffloadPolicy } from '../../types';
 import Input from '../../../../../../ui/Input/Input';
 import MemorySizeInput from '../../../../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import FormLabel from '../../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
@@ -8,22 +8,34 @@ import Select from '../../../../../../ui/Select/Select';
 import FormItem from '../../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import A from '../../../../../../ui/A/A';
 
-export type AliyunOssInputProps = {
-  value: AliyunOssOffloadPolicy,
-  onChange: (value: AliyunOssOffloadPolicy) => void,
+export type AzureBlobInputProps = {
+  value: AzureBlobOffloadPolicy,
+  onChange: (value: AzureBlobOffloadPolicy) => void,
 };
 
-const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
+const AzureBlobInput: React.FC<AzureBlobInputProps> = (props) => {
   const isReadBufferSizeSpecified = props.value.managedLedgerOffloadReadBufferSizeInBytes !== undefined;
   const isMaxBlockSizeSpecified = props.value.managedLedgerOffloadMaxBlockSizeInBytes !== undefined;
 
   return (
-    <div className={s.AliyunOssInput}>
+    <div className={s.AzureBlobInput}>
       <FormItem>
         <FormLabel
-          content="Bucket"
+          content="Container (bucket)"
           isRequired
-          help="A bucket is a basic container that holds your data. Everything you store in Aliyun OSS must be contained in a bucket. You can use a bucket to organize your data and control access to your data, but unlike a directory and folder, you cannot nest a bucket."
+          help={(
+            <>
+              A bucket is a basic container that holds your data. Everything you store in Azure BlobStore must be contained in a bucket. You can use a bucket to organize your data and control access to your data, but unlike a directory and folder, you cannot nest a bucket.
+              <br />
+              <br />
+              More info:
+              <ul>
+                <li>
+                  <A isExternalLink href="https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction">Introduction to Azure Blob storage</A>
+                </li>
+              </ul>
+            </>
+          )}
         />
         <Input
           value={props.value.managedLedgerOffloadBucket}
@@ -34,36 +46,8 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
 
       <FormItem>
         <FormLabel
-          content="Service endpoint"
-          isRequired
-          help={
-            <div>
-              The endpoint is the region where a bucket is located.
-              <br />
-              <br />
-              More info:
-              <ul>
-                <li>
-                  <A isExternalLink href="https://www.alibabacloud.com/help/doc-detail/31837.htm">International website</A>
-                </li>
-                <li>
-                  <A isExternalLink href='https://help.aliyun.com/document_detail/31837.html'>Chinese website</A>
-                </li>
-              </ul>
-            </div>
-          }
-        />
-        <Input
-          value={props.value.managedLedgerOffloadServiceEndpoint}
-          onChange={v => props.onChange({ ...props.value, managedLedgerOffloadServiceEndpoint: v })}
-          placeholder="http://oss-us-west-1-internal.aliyuncs.com"
-        />
-      </FormItem>
-
-      <FormItem>
-        <FormLabel
           content="Read buffer size"
-          help="Block size for each individual read when reading back data from S3-compatible storage."
+          help="Block size for each individual read when reading back data from Azure BlobStore store."
         />
         <FormItem>
           <Select<'not-specified' | 'specified'>
@@ -90,7 +74,7 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
       <FormItem>
         <FormLabel
           content="Block size"
-          help={<div>Maximum size of &quot;part&quot; sent during a multi-part upload to Aliyun OSS store. <br /><strong>It cannot be smaller than 5 MB.</strong></div>}
+          help={<div>Maximum size of &quot;part&quot; sent during a multi-part upload to Azure BlobStore store. <br /><strong>It cannot be smaller than 5 MB.</strong></div>}
         />
         <FormItem>
           <Select<'not-specified' | 'specified'>
@@ -117,4 +101,4 @@ const AliyunOssInput: React.FC<AliyunOssInputProps> = (props) => {
   );
 }
 
-export default AliyunOssInput;
+export default AzureBlobInput;

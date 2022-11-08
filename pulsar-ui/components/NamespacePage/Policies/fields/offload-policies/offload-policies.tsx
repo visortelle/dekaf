@@ -20,6 +20,9 @@ import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import A from '../../../../ui/A/A';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import DriverDocs from './drivers/DriverDocs';
+import AzureBlobInput from './drivers/AzureBlobInput/AzureBlobInput';
+import GoogleCloudStorageInput from './drivers/GoogleCloudStorageInput/GoogleCloudStorageInput';
+import S3Input from './drivers/S3Input/S3Input';
 
 const policy = 'offloadPolicies';
 
@@ -109,17 +112,18 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   { type: 'item', value: 'azureblob', title: 'azureblob' },
                   { type: 'item', value: 'filesystem', title: 'filesystem' },
                   { type: 'item', value: 'google-cloud-storage', title: 'google-cloud-storage' },
+                  { type: 'item', value: 'S3', title: 's3' },
                 ]}
                 onChange={(type) => onChange(defaultPolicyValueByType(type, policiesRes))}
               />
-              <div style={{ marginTop: '4rem' }}>
-                <DriverDocs driverType={value.type} />
-              </div>
             </FormItem>
-
 
             {value.type !== 'inherited-from-broker-config' && (
               <>
+                <FormItem>
+                  <DriverDocs driverType={value.type} />
+                </FormItem>
+
                 <FormItem>
                   <OffloadThresholdInput
                     value={value.managedLedgerOffloadThreshold}
@@ -169,6 +173,24 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             )}
             {value.type === 'aws-s3' && (
               <AwsS3Input
+                value={value}
+                onChange={onChange}
+              />
+            )}
+            {value.type === 'azureblob' && (
+              <AzureBlobInput
+                value={value}
+                onChange={onChange}
+              />
+            )}
+            {value.type === 'google-cloud-storage' && (
+              <GoogleCloudStorageInput
+                value={value}
+                onChange={onChange}
+              />
+            )}
+            {value.type === 'S3' && (
+              <S3Input
                 value={value}
                 onChange={onChange}
               />

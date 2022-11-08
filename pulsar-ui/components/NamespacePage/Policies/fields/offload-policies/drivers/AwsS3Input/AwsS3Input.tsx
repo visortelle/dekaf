@@ -23,7 +23,22 @@ const AwsS3Input: React.FC<AwsS3InputProps> = (props) => {
         <FormLabel
           content="Bucket"
           isRequired
-          help="A bucket is a basic container that holds your data. Everything you store in AWS S3 must be contained in a bucket. You can use a bucket to organize your data and control access to your data, but unlike a directory and folder, you cannot nest a bucket."
+          help={(
+            <>
+              A bucket is a basic container that holds your data. Everything you store in AWS S3 must be contained in a bucket. You can use a bucket to organize your data and control access to your data, but unlike a directory and folder, you cannot nest a bucket.
+              <br />
+              <br />
+              More info:
+              <ul>
+                <li>
+                  <A isExternalLink href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html">AWS S3 Buckets overview</A>
+                </li>
+                <li>
+                  <A isExternalLink href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html">Creating a bucket</A>
+                </li>
+              </ul>
+            </>
+          )}
         />
         <Input
           value={props.value.s3ManagedLedgerOffloadBucket}
@@ -79,8 +94,6 @@ const AwsS3Input: React.FC<AwsS3InputProps> = (props) => {
             <div>
               The endpoint is the region where a bucket is located.
               <br />
-              For more information about Aliyun OSS regions and endpoints,
-              <br />
               <br />
               More info:
               <ul>
@@ -129,7 +142,7 @@ const AwsS3Input: React.FC<AwsS3InputProps> = (props) => {
       <FormItem>
         <FormLabel
           content="Block size"
-          help={<div>Maximum block size sent during a multi-part upload to AWS S3. <br /><strong>It cannot be smaller than 5 MB.</strong></div>}
+          help={<div>Maximum size of &quot;part&quot; sent during a multi-part upload to AWS S3 store. <br /><strong>It cannot be smaller than 5 MB.</strong></div>}
         />
         <FormItem>
           <Select<'not-specified' | 'specified'>
