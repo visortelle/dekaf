@@ -14,6 +14,7 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.tenant.v1.tenant.{CreateTenantResponse, DeleteTenantResponse}
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
+import org.apache.pulsar.common.naming.TopicDomain
 
 class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
     val logger: Logger = Logger(getClass.getName)
@@ -48,16 +49,21 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         logger.debug(s"Getting topics for namespace: ${request.namespace}")
 
         val topics = try {
-            adminClient.topics.getList(request.namespace).asScala
-        } catch {
+            request.topicDomain match
+                case pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT =>
+                    adminClient.topics.getList(request.namespace, TopicDomain.persistent)
+                case pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT =>
+                    adminClient.topics.getList(request.namespace, TopicDomain.non_persistent)
+                case _ =>
+                    adminClient.topics.getList(request.namespace)
+         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 return Future.successful(pb.GetTopicsResponse(status = Some(status)))
         }
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(pb.GetTopicsResponse(status = Some(status), topics = topics.toSeq))
-
+        Future.successful(pb.GetTopicsResponse(status = Some(status), topics = topics.asScala.toSeq))
 
     override def getTopicsInternalStats(request: pb.GetTopicsInternalStatsRequest): Future[pb.GetTopicsInternalStatsResponse] =
         val stats: Map[String, pb.TopicInternalStats] = request.topics.flatMap { topic =>
