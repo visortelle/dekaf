@@ -1,5 +1,4 @@
 import stringify from "safe-stable-stringify";
-import { TreeNode } from "./NavigationTree/TreeView";
 
 export const swrKeys = {
   pulsar: {
@@ -136,16 +135,6 @@ export const swrKeys = {
             "namespaces",
           ],
           namespace: {
-            persistentTopics: {
-              _: (props: { tenant: string; namespace: string }) => [
-                "pulsar",
-                "tenants",
-                props.tenant,
-                "namespaces",
-                props.namespace,
-                "persistentTopics",
-              ],
-            },
             nonPersistentTopics: {
               _: (props: { tenant: string; namespace: string }) => [
                 "pulsar",
@@ -155,6 +144,52 @@ export const swrKeys = {
                 props.namespace,
                 "nonPersistentTopics",
               ],
+              policies: {
+                policy: (props: {
+                  tenant: string;
+                  namespace: string;
+                  policy: string;
+                  isGlobal: boolean;
+                }) => [
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "nonPersistentTopics",
+                  "policies",
+                  props.policy,
+                  props.isGlobal
+                ],
+              },
+            },
+            persistentTopics: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "persistentTopics",
+              ],
+              policies: {
+                policy: (props: {
+                  tenant: string;
+                  namespace: string;
+                  policy: string;
+                  isGlobal: boolean;
+                }) => [
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "persistentTopics",
+                  "policies",
+                  props.policy,
+                  props.isGlobal
+                ],
+              },
             },
             policies: {
               policy: (props: {
