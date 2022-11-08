@@ -1,8 +1,7 @@
 package tenant
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.tenant.v1.tenant as tenantPbLib
-import com.tools.teal.pulsar.ui.tenant.v1.tenant.{CreateTenantRequest, CreateTenantResponse, DeleteTenantRequest, DeleteTenantResponse, GetTenantRequest, GetTenantResponse, ListTenantsRequest, ListTenantsResponse, TenantServiceGrpc, UpdateTenantRequest, UpdateTenantResponse}
+import com.tools.teal.pulsar.ui.tenant.v1.tenant as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
@@ -11,10 +10,10 @@ import scala.jdk.CollectionConverters.*
 
 import scala.concurrent.Future
 
-class TenantServiceImpl extends TenantServiceGrpc.TenantService:
+class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
     val logger: Logger = Logger(getClass.getName)
 
-    override def createTenant(request: CreateTenantRequest): Future[CreateTenantResponse] =
+    override def createTenant(request: pb.CreateTenantRequest): Future[pb.CreateTenantResponse] =
         logger.info(s"Creating tenant: ${request.tenantName}")
 
         val config = TenantInfo.builder
@@ -28,15 +27,15 @@ class TenantServiceImpl extends TenantServiceGrpc.TenantService:
         try {
             adminClient.tenants.createTenant(request.tenantName, config.build)
             val status: Status = Status(code = Code.OK.index)
-            Future.successful(CreateTenantResponse(status = Some(status)))
+            Future.successful(pb.CreateTenantResponse(status = Some(status)))
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(CreateTenantResponse(status = Some(status)))
+                Future.successful(pb.CreateTenantResponse(status = Some(status)))
         }
 
 
-    override def updateTenant(request: UpdateTenantRequest): Future[UpdateTenantResponse] =
+    override def updateTenant(request: pb.UpdateTenantRequest): Future[pb.UpdateTenantResponse] =
         logger.info(s"Updating tenant: ${request.tenantName}")
 
         val config = TenantInfo.builder
@@ -50,59 +49,59 @@ class TenantServiceImpl extends TenantServiceGrpc.TenantService:
         try {
             adminClient.tenants.updateTenant(request.tenantName, config.build)
             val status: Status = Status(code = Code.OK.index)
-            Future.successful(UpdateTenantResponse(status = Some(status)))
+            Future.successful(pb.UpdateTenantResponse(status = Some(status)))
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(UpdateTenantResponse(status = Some(status)))
+                Future.successful(pb.UpdateTenantResponse(status = Some(status)))
         }
 
-    override def deleteTenant(request: DeleteTenantRequest): Future[DeleteTenantResponse] =
+    override def deleteTenant(request: pb.DeleteTenantRequest): Future[pb.DeleteTenantResponse] =
         logger.info(s"Deleting tenant: ${request.tenantName}")
 
         try {
             adminClient.tenants.deleteTenant(request.tenantName, request.force)
             val status: Status = Status(code = Code.OK.index)
-            Future.successful(DeleteTenantResponse(status = Some(status)))
+            Future.successful(pb.DeleteTenantResponse(status = Some(status)))
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(DeleteTenantResponse(status = Some(status)))
+                Future.successful(pb.DeleteTenantResponse(status = Some(status)))
         }
 
-    override def getTenant(request: GetTenantRequest): Future[GetTenantResponse] =
-        logger.info(s"Getting tenant: ${request.tenantName}")
+    override def getTenant(request: pb.GetTenantRequest): Future[pb.GetTenantResponse] =
+        logger.debug(s"Getting tenant: ${request.tenantName}")
 
         val tenant = try {
             adminClient.tenants.getTenantInfo(request.tenantName)
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                return Future.successful(GetTenantResponse(status = Some(status)))
+                return Future.successful(pb.GetTenantResponse(status = Some(status)))
         }
 
-        val tenantInfoPb = tenantPbLib.TenantInfo(
-            adminRoles = tenant.getAdminRoles().asScala.toSeq,
-            allowedClusters = tenant.getAllowedClusters().asScala.toSeq
+        val tenantInfoPb = pb.TenantInfo(
+            adminRoles = tenant.getAdminRoles.asScala.toSeq,
+            allowedClusters = tenant.getAllowedClusters.asScala.toSeq
         )
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(GetTenantResponse(
+        Future.successful(pb.GetTenantResponse(
             status = Some(status),
             tenantName = request.tenantName,
             tenantInfo = Some(tenantInfoPb)
         ))
 
-    override def listTenants(request: ListTenantsRequest): Future[ListTenantsResponse] =
-        logger.info(s"Listing tenants")
+    override def getTenants(request: pb.GetTenantsRequest): Future[pb.GetTenantsResponse] =
+        logger.debug(s"Getting tenants")
 
         val tenants = try {
             adminClient.tenants.getTenants
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                return Future.successful(ListTenantsResponse(status = Some(status)))
+                return Future.successful(pb.GetTenantsResponse(status = Some(status)))
         }
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(ListTenantsResponse(status = Some(status), tenants = tenants.asScala.toSeq))
+        Future.successful(pb.GetTenantsResponse(status = Some(status), tenants = tenants.asScala.toSeq))
