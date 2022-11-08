@@ -1,11 +1,12 @@
-import SelectInput from "../../../ui/ConfigurationTable/SelectInput/SelectInputWithUpdateConfirmation";
+import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
-import { GetSchemaCompatibilityStrategyRequest, SchemaCompatibilityStrategy, SetSchemaCompatibilityStrategyRequest} from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { GetSchemaCompatibilityStrategyRequest, SchemaCompatibilityStrategy, SetSchemaCompatibilityStrategyRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 
 const policy = 'schemaCompatibilityStrategy';
 
@@ -14,8 +15,8 @@ export type FieldInputProps = {
   namespace: string;
 }
 
-type Strategy = keyof typeof SchemaCompatibilityStrategy;
-const strategies = (Object.keys(SchemaCompatibilityStrategy) as Strategy[])
+type PolicyValue = keyof typeof SchemaCompatibilityStrategy;
+const strategies = (Object.keys(SchemaCompatibilityStrategy) as PolicyValue[])
   .filter(key => key !== 'SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED')
   .sort((a, b) => a.localeCompare(b));
 
@@ -27,7 +28,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const onUpdateError = (err: string) => notifyError(`Can't update schema compatibility strategy. ${err}`);
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
-  const { data: strategy, error: strategyError } = useSWR(
+  const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new GetSchemaCompatibilityStrategyRequest();
@@ -37,23 +38,22 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         notifyError(`Can't get schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
         return undefined;
       }
-      return (Object.entries(SchemaCompatibilityStrategy).find(([_, i]) => i === res.getStrategy()) || [])[0] as Strategy;
+      return (Object.entries(SchemaCompatibilityStrategy).find(([_, i]) => i === res.getStrategy()) || [])[0] as PolicyValue;
     },
   );
 
-  if (strategyError) {
-    notifyError(`Can't get schema compatibility strategy: ${strategyError}`);
+  if (initialValueError) {
+    notifyError(`Can't get schema compatibility strategy: ${initialValueError}`);
   }
 
-  if (strategy === undefined) {
+  if (initialValue === undefined) {
     return <></>;
   }
 
   return (
-    <SelectInput<Strategy>
-      list={strategies.map(s => ({ type: 'item', value: s, title: s.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '') }))}
-      value={strategy}
-      onChange={async (v) => {
+    <WithUpdateConfirmation<PolicyValue>
+      initialValue={initialValue}
+      onConfirm={async (v) => {
         const req = new SetSchemaCompatibilityStrategyRequest();
         req.setNamespace(`${props.tenant}/${props.namespace}`);
         req.setStrategy(SchemaCompatibilityStrategy[v]);
@@ -67,8 +67,20 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         }
 
         await mutate(swrKey);
+
       }}
-    />
+    >
+      {({ value, onChange }) => {
+        return (
+          <Select<PolicyValue>
+            list={strategies.map(s => ({ type: 'item', value: s, title: s.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '') }))}
+            value={value}
+            onChange={onChange}
+          />
+        );
+      }}
+    </WithUpdateConfirmation>
+
   );
 }
 
