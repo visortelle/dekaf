@@ -1,0 +1,14 @@
+.BacklogQuotaInput {
+  flex: 1 1 auto;
+}
+
+.Quota {
+  padding: 12rem;
+  border: 1px solid #ddd;
+  margin-bottom: 12rem;
+  border-radius: 8rem;
+}
+
+.Quota:last-child {
+  margin-bottom: 0;
+}

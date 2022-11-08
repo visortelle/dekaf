@@ -11,7 +11,7 @@ export type ListItem<V> = {
 
 export type List<V> = ListItem<V>[]
 
-export type InputProps<V> = {
+export type SelectProps<V> = {
   value: string;
   onChange: (value: V) => void;
   list: List<V>;
@@ -19,7 +19,7 @@ export type InputProps<V> = {
   disabled?: boolean;
 }
 
-function Input<V extends string>(props: InputProps<V>): React.ReactElement {
+function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
   function renderRegularItem(item: ListItem<V>) {
     if (item.type !== 'item') {
       return <></>
@@ -59,4 +59,4 @@ function Input<V extends string>(props: InputProps<V>): React.ReactElement {
   )
 }
 
-export default Input;
+export default Select;
