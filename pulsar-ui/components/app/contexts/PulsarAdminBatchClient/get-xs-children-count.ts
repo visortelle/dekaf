@@ -3,7 +3,6 @@ import stringify from "safe-stable-stringify";
 import { TreePath, treePath } from "../../../NavigationTree/TreeView";
 import { BatchRequest, TreePathStr } from "./types";
 import { hideShowProgressIndicatorHeader } from "../../../../pages/_app";
-import { tree } from "fp-ts";
 
 const getTenantNamespaces = (
   path: TreePath,
