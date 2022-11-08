@@ -10,11 +10,13 @@ import * as _clusterServiceClient from '../../../../grpc-web/tools/teal/pulsar/u
 import * as _metricsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/MetricsServiceClientPb';
 import * as _brokersServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/BrokersServiceClientPb';
 import * as _brokerstatsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokerstats/v1/BrokerstatsServiceClientPb';
+import * as _topicpoliciesServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/TopicpoliciesServiceClientPb';
 
 export type Value = {
   producerServiceClient: _producerServiceClient.ProducerServiceClient,
   consumerServiceClient: _consumerServiceClient.ConsumerServiceClient,
   topicServiceClient: _topicServiceClient.TopicServiceClient,
+  topicpoliciesServiceClient: _topicpoliciesServiceClient.TopicpoliciesServiceClient,
   schemaServiceClient: _schemaServiceClient.SchemaServiceClient,
   namespaceServiceClient: _namespaceServiceClient.NamespaceServiceClient,
   tenantServiceClient: _tenantServiceClient.TenantServiceClient,
@@ -28,6 +30,7 @@ const defaultValue: Value = {
   producerServiceClient: new _producerServiceClient.ProducerServiceClient(''),
   consumerServiceClient: new _consumerServiceClient.ConsumerServiceClient(''),
   topicServiceClient: new _topicServiceClient.TopicServiceClient(''),
+  topicpoliciesServiceClient: new _topicpoliciesServiceClient.TopicpoliciesServiceClient(''),
   schemaServiceClient: new _schemaServiceClient.SchemaServiceClient(''),
   namespaceServiceClient: new _namespaceServiceClient.NamespaceServiceClient(''),
   tenantServiceClient: new _tenantServiceClient.TenantServiceClient(''),
@@ -43,6 +46,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const [producerServiceClient] = useState(new _producerServiceClient.ProducerServiceClient('http://localhost:10000'));
   const [consumerServiceClient] = useState(new _consumerServiceClient.ConsumerServiceClient('http://localhost:10000'));
   const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient('http://localhost:10000'));
+  const [topicpoliciesServiceClient] = useState(new _topicpoliciesServiceClient.TopicpoliciesServiceClient('http://localhost:10000'));
   const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient('http://localhost:10000'));
   const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient('http://localhost:10000'));
   const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient('http://localhost:10000'));
@@ -58,13 +62,14 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           producerServiceClient,
           consumerServiceClient,
           topicServiceClient,
+          topicpoliciesServiceClient,
           schemaServiceClient,
           namespaceServiceClient,
           tenantServiceClient,
           clusterServiceClient,
           metricsServiceClient,
           brokersServiceClient,
-          brokerstatsServiceClient
+          brokerstatsServiceClient,
         }}
       >
         {children}

@@ -16,7 +16,6 @@ import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query
 import { help } from './help';
 import ReactDOMServer from 'react-dom/server';
 import { DeleteDynamicConfigurationRequest, GetDynamicConfigurationNamesRequest, UpdateDynamicConfigurationRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
-import { GetHumanReadableSchemaResponse } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
 const Configuration: React.FC = () => {
