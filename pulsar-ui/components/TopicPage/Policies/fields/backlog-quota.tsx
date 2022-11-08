@@ -50,14 +50,13 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-
   const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
   const swrKey = props.topicType === 'persistent' ?
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy }) :
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy })
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
@@ -109,7 +108,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
     req.setIsGlobal(props.isGlobal)
     let destinationStorageBacklogQuotaPb: pb.DestinationStorageBacklogQuota | undefined = undefined;
-    
+
     if (v.destinationStorage.type === 'specified-for-this-topic') {
       destinationStorageBacklogQuotaPb = new pb.DestinationStorageBacklogQuota();
       destinationStorageBacklogQuotaPb.setLimitSize(v.destinationStorage.limit.type === 'infinite' ? -1 : Math.floor(v.destinationStorage.limit.sizeBytes));
@@ -118,7 +117,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
     req.setDestinationStorage(destinationStorageBacklogQuotaPb)
     let messageAgeBacklogQuotaPb: pb.MessageAgeBacklogQuota | undefined = undefined;
-    
+
     if (v.messageAge.type === 'specified-for-this-topic') {
       messageAgeBacklogQuotaPb = new pb.MessageAgeBacklogQuota();
       messageAgeBacklogQuotaPb.setLimitTime(v.messageAge.limitTime.type === 'infinite' ? -1 : Math.floor(v.messageAge.limitTime.durationSeconds));
@@ -131,7 +130,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
     }
-    
+
     if (v.destinationStorage.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
@@ -153,8 +152,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }
     }
-    
-    mutate(swrKey);
+
+    await mutate(swrKey);
   }
 
   return (

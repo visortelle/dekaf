@@ -7,6 +7,7 @@ import messageTtlField from './fields/message-ttl';
 import backlogQuotaField from './fields/backlog-quota';
 
 import s from './Policies.module.css'
+import { useQueryParam, withDefault, BooleanParam } from 'use-query-params';
 
 export type PoliciesProps = {
   tenant: string;
@@ -16,7 +17,7 @@ export type PoliciesProps = {
 };
 
 const Policies: React.FC<PoliciesProps> = (props) => {
-  const [isGlobal, setIsGlobal] = useState(false)
+  const [isGlobal, setIsGlobal] = useQueryParam('isGlobal', withDefault(BooleanParam, false));
 
   const brokersConfig = BrokersConfig.useContext();
   const isTopicLevelPoliciesEnabled = brokersConfig.get('topicLevelPoliciesEnabled')?.value;
@@ -32,17 +33,20 @@ const Policies: React.FC<PoliciesProps> = (props) => {
   return (
     <div className={s.Policies}>
       <div className={s.ConfigurationTable}>
-        <Checkbox
-          title='isGlobal'
-          checked={isGlobal}
-          onChange={() => setIsGlobal(!isGlobal)}
-        />
+        <div>
+          <span>Is global</span>
+          <Checkbox
+            value={isGlobal}
+            onChange={() => setIsGlobal(v => !v)}
+          />
+        </div>
+
         <ConfigurationTable
           title="Retention"
           fields={[
             messageTtlField,
             backlogQuotaField,
-          ].map(field => field({...props, isGlobal}))}
+          ].map(field => field({ ...props, isGlobal }))}
         />
       </div>
     </div>
