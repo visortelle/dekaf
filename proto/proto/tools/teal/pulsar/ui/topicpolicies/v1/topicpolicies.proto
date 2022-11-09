@@ -84,6 +84,38 @@ message RemoveDelayedDeliveryResponse {
   google.rpc.Status status = 1;
 }
 
+
+message MessageTtlUnspecified {}
+message MessageTtlSpecified {
+  int32 message_ttl_seconds = 1;
+}
+message GetMessageTtlRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMessageTtlResponse {
+  google.rpc.Status status = 1;
+  oneof message_ttl {
+    MessageTtlUnspecified unspecified = 2;
+    MessageTtlSpecified specified = 3;
+  }
+}
+message SetMessageTtlRequest {
+  string topic = 1;
+  int32 message_ttl_seconds = 2;
+  bool is_global = 3;
+}
+message SetMessageTtlResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMessageTtlRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMessageTtlResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -93,5 +125,9 @@ service TopicpoliciesService {
   rpc GetDelayedDelivery(GetDelayedDeliveryRequest) returns (GetDelayedDeliveryResponse);
   rpc SetDelayedDelivery(SetDelayedDeliveryRequest) returns (SetDelayedDeliveryResponse);
   rpc RemoveDelayedDelivery(RemoveDelayedDeliveryRequest) returns (RemoveDelayedDeliveryResponse);
+
+  rpc GetMessageTtl(GetMessageTtlRequest) returns (GetMessageTtlResponse);
+  rpc SetMessageTtl(SetMessageTtlRequest) returns (SetMessageTtlResponse);
+  rpc RemoveMessageTtl(RemoveMessageTtlRequest) returns (RemoveMessageTtlResponse);
 
 }

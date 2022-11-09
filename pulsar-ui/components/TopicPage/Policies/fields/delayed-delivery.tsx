@@ -2,13 +2,13 @@ import useSWR, { useSWRConfig } from "swr";
 import stringify from "safe-stable-stringify";
 
 import Select from '../../../ui/Select/Select';
-import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { swrKeys } from "../../../swrKeys";
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
