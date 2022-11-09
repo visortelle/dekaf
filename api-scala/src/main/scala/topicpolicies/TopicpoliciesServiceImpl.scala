@@ -37,6 +37,15 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     RemoveRetentionResponse,
     RetentionSpecified,
     RetentionUnspecified,
+
+    GetMaxUnackedMessagesOnConsumerRequest,
+    GetMaxUnackedMessagesOnConsumerResponse,
+    SetMaxUnackedMessagesOnConsumerRequest,
+    SetMaxUnackedMessagesOnConsumerResponse,
+    RemoveMaxUnackedMessagesOnConsumerRequest,
+    RemoveMaxUnackedMessagesOnConsumerResponse,
+    MaxUnackedMessagesOnConsumerSpecified,
+    MaxUnackedMessagesOnConsumerUnspecified,
 }
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -300,4 +309,45 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveRetentionResponse(status = Some(status)))
         }
 
+    override def getMaxUnackedMessagesOnConsumer(request: GetMaxUnackedMessagesOnConsumerRequest): Future[GetMaxUnackedMessagesOnConsumerResponse] =
+        try {
+            val maxUnackedMessagesOnConsumerPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxUnackedMessagesOnConsumer(request.topic, false)) match
+                case None =>
+                    pb.GetMaxUnackedMessagesOnConsumerResponse.MaxUnackedMessagesOnConsumer.Unspecified(new MaxUnackedMessagesOnConsumerUnspecified())
+                case Some(v) =>
+                    pb.GetMaxUnackedMessagesOnConsumerResponse.MaxUnackedMessagesOnConsumer.Specified(new MaxUnackedMessagesOnConsumerSpecified(
+                        maxUnackedMessagesOnConsumer = v
+                    ))
+
+            Future.successful(GetMaxUnackedMessagesOnConsumerResponse(
+                status = Some(Status(code = Code.OK.index)),
+                maxUnackedMessagesOnConsumer = maxUnackedMessagesOnConsumerPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
+        }
+
+    override def setMaxUnackedMessagesOnConsumer(request: SetMaxUnackedMessagesOnConsumerRequest): Future[SetMaxUnackedMessagesOnConsumerResponse] =
+        try {
+            logger.info(s"Setting max unacked messages on consumer policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnConsumer(request.topic, request.maxUnackedMessagesOnConsumer)
+            Future.successful(SetMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
+        }
+
+    override def removeMaxUnackedMessagesOnConsumer(request: RemoveMaxUnackedMessagesOnConsumerRequest): Future[RemoveMaxUnackedMessagesOnConsumerResponse] =
+        try {
+            logger.info(s"Removing max unacked messages on consumer policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnConsumer(request.topic)
+            Future.successful(RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
+        }
 
