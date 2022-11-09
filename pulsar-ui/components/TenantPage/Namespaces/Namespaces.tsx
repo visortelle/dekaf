@@ -4,8 +4,6 @@ import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
-import * as PulsarAdminBatchClient from '../../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
@@ -22,6 +20,7 @@ import { useDebounce } from 'use-debounce';
 import { useRef } from 'react';
 import _ from 'lodash';
 import { GetNamespacesMetricsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/metrics_pb';
+import pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { metricsFromPb, NamespaceMetrics } from './converters';
 
@@ -50,9 +49,7 @@ type NamespacesProps = {
 
 const Namespaces: React.FC<NamespacesProps> = (props) => {
   const tableRef = useRef<HTMLDivElement>(null);
-  const adminClient = PulsarAdminClient.useContext().client;
-  const adminBatchClient = PulsarAdminBatchClient.useContext().client;
-  const { metricsServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient, metricsServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
@@ -94,7 +91,17 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
 
   const { data: namespaces, error: namespacesError } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }),
-    async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]),
+    async () => {
+      const req = new pb.GetNamespacesRequest();
+      req.setTenant(props.tenant);
+      const res = await namespaceServiceClient.getNamespaces(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get namespaces: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      return res.getNamespacesList().map(tn => tn.split('/')[1]);
+    }
   );
   if (namespacesError) {
     notifyError(`Unable to get namespaces list. ${namespacesError}`);
@@ -124,7 +131,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
 
   const { data: topicsCount, error: topicsCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantNamespacesTopicsCount._(props.tenant, itemsRendered.map(item => item.data!)),
-    async () => await adminBatchClient?.getTenantNamespacesTopicsCount(props.tenant, itemsRendered.map(item => item.data!)),
+    async () => ({})
   );
 
   if (topicsCountError) {

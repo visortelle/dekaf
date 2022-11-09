@@ -4,6 +4,21 @@ package tools.teal.pulsar.ui.topic.v1;
 
 import "google/rpc/status.proto";
 
+enum TopicDomain {
+  TOPIC_DOMAIN_UNSPECIFIED = 0;
+  TOPIC_DOMAIN_PERSISTENT = 1;
+  TOPIC_DOMAIN_NON_PERSISTENT = 2;
+}
+
+message GetTopicsRequest {
+  string namespace = 1;
+  TopicDomain topic_domain = 2;
+}
+message GetTopicsResponse {
+  google.rpc.Status status = 1;
+  repeated string topics = 2;
+}
+
 message PartitionedTopicMetadata {
   optional int32 partitions = 1;
   map<string, string> properties = 2;
@@ -111,5 +126,6 @@ service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
   rpc GetTopicsInternalStats(GetTopicsInternalStatsRequest) returns (GetTopicsInternalStatsResponse);
+  rpc GetTopics(GetTopicsRequest) returns (GetTopicsResponse);
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {};
 }

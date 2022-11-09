@@ -4,14 +4,13 @@ import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
-import * as PulsarCustomApiClient from '../../app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
+import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
 import { swrKeys } from '../../swrKeys';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
-import { TopicMetrics } from 'tealtools-pulsar-ui-api/metrics/types';
 import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
 import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
@@ -21,6 +20,7 @@ import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
 import { useRef } from 'react';
 import _ from 'lodash';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
 type ColumnKey =
   'topic' |
@@ -55,8 +55,7 @@ type TopicsProps = {
 
 const Topics: React.FC<TopicsProps> = (props) => {
   const tableRef = useRef<HTMLDivElement>(null);
-  const adminClient = PulsarAdminClient.useContext().client;
-  const customApiClient = PulsarCustomApiClient.useContext().client;
+  const { topicServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
@@ -94,15 +93,39 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
   const { data: persistentTopics, error: persistentTopicsError } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
-    async () => (await adminClient.persistentTopic.getList(props.tenant, props.namespace)).map(t => t.split('/')[4]),
+    async () => {
+      const req = new pb.GetTopicsRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT);
+
+      const res = await topicServiceClient.getTopics(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get persistent topics: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      return res.getTopicsList().map(t => t.split('/')[4]);
+    }
   );
   if (persistentTopicsError) {
-    notifyError(`Unable to get persistent topics list. ${persistentTopicsError}`);
+    notifyError(`Unable to get persistent topics: ${persistentTopicsError}`);
   }
 
   const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
-    async () => (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace)).map(t => t.split('/')[4]),
+    async () => {
+      const req = new pb.GetTopicsRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT);
+
+      const res = await topicServiceClient.getTopics(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get persistent topics: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      return res.getTopicsList().map(t => t.split('/')[4]);
+    }
   );
   if (persistentTopicsError) {
     notifyError(`Unable to get persistent topics list. ${nonPersistentTopicsError}`);
@@ -110,7 +133,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
   const { data: allTopicsMetricsData, error: allTopicsMetricsDataError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allNamespaceTopics._(props.tenant, props.namespace),
-    async () => await customApiClient.getAllNamespaceTopicsMetrics(props.tenant, props.namespace),
+    async () => ({ persistent: {}, nonPersistent: {} }),
     { refreshInterval: 3 * 1000 }
   );
   if (allTopicsMetricsDataError) {
@@ -123,8 +146,8 @@ const Topics: React.FC<TopicsProps> = (props) => {
     // According to https://github.com/apache/pulsar/issues/16284#issuecomment-1171890077,
     // persistent topics won't appear in metrics until not loaded to any broker, therefore we can't get topic names just from metrics.
     // We need to get topic names by making additional requests.
-    const pts: Topic[] = persistentTopics?.map(t => ({ topicType: 'persistent', topic: t, metrics: allTopicsMetrics.persistent[t] || {} })) || [];
-    const npts: Topic[] = nonPersistentTopics?.map(t => ({ topicType: 'non-persistent', topic: t, metrics: allTopicsMetrics.nonPersistent[t] || {} })) || [];
+    const pts: Topic[] = persistentTopics?.map(t => ({ topicType: 'persistent', topic: t, metrics: { topicType: 'persistent' } })) || [];
+    const npts: Topic[] = nonPersistentTopics?.map(t => ({ topicType: 'non-persistent', topic: t, metrics: { topicType: 'non-persistent' } })) || [];
     return squashPartitionedTopics([...pts, ...npts]);
   },
     [persistentTopics, nonPersistentTopics, allTopicsMetrics]
@@ -321,7 +344,7 @@ const sortTopics = (topics: Topic[], partitionsCount: { persistent: Record<strin
 
   if (sort.key === 'partitionsCount') {
     const [defs, undefs] = partition(topics, (t) => {
-      switch(t.topicType) {
+      switch (t.topicType) {
         case 'persistent': return partitionsCount.persistent[t.topic] !== undefined;
         case 'non-persistent': return partitionsCount.nonPersistent[t.topic] !== undefined;
       }
@@ -464,3 +487,74 @@ function squashPartitionedTopics(topics: Topic[]): DetectPartitionedTopicsResult
 }
 
 export default Topics;
+
+export type TopicPublisher = {
+  msgRateIn?: number;
+  msgThroughputIn?: number;
+  averageMsgSize?: number;
+  chunkedMessageRate?: number;
+  producerId?: number;
+  isSupportsPartialProducer?: boolean;
+  producerName?: string;
+  address?: string;
+  connectedSince?: string;
+  clientVersion?: string;
+  metadata?: Record<string, string>;
+}
+
+export type TopicReplication = {
+  msgRateIn?: number;
+  msgThroughputIn?: number;
+  msgRateOut?: number;
+  msgThroughputOut?: number;
+  msgRateExpired?: number;
+  replicationBacklog?: number;
+  connectedCount?: number;
+  replicationDelayInSeconds?: number;
+}
+
+export type TopicSubscriptionConsumer = {
+  address?: string;
+  consumerName?: string;
+  availablePermits?: number;
+  connectedSince?: string; // ISO date time
+  msgRateOut?: number;
+  msgThroughputOut?: number;
+  msgRateRedeliver?: number;
+  avgMessagesPerEntry?: number;
+  clientVersion?: string;
+  metadata?: Record<string, string>;
+};
+
+export type TopicSubscription = {
+  consumers?: TopicSubscriptionConsumer[];
+  msgBacklog?: number;
+  msgRateExpired?: number;
+  msgRateOut?: number;
+  msgThroughputOut?: number;
+  msgRateRedeliver?: number;
+  numberOfEntriesSinceFirstNotAckedMessage?: number;
+  totalNonContiguousDeletedMessagesRange?: number;
+  type?: string;
+};
+
+// Reference: https://github.com/apache/pulsar/blob/877795ead640039a0bcb5ef0b9aa190c3536ca1e/pulsar-client-admin-api/src/main/java/org/apache/pulsar/common/policies/data/TopicStats.java
+export type TopicMetrics = {
+  topicType: 'persistent' | 'non-persistent'; // +
+  publishers?: TopicPublisher[]; // count +
+  replication?: Record<string, TopicReplication>;
+  subscriptions?: Record<string, TopicSubscription>; // count +
+  producerCount?: number;
+  averageMsgSize?: number; // +
+  msgRateIn?: number; // +
+  msgRateOut?: number; // +
+  msgInCount?: number;  // +
+  bytesInCount?: number; // +
+  msgOutCount?: number; // +
+  bytesOutCount?: number; // +
+  msgThroughputIn?: number; // +
+  msgThroughputOut?: number; // +
+  storageSize?: number; // +
+  backlogSize?: number; // +
+  pendingAddEntriesCount?: number; // +
+};
