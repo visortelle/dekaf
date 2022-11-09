@@ -2,9 +2,6 @@ import type { AppProps } from 'next/app'
 import * as AppContext from '../components/app/contexts/AppContext';
 import * as AsyncTasks from '../components/app/contexts/AsyncTasks';
 import * as Notifications from '../components/app/contexts/Notifications';
-import * as PulsarAdminClient from '../components/app/contexts/PulsarAdminClient';
-import * as PulsarAdminBatchClient from '../components/app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
-import * as PulsarCustomApiClient from '../components/app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
 import * as PulsarGrpcClient from '../components/app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Modals from '../components/app/contexts/Modals/Modals';
 import * as BrokerConfig from '../components/app/contexts/BrokersConfig';
@@ -81,15 +78,9 @@ const _MyApp = (props: AppProps) => {
         <Notifications.DefaultProvider>
           <Modals.DefaultProvider>
             <PulsarGrpcClient.DefaultProvider>
-              <PulsarAdminClient.DefaultProvider>
-                <PulsarAdminBatchClient.DefaultProvider>
-                  <PulsarCustomApiClient.DefaultProvider>
-                    <BrokerConfig.DefaultProvider>
-                      {typeof window === 'undefined' ? null : <props.Component />}
-                    </BrokerConfig.DefaultProvider>
-                  </PulsarCustomApiClient.DefaultProvider>
-                </PulsarAdminBatchClient.DefaultProvider>
-              </PulsarAdminClient.DefaultProvider>
+              <BrokerConfig.DefaultProvider>
+                {typeof window === 'undefined' ? null : <props.Component />}
+              </BrokerConfig.DefaultProvider>
             </PulsarGrpcClient.DefaultProvider>
           </Modals.DefaultProvider>
         </Notifications.DefaultProvider>

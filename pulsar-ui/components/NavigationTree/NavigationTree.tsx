@@ -5,7 +5,6 @@ import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTr
 import * as Notifications from '../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as tenantPb from '../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
-import * as PulsarAdminBatchClient from '../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
@@ -44,7 +43,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [childrenCountCache, setChildrenCountCache] = useState<{ [key: string]: number }>({});
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
-  const adminBatchClient = PulsarAdminBatchClient.useContext().client;
   const { tenantServiceClient } = PulsarGrpcClient.useContext();
   const navigate = useNavigate();
 
@@ -68,7 +66,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
   const { data: childrenCount, error: childrenCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTreeNodesChildrenCount._(),
-    async () => await adminBatchClient?.getTreeNodesChildrenCount(itemsRenderedDebounced.map(item => item?.data?.path || [])),
+    async () => ({})
   );
 
   if (childrenCountError) {

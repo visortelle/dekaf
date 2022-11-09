@@ -1,5 +1,4 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarAdminClient from '../../../app/contexts/PulsarAdminClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import Input from '../../../ui/ConfigurationTable/Input/Input';
@@ -15,7 +14,6 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarAdminClient.useContext().client;
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -26,8 +24,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       switch (props.topicType) {
-        case 'persistent': await adminClient.persistentTopic.getMessageTtl(props.tenant, props.namespace, props.topic); break;
-        case 'non-persistent': await adminClient.nonPersistentTopic.getMessageTtl(props.tenant, props.namespace, props.topic); break;
+        case 'persistent': 0; break;
+        case 'non-persistent': 0; break;
       }
     }
   );
@@ -47,13 +45,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           if (messageTtl === 0) {
             switch (props.topicType) {
-              case 'persistent': await adminClient.persistentTopic.removeMessageTtl(props.tenant, props.namespace, props.topic).catch(onUpdateError); break;
-              case 'non-persistent': await adminClient.nonPersistentTopic.removeMessageTtl(props.tenant, props.namespace, props.topic).catch(onUpdateError); break;
+              case 'persistent': () => {}; break;
+              case 'non-persistent': () => {}; break;
             }
           } else {
             switch (props.topicType) {
-              case 'persistent': await adminClient.persistentTopic.setMessageTtl(props.tenant, props.namespace, props.topic, messageTtl).catch(onUpdateError); break;
-              case 'non-persistent': await adminClient.nonPersistentTopic.setMessageTtl(props.tenant, props.namespace, props.topic, messageTtl).catch(onUpdateError); break;
+              case 'persistent': () => {}; break;
+              case 'non-persistent': () => {}; break;
             }
           }
 
