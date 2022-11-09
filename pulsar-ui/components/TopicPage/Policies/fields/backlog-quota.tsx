@@ -1,17 +1,19 @@
-import Select from "../../../ui/Select/Select";
+import useSWR, { useSWRConfig } from "swr";
+import stringify from "safe-stable-stringify";
+
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import useSWR, { useSWRConfig } from "swr";
+import Select from "../../../ui/Select/Select";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import s from './backlog-quota.module.css';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import MemorySizeInput from "../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput";
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
-import { swrKeys } from "../../../swrKeys";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
-import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { swrKeys } from "../../../swrKeys";
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
-import stringify from "safe-stable-stringify";
+
+import s from './backlog-quota.module.css';
 
 const policy = 'backlogQuota';
 
@@ -27,56 +29,64 @@ function retentionPolicyFromPb(policyPb: pb.BacklogQuotaRetentionPolicy): Retent
 }
 
 type PolicyValue = {
-  destinationStorage: { type: 'inherited-from-broker-config' } | {
-    type: 'specified-for-this-namespace';
+  destinationStorage: { type: 'inherited-from-namespace-config' } | {
+    type: 'specified-for-this-topic';
     limit: { type: 'infinite' } | { type: 'specific', sizeBytes: number };
     policy: RetentionPolicy;
   },
-  messageAge: { type: 'inherited-from-broker-config' } | {
-    type: 'specified-for-this-namespace';
+  messageAge: { type: 'inherited-from-namespace-config' } | {
+    type: 'specified-for-this-topic';
     limitTime: { type: 'infinite' } | { type: 'specific', durationSeconds: number };
     policy: RetentionPolicy;
   }
 }
 
 export type FieldInputProps = {
+  topicType: 'persistent' | 'non-persistent';
   tenant: string;
   namespace: string;
+  topic: string;
+  isGlobal: boolean;
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const { mutate } = useSWRConfig()
+  const { mutate } = useSWRConfig();
 
-  const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
+  const swrKey = props.topicType === 'persistent' ?
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetBacklogQuotasRequest();
-      req.setNamespace(`${props.tenant}/${props.namespace}`);
-      const res = await namespaceServiceClient.getBacklogQuotas(req, {});
-
+      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setIsGlobal(props.isGlobal);
+      
+      const res = await topicpoliciesServiceClient.getBacklogQuotas(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get backlog quotas for namespace. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get backlog quotas for topic. ${res.getStatus()?.getMessage()}`);
       }
 
-      let v: PolicyValue = { destinationStorage: { type: 'inherited-from-broker-config' }, messageAge: { type: 'inherited-from-broker-config' } };
+      let v: PolicyValue = {
+        destinationStorage: { type: 'inherited-from-namespace-config' },
+        messageAge: { type: 'inherited-from-namespace-config' },
+      };
 
       const destinationStorage = res.getDestinationStorage();
       if (destinationStorage !== undefined) {
         v.destinationStorage = {
-          type: 'specified-for-this-namespace',
+          type: 'specified-for-this-topic',
           limit: destinationStorage.getLimitSize() === -1 ? { type: 'infinite' } : { type: 'specific', sizeBytes: destinationStorage.getLimitSize() },
           policy: retentionPolicyFromPb(destinationStorage.getRetentionPolicy())
         };
       }
-
       const messageAge = res.getMessageAge();
       if (messageAge !== undefined) {
         v.messageAge = {
-          type: 'specified-for-this-namespace',
+          type: 'specified-for-this-topic',
           limitTime: messageAge.getLimitTime() === -1 ? { type: 'infinite' } : { type: 'specific', durationSeconds: messageAge.getLimitTime() },
           policy: retentionPolicyFromPb(messageAge.getRetentionPolicy())
         };
@@ -95,44 +105,49 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const updatePolicy = async (v: PolicyValue): Promise<void> => {
     const req = new pb.SetBacklogQuotasRequest();
-    req.setNamespace(`${props.tenant}/${props.namespace}`);
-
+    req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+    req.setIsGlobal(props.isGlobal)
     let destinationStorageBacklogQuotaPb: pb.DestinationStorageBacklogQuota | undefined = undefined;
-    if (v.destinationStorage.type === 'specified-for-this-namespace') {
+
+    if (v.destinationStorage.type === 'specified-for-this-topic') {
       destinationStorageBacklogQuotaPb = new pb.DestinationStorageBacklogQuota();
       destinationStorageBacklogQuotaPb.setLimitSize(v.destinationStorage.limit.type === 'infinite' ? -1 : Math.floor(v.destinationStorage.limit.sizeBytes));
       destinationStorageBacklogQuotaPb.setRetentionPolicy(retentionPolicyToPb(v.destinationStorage.policy));
     }
-    req.setDestinationStorage(destinationStorageBacklogQuotaPb)
 
+    req.setDestinationStorage(destinationStorageBacklogQuotaPb)
     let messageAgeBacklogQuotaPb: pb.MessageAgeBacklogQuota | undefined = undefined;
-    if (v.messageAge.type === 'specified-for-this-namespace') {
+
+    if (v.messageAge.type === 'specified-for-this-topic') {
       messageAgeBacklogQuotaPb = new pb.MessageAgeBacklogQuota();
       messageAgeBacklogQuotaPb.setLimitTime(v.messageAge.limitTime.type === 'infinite' ? -1 : Math.floor(v.messageAge.limitTime.durationSeconds));
       messageAgeBacklogQuotaPb.setRetentionPolicy(retentionPolicyToPb(v.messageAge.policy));
     }
-    req.setMessageAge(messageAgeBacklogQuotaPb)
 
-    const res = await namespaceServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
+    req.setMessageAge(messageAgeBacklogQuotaPb)
+    const res = await topicpoliciesServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
+
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
     }
 
-    if (v.destinationStorage.type === 'inherited-from-broker-config') {
+    if (v.destinationStorage.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
-      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setIsGlobal(props.isGlobal)
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
-      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
+      const res = await topicpoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }
     }
 
-    if (v.messageAge.type === 'inherited-from-broker-config') {
+    if (v.messageAge.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
-      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setIsGlobal(props.isGlobal)
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
-      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
+      const res = await topicpoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }
@@ -152,20 +167,20 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <div className={s.Quota}>
             <div className={sf.FormLabel}>Destination storage</div>
             <div className={sf.FormItem}>
-              <Select<'inherited-from-broker-config' | 'specified-for-this-namespace'>
+              <Select<'inherited-from-namespace-config' | 'specified-for-this-topic'>
                 list={[
-                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
-                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
+                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from namespace config' },
+                  { type: 'item', value: 'specified-for-this-topic', title: 'Specified for this topic' }
                 ]}
                 onChange={(v) => onChange({
                   ...value,
-                  destinationStorage: v === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-namespace', limit: { type: 'infinite' }, policy: 'producer_request_hold' }
+                  destinationStorage: v === 'inherited-from-namespace-config' ? { type: 'inherited-from-namespace-config' } : { type: 'specified-for-this-topic', limit: { type: 'infinite' }, policy: 'producer_request_hold' }
                 })}
                 value={value.destinationStorage.type}
               />
             </div>
 
-            {value.destinationStorage.type === 'specified-for-this-namespace' && (
+            {value.destinationStorage.type === 'specified-for-this-topic' && (
               <div className={sf.FormItem}>
                 <div className={sf.FormLabel}>Limit size</div>
                 <Select<'infinite' | 'specific'>
@@ -177,7 +192,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                     ...value,
                     destinationStorage: {
                       ...value.destinationStorage,
-                      type: 'specified-for-this-namespace',
+                      type: 'specified-for-this-topic',
                       limit: v === 'infinite' ? { type: 'infinite' } : { type: 'specific', sizeBytes: 1024 },
                       policy: 'producer_request_hold'
                     }
@@ -187,15 +202,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
 
-            {value.destinationStorage.type === 'specified-for-this-namespace' && value.destinationStorage.limit.type === 'specific' && (
+            {value.destinationStorage.type === 'specified-for-this-topic' && value.destinationStorage.limit.type === 'specific' && (
               <div className={sf.FormItem}>
                 <MemorySizeInput
                   initialValue={value.destinationStorage.limit.sizeBytes}
                   onChange={(v) => {
-                    if (value.destinationStorage.type === 'inherited-from-broker-config') {
+                    if (value.destinationStorage.type === 'inherited-from-namespace-config') {
                       return;
                     }
-
                     onChange({
                       ...value,
                       destinationStorage: {
@@ -208,7 +222,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
 
-            {value.destinationStorage.type === 'specified-for-this-namespace' && (
+            {value.destinationStorage.type === 'specified-for-this-topic' && (
               <div className={sf.FormItem}>
                 <div className={sf.FormLabel}>Policy</div>
                 <Select<RetentionPolicy>
@@ -219,7 +233,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   ]}
                   value={value.destinationStorage.policy}
                   onChange={(v) => {
-                    if (value.destinationStorage.type === 'inherited-from-broker-config') {
+                    if (value.destinationStorage.type === 'inherited-from-namespace-config') {
                       return;
                     }
                     onChange({
@@ -238,20 +252,20 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <div className={s.Quota}>
             <div className={sf.FormLabel}>Message age</div>
             <div className={sf.FormItem}>
-              <Select<'inherited-from-broker-config' | 'specified-for-this-namespace'>
+              <Select<'inherited-from-namespace-config' | 'specified-for-this-topic'>
                 list={[
-                  { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
-                  { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' }
+                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from namespace config' },
+                  { type: 'item', value: 'specified-for-this-topic', title: 'Specified for this topic' }
                 ]}
                 onChange={(v) => onChange({
                   ...value,
-                  messageAge: v === 'inherited-from-broker-config' ? { type: 'inherited-from-broker-config' } : { type: 'specified-for-this-namespace', limitTime: { type: 'infinite' }, policy: 'producer_request_hold' }
+                  messageAge: v === 'inherited-from-namespace-config' ? { type: 'inherited-from-namespace-config' } : { type: 'specified-for-this-topic', limitTime: { type: 'infinite' }, policy: 'producer_request_hold' }
                 })}
                 value={value.messageAge.type}
               />
             </div>
 
-            {value.messageAge.type === 'specified-for-this-namespace' && (
+            {value.messageAge.type === 'specified-for-this-topic' && (
               <div className={sf.FormItem}>
                 <div className={sf.FormLabel}>Limit time</div>
                 <Select<'infinite' | 'specific'>
@@ -263,7 +277,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                     ...value,
                     messageAge: {
                       ...value.messageAge,
-                      type: 'specified-for-this-namespace',
+                      type: 'specified-for-this-topic',
                       limitTime: v === 'infinite' ? { type: 'infinite' } : { type: 'specific', durationSeconds: 14 * 24 * 60 * 60 },
                       policy: 'producer_request_hold'
                     }
@@ -273,15 +287,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
 
-            {value.messageAge.type === 'specified-for-this-namespace' && value.messageAge.limitTime.type === 'specific' && (
+            {value.messageAge.type === 'specified-for-this-topic' && value.messageAge.limitTime.type === 'specific' && (
               <div className={sf.FormItem}>
                 <DurationInput
                   initialValue={value.messageAge.limitTime.durationSeconds}
                   onChange={(v) => {
-                    if (value.messageAge.type === 'inherited-from-broker-config') {
+                    if (value.messageAge.type === 'inherited-from-namespace-config') {
                       return;
                     }
-
                     onChange({
                       ...value,
                       messageAge: {
@@ -294,7 +307,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
 
-            {value.messageAge.type === 'specified-for-this-namespace' && (
+            {value.messageAge.type === 'specified-for-this-topic' && (
               <div className={sf.FormItem}>
                 <div className={sf.FormLabel}>Policy</div>
                 <Select<RetentionPolicy>
@@ -305,9 +318,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   ]}
                   value={value.messageAge.policy}
                   onChange={(v) => {
-                    if (value.messageAge.type === 'inherited-from-broker-config') {
+                    if (value.messageAge.type === 'inherited-from-namespace-config') {
                       return;
                     }
+
                     onChange({
                       ...value,
                       messageAge: {
