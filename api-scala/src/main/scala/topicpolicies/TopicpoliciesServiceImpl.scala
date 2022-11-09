@@ -20,6 +20,14 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     DelayedDeliverySpecified,
     DelayedDeliveryUnspecified,
 
+    GetMessageTtlRequest,
+    GetMessageTtlResponse,
+    SetMessageTtlRequest,
+    SetMessageTtlResponse,
+    RemoveMessageTtlRequest,
+    RemoveMessageTtlResponse,
+    MessageTtlSpecified,
+    MessageTtlUnspecified,
 }
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -196,5 +204,46 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveDelayedDeliveryResponse(status = Some(status)))
         }
 
+    override def getMessageTtl(request: GetMessageTtlRequest): Future[GetMessageTtlResponse] =
+        try {
+            val messageTtlPb = Option(adminClient.topicPolicies(request.isGlobal).getMessageTTL(request.topic, false)) match
+                case None =>
+                    pb.GetMessageTtlResponse.MessageTtl.Unspecified(new MessageTtlUnspecified())
+                case Some(v) =>
+                    pb.GetMessageTtlResponse.MessageTtl.Specified(new MessageTtlSpecified(
+                        messageTtlSeconds = v
+                    ))
+
+            Future.successful(GetMessageTtlResponse(
+                status = Some(Status(code = Code.OK.index)),
+                messageTtl = messageTtlPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMessageTtlResponse(status = Some(status)))
+        }
+
+    override def setMessageTtl(request: SetMessageTtlRequest): Future[SetMessageTtlResponse] =
+        try {
+            logger.info(s"Setting message TTL policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).setMessageTTL(request.topic, request.messageTtlSeconds)
+            Future.successful(SetMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMessageTtlResponse(status = Some(status)))
+        }
+
+    override def removeMessageTtl(request: RemoveMessageTtlRequest): Future[RemoveMessageTtlResponse] =
+        try {
+            logger.info(s"Removing message TTL policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeMessageTTL(request.topic)
+            Future.successful(RemoveMessageTtlResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMessageTtlResponse(status = Some(status)))
+        }
 
 
