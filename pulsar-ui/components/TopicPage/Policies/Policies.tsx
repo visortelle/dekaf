@@ -7,7 +7,8 @@ import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 
 import messageTtlField from './fields/message-ttl';
 import backlogQuotaField from './fields/backlog-quota';
-import delayedDelivery from './fields/delayed-delivery';
+import delayedDeliveryField from './fields/delayed-delivery';
+import retentionField from './fields/retention';
 
 import s from './Policies.module.css'
 
@@ -48,7 +49,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           fields={[
             messageTtlField,
             backlogQuotaField,
-            delayedDelivery
+            delayedDeliveryField,
+            retentionField,
           ].map(field => field({ ...props, isGlobal }))}
         />
       </div>
