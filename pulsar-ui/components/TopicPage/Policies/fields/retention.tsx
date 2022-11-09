@@ -195,7 +195,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      key={stringify(key)}
+      key={stringify({initialValue, key})}
       initialValue={initialValue}
       validationError={validationError}
       onConfirm={updatePolicy}
