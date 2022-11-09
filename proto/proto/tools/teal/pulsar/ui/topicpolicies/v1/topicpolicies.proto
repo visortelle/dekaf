@@ -116,6 +116,39 @@ message RemoveMessageTtlResponse {
   google.rpc.Status status = 1;
 }
 
+message RetentionUnspecified {}
+message RetentionSpecified {
+  int32 retention_time_in_minutes = 1;
+  int32 retention_size_in_mb = 2;
+}
+message GetRetentionRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetRetentionResponse {
+  google.rpc.Status status = 1;
+  oneof retention {
+    RetentionUnspecified unspecified = 3;
+    RetentionSpecified specified = 4;
+  }
+}
+message SetRetentionRequest {
+  string topic = 1;
+  int32 retention_time_in_minutes = 2;
+  int32 retention_size_in_mb = 3;
+  bool is_global = 4;
+}
+message SetRetentionResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveRetentionRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveRetentionResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -130,4 +163,7 @@ service TopicpoliciesService {
   rpc SetMessageTtl(SetMessageTtlRequest) returns (SetMessageTtlResponse);
   rpc RemoveMessageTtl(RemoveMessageTtlRequest) returns (RemoveMessageTtlResponse);
 
+  rpc GetRetention(GetRetentionRequest) returns (GetRetentionResponse);
+  rpc SetRetention(SetRetentionRequest) returns (SetRetentionResponse);
+  rpc RemoveRetention(RemoveRetentionRequest) returns (RemoveRetentionResponse);
 }
