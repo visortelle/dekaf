@@ -28,6 +28,15 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     RemoveMessageTtlResponse,
     MessageTtlSpecified,
     MessageTtlUnspecified,
+
+    GetRetentionRequest,
+    GetRetentionResponse,
+    SetRetentionRequest,
+    SetRetentionResponse,
+    RemoveRetentionRequest,
+    RemoveRetentionResponse,
+    RetentionSpecified,
+    RetentionUnspecified,
 }
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -244,6 +253,51 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMessageTtlResponse(status = Some(status)))
+        }
+
+    override def getRetention(request: GetRetentionRequest): Future[GetRetentionResponse] =
+        try {
+            val retentionPb = Option(adminClient.topicPolicies(request.isGlobal).getRetention(request.topic, false)) match
+                case None =>
+                    pb.GetRetentionResponse.Retention.Unspecified(new RetentionUnspecified())
+                case Some(v) =>
+                    pb.GetRetentionResponse.Retention.Specified(new RetentionSpecified(
+                        retentionTimeInMinutes = Option(v.getRetentionTimeInMinutes).getOrElse(0),
+                        retentionSizeInMb = Option(v.getRetentionSizeInMB).map(_.toInt).getOrElse(0)
+                    ))
+
+            Future.successful(GetRetentionResponse(
+                status = Some(Status(code = Code.OK.index)),
+                retention = retentionPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetRetentionResponse(status = Some(status)))
+        }
+
+    override def setRetention(request: SetRetentionRequest): Future[SetRetentionResponse] =
+        try {
+            logger.info(s"Setting retention for topic ${request.topic}")
+            val retention = new RetentionPolicies(request.retentionTimeInMinutes, request.retentionSizeInMb)
+
+            adminClient.topicPolicies(request.isGlobal).setRetention(request.topic, retention)
+            Future.successful(SetRetentionResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetRetentionResponse(status = Some(status)))
+        }
+
+    override def removeRetention(request: RemoveRetentionRequest): Future[RemoveRetentionResponse] =
+        try {
+            logger.info(s"Removing retention for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeRetention(request.topic)
+            Future.successful(RemoveRetentionResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveRetentionResponse(status = Some(status)))
         }
 
 
