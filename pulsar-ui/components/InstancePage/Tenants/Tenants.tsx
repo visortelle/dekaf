@@ -4,15 +4,13 @@ import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import * as PulsarAdminClient from '../../app/contexts/PulsarAdminClient';
-import * as PulsarAdminBatchClient from '../../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
-import * as PulsarCustomApiClient from '../../app/contexts/PulsarCustomApiClient/PulsarCustomApiClient';
+import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient'
+import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb'
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
 import { swrKeys } from '../../swrKeys';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
-import { TenantMetrics } from 'tealtools-pulsar-ui-api/metrics/types';
 import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
 import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
@@ -20,9 +18,14 @@ import { routes } from '../../routes';
 import { NamespaceIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
-import { TenantInfo } from '../../app/contexts/PulsarAdminBatchClient/get-xs';
 import { useRef } from 'react';
 import _ from 'lodash';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
+
+export type TenantInfo = {
+  allowedClusters: string[];
+  adminRoles: string[];
+}
 
 type SortKey =
   'tenant' |
@@ -45,9 +48,7 @@ const firstColumnWidth = '15ch';
 
 const Tenants: React.FC = () => {
   const tableRef = useRef<HTMLDivElement>(null);
-  const adminClient = PulsarAdminClient.useContext().client;
-  const adminBatchClient = PulsarAdminBatchClient.useContext().client;
-  const customApiClient = PulsarCustomApiClient.useContext().client;
+  const { tenantServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
@@ -90,15 +91,27 @@ const Tenants: React.FC = () => {
 
   const { data: tenants, error: tenantsError } = useSWR(
     swrKeys.pulsar.tenants._(),
-    async () => await adminClient.tenants.getTenants()
+    async () => {
+      const req = new pb.GetTenantsRequest();
+      const res = await tenantServiceClient.getTenants(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get tenants: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      return res.getTenantsList();
+    }
   );
   if (tenantsError) {
-    notifyError(`Unable to get tenants list. ${tenantsError}`);
+    notifyError(`Unable to get tenants: ${tenantsError}`);
   }
 
   const { data: allTenantsMetrics, error: allTenantsMetricsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.allTenants._(),
-    async () => await customApiClient.getAllTenantsMetrics(),
+    async () => {
+      const v: Record<string, TenantMetrics> = {};
+      return v;
+    },
     { refreshInterval: 3 * 1000 }
   );
   if (allTenantsMetricsError) {
@@ -107,7 +120,7 @@ const Tenants: React.FC = () => {
 
   const { data: tenantsNamespacesCount, error: tenantsNamespacesCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantsNamespacesCount._(itemsRenderedDebounced.map(item => item.data!)),
-    async () => await adminBatchClient?.getTenantsNamespacesCount(itemsRenderedDebounced.map(item => item.data!)),
+    async () => ({}),
   );
 
   if (tenantsNamespacesCountError) {
@@ -121,7 +134,7 @@ const Tenants: React.FC = () => {
 
   const { data: tenantsInfo, error: tenantsInfoError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTenantsInfo._(itemsRenderedDebounced.map(item => item.data!)),
-    async () => await adminBatchClient?.getTenantsInfo(itemsRenderedDebounced.map(item => item.data!)),
+    async () => ({})
   );
 
   if (tenantsInfoError) {
@@ -397,3 +410,19 @@ function sum(metrics: Record<string, TenantMetrics>, key: keyof TenantMetrics): 
 }
 
 export default Tenants;
+
+export type TenantMetrics = {
+  producerCount?: number;
+  averageMsgSize?: number;
+  msgRateIn?: number;
+  msgRateOut?: number;
+  msgInCount?: number;
+  bytesInCount?: number;
+  msgOutCount?: number;
+  bytesOutCount?: number;
+  msgThroughputIn?: number;
+  msgThroughputOut?: number;
+  storageSize?: number;
+  backlogSize?: number;
+  pendingAddEntriesCount?: number;
+};

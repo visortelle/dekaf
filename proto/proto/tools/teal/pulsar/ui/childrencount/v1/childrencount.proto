@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.childrencount.v1;
+
+import "google/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
+
+message NamespaceChildrenCount {
+  int32 persistent_topics_count = 2;
+  int32 non_persistent_topics_count = 3;
+}
+
+message TopicChildrenCount {
+  int32 subscriptions_count = 1;
+  int32 producers_count = 2;
+  int32 consumers_count = 3;
+}
+
+message GetChildrenCountRequest {
+  bool is_include_instance_tenants_count = 1;
+
+  repeated string tenant_fqns = 2;
+
+  repeated string namespace_fqns = 3;
+
+  bool is_include_topic_subscriptions_count = 40;
+  bool is_include_topic_producers_count = 41;
+  bool is_include_topic_consumers_count = 42;
+  repeated string topics_fqns = 4;
+}
+message GetChildrenCountResponse {
+  google.rpc.Status status = 1;
+
+  google.protobuf.Int32Value instance_tenants_count = 2;
+  map<string, int32> tenant_namespaces_count = 3;
+  map<string, int32> namespace_persistent_topics_count = 4;
+  map<string, int32> namespace_non_persistent_topics_count = 5;
+
+  map<string, int32> topic_subscriptions_count = 6;
+  map<string, int32> topic_producers_count = 7;
+  map<string, int32> topic_consumers_count = 8;
+}
+
+service ChildrenCountService {
+  rpc GetChildrenCount(GetChildrenCountRequest) returns (GetChildrenCountResponse);
+}
