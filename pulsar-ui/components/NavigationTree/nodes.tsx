@@ -2,10 +2,13 @@ import React, { useEffect } from 'react';
 import useSWR, { SWRConfiguration } from 'swr';
 import s from './NavigationTree.module.css'
 import * as Notifications from '../app/contexts/Notifications';
-import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
+import * as PulsarGrpcClient from '../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as namespacePb from '../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as topicsPb from '../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Link from '../ui/LinkWithQuery/LinkWithQuery';
 import { swrKeys } from '../swrKeys';
 import { routes } from '../routes';
+import { Code } from '../../grpc-web/google/rpc/code_pb';
 
 const swrConfiguration: SWRConfiguration = { dedupingInterval: 10000 };
 
@@ -39,11 +42,22 @@ export type PulsarTenantProps = {
 }
 export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { notifyError } = Notifications.useContext();
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
 
   const { data: namespaces, error: namespacesError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }) : null,
-    async () => (await adminClient.namespaces.getTenantNamespaces(props.tenant)).map(tn => tn.split('/')[1]),
+    async () => {
+      const req = new namespacePb.GetNamespacesRequest();
+      req.setTenant(props.tenant);
+
+      const res = await namespaceServiceClient.getNamespaces(req, null);
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(res.getStatus()?.getMessage());
+        return [];
+      }
+
+      return res.getNamespacesList().map(ns => ns.split('/')[1]);
+    },
     swrConfiguration
   );
 
@@ -89,11 +103,23 @@ function squashPartitionedTopics(topics: string[]): string[] {
 }
 export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
-  const adminClient = PulsarAdminClient.useContext().client;
+  const { topicServiceClient } = PulsarGrpcClient.useContext();
 
   const { data: persistentTopics, error: persistentTopicsError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
-    async () => (await adminClient.persistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName),
+    async () => {
+      const req = new topicsPb.GetTopicsRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setTopicDomain(topicsPb.TopicDomain.TOPIC_DOMAIN_PERSISTENT);
+
+      const res = await topicServiceClient.getTopics(req, null);
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to fetch persistent topics. ${res.getStatus()?.getMessage()}`);
+        return [];
+      }
+
+      return res.getTopicsList().map(getTopicName);
+    },
     swrConfiguration
   );
 
@@ -103,7 +129,18 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 
   const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
-    async () => (await adminClient.nonPersistentTopic.getList(props.tenant, props.namespace, undefined, true)).map(getTopicName),
+    async () => {
+      const req = new topicsPb.GetTopicsRequest();
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setTopicDomain(topicsPb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT);
+
+      const res = await topicServiceClient.getTopics(req, null);
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to fetch non-persistent topics. ${res.getStatus()?.getMessage()}`);
+      }
+
+      return res.getTopicsList().map(getTopicName);
+    },
     swrConfiguration
   );
 
