@@ -48,14 +48,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicpoliciesServiceClient.getDelayedDelivery(req, {});
-      
+
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get delayed delivery policy. ${res.getStatus()?.getMessage()}`);
         return;
       }
 
       let value: PolicyValue = { type: 'inherited-from-namespace-config' };
-      
+
       switch (res.getDelayedDeliveryCase()) {
         case pb.GetDelayedDeliveryResponse.DelayedDeliveryCase.UNSPECIFIED: {
           value = { type: 'inherited-from-namespace-config' };
@@ -116,7 +116,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
     }
 
-    await mutate(swrKey);
+    // XXX Fix outdated input state after first update of any topic's policy in a new namespace.
+    setTimeout(() => mutate(swrKey), 300);
   }
 
   return (
