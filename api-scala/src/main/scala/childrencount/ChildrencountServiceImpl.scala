@@ -62,4 +62,3 @@ class TenantServiceImpl extends pb.ChildrenCountServiceGrpc.ChildrenCountService
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(pb.GetChildrenCountResponse(status = Some(status)))
         }
-
