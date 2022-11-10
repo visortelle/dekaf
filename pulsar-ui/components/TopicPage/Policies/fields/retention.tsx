@@ -50,13 +50,13 @@ type PolicyValue =
     { type: 'limit', value: number },
   }
 
-export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
-  tenant: string;
-  namespace: string;
-  topic: string;
-  isGlobal: boolean;
-}
+  export type FieldInputProps = {
+    topicType: 'persistent' | 'non-persistent';
+    tenant: string;
+    namespace: string;
+    topic: string;
+    isGlobal: boolean;
+  }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
@@ -189,13 +189,16 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
     }
 
-    await mutate(swrKey);
-    setKey(key + 1);
+    // XXX Fix outdated input state after first update of any topic's policy in a new namespace.
+    setTimeout(async () => {
+      await mutate(swrKey);
+      setKey(key + 1);
+    }, 300);
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      key={stringify({ initialValue, key })}
+      key={stringify({initialValue, key})}
       initialValue={initialValue}
       validationError={validationError}
       onConfirm={updatePolicy}
