@@ -110,7 +110,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
     }
 
-    await mutate(swrKey);
+    // XXX Fix outdated input state after first update of any topic's policy in a new namespace.
+    setTimeout(() => mutate(swrKey), 300);
   }
 
   return (
