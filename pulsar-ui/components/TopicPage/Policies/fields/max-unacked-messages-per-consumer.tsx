@@ -12,7 +12,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../../swrKeys';
 
-const policy = 'maxUnackedMessagesOnConsumer';
+const policy = 'maxUnackedMessagesPerConsumer';
 
 type PolicyValue = { type: 'inherited-from-namespace-config' } | { type: 'unlimited' } | {
   type: 'specified-for-this-topic',
@@ -155,8 +155,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Max unacked messages on consumer',
-  description: <span>Max unacked messages on consumer.</span>,
+  title: 'Max unacked messages per consumer',
+  description: <span>Max unacked messages per consumer.</span>,
   input: <FieldInput {...props} />
 });
 
