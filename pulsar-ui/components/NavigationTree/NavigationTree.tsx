@@ -3,8 +3,8 @@ import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../app/contexts/Notifications';
-import * as PulsarAdminClient from '../app/contexts/PulsarAdminClient';
-import * as PulsarAdminBatchClient from '../app/contexts/PulsarAdminBatchClient/PulsarAdminBatchClient';
+import * as PulsarGrpcClient from '../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as tenantPb from '../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
 import Input from '../ui/Input/Input';
 import SmallButton from '../ui/SmallButton/SmallButton';
@@ -19,6 +19,7 @@ import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { useNavigate } from 'react-router';
 import { useTimeout } from '@react-hook/timeout';
 import { remToPx } from '../ui/rem-to-px';
+import { Code } from '../../grpc-web/google/rpc/code_pb';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -42,13 +43,21 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [childrenCountCache, setChildrenCountCache] = useState<{ [key: string]: number }>({});
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
-  const adminClient = PulsarAdminClient.useContext().client;
-  const adminBatchClient = PulsarAdminBatchClient.useContext().client;
+  const { tenantServiceClient } = PulsarGrpcClient.useContext();
   const navigate = useNavigate();
 
   const { data: tenants, error: tenantsError } = useSWR(
     swrKeys.pulsar.tenants._(),
-    async () => await adminClient.tenants.getTenants()
+    async () => {
+      const req = new tenantPb.GetTenantsRequest();
+      const res = await tenantServiceClient.getTenants(req, {});
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get tenants: ${res.getStatus()?.getMessage()}`);
+        return [];
+      }
+
+      return res.getTenantsList();
+    }
   );
 
   if (tenantsError) {
@@ -57,7 +66,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
   const { data: childrenCount, error: childrenCountError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTreeNodesChildrenCount._(),
-    async () => await adminBatchClient?.getTreeNodesChildrenCount(itemsRenderedDebounced.map(item => item?.data?.path || [])),
+    async () => ({})
   );
 
   if (childrenCountError) {
