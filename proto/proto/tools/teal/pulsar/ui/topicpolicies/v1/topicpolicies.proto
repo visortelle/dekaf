@@ -149,6 +149,37 @@ message RemoveRetentionResponse {
   google.rpc.Status status = 1;
 }
 
+message MaxUnackedMessagesOnConsumerUnspecified {}
+message MaxUnackedMessagesOnConsumerSpecified {
+  int32 max_unacked_messages_on_consumer = 1;
+}
+message GetMaxUnackedMessagesOnConsumerRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMaxUnackedMessagesOnConsumerResponse {
+  google.rpc.Status status = 1;
+  oneof max_unacked_messages_on_consumer {
+    MaxUnackedMessagesOnConsumerUnspecified unspecified = 2;
+    MaxUnackedMessagesOnConsumerSpecified specified = 3;
+  }
+}
+message SetMaxUnackedMessagesOnConsumerRequest {
+  string topic = 1;
+  int32 max_unacked_messages_on_consumer = 2;
+  bool is_global = 3;
+}
+message SetMaxUnackedMessagesOnConsumerResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxUnackedMessagesOnConsumerRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMaxUnackedMessagesOnConsumerResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -166,4 +197,9 @@ service TopicpoliciesService {
   rpc GetRetention(GetRetentionRequest) returns (GetRetentionResponse);
   rpc SetRetention(SetRetentionRequest) returns (SetRetentionResponse);
   rpc RemoveRetention(RemoveRetentionRequest) returns (RemoveRetentionResponse);
+
+  rpc GetMaxUnackedMessagesOnConsumer(GetMaxUnackedMessagesOnConsumerRequest) returns (GetMaxUnackedMessagesOnConsumerResponse);
+  rpc SetMaxUnackedMessagesOnConsumer(SetMaxUnackedMessagesOnConsumerRequest) returns (SetMaxUnackedMessagesOnConsumerResponse);
+  rpc RemoveMaxUnackedMessagesOnConsumer(RemoveMaxUnackedMessagesOnConsumerRequest) returns (RemoveMaxUnackedMessagesOnConsumerResponse);
+
 }
