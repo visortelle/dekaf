@@ -42,7 +42,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetMaxUnackedMessagesOnConsumerRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
-      console.log(req)
       const res = await topicpoliciesServiceClient.getMaxUnackedMessagesOnConsumer(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get max unacked messages on consumer: ${res.getStatus()?.getMessage()}`);
