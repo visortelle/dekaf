@@ -1,20 +1,12 @@
 .DEFAULT_GOAL := help
 
-.PHONY: build-builder-image
-build-builder-image: ## Build builder docker image
-	./scripts/build-builder-image.sh
+.PHONY: app-build
+builder-build: ## Build builder
+	./builder/build.sh
 
-.PHONY: run-builder-image
-run-builder-image: ## Run builder docker image
-	./scripts/run-builder-image.sh
-
-.PHONY: build-app-image
-build-app-image: ## Build app docker image
-	./scripts/build-app-image.sh
-
-.PHONY: run-app-image
-run-app-image: ## Run app docker image
-	./scripts/run-builder-image.sh
+.PHONY: app-build
+app-build: ## Build app
+	./app/build.sh
 
 .PHONY: help
 help:

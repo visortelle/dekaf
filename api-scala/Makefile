@@ -2,12 +2,11 @@
 
 .PHONY: dev
 dev: ## Start development
-	rm -rf ./target ./project/target
-	sbt run
+	sbt ~reStart
 
 .PHONY: build
 build: # Build
-	sbt build
+	sbt universal:packageBin
 
 .PHONY: help
 help:

@@ -29,10 +29,11 @@ EOF
 RUN <<EOF
 curl -s "https://get.sdkman.io" | bash
 source "$HOME/.sdkman/bin/sdkman-init.sh"
-sdk install java 22.3.r17-grl
+sdk install java 22.3.r19-grl
 sdk install maven 3.8.6
 sdk install scala 3.2.0
 sdk install sbt 1.7.3
+sbt --version # warm up
 EOF
 
 # Install Protobuf and gRPC toolset
