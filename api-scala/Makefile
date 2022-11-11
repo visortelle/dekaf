@@ -7,8 +7,7 @@ dev: ## Start development
 
 .PHONY: build
 build: # Build
-	sbt Docker/stage
-	sbt Docker/publishLocal
+	sbt build
 
 .PHONY: help
 help:
