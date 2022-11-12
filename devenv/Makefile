@@ -12,10 +12,6 @@ dev-local: ## Start development using docker-compose with Pulsar running locally
 	docker volume ls -q | xargs -I {} docker volume rm {}
 	docker-compose -f ./docker-compose-local.yaml up -d
 
-.PHONY: devtools-pulsar-manager
-dev-pulsar-manager: ## Perepare pulsar-manager.
-	./pulsar-manager/create-default-user.sh
-
 .PHONY: clean
 clean: ## Install using Kubernetes Helm.
 	./helm/clean.sh
