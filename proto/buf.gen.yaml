@@ -3,15 +3,15 @@ managed:
   enabled: true
 plugins:
   - name: js # Required for grpc-web.
-    out: ../pulsar-ui/grpc-web
+    out: ../ui/grpc-web
     opt:
       - import_style=commonjs
   - name: grpc-web
-    out: ../pulsar-ui/grpc-web
+    out: ../ui/grpc-web
     opt:
       - mode=grpcwebtext
       - import_style=typescript
   - name: scala
-    out: ../api-scala/src/main/scala/pb
+    out: ../server/src/main/scala/pb
     opt:
       - grpc

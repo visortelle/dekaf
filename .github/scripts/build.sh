@@ -11,4 +11,4 @@ wget -O /tmp/apache-pulsar-client-dev.deb "https://archive.apache.org/dist/pulsa
 apt install -y /tmp/apache-pulsar-client.deb
 apt install -y /tmp/apache-pulsar-client-dev.deb
 
-cd "${repo_dir}/pulsar-ui" && npm ci
+cd "${repo_dir}/ui" && npm ci

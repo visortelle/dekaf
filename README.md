@@ -93,11 +93,11 @@ Currently it's needed for grpc-web.
 
 ### Frontend
 
-- `cd ./pulsar-ui`
+- `cd ./ui`
 - `npm i`
 - `npm run dev`
 
 ### API
 
-- `cd ./api-scala`
+- `cd ./server`
 - `sbt`, then `~reStart` in the SBT shell
