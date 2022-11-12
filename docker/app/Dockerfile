@@ -10,11 +10,11 @@ COPY . .
 RUN cd ./proto && make build
 
 # Build UI
-RUN cd ./pulsar-ui && make build && rm -rf ./.next/cache
+RUN cd ./ui && make build && rm -rf ./.next/cache
 
 # Build server
 RUN source "$HOME/.sdkman/bin/sdkman-init.sh" &&\
-  cd ./api-scala && make build
+  cd ./server && make build
 
 ################################################################
 
@@ -24,10 +24,10 @@ RUN useradd --user-group --system --create-home --no-log-init teal-user
 USER teal-user
 WORKDIR /workdir
 
-COPY --from=builder --chown=tealuser:tealuser /workdir/pulsar-ui/package-lock.json .
-COPY --from=builder --chown=tealuser:tealuser /workdir/pulsar-ui/.next .
-RUN cd ./pulsar-ui && npm ci
+COPY --from=builder --chown=tealuser:tealuser /workdir/ui/package-lock.json .
+COPY --from=builder --chown=tealuser:tealuser /workdir/ui/.next .
+RUN cd ./ui && npm ci
 
-COPY --from=builder --chown=tealuser:tealuser /workdir/api-scala/target/universal/* .
+COPY --from=builder --chown=tealuser:tealuser /workdir/server/target/universal/* .
 RUN ls -laR  /workdir
-# RUN mv /app/pulsar-ui-api* /app/pulsar-ui-api
+# RUN mv /app/ui-api* /app/ui-api
