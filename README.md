@@ -97,13 +97,7 @@ Currently it's needed for grpc-web.
 - `npm i`
 - `npm run dev`
 
-## API Node (we'll get rid of it soon)
-
-- `cd ./api`
-- `npm i`
-- `npm start`
-
 ### API
 
-- `cd ./api`
+- `cd ./api-scala`
 - `sbt`, then `~reStart` in the SBT shell
