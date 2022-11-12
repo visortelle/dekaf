@@ -37,7 +37,6 @@ class TenantServiceImpl extends pb.ChildrenCountServiceGrpc.ChildrenCountService
             val namespaceNonPersistentTopicsFutures = request.topicsFqns
                 .map(adminClient.topics.getListAsync(_, TopicDomain.non_persistent))
                 .map(_.asScala)
-//            val
 
             val allFutures = tenantNamespacesFutures
                 ++ namespacePersistentTopicsFutures
@@ -62,4 +61,3 @@ class TenantServiceImpl extends pb.ChildrenCountServiceGrpc.ChildrenCountService
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(pb.GetChildrenCountResponse(status = Some(status)))
         }
-
