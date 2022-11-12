@@ -10,7 +10,7 @@ docker_image_tag=$("${this_dir}/get-tag.sh")
 docker buildx build \
   --push \
   --progress plain \
-  --platform linux/amd64 \
+  --platform linux/amd64,linux/arm64 \
   -t $docker_image_tag \
   -f builder/Dockerfile \
   "${repo_dir}"

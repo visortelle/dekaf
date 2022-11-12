@@ -2,7 +2,7 @@
 
 .PHONY: build
 build: ## Build
-	npm i
+	npm ci
 	npm run build
 
 .PHONY: help

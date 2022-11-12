@@ -1,3 +1,4 @@
 /pulsar-ui/node_modules
 /pulsar-ui/.next
 /api-scala/target
+/docker

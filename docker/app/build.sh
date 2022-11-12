@@ -7,11 +7,12 @@ repo_dir=${this_dir}/../..
 
 docker_image_tag=$("${this_dir}/get-tag.sh")
 
-docker buildx build \
-  --push \
+builder_image_tag=$("${this_dir}/../builder/get-tag.sh")
+docker pull $builder_image_tag
+
+docker build \
+  --pull \
   --progress plain \
-  --cache-to type=inline \
-  --platform linux/amd64 \
   -t $docker_image_tag \
   -f app/Dockerfile \
   "${repo_dir}"

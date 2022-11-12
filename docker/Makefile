@@ -1,11 +1,11 @@
 .DEFAULT_GOAL := help
 
-.PHONY: app-build
-builder-build: ## Build builder
-	./builder/build.sh
+.PHONY: builder-build-and-push
+builder-build-and-push: ## Build and builder image
+	./builder/build-and-push.sh
 
 .PHONY: app-build
-app-build: ## Build app
+app-build: ## Build app image
 	./app/build.sh
 
 .PHONY: help
