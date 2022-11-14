@@ -65,6 +65,37 @@ message BacklogQuotaCheckResponse {
   bool is_ok = 2;
 }
 
+message ResourceGroup {
+  optional int32 publish_rate_in_msgs = 1;
+  optional int64 publish_rate_in_bytes = 2;
+  optional int32 dispatch_rate_in_msgs = 3;
+  optional int64 dispatch_rate_in_bytes = 4;
+  string name = 5;
+}
+message GetResourceGroupsRequest {}
+message GetResourceGroupsResponse {
+  google.rpc.Status status = 1;
+  repeated ResourceGroup resource_groups = 2;
+}
+message CreateResourceGroupRequest {
+  ResourceGroup resource_group = 1;
+}
+message CreateResourceGroupResponse {
+  google.rpc.Status status = 1;
+}
+message UpdateResourceGroupRequest {
+  ResourceGroup resource_group = 1;
+}
+message UpdateResourceGroupResponse {
+  google.rpc.Status status = 1;
+}
+message DeleteResourceGroupRequest {
+  string resourcegroup = 1;
+}
+message DeleteResourceGroupResponse {
+  google.rpc.Status status = 1;
+}
+
 service BrokersService {
   rpc GetRuntimeConfigurations(GetRuntimeConfigurationsRequest) returns (GetRuntimeConfigurationsResponse) {}
   rpc GetInternalConfigurationData(GetInternalConfigurationDataRequest) returns (GetInternalConfigurationDataResponse) {}
@@ -74,4 +105,9 @@ service BrokersService {
   rpc DeleteDynamicConfiguration(DeleteDynamicConfigurationRequest) returns (DeleteDynamicConfigurationResponse) {}
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
   rpc BacklogQuotaCheck(BacklogQuotaCheckRequest) returns (BacklogQuotaCheckResponse) {}
+
+  rpc GetResourceGroups(GetResourceGroupsRequest) returns (GetResourceGroupsResponse) {}
+  rpc CreateResourceGroup(CreateResourceGroupRequest) returns (CreateResourceGroupResponse) {}
+  rpc UpdateResourceGroup(UpdateResourceGroupRequest) returns (UpdateResourceGroupResponse) {}
+  rpc DeleteResourceGroup(DeleteResourceGroupRequest) returns (DeleteResourceGroupResponse) {}
 }

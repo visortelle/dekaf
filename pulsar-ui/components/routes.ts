@@ -17,6 +17,12 @@ export const routes = {
         path: "/instance/configuration",
         get: () => `/instance/configuration`,
       },
+      resourceGroups: {
+        _: {
+          path: "/instance/configuration/resource-groups",
+          get: () => `/instance/configuration/resource-groups`,
+        }
+      }
     },
     createTenant: {
       _: {

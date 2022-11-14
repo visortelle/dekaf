@@ -8,7 +8,7 @@ import Tenants from './Tenants/Tenants';
 import CreateTenant from './CreateTenant/CreateTenant';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 
-export type InstancePageView = 'overview' | 'configuration' | 'tenants' | 'create-tenant';
+export type InstancePageView = 'overview' | 'configuration' | 'resource-groups' | 'tenants' | 'create-tenant';
 export type InstancePageProps = {
   view: InstancePageView;
 };
@@ -59,6 +59,7 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
 
       {props.view === 'overview' && <Overview />}
       {props.view === 'configuration' && <Configuration />}
+      {props.view === 'resource-groups' && <Configuration view={props.view} />}
       {props.view === 'tenants' && <Tenants />}
       {props.view === 'create-tenant' && <CreateTenant />}
     </div>

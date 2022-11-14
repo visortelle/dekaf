@@ -98,6 +98,9 @@ export const swrKeys = {
       availableDynamicConfigKeys: {
         _: () => ["pulsar", "brokers", "availableDynamicConfigKeys"],
       },
+      availableResourceGroups: {
+        _: () => ["pulsar", "brokers", "availableResouceGroups"],
+      },
       runtimeConfig: {
         _: () => ["pulsar", "brokers", "runtimeConfig"],
       },

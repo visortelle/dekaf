@@ -1,4 +1,5 @@
 import React from 'react';
+import { QueryParamProvider } from 'use-query-params';
 import {
   BrowserRouter,
   useParams,
@@ -9,14 +10,14 @@ import {
   useNavigate
 } from "react-router-dom";
 import { Location } from 'react-router-dom';
+
+import { routes } from '../../routes';
 import Layout, { LayoutProps } from '../../ui/Layout/Layout';
-import InstancePage from '../../InstancePage/InstancePage';
 import TenantPage, { TenantPageView } from '../../TenantPage/TenantPage';
 import NamespacePage, { NamespacePageView } from '../../NamespacePage/NamespacePage';
 import TopicPage, { TopicPageView } from '../../TopicPage/TopicPage';
-import { routes } from '../../routes';
 import { TreeNode } from '../../NavigationTree/TreeView';
-import { QueryParamProvider } from 'use-query-params';
+import InstancePage from '../../InstancePage/InstancePage';
 
 type WithLayoutProps = { layout: Omit<LayoutProps, 'children'> };
 type WithLayout = (children: React.ReactElement, props: WithLayoutProps) => React.ReactElement;
@@ -43,6 +44,7 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     /* Instance */
     { path: routes.instance.overview._.path, element: withLayout(<InstancePage view='overview' />, withLayoutProps) },
     { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view='configuration' />, withLayoutProps) },
+    { path: routes.instance.configuration.resourceGroups._.path, element: withLayout(<InstancePage view='resource-groups' />, withLayoutProps)},
     { path: routes.instance.createTenant._.path, element: withLayout(<InstancePage view='create-tenant' />, withLayoutProps) },
     { path: routes.instance.tenants._.path, element: withLayout(<InstancePage view='tenants' />, setScrollMode(withLayoutProps, 'page-own')) },
 

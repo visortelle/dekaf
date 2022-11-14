@@ -20,7 +20,16 @@ import com.tools.teal.pulsar.ui.brokers.v1.brokers.{
     HealthCheckRequest,
     HealthCheckResponse,
     UpdateDynamicConfigurationRequest,
-    UpdateDynamicConfigurationResponse
+    UpdateDynamicConfigurationResponse,
+
+    GetResourceGroupsRequest,
+    GetResourceGroupsResponse,
+    CreateResourceGroupRequest,
+    CreateResourceGroupResponse,
+    UpdateResourceGroupRequest,
+    UpdateResourceGroupResponse,
+    DeleteResourceGroupRequest,
+    DeleteResourceGroupResponse,
 }
 import org.apache.pulsar.common.naming.TopicVersion
 
@@ -142,4 +151,37 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(BacklogQuotaCheckResponse(status = Some(status), isOk = false))
         }
+    override def getResourceGroups(request: GetResourceGroupsRequest): Future[GetResourceGroupsResponse] =
+        try {
+            val resourceGroupsNames = Option(adminClient.resourcegroups.getResourceGroups).map(_.asScala.toSeq).getOrElse(Seq.empty[String])
+
+            // TODO rewrite async
+            val resourceGroups = resourceGroupsNames.map(group => {
+                val resource = adminClient.resourcegroups.getResourceGroup(group)
+                pb.ResourceGroup(
+                    publishRateInMsgs = Option(resource.getPublishRateInMsgs),
+                    publishRateInBytes = Option(resource.getPublishRateInBytes),
+                    dispatchRateInMsgs = Option(resource.getDispatchRateInMsgs),
+                    dispatchRateInBytes = Option(resource.getDispatchRateInBytes),
+                    name = group
+                )
+            })
+
+            Future.successful(
+                GetResourceGroupsResponse(
+                    status = Some(Status(code = Code.OK.index)),
+                    resourceGroups
+                )
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetResourceGroupsResponse(status = Some(status)))
+        }
+
+    override def createResourceGroup(request: CreateResourceGroupRequest): Future[CreateResourceGroupResponse] = ???
+    override def deleteResourceGroup(request: DeleteResourceGroupRequest): Future[DeleteResourceGroupResponse] = ???
+    override def updateResourceGroup(request: UpdateResourceGroupRequest): Future[UpdateResourceGroupResponse] = ???
 }
+
+

@@ -350,4 +350,3 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
-
