@@ -70,23 +70,22 @@ const ResourceGroups = () => {
           />
         </div>
       </div>
-
-      <div className={s.ConfigurationTable}>
-        <table className={s.Table}>
-          <thead>
-            <tr className={s.Row}>
-              <th className={s.Cell}>Group name</th>
-              <th className={s.Cell}>Publish rate in msgs</th>
-              <th className={s.Cell}>Publish rate in bytes</th>
-              <th className={s.Cell}>Dispatch rate in msgs</th>
-              <th className={s.Cell}>Dispatch rate in bytes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {createGroup && 
-              <ResourceGroupCreating />
-              ||
-              allGroups.map((key) => (
+      {createGroup && 
+        <ResourceGroupCreating />
+        ||
+        <div className={s.ConfigurationTable}>
+          <table className={s.Table}>
+            <thead>
+              <tr className={s.Row}>
+                <th className={s.Cell}>Group name</th>
+                <th className={s.Cell}>Publish rate in msgs</th>
+                <th className={s.Cell}>Publish rate in bytes</th>
+                <th className={s.Cell}>Dispatch rate in msgs</th>
+                <th className={s.Cell}>Dispatch rate in bytes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allGroups.map((key) => (
                 <tr key={key} className={s.Row}>
                   <td className={`${s.Cell} ${s.ConfigParamKeyCell}`} data-tip={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}>
                     <Highlighter
@@ -104,11 +103,11 @@ const ResourceGroups = () => {
                     ) : <span>-</span>}
                   </td> */}
                 </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
   )
 };

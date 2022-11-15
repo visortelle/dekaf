@@ -66,11 +66,11 @@ message BacklogQuotaCheckResponse {
 }
 
 message ResourceGroup {
-  optional int32 publish_rate_in_msgs = 1;
-  optional int64 publish_rate_in_bytes = 2;
-  optional int32 dispatch_rate_in_msgs = 3;
-  optional int64 dispatch_rate_in_bytes = 4;
-  string name = 5;
+  string name = 1;
+  optional int32 publish_rate_in_msgs = 2;
+  optional int64 publish_rate_in_bytes = 3;
+  optional int32 dispatch_rate_in_msgs = 4;
+  optional int64 dispatch_rate_in_bytes = 5;
 }
 message GetResourceGroupsRequest {}
 message GetResourceGroupsResponse {
