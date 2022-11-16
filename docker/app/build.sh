@@ -7,7 +7,7 @@ repo_dir=${this_dir}/../..
 
 image_tag=$("${this_dir}/get-tag.sh")
 
-podman build \
+docker build \
   --pull \
   --progress plain \
   -t $image_tag \

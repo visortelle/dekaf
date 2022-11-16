@@ -26,16 +26,17 @@ stdenv.mkDerivation rec {
   strictDeps = true;
 
   src = fetchzip (if stdenv.hostPlatform.system == "x86_64-linux" then src_linux_x86_64
-                  else if stdenv.hostPlatform.system == "aarch64-linux" then src_linux_arm64
-                  else if stdenv.hostPlatform.system == "x86_64-darwin" then src_darwin_x86_64
-                  else throw "Unsupported system");
+  else if stdenv.hostPlatform.system == "aarch64-linux" then src_linux_arm64
+  else if stdenv.hostPlatform.system == "x86_64-darwin" then src_darwin_x86_64
+  else if stdenv.hostPlatform.system == "aarch64-darwin" then src_darwin_x86_64
+  else throw "Unsupported system");
 
   installPhase = ''
     mkdir -p "$out/bin"
     cp $src/* $out/bin/
   '';
 
-  outputs = ["out"];
+  outputs = [ "out" ];
 
   meta = with lib; {
     homepage = "https://github.com/scalapb/ScalaPB";
