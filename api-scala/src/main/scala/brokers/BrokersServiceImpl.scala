@@ -32,7 +32,7 @@ import com.tools.teal.pulsar.ui.brokers.v1.brokers.{
     DeleteResourceGroupResponse,
 }
 import org.apache.pulsar.common.naming.TopicVersion
-//import org.apache.pulsar.common.policies.data.{ ResourceGroup }
+import org.apache.pulsar.common.policies.data.{ ResourceGroup }
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -182,42 +182,13 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def createResourceGroup(request: CreateResourceGroupRequest): Future[CreateResourceGroupResponse] =
         try {
-//            logger.info(s"Setting dispatch rate policy for namespace ${request.namespace}")
-//            val dispatchRate = DispatchRate.builder
-//                .dispatchThrottlingRateInByte(request.rateInByte)
-//                .dispatchThrottlingRateInMsg(request.rateInMsg)
-//                .ratePeriodInSecond(request.periodInSecond)
-//                .relativeToPublishRate(request.isRelativeToPublishRate)
-//                .build
-//            adminClient.namespaces.setDispatchRate(request.namespace, dispatchRate)
-//            val resourceGroup = pb.ResourceGroup
+            val groupName = request.getResourceGroup.name
+            val resourceGroup = new ResourceGroup;
+            resourceGroup.setDispatchRateInBytes(request.getResourceGroup.dispatchRateInBytes.get)
+            resourceGroup.setDispatchRateInMsgs(request.getResourceGroup.dispatchRateInMsgs.get)
+            resourceGroup.setPublishRateInBytes(request.getResourceGroup.dispatchRateInBytes.get)
+            resourceGroup.setPublishRateInMsgs(request.getResourceGroup.publishRateInMsgs.get)
 
-
-
-//            val resourceGroupName = request.resourceGroup
-//            request.resourceGroup match
-//                case Some(name) =>
-//                    var resourceGroup =
-//                    var backlogQuotaBuilder = BacklogQuotaBuilder.limitTime(quotaPb.limitTime)
-//
-//                    quotaPb.retentionPolicy match
-//                        case Some(retentionPolicy) =>
-//                            backlogQuotaBuilder = backlogQuotaBuilder.retentionPolicy(retentionPolicyFromPb(retentionPolicy))
-//                        case _ =>
-//
-//                    val backlogQuota = backlogQuotaBuilder.build
-//
-//                    logger.info(s"Setting backlog quota (message age) on topic ${request.topic} to ${backlogQuota}")
-//                    adminClient.topicPolicies(request.isGlobal).setBacklogQuota(request.topic, backlogQuota, BacklogQuotaType.message_age)
-
-            val groupName = request.resourceGroup.get.name;
-            val resourceGroup = Map(
-                "publishRateInMsgs" -> request.resourceGroup.get.publishRateInMsgs,
-                "publishRateInBytes" -> request.resourceGroup.get.publishRateInBytes,
-                "dispatchRateInMsgs" -> request.resourceGroup.get.dispatchRateInMsgs,
-                "dispatchRateInBytes" -> request.resourceGroup.get.dispatchRateInBytes,
-            )
-            println(s"REQUEST: ${request}")
             adminClient.resourcegroups.createResourceGroup(groupName, resourceGroup)
             Future.successful(CreateResourceGroupResponse(status = Some(Status(code = Code.OK.index))))
         } catch {

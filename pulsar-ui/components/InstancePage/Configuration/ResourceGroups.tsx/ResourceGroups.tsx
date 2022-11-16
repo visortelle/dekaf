@@ -41,6 +41,7 @@ const ResourceGroups = () => {
         notifyError(`Unable to get available dynamic configuration keys: ${res.getStatus()?.getMessage()}`);
         return [];
       }
+      console.log(res.getResourceGroupsList())
       return res.getResourceGroupsList();
     }
   );
@@ -94,7 +95,6 @@ const ResourceGroups = () => {
                       autoEscape={true}
                       textToHighlight={key}
                     />
-                    ORA ORA ORA
                   </td>
                   {/* <td className={`${s.Cell} ${s.RuntimeConfigCell}`}>{runtimeConfig[key]}</td> */}
                   {/* <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
