@@ -1,4 +1,5 @@
 val scala3Version = "3.2.0"
+val graalvmVersion = "22.3.0"
 val pulsarVersion = "2.10.2"
 val circeVersion = "0.14.3"
 
@@ -25,6 +26,9 @@ lazy val root = project
         "org.apache.pulsar" % "pulsar-client-original" % pulsarVersion,
         "org.apache.pulsar" % "pulsar-client-admin-original" % pulsarVersion,
         "io.netty" % "netty-all" % "4.1.85.Final", // Needed by pulsar-client-original
+        // GraalVM
+        "org.graalvm.truffle" % "truffle-api" % graalvmVersion,
+        "org.graalvm.js" % "js" % graalvmVersion,
 
         // Uncategorized
         "com.google.protobuf" % "protobuf-java" % "3.21.9",
