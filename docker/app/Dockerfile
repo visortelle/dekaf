@@ -1,20 +1,19 @@
-FROM tealtools/testrepo:buildimage as builder
+FROM nixos/nix:2.11.1 as builder
 
-SHELL ["/bin/bash", "-l", "-c"]
-
-WORKDIR /workdir
-
+WORKDIR /src
 COPY . .
 
+SHELL ["nix-shell", "--run"]
+
 # Build protobuf
+RUN ls -la /
 RUN cd ./proto && make build
 
 # Build UI
 RUN cd ./ui && make build && rm -rf ./.next/cache
 
 # Build server
-RUN source "$HOME/.sdkman/bin/sdkman-init.sh" &&\
-  cd ./server && make build
+RUN cd ./server && make build
 
 ################################################################
 
