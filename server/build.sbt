@@ -28,6 +28,10 @@ lazy val root = project
         "org.graalvm.truffle" % "truffle-api" % graalvmVersion,
         "org.graalvm.js" % "js" % graalvmVersion,
 
+        // ZIO
+        "dev.zio" %% "zio" % "2.0.3",
+        "io.d11" %% "zhttp" % "2.0.0-RC11",
+
         // Circe
         "io.circe" %% "circe-core" % circeVersion,
         "io.circe" %% "circe-generic" % circeVersion,

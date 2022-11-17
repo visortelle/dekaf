@@ -1,5 +1,6 @@
 package server.grpc
 
+import zio.*
 import scala.concurrent.{ExecutionContext, Future}
 import io.grpc.{Server, ServerBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService
@@ -30,18 +31,24 @@ import _root_.brokers.BrokersServiceImpl
 import _root_.brokerstats.BrokerStatsServiceImpl
 import _root_.topicpolicies.TopicpoliciesServiceImpl
 
-val server = ServerBuilder
-    .forPort(config.grpcPort)
-    .addService(ProducerServiceGrpc.bindService(ProducerServiceImpl(), ExecutionContext.global))
-    .addService(ConsumerServiceGrpc.bindService(ConsumerServiceImpl(), ExecutionContext.global))
-    .addService(TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
-    .addService(TopicpoliciesServiceGrpc.bindService(TopicpoliciesServiceImpl(), ExecutionContext.global))
-    .addService(SchemaServiceGrpc.bindService(SchemaServiceImpl(), ExecutionContext.global))
-    .addService(TenantServiceGrpc.bindService(TenantServiceImpl(), ExecutionContext.global))
-    .addService(NamespaceServiceGrpc.bindService(NamespaceServiceImpl(), ExecutionContext.global))
-    .addService(ClusterServiceGrpc.bindService(ClusterServiceImpl(), ExecutionContext.global))
-    .addService(MetricsServiceGrpc.bindService(MetricsServiceImpl(), ExecutionContext.global))
-    .addService(BrokersServiceGrpc.bindService(BrokersServiceImpl(), ExecutionContext.global))
-    .addService(BrokerStatsServiceGrpc.bindService(BrokerStatsServiceImpl(), ExecutionContext.global))
-    .addService(ProtoReflectionService.newInstance)
-    .build
+object GrpcServerApp extends ZIOAppDefault:
+    private val grpcServer = ServerBuilder
+        .forPort(config.grpcPort)
+        .addService(ProducerServiceGrpc.bindService(ProducerServiceImpl(), ExecutionContext.global))
+        .addService(ConsumerServiceGrpc.bindService(ConsumerServiceImpl(), ExecutionContext.global))
+        .addService(TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
+        .addService(TopicpoliciesServiceGrpc.bindService(TopicpoliciesServiceImpl(), ExecutionContext.global))
+        .addService(SchemaServiceGrpc.bindService(SchemaServiceImpl(), ExecutionContext.global))
+        .addService(TenantServiceGrpc.bindService(TenantServiceImpl(), ExecutionContext.global))
+        .addService(NamespaceServiceGrpc.bindService(NamespaceServiceImpl(), ExecutionContext.global))
+        .addService(ClusterServiceGrpc.bindService(ClusterServiceImpl(), ExecutionContext.global))
+        .addService(MetricsServiceGrpc.bindService(MetricsServiceImpl(), ExecutionContext.global))
+        .addService(BrokersServiceGrpc.bindService(BrokersServiceImpl(), ExecutionContext.global))
+        .addService(BrokerStatsServiceGrpc.bindService(BrokerStatsServiceImpl(), ExecutionContext.global))
+        .addService(ProtoReflectionService.newInstance)
+        .build
+
+    val run = for {
+        _ <- ZIO.logInfo("Starting gRPC server")
+        _ <- ZIO.attempt(grpcServer.start)
+    } yield ()
