@@ -27,7 +27,7 @@ import org.apache.pulsar.common.naming.TopicVersion
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 
-class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
+class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService:
     override def getAllDynamicConfigurations(request: GetAllDynamicConfigurationsRequest): Future[GetAllDynamicConfigurationsResponse] =
         try {
             val config = adminClient.brokers.getAllDynamicConfigurations.asScala.toMap
@@ -142,4 +142,3 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(BacklogQuotaCheckResponse(status = Some(status), isOk = false))
         }
-}

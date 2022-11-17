@@ -17,8 +17,6 @@ lazy val root = project
       libraryDependencies ++= Seq(
         // Testing
         "org.scalameta" %% "munit" % "0.7.29" % Test,
-        // FP
-        "org.typelevel" %% "cats-core" % "2.8.0",
         // Logging
         "ch.qos.logback" % "logback-classic" % "1.4.4",
         "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
@@ -30,19 +28,21 @@ lazy val root = project
         "org.graalvm.truffle" % "truffle-api" % graalvmVersion,
         "org.graalvm.js" % "js" % graalvmVersion,
 
-        // Uncategorized
-        "com.google.protobuf" % "protobuf-java" % "3.21.9",
-        "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
-        "com.google.guava" % "guava" % "31.1-jre",
-        "com.lihaoyi" %% "os-lib" % "0.8.1",
+        // Circe
         "io.circe" %% "circe-core" % circeVersion,
         "io.circe" %% "circe-generic" % circeVersion,
         "io.circe" %% "circe-parser" % circeVersion,
+
+         // Uncategorized
+        "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
+        "com.google.guava" % "guava" % "31.1-jre",
+        "com.lihaoyi" %% "os-lib" % "0.8.1",
       )
     )
 
 // Protobuf stuff. See also /project/scalapb.sbt
 libraryDependencies ++= Seq(
+  "com.google.protobuf" % "protobuf-java" % "3.21.9",
   "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
   "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
   "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
