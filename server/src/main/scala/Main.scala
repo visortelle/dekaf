@@ -1,7 +1,7 @@
 package main
 
-import _root_.server.grpc.GrpcServerApp
-import _root_.server.http.HttpServerApp
+import _root_.server.grpc.GrpcServer
+import _root_.server.http.HttpServer
 import zio.*
 
-object Main extends ZIOApp.Proxy(GrpcServerApp <> HttpServerApp)
+object Main extends ZIOApp.Proxy(GrpcServer <> HttpServer)

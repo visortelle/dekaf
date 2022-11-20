@@ -2,6 +2,7 @@ val scala3Version = "3.2.0"
 val graalvmVersion = "22.3.0"
 val pulsarVersion = "2.10.2"
 val circeVersion = "0.14.3"
+val zioConfigVersion = "3.0.2"
 
 maintainer := "kiryl_valkovich@teal.tools"
 
@@ -29,18 +30,22 @@ lazy val root = project
         "org.graalvm.js" % "js" % graalvmVersion,
 
         // ZIO
-        "dev.zio" %% "zio" % "2.0.3",
-        "io.d11" %% "zhttp" % "2.0.0-RC11",
+        "dev.zio" %% "zio" % "2.0.4",
+        "dev.zio" %% "zio-http" % "0.0.3",
+        "dev.zio" %% "zio-config" % zioConfigVersion,
+        "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
+        "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
+        "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
 
         // Circe
         "io.circe" %% "circe-core" % circeVersion,
         "io.circe" %% "circe-generic" % circeVersion,
         "io.circe" %% "circe-parser" % circeVersion,
 
-         // Uncategorized
+        // Uncategorized
         "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
         "com.google.guava" % "guava" % "31.1-jre",
-        "com.lihaoyi" %% "os-lib" % "0.8.1",
+        "com.lihaoyi" %% "os-lib" % "0.8.1"
       )
     )
 

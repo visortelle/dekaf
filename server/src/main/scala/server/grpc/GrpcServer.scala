@@ -18,7 +18,7 @@ import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
 import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats.BrokerStatsServiceGrpc
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.TopicpoliciesServiceGrpc
 
-import _root_.client.config
+import _root_.config.readConfig
 import _root_.consumer.ConsumerServiceImpl
 import _root_.topic.TopicServiceImpl
 import _root_.producer.ProducerServiceImpl
@@ -31,9 +31,9 @@ import _root_.brokers.BrokersServiceImpl
 import _root_.brokerstats.BrokerStatsServiceImpl
 import _root_.topicpolicies.TopicpoliciesServiceImpl
 
-object GrpcServerApp extends ZIOAppDefault:
-    private val grpcServer = ServerBuilder
-        .forPort(config.grpcPort)
+object GrpcServer extends ZIOAppDefault:
+    private def createGrpcServer(port: Int) = ServerBuilder
+        .forPort(port)
         .addService(ProducerServiceGrpc.bindService(ProducerServiceImpl(), ExecutionContext.global))
         .addService(ConsumerServiceGrpc.bindService(ConsumerServiceImpl(), ExecutionContext.global))
         .addService(TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
@@ -48,7 +48,8 @@ object GrpcServerApp extends ZIOAppDefault:
         .addService(ProtoReflectionService.newInstance)
         .build
 
-    val run = for {
-        _ <- ZIO.logInfo("Starting gRPC server")
-        _ <- ZIO.attempt(grpcServer.start)
-    } yield ()
+    val run: ZIO[Any, Throwable, Unit] = for
+        config <- readConfig
+        _ <- ZIO.logInfo(s"gRPC server listening port: ${config.grpcPort}")
+        _ <- ZIO.attemptBlockingInterrupt(createGrpcServer(config.grpcPort).awaitTermination)
+    yield ()

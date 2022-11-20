@@ -1,0 +1,17 @@
+# The port HTTP server listens on.
+httpPort: 8090
+# The port gRPC server listens on.
+grpcPort: 10000
+# When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.
+publicUrl: "http://localhsot:3000"
+
+# The Pulsar instances configuration.
+pulsarInstances:
+  # Pulsar instance name.
+  - name: "local"
+    # Optional accent color to visually distinguish this instance.
+    color: "#ff0000"
+    # The URL where Pulsar broker (or proxy) serves protobuf requests. Example: "pulsar://localhost:6650".
+    brokerServiceUrl: "pulsar://localhost:6650"
+    # The URL where Pulsar broker (or proxy) serves http requests. Example: "http://localhost:8080".
+    webServiceUrl: "http://localhost:8080"
