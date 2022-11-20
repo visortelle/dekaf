@@ -31,7 +31,7 @@ lazy val root = project
 
         // ZIO
         "dev.zio" %% "zio" % "2.0.4",
-        "dev.zio" %% "zio-http" % "0.0.3",
+
         "dev.zio" %% "zio-config" % zioConfigVersion,
         "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
         "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
@@ -42,10 +42,14 @@ lazy val root = project
         "io.circe" %% "circe-generic" % circeVersion,
         "io.circe" %% "circe-parser" % circeVersion,
 
+        // Javalin
+        "io.javalin" % "javalin" % "5.1.4",
+        "javax.annotation" % "javax.annotation-api" % "1.3.2",
+
         // Uncategorized
         "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
         "com.google.guava" % "guava" % "31.1-jre",
-        "com.lihaoyi" %% "os-lib" % "0.8.1"
+        "com.lihaoyi" %% "os-lib" % "0.8.1",
       )
     )
 
