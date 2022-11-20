@@ -44,6 +44,8 @@ lazy val root = project
 
         // Javalin
         "io.javalin" % "javalin" % "5.1.4",
+        "io.javalin" % "javalin-rendering" % "5.1.4",
+        "org.freemarker" % "freemarker" % "2.3.31",
         "javax.annotation" % "javax.annotation-api" % "1.3.2",
 
         // Uncategorized
