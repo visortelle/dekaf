@@ -18,7 +18,7 @@ import s from '../../../CreateTenant/CreateTenant.module.css'
 const ResourceGroupCreating = () => {
   const req = new CreateResourceGroupRequest();
   const resourceGroup = new ResourceGroup();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const { notifyError } = Notifications.useContext();
   const { brokersServiceClient } = PulsarGrpcClient.useContext();
 
@@ -40,17 +40,16 @@ const ResourceGroupCreating = () => {
     resourceGroup.setPublishRateInMsgs(+publishRateInMsgs)
 
     req.setResourceGroup(resourceGroup)
-    console.log(req)
+    
     const res = await brokersServiceClient.createResourceGroup(req, null).catch(err => { `Unable to create tenant: ${err}` });
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to create tenant: ${res.getStatus()?.getMessage()}`);
       return;
     }
-    console.log(res)
 
-    mutate(swrKeys.pulsar.brokers.availableResourceGroups._());
+    await mutate(swrKeys.pulsar.brokers.availableResourceGroups._());
 
-    // navigate(routes.instance.tenants._.get());
+    navigate(routes.instance.configuration.resourceGroups._.get());
   }
 
   const resourceGroupNameInput = <Input value={resourceGroupName} onChange={setResourceGroupName} placeholder="tenant-1" />;

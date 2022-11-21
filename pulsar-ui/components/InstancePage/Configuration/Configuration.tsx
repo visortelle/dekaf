@@ -146,7 +146,7 @@ type DynamicConfigValueProps = {
   configValue: string;
 }
 
-const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
+export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
   const [isShowEditor, setIsShowEditor] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(props.configValue || '');
   const ref = useRef<HTMLDivElement>(null);

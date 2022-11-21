@@ -186,7 +186,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             val resourceGroup = new ResourceGroup;
             resourceGroup.setDispatchRateInBytes(request.getResourceGroup.dispatchRateInBytes.get)
             resourceGroup.setDispatchRateInMsgs(request.getResourceGroup.dispatchRateInMsgs.get)
-            resourceGroup.setPublishRateInBytes(request.getResourceGroup.dispatchRateInBytes.get)
+            resourceGroup.setPublishRateInBytes(request.getResourceGroup.publishRateInBytes.get)
             resourceGroup.setPublishRateInMsgs(request.getResourceGroup.publishRateInMsgs.get)
 
             adminClient.resourcegroups.createResourceGroup(groupName, resourceGroup)
@@ -196,8 +196,35 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(CreateResourceGroupResponse(status = Some(status)))
         }
-    override def deleteResourceGroup(request: DeleteResourceGroupRequest): Future[DeleteResourceGroupResponse] = ???
-    override def updateResourceGroup(request: UpdateResourceGroupRequest): Future[UpdateResourceGroupResponse] = ???
-}
+    override def deleteResourceGroup(request: DeleteResourceGroupRequest): Future[DeleteResourceGroupResponse] =
+        try {
+            adminClient.resourcegroups.deleteResourceGroup(request.name)
+            Future.successful(
+                DeleteResourceGroupResponse(status = Some(Status(code = Code.OK.index)))
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(DeleteResourceGroupResponse(status = Some(status)))
+        }
 
+    override def updateResourceGroup(request: UpdateResourceGroupRequest): Future[UpdateResourceGroupResponse] =
+        try {
+            val groupName = request.getResourceGroup.name
+            val resourceGroup = new ResourceGroup;
+            resourceGroup.setDispatchRateInBytes(request.getResourceGroup.dispatchRateInBytes.get)
+            resourceGroup.setDispatchRateInMsgs(request.getResourceGroup.dispatchRateInMsgs.get)
+            resourceGroup.setPublishRateInBytes(request.getResourceGroup.publishRateInBytes.get)
+            resourceGroup.setPublishRateInMsgs(request.getResourceGroup.publishRateInMsgs.get)
+
+            adminClient.resourcegroups.updateResourceGroup(groupName, resourceGroup)
+            Future.successful(
+                UpdateResourceGroupResponse(status = Some(Status(code = Code.OK.index)))
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(UpdateResourceGroupResponse(status = Some(status)))
+        }
+}
 

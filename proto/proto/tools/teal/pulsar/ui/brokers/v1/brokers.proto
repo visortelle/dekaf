@@ -90,7 +90,7 @@ message UpdateResourceGroupResponse {
   google.rpc.Status status = 1;
 }
 message DeleteResourceGroupRequest {
-  string resourcegroup = 1;
+  string name = 1;
 }
 message DeleteResourceGroupResponse {
   google.rpc.Status status = 1;

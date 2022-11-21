@@ -4,7 +4,7 @@ import ReactDOMServer from 'react-dom/server';
 import useSWR, { mutate } from 'swr';
 import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
 
-
+import { DynamicConfigValue } from '../Configuration';
 import ResourceGroupCreating from './ResourceGroupCreating/ResourceGroupCreating';
 import { help } from '../help';
 import { swrKeys } from '../../../swrKeys';
@@ -15,6 +15,7 @@ import {
   GetResourceGroupsRequest,
   CreateResourceGroupRequest,
   UpdateResourceGroupRequest,
+  DeleteResourceGroupRequest,
 } from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import Input from '../../../ui/Input/Input';
@@ -25,7 +26,7 @@ import s from './../Configuration.module.css';
 const ResourceGroups = () => {
 
   const { brokersServiceClient } = PulsarGrpcClient.useContext();
-  const { notifyError } = Notifications.useContext();
+  const { notifySuccess, notifyError } = Notifications.useContext();
   const [paramFilter, setParamFilter] = useQueryParam('paramFilter', withDefault(StringParam, ''));
   const [createGroup, setCreateGroup] = useQueryParam('createGroup', withDefault(BooleanParam, false));
 
@@ -41,21 +42,39 @@ const ResourceGroups = () => {
         notifyError(`Unable to get available dynamic configuration keys: ${res.getStatus()?.getMessage()}`);
         return [];
       }
-      console.log(res.getResourceGroupsList())
       return res.getResourceGroupsList();
     }
   );
   if (availableResourceGroupsError) {
     notifyError(`Unable to get dynamic configuration parameters list. ${availableResourceGroupsError}`);
   }
-
-  let allGroups = availableResourceGroups && availableResourceGroups[0] ? [...Object.keys(availableResourceGroups[0])] : [];
+  let allGroups = availableResourceGroups;
+  // let allGroups = availableResourceGroups && availableResourceGroups[0] ? [...Object.keys(availableResourceGroups[0])] : [];
   // let allKeys = Array.from(new Set([...Object.keys(dynamicConfig), ...Object.keys(runtimeConfig)])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
 
-  if (paramFilter !== '') {
-    allGroups = allGroups.filter(key => key.toLowerCase().includes(paramFilter.toLowerCase()));
+  // if (paramFilter !== '') {
+  //   allGroups = allGroups.filter(key => key.toLowerCase().includes(paramFilter.toLowerCase()));
+  // }
+
+  const deleteResourceGroup = async (name: string) => {
+    const req = new DeleteResourceGroupRequest();
+    req.setName(name);
+    const res = await brokersServiceClient.deleteResourceGroup(req, {}).catch(err => notifyError(`Unable to delete resource group value: ${err}`));
+    if (res === undefined) {
+      return;
+    }
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to delete resource group: ${res.getStatus()?.getMessage()}`);
+      return;
+    }
+
+    notifySuccess(`Resource group ${name} has been successfully deleted.`);
+    // setIsShowEditor(false);
+
+    await mutate(swrKeys.pulsar.brokers.availableResourceGroups._());
   }
- 
+
+
   return (
     <div>
       <div className={s.Toolbar}>
@@ -71,9 +90,7 @@ const ResourceGroups = () => {
           />
         </div>
       </div>
-      {createGroup && 
-        <ResourceGroupCreating />
-        ||
+      {createGroup && <ResourceGroupCreating /> ||
         <div className={s.ConfigurationTable}>
           <table className={s.Table}>
             <thead>
@@ -86,22 +103,36 @@ const ResourceGroups = () => {
               </tr>
             </thead>
             <tbody>
-              {allGroups.map((key) => (
-                <tr key={key} className={s.Row}>
-                  <td className={`${s.Cell} ${s.ConfigParamKeyCell}`} data-tip={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}>
-                    <Highlighter
-                      highlightClassName="highlight-substring"
-                      searchWords={[paramFilter]}
-                      autoEscape={true}
-                      textToHighlight={key}
-                    />
-                  </td>
-                  {/* <td className={`${s.Cell} ${s.RuntimeConfigCell}`}>{runtimeConfig[key]}</td> */}
-                  {/* <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+              {allGroups && allGroups.map((key) => (
+                <tr key={key.getName()} className={s.Row}>
+                  <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                     {availableResourceGroups?.includes(key) ? (
-                      <DynamicConfigValue configKey={key} configValue={dynamicConfig[key]} />
+                      <DynamicConfigValue configKey={key.getName()} configValue={key.getName()} />
                     ) : <span>-</span>}
-                  </td> */}
+                  </td>
+                  <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                    {availableResourceGroups?.includes(key) ? (
+                      <DynamicConfigValue configKey={key.getDispatchRateInMsgs().toString()} configValue={key.getDispatchRateInMsgs().toString()} />
+                    ) : <span>-</span>}
+                  </td>
+                  <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                    {availableResourceGroups?.includes(key) ? (
+                      <DynamicConfigValue configKey={key.getDispatchRateInBytes().toString()} configValue={key.getDispatchRateInBytes().toString()} />
+                    ) : <span>-</span>}
+                  </td>
+                  <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                    {availableResourceGroups?.includes(key) ? (
+                      <DynamicConfigValue configKey={key.getPublishRateInMsgs.toString()} configValue={key.getPublishRateInMsgs().toString()} />
+                    ) : <span>-</span>}
+                  </td>
+                  <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                    {availableResourceGroups?.includes(key) ? (
+                      <DynamicConfigValue configKey={key.getPublishRateInBytes().toString()} configValue={key.getPublishRateInBytes().toString()} />
+                    ) : <span>-</span>}
+                  </td>
+                  <td onClick={() => deleteResourceGroup(key.getName())}>
+                    delete
+                  </td>
                 </tr>
               ))}
             </tbody>
