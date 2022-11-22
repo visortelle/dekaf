@@ -2,13 +2,11 @@
 
 .PHONY: dev
 dev: ## Start development
-	rm -rf ./target ./project/target
-	sbt run
+	sbt ~reStart
 
 .PHONY: build
 build: # Build
-	sbt Docker/stage
-	sbt Docker/publishLocal
+	sbt universal:packageBin
 
 .PHONY: help
 help:

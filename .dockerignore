@@ -1,0 +1,4 @@
+/ui/node_modules
+/ui/.next
+/server/target
+/docker
