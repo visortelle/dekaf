@@ -18,7 +18,7 @@ import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/Pul
 import { swrKeys } from '../../../../swrKeys';
 import { routes } from '../../../../routes';
 
-import s from '../../../CreateTenant/CreateTenant.module.css'
+import s from './ResourceGroup.module.css';
 
 interface Props {
   resourceGroupSettings?: ResourceGroupSettings
@@ -48,10 +48,10 @@ const ResourceGroup = (props: Props) => {
     const req = new CreateResourceGroupRequest()
  
     resourceGroup.setName(resourceGroupName)
-    resourceGroup.setDispatchRateInBytes(+dispatchRateInBytes)
-    resourceGroup.setDispatchRateInMsgs(+dispatchRateInMsgs)
-    resourceGroup.setPublishRateInBytes(+publishRateInBytes)
-    resourceGroup.setPublishRateInMsgs(+publishRateInMsgs)
+    resourceGroup.setDispatchRateInBytes(Number(dispatchRateInBytes))
+    resourceGroup.setDispatchRateInMsgs(Number(dispatchRateInMsgs))
+    resourceGroup.setPublishRateInBytes(Number(publishRateInBytes))
+    resourceGroup.setPublishRateInMsgs(Number(publishRateInMsgs))
 
     req.setResourceGroup(resourceGroup)
     
@@ -69,10 +69,10 @@ const ResourceGroup = (props: Props) => {
     const req = new UpdateResourceGroupRequest()
  
     resourceGroup.setName(resourceGroupName)
-    resourceGroup.setDispatchRateInBytes(+dispatchRateInBytes)
-    resourceGroup.setDispatchRateInMsgs(+dispatchRateInMsgs)
-    resourceGroup.setPublishRateInBytes(+publishRateInBytes)
-    resourceGroup.setPublishRateInMsgs(+publishRateInMsgs)
+    resourceGroup.setDispatchRateInBytes(Number(dispatchRateInBytes))
+    resourceGroup.setDispatchRateInMsgs(Number(dispatchRateInMsgs))
+    resourceGroup.setPublishRateInBytes(Number(publishRateInBytes))
+    resourceGroup.setPublishRateInMsgs(Number(publishRateInMsgs))
 
     req.setResourceGroup(resourceGroup)
     
@@ -107,7 +107,7 @@ const ResourceGroup = (props: Props) => {
   const publishRateInMsgsInput = <Input type="number" value={publishRateInMsgs} onChange={setPublishRateInMsgs} placeholder="Publish rate in msgs" />;
 
   return (
-    <form className={s.CreateTenant} onSubmit={e => e.preventDefault()}>
+    <form className={s.ResourceGroup} onSubmit={e => e.preventDefault()}>
       <div className={s.Title}>
         {resourceGroupSettings &&
           <H1>Update resource group</H1> ||
