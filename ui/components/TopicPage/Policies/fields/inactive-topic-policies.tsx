@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import stringify from "safe-stable-stringify";
 
 import Select from "../../../ui/Select/Select";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
@@ -9,7 +10,7 @@ import DurationInput from "../../../ui/ConfigurationTable/DurationInput/Duration
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { swrKeys } from "../../../swrKeys";
 
 const policy = 'inactiveTopicPolicies';
@@ -91,48 +92,51 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     return null;
   }
 
+  const updatePolicy = async (value: PolicyValue) => {
+    if (value.type === 'inherited-from-namespace-config') {
+      const req = new pb.RemoveInactiveTopicPoliciesRequest();
+      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setIsGlobal(props.isGlobal);
+
+      const res = await topicpoliciesServiceClient.removeInactiveTopicPolicies(req, {});
+
+      if (res !== undefined && (res.getStatus()?.getCode() !== Code.OK)) {
+        notifyError(`Unable to set inactive topic policies: ${res.getStatus()?.getMessage()}`);
+      }
+    }
+
+    if (value.type === 'specified-for-this-topic') {
+      const inactiveTopicDeleteModeToPb = (mode: InactiveTopicDeleteMode): pb.InactiveTopicPoliciesDeleteMode => {
+        switch (mode) {
+          case 'delete_when_no_subscriptions': return pb.InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_NO_SUBSCRIPTIONS;
+          case 'delete_when_subscriptions_caught_up': return pb.InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP;
+          default: throw new Error(`Unknown inactive topic delete mode: ${mode}`);
+        }
+      }
+
+      const req = new pb.SetInactiveTopicPoliciesRequest();
+      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setIsGlobal(props.isGlobal);
+      req.setInactiveTopicDeleteMode(inactiveTopicDeleteModeToPb(value.inactiveTopicDeleteMode));
+      req.setMaxInactiveDurationSeconds(Math.floor(value.maxInactiveDurationSeconds));
+      req.setDeleteWhileInactive(value.deleteWhileInactive);
+
+      const res = await topicpoliciesServiceClient.setInactiveTopicPolicies(req, {});
+      if (res !== undefined && (res.getStatus()?.getCode() !== Code.OK)) {
+        notifyError(`Unable to set inactive topic policies: ${res.getStatus()?.getMessage()}`);
+      }
+    }
+
+    await mutate(swrKey);
+    setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
+  }
+
+
   return (
     <WithUpdateConfirmation<PolicyValue>
-      key={key}
+      key={stringify({initialValue, key})}
       initialValue={initialValue}
-      onConfirm={async (value) => {
-        if (value.type === 'inherited-from-namespace-config') {
-          const req = new pb.RemoveInactiveTopicPoliciesRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-          req.setIsGlobal(props.isGlobal);
-
-          const res = await topicpoliciesServiceClient.removeInactiveTopicPolicies(req, {});
-
-          if (res !== undefined && (res.getStatus()?.getCode() !== Code.OK)) {
-            notifyError(`Unable to set inactive topic policies: ${res.getStatus()?.getMessage()}`);
-          }
-        }
-
-        if (value.type === 'specified-for-this-topic') {
-          const inactiveTopicDeleteModeToPb = (mode: InactiveTopicDeleteMode): pb.InactiveTopicPoliciesDeleteMode => {
-            switch (mode) {
-              case 'delete_when_no_subscriptions': return pb.InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_NO_SUBSCRIPTIONS;
-              case 'delete_when_subscriptions_caught_up': return pb.InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP;
-              default: throw new Error(`Unknown inactive topic delete mode: ${mode}`);
-            }
-          }
-
-          const req = new pb.SetInactiveTopicPoliciesRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-          req.setIsGlobal(props.isGlobal);
-          req.setInactiveTopicDeleteMode(inactiveTopicDeleteModeToPb(value.inactiveTopicDeleteMode));
-          req.setMaxInactiveDurationSeconds(Math.floor(value.maxInactiveDurationSeconds));
-          req.setDeleteWhileInactive(value.deleteWhileInactive);
-
-          const res = await topicpoliciesServiceClient.setInactiveTopicPolicies(req, {});
-          if (res !== undefined && (res.getStatus()?.getCode() !== Code.OK)) {
-            notifyError(`Unable to set inactive topic policies: ${res.getStatus()?.getMessage()}`);
-          }
-        }
-
-        await mutate(swrKey);
-        setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
-      }}
+      onConfirm={updatePolicy}
     >
       {({ value, onChange }) => {
         return (
