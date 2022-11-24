@@ -4,11 +4,16 @@ export const swrKeys = {
   pulsar: {
     schemas: {
       getLatestSchemaInfo: {
-        _: (topic: string) => ["pulsar", "schemas", "getLatestSchemaInfo", topic],
+        _: (topic: string) => [
+          "pulsar",
+          "schemas",
+          "getLatestSchemaInfo",
+          topic,
+        ],
       },
       listSchemas: {
         _: (topic: string) => ["pulsar", "schemas", "listSchemas", topic],
-      }
+      },
     },
     customApi: {
       metrics: {
@@ -32,7 +37,7 @@ export const swrKeys = {
             "metrics",
             "allNamespaceTopics",
             tenant,
-            namespace
+            namespace,
           ],
         },
         namespace: {
@@ -50,17 +55,13 @@ export const swrKeys = {
             "metrics",
             "topicsInternalStats",
             stringify(topics),
-          ]
-        }
+          ],
+        },
       },
     },
     batch: {
       getTreeNodesChildrenCount: {
-        _: () => [
-          "pulsar",
-          "batch",
-          "getTreeNodesChildrenCount"
-        ],
+        _: () => ["pulsar", "batch", "getTreeNodesChildrenCount"],
       },
       getTenantsNamespacesCount: {
         _: (tenants: string[]) => [
@@ -97,6 +98,9 @@ export const swrKeys = {
       },
       availableDynamicConfigKeys: {
         _: () => ["pulsar", "brokers", "availableDynamicConfigKeys"],
+      },
+      resourceGroups: {
+        _: () => ["pulsar", "brokers", "resourceGroups"],
       },
       runtimeConfig: {
         _: () => ["pulsar", "brokers", "runtimeConfig"],
@@ -159,7 +163,7 @@ export const swrKeys = {
                   "nonPersistentTopics",
                   "policies",
                   props.policy,
-                  props.isGlobal
+                  props.isGlobal,
                 ],
               },
             },
@@ -187,7 +191,7 @@ export const swrKeys = {
                   "persistentTopics",
                   "policies",
                   props.policy,
-                  props.isGlobal
+                  props.isGlobal,
                 ],
               },
             },
