@@ -287,6 +287,70 @@ message RemovePersistenceResponse {
   google.rpc.Status status = 1;
 }
 
+message DeduplicationUnspecified {
+}
+message DeduplicationSpecified {
+  bool enabled = 1;
+}
+message GetDeduplicationRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetDeduplicationResponse {
+  google.rpc.Status status = 1;
+  oneof deduplication {
+    DeduplicationUnspecified unspecified = 2;
+    DeduplicationSpecified specified = 3;
+  }
+}
+message SetDeduplicationRequest {
+  string topic = 1;
+  bool enabled = 2;
+  bool is_global = 3;
+}
+message SetDeduplicationResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveDeduplicationRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveDeduplicationResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeduplicationSnapshotIntervalDisabled {
+}
+message DeduplicationSnapshotIntervalEnabled {
+  int32 interval = 1;
+}
+message GetDeduplicationSnapshotIntervalRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetDeduplicationSnapshotIntervalResponse {
+  google.rpc.Status status = 1;
+  oneof interval {
+    DeduplicationSnapshotIntervalDisabled disabled = 2;
+    DeduplicationSnapshotIntervalEnabled enabled = 3;
+  }
+}
+message SetDeduplicationSnapshotIntervalRequest {
+  string topic = 1;
+  int32 interval = 2;
+  bool is_global = 3;
+}
+message SetDeduplicationSnapshotIntervalResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveDeduplicationSnapshotIntervalRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveDeduplicationSnapshotIntervalResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -320,4 +384,12 @@ service TopicpoliciesService {
   rpc GetPersistence(GetPersistenceRequest) returns (GetPersistenceResponse);
   rpc SetPersistence(SetPersistenceRequest) returns (SetPersistenceResponse);
   rpc RemovePersistence(RemovePersistenceRequest) returns (RemovePersistenceResponse);
+
+  rpc GetDeduplication(GetDeduplicationRequest) returns (GetDeduplicationResponse);
+  rpc SetDeduplication(SetDeduplicationRequest) returns (SetDeduplicationResponse);
+  rpc RemoveDeduplication(RemoveDeduplicationRequest) returns (RemoveDeduplicationResponse);
+
+  rpc GetDeduplicationSnapshotInterval(GetDeduplicationSnapshotIntervalRequest) returns (GetDeduplicationSnapshotIntervalResponse);
+  rpc SetDeduplicationSnapshotInterval(SetDeduplicationSnapshotIntervalRequest) returns (SetDeduplicationSnapshotIntervalResponse);
+  rpc RemoveDeduplicationSnapshotInterval(RemoveDeduplicationSnapshotIntervalRequest) returns (RemoveDeduplicationSnapshotIntervalResponse);
 }
