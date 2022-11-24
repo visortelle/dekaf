@@ -7,7 +7,8 @@ import {
   useRoutes,
   RouteObject,
   matchPath,
-  useNavigate
+  useNavigate,
+  Params
 } from "react-router-dom";
 import { Location } from 'react-router-dom';
 
@@ -49,14 +50,7 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
 
     { path: routes.instance.resourceGroups._.path, element: withLayout(<InstancePage view={{ type: 'resource-groups' }} />, withLayoutProps) },
     { path: routes.instance.resourceGroups.create._.path, element: withLayout(<InstancePage view={{ type: 'create-resource-group' }} />, withLayoutProps) },
-    {
-      path: routes.instance.resourceGroups.edit._.path, element: withLayout((() => {
-        const { groupName } = useParams<{ groupName: string }>();
-        return <InstancePage view={{ type: 'edit-resource-group', groupName: groupName! }} />
-      })(),
-        withLayoutProps
-      )
-    },
+    { path: routes.instance.resourceGroups.edit._.path, element: withLayout(<WithParams>{(params) => <InstancePage view={{ type: 'edit-resource-group', groupName: params.groupName! }} />}</WithParams>, withLayoutProps) },
 
     /* Topics */
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.path, element: withLayout(<RoutedTopicPage view='messages' />, setScrollMode(withLayoutProps, 'page-own')) },
@@ -120,6 +114,11 @@ const RoutedNamespacePage = (props: { view: NamespacePageView }) => {
 const RoutedTopicPage = (props: { view: TopicPageView }) => {
   const { tenant, namespace, topic, topicType } = useParams();
   return <TopicPage tenant={tenant!} namespace={namespace!} topic={topic!} view={props.view} topicType={topicType as 'persistent' | 'non-persistent'} />
+}
+
+const WithParams = (props: { children: (params: Readonly<Params<string>>) => React.ReactElement }) => {
+  const params = useParams();
+  return props.children(params);
 }
 
 /**

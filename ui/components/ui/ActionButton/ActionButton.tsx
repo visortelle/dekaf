@@ -1,6 +1,7 @@
 import React from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import s from './ActionButton.module.css'
+import Link from '../../ui/LinkWithQuery/LinkWithQuery';
 
 import editIcon from '!!raw-loader!./edit.svg';
 import closeIcon from '!!raw-loader!./close.svg';
@@ -8,6 +9,7 @@ import closeIcon from '!!raw-loader!./close.svg';
 export type ActionButtonProps = {
   action: { type: 'predefined', action: 'edit' | 'close' }
   onClick: () => void;
+  linkTo?: string;
 };
 
 const ActionButton: React.FC<ActionButtonProps> = (props) => {
@@ -17,11 +19,17 @@ const ActionButton: React.FC<ActionButtonProps> = (props) => {
     case 'close': svgIcon = closeIcon; break;
   }
 
-  return (
+  const button = (
     <button type="button" className={s.ActionButton} onClick={props.onClick}>
       <SvgIcon svg={svgIcon} />
     </button>
   );
+
+  return props.linkTo ? (
+    <Link to={props.linkTo}>
+      {button}
+    </Link>
+  ) : button
 }
 
 export default ActionButton;

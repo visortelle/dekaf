@@ -16,6 +16,8 @@ import { routes } from '../../../routes';
 
 import s from './ResourceGroupForm.module.css';
 import { isEqual } from 'lodash';
+import { mutate } from 'swr';
+import { swrKeys } from '../../../swrKeys';
 
 type Value = {
   name: string;
@@ -30,19 +32,19 @@ function resourceGroupPbFromFormValue(v: Value): pb.ResourceGroup {
   const resourceGroupPb = new pb.ResourceGroup();
 
   resourceGroupPb.setName(v.name);
-  resourceGroupPb.setDispatchRateInBytes(v.dispatchRateInBytes === undefined ?
+  resourceGroupPb.setDispatchRateInBytes(!v.dispatchRateInBytes ?
     undefined :
     new Int64Value().setValue(Number(v.dispatchRateInBytes))
   );
-  resourceGroupPb.setDispatchRateInMsgs(v.dispatchRateInMsgs === undefined ?
+  resourceGroupPb.setDispatchRateInMsgs(!v.dispatchRateInMsgs ?
     undefined :
     new Int32Value().setValue(Number(v.dispatchRateInMsgs))
   );
-  resourceGroupPb.setPublishRateInBytes(v.publishRateInBytes === undefined ?
+  resourceGroupPb.setPublishRateInBytes(!v.publishRateInBytes ?
     undefined :
     new Int64Value().setValue(Number(v.publishRateInBytes))
   );
-  resourceGroupPb.setPublishRateInMsgs(v.publishRateInMsgs === undefined ?
+  resourceGroupPb.setPublishRateInMsgs(!v.publishRateInMsgs ?
     undefined :
     new Int32Value().setValue(Number(v.publishRateInMsgs))
   );
@@ -56,7 +58,7 @@ type Props = {
 
 const ResourceGroupForm = (props: Props) => {
   const navigate = useNavigate();
-  const { notifyError } = Notifications.useContext();
+  const { notifySuccess, notifyError } = Notifications.useContext();
   const { brokersServiceClient } = PulsarGrpcClient.useContext();
 
   const [formValue, setFormValue] = useState<Value | undefined>(undefined);
@@ -118,6 +120,7 @@ const ResourceGroupForm = (props: Props) => {
       return;
     }
 
+    await mutate(swrKeys.pulsar.brokers.resourceGroups);
     navigate(routes.instance.resourceGroups._.get());
   }
 
@@ -131,6 +134,8 @@ const ResourceGroupForm = (props: Props) => {
       notifyError(`Unable to update resource group: ${res.getStatus()?.getMessage()}`);
       return;
     }
+
+    navigate(routes.instance.resourceGroups._.get());
   }
 
   const deleteResourceGroup = async () => {
@@ -143,6 +148,8 @@ const ResourceGroupForm = (props: Props) => {
       return;
     }
 
+    notifySuccess(<span>Resource group <strong>{formValue.name}</strong> has been deleted</span>, `resource-group-deleted-${formValue.name}`);
+    await mutate(swrKeys.pulsar.brokers.resourceGroups._())
     navigate(routes.instance.resourceGroups._.get());
   }
 
@@ -181,7 +188,7 @@ const ResourceGroupForm = (props: Props) => {
   const publishRateInMsgsInput = (
     <Input
       type="number"
-      value={formValue.publishRateInBytes || ''}
+      value={formValue.publishRateInMsgs || ''}
       onChange={(v) => setFormValue({ ...formValue, publishRateInMsgs: v })}
       placeholder="100"
     />
@@ -192,7 +199,17 @@ const ResourceGroupForm = (props: Props) => {
       <div className={s.Title}>
         <H1>
           {props.view.type === 'create' && <>Create resource group</>}
-          {props.view.type === 'edit' && <>Update resource group</>}
+          {props.view.type === 'edit' && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              Update resource group
+              <Button
+                onClick={deleteResourceGroup}
+                type='danger'
+                text='Delete'
+                buttonProps={{ type: 'submit' }}
+              />
+            </div>
+          )}
         </H1>
       </div>
 
@@ -231,31 +248,25 @@ const ResourceGroupForm = (props: Props) => {
           },
         ]}
       />
-      {props.view.type === 'edit' &&
-        <div>
-          <Button
-            onClick={updateResourceGroup}
-            type='primary'
-            text='Update'
-            disabled={isEqual(formValue, initialFormValue)}
-            buttonProps={{ type: 'submit' }}
-          />
-          <Button
-            onClick={deleteResourceGroup}
-            type='danger'
-            text='Delete'
-            buttonProps={{ type: 'submit' }}
-          />
-        </div> ||
+      {props.view.type === 'edit' && (
+        <Button
+          onClick={updateResourceGroup}
+          type='primary'
+          text='Save'
+          disabled={isEqual(formValue, initialFormValue)}
+          buttonProps={{ type: 'submit' }}
+        />
+      )}
+      {props.view.type === 'create' && (
         <Button
           onClick={createResourceGroup}
           type='primary'
           text='Create'
           buttonProps={{ type: 'submit' }}
         />
-      }
+      )}
     </form>
-  )
+  );
 };
 
 export default ResourceGroupForm;

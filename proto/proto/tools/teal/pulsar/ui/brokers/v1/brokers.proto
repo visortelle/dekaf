@@ -66,6 +66,7 @@ message BacklogQuotaCheckResponse {
   bool is_ok = 2;
 }
 
+// TODO - move resource group related APIs to a separate service
 message ResourceGroup {
   string name = 1;
   google.protobuf.Int32Value publish_rate_in_msgs = 2;

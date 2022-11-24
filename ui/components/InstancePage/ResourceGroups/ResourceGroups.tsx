@@ -15,6 +15,7 @@ import sc from '../Configuration/Configuration.module.css';
 import { H1 } from '../../ui/H/H';
 import ActionButton from '../../ui/ActionButton/ActionButton';
 import { useNavigate } from 'react-router';
+import { ToolbarButton } from '../../ui/Toolbar/Toolbar';
 
 type View = FormView | { type: 'show-all-groups' };
 
@@ -58,14 +59,10 @@ const ResourceGroups: React.FC<Props> = (props) => {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <H1>Resource groups</H1>
             <div style={{ marginBottom: '12rem' }}>
-              <Button
-                text={props.view.type === 'show-all-groups' ? 'Create' : 'Show all groups'}
-                onClick={() => {
-                  switch (props.view.type) {
-                    case 'show-all-groups': navigate(routes.instance.resourceGroups.create._.get()); break;
-                    case 'create': navigate(routes.instance.resourceGroups._.get()); break;
-                  }
-                }}
+              <ToolbarButton
+                text={'Create'}
+                onClick={() => undefined}
+                linkTo={routes.instance.resourceGroups.create._.get()}
                 type="primary"
               />
             </div>
@@ -104,7 +101,8 @@ const ResourceGroups: React.FC<Props> = (props) => {
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
                       <ActionButton
                         action={{ type: 'predefined', action: 'edit' }}
-                        onClick={() => navigate(routes.instance.resourceGroups.edit._.get({ groupName: rg.getName() }))}
+                        linkTo={routes.instance.resourceGroups.edit._.get({ groupName: rg.getName() })}
+                        onClick={() => undefined}
                       />
                     </td>
                   </tr>
