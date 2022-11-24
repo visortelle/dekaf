@@ -12,6 +12,7 @@ import retentionField from './fields/retention';
 import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-per-consumer';
 import maxUnackedMessagesPerSubscriptionField from './fields/max-unacked-messages-per-subscription';
 import inactiveTopicPoliciesField from './fields/inactive-topic-policies';
+import persistenceField from './fields/persistence';
 import deduplicationField from './fields/deduplication';
 import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
 
@@ -59,6 +60,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             maxUnackedMessagesPerConsumerField,
             maxUnackedMessagesPerSubscriptionField,
             inactiveTopicPoliciesField,
+            persistenceField,
             deduplicationField,
             deduplicationSnapshotIntervalField,
           ].map(field => field({ ...props, isGlobal }))}

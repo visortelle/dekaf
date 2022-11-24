@@ -65,6 +65,17 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     InactiveTopicPoliciesDeleteMode,
     InactiveTopicPoliciesSpecified,
     InactiveTopicPoliciesUnspecified,
+    PersistenceUnspecified,
+
+    GetPersistenceRequest,
+    GetPersistenceResponse,
+    SetPersistenceRequest,
+    SetPersistenceResponse,
+    RemovePersistenceRequest,
+    RemovePersistenceResponse,
+    PersistenceSpecified,
+    PersistenceUnspecified,
+
 
     DeduplicationSpecified,
     DeduplicationUnspecified,
@@ -469,6 +480,128 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(status)))
         }
+    override def getPersistence(request: GetPersistenceRequest): Future[GetPersistenceResponse] =
+        try {
+            val persistencePb = Option(adminClient.topicPolicies(request.isGlobal).getPersistence(request.topic, false)) match
+                case None =>
+                    pb.GetPersistenceResponse.Persistence.Unspecified(new PersistenceUnspecified())
+                case Some(v) =>
+                    pb.GetPersistenceResponse.Persistence.Specified(new PersistenceSpecified(
+                        bookkeeperEnsemble = Option(v.getBookkeeperEnsemble).getOrElse(0),
+                        bookkeeperWriteQuorum = Option(v.getBookkeeperWriteQuorum).getOrElse(0),
+                        bookkeeperAckQuorum = Option(v.getBookkeeperAckQuorum).getOrElse(0),
+                        managedLedgerMaxMarkDeleteRate = Option(v.getManagedLedgerMaxMarkDeleteRate).getOrElse(0.0)
+                    ))
+
+            Future.successful(GetPersistenceResponse(
+                status = Some(Status(code = Code.OK.index)),
+                persistence = persistencePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetPersistenceResponse(status = Some(status)))
+        }
+    override def setPersistence(request: SetPersistenceRequest): Future[SetPersistenceResponse] =
+        try {
+            logger.info(s"Setting persistence policy for topic ${request.topic}")
+            val persistencePolicies = PersistencePolicies(request.bookkeeperEnsemble, request.bookkeeperWriteQuorum, request.bookkeeperAckQuorum, request.managedLedgerMaxMarkDeleteRate)
+            adminClient.topicPolicies(request.isGlobal).setPersistence(request.topic, persistencePolicies)
+            Future.successful(SetPersistenceResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetPersistenceResponse(status = Some(status)))
+        }
+    override def removePersistence(request: RemovePersistenceRequest): Future[RemovePersistenceResponse] =
+        try {
+            logger.info(s"Removing persistence policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removePersistence(request.topic)
+            Future.successful(RemovePersistenceResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemovePersistenceResponse(status = Some(status)))
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     override def getDeduplication(request: GetDeduplicationRequest): Future[GetDeduplicationResponse] =
         try {
             val deduplication = Option(adminClient.topicPolicies(request.isGlobal).getDeduplicationStatus(request.topic, false)) match

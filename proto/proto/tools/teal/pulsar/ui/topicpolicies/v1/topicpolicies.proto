@@ -250,6 +250,43 @@ message RemoveInactiveTopicPoliciesResponse {
   google.rpc.Status status = 1;
 }
 
+message PersistenceUnspecified {}
+message PersistenceSpecified {
+  int32 bookkeeper_ensemble = 1;
+  int32 bookkeeper_write_quorum = 2;
+  int32 bookkeeper_ack_quorum = 3;
+  double managed_ledger_max_mark_delete_rate = 4;
+}
+message GetPersistenceRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetPersistenceResponse {
+  google.rpc.Status status = 1;
+  oneof persistence {
+    PersistenceUnspecified unspecified = 3;
+    PersistenceSpecified specified = 4;
+  }
+}
+message SetPersistenceRequest {
+  string topic = 1;
+  int32 bookkeeper_ensemble = 2;
+  int32 bookkeeper_write_quorum = 3;
+  int32 bookkeeper_ack_quorum = 4;
+  double managed_ledger_max_mark_delete_rate = 5;
+  bool is_global = 6;
+}
+message SetPersistenceResponse {
+  google.rpc.Status status = 1;
+}
+message RemovePersistenceRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemovePersistenceResponse {
+  google.rpc.Status status = 1;
+}
+
 message DeduplicationUnspecified {
 }
 message DeduplicationSpecified {
@@ -343,6 +380,10 @@ service TopicpoliciesService {
   rpc GetInactiveTopicPolicies(GetInactiveTopicPoliciesRequest) returns (GetInactiveTopicPoliciesResponse);
   rpc SetInactiveTopicPolicies(SetInactiveTopicPoliciesRequest) returns (SetInactiveTopicPoliciesResponse);
   rpc RemoveInactiveTopicPolicies(RemoveInactiveTopicPoliciesRequest) returns (RemoveInactiveTopicPoliciesResponse);
+
+  rpc GetPersistence(GetPersistenceRequest) returns (GetPersistenceResponse);
+  rpc SetPersistence(SetPersistenceRequest) returns (SetPersistenceResponse);
+  rpc RemovePersistence(RemovePersistenceRequest) returns (RemovePersistenceResponse);
 
   rpc GetDeduplication(GetDeduplicationRequest) returns (GetDeduplicationResponse);
   rpc SetDeduplication(SetDeduplicationRequest) returns (SetDeduplicationResponse);
