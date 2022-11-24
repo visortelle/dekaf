@@ -1,15 +1,17 @@
+import useSWR, { useSWRConfig } from "swr";
+import stringify from 'safe-stable-stringify';
+
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Select from '../../../ui/Select/Select';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
-import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import stringify from 'safe-stable-stringify';
+import { swrKeys } from '../../../swrKeys';
+
 
 const policy = 'deduplicationSnapshotInterval';
 

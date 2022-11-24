@@ -1,4 +1,5 @@
 import useSWR, { useSWRConfig } from "swr";
+import stringify from 'safe-stable-stringify';
 
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
@@ -66,6 +67,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <WithUpdateConfirmation<PolicyValue>
+      key={stringify(initialValue)}
       initialValue={initialValue}
       onConfirm={async (v) => {
         if (v === 'inherited-from-namespace-config') {

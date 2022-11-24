@@ -65,7 +65,6 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     InactiveTopicPoliciesDeleteMode,
     InactiveTopicPoliciesSpecified,
     InactiveTopicPoliciesUnspecified,
-    PersistenceUnspecified,
 
     GetPersistenceRequest,
     GetPersistenceResponse,
