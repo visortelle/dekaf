@@ -10,6 +10,7 @@ import backlogQuotaField from './fields/backlog-quota';
 import delayedDeliveryField from './fields/delayed-delivery';
 import retentionField from './fields/retention';
 import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-per-consumer';
+import inactiveTopicPoliciesField from './fields/inactive-topic-policies';
 
 import s from './Policies.module.css'
 
@@ -53,6 +54,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             delayedDeliveryField,
             retentionField,
             maxUnackedMessagesPerConsumerField,
+            inactiveTopicPoliciesField,
           ].map(field => field({ ...props, isGlobal }))}
         />
       </div>
