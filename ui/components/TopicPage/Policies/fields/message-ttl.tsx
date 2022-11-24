@@ -9,7 +9,7 @@ import DurationInput from '../../../ui/ConfigurationTable/DurationInput/Duration
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../../swrKeys';
 
