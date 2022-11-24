@@ -46,6 +46,15 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     RemoveMaxUnackedMessagesOnConsumerResponse,
     MaxUnackedMessagesOnConsumerSpecified,
     MaxUnackedMessagesOnConsumerUnspecified,
+
+    GetMaxUnackedMessagesOnSubscriptionRequest,
+    GetMaxUnackedMessagesOnSubscriptionResponse,
+    SetMaxUnackedMessagesOnSubscriptionRequest,
+    SetMaxUnackedMessagesOnSubscriptionResponse,
+    RemoveMaxUnackedMessagesOnSubscriptionRequest,
+    RemoveMaxUnackedMessagesOnSubscriptionResponse,
+    MaxUnackedMessagesOnSubscriptionSpecified,
+    MaxUnackedMessagesOnSubscriptionUnspecified,
 }
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -349,5 +358,47 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
+        }
+
+    override def getMaxUnackedMessagesOnSubscription(request: GetMaxUnackedMessagesOnSubscriptionRequest): Future[GetMaxUnackedMessagesOnSubscriptionResponse] =
+        try {
+            val maxUnackedMessagesOnSubscriptionPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxUnackedMessagesOnSubscription(request.topic, false)) match
+                case None =>
+                    pb.GetMaxUnackedMessagesOnSubscriptionResponse.MaxUnackedMessagesOnSubscription.Unspecified(new MaxUnackedMessagesOnSubscriptionUnspecified())
+                case Some(v) =>
+                    pb.GetMaxUnackedMessagesOnSubscriptionResponse.MaxUnackedMessagesOnSubscription.Specified(new MaxUnackedMessagesOnSubscriptionSpecified(
+                        maxUnackedMessagesOnSubscription = v
+                    ))
+
+            Future.successful(GetMaxUnackedMessagesOnSubscriptionResponse(
+                status = Some(Status(code = Code.OK.index)),
+                maxUnackedMessagesOnSubscription = maxUnackedMessagesOnSubscriptionPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
+        }
+
+    override def setMaxUnackedMessagesOnSubscription(request: SetMaxUnackedMessagesOnSubscriptionRequest): Future[SetMaxUnackedMessagesOnSubscriptionResponse] =
+        try {
+            logger.info(s"Setting max unacked messages on subscription policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnSubscription(request.topic, request.maxUnackedMessagesOnSubscription)
+            Future.successful(SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
+        }
+
+    override def removeMaxUnackedMessagesOnSubscription(request: RemoveMaxUnackedMessagesOnSubscriptionRequest): Future[RemoveMaxUnackedMessagesOnSubscriptionResponse] =
+        try {
+            logger.info(s"Removing max unacked messages on subscription policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnSubscription(request.topic)
+            Future.successful(RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
 
