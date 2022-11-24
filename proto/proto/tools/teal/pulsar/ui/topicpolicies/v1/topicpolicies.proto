@@ -84,7 +84,6 @@ message RemoveDelayedDeliveryResponse {
   google.rpc.Status status = 1;
 }
 
-
 message MessageTtlUnspecified {}
 message MessageTtlSpecified {
   int32 message_ttl_seconds = 1;
@@ -180,6 +179,114 @@ message RemoveMaxUnackedMessagesOnConsumerResponse {
   google.rpc.Status status = 1;
 }
 
+message MaxUnackedMessagesOnSubscriptionUnspecified {}
+message MaxUnackedMessagesOnSubscriptionSpecified {
+  int32 max_unacked_messages_on_subscription = 1;
+}
+message GetMaxUnackedMessagesOnSubscriptionRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMaxUnackedMessagesOnSubscriptionResponse {
+  google.rpc.Status status = 1;
+  oneof max_unacked_messages_on_subscription {
+    MaxUnackedMessagesOnSubscriptionUnspecified unspecified = 2;
+    MaxUnackedMessagesOnSubscriptionSpecified specified = 3;
+  }
+}
+message SetMaxUnackedMessagesOnSubscriptionRequest {
+  string topic = 1;
+  int32 max_unacked_messages_on_subscription = 2;
+  bool is_global = 3;
+}
+message SetMaxUnackedMessagesOnSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxUnackedMessagesOnSubscriptionRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMaxUnackedMessagesOnSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+
+enum InactiveTopicPoliciesDeleteMode {
+  INACTIVE_TOPIC_POLICIES_DELETE_MODE_UNSPECIFIED = 0;
+  INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_NO_SUBSCRIPTIONS = 1;
+  INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP = 2;
+}
+message InactiveTopicPoliciesUnspecified {}
+message InactiveTopicPoliciesSpecified {
+  InactiveTopicPoliciesDeleteMode inactive_topic_delete_mode = 1;
+  int32 max_inactive_duration_seconds = 2;
+  bool delete_while_inactive = 3;
+}
+message GetInactiveTopicPoliciesRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetInactiveTopicPoliciesResponse {
+  google.rpc.Status status = 1;
+  oneof inactive_topic_policies {
+    InactiveTopicPoliciesUnspecified unspecified = 2;
+    InactiveTopicPoliciesSpecified specified = 3;
+  }
+}
+message SetInactiveTopicPoliciesRequest {
+  string topic = 1;
+  InactiveTopicPoliciesDeleteMode inactive_topic_delete_mode = 2;
+  int32 max_inactive_duration_seconds = 3;
+  bool delete_while_inactive = 4;
+  bool is_global = 5;
+}
+message SetInactiveTopicPoliciesResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveInactiveTopicPoliciesRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveInactiveTopicPoliciesResponse {
+  google.rpc.Status status = 1;
+}
+
+message PersistenceUnspecified {}
+message PersistenceSpecified {
+  int32 bookkeeper_ensemble = 1;
+  int32 bookkeeper_write_quorum = 2;
+  int32 bookkeeper_ack_quorum = 3;
+  double managed_ledger_max_mark_delete_rate = 4;
+}
+message GetPersistenceRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetPersistenceResponse {
+  google.rpc.Status status = 1;
+  oneof persistence {
+    PersistenceUnspecified unspecified = 3;
+    PersistenceSpecified specified = 4;
+  }
+}
+message SetPersistenceRequest {
+  string topic = 1;
+  int32 bookkeeper_ensemble = 2;
+  int32 bookkeeper_write_quorum = 3;
+  int32 bookkeeper_ack_quorum = 4;
+  double managed_ledger_max_mark_delete_rate = 5;
+  bool is_global = 6;
+}
+message SetPersistenceResponse {
+  google.rpc.Status status = 1;
+}
+message RemovePersistenceRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemovePersistenceResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -202,4 +309,15 @@ service TopicpoliciesService {
   rpc SetMaxUnackedMessagesOnConsumer(SetMaxUnackedMessagesOnConsumerRequest) returns (SetMaxUnackedMessagesOnConsumerResponse);
   rpc RemoveMaxUnackedMessagesOnConsumer(RemoveMaxUnackedMessagesOnConsumerRequest) returns (RemoveMaxUnackedMessagesOnConsumerResponse);
 
+  rpc GetMaxUnackedMessagesOnSubscription(GetMaxUnackedMessagesOnSubscriptionRequest) returns (GetMaxUnackedMessagesOnSubscriptionResponse);
+  rpc SetMaxUnackedMessagesOnSubscription(SetMaxUnackedMessagesOnSubscriptionRequest) returns (SetMaxUnackedMessagesOnSubscriptionResponse);
+  rpc RemoveMaxUnackedMessagesOnSubscription(RemoveMaxUnackedMessagesOnSubscriptionRequest) returns (RemoveMaxUnackedMessagesOnSubscriptionResponse);
+  
+  rpc GetInactiveTopicPolicies(GetInactiveTopicPoliciesRequest) returns (GetInactiveTopicPoliciesResponse);
+  rpc SetInactiveTopicPolicies(SetInactiveTopicPoliciesRequest) returns (SetInactiveTopicPoliciesResponse);
+  rpc RemoveInactiveTopicPolicies(RemoveInactiveTopicPoliciesRequest) returns (RemoveInactiveTopicPoliciesResponse);
+
+  rpc GetPersistence(GetPersistenceRequest) returns (GetPersistenceResponse);
+  rpc SetPersistence(SetPersistenceRequest) returns (SetPersistenceResponse);
+  rpc RemovePersistence(RemovePersistenceRequest) returns (RemovePersistenceResponse);
 }
