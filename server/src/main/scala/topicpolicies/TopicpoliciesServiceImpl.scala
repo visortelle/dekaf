@@ -379,7 +379,6 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
-
     override def setMaxUnackedMessagesOnSubscription(request: SetMaxUnackedMessagesOnSubscriptionRequest): Future[SetMaxUnackedMessagesOnSubscriptionResponse] =
         try {
             logger.info(s"Setting max unacked messages on subscription policy for topic ${request.topic}")
@@ -390,7 +389,6 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
-
     override def removeMaxUnackedMessagesOnSubscription(request: RemoveMaxUnackedMessagesOnSubscriptionRequest): Future[RemoveMaxUnackedMessagesOnSubscriptionResponse] =
         try {
             logger.info(s"Removing max unacked messages on subscription policy for topic ${request.topic}")
