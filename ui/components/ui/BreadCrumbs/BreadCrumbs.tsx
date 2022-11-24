@@ -11,7 +11,14 @@ import { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';
 import Button from '../Button/Button';
 
-export type CrumbType = 'instance' | 'tenant' | 'namespace' | 'persistent-topic' | 'non-persistent-topic';
+export type CrumbType =
+  'instance' |
+  'tenant' |
+  'namespace' |
+  'persistent-topic' |
+  'non-persistent-topic' |
+  'link';
+
 export type Crumb = {
   id: string;
   type: CrumbType;
@@ -47,6 +54,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       case 'namespace': href = routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant, namespace }); break;
       case 'persistent-topic': href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant, namespace, topic, topicType: 'persistent' }); break;
       case 'non-persistent-topic': href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant, namespace, topic, topicType: 'non-persistent' }); break;
+      case 'link': href = crumb.value; break;
     }
 
     const onClick = () => {
