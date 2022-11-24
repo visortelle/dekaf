@@ -6,15 +6,14 @@ import { routes } from '../../routes';
 import { swrKeys } from '../../swrKeys';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as I18n from '../../app/contexts/I18n/I18n';
 import { GetResourceGroupsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import Button from '../../ui/Button/Button';
 
 import s from './ResourceGroups.module.css';
 import sc from '../Configuration/Configuration.module.css';
 import { H1 } from '../../ui/H/H';
 import ActionButton from '../../ui/ActionButton/ActionButton';
-import { useNavigate } from 'react-router';
 import { ToolbarButton } from '../../ui/Toolbar/Toolbar';
 
 type View = FormView | { type: 'show-all-groups' };
@@ -26,7 +25,7 @@ type Props = {
 const ResourceGroups: React.FC<Props> = (props) => {
   const { brokersServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const navigate = useNavigate();
+  const i18n = I18n.useContext();
 
   const { data: groups, error: groupsError } = useSWR(
     swrKeys.pulsar.brokers.resourceGroups._(),
@@ -81,22 +80,28 @@ const ResourceGroups: React.FC<Props> = (props) => {
               </thead>
 
               <tbody>
-                {groupsToRender && groupsToRender.map((rg) => (
+                {groupsToRender && groupsToRender.map((rg) => {
+                  const dispatchRateInBytes = rg.getDispatchRateInBytes()?.getValue();
+                  const dispatchRateInMsgs = rg.getDispatchRateInMsgs()?.getValue();
+                  const publishRateInBytes = rg.getPublishRateInBytes()?.getValue();
+                  const publishRateInMsgs = rg.getPublishRateInMsgs()?.getValue();
+
+                  return (
                   <tr key={rg.getName()} className={sc.Row}>
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
                       {rg.getName()}
                     </td>
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
-                      {rg.getDispatchRateInBytes()?.getValue()}
+                      {dispatchRateInBytes === undefined ? '-' : i18n.formatLongNumber(dispatchRateInBytes)}
                     </td>
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
-                      {rg.getDispatchRateInMsgs()?.getValue()}
+                      {dispatchRateInMsgs === undefined ? '-' : i18n.formatLongNumber(dispatchRateInMsgs)}
                     </td>
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
-                      {rg.getPublishRateInBytes()?.getValue()}
+                      {publishRateInBytes === undefined ? '-' : i18n.formatLongNumber(publishRateInBytes)}
                     </td>
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
-                      {rg.getPublishRateInMsgs()?.getValue()}
+                      {publishRateInMsgs === undefined ? '-' : i18n.formatLongNumber(publishRateInMsgs)}
                     </td>
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
                       <ActionButton
@@ -106,7 +111,7 @@ const ResourceGroups: React.FC<Props> = (props) => {
                       />
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
