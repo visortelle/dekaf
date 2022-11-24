@@ -3,6 +3,7 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.brokers.v1;
 
 import "google/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
 
 message InternalConfigurationData {
   string zookeeper_servers = 1;
@@ -65,6 +66,45 @@ message BacklogQuotaCheckResponse {
   bool is_ok = 2;
 }
 
+// TODO - move resource group related APIs to a separate service
+message ResourceGroup {
+  string name = 1;
+  google.protobuf.Int32Value publish_rate_in_msgs = 2;
+  google.protobuf.Int64Value publish_rate_in_bytes = 3;
+  google.protobuf.Int32Value dispatch_rate_in_msgs = 4;
+  google.protobuf.Int64Value dispatch_rate_in_bytes = 5;
+}
+message GetResourceGroupRequest {
+  string name = 1;
+}
+message GetResourceGroupResponse {
+  google.rpc.Status status = 1;
+  ResourceGroup resource_group = 2;
+}
+message GetResourceGroupsRequest {}
+message GetResourceGroupsResponse {
+  google.rpc.Status status = 1;
+  repeated ResourceGroup resource_groups = 2;
+}
+message CreateResourceGroupRequest {
+  ResourceGroup resource_group = 1;
+}
+message CreateResourceGroupResponse {
+  google.rpc.Status status = 1;
+}
+message UpdateResourceGroupRequest {
+  ResourceGroup resource_group = 1;
+}
+message UpdateResourceGroupResponse {
+  google.rpc.Status status = 1;
+}
+message DeleteResourceGroupRequest {
+  string name = 1;
+}
+message DeleteResourceGroupResponse {
+  google.rpc.Status status = 1;
+}
+
 service BrokersService {
   rpc GetRuntimeConfigurations(GetRuntimeConfigurationsRequest) returns (GetRuntimeConfigurationsResponse) {}
   rpc GetInternalConfigurationData(GetInternalConfigurationDataRequest) returns (GetInternalConfigurationDataResponse) {}
@@ -74,4 +114,10 @@ service BrokersService {
   rpc DeleteDynamicConfiguration(DeleteDynamicConfigurationRequest) returns (DeleteDynamicConfigurationResponse) {}
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
   rpc BacklogQuotaCheck(BacklogQuotaCheckRequest) returns (BacklogQuotaCheckResponse) {}
+
+  rpc GetResourceGroups(GetResourceGroupsRequest) returns (GetResourceGroupsResponse) {}
+  rpc GetResourceGroup(GetResourceGroupRequest) returns (GetResourceGroupResponse) {}
+  rpc CreateResourceGroup(CreateResourceGroupRequest) returns (CreateResourceGroupResponse) {}
+  rpc UpdateResourceGroup(UpdateResourceGroupRequest) returns (UpdateResourceGroupResponse) {}
+  rpc DeleteResourceGroup(DeleteResourceGroupRequest) returns (DeleteResourceGroupResponse) {}
 }
