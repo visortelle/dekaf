@@ -46,6 +46,16 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     RemoveMaxUnackedMessagesOnConsumerResponse,
     MaxUnackedMessagesOnConsumerSpecified,
     MaxUnackedMessagesOnConsumerUnspecified,
+
+    GetInactiveTopicPoliciesRequest,
+    GetInactiveTopicPoliciesResponse,
+    SetInactiveTopicPoliciesRequest,
+    SetInactiveTopicPoliciesResponse,
+    RemoveInactiveTopicPoliciesRequest,
+    RemoveInactiveTopicPoliciesResponse,
+    InactiveTopicPoliciesDeleteMode,
+    InactiveTopicPoliciesSpecified,
+    InactiveTopicPoliciesUnspecified,
 }
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -351,3 +361,61 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
 
+    override def getInactiveTopicPolicies(request: GetInactiveTopicPoliciesRequest): Future[GetInactiveTopicPoliciesResponse] =
+        try {
+            val inactiveTopicPoliciesPb = Option(adminClient.topicPolicies(request.isGlobal).getInactiveTopicPolicies(request.topic, false)) match
+                case None =>
+                    pb.GetInactiveTopicPoliciesResponse.InactiveTopicPolicies.Unspecified(InactiveTopicPoliciesUnspecified())
+                case Some(v) =>
+                    pb.GetInactiveTopicPoliciesResponse.InactiveTopicPolicies.Specified(InactiveTopicPoliciesSpecified(
+                        inactiveTopicDeleteMode = v.getInactiveTopicDeleteMode match
+                            case InactiveTopicDeleteMode.delete_when_no_subscriptions =>
+                                InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_NO_SUBSCRIPTIONS
+                            case InactiveTopicDeleteMode.delete_when_subscriptions_caught_up =>
+                                InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP,
+                            maxInactiveDurationSeconds = v.getMaxInactiveDurationSeconds,
+                        deleteWhileInactive = v.isDeleteWhileInactive
+                    ))
+
+            Future.successful(GetInactiveTopicPoliciesResponse(
+                status = Some(Status(code = Code.OK.index)),
+                inactiveTopicPolicies = inactiveTopicPoliciesPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetInactiveTopicPoliciesResponse(status = Some(status)))
+        }
+
+    override def setInactiveTopicPolicies(request: SetInactiveTopicPoliciesRequest): Future[SetInactiveTopicPoliciesResponse] =
+        try {
+            logger.info(s"Setting inactive topic policies for topic ${request.topic}")
+
+            val inactiveTopicPolicies = new InactiveTopicPolicies()
+            inactiveTopicPolicies.setDeleteWhileInactive(request.deleteWhileInactive)
+            inactiveTopicPolicies.setMaxInactiveDurationSeconds(request.maxInactiveDurationSeconds)
+
+            request.inactiveTopicDeleteMode match
+                case InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_NO_SUBSCRIPTIONS =>
+                    inactiveTopicPolicies.setInactiveTopicDeleteMode(InactiveTopicDeleteMode.delete_when_no_subscriptions)
+                case InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP =>
+                    inactiveTopicPolicies.setInactiveTopicDeleteMode(InactiveTopicDeleteMode.delete_when_subscriptions_caught_up)
+
+            adminClient.topicPolicies(request.isGlobal).setInactiveTopicPolicies(request.topic, inactiveTopicPolicies)
+            Future.successful(SetInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetInactiveTopicPoliciesResponse(status = Some(status)))
+        }
+
+    override def removeInactiveTopicPolicies(request: RemoveInactiveTopicPoliciesRequest): Future[RemoveInactiveTopicPoliciesResponse] =
+        try {
+            logger.info(s"Removing inactive topic policies for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeInactiveTopicPolicies(request.topic)
+            Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(status)))
+        }
