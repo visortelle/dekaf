@@ -111,13 +111,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
     }
 
-    setTimeout(() => mutate(swrKey), 300);
+    setTimeout(async () => {
+      await mutate(swrKey)
+    }, 300);
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      initialValue={initialValue}
       key={stringify(initialValue)}
+      initialValue={initialValue}
       onConfirm={updatePolicy}
     >
       {({ value, onChange }) => {
