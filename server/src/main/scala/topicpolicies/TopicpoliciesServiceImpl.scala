@@ -75,6 +75,23 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     PersistenceSpecified,
     PersistenceUnspecified,
 
+    DeduplicationSpecified,
+    DeduplicationUnspecified,
+    GetDeduplicationRequest,
+    GetDeduplicationResponse,
+    SetDeduplicationRequest,
+    SetDeduplicationResponse,
+    RemoveDeduplicationRequest,
+    RemoveDeduplicationResponse,
+
+    DeduplicationSnapshotIntervalDisabled,
+    DeduplicationSnapshotIntervalEnabled,
+    GetDeduplicationSnapshotIntervalRequest,
+    GetDeduplicationSnapshotIntervalResponse,
+    SetDeduplicationSnapshotIntervalRequest,
+    SetDeduplicationSnapshotIntervalResponse,
+    RemoveDeduplicationSnapshotIntervalRequest,
+    RemoveDeduplicationSnapshotIntervalResponse,
 }
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -503,4 +520,78 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemovePersistenceResponse(status = Some(status)))
+        }
+    override def getDeduplication(request: GetDeduplicationRequest): Future[GetDeduplicationResponse] =
+        try {
+            val deduplication = Option(adminClient.topicPolicies(request.isGlobal).getDeduplicationStatus(request.topic, false)) match
+                case None =>
+                    pb.GetDeduplicationResponse.Deduplication.Unspecified(new DeduplicationUnspecified())
+                case Some(v) =>
+                    pb.GetDeduplicationResponse.Deduplication.Specified(new DeduplicationSpecified(enabled = v))
+
+            Future.successful(GetDeduplicationResponse(
+                status = Some(Status(code = Code.OK.index)),
+                deduplication
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetDeduplicationResponse(status = Some(status)))
+        }
+    override def setDeduplication(request: SetDeduplicationRequest): Future[SetDeduplicationResponse] =
+        try {
+            logger.info(s"Setting deduplication policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).setDeduplicationStatus(request.topic, request.enabled)
+            Future.successful(SetDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetDeduplicationResponse(status = Some(status)))
+        }
+    override def removeDeduplication(request: RemoveDeduplicationRequest): Future[RemoveDeduplicationResponse] =
+        try {
+            logger.info(s"Removing deduplication policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeDeduplicationStatus(request.topic)
+            Future.successful(RemoveDeduplicationResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveDeduplicationResponse(status = Some(status)))
+        }
+    override def getDeduplicationSnapshotInterval(request: GetDeduplicationSnapshotIntervalRequest): Future[GetDeduplicationSnapshotIntervalResponse] =
+        try {
+            val interval = Option(adminClient.topicPolicies(request.isGlobal).getDeduplicationSnapshotInterval(request.topic)) match
+                case None =>
+                    pb.GetDeduplicationSnapshotIntervalResponse.Interval.Disabled(new pb.DeduplicationSnapshotIntervalDisabled())
+                case Some(v) =>
+                    pb.GetDeduplicationSnapshotIntervalResponse.Interval.Enabled(new DeduplicationSnapshotIntervalEnabled(interval = v))
+
+            Future.successful(GetDeduplicationSnapshotIntervalResponse(
+                status = Some(Status(code = Code.OK.index)),
+                interval
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetDeduplicationSnapshotIntervalResponse(status = Some(status)))
+        }
+    override def setDeduplicationSnapshotInterval(request: SetDeduplicationSnapshotIntervalRequest): Future[SetDeduplicationSnapshotIntervalResponse] =
+        try {
+            logger.info(s"Setting deduplication snapshot interval policy for topic ${request.topic}. ${request.interval}")
+            adminClient.topicPolicies(request.isGlobal).setDeduplicationSnapshotInterval(request.topic, request.interval)
+            Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(status)))
+        }
+    override def removeDeduplicationSnapshotInterval(request: RemoveDeduplicationSnapshotIntervalRequest): Future[RemoveDeduplicationSnapshotIntervalResponse] =
+        try {
+            logger.info(s"Removing deduplication snapshot interval policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeDeduplicationSnapshotInterval(request.topic)
+            Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
