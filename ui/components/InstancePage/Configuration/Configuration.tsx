@@ -9,32 +9,20 @@ import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrp
 import * as Notifications from '../../app/contexts/Notifications';
 import { swrKeys } from '../../swrKeys';
 import { help } from './help';
-import { 
+import {
   DeleteDynamicConfigurationRequest,
   GetDynamicConfigurationNamesRequest,
   UpdateDynamicConfigurationRequest
 } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import { ToolbarButton } from '../../ui/Toolbar/Toolbar';
 import Input from '../../ui/Input/Input';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Button from '../../ui/Button/Button';
-import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import { routes } from '../../routes';
-import ResourceGroups from './ResourceGroups.tsx/ResourceGroups';
 
-import editIcon from '!!raw-loader!./edit.svg';
-import closeIcon from '!!raw-loader!./close.svg';
 import s from './Configuration.module.css';
+import ActionButton from '../../ui/ActionButton/ActionButton';
 
-interface Props {
-  view?: 'resource-groups'
-}
-
-const Configuration = (props: Props) => {
-
-  const { view } = props;
-
+const Configuration = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
   const { brokersServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
@@ -71,72 +59,52 @@ const Configuration = (props: Props) => {
 
   return (
     <div className={s.Configuration}>
-      {view === 'resource-groups' && 
-        <>
-          <ToolbarButton 
-            linkTo={routes.instance.configuration._.get()}
-            text='Configurations'
-            onClick={() => { }}
-            type='regular'
+      <div className={s.Toolbar}>
+        <div style={{ width: '480rem' }}>
+          <Input value={paramFilter} onChange={v => setParamFilter(v)} placeholder="managedLedger" focusOnMount={true} clearable={true} />
+        </div>
+        <div style={{ marginLeft: 'auto', marginTop: 'auto' }}>
+          <SmallButton
+            text={isShowDynamicOnly ? 'Show all' : 'Show dynamic only'}
+            onClick={() => setIsShowDynamicOnly(!isShowDynamicOnly)}
+            type="primary"
           />
-          <ResourceGroups />
-        </>
-        ||
-        <>
-          <ToolbarButton 
-            linkTo={routes.instance.configuration.resourceGroups._.get()}
-            text='Resource groups'
-            onClick={() => {}}
-            type='regular'
-          />
-          <div className={s.Toolbar}>
-            <div style={{ width: '480rem' }}>
-              <Input value={paramFilter} onChange={v => setParamFilter(v)} placeholder="managedLedger" focusOnMount={true} clearable={true} />
-            </div>
-            <div style={{ marginLeft: 'auto', marginTop: 'auto' }}>
-              <SmallButton
-                text={isShowDynamicOnly ? 'Show all' : 'Show dynamic only'}
-                onClick={() => setIsShowDynamicOnly(!isShowDynamicOnly)}
-                type="primary"
-              />
-            </div>
-          </div>
+        </div>
+      </div>
 
-          <div className={s.ConfigurationTable}>
-            <table className={s.Table}>
-              <thead>
-                <tr className={s.Row}>
-                  <th className={s.Cell}>Param</th>
-                  <th className={s.Cell}>Runtime config</th>
-                  <th className={s.Cell}>Dynamic config</th>
+      <div className={s.ConfigurationTable}>
+        <table className={s.Table}>
+          <thead>
+            <tr className={s.Row}>
+              <th className={s.Cell}>Param</th>
+              <th className={s.Cell}>Runtime config</th>
+              <th className={s.Cell}>Dynamic config</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allKeys.map((key) => {
+              return (
+                <tr key={key} className={s.Row}>
+                  <td className={`${s.Cell} ${s.ConfigParamKeyCell}`} data-tip={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}>
+                    <Highlighter
+                      highlightClassName="highlight-substring"
+                      searchWords={[paramFilter]}
+                      autoEscape={true}
+                      textToHighlight={key}
+                    />
+                  </td>
+                  <td className={`${s.Cell} ${s.RuntimeConfigCell}`}>{runtimeConfig[key]}</td>
+                  <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                    {availableDynamicConfigKeys?.includes(key) ? (
+                      <DynamicConfigValue configKey={key} configValue={dynamicConfig[key]} />
+                    ) : <span>-</span>}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {allKeys.map((key) => {
-                  return (
-                    <tr key={key} className={s.Row}>
-                      <td className={`${s.Cell} ${s.ConfigParamKeyCell}`} data-tip={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}>
-                        <Highlighter
-                          highlightClassName="highlight-substring"
-                          searchWords={[paramFilter]}
-                          autoEscape={true}
-                          textToHighlight={key}
-                        />
-                      </td>
-                      <td className={`${s.Cell} ${s.RuntimeConfigCell}`}>{runtimeConfig[key]}</td>
-                      <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                        {availableDynamicConfigKeys?.includes(key) ? (
-                          <DynamicConfigValue configKey={key} configValue={dynamicConfig[key]} />
-                        ) : <span>-</span>}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </>
-        }
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -247,9 +215,10 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
 
       {props.configValue}
 
-      <button type="button" className={s.DynamicConfigValueButton} onClick={() => setIsShowEditor(!isShowEditor)}>
-        {isShowEditor ? <SvgIcon svg={closeIcon} /> : <SvgIcon svg={editIcon} />}
-      </button>
+      <ActionButton
+        onClick={() => setIsShowEditor(!isShowEditor)}
+        action={isShowEditor ? { type: 'predefined', action: 'close' } : { type: 'predefined', action: 'edit' }}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.brokers.v1;
 
 import "google/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
 
 message InternalConfigurationData {
   string zookeeper_servers = 1;
@@ -67,10 +68,17 @@ message BacklogQuotaCheckResponse {
 
 message ResourceGroup {
   string name = 1;
-  optional int32 publish_rate_in_msgs = 2;
-  optional int64 publish_rate_in_bytes = 3;
-  optional int32 dispatch_rate_in_msgs = 4;
-  optional int64 dispatch_rate_in_bytes = 5;
+  google.protobuf.Int32Value publish_rate_in_msgs = 2;
+  google.protobuf.Int64Value publish_rate_in_bytes = 3;
+  google.protobuf.Int32Value dispatch_rate_in_msgs = 4;
+  google.protobuf.Int64Value dispatch_rate_in_bytes = 5;
+}
+message GetResourceGroupRequest {
+  string name = 1;
+}
+message GetResourceGroupResponse {
+  google.rpc.Status status = 1;
+  ResourceGroup resource_group = 2;
 }
 message GetResourceGroupsRequest {}
 message GetResourceGroupsResponse {
@@ -107,6 +115,7 @@ service BrokersService {
   rpc BacklogQuotaCheck(BacklogQuotaCheckRequest) returns (BacklogQuotaCheckResponse) {}
 
   rpc GetResourceGroups(GetResourceGroupsRequest) returns (GetResourceGroupsResponse) {}
+  rpc GetResourceGroup(GetResourceGroupRequest) returns (GetResourceGroupResponse) {}
   rpc CreateResourceGroup(CreateResourceGroupRequest) returns (CreateResourceGroupResponse) {}
   rpc UpdateResourceGroup(UpdateResourceGroupRequest) returns (UpdateResourceGroupResponse) {}
   rpc DeleteResourceGroup(DeleteResourceGroupRequest) returns (DeleteResourceGroupResponse) {}

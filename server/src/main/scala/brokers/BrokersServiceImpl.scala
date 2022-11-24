@@ -4,35 +4,9 @@ import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.brokers.v1.brokers as pb
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.brokers.v1.brokers.{
-    BacklogQuotaCheckRequest,
-    BacklogQuotaCheckResponse,
-    DeleteDynamicConfigurationRequest,
-    DeleteDynamicConfigurationResponse,
-    GetAllDynamicConfigurationsRequest,
-    GetAllDynamicConfigurationsResponse,
-    GetDynamicConfigurationNamesRequest,
-    GetDynamicConfigurationNamesResponse,
-    GetInternalConfigurationDataRequest,
-    GetInternalConfigurationDataResponse,
-    GetRuntimeConfigurationsRequest,
-    GetRuntimeConfigurationsResponse,
-    HealthCheckRequest,
-    HealthCheckResponse,
-    UpdateDynamicConfigurationRequest,
-    UpdateDynamicConfigurationResponse,
-
-    GetResourceGroupsRequest,
-    GetResourceGroupsResponse,
-    CreateResourceGroupRequest,
-    CreateResourceGroupResponse,
-    UpdateResourceGroupRequest,
-    UpdateResourceGroupResponse,
-    DeleteResourceGroupRequest,
-    DeleteResourceGroupResponse,
-}
+import com.tools.teal.pulsar.ui.brokers.v1.brokers.{BacklogQuotaCheckRequest, BacklogQuotaCheckResponse, CreateResourceGroupRequest, CreateResourceGroupResponse, DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, DeleteResourceGroupRequest, DeleteResourceGroupResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetResourceGroupRequest, GetResourceGroupResponse, GetResourceGroupsRequest, GetResourceGroupsResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, HealthCheckRequest, HealthCheckResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse, UpdateResourceGroupRequest, UpdateResourceGroupResponse}
 import org.apache.pulsar.common.naming.TopicVersion
-import org.apache.pulsar.common.policies.data.{ ResourceGroup }
+import org.apache.pulsar.common.policies.data.ResourceGroup
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -178,6 +152,29 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(GetResourceGroupsResponse(status = Some(status)))
+        }
+
+    override def getResourceGroup(request: pb.GetResourceGroupRequest): Future[pb.GetResourceGroupResponse] =
+        try {
+            val rg = adminClient.resourcegroups.getResourceGroup(request.name)
+            val resourceGroup = pb.ResourceGroup(
+                dispatchRateInMsgs = Option(rg.getDispatchRateInMsgs),
+                dispatchRateInBytes = Option(rg.getDispatchRateInBytes),
+                publishRateInMsgs = Option(rg.getPublishRateInMsgs),
+                publishRateInBytes = Option(rg.getPublishRateInBytes),
+                name = request.name
+            )
+
+            Future.successful(
+                pb.GetResourceGroupResponse(
+                    status = Some(Status(code = Code.OK.index)),
+                    resourceGroup = Some(resourceGroup)
+                )
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.GetResourceGroupResponse(status = Some(status)))
         }
 
     override def createResourceGroup(request: CreateResourceGroupRequest): Future[CreateResourceGroupResponse] =

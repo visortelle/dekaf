@@ -17,12 +17,25 @@ export const routes = {
         path: "/instance/configuration",
         get: () => `/instance/configuration`,
       },
-      resourceGroups: {
+    },
+    resourceGroups: {
+      _: {
+        path: "/instance/resource-groups",
+        get: () => `/instance/resource-groups`,
+      },
+      create: {
         _: {
-          path: "/instance/configuration/resource-groups",
-          get: () => `/instance/configuration/resource-groups`,
-        }
-      }
+          path: "/instance/resource-groups/create",
+          get: () => `/instance/resource-groups/create`,
+        },
+      },
+      edit: {
+        _: {
+          path: "/instance/resource-groups/edit/:groupName",
+          get: (props: { groupName: string }) =>
+            `/instance/resource-groups/edit/${props.groupName}`,
+        },
+      },
     },
     createTenant: {
       _: {

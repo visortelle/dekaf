@@ -42,11 +42,21 @@ const Router: React.FC = () => {
 const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => RouteObject[] } => {
   const getRoutes = ({ withLayout, withLayoutProps }: { withLayout: WithLayout, withLayoutProps: WithLayoutProps }) => [
     /* Instance */
-    { path: routes.instance.overview._.path, element: withLayout(<InstancePage view='overview' />, withLayoutProps) },
-    { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view='configuration' />, withLayoutProps) },
-    { path: routes.instance.configuration.resourceGroups._.path, element: withLayout(<InstancePage view='resource-groups' />, withLayoutProps)},
-    { path: routes.instance.createTenant._.path, element: withLayout(<InstancePage view='create-tenant' />, withLayoutProps) },
-    { path: routes.instance.tenants._.path, element: withLayout(<InstancePage view='tenants' />, setScrollMode(withLayoutProps, 'page-own')) },
+    { path: routes.instance.overview._.path, element: withLayout(<InstancePage view={{ type: 'overview' }} />, withLayoutProps) },
+    { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view={{ type: 'configuration' }} />, withLayoutProps) },
+    { path: routes.instance.createTenant._.path, element: withLayout(<InstancePage view={{ type: 'create-tenant' }} />, withLayoutProps) },
+    { path: routes.instance.tenants._.path, element: withLayout(<InstancePage view={{ type: 'tenants' }} />, setScrollMode(withLayoutProps, 'page-own')) },
+
+    { path: routes.instance.resourceGroups._.path, element: withLayout(<InstancePage view={{ type: 'resource-groups' }} />, withLayoutProps) },
+    { path: routes.instance.resourceGroups.create._.path, element: withLayout(<InstancePage view={{ type: 'create-resource-group' }} />, withLayoutProps) },
+    {
+      path: routes.instance.resourceGroups.edit._.path, element: withLayout((() => {
+        const { groupName } = useParams<{ groupName: string }>();
+        return <InstancePage view={{ type: 'edit-resource-group', groupName: groupName! }} />
+      })(),
+        withLayoutProps
+      )
+    },
 
     /* Topics */
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.path, element: withLayout(<RoutedTopicPage view='messages' />, setScrollMode(withLayoutProps, 'page-own')) },
@@ -62,10 +72,10 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     { path: routes.tenants.tenant.namespaces.namespace.createTopic._.path, element: withLayout(<RoutedNamespacePage view='create-topic' />, withLayoutProps) },
 
     /* Tenants */
-    { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RouteTenantPage view={'configuration'} />, withLayoutProps) },
-    { path: routes.tenants.tenant.createNamespace._.path, element: withLayout(<RouteTenantPage view={'create-namespace'} />, withLayoutProps) },
-    { path: routes.tenants.tenant.deleteTenant._.path, element: withLayout(<RouteTenantPage view={'delete-tenant'} />, withLayoutProps) },
-    { path: routes.tenants.tenant.namespaces._.path, element: withLayout(<RouteTenantPage view={'namespaces'} />, setScrollMode(withLayoutProps, 'page-own')) },
+    { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RoutedTenantPage view={'configuration'} />, withLayoutProps) },
+    { path: routes.tenants.tenant.createNamespace._.path, element: withLayout(<RoutedTenantPage view={'create-namespace'} />, withLayoutProps) },
+    { path: routes.tenants.tenant.deleteTenant._.path, element: withLayout(<RoutedTenantPage view={'delete-tenant'} />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces._.path, element: withLayout(<RoutedTenantPage view={'namespaces'} />, setScrollMode(withLayoutProps, 'page-own')) },
   ];
   const paths = getRoutes({ withLayout: () => <></>, withLayoutProps: defaultWithLayoutProps }).map(ro => ro.path).filter(p => p !== undefined) as string[];
 
@@ -97,7 +107,7 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   return useRoutes(getRoutes({ withLayout, withLayoutProps }));
 }
 
-const RouteTenantPage = (props: { view: TenantPageView }) => {
+const RoutedTenantPage = (props: { view: TenantPageView }) => {
   const { tenant } = useParams();
   return <TenantPage tenant={tenant!} view={props.view} />
 }
