@@ -351,6 +351,117 @@ message RemoveDeduplicationSnapshotIntervalResponse {
   google.rpc.Status status = 1;
 }
 
+message DispatchRateUnspecified {}
+message DispatchRateSpecified {
+  int32 rate_in_msg = 1;
+  int64 rate_in_byte = 2;
+  int32 period_in_second = 3;
+  bool is_relative_to_publish_rate = 4;
+}
+message GetDispatchRateRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetDispatchRateResponse {
+  google.rpc.Status status = 1;
+  oneof dispatch_rate {
+    DispatchRateUnspecified unspecified = 2;
+    DispatchRateSpecified specified = 3;
+  }
+}
+message SetDispatchRateRequest {
+  string topic = 1;
+  int32 rate_in_msg = 2;
+  int64 rate_in_byte = 3;
+  int32 period_in_second = 4;
+  bool is_relative_to_publish_rate = 5;
+  bool is_global = 6;
+}
+message SetDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveDispatchRateRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+
+message ReplicatorDispatchRateUnspecified {}
+message ReplicatorDispatchRateSpecified {
+  int32 rate_in_msg = 1;
+  int64 rate_in_byte = 2;
+  bool is_relative_to_publish_rate = 3;
+  int32 period_in_second = 4;
+}
+message GetReplicatorDispatchRateRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetReplicatorDispatchRateResponse {
+  google.rpc.Status status = 1;
+  oneof replicator_dispatch_rate {
+    ReplicatorDispatchRateUnspecified unspecified = 3;
+    ReplicatorDispatchRateSpecified specified = 4;
+  }
+}
+message SetReplicatorDispatchRateRequest {
+  string topic = 1;
+  int32 rate_in_msg = 2;
+  int64 rate_in_byte = 3;
+  bool is_relative_to_publish_rate = 4;
+  int32 period_in_second = 5;
+  bool is_global = 6;
+}
+message SetReplicatorDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveReplicatorDispatchRateRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveReplicatorDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+
+message SubscriptionDispatchRateUnspecified {}
+message SubscriptionDispatchRateSpecified {
+  int32 rate_in_msg = 1;
+  int64 rate_in_byte = 2;
+  bool is_relative_to_publish_rate = 3;
+  int32 period_in_second = 4;
+}
+message GetSubscriptionDispatchRateRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetSubscriptionDispatchRateResponse {
+  google.rpc.Status status = 1;
+  oneof subscription_dispatch_rate {
+    SubscriptionDispatchRateUnspecified unspecified = 3;
+    SubscriptionDispatchRateSpecified specified = 4;
+  }
+}
+message SetSubscriptionDispatchRateRequest {
+  string topic = 1;
+  int32 rate_in_msg = 2;
+  int64 rate_in_byte = 3;
+  bool is_relative_to_publish_rate = 4;
+  int32 period_in_second = 5;
+  bool is_global = 6;
+}
+message SetSubscriptionDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscriptionDispatchRateRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveSubscriptionDispatchRateResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -392,4 +503,16 @@ service TopicpoliciesService {
   rpc GetDeduplicationSnapshotInterval(GetDeduplicationSnapshotIntervalRequest) returns (GetDeduplicationSnapshotIntervalResponse);
   rpc SetDeduplicationSnapshotInterval(SetDeduplicationSnapshotIntervalRequest) returns (SetDeduplicationSnapshotIntervalResponse);
   rpc RemoveDeduplicationSnapshotInterval(RemoveDeduplicationSnapshotIntervalRequest) returns (RemoveDeduplicationSnapshotIntervalResponse);
+
+  rpc GetDispatchRate(GetDispatchRateRequest) returns (GetDispatchRateResponse);
+  rpc SetDispatchRate(SetDispatchRateRequest) returns (SetDispatchRateResponse);
+  rpc RemoveDispatchRate(RemoveDispatchRateRequest) returns (RemoveDispatchRateResponse);
+
+  rpc GetReplicatorDispatchRate(GetReplicatorDispatchRateRequest) returns (GetReplicatorDispatchRateResponse);
+  rpc SetReplicatorDispatchRate(SetReplicatorDispatchRateRequest) returns (SetReplicatorDispatchRateResponse);
+  rpc RemoveReplicatorDispatchRate(RemoveReplicatorDispatchRateRequest) returns (RemoveReplicatorDispatchRateResponse);
+
+  rpc GetSubscriptionDispatchRate(GetSubscriptionDispatchRateRequest) returns (GetSubscriptionDispatchRateResponse);
+  rpc SetSubscriptionDispatchRate(SetSubscriptionDispatchRateRequest) returns (SetSubscriptionDispatchRateResponse);
+  rpc RemoveSubscriptionDispatchRate(RemoveSubscriptionDispatchRateRequest) returns (RemoveSubscriptionDispatchRateResponse);
 }
