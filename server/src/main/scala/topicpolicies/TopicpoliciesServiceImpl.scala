@@ -119,6 +119,14 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     RemoveSubscriptionDispatchRateResponse,
     SubscriptionDispatchRateSpecified,
     SubscriptionDispatchRateUnspecified,
+
+    GetCompactionThresholdRequest,
+    GetCompactionThresholdResponse,
+    SetCompactionThresholdRequest,
+    SetCompactionThresholdResponse,
+    RemoveCompactionThresholdRequest,
+    RemoveCompactionThresholdResponse,
+    CompactionThresholdEnabled,
 }
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -768,4 +776,38 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(status)))
+        }
+    override def getCompactionThreshold(request: GetCompactionThresholdRequest): Future[GetCompactionThresholdResponse] =
+        try {
+            val threshold = Option(adminClient.topicPolicies(request.isGlobal).getCompactionThreshold(request.topic, false)).map(_.toLong) match
+                case None => pb.GetCompactionThresholdResponse.Threshold.Disabled(new pb.CompactionThresholdDisabled())
+                case Some(v) => pb.GetCompactionThresholdResponse.Threshold.Enabled(new CompactionThresholdEnabled(threshold = v))
+            Future.successful(GetCompactionThresholdResponse(
+                status = Some(Status(code = Code.OK.index)),
+                threshold
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetCompactionThresholdResponse(status = Some(status)))
+        }
+    override def setCompactionThreshold(request: SetCompactionThresholdRequest): Future[SetCompactionThresholdResponse] =
+        try {
+            logger.info(s"Setting compaction threshold policy for topic ${request.topic}. ${request.threshold}")
+            adminClient.topicPolicies(request.isGlobal).setCompactionThreshold(request.topic, request.threshold)
+            Future.successful(SetCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetCompactionThresholdResponse(status = Some(status)))
+        }
+    override def removeCompactionThreshold(request: RemoveCompactionThresholdRequest): Future[RemoveCompactionThresholdResponse] =
+        try {
+            logger.info(s"Removing compaction threshold policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeCompactionThreshold(request.topic)
+            Future.successful(RemoveCompactionThresholdResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveCompactionThresholdResponse(status = Some(status)))
         }

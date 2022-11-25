@@ -462,6 +462,38 @@ message RemoveSubscriptionDispatchRateResponse {
   google.rpc.Status status = 1;
 }
 
+message CompactionThresholdDisabled {
+}
+message CompactionThresholdEnabled {
+  int64 threshold = 1;
+}
+message GetCompactionThresholdRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetCompactionThresholdResponse {
+  google.rpc.Status status = 1;
+  oneof threshold {
+    CompactionThresholdDisabled disabled = 2;
+    CompactionThresholdEnabled enabled = 3;
+  }
+}
+message SetCompactionThresholdRequest {
+  string topic = 1;
+  int64 threshold = 2;
+  bool is_global = 3;
+}
+message SetCompactionThresholdResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveCompactionThresholdRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveCompactionThresholdResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -515,4 +547,8 @@ service TopicpoliciesService {
   rpc GetSubscriptionDispatchRate(GetSubscriptionDispatchRateRequest) returns (GetSubscriptionDispatchRateResponse);
   rpc SetSubscriptionDispatchRate(SetSubscriptionDispatchRateRequest) returns (SetSubscriptionDispatchRateResponse);
   rpc RemoveSubscriptionDispatchRate(RemoveSubscriptionDispatchRateRequest) returns (RemoveSubscriptionDispatchRateResponse);
+
+  rpc GetCompactionThreshold(GetCompactionThresholdRequest) returns (GetCompactionThresholdResponse);
+  rpc SetCompactionThreshold(SetCompactionThresholdRequest) returns (SetCompactionThresholdResponse);
+  rpc RemoveCompactionThreshold(RemoveCompactionThresholdRequest) returns (RemoveCompactionThresholdResponse);
 }
