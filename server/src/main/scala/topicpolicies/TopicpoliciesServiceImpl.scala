@@ -1,139 +1,13 @@
 package topicpolicies
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
-    TopicpoliciesServiceGrpc,
-
-    GetBacklogQuotasRequest,
-    GetBacklogQuotasResponse,
-    SetBacklogQuotasRequest,
-    SetBacklogQuotasResponse,
-    RemoveBacklogQuotaRequest,
-    RemoveBacklogQuotaResponse,
-
-    GetDelayedDeliveryRequest,
-    GetDelayedDeliveryResponse,
-    SetDelayedDeliveryRequest,
-    SetDelayedDeliveryResponse,
-    RemoveDelayedDeliveryRequest,
-    RemoveDelayedDeliveryResponse,
-    DelayedDeliverySpecified,
-    DelayedDeliveryUnspecified,
-
-    GetMessageTtlRequest,
-    GetMessageTtlResponse,
-    SetMessageTtlRequest,
-    SetMessageTtlResponse,
-    RemoveMessageTtlRequest,
-    RemoveMessageTtlResponse,
-    MessageTtlSpecified,
-    MessageTtlUnspecified,
-
-    GetRetentionRequest,
-    GetRetentionResponse,
-    SetRetentionRequest,
-    SetRetentionResponse,
-    RemoveRetentionRequest,
-    RemoveRetentionResponse,
-    RetentionSpecified,
-    RetentionUnspecified,
-
-    GetMaxUnackedMessagesOnConsumerRequest,
-    GetMaxUnackedMessagesOnConsumerResponse,
-    SetMaxUnackedMessagesOnConsumerRequest,
-    SetMaxUnackedMessagesOnConsumerResponse,
-    RemoveMaxUnackedMessagesOnConsumerRequest,
-    RemoveMaxUnackedMessagesOnConsumerResponse,
-    MaxUnackedMessagesOnConsumerSpecified,
-    MaxUnackedMessagesOnConsumerUnspecified,
-
-    GetMaxUnackedMessagesOnSubscriptionRequest,
-    GetMaxUnackedMessagesOnSubscriptionResponse,
-    SetMaxUnackedMessagesOnSubscriptionRequest,
-    SetMaxUnackedMessagesOnSubscriptionResponse,
-    RemoveMaxUnackedMessagesOnSubscriptionRequest,
-    RemoveMaxUnackedMessagesOnSubscriptionResponse,
-    MaxUnackedMessagesOnSubscriptionSpecified,
-    MaxUnackedMessagesOnSubscriptionUnspecified,
-
-    GetInactiveTopicPoliciesRequest,
-    GetInactiveTopicPoliciesResponse,
-    SetInactiveTopicPoliciesRequest,
-    SetInactiveTopicPoliciesResponse,
-    RemoveInactiveTopicPoliciesRequest,
-    RemoveInactiveTopicPoliciesResponse,
-    InactiveTopicPoliciesDeleteMode,
-    InactiveTopicPoliciesSpecified,
-    InactiveTopicPoliciesUnspecified,
-
-    GetPersistenceRequest,
-    GetPersistenceResponse,
-    SetPersistenceRequest,
-    SetPersistenceResponse,
-    RemovePersistenceRequest,
-    RemovePersistenceResponse,
-    PersistenceSpecified,
-    PersistenceUnspecified,
-
-    DeduplicationSpecified,
-    DeduplicationUnspecified,
-    GetDeduplicationRequest,
-    GetDeduplicationResponse,
-    SetDeduplicationRequest,
-    SetDeduplicationResponse,
-    RemoveDeduplicationRequest,
-    RemoveDeduplicationResponse,
-
-    DeduplicationSnapshotIntervalDisabled,
-    DeduplicationSnapshotIntervalEnabled,
-    GetDeduplicationSnapshotIntervalRequest,
-    GetDeduplicationSnapshotIntervalResponse,
-    SetDeduplicationSnapshotIntervalRequest,
-    SetDeduplicationSnapshotIntervalResponse,
-    RemoveDeduplicationSnapshotIntervalRequest,
-    RemoveDeduplicationSnapshotIntervalResponse,
-
-    GetDispatchRateRequest,
-    GetDispatchRateResponse,
-    SetDispatchRateRequest,
-    SetDispatchRateResponse,
-    RemoveDispatchRateRequest,
-    RemoveDispatchRateResponse,
-    DispatchRateSpecified,
-    DispatchRateUnspecified,
-
-    GetReplicatorDispatchRateRequest,
-    GetReplicatorDispatchRateResponse,
-    SetReplicatorDispatchRateRequest,
-    SetReplicatorDispatchRateResponse,
-    RemoveReplicatorDispatchRateRequest,
-    RemoveReplicatorDispatchRateResponse,
-    ReplicatorDispatchRateSpecified,
-    ReplicatorDispatchRateUnspecified,
-
-    GetSubscriptionDispatchRateRequest,
-    GetSubscriptionDispatchRateResponse,
-    SetSubscriptionDispatchRateRequest,
-    SetSubscriptionDispatchRateResponse,
-    RemoveSubscriptionDispatchRateRequest,
-    RemoveSubscriptionDispatchRateResponse,
-    SubscriptionDispatchRateSpecified,
-    SubscriptionDispatchRateUnspecified,
-
-    GetCompactionThresholdRequest,
-    GetCompactionThresholdResponse,
-    SetCompactionThresholdRequest,
-    SetCompactionThresholdResponse,
-    RemoveCompactionThresholdRequest,
-    RemoveCompactionThresholdResponse,
-    CompactionThresholdEnabled,
-}
+import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{CompactionThresholdEnabled, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DispatchRateSpecified, DispatchRateUnspecified, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetMaxUnackedMessagesOnConsumerRequest, GetMaxUnackedMessagesOnConsumerResponse, GetMaxUnackedMessagesOnSubscriptionRequest, GetMaxUnackedMessagesOnSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetPersistenceRequest, GetPersistenceResponse, GetPublishRateRequest, GetPublishRateResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxUnackedMessagesOnConsumerSpecified, MaxUnackedMessagesOnConsumerUnspecified, MaxUnackedMessagesOnSubscriptionSpecified, MaxUnackedMessagesOnSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, PersistenceSpecified, PersistenceUnspecified, PublishRateSpecified, PublishRateUnspecified, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxUnackedMessagesOnConsumerRequest, RemoveMaxUnackedMessagesOnConsumerResponse, RemoveMaxUnackedMessagesOnSubscriptionRequest, RemoveMaxUnackedMessagesOnSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemovePublishRateRequest, RemovePublishRateResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetMaxUnackedMessagesOnConsumerRequest, SetMaxUnackedMessagesOnConsumerResponse, SetMaxUnackedMessagesOnSubscriptionRequest, SetMaxUnackedMessagesOnSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetPersistenceRequest, SetPersistenceResponse, SetPublishRateRequest, SetPublishRateResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, TopicpoliciesServiceGrpc}
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import org.apache.pulsar.common.policies.data.BacklogQuota.{ BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder }
-import org.apache.pulsar.common.policies.data.{ AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, RetentionPolicies }
+import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
+import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, PublishRate, RetentionPolicies}
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
@@ -681,7 +555,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
         }
     override def getReplicatorDispatchRate(request: GetReplicatorDispatchRateRequest): Future[GetReplicatorDispatchRateResponse] =
         try {
-            val replicatorDispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getReplicatorDispatchRate(request.topic)) match
+            val replicatorDispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getReplicatorDispatchRate(request.topic, false)) match
                 case None =>
                     pb.GetReplicatorDispatchRateResponse.ReplicatorDispatchRate.Unspecified(new ReplicatorDispatchRateUnspecified())
                 case Some(v) =>
@@ -730,7 +604,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
         }
     override def getSubscriptionDispatchRate(request: GetSubscriptionDispatchRateRequest): Future[GetSubscriptionDispatchRateResponse] =
         try {
-            val subscriptionDispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getSubscriptionDispatchRate(request.topic)) match
+            val subscriptionDispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getSubscriptionDispatchRate(request.topic, false)) match
                 case None =>
                     pb.GetSubscriptionDispatchRateResponse.SubscriptionDispatchRate.Unspecified(new SubscriptionDispatchRateUnspecified())
                 case Some(v) =>
@@ -810,4 +684,45 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveCompactionThresholdResponse(status = Some(status)))
+        }
+    override def getPublishRate(request: GetPublishRateRequest): Future[GetPublishRateResponse] =
+        try {
+            val publishRatePb = Option(adminClient.topicPolicies(request.isGlobal).getPublishRate(request.topic)) match
+                case None =>
+                    pb.GetPublishRateResponse.PublishRate.Unspecified(new PublishRateUnspecified)
+                case Some(v) =>
+                    pb.GetPublishRateResponse.PublishRate.Specified(new PublishRateSpecified(
+                        rateInMsg = Option(v.publishThrottlingRateInMsg).getOrElse(0),
+                        rateInByte = Option(v.publishThrottlingRateInByte).getOrElse(0)
+                    ))
+
+            Future.successful(GetPublishRateResponse(
+                status = Some(Status(code = Code.OK.index)),
+                publishRate = publishRatePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetPublishRateResponse(status = Some(status)))
+        }
+    override def setPublishRate(request: SetPublishRateRequest): Future[SetPublishRateResponse] =
+        try {
+            logger.info(s"Setting publish rate policy for topic ${request.topic}. ${request.rateInMsg}, ${request.rateInByte}")
+            val publishRate = PublishRate( request.rateInMsg, request.rateInByte )
+            adminClient.topicPolicies(request.isGlobal).setPublishRate(request.topic, publishRate)
+            Future.successful(SetPublishRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetPublishRateResponse(status = Some(status)))
+        }
+    override def removePublishRate(request: RemovePublishRateRequest): Future[RemovePublishRateResponse] =
+        try {
+            logger.info(s"Removing publish rate policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removePublishRate(request.topic)
+            Future.successful(RemovePublishRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemovePublishRateResponse(status = Some(status)))
         }
