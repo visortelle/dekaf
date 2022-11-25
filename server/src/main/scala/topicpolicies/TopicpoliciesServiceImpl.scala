@@ -92,6 +92,33 @@ import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{
     SetDeduplicationSnapshotIntervalResponse,
     RemoveDeduplicationSnapshotIntervalRequest,
     RemoveDeduplicationSnapshotIntervalResponse,
+
+    GetDispatchRateRequest,
+    GetDispatchRateResponse,
+    SetDispatchRateRequest,
+    SetDispatchRateResponse,
+    RemoveDispatchRateRequest,
+    RemoveDispatchRateResponse,
+    DispatchRateSpecified,
+    DispatchRateUnspecified,
+
+    GetReplicatorDispatchRateRequest,
+    GetReplicatorDispatchRateResponse,
+    SetReplicatorDispatchRateRequest,
+    SetReplicatorDispatchRateResponse,
+    RemoveReplicatorDispatchRateRequest,
+    RemoveReplicatorDispatchRateResponse,
+    ReplicatorDispatchRateSpecified,
+    ReplicatorDispatchRateUnspecified,
+
+    GetSubscriptionDispatchRateRequest,
+    GetSubscriptionDispatchRateResponse,
+    SetSubscriptionDispatchRateRequest,
+    SetSubscriptionDispatchRateResponse,
+    RemoveSubscriptionDispatchRateRequest,
+    RemoveSubscriptionDispatchRateResponse,
+    SubscriptionDispatchRateSpecified,
+    SubscriptionDispatchRateUnspecified,
 }
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -594,4 +621,151 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(status)))
+        }
+    override def getDispatchRate(request: GetDispatchRateRequest): Future[GetDispatchRateResponse] =
+        try {
+            val dispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getDispatchRate(request.topic, false)) match
+                case None =>
+                    pb.GetDispatchRateResponse.DispatchRate.Unspecified(new DispatchRateUnspecified())
+                case Some(v) =>
+                    pb.GetDispatchRateResponse.DispatchRate.Specified(new DispatchRateSpecified(
+                        rateInMsg = v.getDispatchThrottlingRateInMsg,
+                        rateInByte = v.getDispatchThrottlingRateInByte,
+                        periodInSecond = v.getRatePeriodInSecond,
+                        isRelativeToPublishRate = v.isRelativeToPublishRate
+                    ))
+
+            Future.successful(GetDispatchRateResponse(
+                status = Some(Status(code = Code.OK.index)),
+                dispatchRate = dispatchRatePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetDispatchRateResponse(status = Some(status)))
+        }
+    override def setDispatchRate(request: SetDispatchRateRequest): Future[SetDispatchRateResponse] =
+        try {
+            logger.info(s"Setting dispatch rate policy for topic ${request.topic}")
+            val dispatchRate = DispatchRate.builder
+                .dispatchThrottlingRateInByte(request.rateInByte)
+                .dispatchThrottlingRateInMsg(request.rateInMsg)
+                .ratePeriodInSecond(request.periodInSecond)
+                .relativeToPublishRate(request.isRelativeToPublishRate)
+                .build
+
+            adminClient.topicPolicies(request.isGlobal).setDispatchRate(request.topic, dispatchRate)
+            Future.successful(SetDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetDispatchRateResponse(status = Some(status)))
+        }
+    override def removeDispatchRate(request: RemoveDispatchRateRequest): Future[RemoveDispatchRateResponse] =
+        try {
+            logger.info(s"Removing dispatch rate policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeDispatchRate(request.topic)
+            Future.successful(RemoveDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveDispatchRateResponse(status = Some(status)))
+        }
+    override def getReplicatorDispatchRate(request: GetReplicatorDispatchRateRequest): Future[GetReplicatorDispatchRateResponse] =
+        try {
+            val replicatorDispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getReplicatorDispatchRate(request.topic)) match
+                case None =>
+                    pb.GetReplicatorDispatchRateResponse.ReplicatorDispatchRate.Unspecified(new ReplicatorDispatchRateUnspecified())
+                case Some(v) =>
+                    pb.GetReplicatorDispatchRateResponse.ReplicatorDispatchRate.Specified(new ReplicatorDispatchRateSpecified(
+                        rateInMsg = Option(v.getDispatchThrottlingRateInMsg).getOrElse(0),
+                        rateInByte = Option(v.getDispatchThrottlingRateInByte).getOrElse(0),
+                        periodInSecond = Option(v.getRatePeriodInSecond).getOrElse(0),
+                        isRelativeToPublishRate = Option(v.isRelativeToPublishRate).getOrElse(false)
+                    ))
+
+            Future.successful(GetReplicatorDispatchRateResponse(
+                status = Some(Status(code = Code.OK.index)),
+                replicatorDispatchRate = replicatorDispatchRatePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetReplicatorDispatchRateResponse(status = Some(status)))
+        }
+    override def setReplicatorDispatchRate(request: SetReplicatorDispatchRateRequest): Future[SetReplicatorDispatchRateResponse] =
+        try {
+            logger.info(s"Setting replicator dispatch rate for topic ${request.topic}")
+            val dispatchRate = DispatchRate.builder
+                .dispatchThrottlingRateInByte(request.rateInByte)
+                .dispatchThrottlingRateInMsg(request.rateInMsg)
+                .ratePeriodInSecond(request.periodInSecond)
+                .relativeToPublishRate(request.isRelativeToPublishRate)
+                .build
+
+            adminClient.topicPolicies(request.isGlobal).setReplicatorDispatchRate(request.topic, dispatchRate)
+            Future.successful(SetReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetReplicatorDispatchRateResponse(status = Some(status)))
+        }
+    override def removeReplicatorDispatchRate(request: RemoveReplicatorDispatchRateRequest): Future[RemoveReplicatorDispatchRateResponse] =
+        try {
+            logger.info(s"Removing replicator dispatch rate for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeReplicatorDispatchRate(request.topic)
+            Future.successful(RemoveReplicatorDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveReplicatorDispatchRateResponse(status = Some(status)))
+        }
+    override def getSubscriptionDispatchRate(request: GetSubscriptionDispatchRateRequest): Future[GetSubscriptionDispatchRateResponse] =
+        try {
+            val subscriptionDispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getSubscriptionDispatchRate(request.topic)) match
+                case None =>
+                    pb.GetSubscriptionDispatchRateResponse.SubscriptionDispatchRate.Unspecified(new SubscriptionDispatchRateUnspecified())
+                case Some(v) =>
+                    pb.GetSubscriptionDispatchRateResponse.SubscriptionDispatchRate.Specified(new SubscriptionDispatchRateSpecified(
+                        rateInMsg = Option(v.getDispatchThrottlingRateInMsg).getOrElse(0),
+                        rateInByte = Option(v.getDispatchThrottlingRateInByte).getOrElse(0),
+                        periodInSecond = Option(v.getRatePeriodInSecond).getOrElse(0),
+                        isRelativeToPublishRate = Option(v.isRelativeToPublishRate).getOrElse(false)
+                    ))
+
+            Future.successful(GetSubscriptionDispatchRateResponse(
+                status = Some(Status(code = Code.OK.index)),
+                subscriptionDispatchRate = subscriptionDispatchRatePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetSubscriptionDispatchRateResponse(status = Some(status)))
+        }
+    override def setSubscriptionDispatchRate(request: SetSubscriptionDispatchRateRequest): Future[SetSubscriptionDispatchRateResponse] =
+        try {
+            logger.info(s"Setting subscription dispatch rate for topic ${request.topic}")
+            val dispatchRate = DispatchRate.builder
+                .dispatchThrottlingRateInByte(request.rateInByte)
+                .dispatchThrottlingRateInMsg(request.rateInMsg)
+                .ratePeriodInSecond(request.periodInSecond)
+                .relativeToPublishRate(request.isRelativeToPublishRate)
+                .build
+
+            adminClient.topicPolicies(request.isGlobal).setSubscriptionDispatchRate(request.topic, dispatchRate)
+            Future.successful(SetSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetSubscriptionDispatchRateResponse(status = Some(status)))
+        }
+    override def removeSubscriptionDispatchRate(request: RemoveSubscriptionDispatchRateRequest): Future[RemoveSubscriptionDispatchRateResponse] =
+        try {
+            logger.info(s"Removing subscription dispatch rate for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeSubscriptionDispatchRate(request.topic)
+            Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(status)))
         }
