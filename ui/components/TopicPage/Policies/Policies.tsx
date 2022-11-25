@@ -15,6 +15,9 @@ import inactiveTopicPoliciesField from './fields/inactive-topic-policies';
 import persistenceField from './fields/persistence';
 import deduplicationField from './fields/deduplication';
 import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
+import dispatchRateField from './fields/dispatch-rate';
+import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
+import subcriptionDispatchRateField from './fields/subscription-dispatch-rate';
 
 import s from './Policies.module.css'
 
@@ -63,6 +66,9 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             persistenceField,
             deduplicationField,
             deduplicationSnapshotIntervalField,
+            dispatchRateField,
+            replicatorDispatchRateField,
+            subcriptionDispatchRateField,
           ].map(field => field({ ...props, isGlobal }))}
         />
       </div>
