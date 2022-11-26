@@ -1,3 +1,4 @@
+# Contributing
 
 ## Development environment
 
@@ -34,3 +35,7 @@
 
 - `cd ./server`
 - `sbt`, then `~reStart` in the SBT shell
+
+## Resources
+
+- [LEARNING.md](./LEARNING.md)
