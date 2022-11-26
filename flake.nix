@@ -47,6 +47,9 @@
             '';
 
             packages = [
+              pkgs.git
+              pkgs.git-lfs
+
               pkgs.nodejs-18_x
 
               graalvm
