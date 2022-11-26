@@ -35,19 +35,16 @@ case class ServerConfig(
 )
 
 case class Config(
-    grpcPort: Int,
-    httpPort: Int,
-    publicUrl: String,
-//    ui: UiConfig,
-//    serverConfig: ServerConfig,
+    ui: UiConfig,
+    server: ServerConfig,
     @describe("The Pulsar instances configuration")
     pulsarInstances: List[PulsarInstanceConfig]
 )
 
 val defaultConfig = Config(
-  grpcPort = 8090,
-  httpPort = 8091,
   publicUrl = "http://localhost:8091",
+  port = 8091,
+
   pulsarInstances = List(
     PulsarInstanceConfig(
       name = "local",

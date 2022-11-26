@@ -1,5 +1,5 @@
 {
-  description = "A library for probabilistic programming in Haskell.";
+  description = "Tools needed for X-Ray development.";
   inputs = {
     nixpkgs = {
       url = "nixpkgs/nixos-unstable";
