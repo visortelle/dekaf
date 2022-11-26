@@ -57,7 +57,6 @@ static_resources:
       type: logical_dns
       http2_protocol_options: {}
       lb_policy: round_robin
-      # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
       load_assignment:
         cluster_name: cluster_0
         endpoints:
@@ -65,5 +64,5 @@ static_resources:
             - endpoint:
                 address:
                   socket_address:
-                    address: host.docker.internal
+                    address: 0.0.0.0
                     port_value: 8090
