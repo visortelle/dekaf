@@ -21,7 +21,9 @@ object HttpServer extends ZIOAppDefault:
             })
         })
         .get("/", ctx => {
-            val model = Map("httpPort" -> "0000").asJava
+            val model = Map(
+                "publicUrl" -> "0000"
+            ).asJava
             ctx.render("/ui/index.ftl", model)
         })
         .get("/health", ctx => ctx.result("OK"))

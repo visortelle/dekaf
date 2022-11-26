@@ -20,13 +20,26 @@ case class PulsarInstanceConfig(
     webServiceUrl: String
 )
 
-case class Config(
+case class UiConfig(
+    @describe("When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.")
+    publicUrl: String,
+    @describe("X-Ray will send API requests to this endpoint.")
+    apiUrl: String
+)
+
+case class ServerConfig(
     @describe("The port HTTP server listens on")
     httpPort: Int,
     @describe("The port gRPC server listens on")
-    grpcPort: Int,
-    @describe("When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.")
-    publicUrl: String,
+    grpcPort: Int
+)
+
+case class Config(
+                     grpcPort: Int,
+                     httpPort: Int,
+                     publicUrl: String,
+//    ui: UiConfig,
+//    serverConfig: ServerConfig,
     @describe("The Pulsar instances configuration")
     pulsarInstances: List[PulsarInstanceConfig]
 )
