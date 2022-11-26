@@ -35,9 +35,9 @@ case class ServerConfig(
 )
 
 case class Config(
-                     grpcPort: Int,
-                     httpPort: Int,
-                     publicUrl: String,
+    grpcPort: Int,
+    httpPort: Int,
+    publicUrl: String,
 //    ui: UiConfig,
 //    serverConfig: ServerConfig,
     @describe("The Pulsar instances configuration")
