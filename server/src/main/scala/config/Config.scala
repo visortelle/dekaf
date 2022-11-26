@@ -35,16 +35,29 @@ case class ServerConfig(
 )
 
 case class Config(
-    ui: UiConfig,
-    server: ServerConfig,
+//    ui: UiConfig,
+//    server: ServerConfig,
+//    @describe("The Pulsar instances configuration")
+//    pulsarInstances: List[PulsarInstanceConfig]
+
+    @describe("The port HTTP server listens on")
+    httpPort: Int,
+    @describe("The port gRPC server listens on")
+    grpcPort: Int,
+    @describe("When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.")
+    publicUrl: String,
     @describe("The Pulsar instances configuration")
     pulsarInstances: List[PulsarInstanceConfig]
 )
 
 val defaultConfig = Config(
+//  ui = UiConfig(
+//    publicUrl = "http://localhost:8091",
+//    apiUrl = "http://localhost:8080"
+//  ),
+  grpcPort = 8090,
+  httpPort = 8091,
   publicUrl = "http://localhost:8091",
-  port = 8091,
-
   pulsarInstances = List(
     PulsarInstanceConfig(
       name = "local",

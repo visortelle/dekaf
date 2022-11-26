@@ -1,8 +1,3 @@
-admin:
-  access_log_path: /tmp/admin_access.log
-  address:
-    socket_address: { address: 0.0.0.0, port_value: 10001 }
-
 static_resources:
   listeners:
     - name: listener_0
@@ -27,9 +22,11 @@ static_resources:
                   - name: local_service
                     domains: ["*"]
                     routes:
-                      - match: { prefix: "/" }
+                      - match:
+                          prefix: "/api/"
                         route:
                           cluster: pulsar_ui
+                          prefix_rewrite: "/"
                           timeout: 0s
                           max_stream_duration:
                             grpc_timeout_header_max: 0s

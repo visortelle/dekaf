@@ -1,11 +1,5 @@
 .DEFAULT_GOAL := help
 
-.PHONY: dev
-dev: ## Start development using docker-compose
-	docker ps -a -q | xargs -I {} docker container rm -f {}
-	docker volume ls -q | xargs -I {} docker volume rm {}
-	docker-compose up -d
-
 .PHONY: dev-local
 dev-local: ## Start development using docker-compose with Pulsar running locally
 	docker ps -a -q | xargs -I {} docker container rm -f {}
