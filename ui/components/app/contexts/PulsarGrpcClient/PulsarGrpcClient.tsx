@@ -43,17 +43,17 @@ const defaultValue: Value = {
 const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
-  const [producerServiceClient] = useState(new _producerServiceClient.ProducerServiceClient('http://localhost:10000'));
-  const [consumerServiceClient] = useState(new _consumerServiceClient.ConsumerServiceClient('http://localhost:10000'));
-  const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient('http://localhost:10000'));
-  const [topicpoliciesServiceClient] = useState(new _topicpoliciesServiceClient.TopicpoliciesServiceClient('http://localhost:10000'));
-  const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient('http://localhost:10000'));
-  const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient('http://localhost:10000'));
-  const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient('http://localhost:10000'));
-  const [clusterServiceClient] = useState(new _clusterServiceClient.ClusterServiceClient('http://localhost:10000'));
-  const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient('http://localhost:10000'));
-  const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient('http://localhost:10000'));
-  const [brokerstatsServiceClient] = useState(new _brokerstatsServiceClient.BrokerStatsServiceClient('http://localhost:10000'));
+  const [producerServiceClient] = useState(new _producerServiceClient.ProducerServiceClient('http://localhost:10000/api'));
+  const [consumerServiceClient] = useState(new _consumerServiceClient.ConsumerServiceClient('http://localhost:10000/api'));
+  const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient('http://localhost:10000/api'));
+  const [topicpoliciesServiceClient] = useState(new _topicpoliciesServiceClient.TopicpoliciesServiceClient('http://localhost:10000/api'));
+  const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient('http://localhost:10000/api'));
+  const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient('http://localhost:10000/api'));
+  const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient('http://localhost:10000/api'));
+  const [clusterServiceClient] = useState(new _clusterServiceClient.ClusterServiceClient('http://localhost:10000/api'));
+  const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient('http://localhost:10000/api'));
+  const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient('http://localhost:10000/api'));
+  const [brokerstatsServiceClient] = useState(new _brokerstatsServiceClient.BrokerStatsServiceClient('http://localhost:10000/api'));
 
   return (
     <>
