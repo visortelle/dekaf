@@ -20,18 +20,23 @@ def getOs: IO[Throwable, OS] =
     else ZIO.fail(new Exception("Unsupported OS"))
 
 def getArch: IO[Throwable, Arch] = SystemUtils.OS_ARCH match
-    case "x86_64"   => ZIO.succeed(Amd64())
+    case "x86_64"  => ZIO.succeed(Amd64())
     case "aarch64" => ZIO.succeed(Arm64())
     case _         => ZIO.fail(new Exception("Unsupported architecture"))
 
-def getEnvoyBinaryPath: IO[Throwable, os.ResourcePath] =
+def getEnvoyBinResourcePath: IO[Throwable, os.ResourcePath] =
     for
-        _ <- ZIO.attempt(println(s"ARCHITECTURE: ${SystemUtils.OS_ARCH}"))
         currentOs <- getOs
         currentArch <- getArch
         path <- (currentOs, currentArch) match
             case (Darwin(), Amd64()) => ZIO.succeed(os.resource / "envoy" / "darwin" / "amd64" / "envoy.bin")
             case _                   => ZIO.fail(new Exception(s"Unsupported OS/architecture combination: $currentOs/$currentArch"))
-        content <- ZIO.attempt(os.read(path))
-        _ <- ZIO.attempt(println(s"CONTENT: ${content}"))
     yield path
+
+def getEnvoyBinPath: IO[Throwable, os.Path] =
+    for
+        binResourcePath <- getEnvoyBinResourcePath
+        binOut <- ZIO.attempt(os.temp.dir(null, "x-ray") / "envoy")
+        _ <- ZIO.logInfo(s"Copying Envoy proxy binary to temp directory: ${binOut.toString}")
+        _ <- ZIO.attempt(os.write(binOut, binResourcePath.toSource, "r-xr-xr-x"))
+    yield binOut

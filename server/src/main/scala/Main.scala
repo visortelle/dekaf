@@ -6,4 +6,4 @@ import _root_.envoy.Envoy
 import zio.*
 
 //object Main extends ZIOApp.Proxy(GrpcServer <> HttpServer <> Envoy)
-object Main extends ZIOApp.Proxy(Envoy)
+object Main extends ZIOApp.Proxy(GrpcServer <> Envoy)
