@@ -3,13 +3,13 @@ package envoy
 import zio.*
 import os as os
 
-case class EnvoyConfig(
+case class EnvoyConfigParams(
     httpServerPort: Int,
     grpcServerPort: Int,
     listenPort: Int
 )
 
-def renderEnvoyConfig(config: EnvoyConfig): String =
+def renderEnvoyConfig(config: EnvoyConfigParams): String =
     s"""
 static_resources:
   listeners:
@@ -78,7 +78,7 @@ static_resources:
                     port_value: ${config.grpcServerPort}
                   """.stripMargin
 
-def getEnvoyConfigPath(config: EnvoyConfig): IO[Throwable, os.Path] = for
+def getEnvoyConfigPath(config: EnvoyConfigParams): IO[Throwable, os.Path] = for
     fileContent <- ZIO.succeed(renderEnvoyConfig(config))
     tempDirPath <- ZIO.attempt(os.temp.dir(null, "x-ray"))
     tempFilePath <- ZIO.attempt(tempDirPath / "envoy.yaml")

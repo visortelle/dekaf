@@ -1,4 +1,4 @@
-val scala3Version = "3.2.0"
+val scala3Version = "3.2.1"
 val graalvmVersion = "22.3.0"
 val pulsarVersion = "2.10.2"
 val circeVersion = "0.14.3"
@@ -19,7 +19,7 @@ lazy val root = project
         // Testing
         "org.scalameta" %% "munit" % "0.7.29" % Test,
         // Logging
-        "ch.qos.logback" % "logback-classic" % "1.4.4",
+        "ch.qos.logback" % "logback-classic" % "1.4.5",
         "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
         // Pulsar
         "org.apache.pulsar" % "pulsar-client-original" % pulsarVersion,
@@ -37,14 +37,16 @@ lazy val root = project
         "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
         "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
 
+        "dev.zio" %% "zio-process" % "0.7.1",
+
         // Circe
         "io.circe" %% "circe-core" % circeVersion,
         "io.circe" %% "circe-generic" % circeVersion,
         "io.circe" %% "circe-parser" % circeVersion,
 
         // Javalin
-        "io.javalin" % "javalin" % "5.1.4",
-        "io.javalin" % "javalin-rendering" % "5.1.4",
+        "io.javalin" % "javalin" % "5.2.0",
+        "io.javalin" % "javalin-rendering" % "5.2.0",
         "org.freemarker" % "freemarker" % "2.3.31",
         "javax.annotation" % "javax.annotation-api" % "1.3.2",
 

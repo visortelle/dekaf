@@ -1,9 +1,11 @@
 package envoy
 
-import os.Path
 import zio.*
+import zio.process.{Command, ProcessOutput}
 
-val envoyConfig = EnvoyConfig(
+import java.io.File
+
+val envoyConfig = EnvoyConfigParams(
   httpServerPort = 8080,
   grpcServerPort = 8090,
   listenPort = 8081
@@ -11,9 +13,16 @@ val envoyConfig = EnvoyConfig(
 
 object Envoy extends ZIOAppDefault:
     def run: IO[Throwable, Unit] = for
+        envoyBinPath <- getEnvoyBinPath
+        configPath <- getEnvoyConfigPath(envoyConfig).map(_.toString)
+
+        _ <- ZIO.logInfo(s"Starting Envoy with config: $configPath")
+        _ <- ZIO.logInfo(s"Envoy binary path: $envoyBinPath")
+
         _ <- ZIO.logInfo(s"Starting Envoy proxy with config: $envoyConfig")
-        envoyBinaryPath <- getEnvoyBinaryPath
-        configPath <- getEnvoyConfigPath(envoyConfig)
-        _ <- ZIO.attempt(println(s"Starting Envoy with config: $configPath"))
-        _ <- ZIO.attempt(println(s"Envoy binary path: $envoyBinaryPath"))
+        _ <- Command(envoyBinPath.toString, "--config-path", configPath)
+            .redirectErrorStream(true)
+            .stderr(ProcessOutput.Inherit)
+            .stdout(ProcessOutput.Inherit)
+            .run
     yield ()
