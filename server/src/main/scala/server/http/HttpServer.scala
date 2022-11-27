@@ -28,7 +28,7 @@ object HttpServer extends ZIOAppDefault:
         })
         .get("/health", ctx => ctx.result("OK"))
 
-    val run: ZIO[Any, Throwable, Unit] = for
+    val run: IO[Throwable, Unit] = for
         config <- readConfig
         _ <- ZIO.logInfo(s"HTTP server listening on port ${config.httpPort}")
         _ <- ZIO.attempt(app.start(config.httpPort))

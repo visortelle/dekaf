@@ -1,5 +1,6 @@
 package envoy
 
+import os.Path
 import zio.*
 
 val envoyConfig = EnvoyConfig(
@@ -8,8 +9,11 @@ val envoyConfig = EnvoyConfig(
   listenPort = 8081
 )
 
-def abc = for
-    os <- getOs
-    arch <- getArch
-    configPath <- getEnvoyConfigPath(envoyConfig)
-yield ()
+object Envoy extends ZIOAppDefault:
+    def run: IO[Throwable, Unit] = for
+        _ <- ZIO.logInfo(s"Starting Envoy proxy with config: $envoyConfig")
+        envoyBinaryPath <- getEnvoyBinaryPath
+        configPath <- getEnvoyConfigPath(envoyConfig)
+        _ <- ZIO.attempt(println(s"Starting Envoy with config: $configPath"))
+        _ <- ZIO.attempt(println(s"Envoy binary path: $envoyBinaryPath"))
+    yield ()
