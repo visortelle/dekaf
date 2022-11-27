@@ -1,7 +1,15 @@
 package envoy
 
-import org.apache.commons.lang3.SystemUtils
+import zio.*
 
-//type OS = WINDOWS | LINUX | MAC | UNKNOWN
+val envoyConfig = EnvoyConfig(
+  httpServerPort = 8080,
+  grpcServerPort = 8090,
+  listenPort = 8081
+)
 
-val arch = SystemUtils.OS_ARCH
+def abc = for
+    os <- getOs
+    arch <- getArch
+    configPath <- getEnvoyConfigPath(envoyConfig)
+yield ()
