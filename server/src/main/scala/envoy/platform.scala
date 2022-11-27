@@ -33,5 +33,5 @@ def getEnvoyBinaryPath: IO[Throwable, os.ResourcePath] =
             case (Darwin(), Amd64()) => ZIO.succeed(os.resource / "envoy" / "darwin" / "amd64" / "envoy.bin")
             case _                   => ZIO.fail(new Exception(s"Unsupported OS/architecture combination: $currentOs/$currentArch"))
         content <- ZIO.attempt(os.read(path))
-        _ <- ZIO.attempt(println(s"CONTENT: ${content.size}"))
+        _ <- ZIO.attempt(println(s"CONTENT: ${content}"))
     yield path
