@@ -22,7 +22,7 @@ object Envoy extends ZIOAppDefault:
 
         _ <- Command(envoyBinPath.toString, "--config-path", configPath)
             .redirectErrorStream(true)
-//            .stderr(ProcessOutput.Inherit)
-//            .stdout(ProcessOutput.Inherit)
+            .stderr(ProcessOutput.Inherit)
+            .stdout(ProcessOutput.Inherit)
             .successfulExitCode
     yield ()
