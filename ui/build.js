@@ -1,7 +1,7 @@
 const path = require('path');
 const cssModulesPlugin = require("esbuild-css-modules-plugin");
 
-const outdir = path.resolve(__dirname, '..', 'server', 'src', 'main', 'resources', 'ui', 'static');
+const outdir = path.resolve(__dirname, '..', 'server', 'src', 'main', 'resources', 'ui', 'static', 'dist');
 
 require("esbuild")
   .build({
