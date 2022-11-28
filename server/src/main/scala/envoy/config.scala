@@ -32,7 +32,7 @@ static_resources:
               route_config:
                 name: local_route
                 virtual_hosts:
-                  - name: local_service
+                  - name: pulsar_ui
                     domains: ["*"]
                     routes:
                       - match:
@@ -44,13 +44,18 @@ static_resources:
                           max_stream_duration:
                             grpc_timeout_header_max: 0s
                             max_stream_duration: 0s
+                      - match:
+                          prefix: "/"
+                        route:
+                          cluster: pulsar_ui_http
+                          prefix_rewrite: "/"
+                          timeout: 0s
                     cors:
                       allow_origin_string_match:
                         - prefix: "*"
                       allow_methods: GET, PUT, DELETE, POST, OPTIONS
                       allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout
                       max_age: "1728000"
-                      expose_headers: custom-header-1,grpc-status,grpc-message
               http_filters:
                 - name: envoy.filters.http.grpc_web
                   typed_config:
@@ -79,7 +84,6 @@ static_resources:
     - name: pulsar_ui_http
       connect_timeout: 0.25s
       type: logical_dns
-      http2_protocol_options: {}
       lb_policy: round_robin
       load_assignment:
         cluster_name: cluster_0
