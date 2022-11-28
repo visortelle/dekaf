@@ -38,7 +38,7 @@ static_resources:
                       - match:
                           prefix: "/api/"
                         route:
-                          cluster: pulsar_ui
+                          cluster: pulsar_ui_grpc
                           prefix_rewrite: "/"
                           timeout: 0s
                           max_stream_duration:
@@ -62,7 +62,7 @@ static_resources:
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-    - name: pulsar_ui
+    - name: pulsar_ui_grpc
       connect_timeout: 0.25s
       type: logical_dns
       http2_protocol_options: {}
@@ -76,6 +76,20 @@ static_resources:
                   socket_address:
                     address: 0.0.0.0
                     port_value: ${config.grpcServerPort}
+    - name: pulsar_ui_http
+      connect_timeout: 0.25s
+      type: logical_dns
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: cluster_0
+        endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: 0.0.0.0
+                    port_value: ${config.httpServerPort}
                   """.stripMargin
 
 def getEnvoyConfigPath(config: EnvoyConfigParams): IO[Throwable, os.Path] = for
