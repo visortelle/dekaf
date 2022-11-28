@@ -20,5 +20,6 @@ require("esbuild")
         v2: true
       }),
     ],
+    watch: process.argv.includes("--watch"),
   })
   .catch(() => process.exit(1));
