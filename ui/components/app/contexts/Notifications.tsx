@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import s from './Notifications.module.css';
 
-export const toastContainerId = '__xray-toast-container';
+export const toastContainerId = '__pulsar-ui__toast-container';
 
 export type Value = {
   notifySuccess: (content: ReactNode, notificationId?: string, isShort?: boolean) => void,
@@ -35,9 +35,9 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
         draggable={false}
         pauseOnHover={true}
         pauseOnFocusLoss={true}
-        className={s.toastContainer}
-        toastClassName={s.toast}
-        bodyClassName={s.toastBody}
+        className={s.ToastContainer}
+        toastClassName={s.Toast}
+        bodyClassName={s.ToastBody}
       />
       {children}
     </Context.Provider>
