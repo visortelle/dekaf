@@ -894,15 +894,11 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
         try {
             val subscriptionTypesEnabledPb = Option(adminClient.topicPolicies(request.isGlobal).getSubscriptionTypesEnabled(request.topic)) match
                 case None =>
-                    val status = Status(code = Code.FAILED_PRECONDITION.index, message = "Subscription types enabled can't be null. Looks like a Pulsar error.")
-                    return Future.successful(GetSubscriptionTypesEnabledResponse(status = Some(status)))
-                case Some(v) if v.size() == 0 =>
                     pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Inherited(new SubscriptionTypesEnabledInherited())
                 case Some(v) =>
                     pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Specified(new SubscriptionTypesEnabledSpecified(
                         types = v.asScala.map(subscriptionTypeToPb).toSeq
                     ))
-
             Future.successful(GetSubscriptionTypesEnabledResponse(
                 status = Some(Status(code = Code.OK.index)),
                 subscriptionTypesEnabled = subscriptionTypesEnabledPb
@@ -986,9 +982,15 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
     override def getSchemaCompatibilityStrategy(request: GetSchemaCompatibilityStrategyRequest): Future[GetSchemaCompatibilityStrategyResponse] =
         try {
-            val strategy = adminClient.topicPolicies(request.isGlobal).getSchemaCompatibilityStrategy(request.topic, false)
+            val strategy = Option(adminClient.topicPolicies(request.isGlobal).getSchemaCompatibilityStrategy(request.topic, false)) match
+                case None =>
+                    pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Inherited(new SubscriptionTypesEnabledInherited())
+                case Some(v) =>
+                    pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Specified(new SubscriptionTypesEnabledSpecified(
+                        types = v.asScala.map(subscriptionTypeToPb).toSeq
+                    ))
+
             val status = Status(code = Code.OK.index)
-            println(strategy)
             Future.successful(
                 GetSchemaCompatibilityStrategyResponse(
                     status = Some(status),

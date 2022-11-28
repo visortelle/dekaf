@@ -100,7 +100,6 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try {
             val strategy = adminClient.namespaces.getSchemaCompatibilityStrategy(request.namespace)
             val status = Status(code = Code.OK.index)
-            println(strategy)
             Future.successful(
               GetSchemaCompatibilityStrategyResponse(
                 status = Some(status),
