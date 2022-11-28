@@ -14,8 +14,8 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 
 const policy = 'compactionThreshold';
 
-type PolicyValue = { type: 'inherited-from-broker-config' } | {
-  type: 'specified-for-this-namespace',
+type PolicyValue = { type: 'inherited-from-namespace-config' } | {
+  type: 'specified-for-this-topic',
   sizeBytes: number;
 } | {
   type: 'automatic-compaction-disabled'
@@ -54,15 +54,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         return;
       }
 
-      let value: PolicyValue = { type: 'inherited-from-broker-config' };
+      let value: PolicyValue = { type: 'inherited-from-namespace-config' };
       switch (res.getThresholdCase()) {
         case pb.GetCompactionThresholdResponse.ThresholdCase.DISABLED: {
-          value = { type: 'inherited-from-broker-config' };
+          value = { type: 'inherited-from-namespace-config' };
           break;
         }
         case pb.GetCompactionThresholdResponse.ThresholdCase.ENABLED: {
           const threshold = res.getEnabled()?.getThreshold() || 0;
-          value = threshold === 0 ? { type: 'automatic-compaction-disabled' } : { type: 'specified-for-this-namespace', sizeBytes: threshold };
+          value = threshold === 0 ? { type: 'automatic-compaction-disabled' } : { type: 'specified-for-this-topic', sizeBytes: threshold };
           break;
         }
       }
@@ -85,7 +85,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       initialValue={initialValue}
       onConfirm={async (value) => {
         switch (value.type) {
-          case 'inherited-from-broker-config': {
+          case 'inherited-from-namespace-config': {
             const req = new pb.RemoveCompactionThresholdRequest();
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
@@ -102,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
             break;
           }
-          case 'specified-for-this-namespace': {
+          case 'specified-for-this-topic': {
             const req = new pb.SetCompactionThresholdRequest();
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
@@ -147,15 +147,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <div className={sf.FormItem}>
             <Select<PolicyValue['type']>
               list={[
-                { type: 'item', title: 'Inherited from broker config', value: 'inherited-from-broker-config' },
+                { type: 'item', title: 'Inherited from namespace config', value: 'inherited-from-namespace-config' },
                 { type: 'item', title: 'Automatic compaction disabled', value: 'automatic-compaction-disabled' },
-                { type: 'item', title: 'Specified for this namespace', value: 'specified-for-this-namespace' },
+                { type: 'item', title: 'Specified for this topic', value: 'specified-for-this-topic' },
               ]}
               value={value.type}
               onChange={(type) => {
-                if (type === 'specified-for-this-namespace') {
+                if (type === 'specified-for-this-topic') {
                   onChange({
-                    type: 'specified-for-this-namespace', sizeBytes: 1024
+                    type: 'specified-for-this-topic', sizeBytes: 1024
                   });
                   return;
                 }
@@ -164,7 +164,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               }}
             />
           </div>
-          {value.type === 'specified-for-this-namespace' && (
+          {value.type === 'specified-for-this-topic' && (
             <MemorySizeInput
               initialValue={value.sizeBytes}
               onChange={(size) => {
