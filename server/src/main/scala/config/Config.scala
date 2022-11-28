@@ -20,14 +20,7 @@ case class PulsarInstanceConfig(
     webServiceUrl: String
 )
 
-case class UiConfig(
-    @describe("When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.")
-    publicUrl: String,
-    @describe("X-Ray will send API requests to this endpoint.")
-    apiUrl: String
-)
-
-case class ServerConfig(
+case class InternalConfig(
     @describe("The port HTTP server listens on")
     httpPort: Int,
     @describe("The port gRPC server listens on")
@@ -35,15 +28,10 @@ case class ServerConfig(
 )
 
 case class Config(
-//    ui: UiConfig,
-//    server: ServerConfig,
-//    @describe("The Pulsar instances configuration")
-//    pulsarInstances: List[PulsarInstanceConfig]
-
-    @describe("The port HTTP server listens on")
-    httpPort: Int,
-    @describe("The port gRPC server listens on")
-    grpcPort: Int,
+    @describe("Not intended for use by end-user.")
+    internal: Option[InternalConfig],
+    @describe("The port the server listens on")
+    port: Int,
     @describe("When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.")
     publicUrl: String,
     @describe("The Pulsar instances configuration")
@@ -51,12 +39,13 @@ case class Config(
 )
 
 val defaultConfig = Config(
-//  ui = UiConfig(
-//    publicUrl = "http://localhost:8091",
-//    apiUrl = "http://localhost:8080"
-//  ),
-  grpcPort = 8090,
-  httpPort = 8091,
+  internal = Some(
+    InternalConfig(
+      httpPort = 18080,
+      grpcPort = 18081
+    )
+  ),
+  port = 8080,
   publicUrl = "http://localhost:8091",
   pulsarInstances = List(
     PulsarInstanceConfig(
@@ -74,4 +63,18 @@ val yamlConfigSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
 
 val configSource = yamlConfigSource
 
-val readConfig = read(configDescriptor from configSource)
+val internalHttpPort = getFreePort
+val internalGrpcPort = getFreePort
+
+val readConfig =
+    for
+        configMemo <- read(configDescriptor from configSource).map(
+          _.copy(
+            internal = Some(InternalConfig(
+              httpPort = internalHttpPort,
+              grpcPort = internalGrpcPort
+            ))
+          )
+        ).memoize
+        config <- configMemo
+    yield config
