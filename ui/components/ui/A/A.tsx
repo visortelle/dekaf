@@ -1,7 +1,7 @@
 import React from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import s from './A.module.css'
-import externalLinkIcon from '!!raw-loader!./external-link.svg';
+import externalLinkIcon from './external-link.svg';
 
 export type AProps = React.DetailedHTMLProps<React.AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement> & {
   isExternalLink?: boolean;

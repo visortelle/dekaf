@@ -22,8 +22,8 @@ import {
   MessageFilter,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
-import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
-import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
+import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
+import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';

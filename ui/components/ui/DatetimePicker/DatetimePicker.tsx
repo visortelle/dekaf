@@ -2,8 +2,8 @@ import React from 'react';
 import s from './DatetimePicker.module.css'
 import Picker from 'react-datetime-picker/dist/entry.nostyle';
 import SvgIcon from '../SvgIcon/SvgIcon';
-import clearIcon from '!!raw-loader!./clear.svg';
-import calendarIcon from '!!raw-loader!./calendar.svg';
+import clearIcon from './clear.svg';
+import calendarIcon from './calendar.svg';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 import 'react-datetime-picker/dist/DateTimePicker.css';

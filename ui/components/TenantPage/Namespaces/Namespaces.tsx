@@ -1,8 +1,8 @@
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import s from './Namespaces.module.css'
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
-import arrowDownIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-down.svg';
-import arrowUpIcon from '!!raw-loader!../../ui/ChildrenTable/arrow-up.svg';
+import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
+import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';

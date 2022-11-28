@@ -1,7 +1,7 @@
 import React from 'react'
 import s from './SelectInput.module.css';
 import SvgIcon from '../../SvgIcon/SvgIcon';
-import arrowDownIcon from '!!raw-loader!./arrow-down.svg';
+import arrowDownIcon from './arrow-down.svg';
 import { nanoid } from 'nanoid';
 
 export type ListItem<V> = {

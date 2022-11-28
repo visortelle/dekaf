@@ -1,7 +1,7 @@
 import s from './Input.module.css';
 import { Attributes, HTMLAttributes, HTMLInputTypeAttribute, InputHTMLAttributes, useEffect, useRef } from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
-import clearIcon from '!!raw-loader!./clear.svg';
+import clearIcon from './clear.svg';
 
 export type InputProps = {
   value: string,
