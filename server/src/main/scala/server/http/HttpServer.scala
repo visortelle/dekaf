@@ -30,6 +30,8 @@ object HttpServer extends ZIOAppDefault:
 
     val run: IO[Throwable, Unit] = for
         config <- readConfig
-        _ <- ZIO.logInfo(s"HTTP server listening on port ${config.httpPort}")
-        _ <- ZIO.attempt(app.start(config.httpPort))
+        port <- ZIO.attempt(config.internal.get.httpPort)
+
+        _ <- ZIO.logInfo(s"HTTP server listening on port ${port}")
+        _ <- ZIO.attempt(app.start(port))
     yield ()

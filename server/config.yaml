@@ -1,7 +1,5 @@
-# The port HTTP server listens on.
-httpPort: 8091
-# The port gRPC server listens on.
-grpcPort: 8090
+# The port the server listens on
+port: 8090
 # When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.
 publicUrl: "http://localhsot:3000"
 

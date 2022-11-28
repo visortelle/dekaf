@@ -50,9 +50,10 @@ object GrpcServer extends ZIOAppDefault:
 
     val run: ZIO[Any, Throwable, Unit] = for
         config <- readConfig
+        port <- ZIO.attempt(config.internal.get.grpcPort)
 
-        _ <- ZIO.logInfo(s"gRPC server listening port: ${config.grpcPort}")
-        server <- ZIO.attempt(createGrpcServer(config.grpcPort))
+        _ <- ZIO.logInfo(s"gRPC server listening port: ${port}")
+        server <- ZIO.attempt(createGrpcServer(port))
         _ <- ZIO.attempt(server.start)
         _ <- ZIO.attemptBlockingInterrupt(server.awaitTermination)
     yield ()
