@@ -1,9 +1,9 @@
 import React from 'react';
 import s from './Toolbar.module.css'
-import pauseIcon from '!!raw-loader!./icons/pause.svg';
-import resumeIcon from '!!raw-loader!./icons/resume.svg';
-import resetIcon from '!!raw-loader!./icons/reset.svg';
-import consoleIcon from '!!raw-loader!./icons/console.svg';
+import pauseIcon from './icons/pause.svg';
+import resumeIcon from './icons/resume.svg';
+import resetIcon from './icons/reset.svg';
+import consoleIcon from './icons/console.svg';
 import Button from '../../ui/Button/Button';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { SessionState, SessionConfig } from './types';

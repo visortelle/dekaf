@@ -5,7 +5,7 @@ import { SessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Producer from './Producer/Producer';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
-import closeIcon from '!!raw-loader!./close.svg';
+import closeIcon from './close.svg';
 import EnteringFromBottomDiv from '../../../ui/animations/EnteringFromBottomDiv';
 
 export type ConsoleProps = {

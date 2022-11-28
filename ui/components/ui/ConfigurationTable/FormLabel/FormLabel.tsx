@@ -1,6 +1,6 @@
 import React from 'react';
 import SvgIcon from '../../SvgIcon/SvgIcon';
-import helpIcon from '!!raw-loader!./help.svg';
+import helpIcon from './help.svg';
 import s from './FormLabel.module.css'
 import ReactDOMServer from 'react-dom/server';
 
