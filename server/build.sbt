@@ -1,3 +1,5 @@
+import sbt.dsl.LinterLevel.Ignore
+
 val scala3Version = "3.2.1"
 val graalvmVersion = "22.3.0"
 val pulsarVersion = "2.10.2"
@@ -9,12 +11,24 @@ maintainer := "kiryl_valkovich@teal.tools"
 lazy val root = project
     .enablePlugins(JavaAppPackaging)
     .enablePlugins(UniversalPlugin)
+    .enablePlugins(GitVersioning)
+    .enablePlugins(BuildInfoPlugin)
     .in(file("."))
     .settings(
       name := "pulsar-ui-server",
-      version := "0.1.0-SNAPSHOT",
       scalaVersion := scala3Version,
       Compile / mainClass := Some("main.Main"),
+      buildInfoKeys ++= Seq[BuildInfoKey](
+        "contact" -> "contact@teal.tools"
+      ),
+      buildInfoPackage := "buildinfo",
+      buildInfoOptions += BuildInfoOption.BuildTime,
+      buildInfoOptions += BuildInfoOption.ToMap,
+      watchSources := watchSources.value.filterNot { a =>
+          streams.value.log.info(s"PAAAAAAAAAAAAAAAAAAAAAAAAAAATH ${a.base.getPath}")
+          a.base.getPath.contains("dist")
+      },
+      git.useGitDescribe := true,
       libraryDependencies ++= Seq(
         // Testing
         "org.scalameta" %% "munit" % "0.7.29" % Test,
@@ -31,12 +45,10 @@ lazy val root = project
 
         // ZIO
         "dev.zio" %% "zio" % "2.0.4",
-
         "dev.zio" %% "zio-config" % zioConfigVersion,
         "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
         "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
         "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
-
         "dev.zio" %% "zio-process" % "0.7.1",
 
         // Circe
@@ -54,7 +66,7 @@ lazy val root = project
         "org.apache.commons" % "commons-lang3" % "3.12.0",
         "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
         "com.google.guava" % "guava" % "31.1-jre",
-        "com.lihaoyi" %% "os-lib" % "0.8.1",
+        "com.lihaoyi" %% "os-lib" % "0.8.1"
       )
     )
 

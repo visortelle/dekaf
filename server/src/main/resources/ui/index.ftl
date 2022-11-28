@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,12 +8,13 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin=''/>
+
   <link
     href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;600&family=Fira+Sans:wght@400;700&display=swap"
-    rel="stylesheet"/>
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhai+2:wght@400;700&display=swap" rel="stylesheet" />
 
-  <!-- Include stylesheets here is the only way I found to get rid of annoying styles flickering NextJS bug after each
-  page reload. -->
+  <link href="/ui/static/globals.css" rel="stylesheet"></link>
   <link href="/ui/static/dist/entrypoint.css" rel="stylesheet"></link>
 
   <link rel="apple-touch-icon" sizes="180x180" href="/ui/static/favicon/apple-touch-icon.png"/>
@@ -27,6 +29,8 @@
 
 <body>
 
+<div id="pulsar-ui-root"></div>
+
 <script src="/ui/static/dist/entrypoint.js"></script>
 
 <script>
@@ -34,8 +38,6 @@
     pulsarUiEntrypoint.renderApp(document.getElementById('pulsar-ui-root'));
   });
 </script>
-
-<div id="pulsar-ui-root"></div>
 
 </body>
 

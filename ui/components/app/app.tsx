@@ -6,11 +6,10 @@ import * as Modals from './contexts/Modals/Modals';
 import * as BrokerConfig from './contexts/BrokersConfig';
 import * as I18n from './contexts/I18n/I18n';
 import ReactTooltip from 'react-tooltip';
-import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.css?css';
 import { SWRConfig } from 'swr';
 import useInterval from './hooks/use-interval';
 import Router from './Router/Router'
-import './globals.css';
 
 const MyApp = () => {
   return (
