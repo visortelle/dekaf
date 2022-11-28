@@ -20,6 +20,13 @@ import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
 import subcriptionDispatchRateField from './fields/subscription-dispatch-rate';
 import compactionThresholdField from './fields/compaction-threshold';
 import publishRateField from './fields/publish-rate';
+import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscription';
+import maxConsumersPerTopicField from './fields/max-consumers-per-topic';
+import maxProducersPerTopicField from './fields/max-producers-per-topic';
+import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
+import subscribyRateField from './fields/subscribe-rate';
+import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
+import maxSubscriptionsPerTopicField from './fields/max-subscriptions-per-topic';
 
 import s from './Policies.module.css'
 
@@ -73,6 +80,13 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             subcriptionDispatchRateField,
             compactionThresholdField,
             publishRateField,
+            maxConsumersPerSubscriptionField,
+            maxConsumersPerTopicField,
+            maxProducersPerTopicField,
+            subscribyRateField,
+            maxSubscriptionsPerTopicField,
+            subscriptionTypesEnabledField,
+            schemaCompatibilityStrategyField,
           ].map(field => field({ ...props, isGlobal }))}
         />
       </div>

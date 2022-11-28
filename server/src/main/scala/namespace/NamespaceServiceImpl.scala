@@ -96,12 +96,11 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
         }
 
-    override def getSchemaCompatibilityStrategy(
-        request: GetSchemaCompatibilityStrategyRequest
-    ): Future[GetSchemaCompatibilityStrategyResponse] =
+    override def getSchemaCompatibilityStrategy(request: GetSchemaCompatibilityStrategyRequest): Future[GetSchemaCompatibilityStrategyResponse] =
         try {
             val strategy = adminClient.namespaces.getSchemaCompatibilityStrategy(request.namespace)
             val status = Status(code = Code.OK.index)
+            println(strategy)
             Future.successful(
               GetSchemaCompatibilityStrategyResponse(
                 status = Some(status),
@@ -115,9 +114,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
         }
 
-    override def setSchemaCompatibilityStrategy(
-        request: SetSchemaCompatibilityStrategyRequest
-    ): Future[SetSchemaCompatibilityStrategyResponse] =
+    override def setSchemaCompatibilityStrategy(request: SetSchemaCompatibilityStrategyRequest): Future[SetSchemaCompatibilityStrategyResponse] =
         logger.info(s"Setting schema compatibility strategy policy for namespace ${request.namespace}")
 
         try {
