@@ -982,13 +982,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
 
     override def getSchemaCompatibilityStrategy(request: GetSchemaCompatibilityStrategyRequest): Future[GetSchemaCompatibilityStrategyResponse] =
         try {
-            val strategy = Option(adminClient.topicPolicies(request.isGlobal).getSchemaCompatibilityStrategy(request.topic, false)) match
-                case None =>
-                    pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Inherited(new SubscriptionTypesEnabledInherited())
-                case Some(v) =>
-                    pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Specified(new SubscriptionTypesEnabledSpecified(
-                        types = v.asScala.map(subscriptionTypeToPb).toSeq
-                    ))
+            val strategy = adminClient.topicPolicies(request.isGlobal).getSchemaCompatibilityStrategy(request.topic, false)
 
             val status = Status(code = Code.OK.index)
             Future.successful(
