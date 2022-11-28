@@ -1,6 +1,6 @@
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import App from './components/app/app';
 
 export function renderApp(rootElement: HTMLElement) {
-  ReactDOM.render(<App />, rootElement);
+  ReactDOM.createRoot(rootElement).render(<App />);
 }

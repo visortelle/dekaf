@@ -53,6 +53,7 @@
     "@types/react-highlight-words": "^0.16.4",
     "@types/uuid": "^8.3.4",
     "esbuild": "^0.15.16",
+    "esbuild-css-modules-plugin": "^2.6.2",
     "eslint": "8.16.0",
     "jest": "^28.1.1",
     "jest-environment-jsdom": "^28.1.1",

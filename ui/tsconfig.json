@@ -12,10 +12,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "noFallthroughCasesInSwitch": true,
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "components/TopicPage/Messages/Messages.tsx"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
