@@ -42,20 +42,24 @@ const defaultValue: Value = {
 
 const Context = React.createContext<Value>(defaultValue);
 
-const grpcWebUrl = 'http://localhost:8090/api';
+type DefaultProviderProps = {
+  children: ReactNode,
+  grpcWebUrl: string
+};
+export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
+  console.log('grpcWebUrl', props.grpcWebUrl);
 
-export const DefaultProvider = ({ children }: { children: ReactNode }) => {
-  const [producerServiceClient] = useState(new _producerServiceClient.ProducerServiceClient(grpcWebUrl));
-  const [consumerServiceClient] = useState(new _consumerServiceClient.ConsumerServiceClient(grpcWebUrl));
-  const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient(grpcWebUrl));
-  const [topicpoliciesServiceClient] = useState(new _topicpoliciesServiceClient.TopicpoliciesServiceClient(grpcWebUrl));
-  const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient(grpcWebUrl));
-  const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient(grpcWebUrl));
-  const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient(grpcWebUrl));
-  const [clusterServiceClient] = useState(new _clusterServiceClient.ClusterServiceClient(grpcWebUrl));
-  const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient(grpcWebUrl));
-  const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient(grpcWebUrl));
-  const [brokerstatsServiceClient] = useState(new _brokerstatsServiceClient.BrokerStatsServiceClient(grpcWebUrl));
+  const [producerServiceClient] = useState(new _producerServiceClient.ProducerServiceClient(props.grpcWebUrl));
+  const [consumerServiceClient] = useState(new _consumerServiceClient.ConsumerServiceClient(props.grpcWebUrl));
+  const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient(props.grpcWebUrl));
+  const [topicpoliciesServiceClient] = useState(new _topicpoliciesServiceClient.TopicpoliciesServiceClient(props.grpcWebUrl));
+  const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient(props.grpcWebUrl));
+  const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient(props.grpcWebUrl));
+  const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient(props.grpcWebUrl));
+  const [clusterServiceClient] = useState(new _clusterServiceClient.ClusterServiceClient(props.grpcWebUrl));
+  const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient(props.grpcWebUrl));
+  const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient(props.grpcWebUrl));
+  const [brokerstatsServiceClient] = useState(new _brokerstatsServiceClient.BrokerStatsServiceClient(props.grpcWebUrl));
 
   return (
     <>
@@ -74,7 +78,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
           brokerstatsServiceClient,
         }}
       >
-        {children}
+        {props.children}
       </Context.Provider>
     </>
   )

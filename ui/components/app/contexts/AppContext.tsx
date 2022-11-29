@@ -1,8 +1,11 @@
 import React, { ReactNode, useState } from 'react';
 
-export type Config = {
+type BuildInfo = {
 
-};
+}
+export type Config = {
+  publicUrl: string
+}
 
 export type PerformanceOptimizations = {
   pulsarConsumerState: 'inactive' | 'active';
@@ -15,14 +18,21 @@ export type Value = {
 }
 
 const defaultValue: Value = {
-  config: {},
+  config: {
+    publicUrl: ''
+  },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },
   setPerformanceOptimizations: () => undefined,
 };
 
 const Context = React.createContext<Value>(defaultValue);
 
-export const DefaultProvider = ({ children }: { children: ReactNode }) => {
+type DefaultProviderProps = {
+ children: ReactNode,
+ config: Config
+};
+
+export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const [performanceOptimizations, setPerformanceOptimizations] = useState<PerformanceOptimizations>(defaultValue.performanceOptimizations);
 
   return (
@@ -30,11 +40,12 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
       <Context.Provider
         value={{
           ...defaultValue,
+          config: props.config,
           performanceOptimizations,
           setPerformanceOptimizations: (performanceOptimizations: PerformanceOptimizations) => setPerformanceOptimizations(performanceOptimizations),
         }}
       >
-        {children}
+        {props.children}
       </Context.Provider>
     </>
   )

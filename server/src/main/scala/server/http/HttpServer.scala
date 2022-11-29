@@ -2,7 +2,7 @@ package server.http
 
 import zio.*
 import zio.ZIOAppDefault
-import _root_.config.readConfig
+import _root_.config.{readConfig, Config}
 import io.javalin.Javalin
 import io.javalin.rendering.template.JavalinFreemarker
 
@@ -10,7 +10,7 @@ import io.javalin.http.staticfiles.{Location, StaticFileConfig}
 import scala.jdk.CollectionConverters.*
 
 object HttpServer extends ZIOAppDefault:
-    private val app = Javalin
+    def createApp(appConfig: Config): Javalin = Javalin
         .create { config =>
             JavalinFreemarker.init()
             config.showJavalinBanner = false
@@ -23,7 +23,7 @@ object HttpServer extends ZIOAppDefault:
               "/",
               ctx => {
                   val model = Map(
-                    "publicUrl" -> "0000"
+                    "publicUrl" -> appConfig.publicUrl
                   ).asJava
                   ctx.render("/ui/index.ftl", model)
               }
@@ -36,5 +36,6 @@ object HttpServer extends ZIOAppDefault:
         port <- ZIO.attempt(config.internal.get.httpPort)
 
         _ <- ZIO.logInfo(s"HTTP server listening on port $port")
+        app <- ZIO.succeed(createApp(config))
         _ <- ZIO.attempt(app.start(port))
     yield ()
