@@ -1,17 +1,25 @@
 import React from 'react';
+import useSWR, { useSWRConfig } from "swr";
 import stringify from "safe-stable-stringify";
 
+import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import Select from "../../../ui/Select/Select";
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import useSWR, { useSWRConfig } from "swr";
-import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import { swrKeys } from "../../../swrKeys";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
-import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import { swrKeys } from "../../../swrKeys";
+
+import sf from '../../../ui/ConfigurationTable/form.module.css';
 
 const policy = 'schemaCompatibilityStrategy';
+
+type Strategies = keyof typeof pb.SchemaCompatibilityStrategy;
+
+type PolicyValue =
+  { type: 'inherited-from-namespace-config' } |
+  { type: 'specified-for-this-topic', schemaCompatibilityStrategy: Strategies };
 
 export type FieldInputProps = {
   topicType: 'persistent' | 'non-persistent';
@@ -21,8 +29,7 @@ export type FieldInputProps = {
   isGlobal: boolean;
 }
 
-type PolicyValue = keyof typeof pb.SchemaCompatibilityStrategy;
-const strategies = (Object.keys(pb.SchemaCompatibilityStrategy) as PolicyValue[])
+const strategies = (Object.keys(pb.SchemaCompatibilityStrategy) as Strategies[])
   .filter(key => key !== 'SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED')
   .sort((a, b) => a.localeCompare(b));
 
@@ -31,7 +38,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const onUpdateError = (err: string) => notifyError(`Can't update schema compatibility strategy. ${err}`);
   const swrKey = props.topicType === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
@@ -47,10 +53,24 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         notifyError(`Can't get schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
         return undefined;
       }
-      return (Object.entries(pb.SchemaCompatibilityStrategy).find(([_, i]) => i === res.getStrategy()) || [])[0] as PolicyValue;
+      let initialValue: PolicyValue = { type: 'inherited-from-namespace-config' };
+      switch (res.getStrategyCase()) {
+        case pb.GetSchemaCompatibilityStrategyResponse.StrategyCase.INHERITED: {
+          initialValue = { type: 'inherited-from-namespace-config' };
+          break;
+        }
+        case pb.GetSchemaCompatibilityStrategyResponse.StrategyCase.SPECIFIED: {
+          initialValue = {
+            type: 'specified-for-this-topic',
+            schemaCompatibilityStrategy: (Object.entries(pb.SchemaCompatibilityStrategy).find(([_, i]) => i === res.getSpecified()?.getStrategy()) || [])[0] as Strategies,
+          }
+          break;
+        }
+      }
+
+      return initialValue;
     },
   );
-
   if (initialValueError) {
     notifyError(`Can't get schema compatibility strategy: ${initialValueError}`);
   }
@@ -61,20 +81,32 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      initialValue={initialValue}
       key={stringify(initialValue)}
-      onConfirm={async (v) => {
-        const req = new pb.SetSchemaCompatibilityStrategyRequest();
-        req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-        req.setIsGlobal(props.isGlobal);
-        req.setStrategy(pb.SchemaCompatibilityStrategy[v]);
-        const res = await topicpoliciesServiceClient.setSchemaCompatibilityStrategy(req, {}).catch(onUpdateError);
+      initialValue={initialValue}
+      onConfirm={async (value) => {
+        if (value.type === 'inherited-from-namespace-config') {
+          const req = new pb.SetSchemaCompatibilityStrategyRequest();
+          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setIsGlobal(props.isGlobal);
 
-        if (res === undefined) {
-          return;
+          const res = await topicpoliciesServiceClient.removeSchemaCompatibilityStrategy(req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
+            return;
+          }
         }
-        if (res.getStatus()?.getCode() !== Code.OK) {
-          notifyError(`Can't update schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
+
+        if (value.type === 'specified-for-this-topic') {
+          const req = new pb.SetSchemaCompatibilityStrategyRequest();
+          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setIsGlobal(props.isGlobal);
+          req.setStrategy(pb.SchemaCompatibilityStrategy[value.schemaCompatibilityStrategy]);
+
+          const res = await topicpoliciesServiceClient.setSchemaCompatibilityStrategy (req, {});
+          if (res.getStatus()?.getCode() !== Code.OK) {
+            notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
+            return;
+          }
         }
 
         setTimeout(async () => {
@@ -84,15 +116,45 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     >
       {({ value, onChange }) => {
         return (
-          <Select<PolicyValue>
-            list={strategies.map(s => ({ type: 'item', value: s, title: s.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '') }))}
-            value={value}
-            onChange={onChange}
-          />
+          <>
+            <div className={sf.FormItem}>
+              <Select<PolicyValue['type']>
+                list={[
+                  { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from namespace config' },
+                  { type: 'item', value: 'specified-for-this-topic', title: 'Specified for this topic' }
+                ]}
+                onChange={v => {
+                  switch (v) {
+                    case 'inherited-from-namespace-config':
+                      onChange({ type: 'inherited-from-namespace-config' });
+                      break;
+                    case 'specified-for-this-topic':
+                      onChange({
+                        type: 'specified-for-this-topic',
+                        schemaCompatibilityStrategy: strategies[0]
+                      });
+                      break;
+                  }
+                }}
+                value={value.type}
+              />
+            </div>
+            {value.type === 'specified-for-this-topic' &&
+              <div className={sf.FormItem}>
+                <Select<Strategies>
+                  list={strategies.map(s => ({ type: 'item', value: s, title: s.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '') }))}
+                  value={value.schemaCompatibilityStrategy}
+                  onChange={(value) => onChange({
+                    type: 'specified-for-this-topic',
+                    schemaCompatibilityStrategy: value
+                  })}
+                />
+              </div>
+            }
+          </>
         );
       }}
     </WithUpdateConfirmation>
-
   );
 }
 

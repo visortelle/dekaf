@@ -1,13 +1,14 @@
-import stringify from 'safe-stable-stringify';
-
-import Select, { ListItem } from "../../../ui/Select/Select"; import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as Either from 'fp-ts/lib/Either';
+import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import stringify from 'safe-stable-stringify';
+import * as Either from 'fp-ts/lib/Either';
+
+import Select, { ListItem } from "../../../ui/Select/Select";
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useState } from "react";
 import { swrKeys } from "../../../swrKeys";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
