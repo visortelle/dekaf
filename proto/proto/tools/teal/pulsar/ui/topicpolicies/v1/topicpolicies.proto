@@ -765,6 +765,38 @@ message RemoveSchemaCompatibilityStrategyResponse {
   google.rpc.Status status = 1;
 }
 
+message MaxMessageSizeDisabled {
+}
+message MaxMessageSizeEnabled {
+  int32 max_message_size = 1;
+}
+message GetMaxMessageSizeRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMaxMessageSizeResponse {
+  google.rpc.Status status = 1;
+  oneof max_message_size {
+    MaxMessageSizeDisabled disabled = 2;
+    MaxMessageSizeEnabled enabled = 3;
+  }
+}
+message SetMaxMessageSizeRequest {
+  string topic = 1;
+  int32 max_message_size = 2;
+  bool is_global = 3;
+}
+message SetMaxMessageSizeResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxMessageSizeRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMaxMessageSizeResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -854,4 +886,8 @@ service TopicpoliciesService {
   rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
   rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);
   rpc RemoveSchemaCompatibilityStrategy(RemoveSchemaCompatibilityStrategyRequest) returns (RemoveSchemaCompatibilityStrategyResponse);
+
+  rpc GetMaxMessageSize(GetMaxMessageSizeRequest) returns (GetMaxMessageSizeResponse);
+  rpc SetMaxMessageSize(SetMaxMessageSizeRequest) returns (SetMaxMessageSizeResponse);
+  rpc RemoveMaxMessageSize(RemoveMaxMessageSizeRequest) returns (RemoveMaxMessageSizeResponse);
 }

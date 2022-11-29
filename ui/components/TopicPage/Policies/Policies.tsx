@@ -27,6 +27,7 @@ import schemaCompatibilityStrategyField from './fields/schema-compatibility-stra
 import subscribyRateField from './fields/subscribe-rate';
 import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
 import maxSubscriptionsPerTopicField from './fields/max-subscriptions-per-topic';
+import maxMessageSizeField from './fields/max-message-size';
 
 import s from './Policies.module.css'
 
@@ -87,6 +88,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             maxSubscriptionsPerTopicField,
             subscriptionTypesEnabledField,
             schemaCompatibilityStrategyField,
+            maxMessageSizeField,
           ].map(field => field({ ...props, isGlobal }))}
         />
       </div>
