@@ -21,5 +21,6 @@ require("esbuild")
       }),
     ],
     watch: process.argv.includes("--watch"),
+    logLevel: 'info'
   })
   .catch(() => process.exit(1));

@@ -11,12 +11,16 @@ import { SWRConfig } from 'swr';
 import useInterval from './hooks/use-interval';
 import Router from './Router/Router'
 
-const MyApp = () => {
+type AppProps = {
+  config: AppContext.Config;
+};
+
+const App: React.FC<AppProps> = (props) => {
   return (
-    <AppContext.DefaultProvider>
+    <AppContext.DefaultProvider config={props.config}>
       <I18n.DefaultProvider>
         <AsyncTasks.DefaultProvider>
-          <_MyApp />
+          <_App {...props} />
         </AsyncTasks.DefaultProvider>
       </I18n.DefaultProvider>
     </AppContext.DefaultProvider>
@@ -25,7 +29,7 @@ const MyApp = () => {
 
 export const hideShowProgressIndicatorHeader = 'x-hide-show-progress-indicator';
 
-const _MyApp = () => {
+const _App: React.FC<AppProps> = (props) => {
   useInterval(() => ReactTooltip.rebuild(), 2000); // Fix react-tooltip doesn't hide.
 
   return (
@@ -50,7 +54,7 @@ const _MyApp = () => {
 
       <Notifications.DefaultProvider>
         <Modals.DefaultProvider>
-          <PulsarGrpcClient.DefaultProvider>
+          <PulsarGrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, '')}/api`}>
             <BrokerConfig.DefaultProvider>
               <Router />
             </BrokerConfig.DefaultProvider>
@@ -61,4 +65,4 @@ const _MyApp = () => {
   );
 }
 
-export default MyApp;
+export default App;
