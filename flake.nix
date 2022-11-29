@@ -40,6 +40,15 @@
           protoc-gen-scala = pkgs.callPackage ./nix/protoc-gen-scala.nix { };
           graalvm = pkgs.callPackage ./nix/graalvm { };
 
+          missingSysPkgs =
+            if pkgs.stdenv.isDarwin then
+              [
+                pkgs.darwin.apple_sdk.frameworks.Foundation
+                pkgs.darwin.libiconv
+              ]
+            else
+              [ ];
+
           pulsar-ui-dev = pkgs.mkShell {
             shellHook = ''
               export JAVA_HOME=$(echo "$(which java)" | sed 's/\/bin\/java//g' )
@@ -66,8 +75,10 @@
 
               pkgs.kubectl
               pkgs.awscli2
-              pkgs.qemu
-            ];
+
+              pkgs.zlib
+              pkgs.upx
+            ] ++ missingSysPkgs;
           };
         in
         rec {

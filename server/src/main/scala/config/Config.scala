@@ -16,7 +16,7 @@ case class PulsarInstanceConfig(
     color: Option[String],
     @describe("The URL where Pulsar broker (or proxy) serves protobuf requests. Example: pulsar://localhost:6650")
     brokerServiceUrl: String,
-    @describe("The URL where Pulsar broker (or proxy) serves http requests. Example: http://localhost:8080")
+    @describe("The URL where Pulsar broker (or proxy) serves http requests. Example: http://localhost:8090")
     webServiceUrl: String
 )
 
@@ -41,11 +41,11 @@ case class Config(
 val defaultConfig = Config(
   internal = Some(
     InternalConfig(
-      httpPort = 18080,
-      grpcPort = 18081
+      httpPort = 18090,
+      grpcPort = 18091
     )
   ),
-  port = 8080,
+  port = 8090,
   publicUrl = "http://localhost:8091",
   pulsarInstances = List(
     PulsarInstanceConfig(
