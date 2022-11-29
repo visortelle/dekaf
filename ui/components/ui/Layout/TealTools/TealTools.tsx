@@ -1,14 +1,15 @@
 import React from 'react';
 import s from './TealTools.module.css'
 import Logo from './Logo';
+import * as AppContext from '../../../app/contexts/AppContext';
 
-export type TealToolsProps = {};
+const TealTools: React.FC = () => {
+  const { config } = AppContext.useContext();
 
-const TealTools: React.FC<TealToolsProps> = (props) => {
   return (
     <div className={s.TealTools}>
       <div className={s.Text}>
-        Teal Tool for Apache Pulsar v1.0.0-beta-1
+        {config.buildInfo.name} {config.buildInfo.version}
       </div>
       <div className={s.Links}>
         <a href="#" target="__blank" className={`A ${s.Link}`}>

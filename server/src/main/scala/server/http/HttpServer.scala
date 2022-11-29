@@ -3,9 +3,9 @@ package server.http
 import zio.*
 import zio.ZIOAppDefault
 import _root_.config.{readConfig, Config}
+import buildinfo as buildinfo
 import io.javalin.Javalin
 import io.javalin.rendering.template.JavalinFreemarker
-
 import io.javalin.http.staticfiles.{Location, StaticFileConfig}
 import scala.jdk.CollectionConverters.*
 
@@ -23,7 +23,8 @@ object HttpServer extends ZIOAppDefault:
               "/",
               ctx => {
                   val model = Map(
-                    "publicUrl" -> appConfig.publicUrl
+                    "publicUrl" -> appConfig.publicUrl,
+                    "buildInfo" -> buildinfo.BuildInfo.toMap.asJava
                   ).asJava
                   ctx.render("/ui/index.ftl", model)
               }

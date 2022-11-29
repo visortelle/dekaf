@@ -1,10 +1,14 @@
 import React, { ReactNode, useState } from 'react';
 
 type BuildInfo = {
-
+  name: string,
+  version: string,
+  builtAtString: string,
+  builtAtMillis: number
 }
 export type Config = {
-  publicUrl: string
+  publicUrl: string,
+  buildInfo: BuildInfo
 }
 
 export type PerformanceOptimizations = {
