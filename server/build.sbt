@@ -15,12 +15,9 @@ lazy val root = project
     .enablePlugins(BuildInfoPlugin)
     .in(file("."))
     .settings(
-      name := "pulsar-ui-server",
+      name := "Pulsar UI",
       scalaVersion := scala3Version,
       Compile / mainClass := Some("main.Main"),
-      buildInfoKeys ++= Seq[BuildInfoKey](
-        "contact" -> "contact@teal.tools"
-      ),
       buildInfoPackage := "buildinfo",
       buildInfoOptions += BuildInfoOption.BuildTime,
       buildInfoOptions += BuildInfoOption.ToMap,

@@ -26,9 +26,15 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const config = {
-      publicUrl: '${publicUrl}'
+      publicUrl: '${publicUrl}',
+      buildInfo: {
+        name: '${buildInfo.name}',
+        version: '${buildInfo.version}',
+        builtAtString: '${buildInfo.builtAtString}',
+        builtAtMillis: '${buildInfo.builtAtMillis}',
+      }
     };
-    
+
     pulsarUiEntrypoint.renderApp(document.getElementById('pulsar-ui-root'), config);
   });
 
