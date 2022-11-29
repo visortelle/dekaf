@@ -9,7 +9,7 @@ const TealTools: React.FC = () => {
   return (
     <div className={s.TealTools}>
       <div className={s.Text}>
-        {config.buildInfo.name} {config.buildInfo.version}
+        {config.buildInfo.name} v{config.buildInfo.version}
       </div>
       <div className={s.Links}>
         <a href="#" target="__blank" className={`A ${s.Link}`}>
