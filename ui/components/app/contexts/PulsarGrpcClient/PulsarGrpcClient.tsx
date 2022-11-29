@@ -47,8 +47,6 @@ type DefaultProviderProps = {
   grpcWebUrl: string
 };
 export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
-  console.log('grpcWebUrl', props.grpcWebUrl);
-
   const [producerServiceClient] = useState(new _producerServiceClient.ProducerServiceClient(props.grpcWebUrl));
   const [consumerServiceClient] = useState(new _consumerServiceClient.ConsumerServiceClient(props.grpcWebUrl));
   const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient(props.grpcWebUrl));
