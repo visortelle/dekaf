@@ -24,10 +24,6 @@ lazy val root = project
       buildInfoPackage := "buildinfo",
       buildInfoOptions += BuildInfoOption.BuildTime,
       buildInfoOptions += BuildInfoOption.ToMap,
-      watchSources := watchSources.value.filterNot { a =>
-          streams.value.log.info(s"PAAAAAAAAAAAAAAAAAAAAAAAAAAATH ${a.base.getPath}")
-          a.base.getPath.contains("dist")
-      },
       git.useGitDescribe := true,
       libraryDependencies ++= Seq(
         // Testing
