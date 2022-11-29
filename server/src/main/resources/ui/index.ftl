@@ -6,23 +6,13 @@
   <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin=''/>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;600&family=Fira+Sans:wght@400;700&display=swap"
-    rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhai+2:wght@400;700&display=swap" rel="stylesheet" />
-
-  <link href="/ui/static/globals.css" rel="stylesheet"></link>
-  <link href="/ui/static/dist/entrypoint.css" rel="stylesheet"></link>
+  <link href="/ui/static/fonts.css" rel="stylesheet"/>
+  <link href="/ui/static/globals.css" rel="stylesheet"/>
+  <link href="/ui/static/dist/entrypoint.css" rel="stylesheet"/>
 
   <link rel="apple-touch-icon" sizes="180x180" href="/ui/static/favicon/apple-touch-icon.png"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/ui/static/favicon/favicon-32x32.png"/>
   <link rel="icon" type="image/png" sizes="16x16" href="/ui/static/favicon/favicon-16x16.png"/>
-
-  <!-- Empty script tag as chrome bug fix, see https://stackoverflow.com/a/42969608/943337 -->
-  <script></script>
 
   <title>X-Ray</title>
 </head>
@@ -37,6 +27,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     pulsarUiEntrypoint.renderApp(document.getElementById('pulsar-ui-root'));
   });
+
 </script>
 
 </body>
