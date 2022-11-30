@@ -182,7 +182,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Compaction maxMessageSize',
+  title: 'Max message size',
   description: <span>Set max message size for a namespace.</span>,
   input: <FieldInput {...props} />
 });
