@@ -3,6 +3,7 @@ import { useQueryParam, withDefault, BooleanParam } from 'use-query-params';
 
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import Checkbox from '../../ui/Checkbox/Checkbox';
+import { H1 } from '../../ui/H/H';
 import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 
 import messageTtlField from './fields/message-ttl';
@@ -17,7 +18,7 @@ import deduplicationField from './fields/deduplication';
 import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
 import dispatchRateField from './fields/dispatch-rate';
 import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
-import subcriptionDispatchRateField from './fields/subscription-dispatch-rate';
+import subscriptionDispatchRateField from './fields/subscription-dispatch-rate';
 import compactionThresholdField from './fields/compaction-threshold';
 import publishRateField from './fields/publish-rate';
 import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscription';
@@ -54,44 +55,90 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
   return (
     <div className={s.Policies}>
-      <div className={s.ConfigurationTable}>
-        <div>
-          <span>Is global</span>
-          <Checkbox
-            value={isGlobal}
-            onChange={() => setIsGlobal(v => !v)}
-          />
-        </div>
 
+      <div className={s.Title}>
+        <H1>Topic policies</H1>
+      </div>
+
+      <div>
+        <span>Is global</span>
+        <Checkbox
+          value={isGlobal}
+          onChange={() => setIsGlobal(v => !v)}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
         <ConfigurationTable
-          title="Retention"
+          title="Topics"
           fields={[
-            messageTtlField,
-            backlogQuotaField,
             delayedDeliveryField,
-            retentionField,
-            maxUnackedMessagesPerConsumerField,
-            maxUnackedMessagesPerSubscriptionField,
-            inactiveTopicPoliciesField,
+            compactionThresholdField,
             persistenceField,
-            deduplicationField,
-            deduplicationSnapshotIntervalField,
+            publishRateField,
+            subscribyRateField,
+            maxMessageSizeField,
+            inactiveTopicPoliciesField,
+            maxProducersPerTopicField,
+            maxConsumersPerTopicField,
+            maxSubscriptionsPerTopicField,
             dispatchRateField,
             replicatorDispatchRateField,
-            subcriptionDispatchRateField,
-            compactionThresholdField,
-            publishRateField,
-            maxConsumersPerSubscriptionField,
-            maxConsumersPerTopicField,
-            maxProducersPerTopicField,
-            subscribyRateField,
-            maxSubscriptionsPerTopicField,
-            subscriptionTypesEnabledField,
-            schemaCompatibilityStrategyField,
-            maxMessageSizeField,
           ].map(field => field({ ...props, isGlobal }))}
         />
       </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Consumers"
+          fields={[
+            maxUnackedMessagesPerConsumerField
+          ].map(field => field({ ...props, isGlobal }))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Subscriptions"
+          fields={[
+            subscriptionTypesEnabledField,
+            subscriptionDispatchRateField,
+            maxConsumersPerSubscriptionField,
+            maxUnackedMessagesPerSubscriptionField
+          ].map(field => field({ ...props, isGlobal }))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Retention"
+          fields={[
+            retentionField,
+            backlogQuotaField,
+            messageTtlField,
+          ].map(field => field({ ...props, isGlobal }))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Deduplication"
+          fields={[
+            deduplicationField,
+            deduplicationSnapshotIntervalField
+          ].map(field => field({ ...props, isGlobal }))}
+        />
+      </div>
+
+      <div className={s.ConfigurationTable}>
+        <ConfigurationTable
+          title="Schema"
+          fields={[
+            schemaCompatibilityStrategyField,
+          ].map(field => field({ ...props, isGlobal }))}
+        />
+      </div>
+
     </div>
   );
 }
