@@ -12,13 +12,13 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 
-const policy = 'compactionThreshold';
+const policy = 'maxMessageSize';
 
 type PolicyValue = { type: 'inherited-from-namespace-config' } | {
   type: 'specified-for-this-topic',
   sizeBytes: number;
 } | {
-  type: 'automatic-compaction-disabled'
+  type: 'infinite'
 };
 
 export type FieldInputProps = {
@@ -41,10 +41,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
-      const req = new pb.GetCompactionThresholdRequest();
+      const req = new pb.GetMaxMessageSizeRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
-      const res = await topicpoliciesServiceClient.getCompactionThreshold(req, {});
+      const res = await topicpoliciesServiceClient.getMaxMessageSize(req, {});
       if (res === undefined) {
         return;
       }
@@ -55,14 +55,14 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
 
       let value: PolicyValue = { type: 'inherited-from-namespace-config' };
-      switch (res.getThresholdCase()) {
-        case pb.GetCompactionThresholdResponse.ThresholdCase.DISABLED: {
+      switch (res.getMaxMessageSizeCase()) {
+        case pb.GetMaxMessageSizeResponse.MaxMessageSizeCase.DISABLED: {
           value = { type: 'inherited-from-namespace-config' };
           break;
         }
-        case pb.GetCompactionThresholdResponse.ThresholdCase.ENABLED: {
-          const threshold = res.getEnabled()?.getThreshold() || 0;
-          value = threshold === 0 ? { type: 'automatic-compaction-disabled' } : { type: 'specified-for-this-topic', sizeBytes: threshold };
+        case pb.GetMaxMessageSizeResponse.MaxMessageSizeCase.ENABLED: {
+          const maxMessageSize = res.getEnabled()?.getMaxMessageSize() || 0;
+          value = maxMessageSize === 0 ? { type: 'infinite' } : { type: 'specified-for-this-topic', sizeBytes: maxMessageSize };
           break;
         }
       }
@@ -72,7 +72,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (initialValueError) {
-    notifyError(`Unable to get compaction threshold policy. ${initialValueError}`);
+    notifyError(`Unable to get compaction max message size policy. ${initialValueError}`);
   }
 
   if (initialValue === undefined) {
@@ -86,11 +86,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       onConfirm={async (value) => {
         switch (value.type) {
           case 'inherited-from-namespace-config': {
-            const req = new pb.RemoveCompactionThresholdRequest();
+            const req = new pb.RemoveMaxMessageSizeRequest();
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
 
-            const res = await topicpoliciesServiceClient.removeCompactionThreshold(req, {});
+            const res = await topicpoliciesServiceClient.removeMaxMessageSize(req, {});
 
             if (res === undefined) {
               return;
@@ -103,12 +103,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             break;
           }
           case 'specified-for-this-topic': {
-            const req = new pb.SetCompactionThresholdRequest();
+            const req = new pb.SetMaxMessageSizeRequest();
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
-            req.setThreshold(Math.floor(value.sizeBytes));
+            req.setMaxMessageSize(Math.floor(value.sizeBytes));
 
-            const res = await topicpoliciesServiceClient.setCompactionThreshold(req, {});
+            const res = await topicpoliciesServiceClient.setMaxMessageSize(req, {});
             if (res === undefined) {
               return;
             }
@@ -119,13 +119,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
             break;
           }
-          case 'automatic-compaction-disabled': {
-            const req = new pb.SetCompactionThresholdRequest();
+          case 'infinite': {
+            const req = new pb.SetMaxMessageSizeRequest();
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
-            req.setThreshold(0);
+            req.setMaxMessageSize(0);
 
-            const res = await topicpoliciesServiceClient.setCompactionThreshold(req, {});
+            const res = await topicpoliciesServiceClient.setMaxMessageSize(req, {});
             if (res === undefined) {
               return;
             }
@@ -148,7 +148,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <Select<PolicyValue['type']>
               list={[
                 { type: 'item', title: 'Inherited from namespace config', value: 'inherited-from-namespace-config' },
-                { type: 'item', title: 'Automatic compaction disabled', value: 'automatic-compaction-disabled' },
+                { type: 'item', title: 'Infinite', value: 'infinite' },
                 { type: 'item', title: 'Specified for this topic', value: 'specified-for-this-topic' },
               ]}
               value={value.type}
@@ -182,8 +182,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Compaction threshold',
-  description: <span>Set compactionThreshold for a namespace.</span>,
+  title: 'Max message size',
+  description: <span>Set max message size for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

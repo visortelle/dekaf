@@ -527,6 +527,276 @@ message RemovePublishRateResponse {
   google.rpc.Status status = 1;
 }
 
+message MaxConsumersPerSubscriptionUnspecified {}
+message MaxConsumersPerSubscriptionSpecified {
+  int32 max_consumers_per_subscription = 1;
+}
+message GetMaxConsumersPerSubscriptionRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMaxConsumersPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+  oneof max_consumers_per_subscription {
+    MaxConsumersPerSubscriptionUnspecified unspecified = 2;
+    MaxConsumersPerSubscriptionSpecified specified = 3;
+  }
+}
+message SetMaxConsumersPerSubscriptionRequest {
+  string topic = 1;
+  int32 max_consumers_per_subscription = 2;
+  bool is_global = 3;
+}
+message SetMaxConsumersPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxConsumersPerSubscriptionRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMaxConsumersPerSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+
+message MaxProducersUnspecified {}
+message MaxProducersSpecified {
+  int32 max_producers = 1;
+}
+message GetMaxProducersRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMaxProducersResponse {
+  google.rpc.Status status = 1;
+  oneof max_producers {
+    MaxProducersUnspecified unspecified = 2;
+    MaxProducersSpecified specified = 3;
+  }
+}
+message SetMaxProducersRequest {
+  string topic = 1;
+  int32 max_producers = 2;
+  bool is_global = 3;
+}
+message SetMaxProducersResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxProducersRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMaxProducersResponse {
+  google.rpc.Status status = 1;
+}
+
+message MaxSubscriptionsPerTopicUnspecified {}
+message MaxSubscriptionsPerTopicSpecified {
+  int32 max_subscriptions_per_topic = 1;
+}
+message GetMaxSubscriptionsPerTopicRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMaxSubscriptionsPerTopicResponse {
+  google.rpc.Status status = 1;
+  oneof max_subscriptions_per_topic {
+    MaxSubscriptionsPerTopicUnspecified unspecified = 2;
+    MaxSubscriptionsPerTopicSpecified specified = 3;
+  }
+}
+message SetMaxSubscriptionsPerTopicRequest {
+  string topic = 1;
+  int32 max_subscriptions_per_topic = 2;
+  bool is_global = 3;
+}
+message SetMaxSubscriptionsPerTopicResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxSubscriptionsPerTopicRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMaxSubscriptionsPerTopicResponse {
+  google.rpc.Status status = 1;
+}
+
+message MaxConsumersUnspecified {}
+message MaxConsumersSpecified {
+  int32 max_consumers = 1;
+}
+message GetMaxConsumersRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMaxConsumersResponse {
+  google.rpc.Status status = 1;
+  oneof max_consumers {
+    MaxConsumersUnspecified unspecified = 2;
+    MaxConsumersSpecified specified = 3;
+  }
+}
+message SetMaxConsumersRequest {
+  string topic = 1;
+  int32 max_consumers = 2;
+  bool is_global = 3;
+}
+message SetMaxConsumersResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxConsumersRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMaxConsumersResponse {
+  google.rpc.Status status = 1;
+}
+
+enum SubscriptionType {
+  SUBSCRIPTION_TYPE_UNSPECIFIED = 0;
+  SUBSCRIPTION_TYPE_EXCLUSIVE = 1;
+  SUBSCRIPTION_TYPE_SHARED = 2;
+  SUBSCRIPTION_TYPE_FAILOVER = 3;
+  SUBSCRIPTION_TYPE_KEY_SHARED = 4;
+}
+message SubscriptionTypesEnabledInherited {}
+message SubscriptionTypesEnabledSpecified {
+  repeated SubscriptionType types = 1;
+}
+message GetSubscriptionTypesEnabledRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+  oneof subscription_types_enabled {
+    SubscriptionTypesEnabledInherited inherited = 3;
+    SubscriptionTypesEnabledSpecified specified = 4;
+  }
+}
+message SetSubscriptionTypesEnabledRequest {
+  string topic = 1;
+  repeated SubscriptionType types = 2;
+  bool is_global = 3;
+}
+message SetSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscriptionTypesEnabledRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveSubscriptionTypesEnabledResponse {
+  google.rpc.Status status = 1;
+}
+
+message SubscribeRateUnspecified {}
+message SubscribeRateSpecified {
+  int32 subscribe_throttling_rate_per_consumer = 1;
+  int32 rate_period_in_seconds = 2;
+}
+message GetSubscribeRateRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetSubscribeRateResponse {
+  google.rpc.Status status = 1;
+  oneof subscribe_rate {
+    SubscribeRateUnspecified unspecified = 3;
+    SubscribeRateSpecified specified = 4;
+  }
+}
+message SetSubscribeRateRequest {
+  string topic = 1;
+  int32 subscribe_throttling_rate_per_consumer = 2;
+  int32 rate_period_in_seconds = 3;
+  bool is_global = 4;
+}
+message SetSubscribeRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSubscribeRateRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveSubscribeRateResponse {
+  google.rpc.Status status = 1;
+}
+
+enum SchemaCompatibilityStrategy {
+  SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED = 0;
+  SCHEMA_COMPATIBILITY_STRATEGY_UNDEFINED = 100;
+  SCHEMA_COMPATIBILITY_STRATEGY_ALWAYS_INCOMPATIBLE = 1;
+  SCHEMA_COMPATIBILITY_STRATEGY_ALWAYS_COMPATIBLE = 2;
+  SCHEMA_COMPATIBILITY_STRATEGY_BACKWARD = 3;
+  SCHEMA_COMPATIBILITY_STRATEGY_FORWARD = 4;
+  SCHEMA_COMPATIBILITY_STRATEGY_FULL = 5;
+  SCHEMA_COMPATIBILITY_STRATEGY_BACKWARD_TRANSITIVE = 6;
+  SCHEMA_COMPATIBILITY_STRATEGY_FORWARD_TRANSITIVE = 7;
+  SCHEMA_COMPATIBILITY_STRATEGY_FULL_TRANSITIVE = 8;  
+}
+message SchemaCompatibilityStrategyInherited {}
+message SchemaCompatibilityStrategySpecified {
+  SchemaCompatibilityStrategy strategy = 1;
+}
+message GetSchemaCompatibilityStrategyRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetSchemaCompatibilityStrategyResponse {
+  google.rpc.Status status = 1;
+  oneof strategy {
+    SchemaCompatibilityStrategyInherited inherited = 3;
+    SchemaCompatibilityStrategySpecified specified = 4;
+  }
+}
+message SetSchemaCompatibilityStrategyRequest {
+  string topic = 1;
+  SchemaCompatibilityStrategy strategy = 2;
+  bool is_global = 3;
+}
+message SetSchemaCompatibilityStrategyResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveSchemaCompatibilityStrategyRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveSchemaCompatibilityStrategyResponse {
+  google.rpc.Status status = 1;
+}
+
+message MaxMessageSizeDisabled {
+}
+message MaxMessageSizeEnabled {
+  int32 max_message_size = 1;
+}
+message GetMaxMessageSizeRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message GetMaxMessageSizeResponse {
+  google.rpc.Status status = 1;
+  oneof max_message_size {
+    MaxMessageSizeDisabled disabled = 2;
+    MaxMessageSizeEnabled enabled = 3;
+  }
+}
+message SetMaxMessageSizeRequest {
+  string topic = 1;
+  int32 max_message_size = 2;
+  bool is_global = 3;
+}
+message SetMaxMessageSizeResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveMaxMessageSizeRequest {
+  string topic = 1;
+  bool is_global = 2;
+}
+message RemoveMaxMessageSizeResponse {
+  google.rpc.Status status = 1;
+}
+
 service TopicpoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -588,4 +858,36 @@ service TopicpoliciesService {
   rpc GetPublishRate(GetPublishRateRequest) returns (GetPublishRateResponse);
   rpc SetPublishRate(SetPublishRateRequest) returns (SetPublishRateResponse);
   rpc RemovePublishRate(RemovePublishRateRequest) returns (RemovePublishRateResponse);
+
+  rpc GetMaxConsumersPerSubscription(GetMaxConsumersPerSubscriptionRequest) returns (GetMaxConsumersPerSubscriptionResponse);
+  rpc SetMaxConsumersPerSubscription(SetMaxConsumersPerSubscriptionRequest) returns (SetMaxConsumersPerSubscriptionResponse);
+  rpc RemoveMaxConsumersPerSubscription(RemoveMaxConsumersPerSubscriptionRequest) returns (RemoveMaxConsumersPerSubscriptionResponse);
+
+  rpc GetMaxProducers(GetMaxProducersRequest) returns (GetMaxProducersResponse);
+  rpc SetMaxProducers(SetMaxProducersRequest) returns (SetMaxProducersResponse);
+  rpc RemoveMaxProducers(RemoveMaxProducersRequest) returns (RemoveMaxProducersResponse);
+
+  rpc GetMaxSubscriptionsPerTopic(GetMaxSubscriptionsPerTopicRequest) returns (GetMaxSubscriptionsPerTopicResponse);
+  rpc SetMaxSubscriptionsPerTopic(SetMaxSubscriptionsPerTopicRequest) returns (SetMaxSubscriptionsPerTopicResponse);
+  rpc RemoveMaxSubscriptionsPerTopic(RemoveMaxSubscriptionsPerTopicRequest) returns (RemoveMaxSubscriptionsPerTopicResponse);
+
+  rpc GetMaxConsumers(GetMaxConsumersRequest) returns (GetMaxConsumersResponse);
+  rpc SetMaxConsumers(SetMaxConsumersRequest) returns (SetMaxConsumersResponse);
+  rpc RemoveMaxConsumers(RemoveMaxConsumersRequest) returns (RemoveMaxConsumersResponse);
+
+  rpc GetSubscriptionTypesEnabled(GetSubscriptionTypesEnabledRequest) returns (GetSubscriptionTypesEnabledResponse);
+  rpc SetSubscriptionTypesEnabled(SetSubscriptionTypesEnabledRequest) returns (SetSubscriptionTypesEnabledResponse);
+  rpc RemoveSubscriptionTypesEnabled(RemoveSubscriptionTypesEnabledRequest) returns (RemoveSubscriptionTypesEnabledResponse);
+
+  rpc GetSubscribeRate(GetSubscribeRateRequest) returns (GetSubscribeRateResponse);
+  rpc SetSubscribeRate(SetSubscribeRateRequest) returns (SetSubscribeRateResponse);
+  rpc RemoveSubscribeRate(RemoveSubscribeRateRequest) returns (RemoveSubscribeRateResponse);
+
+  rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
+  rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);
+  rpc RemoveSchemaCompatibilityStrategy(RemoveSchemaCompatibilityStrategyRequest) returns (RemoveSchemaCompatibilityStrategyResponse);
+
+  rpc GetMaxMessageSize(GetMaxMessageSizeRequest) returns (GetMaxMessageSizeResponse);
+  rpc SetMaxMessageSize(SetMaxMessageSizeRequest) returns (SetMaxMessageSizeResponse);
+  rpc RemoveMaxMessageSize(RemoveMaxMessageSizeRequest) returns (RemoveMaxMessageSizeResponse);
 }
