@@ -1,13 +1,14 @@
 package topicpolicies
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{CompactionThresholdEnabled, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DispatchRateSpecified, DispatchRateUnspecified, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetMaxUnackedMessagesOnConsumerRequest, GetMaxUnackedMessagesOnConsumerResponse, GetMaxUnackedMessagesOnSubscriptionRequest, GetMaxUnackedMessagesOnSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetPersistenceRequest, GetPersistenceResponse, GetPublishRateRequest, GetPublishRateResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxUnackedMessagesOnConsumerSpecified, MaxUnackedMessagesOnConsumerUnspecified, MaxUnackedMessagesOnSubscriptionSpecified, MaxUnackedMessagesOnSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, PersistenceSpecified, PersistenceUnspecified, PublishRateSpecified, PublishRateUnspecified, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxUnackedMessagesOnConsumerRequest, RemoveMaxUnackedMessagesOnConsumerResponse, RemoveMaxUnackedMessagesOnSubscriptionRequest, RemoveMaxUnackedMessagesOnSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemovePublishRateRequest, RemovePublishRateResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetMaxUnackedMessagesOnConsumerRequest, SetMaxUnackedMessagesOnConsumerResponse, SetMaxUnackedMessagesOnSubscriptionRequest, SetMaxUnackedMessagesOnSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetPersistenceRequest, SetPersistenceResponse, SetPublishRateRequest, SetPublishRateResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, TopicpoliciesServiceGrpc}
+import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{CompactionThresholdEnabled, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DispatchRateSpecified, DispatchRateUnspecified, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersRequest, GetMaxConsumersResponse, GetMaxMessageSizeRequest, GetMaxMessageSizeResponse, GetMaxProducersRequest, GetMaxProducersResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetMaxUnackedMessagesOnConsumerRequest, GetMaxUnackedMessagesOnConsumerResponse, GetMaxUnackedMessagesOnSubscriptionRequest, GetMaxUnackedMessagesOnSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetPersistenceRequest, GetPersistenceResponse, GetPublishRateRequest, GetPublishRateResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSubscribeRateRequest, GetSubscribeRateResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, GetSubscriptionTypesEnabledRequest, GetSubscriptionTypesEnabledResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersSpecified, MaxConsumersUnspecified, MaxMessageSizeDisabled, MaxMessageSizeEnabled, MaxProducersSpecified, MaxProducersUnspecified, MaxSubscriptionsPerTopicSpecified, MaxSubscriptionsPerTopicUnspecified, MaxUnackedMessagesOnConsumerSpecified, MaxUnackedMessagesOnConsumerUnspecified, MaxUnackedMessagesOnSubscriptionSpecified, MaxUnackedMessagesOnSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, PersistenceSpecified, PersistenceUnspecified, PublishRateSpecified, PublishRateUnspecified, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersRequest, RemoveMaxConsumersResponse, RemoveMaxMessageSizeRequest, RemoveMaxMessageSizeResponse, RemoveMaxProducersRequest, RemoveMaxProducersResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveMaxUnackedMessagesOnConsumerRequest, RemoveMaxUnackedMessagesOnConsumerResponse, RemoveMaxUnackedMessagesOnSubscriptionRequest, RemoveMaxUnackedMessagesOnSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemovePublishRateRequest, RemovePublishRateResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSchemaCompatibilityStrategyRequest, RemoveSchemaCompatibilityStrategyResponse, RemoveSubscribeRateRequest, RemoveSubscribeRateResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, RemoveSubscriptionTypesEnabledRequest, RemoveSubscriptionTypesEnabledResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SchemaCompatibilityStrategyInherited, SchemaCompatibilityStrategySpecified, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersRequest, SetMaxConsumersResponse, SetMaxMessageSizeRequest, SetMaxMessageSizeResponse, SetMaxProducersRequest, SetMaxProducersResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetMaxUnackedMessagesOnConsumerRequest, SetMaxUnackedMessagesOnConsumerResponse, SetMaxUnackedMessagesOnSubscriptionRequest, SetMaxUnackedMessagesOnSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetPersistenceRequest, SetPersistenceResponse, SetPublishRateRequest, SetPublishRateResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSubscribeRateRequest, SetSubscribeRateResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SetSubscriptionTypesEnabledRequest, SetSubscriptionTypesEnabledResponse, SubscribeRateSpecified, SubscribeRateUnspecified, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, SubscriptionTypesEnabledInherited, SubscriptionTypesEnabledSpecified, TopicpoliciesServiceGrpc}
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
+import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, PublishRate, RetentionPolicies}
+import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, PublishRate, RetentionPolicies, SubscribeRate}
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
@@ -725,4 +726,334 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
             err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemovePublishRateResponse(status = Some(status)))
+        }
+    override def getMaxConsumersPerSubscription(request: GetMaxConsumersPerSubscriptionRequest): Future[GetMaxConsumersPerSubscriptionResponse] =
+        try {
+            val maxConsumersPerSubscriptionPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxConsumersPerSubscription(request.topic)) match
+                case None =>
+                    pb.GetMaxConsumersPerSubscriptionResponse.MaxConsumersPerSubscription.Unspecified(new MaxConsumersPerSubscriptionUnspecified())
+                case Some(v) =>
+                    pb.GetMaxConsumersPerSubscriptionResponse.MaxConsumersPerSubscription.Specified(new MaxConsumersPerSubscriptionSpecified(
+                        maxConsumersPerSubscription = v
+                    ))
+
+            Future.successful(GetMaxConsumersPerSubscriptionResponse(
+                status = Some(Status(code = Code.OK.index)),
+                maxConsumersPerSubscription = maxConsumersPerSubscriptionPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMaxConsumersPerSubscriptionResponse(status = Some(status)))
+        }
+    override def setMaxConsumersPerSubscription(request: SetMaxConsumersPerSubscriptionRequest): Future[SetMaxConsumersPerSubscriptionResponse] =
+        try {
+            logger.info(s"Setting max consumers per subscription policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).setMaxConsumersPerSubscription(request.topic, request.maxConsumersPerSubscription)
+            Future.successful(SetMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMaxConsumersPerSubscriptionResponse(status = Some(status)))
+        }
+    override def removeMaxConsumersPerSubscription(request: RemoveMaxConsumersPerSubscriptionRequest): Future[RemoveMaxConsumersPerSubscriptionResponse] =
+        try {
+            logger.info(s"Removing max consumers per subscription policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeMaxConsumersPerSubscription(request.topic)
+            Future.successful(RemoveMaxConsumersPerSubscriptionResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMaxConsumersPerSubscriptionResponse(status = Some(status)))
+        }
+    override def getMaxProducers(request: GetMaxProducersRequest): Future[GetMaxProducersResponse] =
+        try {
+            val maxProducersPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxProducers(request.topic, false)) match
+                case None =>
+                    pb.GetMaxProducersResponse.MaxProducers.Unspecified(new MaxProducersUnspecified())
+                case Some(v) =>
+                    pb.GetMaxProducersResponse.MaxProducers.Specified(new MaxProducersSpecified(
+                        maxProducers = v
+                    ))
+
+            Future.successful(GetMaxProducersResponse(
+                status = Some(Status(code = Code.OK.index)),
+                maxProducers = maxProducersPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMaxProducersResponse(status = Some(status)))
+        }
+    override def setMaxProducers(request: SetMaxProducersRequest): Future[SetMaxProducersResponse] =
+        try {
+            logger.info(s"Setting max producers per topic policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).setMaxProducers(request.topic, request.maxProducers)
+            Future.successful(SetMaxProducersResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMaxProducersResponse(status = Some(status)))
+        }
+    override def removeMaxProducers(request: RemoveMaxProducersRequest): Future[RemoveMaxProducersResponse] =
+        try {
+            logger.info(s"Removing max producers per topic policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeMaxProducers(request.topic)
+            Future.successful(RemoveMaxProducersResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMaxProducersResponse(status = Some(status)))
+        }
+    override def getMaxSubscriptionsPerTopic(request: GetMaxSubscriptionsPerTopicRequest): Future[GetMaxSubscriptionsPerTopicResponse] =
+        try {
+            val maxSubscriptionsPerTopicPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxSubscriptionsPerTopic(request.topic)) match
+                case None =>
+                    pb.GetMaxSubscriptionsPerTopicResponse.MaxSubscriptionsPerTopic.Unspecified(new MaxSubscriptionsPerTopicUnspecified())
+                case Some(v) =>
+                    pb.GetMaxSubscriptionsPerTopicResponse.MaxSubscriptionsPerTopic.Specified(new MaxSubscriptionsPerTopicSpecified(
+                        maxSubscriptionsPerTopic = v
+                    ))
+
+            Future.successful(GetMaxSubscriptionsPerTopicResponse(
+                status = Some(Status(code = Code.OK.index)),
+                maxSubscriptionsPerTopic = maxSubscriptionsPerTopicPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMaxSubscriptionsPerTopicResponse(status = Some(status)))
+        }
+    override def setMaxSubscriptionsPerTopic(request: SetMaxSubscriptionsPerTopicRequest): Future[SetMaxSubscriptionsPerTopicResponse] =
+        try {
+            logger.info(s"Setting max subscriptions per topic policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).setMaxSubscriptionsPerTopic(request.topic, request.maxSubscriptionsPerTopic)
+            Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(status)))
+        }
+    override def removeMaxSubscriptionsPerTopic(request: RemoveMaxSubscriptionsPerTopicRequest): Future[RemoveMaxSubscriptionsPerTopicResponse] =
+        try {
+            logger.info(s"Removing max subscriptions per topic policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeMaxSubscriptionsPerTopic(request.topic)
+            Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(status)))
+        }
+    override def getMaxConsumers(request: GetMaxConsumersRequest): Future[GetMaxConsumersResponse] =
+        try {
+            val maxConsumersPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxConsumers(request.topic, false)) match
+                case None =>
+                    pb.GetMaxConsumersResponse.MaxConsumers.Unspecified(new MaxConsumersUnspecified())
+                case Some(v) =>
+                    pb.GetMaxConsumersResponse.MaxConsumers.Specified(new MaxConsumersSpecified(
+                        maxConsumers = v
+                    ))
+
+            Future.successful(GetMaxConsumersResponse(
+                status = Some(Status(code = Code.OK.index)),
+                maxConsumers = maxConsumersPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMaxConsumersResponse(status = Some(status)))
+        }
+    override def setMaxConsumers(request: SetMaxConsumersRequest): Future[SetMaxConsumersResponse] =
+        try {
+            logger.info(s"Setting max consumers per topic policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).setMaxConsumers(request.topic, request.maxConsumers)
+            Future.successful(SetMaxConsumersResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMaxConsumersResponse(status = Some(status)))
+        }
+    override def removeMaxConsumers(request: RemoveMaxConsumersRequest): Future[RemoveMaxConsumersResponse] =
+        try {
+            logger.info(s"Removing max consumers per topic policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeMaxConsumers(request.topic)
+            Future.successful(RemoveMaxConsumersResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMaxConsumersResponse(status = Some(status)))
+        }
+    override def getSubscriptionTypesEnabled(request: GetSubscriptionTypesEnabledRequest): Future[GetSubscriptionTypesEnabledResponse] =
+        def subscriptionTypeToPb(subscriptionType: SubscriptionType): pb.SubscriptionType =
+            subscriptionType match
+                case SubscriptionType.Exclusive => pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE
+                case SubscriptionType.Failover => pb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER
+                case SubscriptionType.Shared => pb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED
+                case SubscriptionType.Key_Shared => pb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED
+
+        try {
+            def inherited = pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Inherited(new SubscriptionTypesEnabledInherited())
+            val subscriptionTypesEnabledPb = Option(adminClient.topicPolicies(request.isGlobal).getSubscriptionTypesEnabled(request.topic)) match
+                case None => inherited
+                case Some(v) if v.size() == 0 => inherited
+                case Some(v) =>
+                    pb.GetSubscriptionTypesEnabledResponse.SubscriptionTypesEnabled.Specified(new SubscriptionTypesEnabledSpecified(
+                        types = v.asScala.map(subscriptionTypeToPb).toSeq
+                    ))
+            Future.successful(GetSubscriptionTypesEnabledResponse(
+                status = Some(Status(code = Code.OK.index)),
+                subscriptionTypesEnabled = subscriptionTypesEnabledPb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetSubscriptionTypesEnabledResponse(status = Some(status)))
+        }
+    override def setSubscriptionTypesEnabled(request: SetSubscriptionTypesEnabledRequest): Future[SetSubscriptionTypesEnabledResponse] =
+        def pbToSubscriptionType(subscriptionTypePb: pb.SubscriptionType): SubscriptionType =
+            subscriptionTypePb match
+                case pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE => SubscriptionType.Exclusive
+                case pb.SubscriptionType.SUBSCRIPTION_TYPE_FAILOVER => SubscriptionType.Failover
+                case pb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED => SubscriptionType.Shared
+                case pb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED => SubscriptionType.Key_Shared
+
+        try {
+            logger.info(s"Setting subscription types enabled policy for topic ${request.topic}")
+
+            val subscriptionTypesEnabled = request.types.map(pbToSubscriptionType).toSet.asJava
+            adminClient.topicPolicies(request.isGlobal).setSubscriptionTypesEnabled(request.topic, subscriptionTypesEnabled)
+            Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(status)))
+        }
+    override def removeSubscriptionTypesEnabled(request: RemoveSubscriptionTypesEnabledRequest): Future[RemoveSubscriptionTypesEnabledResponse] =
+        try {
+            logger.info(s"Removing subscription types enabled policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeSubscriptionTypesEnabled(request.topic)
+            Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(status)))
+        }
+    override def getSubscribeRate(request: GetSubscribeRateRequest): Future[GetSubscribeRateResponse] =
+        try {
+            val subscribeRatePb = Option(adminClient.topicPolicies(request.isGlobal).getSubscribeRate(request.topic, false)) match
+                case None =>
+                    pb.GetSubscribeRateResponse.SubscribeRate.Unspecified(new SubscribeRateUnspecified())
+                case Some(v) =>
+                    pb.GetSubscribeRateResponse.SubscribeRate.Specified(new SubscribeRateSpecified(
+                        subscribeThrottlingRatePerConsumer = Option(v.subscribeThrottlingRatePerConsumer).getOrElse(0),
+                        ratePeriodInSeconds = Option(v.ratePeriodInSecond).getOrElse(0)
+                    ))
+
+            Future.successful(GetSubscribeRateResponse(
+                status = Some(Status(code = Code.OK.index)),
+                subscribeRate = subscribeRatePb
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetSubscribeRateResponse(status = Some(status)))
+        }
+    override def setSubscribeRate(request: SetSubscribeRateRequest): Future[SetSubscribeRateResponse] =
+        try {
+            logger.info(s"Setting subscribe rate policy for topic ${request.topic}")
+            val subscribeRate = new SubscribeRate(request.subscribeThrottlingRatePerConsumer, request.ratePeriodInSeconds)
+
+            adminClient.topicPolicies(request.isGlobal).setSubscribeRate(request.topic, subscribeRate)
+            Future.successful(SetSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetSubscribeRateResponse(status = Some(status)))
+        }
+    override def removeSubscribeRate(request: RemoveSubscribeRateRequest): Future[RemoveSubscribeRateResponse] =
+        try {
+            logger.info(s"Removing subscribe rate policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeSubscribeRate(request.topic)
+            Future.successful(RemoveSubscribeRateResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveSubscribeRateResponse(status = Some(status)))
+        }
+    override def getSchemaCompatibilityStrategy(request: GetSchemaCompatibilityStrategyRequest): Future[GetSchemaCompatibilityStrategyResponse] =
+        try {
+            val strategy = Option(adminClient.topicPolicies(request.isGlobal).getSchemaCompatibilityStrategy(request.topic, false)) match
+                case None =>
+                    pb.GetSchemaCompatibilityStrategyResponse.Strategy.Inherited(new SchemaCompatibilityStrategyInherited())
+                case Some(v) =>
+                    pb.GetSchemaCompatibilityStrategyResponse.Strategy.Specified(new SchemaCompatibilityStrategySpecified(
+                        strategy = schemaCompatibilityStrategyToPb(v)
+                    ))
+            val status = Status(code = Code.OK.index)
+            Future.successful(
+                GetSchemaCompatibilityStrategyResponse(
+                    status = Some(status),
+                    strategy = strategy
+                )
+            )
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetSchemaCompatibilityStrategyResponse(status = Some(status)))
+        }
+    override def setSchemaCompatibilityStrategy(request: SetSchemaCompatibilityStrategyRequest): Future[SetSchemaCompatibilityStrategyResponse] =
+        logger.info(s"Setting schema compatibility strategy policy for topic ${request.topic}")
+
+        try {
+            adminClient.topicPolicies(request.isGlobal).setSchemaCompatibilityStrategy(request.topic, schemaCompatibilityStrategyFromPb(request.strategy))
+            val status = Status(code = Code.OK.index)
+            Future.successful(SetSchemaCompatibilityStrategyResponse(status = Some(status)))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetSchemaCompatibilityStrategyResponse(status = Some(status)))
+        }
+    override def removeSchemaCompatibilityStrategy(request: RemoveSchemaCompatibilityStrategyRequest): Future[RemoveSchemaCompatibilityStrategyResponse] =
+        try {
+            logger.info(s"Removing schema compatibility strategy policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeSchemaCompatibilityStrategy(request.topic)
+            Future.successful(RemoveSchemaCompatibilityStrategyResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveSchemaCompatibilityStrategyResponse(status = Some(status)))
+        }
+    override def getMaxMessageSize(request: GetMaxMessageSizeRequest): Future[GetMaxMessageSizeResponse] =
+        try {
+            val maxMessageSize = Option(adminClient.topicPolicies(request.isGlobal).getMaxMessageSize(request.topic)).map(_.toInt) match
+                case None => pb.GetMaxMessageSizeResponse.MaxMessageSize.Disabled(new MaxMessageSizeDisabled())
+                case Some(v) => pb.GetMaxMessageSizeResponse.MaxMessageSize.Enabled(new MaxMessageSizeEnabled(maxMessageSize = v))
+            Future.successful(GetMaxMessageSizeResponse(
+                status = Some(Status(code = Code.OK.index)),
+                maxMessageSize
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetMaxMessageSizeResponse(status = Some(status)))
+        }
+    override def setMaxMessageSize(request: SetMaxMessageSizeRequest): Future[SetMaxMessageSizeResponse] =
+        try {
+            logger.info(s"Setting max message size policy for topic ${request.topic}. ${request.maxMessageSize}")
+            adminClient.topicPolicies(request.isGlobal).setMaxMessageSize(request.topic, request.maxMessageSize)
+            Future.successful(SetMaxMessageSizeResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(SetMaxMessageSizeResponse(status = Some(status)))
+        }
+    override def removeMaxMessageSize(request: RemoveMaxMessageSizeRequest): Future[RemoveMaxMessageSizeResponse] =
+        try {
+            logger.info(s"Removing max message size policy for topic ${request.topic}")
+            adminClient.topicPolicies(request.isGlobal).removeMaxMessageSize(request.topic)
+            Future.successful(RemoveMaxMessageSizeResponse(status = Some(Status(code = Code.OK.index))))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(RemoveMaxMessageSizeResponse(status = Some(status)))
         }
