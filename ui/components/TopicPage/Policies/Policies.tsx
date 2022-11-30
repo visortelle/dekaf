@@ -18,6 +18,8 @@ import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-
 import dispatchRateField from './fields/dispatch-rate';
 import replicatorDispatchRateField from './fields/replicator-dispatch-rate';
 import subcriptionDispatchRateField from './fields/subscription-dispatch-rate';
+import compactionThresholdField from './fields/compaction-threshold';
+import publishRateField from './fields/publish-rate';
 
 import s from './Policies.module.css'
 
@@ -69,6 +71,8 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             dispatchRateField,
             replicatorDispatchRateField,
             subcriptionDispatchRateField,
+            compactionThresholdField,
+            publishRateField,
           ].map(field => field({ ...props, isGlobal }))}
         />
       </div>
