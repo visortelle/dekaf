@@ -123,7 +123,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             const req = new pb.SetMaxMessageSizeRequest();
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
-            req.setMaxMessageSize(-1);
+            req.setMaxMessageSize(0);
 
             const res = await topicpoliciesServiceClient.setMaxMessageSize(req, {});
             if (res === undefined) {
