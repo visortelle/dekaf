@@ -122,7 +122,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               <Select<PolicyValue['type']>
                 list={[
                   { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from namespace config' },
-                  { type: 'item', value: 'specified-for-this-topic', title: 'specified-for-this-topic' },
+                  { type: 'item', value: 'specified-for-this-topic', title: 'Specified for this topic' },
                 ]}
                 value={value.type}
                 onChange={(type) => {

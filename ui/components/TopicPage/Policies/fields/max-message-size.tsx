@@ -18,7 +18,7 @@ type PolicyValue = { type: 'inherited-from-namespace-config' } | {
   type: 'specified-for-this-topic',
   sizeBytes: number;
 } | {
-  type: 'infinity-max-message-size'
+  type: 'infinite'
 };
 
 export type FieldInputProps = {
@@ -62,7 +62,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         }
         case pb.GetMaxMessageSizeResponse.MaxMessageSizeCase.ENABLED: {
           const maxMessageSize = res.getEnabled()?.getMaxMessageSize() || 0;
-          value = maxMessageSize === 0 ? { type: 'infinity-max-message-size' } : { type: 'specified-for-this-topic', sizeBytes: maxMessageSize };
+          value = maxMessageSize === 0 ? { type: 'infinite' } : { type: 'specified-for-this-topic', sizeBytes: maxMessageSize };
           break;
         }
       }
@@ -119,7 +119,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
             break;
           }
-          case 'infinity-max-message-size': {
+          case 'infinite': {
             const req = new pb.SetMaxMessageSizeRequest();
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
@@ -148,7 +148,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <Select<PolicyValue['type']>
               list={[
                 { type: 'item', title: 'Inherited from namespace config', value: 'inherited-from-namespace-config' },
-                { type: 'item', title: 'Infinity max message size', value: 'infinity-max-message-size' },
+                { type: 'item', title: 'Infinite', value: 'infinite' },
                 { type: 'item', title: 'Specified for this topic', value: 'specified-for-this-topic' },
               ]}
               value={value.type}
