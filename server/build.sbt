@@ -7,37 +7,20 @@ val zioConfigVersion = "3.0.2"
 maintainer := "kiryl_valkovich@teal.tools"
 
 lazy val root = project
-    .enablePlugins(GraalVMNativeImagePlugin)
+    .enablePlugins(JavaAppPackaging)
+    .enablePlugins(UniversalPlugin)
     .enablePlugins(GitVersioning)
     .enablePlugins(BuildInfoPlugin)
-    .enablePlugins(NativeImagePlugin)
     .in(file("."))
     .settings(
       name := "pulsar-ui",
       scalaVersion := scala3Version,
       Compile / mainClass := Some("main.Main"),
-      nativeImageInstalled := true,
-      nativeImageOptions ++= Seq(
-        s"-H:ReflectionConfigurationFiles=${target.value / "native-image-configs" / "reflect-config.json"}",
-        s"-H:ConfigurationFileDirectories=${target.value / "native-image-configs"}",
-        "-H:Log=registerResource:5",
-        "-H:IncludeResources=ui/.*",
-        "-H:+JNI",
-        "--language:js",
-        "-H:+ReportExceptionStackTraces",
-        "-H:-CheckToolchain",
-        "--enable-preview",
-        "--initialize-at-build-time=ch.qos.logback",
-        "--initialize-at-build-time=org.snakeyaml",
-        "--initialize-at-run-time=io.netty",
-        "--trace-object-instantiation=ch.qos.logback.core.AsyncAppenderBase$Worker",
-        "--trace-class-initialization=ch.qos.logback.classic.Logger"
-      ),
       buildInfoPackage := "buildinfo",
       buildInfoOptions += BuildInfoOption.BuildTime,
       buildInfoOptions += BuildInfoOption.ToMap,
       git.useGitDescribe := true,
-//      Compile / packageDoc / mappings := Seq(), // https://github.com/sbt/sbt-native-packager/issues/651
+      Compile / packageDoc / mappings := Seq(), // https://github.com/sbt/sbt-native-packager/issues/651
       libraryDependencies ++= Seq(
         // Testing
         "org.scalameta" %% "munit" % "0.7.29" % Test,

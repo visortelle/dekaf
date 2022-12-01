@@ -20,10 +20,9 @@ def getOs: IO[Throwable, OS] =
     else ZIO.fail(new Exception("Unsupported OS"))
 
 def getArch: IO[Throwable, Arch] = SystemUtils.OS_ARCH match
-//    case "x86_64"  => ZIO.succeed(Amd64())
-//    case "aarch64" => ZIO.succeed(Arm64())
-    case _  => ZIO.succeed(Amd64())
-//    case _         => ZIO.fail(new Exception("Unsupported architecture"))
+    case "x86_64"  => ZIO.succeed(Amd64())
+    case "aarch64" => ZIO.succeed(Arm64())
+    case _         => ZIO.fail(new Exception("Unsupported architecture"))
 
 def getEnvoyBinResourcePath: IO[Throwable, os.ResourcePath] =
     for
