@@ -23,7 +23,13 @@ export type Value = {
 
 const defaultValue: Value = {
   config: {
-    publicUrl: ''
+    publicUrl: '',
+    buildInfo: {
+      name: '',
+      version: '',
+      builtAtString: '',
+      builtAtMillis: 0
+    }
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },
   setPerformanceOptimizations: () => undefined,

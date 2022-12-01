@@ -56,9 +56,6 @@
             '';
 
             packages = [
-              pkgs.git
-              pkgs.git-lfs
-
               pkgs.nodejs-18_x
 
               graalvm
@@ -76,8 +73,10 @@
               pkgs.kubectl
               pkgs.awscli2
 
+              pkgs.git
+              pkgs.git-lfs
+
               pkgs.zlib
-              pkgs.upx
             ] ++ missingSysPkgs;
           };
         in
