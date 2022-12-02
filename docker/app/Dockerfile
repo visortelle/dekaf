@@ -12,20 +12,22 @@ COPY ./*.nix ./
 COPY ./nix ./nix
 COPY ./flake.lock ./
 
-# RUN nix build -L --show-trace
-# SHELL ["nix-shell", "--run"]
+RUN nix build -L --show-trace
+SHELL ["nix-shell", "--run"]
 
-# # Cache server dependencies
-# COPY ./server/build.sbt ./server/
-# RUN cd ./server && sbt update
+# Cache server dependencies
+COPY ./server/build.sbt ./server/
+COPY ./server/project/* ./server/project/
+RUN cd ./server && sbt update
 
-# # Cache ui dependencies
-# COPY ui/package-json.lock ./ui/
-# RUN cd ./us && npm ci
+# Cache ui dependencies
+COPY ui/package.json ./ui/
+COPY ui/package-lock.json ./ui/
+RUN cd ./ui && npm ci
 
-# COPY . .
+COPY . .
 
-# RUN make
+RUN make build-jar
 
 # ################################################################
 

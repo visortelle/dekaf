@@ -1,5 +1,3 @@
-.DEFAULT_GOAL := clean-and-build
-
 .PHONY: clean-and-build
 clean-and-build: clean build
 
