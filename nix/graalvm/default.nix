@@ -60,7 +60,7 @@ stdenv.mkDerivation rec {
       patchelf $out/bin/java --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)"
     fi
 
-    $out/bin/gu --jvm install js
+    $out/bin/gu install js
   '';
 
   outputs = [ "out" ];
