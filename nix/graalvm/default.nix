@@ -42,6 +42,7 @@ stdenv.mkDerivation rec {
   buildInputs = [ file ];
 
   installPhase = ''
+    set -x
     mkdir -p "$out"
 
     if [[ -d "$src/Contents" ]]; then
