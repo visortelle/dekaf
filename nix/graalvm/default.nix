@@ -60,7 +60,9 @@ stdenv.mkDerivation rec {
       patchelf $out/bin/java --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)"
     fi
 
-    $out/bin/gu install js
+    export JAVA_HOME=$out
+    export GRAAL_HOME=$out
+    $out/bin/gu --jvm --vm.Djava.net.useSystemProxy=true install js
   '';
 
   outputs = [ "out" ];
