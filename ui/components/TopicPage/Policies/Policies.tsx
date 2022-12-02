@@ -70,7 +70,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
       <div className={s.ConfigurationTable}>
         <ConfigurationTable
-          title="Topics"
+          title="Topic"
           fields={[
             delayedDeliveryField,
             compactionThresholdField,
