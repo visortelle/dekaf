@@ -55,6 +55,7 @@ stdenv.mkDerivation rec {
     export LD_LIBRARY_PATH="${runtimeLibraryPath}"
 
     if (uname -a | grep -i "linux"); then
+      patchelf $out/bin/gu --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)"
       patchelf $out/bin/java --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)"
     fi
 
