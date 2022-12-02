@@ -28,7 +28,7 @@ let
 
   graaljs_linux_x86_64 = {
     url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-linux-amd64-22.3.0.jar";
-    sha256 = "";
+    sha256 = "sha256-QlROK3LZd/nQBn9FFiE3QzKpc5083Th5tBGoKH8YSvM=";
   };
 
   graaljs_darwin_x86_64 = {
@@ -69,7 +69,6 @@ stdenv.mkDerivation rec {
   buildInputs = [ file ];
 
   installPhase = ''
-    set -x
     mkdir -p "$out"
 
     if [[ -d "$src/Contents" ]]; then
