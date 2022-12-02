@@ -19,10 +19,13 @@ def getOs: IO[Throwable, OS] =
     else if SystemUtils.IS_OS_MAC then ZIO.succeed(Darwin())
     else ZIO.fail(new Exception("Unsupported OS"))
 
-def getArch: IO[Throwable, Arch] = SystemUtils.OS_ARCH match
-    case "x86_64"  => ZIO.succeed(Amd64())
-    case "aarch64" => ZIO.succeed(Arm64())
-    case _         => ZIO.fail(new Exception("Unsupported architecture"))
+def getArch: IO[Throwable, Arch] =
+    val arch = SystemUtils.OS_ARCH
+    arch match
+        case "x86_64"  => ZIO.succeed(Amd64())
+        case "amd64"  => ZIO.succeed(Amd64())
+        case "aarch64" => ZIO.succeed(Arm64())
+        case _         => ZIO.fail(new Exception(s"Unsupported architecture: ${arch}"))
 
 def getEnvoyBinResourcePath: IO[Throwable, os.ResourcePath] =
     for
