@@ -33,7 +33,7 @@ let
 
   graaljs_darwin_x86_64 = {
     url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-darwin-amd64-22.3.0.jar";
-    sha256 = "";
+    sha256 = "sha256-u+K/MExdj+ubd6ABtMKs46mDFT6ooqGnj03g0Wilv8A=";
   };
 
   graaljs_darwin_arm64 = {
