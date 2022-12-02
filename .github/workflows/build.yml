@@ -5,18 +5,14 @@ jobs:
   build:
     strategy:
       matrix:
-        os:
-          - ubuntu-20.04
-          # - macos-latest
         include:
-          - os: ubuntu-20.04
-            system: x86_64-linux
-            experimental: false
+          - os: Linux
+          - arch: X64
           # - os: macos-latest
           #   system: x86_64-darwin
           #   experimental: false
 
-    runs-on: ${{ matrix.os }}
+    runs-on: [self-hosted, matrix.os, matrix.arch]
 
     steps:
       - uses: actions/checkout@v3
