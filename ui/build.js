@@ -11,8 +11,9 @@ require("esbuild")
     loader: {
       ".svg": "text",
     },
+    minify: true,
     globalName: "pulsarUiEntrypoint",
-    sourcemap: true,
+    sourcemap: 'both',
     outdir,
     plugins: [
       cssModulesPlugin({

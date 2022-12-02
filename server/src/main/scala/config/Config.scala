@@ -59,9 +59,7 @@ val defaultConfig = Config(
 
 val configDescriptor = descriptor[Config].default(defaultConfig)
 
-val yamlConfigSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
-
-val configSource = yamlConfigSource
+val configSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
 
 val internalHttpPort = getFreePort
 val internalGrpcPort = getFreePort

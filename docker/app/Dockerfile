@@ -1,32 +1,38 @@
-FROM nixos/nix:2.11.1 as builder
+FROM nixos/nix:2.11.1
 
-WORKDIR /src
-COPY . .
-
-SHELL ["nix-shell", "--run"]
-
-# Build protobuf
-RUN ls -la /
-RUN cd ./proto && make build
-
-# Build UI
-RUN cd ./ui && make build && rm -rf ./.next/cache
-
-# Build server
-RUN cd ./server && make build
-
-################################################################
-
-FROM ghcr.io/graalvm/jdk:ol8-java17-22.3.0
-
-RUN useradd --user-group --system --create-home --no-log-init teal-user
-USER teal-user
 WORKDIR /workdir
 
-COPY --from=builder --chown=tealuser:tealuser /workdir/ui/package-lock.json .
-COPY --from=builder --chown=tealuser:tealuser /workdir/ui/.next .
-RUN cd ./ui && npm ci
+# Configure Nix
+RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable && nix-channel --update
+COPY ./docker/app/nix.conf /tmp/nix.conf
+RUN cat /tmp/nix.conf >> /etc/nix/nix.conf && rm /tmp/nix.conf
 
-COPY --from=builder --chown=tealuser:tealuser /workdir/server/target/universal/* .
-RUN ls -laR  /workdir
-# RUN mv /app/ui-api* /app/ui-api
+# Cache Nix dependencies
+COPY ./*.nix ./
+COPY ./nix ./nix
+COPY ./flake.lock ./
+
+# RUN nix build -L --show-trace
+# SHELL ["nix-shell", "--run"]
+
+# # Cache server dependencies
+# COPY ./server/build.sbt ./server/
+# RUN cd ./server && sbt update
+
+# # Cache ui dependencies
+# COPY ui/package-json.lock ./ui/
+# RUN cd ./us && npm ci
+
+# COPY . .
+
+# RUN make
+
+# ################################################################
+
+# FROM ghcr.io/graalvm/jdk:ol8-java17-22.3.0
+
+# RUN useradd --user-group --system --create-home --no-log-init teal-user
+# USER teal-user
+# WORKDIR /workdir
+
+# COPY --from=builder --chown=tealuser:tealuser /workdir/server/target/universal/* .

@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchzip, fetchurl }:
+{ lib, stdenv, fetchzip, fetchurl, zlib, file }:
 
 let
   src_linux_arm64 = {
@@ -8,7 +8,7 @@ let
 
   src_linux_x86_64 = {
     url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.0/graalvm-ce-java17-linux-amd64-22.3.0.tar.gz";
-    sha256 = "";
+    sha256 = "sha256-VN5Mmqiz15uLQMNJBym+VtSumcT5NWhIIXp5b4piYKw=";
   };
 
   src_darwin_x86_64 = {
@@ -38,6 +38,9 @@ stdenv.mkDerivation rec {
   else if system == "aarch64-darwin" then src_darwin_x86_64
   else throw "Unsupported system");
 
+  runtimeLibraryPath = lib.makeLibraryPath ([ zlib ]);
+  buildInputs = [ file ];
+
   installPhase = ''
     mkdir -p "$out"
 
@@ -47,10 +50,16 @@ stdenv.mkDerivation rec {
       cp -r $src/* $out/;
     fi
 
-    chmod -R 700 $out
+    chmod -R 700 $out;
+
+    export LD_LIBRARY_PATH="${runtimeLibraryPath}"
+
+    if (uname -a | grep "linuxkit"); then
+      patchelf $out/bin/gu --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)"
+      patchelf $out/bin/java --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)"
+    fi
 
     $out/bin/gu install js
-    $out/bin/gu install native-image
   '';
 
   outputs = [ "out" ];

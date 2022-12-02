@@ -49,13 +49,19 @@
             else
               [ ];
 
+          runtimeLibraryPath = lib.makeLibraryPath ([ pkgs.zlib ]);
+
           pulsar-ui-dev = pkgs.mkShell {
             shellHook = ''
               export JAVA_HOME=$(echo "$(which java)" | sed 's/\/bin\/java//g' )
               export GRAAL_HOME=$JAVA_HOME
+
+
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}"
             '';
 
             packages = [
+              pkgs.gnumake
               pkgs.nodejs-18_x
 
               graalvm
@@ -75,8 +81,6 @@
 
               pkgs.git
               pkgs.git-lfs
-
-              pkgs.zlib
             ] ++ missingSysPkgs;
           };
         in
