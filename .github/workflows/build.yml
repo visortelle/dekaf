@@ -7,14 +7,14 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          # - macos-latest
         include:
           - os: ubuntu-latest
             system: x86_64-linux
             experimental: false
-          - os: macos-latest
-            system: x86_64-darwin
-            experimental: false
+          # - os: macos-latest
+          #   system: x86_64-darwin
+          #   experimental: false
 
     runs-on: ${{ matrix.os }}
 
