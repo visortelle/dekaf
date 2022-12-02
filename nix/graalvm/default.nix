@@ -22,22 +22,22 @@ let
   };
 
   graaljs_linux_arm64 = {
-    url = "";
+    url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-linux-aarch64-22.3.0.jar";
     sha256 = "";
   };
 
   graaljs_linux_x86_64 = {
-    url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/graaljs-22.3.0-linux-amd64.tar.gz";
+    url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-linux-amd64-22.3.0.jar";
     sha256 = "";
   };
 
-  graaljv_darwin_x86_64 = {
-    url = "";
+  graaljs_darwin_x86_64 = {
+    url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-darwin-amd64-22.3.0.jar";
     sha256 = "";
   };
 
   graaljs_darwin_arm64 = {
-    url = "";
+    url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-darwin-aarch64-22.3.0.jar";
     sha256 = "";
   };
 in
@@ -58,7 +58,7 @@ stdenv.mkDerivation rec {
   else if system == "aarch64-darwin" then src_darwin_x86_64
   else throw "Unsupported system");
 
-  graaljs_src = fetchurl (if system == "x86_64-linux" then graaljs_linux_x86_64
+  graaljs_jar = fetchurl (if system == "x86_64-linux" then graaljs_linux_x86_64
   else if system == "aarch64-linux" then graaljs_linux_arm64
   else if system == "x86_64-darwin" then graaljs_darwin_x86_64
   else if system == "aarch64-darwin" then graaljs_darwin_x86_64
@@ -87,7 +87,7 @@ stdenv.mkDerivation rec {
       patchelf $out/bin/java --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)"
     fi
 
-    $out/bin/gu -L install ${graaljs_src}
+    $out/bin/gu -L install ${graaljs_jar}
   '';
 
   outputs = [ "out" ];
