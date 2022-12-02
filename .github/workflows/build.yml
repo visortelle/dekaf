@@ -31,4 +31,6 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: Build and test
-        run: nix-shell --run 'make build-jar'
+        run: |
+          nix build -L
+          nix-shell --run 'make build-jar'
