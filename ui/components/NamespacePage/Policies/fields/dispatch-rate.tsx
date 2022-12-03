@@ -178,4 +178,3 @@ const field = (props: FieldInputProps): ConfigurationField => ({
 });
 
 export default field;
-

@@ -1,14 +1,14 @@
-.DEFAULT_GOAL := help
+.PHONY: clean-and-build
+clean-and-build: clean build
 
-.PHONY: dev
-dev: ## Start development
-	sbt ~reStart
+.PHONY: clean
+clean:
+	rm -rf ./target
 
 .PHONY: build
 build: # Build
 	sbt universal:packageBin
 
-.PHONY: help
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
+.PHONY: dev
+dev: ## Start development
+	sbt ~reStart

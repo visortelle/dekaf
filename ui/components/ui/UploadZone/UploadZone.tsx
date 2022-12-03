@@ -2,7 +2,7 @@ import { useRef } from "react";
 import Upload from 'rc-upload';
 import s from './UploadZone.module.css';
 import SvgIcon from "../SvgIcon/SvgIcon";
-import uploadIcon from '!!raw-loader!./upload.svg';
+import uploadIcon from './upload.svg';
 
 export type UploadZoneProps = {
   children: React.ReactNode,

@@ -1,5 +1,5 @@
 {
-  description = "A library for probabilistic programming in Haskell.";
+  description = "Tools needed for X-Ray development.";
   inputs = {
     nixpkgs = {
       url = "nixpkgs/nixos-unstable";
@@ -40,13 +40,28 @@
           protoc-gen-scala = pkgs.callPackage ./nix/protoc-gen-scala.nix { };
           graalvm = pkgs.callPackage ./nix/graalvm { };
 
+          missingSysPkgs =
+            if pkgs.stdenv.isDarwin then
+              [
+                pkgs.darwin.apple_sdk.frameworks.Foundation
+                pkgs.darwin.libiconv
+              ]
+            else
+              [ ];
+
+          runtimeLibraryPath = lib.makeLibraryPath ([ pkgs.zlib ]);
+
           pulsar-ui-dev = pkgs.mkShell {
             shellHook = ''
               export JAVA_HOME=$(echo "$(which java)" | sed 's/\/bin\/java//g' )
               export GRAAL_HOME=$JAVA_HOME
+
+
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}"
             '';
 
             packages = [
+              pkgs.gnumake
               pkgs.nodejs-18_x
 
               graalvm
@@ -63,8 +78,10 @@
 
               pkgs.kubectl
               pkgs.awscli2
-              pkgs.qemu
-            ];
+
+              pkgs.git
+              pkgs.git-lfs
+            ] ++ missingSysPkgs;
           };
         in
         rec {

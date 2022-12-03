@@ -12,11 +12,3 @@ services:
     volumes:
       - $PWD/cases:/cases
       - $PWD/entrypoint.sh:/entrypoint.sh
-
-  envoy:
-    image: envoyproxy/envoy:v1.24-latest
-    ports:
-      - 10000:10000
-      - 10001:10001
-    volumes:
-      - $PWD/envoy/envoy.yaml:/etc/envoy/envoy.yaml

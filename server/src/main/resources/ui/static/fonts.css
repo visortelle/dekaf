@@ -1,0 +1,43 @@
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(./fonts/FiraCode/FiraCode-Light.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(./fonts/FiraCode/FiraCode-Regular.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(./fonts/FiraCode/FiraCode-Medium.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(./fonts/FiraCode/FiraCode-SemiBold.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(./fonts/FiraCode/FiraCode-Bold.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Baloo Bhai 2';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(./fonts/BalooBhai2/BalooBhai2-Bold.woff2) format('woff2');
+}

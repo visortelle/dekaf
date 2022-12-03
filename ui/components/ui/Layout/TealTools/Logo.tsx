@@ -3,7 +3,7 @@ import s from './Logo.module.css';
 const Logo = (props: { fontSize: string, isDark?: boolean, isCompact?: boolean }) => {
   return (
     <div
-      className={s.logo}
+      className={s.Logo}
       style={{
         fontSize: props.fontSize,
         color: props.isDark ? '#fff' : 'var(--text-color)'
