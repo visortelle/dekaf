@@ -55,13 +55,13 @@ stdenv.mkDerivation rec {
   src = fetchzip (if system == "x86_64-linux" then src_linux_x86_64
   else if system == "aarch64-linux" then src_linux_arm64
   else if system == "x86_64-darwin" then src_darwin_x86_64
-  else if system == "aarch64-darwin" then src_darwin_x86_64
+  else if system == "aarch64-darwin" then src_darwin_arm64
   else throw "Unsupported system");
 
   graaljs_jar = fetchurl (if system == "x86_64-linux" then graaljs_linux_x86_64
   else if system == "aarch64-linux" then graaljs_linux_arm64
   else if system == "x86_64-darwin" then graaljs_darwin_x86_64
-  else if system == "aarch64-darwin" then graaljs_darwin_x86_64
+  else if system == "aarch64-darwin" then graaljs_darwin_arm64
   else throw "Unsupported system");
 
 
