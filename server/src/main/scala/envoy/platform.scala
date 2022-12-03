@@ -33,7 +33,9 @@ def getEnvoyBinResourcePath: IO[Throwable, os.ResourcePath] =
         currentArch <- getArch
         path <- (currentOs, currentArch) match
             case (Darwin(), Amd64()) => ZIO.succeed(os.resource / "envoy" / "darwin" / "amd64" / "envoy.bin")
-            case (Darwin(), Arm64()) => ZIO.succeed(os.resource / "envoy" / "darwin" / "arm64" / "envoy.bin")
+
+            // Rely on the Rosetta 2 subsystem that emulates x86_64 on Apple Silicon
+            case (Darwin(), Arm64()) => ZIO.succeed(os.resource / "envoy" / "darwin" / "amd64" / "envoy.bin")
             case _                   => ZIO.fail(new Exception(s"Unsupported OS/architecture combination: $currentOs/$currentArch"))
     yield path
 
