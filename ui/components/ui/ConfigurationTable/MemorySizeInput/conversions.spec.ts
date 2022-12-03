@@ -19,7 +19,7 @@ describe("memoryToBytes", () => {
 
 describe("bytesToMemorySize", () => {
   it("should convert bytes to memory size", () => {
-    expect(bytesToMemorySize(0)).toEqual({ size: 0, unit: "MB" });
+    expect(bytesToMemorySize(0)).toEqual({ size: 0, unit: "B" });
     expect(bytesToMemorySize(1024 * 1024)).toEqual({ size: 1, unit: "MB" });
 
     expect(bytesToMemorySize(1024 * 1024 * 999)).toEqual({
