@@ -6,10 +6,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runs-on: [self-hosted, Linux, X64]
-          # - os: macos-latest
-          #   system: x86_64-darwin
-          #   experimental: false
+          - runs-on: ubuntu-latest
 
     runs-on: ${{matrix.runs-on}}
 
