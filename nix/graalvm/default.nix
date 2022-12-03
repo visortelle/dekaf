@@ -23,7 +23,7 @@ let
 
   graaljs_linux_arm64 = {
     url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-linux-aarch64-22.3.0.jar";
-    sha256 = "";
+    sha256 = "sha256-1iLZ + PQJEjtix7SAqMkYe6iZEbTgZKjZLm8ppwg3wKE=";
   };
 
   graaljs_linux_x86_64 = {
