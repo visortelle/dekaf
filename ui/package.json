@@ -5,13 +5,11 @@
   "scripts": {
     "dev": "node ./build.js --watch",
     "build": "tsc --noEmit && node ./build.js",
-    "test": "npm run lint && npm run test:jest",
-    "test:jest": "jest"
+    "test": "jest"
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.4.5",
+    "@monaco-editor/react": "^4.4.6",
     "@react-hook/timeout": "^2.1.1",
-    "axios": "^0.27.2",
     "batchelorjs": "^2.0.0",
     "dayjs": "^1.11.3",
     "detect-browser": "^5.3.0",
@@ -51,12 +49,14 @@
     "@types/react-dom": "18.0.5",
     "@types/react-highlight-words": "^0.16.4",
     "@types/uuid": "^8.3.4",
+    "alias-hq": "^5.4.0",
     "esbuild": "^0.15.16",
     "esbuild-css-modules-plugin": "^2.6.2",
-    "eslint": "8.16.0",
-    "jest": "^28.1.1",
-    "jest-environment-jsdom": "^28.1.1",
-    "typescript": "4.8.4"
+    "esbuild-jest": "^0.5.0",
+    "eslint": "8.29.0",
+    "jest": "^29.3.1",
+    "jest-environment-jsdom": "^29.3.1",
+    "typescript": "4.9.3"
   },
   "optionalDependencies": {
     "ui-grpc-web-client": "*"

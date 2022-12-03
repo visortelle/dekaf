@@ -4,7 +4,7 @@ build: build-jar build-docker
 .PHONY: build-jar
 build-jar:
 	cd ./proto && make clean-and-build
-	cd ./ui && make clean-and-build
+	cd ./ui && make clean-and-build && make test
 	cd ./server && make clean-and-build
 
 .PHONY: build-docker
