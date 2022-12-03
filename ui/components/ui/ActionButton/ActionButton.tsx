@@ -3,8 +3,8 @@ import SvgIcon from '../SvgIcon/SvgIcon';
 import s from './ActionButton.module.css'
 import Link from '../../ui/LinkWithQuery/LinkWithQuery';
 
-import editIcon from '!!raw-loader!./edit.svg';
-import closeIcon from '!!raw-loader!./close.svg';
+import editIcon from './edit.svg';
+import closeIcon from './close.svg';
 
 export type ActionButtonProps = {
   action: { type: 'predefined', action: 'edit' | 'close' }
