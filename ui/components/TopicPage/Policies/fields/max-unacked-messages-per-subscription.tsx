@@ -1,23 +1,22 @@
-import { useState } from 'react';
 import useSWR, { useSWRConfig } from "swr";
 import stringify from "safe-stable-stringify";
 
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
+import Input from '../../../ui/Input/Input';
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
-import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../../swrKeys';
 
-const policy = 'messageTtl';
+const policy = 'maxUnackedMessagesPerSubscription';
 
 type PolicyValue = { type: 'inherited-from-namespace-config' } | { type: 'unlimited' } | {
   type: 'specified-for-this-topic',
-  messageTtlSeconds: number,
+  maxUnackedMessagesOnSubscription: number,
 };
 
 export type FieldInputProps = {
@@ -32,7 +31,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
-  const [key, setKey] = useState(0);
 
   const swrKey = props.topicType === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
@@ -41,29 +39,29 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
-      const req = new pb.GetMessageTtlRequest();
+      const req = new pb.GetMaxUnackedMessagesOnSubscriptionRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getMessageTtl(req, {});
+      const res = await topicpoliciesServiceClient.getMaxUnackedMessagesOnSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get message TTL: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get max unacked messages on subscription: ${res.getStatus()?.getMessage()}`);
         return;
       }
 
       let initialValue: PolicyValue = { type: 'inherited-from-namespace-config' };
-      switch (res.getMessageTtlCase()) {
-        case pb.GetMessageTtlResponse.MessageTtlCase.UNSPECIFIED: {
+      switch (res.getMaxUnackedMessagesOnSubscriptionCase()) {
+        case pb.GetMaxUnackedMessagesOnSubscriptionResponse.MaxUnackedMessagesOnSubscriptionCase.UNSPECIFIED: {
           initialValue = { type: 'inherited-from-namespace-config' };
           break;
         }
-        case pb.GetMessageTtlResponse.MessageTtlCase.SPECIFIED: {
-          const messageTtlSeconds = res.getSpecified()?.getMessageTtlSeconds() ?? 0;
+        case pb.GetMaxUnackedMessagesOnSubscriptionResponse.MaxUnackedMessagesOnSubscriptionCase.SPECIFIED: {
+          const maxUnackedMessagesOnSubscription = res.getSpecified()?.getMaxUnackedMessagesOnSubscription() ?? 0;
 
-          if (messageTtlSeconds === 0) {
+          if (maxUnackedMessagesOnSubscription === 0) {
             initialValue = { type: 'unlimited' };
           } else {
-            initialValue = { type: 'specified-for-this-topic', messageTtlSeconds: messageTtlSeconds };
+            initialValue = { type: 'specified-for-this-topic', maxUnackedMessagesOnSubscription };
           }
 
           break;
@@ -75,7 +73,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 
   if (initialValueError) {
-    notifyError(`Unable to get message TTL: ${initialValueError}`);
+    notifyError(`Unable to get max unacked messages on subscription. ${initialValueError}`);
   }
 
   if (initialValue === undefined) {
@@ -84,45 +82,43 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const updatePolicy = async (value: PolicyValue) => {
     if (value.type === 'inherited-from-namespace-config') {
-      const req = new pb.RemoveMessageTtlRequest();
+      const req = new pb.RemoveMaxUnackedMessagesOnSubscriptionRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.removeMessageTtl(req, {});
+      const res = await topicpoliciesServiceClient.removeMaxUnackedMessagesOnSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to set max unacked messages on subscription: ${res.getStatus()?.getMessage()}`);
       }
     }
 
     if (value.type === 'unlimited' || value.type === 'specified-for-this-topic') {
-      const req = new pb.SetMessageTtlRequest();
+      const req = new pb.SetMaxUnackedMessagesOnSubscriptionRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       if (value.type === 'unlimited') {
-        req.setMessageTtlSeconds(0);
+        req.setMaxUnackedMessagesOnSubscription(0);
       }
 
       if (value.type === 'specified-for-this-topic') {
-        req.setMessageTtlSeconds(Math.floor(value.messageTtlSeconds));
+        req.setMaxUnackedMessagesOnSubscription(value.maxUnackedMessagesOnSubscription);
       }
 
-      const res = await topicpoliciesServiceClient.setMessageTtl(req, {});
+      const res = await topicpoliciesServiceClient.setMaxUnackedMessagesOnSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to set max unacked messages on subscription: ${res.getStatus()?.getMessage()}`);
       }
     }
 
-    // XXX Fix outdated input state after first update of any topic's policy in a new namespace.
     setTimeout(async () => {
-      await mutate(swrKey);
-      setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
+      await mutate(swrKey)
     }, 300);
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      key={stringify({initialValue, key})}
+      key={stringify(initialValue)}
       initialValue={initialValue}
       onConfirm={updatePolicy}
     >
@@ -140,16 +136,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   switch (v) {
                     case 'inherited-from-namespace-config': onChange({ type: 'inherited-from-namespace-config' }); break;
                     case 'unlimited': onChange({ type: 'unlimited' }); break;
-                    case 'specified-for-this-topic': onChange({ type: 'specified-for-this-topic', messageTtlSeconds: 1 }); break;
+                    case 'specified-for-this-topic': onChange({ type: 'specified-for-this-topic', maxUnackedMessagesOnSubscription: 1 }); break;
                   }
                 }}
                 value={value.type}
               />
             </div>
             {value.type === 'specified-for-this-topic' && (
-              <DurationInput
-                initialValue={value.messageTtlSeconds}
-                onChange={v => onChange({ type: 'specified-for-this-topic', messageTtlSeconds: v })}
+              <Input
+                type="number"
+                value={value.maxUnackedMessagesOnSubscription.toString()}
+                onChange={v => onChange({ type: 'specified-for-this-topic', maxUnackedMessagesOnSubscription: parseInt(v) })}
               />
             )}
           </>
@@ -161,8 +158,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
-  title: 'Message TTL',
-  description: <span>By default, Pulsar stores all unacknowledged messages forever. This can lead to heavy disk space usage in cases where a lot of messages are going unacknowledged. If disk space is a concern, you can set a time to live (TTL) that determines how long unacknowledged messages will be retained.</span>,
+  title: 'Max unacked messages per subscription',
+  description: <span>Max unacked messages per subscription.</span>,
   input: <FieldInput {...props} />
 });
 

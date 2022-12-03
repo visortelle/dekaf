@@ -14,6 +14,7 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 import s from './backlog-quota.module.css';
+import { useState } from "react";
 
 const policy = 'backlogQuota';
 
@@ -53,6 +54,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
+  const [key, setKey] = useState(0);
 
   const swrKey = props.topicType === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
@@ -154,12 +156,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
 
     // XXX Fix outdated input state after first update of any topic's policy in a new namespace.
-    setTimeout(() => mutate(swrKey), 300);
+    setTimeout(async () => {
+      await mutate(swrKey);
+      setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
+    }, 300);
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      key={stringify(initialValue)}
+      key={key}
       initialValue={initialValue}
       onConfirm={updatePolicy}
     >
