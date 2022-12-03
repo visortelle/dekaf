@@ -18,12 +18,12 @@ let
 
   src_darwin_arm64 = {
     url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.0/graalvm-ce-java17-darwin-aarch64-22.3.0.tar.gz";
-    sha256 = "";
+    sha256 = "sha256-1iLZ+PQJEjtix7SAqMkYe6iZEbTgZKjZLm8ppwg3wKE=";
   };
 
   graaljs_linux_arm64 = {
     url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-linux-aarch64-22.3.0.jar";
-    sha256 = "sha256-1iLZ + PQJEjtix7SAqMkYe6iZEbTgZKjZLm8ppwg3wKE=";
+    sha256 = "";
   };
 
   graaljs_linux_x86_64 = {
