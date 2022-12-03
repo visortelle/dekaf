@@ -18,6 +18,25 @@ export const routes = {
         get: () => `/instance/configuration`,
       },
     },
+    resourceGroups: {
+      _: {
+        path: "/instance/resource-groups",
+        get: () => `/instance/resource-groups`,
+      },
+      create: {
+        _: {
+          path: "/instance/resource-groups/create",
+          get: () => `/instance/resource-groups/create`,
+        },
+      },
+      edit: {
+        _: {
+          path: "/instance/resource-groups/edit/:groupName",
+          get: (props: { groupName: string }) =>
+            `/instance/resource-groups/edit/${props.groupName}`,
+        },
+      },
+    },
     createTenant: {
       _: {
         path: "/instance/create-tenant",

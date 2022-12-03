@@ -7,8 +7,17 @@ import { routes } from '../routes';
 import Tenants from './Tenants/Tenants';
 import CreateTenant from './CreateTenant/CreateTenant';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
+import ResourceGroups from './ResourceGroups/ResourceGroups';
 
-export type InstancePageView = 'overview' | 'configuration' | 'tenants' | 'create-tenant';
+export type InstancePageView =
+  { type: 'overview' } |
+  { type: 'configuration' } |
+  { type: 'tenants' } |
+  { type: 'create-tenant' } |
+  { type: 'resource-groups' } |
+  { type: 'create-resource-group' } |
+  { type: 'edit-resource-group', groupName: string };
+
 export type InstancePageProps = {
   view: InstancePageView;
 };
@@ -47,6 +56,12 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               type: 'regular'
             },
             {
+              linkTo: routes.instance.resourceGroups._.get(),
+              text: 'Resource groups',
+              onClick: () => { },
+              type: 'regular'
+            },
+            {
               linkTo: routes.instance.createTenant._.get(),
               text: 'Create tenant',
               onClick: () => { },
@@ -57,10 +72,13 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
         />
       </div>
 
-      {props.view === 'overview' && <Overview />}
-      {props.view === 'configuration' && <Configuration />}
-      {props.view === 'tenants' && <Tenants />}
-      {props.view === 'create-tenant' && <CreateTenant />}
+      {props.view.type === 'overview' && <Overview />}
+      {props.view.type === 'configuration' && <Configuration />}
+      {props.view.type === 'tenants' && <Tenants />}
+      {props.view.type === 'create-tenant' && <CreateTenant />}
+      {props.view.type === 'resource-groups' && <ResourceGroups view={{ type: 'show-all-groups' }} />}
+      {props.view.type === 'create-resource-group' && <ResourceGroups view={{ type: 'create' }} />}
+      {props.view.type === 'edit-resource-group' && <ResourceGroups view={{ type: 'edit', groupName: props.view.groupName }} />}
     </div>
   );
 }

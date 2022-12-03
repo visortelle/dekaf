@@ -1,24 +1,28 @@
 import React, { useEffect, useRef } from 'react';
-import s from './Configuration.module.css';
-import * as BrokerConfig from '../../app/contexts/BrokersConfig';
-import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import editIcon from './edit.svg';
-import closeIcon from './close.svg';
+import Highlighter from "react-highlight-words";
+import ReactDOMServer from 'react-dom/server';
 import useSWR, { mutate } from 'swr';
+import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
+
+import * as BrokerConfig from '../../app/contexts/BrokersConfig';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
+import { swrKeys } from '../../swrKeys';
+import { help } from './help';
+import {
+  DeleteDynamicConfigurationRequest,
+  GetDynamicConfigurationNamesRequest,
+  UpdateDynamicConfigurationRequest
+} from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Input from '../../ui/Input/Input';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Button from '../../ui/Button/Button';
-import { swrKeys } from '../../swrKeys';
-import Highlighter from "react-highlight-words";
-import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
-import { help } from './help';
-import ReactDOMServer from 'react-dom/server';
-import { DeleteDynamicConfigurationRequest, GetDynamicConfigurationNamesRequest, UpdateDynamicConfigurationRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
-import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
-const Configuration: React.FC = () => {
+import s from './Configuration.module.css';
+import ActionButton from '../../ui/ActionButton/ActionButton';
+
+const Configuration = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
   const { brokersServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
@@ -96,7 +100,7 @@ const Configuration: React.FC = () => {
                     ) : <span>-</span>}
                   </td>
                 </tr>
-              );
+              )
             })}
           </tbody>
         </table>
@@ -110,7 +114,7 @@ type DynamicConfigValueProps = {
   configValue: string;
 }
 
-const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
+export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
   const [isShowEditor, setIsShowEditor] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(props.configValue || '');
   const ref = useRef<HTMLDivElement>(null);
@@ -211,9 +215,10 @@ const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => {
 
       {props.configValue}
 
-      <button type="button" className={s.DynamicConfigValueButton} onClick={() => setIsShowEditor(!isShowEditor)}>
-        {isShowEditor ? <SvgIcon svg={closeIcon} /> : <SvgIcon svg={editIcon} />}
-      </button>
+      <ActionButton
+        onClick={() => setIsShowEditor(!isShowEditor)}
+        action={isShowEditor ? { type: 'predefined', action: 'close' } : { type: 'predefined', action: 'edit' }}
+      />
     </div>
   );
 }
