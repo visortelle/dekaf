@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import Button from '../../../../ui/Button/Button';
 import Input from '../../../../ui/Input/Input';
 import s from './Producer.module.css'
-import sendIcon from '!!raw-loader!./icons/send.svg';
+import sendIcon from './icons/send.svg';
 import Select from '../../../../ui/Select/Select';
 import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';

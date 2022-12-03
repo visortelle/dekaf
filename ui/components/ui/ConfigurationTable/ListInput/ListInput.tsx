@@ -1,6 +1,6 @@
 import s from './ListInput.module.css'
 import SvgIcon from '../../SvgIcon/SvgIcon';
-import removeIcon from '!!raw-loader!./remove.svg';
+import removeIcon from './remove.svg';
 import { useEffect, useState } from "react";
 import * as Either from 'fp-ts/Either';
 

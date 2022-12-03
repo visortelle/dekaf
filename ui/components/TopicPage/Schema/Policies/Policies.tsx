@@ -5,7 +5,7 @@ import * as Notifications from '../../../app/contexts/Notifications';
 import { swrKeys } from '../../../swrKeys';
 import { GetIsAllowAutoUpdateSchemaRequest, GetSchemaCompatibilityStrategyRequest, GetSchemaValidationEnforceRequest, SchemaCompatibilityStrategy } from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import useSWR from 'swr';
-import editIcon from '!!raw-loader!./edit.svg';
+import editIcon from './edit.svg';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { H3 } from '../../../ui/H/H';
 import Button from '../../../ui/Button/Button';

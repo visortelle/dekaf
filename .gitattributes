@@ -1,1 +1,52 @@
+# Binary files
+*.bin filter=lfs diff=lfs merge=lfs -text
+
+# JPEG
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.jpe filter=lfs diff=lfs merge=lfs -text
+*.jif filter=lfs diff=lfs merge=lfs -text
+*.jfif filter=lfs diff=lfs merge=lfs -text
+*.jfi filter=lfs diff=lfs merge=lfs -text
+# JPEG 2000
+*.jp2 filter=lfs diff=lfs merge=lfs -text
+*.j2k filter=lfs diff=lfs merge=lfs -text
+*.jpf filter=lfs diff=lfs merge=lfs -text
+*.jpx filter=lfs diff=lfs merge=lfs -text
+*.jpm filter=lfs diff=lfs merge=lfs -text
+*.mj2 filter=lfs diff=lfs merge=lfs -text
+# JPEG XR
+*.jxr filter=lfs diff=lfs merge=lfs -text
+*.hdp filter=lfs diff=lfs merge=lfs -text
+*.wdp filter=lfs diff=lfs merge=lfs -text
+# Graphics Interchange Format
+*.gif filter=lfs diff=lfs merge=lfs -text
+# RAW
+*.raw filter=lfs diff=lfs merge=lfs -text
+# Web P
+*.webp filter=lfs diff=lfs merge=lfs -text
+# Portable Network Graphics
+*.png filter=lfs diff=lfs merge=lfs -text
+# Animated Portable Network Graphics
+*.apng filter=lfs diff=lfs merge=lfs -text
+# Multiple-image Network Graphics
+*.mng filter=lfs diff=lfs merge=lfs -text
+# Tagged Image File Format
+*.tiff filter=lfs diff=lfs merge=lfs -text
+*.tif filter=lfs diff=lfs merge=lfs -text
+# Scalable Vector Graphics
+*.svg filter=lfs diff=lfs merge=lfs -text
+*.svgz filter=lfs diff=lfs merge=lfs -text
+# Portable Document Format
+*.pdf filter=lfs diff=lfs merge=lfs -text
+# X BitMap
+*.xbm filter=lfs diff=lfs merge=lfs -text
+# BMP
+*.bmp filter=lfs diff=lfs merge=lfs -text
+*.dib filter=lfs diff=lfs merge=lfs -text
+# ICO
+*.ico filter=lfs diff=lfs merge=lfs -text
+# 3D Images
+*.3dm filter=lfs diff=lfs merge=lfs -text
+*.max filter=lfs diff=lfs merge=lfs -text
 protoc filter=lfs diff=lfs merge=lfs -text
