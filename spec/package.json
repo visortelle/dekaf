@@ -15,5 +15,9 @@
   "devDependencies": {
     "@playwright/test": "^1.28.1",
     "@types/node": "^18.11.10"
+  },
+  "dependencies": {
+    "portfinder": "^1.0.32",
+    "testcontainers": "^9.0.1"
   }
 }
