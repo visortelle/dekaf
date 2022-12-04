@@ -1,0 +1,19 @@
+{
+  "name": "spec",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen",
+    "show-trace": "playwright show-trace"
+  },
+  "keywords": [],
+  "author": "visortelle",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.28.1",
+    "@types/node": "^18.11.10"
+  }
+}
