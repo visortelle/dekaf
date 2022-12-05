@@ -9,60 +9,54 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { swrKeys } from "../../../swrKeys";
-import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Input from "../../../ui/Input/Input";
 
 const policy = 'publishRate';
 
 type PolicyValue = {
-  type: 'inherited-from-namespace-config'
+  type: 'inherited-from-broker-config'
 } | {
-  type: 'specified',
+  type: 'specified-for-this-namespace',
   rateInMsg: number;
   rateInByte: number;
 };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
   tenant: string;
   namespace: string;
-  topic: string;
-  isGlobal: boolean;
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
 
-  const swrKey = props.topicType === 'persistent' ?
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
+  const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetPublishRateRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-      req.setIsGlobal(props.isGlobal);
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await topicpoliciesServiceClient.getPublishRate(req, {});
+      const res = await namespaceServiceClient.getPublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get publish rate for topic. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to get publish rate for namespace. ${res.getStatus()?.getMessage()}`);
       }
 
-      let initialValue: PolicyValue = { type: 'inherited-from-namespace-config' };
+      let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
       switch (res.getPublishRateCase()) {
         case pb.GetPublishRateResponse.PublishRateCase.UNSPECIFIED: {
-          initialValue = { type: 'inherited-from-namespace-config'};
+          initialValue = { type: 'inherited-from-broker-config'};
           break;
         }
         case pb.GetPublishRateResponse.PublishRateCase.SPECIFIED: {
           const publishRate = res.getSpecified()!;
           initialValue = {
-            type: 'specified',
+            type: 'specified-for-this-namespace',
             rateInMsg: publishRate.getRateInMsg(),
             rateInByte: publishRate.getRateInByte(),
           }
@@ -84,34 +78,30 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const updatePolicy = async (value: PolicyValue): Promise<void> => {
 
-    if (value.type === 'inherited-from-namespace-config') {
+    if (value.type === 'inherited-from-broker-config') {
       const req = new pb.SetPublishRateRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-      req.setIsGlobal(props.isGlobal)
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await topicpoliciesServiceClient.removePublishRate(req, {});
+      const res = await namespaceServiceClient.removePublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set publish rate. ${res.getStatus()?.getMessage()}`);
       }
     }
 
-    if (value.type === 'specified') {
+    if (value.type === 'specified-for-this-namespace') {
       const req = new pb.SetPublishRateRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
-      req.setIsGlobal(props.isGlobal);
+      req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setRateInMsg(value.rateInMsg);
       req.setRateInByte(value.rateInByte);
 
-      const res = await topicpoliciesServiceClient.setPublishRate(req, {});
+      const res = await namespaceServiceClient.setPublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set publish rate. ${res.getStatus()?.getMessage()}`);
       }
     }
-    // XXX Fix outdated input state after first update of any topic's policy in a new namespace.
-    setTimeout(async () => {
+
       await mutate(swrKey);
-      setKey(key + 1);
-    }, 300);
+      await setKey(key + 1);
   }
 
   return (
@@ -125,15 +115,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           <div className={sf.FormItem}>
             <Select<PolicyValue['type']>
               list={[
-                { type: 'item', value: 'inherited-from-namespace-config', title: 'Inherited from namespace config' },
-                { type: 'item', value: 'specified', title: 'Specified' },
+                { type: 'item', value: 'inherited-from-broker-config', title: 'Inherited from broker config' },
+                { type: 'item', value: 'specified-for-this-namespace', title: 'Specified for this namespace' },
               ]}
               value={value.type}
               onChange={(type) => {
-                if (type === 'inherited-from-namespace-config') {
+                if (type === 'inherited-from-broker-config') {
                   onChange({ type });
                 }
-                if (type === 'specified') {
+                if (type === 'specified-for-this-namespace') {
                   onChange({
                     type,
                     rateInMsg: -1,
@@ -143,7 +133,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               }}
             />
           </div>
-          {value.type === 'specified' && (
+          {value.type === 'specified-for-this-namespace' && (
             <div>
               <div className={sf.FormItem}>
                 <div className={sf.FormLabel}>Byte dispatch rate</div>
@@ -164,7 +154,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Publish rate',
-  description: <span>Message-publish-rate for this topic.</span>,
+  description: <span>Configured message-publish-rate for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
 
