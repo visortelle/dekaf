@@ -154,7 +154,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Publish rate',
-  description: <span>Info about publish rate<br />More info</span>,
+  description: <span>Configured message-publish-rate for all topics of the namespace</span>,
   input: <FieldInput {...props} />
 });
 
