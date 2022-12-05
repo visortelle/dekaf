@@ -1,6 +1,7 @@
 import React from 'react';
-import s from './Policies.module.css'
+
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
+import { H1 } from '../../ui/H/H';
 import replicationClustersField from './fields/replication-clusters';
 import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
 import backlogQuotaField from './fields/backlog-quota';
@@ -34,7 +35,9 @@ import schemaCompatibilityStrategyField from './fields/schema-compatibility-stra
 import isALlowAutoUpdateSchemaField from './fields/is-allow-auto-update-schema';
 import schemaValidationEnforceField from './fields/schema-validation-enforce';
 import offloadPoliciesField from './fields/offload-policies/offload-policies';
-import { H1 } from '../../ui/H/H';
+import publishRateField from './fields/publish-rate';
+
+import s from './Policies.module.css'
 
 export type PoliciesProps = {
   tenant: string;
@@ -56,6 +59,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             maxTopicsPerNamespaceField,
             compactionThresholdField,
             delayedDeliveryField,
+            publishRateField,
           ].map(field => field(props))}
         />
       </div>

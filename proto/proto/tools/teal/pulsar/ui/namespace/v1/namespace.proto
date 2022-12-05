@@ -1050,6 +1050,36 @@ message RemoveOffloadPoliciesResponse {
   google.rpc.Status status = 1;
 }
 
+message PublishRateUnspecified {}
+message PublishRateSpecified {
+  int32 rate_in_msg = 1;
+  int64 rate_in_byte = 2;
+}
+message GetPublishRateRequest {
+  string namespace = 1;
+}
+message GetPublishRateResponse {
+  google.rpc.Status status = 1;
+  oneof publish_rate {
+    PublishRateUnspecified unspecified = 2;
+    PublishRateSpecified specified = 3;
+  }
+}
+message SetPublishRateRequest {
+  string namespace = 1;
+  int32 rate_in_msg = 2;
+  int64 rate_in_byte = 3;
+}
+message SetPublishRateResponse {
+  google.rpc.Status status = 1;
+}
+message RemovePublishRateRequest {
+  string namespace = 1;
+}
+message RemovePublishRateResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -1188,4 +1218,8 @@ service NamespaceService {
   rpc GetOffloadPolicies(GetOffloadPoliciesRequest) returns (GetOffloadPoliciesResponse);
   rpc SetOffloadPolicies(SetOffloadPoliciesRequest) returns (SetOffloadPoliciesResponse);
   rpc RemoveOffloadPolicies(RemoveOffloadPoliciesRequest) returns (RemoveOffloadPoliciesResponse);
+
+  rpc GetPublishRate(GetPublishRateRequest) returns (GetPublishRateResponse);
+  rpc SetPublishRate(SetPublishRateRequest) returns (SetPublishRateResponse);
+  rpc RemovePublishRate(RemovePublishRateRequest) returns (RemovePublishRateResponse);
 }
