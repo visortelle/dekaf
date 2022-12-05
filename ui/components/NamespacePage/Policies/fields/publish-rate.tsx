@@ -101,10 +101,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
     }
 
-    setTimeout(async () => {
       await mutate(swrKey);
-      setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
-    }, 300);
+      await setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
   }
 
   return (
