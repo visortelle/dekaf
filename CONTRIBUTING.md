@@ -3,7 +3,18 @@
 ## Development environment
 
 - [Install Nix](https://nixos.org/download.html)
-- Use `nix-shell` command at the repository root to enter the development environment.
+- Install [git-lfs](https://git-lfs.github.com/)
+- Add the following content to your `~/.gitconfig`:
+
+```
+[filter "lfs"]
+        required = true
+        clean = git-lfs clean -- %f
+        smudge = git-lfs smudge -- %f
+        process = git-lfs filter-process
+```
+
+- Use `make dev` command at the repository root to enter the development environment shell.
 
 ## Get access to development Kubernetes cluster
 
