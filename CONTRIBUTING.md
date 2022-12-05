@@ -15,6 +15,8 @@
 ```
 
 - Use `make dev` command at the repository root to enter the development environment shell.
+- Go to the server directory `cd ./server` and run `make dev` here.
+- Open a second terminal, go to the UI directory `cd ./ui` and run `make dev` here.
 
 ## Get access to development Kubernetes cluster
 
