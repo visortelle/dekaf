@@ -18,9 +18,9 @@ export type CreateContainerProps = {
 export async function createContainer(
   props: CreateContainerProps
 ): Promise<PulsarStandaloneContainer> {
-  const brokerServicePort = await portfinder.getPortPromise();
-  const webServicePort = await portfinder.getPortPromise();
-  const zookeeperServicePort = await portfinder.getPortPromise();
+  const brokerServiceHostPort = await portfinder.getPortPromise();
+  const webServiceHostPort = await portfinder.getPortPromise();
+  const zookeeperServiceHostPort = await portfinder.getPortPromise();
 
   const contentToCopy: ContentToCopy[] = [
     { target: "/broker.conf.append", content: props.brokerConf || "" },
@@ -40,15 +40,15 @@ export async function createContainer(
     .withExposedPorts(
       {
         container: 8080,
-        host: webServicePort,
+        host: webServiceHostPort,
       },
       {
         container: 6650,
-        host: brokerServicePort,
+        host: brokerServiceHostPort,
       },
       {
         container: 2181,
-        host: zookeeperServicePort,
+        host: zookeeperServiceHostPort,
       }
     )
     .withCopyContentToContainer(contentToCopy)
@@ -68,8 +68,8 @@ export async function createContainer(
     .start();
 
   const pulsarStandaloneContainer: PulsarStandaloneContainer = {
-    brokerServiceUrl: `pulsar://0.0.0.0:${brokerServicePort}`,
-    webServiceUrl: `http://0.0.0.0:${webServicePort}`,
+    brokerServiceUrl: `pulsar://0.0.0.0:${brokerServiceHostPort}`,
+    webServiceUrl: `http://0.0.0.0:${webServiceHostPort}`,
     stop: async () => {
       container.stop({ removeVolumes: true, timeout: 30 * 1000 });
     },

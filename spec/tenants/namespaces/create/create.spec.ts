@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { createContainer } from '../../../testing/pulsar-standalone/create-container';
 
 test('homepage has title and links to intro page', async ({ page }) => {
+  const container = await createContainer({});
+
   await page.goto('http://localhost:8090');
   await expect(page).toHaveTitle('X-Ray');
 
