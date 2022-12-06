@@ -1,3 +1,7 @@
 .PHONY: build
 build:
-	./app/build.sh
+	./build.sh
+
+.PHONY: run
+run:
+	./run.sh

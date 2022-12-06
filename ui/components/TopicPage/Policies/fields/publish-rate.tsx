@@ -13,8 +13,6 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Input from "../../../ui/Input/Input";
 
-import s from './backlog-quota.module.css';
-
 const policy = 'publishRate';
 
 type PolicyValue = {
@@ -90,7 +88,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.SetPublishRateRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal)
-  
+
       const res = await topicpoliciesServiceClient.removePublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set publish rate. ${res.getStatus()?.getMessage()}`);
@@ -112,7 +110,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     // XXX Fix outdated input state after first update of any topic's policy in a new namespace.
     setTimeout(async () => {
       await mutate(swrKey);
-      setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
+      setKey(key + 1);
     }, 300);
   }
 
@@ -166,10 +164,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Publish rate',
-  description: <span>Info about publish rate<br />More info</span>,
+  description: <span>Message-publish-rate for this topic.</span>,
   input: <FieldInput {...props} />
 });
-
-
 
 export default field;
