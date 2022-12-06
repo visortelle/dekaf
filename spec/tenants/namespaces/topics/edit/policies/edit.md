@@ -1,4 +1,4 @@
-# Delete
+# Edit
 
 1. Navigate to the Tenant page.
 <img style="width: 450px" src="./step-1.png" />
@@ -9,11 +9,8 @@
 3. Press on your **topic**.
   <img style="width: 450px" src="./step-3.png" />
 
-4. Press on **Delete**.
+4. Press on **Policies**.
   <img style="width: 450px" src="./step-4.png" />
 
-5. Сonfirm your action by pressing the relevant button.
+5. Each policy change must be individually confirmed by clicking on **Update**. If you wish, you can reset the changes by pressing **Reset**.
   <img style="width: 450px" src="./step-5.png" />
-
-6. You should now see your namespace without this topic and notification about it.
-<img style="width: 450px" src="./step-6.png" />

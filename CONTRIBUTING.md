@@ -3,7 +3,22 @@
 ## Development environment
 
 - [Install Nix](https://nixos.org/download.html)
-- Use `nix-shell` command at the repository root to enter the development environment.
+- Install [git-lfs](https://git-lfs.github.com/)
+- Add the following content to your `~/.gitconfig`:
+
+```
+[filter "lfs"]
+        required = true
+        clean = git-lfs clean -- %f
+        smudge = git-lfs smudge -- %f
+        process = git-lfs filter-process
+```
+
+- Use `make dev` command at the repository root to enter the development environment shell.
+- Go to `./devenv` directory and run `make dev-local` to start local Pulsar-standalone instance in Docker.
+- Go to the Protobuf definitions directory `cd ./proto` and run `make build` here.
+- Go to the server directory `cd ./server` and run `make dev` here.
+- Open a second terminal, go to the UI directory `cd ./ui` and run `make dev` here.
 
 ## Get access to development Kubernetes cluster
 
@@ -19,22 +34,6 @@
 - [ ] Make sure that you have kubectl installed: https://kubernetes.io/docs/tasks/tools/
 - [ ] Configure kubectl context: `aws eks --region eu-central-1 update-kubeconfig --name pulsar-dev`
 - [ ] Ensure that you have access to the Kubernetes cluster by running `kubectl get namespaces`
-
-## Development
-
-- To build proto files, go to `./proto` and run `make build`. VSCode TypeScript server sometimes doesn't see files changes, so press `CMD+Shift+P` and run `Restart TS Server` command.
-- `pkill kubectl; make port-forward` in the `./devenv` directory to "make the remote Pulsar available" at the localhost.
-
-### Frontend
-
-- `cd ./ui`
-- `npm i`
-- `npm run dev`
-
-### API
-
-- `cd ./server`
-- `sbt`, then `~reStart` in the SBT shell
 
 ## Resources
 
