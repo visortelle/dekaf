@@ -81,6 +81,7 @@
 
               pkgs.git
               pkgs.git-lfs
+              pkgs.unzip
             ] ++ missingSysPkgs;
           };
         in
