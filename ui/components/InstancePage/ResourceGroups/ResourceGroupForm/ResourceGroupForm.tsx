@@ -149,7 +149,9 @@ const ResourceGroupForm = (props: Props) => {
     }
 
     notifySuccess(<span>Resource group <strong>{formValue.name}</strong> has been deleted</span>, `resource-group-deleted-${formValue.name}`);
-    await mutate(swrKeys.pulsar.brokers.resourceGroups._())
+    await setTimeout(() => {
+      mutate(swrKeys.pulsar.brokers.resourceGroups._())
+    }, 300)
     navigate(routes.instance.resourceGroups._.get());
   }
 

@@ -43,7 +43,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
       const res = await namespaceServiceClient.getPublishRate(req, {});
-      console.log(res)
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get publish rate for namespace. ${res.getStatus()?.getMessage()}`);
       }
