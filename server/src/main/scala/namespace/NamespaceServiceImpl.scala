@@ -1844,19 +1844,18 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
         try {
             val permissions = Option(adminClient.namespaces.getPermissions(request.namespace).asScala.toMap) match
-//                case None =>
-//                    pb.GetPermissionsResponse.AuthAction.Unspecified(new PermissionsUnspecified())
+                case None =>
+                    pb.GetPermissionsResponse.AuthAction.Unspecified(new PermissionsUnspecified())
                 case Some(v) =>
-//                    pb.GetPermissionsResponse.AuthAction.Specified(new PermissionsSpecified(
-                        val authAction = v.map(x =>
-                            println(x._2.asScala.map(authActionToPb))
+                    pb.GetPermissionsResponse.AuthAction.Specified(new PermissionsSpecified(
+                        authAction = v.map(x =>
                             (x._1 -> x._2.asScala.map(authActionToPb))
                         )
-//                    ))
+                    ))
 
             Future.successful(GetPermissionsResponse(
                 status = Some(Status(code = Code.OK.index)),
-//                permissions,
+                permissions,
             ))
         } catch {
             err =>

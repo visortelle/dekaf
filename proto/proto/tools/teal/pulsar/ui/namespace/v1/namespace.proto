@@ -1130,10 +1130,10 @@ message GetPermissionsRequest {
 }
 message GetPermissionsResponse {
   google.rpc.Status status = 1;
-  // oneof auth_action {
-  //   PermissionsUnspecified unspecified = 2;
-  //   PermissionsSpecified specified = 3;
-  // }
+  oneof auth_action {
+    PermissionsUnspecified unspecified = 2;
+    PermissionsSpecified specified = 3;
+  }
 }
 // message SetPermissionsRequest {
 //   string namespace = 1;
