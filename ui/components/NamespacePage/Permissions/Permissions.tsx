@@ -3,9 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import useSWR, { useSWRConfig } from "swr";
 
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../swrKeys';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
+
+// interface Permissions {
+//   [role: string]: string
+//   // ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages']
+// }
+
+type PolicyValue = pb.PermissionsSpecified
 
 interface PermissionsProps {
   tenant: string;
@@ -27,12 +35,11 @@ const Permissions = (props: PermissionsProps) => {
 
   const { notifyError } = Notifications.useContext();
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
-  const { mutate } = useSWRConfig()
-  const navigate = useNavigate();
+  const { mutate } = useSWRConfig();
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.permissions._({ tenant: props.tenant, namespace: props.namespace });
 
-  const { data: initialValue, error: initialValueError } = useSWR(
+  const { data: permissions, error: permissionsError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetPermissionsRequest();
@@ -41,19 +48,15 @@ const Permissions = (props: PermissionsProps) => {
       if (res === undefined) {
         return;
       }
-      // if (res.getStatus()?.getCode() !== Code.OK) {
-      //   notifyError(`Unable to get retention policy: ${res.getStatus()?.getMessage()}`);
-      //   return;
-      // }
 
       console.log(`asd: ${res}`);
 
-      // if (res.getStatus()?.getCode() !== Code.OK) {
-      //   notifyError(res.getStatus()?.getMessage());
-      //   return;
-      // }
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(res.getStatus()?.getMessage());
+        return;
+      }
 
-      // let value: PolicyValue = { type: 'undefined' };
+      let permissions = res.getSpecified();
       // setResourceGroupsList(res.getResourceGroupsList())
 
       // switch (res.getResourceGroupCase()) {
@@ -68,9 +71,13 @@ const Permissions = (props: PermissionsProps) => {
       //   }
       // }
 
-      // return value;
+      return permissions;
     }
   );
+
+  if (permissionsError) {
+    notifyError(`Unable to get permissions. ${permissionsError}`);
+  };
 
   return (
     <div>
