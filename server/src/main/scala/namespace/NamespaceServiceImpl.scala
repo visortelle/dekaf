@@ -1831,34 +1831,33 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(RemoveResourceGroupResponse(status = Some(status)))
         }
     override def getPermissions(request: GetPermissionsRequest): Future[GetPermissionsResponse] =
-        logger.debug(s"Getting Permissions for namespace: ${request.namespace}")
+         logger.debug(s"Getting Permissions for namespace: ${request.namespace}")
 
-        def authActionToPb(authAction: AuthAction): pb.AuthAction =
-            authAction match
-                case AuthAction.produce => pb.AuthAction.AUTH_ACTION_PRODUCE
-                case AuthAction.consume => pb.AuthAction.AUTH_ACTION_CONSUME
-                case AuthAction.functions => pb.AuthAction.AUTH_ACTION_FUNCTIONS
-                case AuthAction.sources => pb.AuthAction.AUTH_ACTION_SOURCES
-                case AuthAction.sinks => pb.AuthAction.AUTH_ACTION_SINKS
-                case AuthAction.packages => pb.AuthAction.AUTH_ACTION_PACKAGES
+         def authActionToPb(authAction: AuthAction): pb.AuthAction =
+             authAction match
+                 case AuthAction.produce => pb.AuthAction.AUTH_ACTION_PRODUCE
+                 case AuthAction.consume => pb.AuthAction.AUTH_ACTION_CONSUME
+                 case AuthAction.functions => pb.AuthAction.AUTH_ACTION_FUNCTIONS
+                 case AuthAction.sources => pb.AuthAction.AUTH_ACTION_SOURCES
+                 case AuthAction.sinks => pb.AuthAction.AUTH_ACTION_SINKS
+                 case AuthAction.packages => pb.AuthAction.AUTH_ACTION_PACKAGES
 
-        try {
-            val permissions = Option(adminClient.namespaces.getPermissions(request.namespace).asScala.toMap) match
-                case None =>
-                    pb.GetPermissionsResponse.AuthAction.Unspecified(new PermissionsUnspecified())
-                case Some(v) =>
-                    pb.GetPermissionsResponse.AuthAction.Specified(new PermissionsSpecified(
-                        authAction = v.map(x =>
-                            (x._1 -> x._2.asScala.map(authActionToPb))
-                        )
-                    ))
+         try {
+             val permissions = Option(adminClient.namespaces.getPermissions(request.namespace).asScala.toMap) match
+                 case None =>
+                    val status = Status(code = Code.INTERNAL.index)
+                    return Future.successful(GetPermissionsResponse(status = Some(status)))
+                 case Some(v) =>
+                     v.map(x =>
+                         x._1 -> new pb.AuthActions(authActions = x._2.asScala.toList.map(authActionToPb))
+                     )
 
-            Future.successful(GetPermissionsResponse(
-                status = Some(Status(code = Code.OK.index)),
-                permissions,
-            ))
-        } catch {
-            err =>
-                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(GetPermissionsResponse(status = Some(status)))
-        }
+             Future.successful(GetPermissionsResponse(
+                 status = Some(Status(code = Code.OK.index)),
+                 permissions,
+             ))
+         } catch {
+             err =>
+                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                 Future.successful(GetPermissionsResponse(status = Some(status)))
+         }

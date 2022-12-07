@@ -1121,19 +1121,15 @@ enum AuthAction {
   AUTH_ACTION_SINKS = 5;
   AUTH_ACTION_PACKAGES = 6;
 }
-message PermissionsUnspecified {}
-message PermissionsSpecified {
-  map<string, AuthAction> auth_action = 1;
+message AuthActions {
+  repeated AuthAction auth_actions = 1;
 }
 message GetPermissionsRequest {
   string namespace = 1;
 }
 message GetPermissionsResponse {
   google.rpc.Status status = 1;
-  oneof auth_action {
-    PermissionsUnspecified unspecified = 2;
-    PermissionsSpecified specified = 3;
-  }
+  map<string, AuthActions> permissions = 2;
 }
 // message SetPermissionsRequest {
 //   string namespace = 1;
