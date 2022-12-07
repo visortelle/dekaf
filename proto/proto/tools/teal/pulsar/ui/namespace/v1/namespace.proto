@@ -1112,10 +1112,49 @@ message RemoveResourceGroupResponse {
   google.rpc.Status status = 1;
 }
 
+enum AuthAction {
+  AUTH_ACTION_UNSPECIFIED = 0;
+  AUTH_ACTION_PRODUCE = 1;
+  AUTH_ACTION_CONSUME = 2;
+  AUTH_ACTION_FUNCTIONS = 3;
+  AUTH_ACTION_SOURCES = 4;
+  AUTH_ACTION_SINKS = 5;
+  AUTH_ACTION_PACKAGES = 6;
+}
+message PermissionsUnspecified {}
+message PermissionsSpecified {
+  map<string, AuthAction> auth_action = 1;
+}
+message GetPermissionsRequest {
+  string namespace = 1;
+}
+message GetPermissionsResponse {
+  google.rpc.Status status = 1;
+  // oneof auth_action {
+  //   PermissionsUnspecified unspecified = 2;
+  //   PermissionsSpecified specified = 3;
+  // }
+}
+// message SetPermissionsRequest {
+//   string namespace = 1;
+//   map<string, AuthAction> auth_action = 2;
+// }
+// message SetPermissionsResponse {
+//   google.rpc.Status status = 1;
+// }
+// message RemovePermissionsRequest {
+//   string namespace = 1;
+// }
+// message RemovePermissionsResponse {
+//   google.rpc.Status status = 1;
+// }
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
   rpc GetNamespaces(GetNamespacesRequest) returns (GetNamespacesResponse);
+
+  rpc GetPermissions(GetPermissionsRequest) returns (GetPermissionsResponse);
 
   rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
   rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);

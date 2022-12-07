@@ -1,18 +1,20 @@
 import React from 'react';
-import { CreateNonPartitionedTopicRequest, CreatePartitionedTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
-import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
+import { useNavigate } from 'react-router-dom';
+import { mutate } from 'swr';
+
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
+import { CreateNonPartitionedTopicRequest, CreatePartitionedTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import Button from '../../ui/Button/Button';
 import Input from '../../ui/Input/Input';
 import Select from '../../ui/Select/Select';
-import s from './CreateTopic.module.css'
-import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import { mutate } from 'swr';
-import { swrKeys } from '../../swrKeys';
-import { useNavigate } from 'react-router-dom';
-import { routes } from '../../routes';
 import { H1 } from '../../ui/H/H';
+import { swrKeys } from '../../swrKeys';
+import { routes } from '../../routes';
+
+import s from './CreateTopic.module.css'
 
 export type CreateTopicProps = {
   tenant: string;
