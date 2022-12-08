@@ -188,7 +188,7 @@ const Permissions = (props: PermissionsProps) => {
             </tr>
           </thead>
           <tbody>
-            {permissionsList?.map((permission, index) => (
+            {authActions && permissionsList?.map((permission, index) => (
               <tr key={permission.role} className={s.Row}>
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   {permission.role}
@@ -222,8 +222,10 @@ const Permissions = (props: PermissionsProps) => {
                     onClick={() => grant(permission)}
                     type='primary'
                     text='update'
+                    disabled={JSON.stringify(authActions[index].actions) === JSON.stringify(permission.actions)}
                     buttonProps={{ type: 'submit' }}
                   />
+                  {/* {console.log(JSON.stringify(authActions[index].actions), permission.actions)} */}
                 </td>
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   <div
@@ -269,6 +271,7 @@ const Permissions = (props: PermissionsProps) => {
                       type='primary'
                       text='OK'
                       buttonProps={{ type: 'submit' }}
+                      disabled={formValue.role.length < 1}
                     />
                   </div>
                 </td>
