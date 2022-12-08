@@ -12,7 +12,7 @@ import { swrKeys } from '../../swrKeys';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
 import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
-import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
+import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
 import { TopicIcon, ProducerIcon, ConsumerIcon, SubscriptionIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
@@ -271,14 +271,14 @@ const Namespace: React.FC<NamespaceProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.namespace} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
-        <LinkWithQuery to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })} className="A">
+        <Link to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })} className="A">
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.namespace}
             autoEscape={true}
             textToHighlight={props.namespace}
           />
-        </LinkWithQuery>
+        </Link>
       </Td>
       <Td width="4ch" title={`${props.persistentTopicsCount?.toString()} persistent topics`}>
         {props.persistentTopicsCount !== undefined && <span className={cts.LazyContent}>{props.persistentTopicsCount}</span>}

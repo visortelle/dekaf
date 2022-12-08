@@ -13,7 +13,7 @@ import { swrKeys } from '../../swrKeys';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
 import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
-import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
+import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
 import { TopicIcon, SubscriptionIcon, ProducerIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
@@ -272,7 +272,7 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.topic.topic} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
-        <LinkWithQuery
+        <Link
           to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
             tenant: props.tenant,
             namespace: props.namespace,
@@ -288,7 +288,7 @@ const TopicComponent: React.FC<TopicComponentProps> = (props) => {
             autoEscape={true}
             textToHighlight={props.topic.topic}
           />
-        </LinkWithQuery>
+        </Link>
       </Td>
       <Td width="20rem" style={{ position: 'sticky', left: `calc(${firstColumnWidth} + 25rem)`, zIndex: 1 }}>
         <div style={{ transform: 'scale(0.8) translate(-20%, 0)' }}>

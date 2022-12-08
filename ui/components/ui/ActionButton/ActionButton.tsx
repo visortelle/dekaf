@@ -1,7 +1,7 @@
 import React from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import s from './ActionButton.module.css'
-import Link from '../../ui/LinkWithQuery/LinkWithQuery';
+import Link from '../Link/Link';
 
 import editIcon from './edit.svg';
 import closeIcon from './close.svg';

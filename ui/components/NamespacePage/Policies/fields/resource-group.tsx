@@ -13,6 +13,7 @@ import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
+import Link from "../../../ui/Link/Link";
 import A from "../../../ui/A/A";
 
 import s from './resource-group.module.css';
@@ -88,7 +89,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           case 'undefined': {
             const req = new pb.RemoveResourceGroupRequest();
             req.setNamespace(`${props.tenant}/${props.namespace}`);
-            
+
             const res = await namespaceServiceClient.removeResourceGroup(req, {});
 
             if (res === undefined) {
@@ -118,7 +119,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             break;
           }
         }
-        
+
         await mutate(swrKey);
       }}
     >
@@ -143,31 +144,30 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               }}
             />
           </div>
-          {value.type === 'specified-for-this-namespace' &&
-            <div className={s.MessageBlock}>
-              <strong>
-                If there is no desired resource group
-              </strong>
-              <A isExternalLink target="_blank" href={routes.instance.resourceGroups.create._.get()}>
-                Create resource group
-              </A>
-            </div>
-          }
           {value.type === 'specified-for-this-namespace' && resourceGroupsList.length !== 0 && (
-            <div className={sf.FormItem}>
-              <Select<string>
-                list={resourceGroupsList.map(resourceGroup => { 
-                  return {type: 'item', value: resourceGroup, title: resourceGroup}
-                })}
-                value={value.resourceGroup}
-                onChange={(v) => {
-                  onChange({
-                    ...value,
-                    resourceGroup: v
-                  })
-                }}
-              />
-            </div>
+            <>
+              <div className={sf.FormItem}>
+                <Select<string>
+                  list={resourceGroupsList.map(resourceGroup => {
+                    return { type: 'item', value: resourceGroup, title: resourceGroup }
+                  })}
+                  value={value.resourceGroup}
+                  onChange={(v) => {
+                    onChange({
+                      ...value,
+                      resourceGroup: v
+                    })
+                  }}
+                />
+                <div style={{ marginTop: '8rem' }}>
+                  <Link target={'_blank'} to={routes.instance.resourceGroups._.get()}>
+                    <A isExternalLink>
+                      Open resource groups editor
+                    </A>
+                  </Link>
+                </div>
+              </div>
+            </>
           )}
         </>
       )}

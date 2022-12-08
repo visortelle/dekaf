@@ -81,7 +81,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     if (value.type === 'inherited-from-broker-config') {
       const req = new pb.SetPublishRateRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-  
+
       const res = await namespaceServiceClient.removePublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set publish rate. ${res.getStatus()?.getMessage()}`);
@@ -154,7 +154,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Publish rate',
-  description: <span>Info about publish rate<br />More info</span>,
+  description: <span>Configured message-publish-rate for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
 
