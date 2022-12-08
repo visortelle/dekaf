@@ -16,6 +16,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
 import { Link } from "react-router-dom";
 import Button from "../../../ui/Button/Button";
+import A from "../../../ui/A/A";
 
 const policy = 'resourceGroup';
 
@@ -145,17 +146,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             />
           </div>
           {value.type === 'specified-for-this-namespace' &&
-            <div style={{ marginBottom: '24rem' }}>
-              <Link
-                to={routes.instance.resourceGroups.create._.get()} 
-                target="_blank"
-              >
-                <Button 
-                  onClick={() => {}}
-                  type='primary'
-                  text='create resource group'
-                />
-              </Link>
+            <div style={{backgroundColor: 'rgba(150, 150, 150, 0.2)', padding: '10px', borderRadius: '15px', marginBottom: '10px'}}>
+              <strong>If you do not have the required </strong>
+              <A isExternalLink target="_blank" href={routes.instance.resourceGroups.create._.get()}>
+                Create resource group
+              </A>
             </div>
           }
           {value.type === 'specified-for-this-namespace' && resourceGroupsList.length !== 0 && (
