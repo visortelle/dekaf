@@ -9,16 +9,18 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { ToolbarButton } from "../../../ui/Toolbar/Toolbar";
 import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
+import A from "../../../ui/A/A";
+
+import s from './resource-group.module.css';
 
 const policy = 'resourceGroup';
 
 type PolicyValue = { type: 'undefined' } | {
-  type: 'specified-for-this-topic',
+  type: 'specified-for-this-namespace',
   resourceGroup: string;
 };
 
@@ -60,7 +62,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         }
         case pb.GetResourceGroupResponse.ResourceGroupCase.SPECIFIED: {
           const resourceGroup = res.getSpecified()?.getResourceGroup() || '';
-          value = { type: 'specified-for-this-topic', resourceGroup: resourceGroup };
+          value = { type: 'specified-for-this-namespace', resourceGroup: resourceGroup };
           break;
         }
       }
@@ -99,7 +101,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
             break;
           }
-          case 'specified-for-this-topic': {
+          case 'specified-for-this-namespace': {
             const req = new pb.SetResourceGroupRequest();
             req.setNamespace(`${props.tenant}/${props.namespace}`);
             req.setResourceGroup(value.resourceGroup);
@@ -116,9 +118,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             break;
           }
         }
-        setTimeout(async () => {
-          await mutate(swrKey);
-        }, 300);
+        
+        await mutate(swrKey);
       }}
     >
       {({ value, onChange }) => (
@@ -127,13 +128,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <Select<PolicyValue['type']>
               list={[
                 { type: 'item', title: 'Undefined', value: 'undefined' },
-                { type: 'item', title: 'Specified for this topic', value: 'specified-for-this-topic' },
+                { type: 'item', title: 'Specified for this namespace', value: 'specified-for-this-namespace' },
               ]}
               value={value.type}
               onChange={(type) => {
-                if (type === 'specified-for-this-topic') {
+                if (type === 'specified-for-this-namespace') {
                   onChange({
-                    type: 'specified-for-this-topic', resourceGroup: ''
+                    type: 'specified-for-this-namespace', resourceGroup: resourceGroupsList[0]
                   });
                   return;
                 }
@@ -142,19 +143,18 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               }}
             />
           </div>
-          {value.type === 'specified-for-this-topic' &&
-            <div style={{ marginBottom: '12rem' }}>
-              <ToolbarButton
-                text={'create resource group'}
-                onClick={() => undefined}
-                linkTo={routes.instance.resourceGroups.create._.get()}
-                type="primary"
-              />
+          {value.type === 'specified-for-this-namespace' &&
+            <div className={s.MessageBlock}>
+              <strong>
+                If there is no desired resource group
+              </strong>
+              <A isExternalLink target="_blank" href={routes.instance.resourceGroups.create._.get()}>
+                Create resource group
+              </A>
             </div>
           }
-          {value.type === 'specified-for-this-topic' && resourceGroupsList.length !== 0 && (
+          {value.type === 'specified-for-this-namespace' && resourceGroupsList.length !== 0 && (
             <div className={sf.FormItem}>
-              <div className={sf.FormLabel}>Policy</div>
               <Select<string>
                 list={resourceGroupsList.map(resourceGroup => { 
                   return {type: 'item', value: resourceGroup, title: resourceGroup}
