@@ -59,7 +59,7 @@ interface PermissionsProps {
   namespace: string;
 }
 
-interface AuthAction {
+interface Permission {
   role: string;
   actions: {
     [action: string]: boolean;
@@ -77,10 +77,10 @@ const Permissions = (props: PermissionsProps) => {
   const { notifyError } = Notifications.useContext();
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { mutate } = useSWRConfig();
-  const [formValue, setFormValue] = useState<AuthAction | undefined>(undefined);
-  const [authActionsList, setAuthActionsList] = useState<AuthAction[]>()
+  const [formValue, setFormValue] = useState<Permission | undefined>(undefined);
+  const [permissionsList, setAuthActionsList] = useState<Permission[]>()
 
-  const defaultAuthAction: AuthAction = {
+  const defaultAuthAction: Permission = {
     role: '',
     actions: {
       produce: false,
@@ -142,21 +142,19 @@ const Permissions = (props: PermissionsProps) => {
     await mutate(swrKey);
   }
 
-  const grant = async () => {
-    if (!formValue) {
-      return
-    }
-    let actions: AuthActionList[] = [];
-    for (let key in formValue.actions) {
-      if (formValue.actions[key] === true) {
-        actions.push(key)
+  const grant = async (permission: Permission) => {
+
+    let actions: pb.AuthAction[] = [];
+    for (let key in permission.actions) {
+      if (permission.actions[key] === true) {
+        actions.push(authActionToPb(key))
       }
     }
 
     const req = new pb.GrantPermissionsRequest();
     req.setNamespace(`${props.tenant}/${props.namespace}`);
-    req.setRole(formValue.role)
-    req.setPermissionsList(actions.map(authActionToPb))
+    req.setRole(permission.role)
+    req.setPermissionsList(actions)
 
     const res = await namespaceServiceClient.grantPermissions (req, {});
 
@@ -190,7 +188,7 @@ const Permissions = (props: PermissionsProps) => {
             </tr>
           </thead>
           <tbody>
-            {authActionsList?.map((permission, index) => (
+            {permissionsList?.map((permission, index) => (
               <tr key={permission.role} className={s.Row}>
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   {permission.role}
@@ -203,7 +201,7 @@ const Permissions = (props: PermissionsProps) => {
                         value={permission.actions[action]}
                         onChange={(value) => {
                           setAuthActionsList(Object.assign(
-                            [...authActionsList],
+                            [...permissionsList],
                             { 
                               [index]: {
                                 ...permission,
@@ -221,9 +219,9 @@ const Permissions = (props: PermissionsProps) => {
                 ))}
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   <Button
-                    onClick={() => grant()}
+                    onClick={() => grant(permission)}
                     type='primary'
-                    text='OK'
+                    text='update'
                     buttonProps={{ type: 'submit' }}
                   />
                 </td>
@@ -267,7 +265,7 @@ const Permissions = (props: PermissionsProps) => {
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   <div className={`${s.ButtonBlock}`}>
                     <Button
-                      onClick={() => grant()}
+                      onClick={() => grant(formValue)}
                       type='primary'
                       text='OK'
                       buttonProps={{ type: 'submit' }}
