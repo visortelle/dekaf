@@ -1801,7 +1801,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                     pb.GetResourceGroupResponse.ResourceGroup.Unspecified(new ResourceGroupUnspecified())
                 case Some(v) =>
                     pb.GetResourceGroupResponse.ResourceGroup.Specified(new ResourceGroupSpecified(resourceGroup = v))
-            println(Option(adminClient.namespaces.getNamespaceResourceGroup(request.namespace)))
+
             val resourceGroups = Option(adminClient.resourcegroups.getResourceGroups).map(_.asScala.toSeq).getOrElse(Seq.empty[String])
 
             Future.successful(GetResourceGroupResponse(

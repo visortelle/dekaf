@@ -9,13 +9,10 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { ToolbarButton } from "../../../ui/Toolbar/Toolbar";
 import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
-import { Link } from "react-router-dom";
-import Button from "../../../ui/Button/Button";
 import A from "../../../ui/A/A";
 
 const policy = 'resourceGroup';
@@ -119,9 +116,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             break;
           }
         }
-        setTimeout(async () => {
+        // setTimeout(async () => {
           await mutate(swrKey);
-        }, 300);
+        // }, 300);
       }}
     >
       {({ value, onChange }) => (
