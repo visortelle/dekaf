@@ -1,5 +1,4 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import useSWR, { useSWRConfig } from "swr";
 
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
@@ -7,39 +6,95 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../swrKeys';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
+import Checkbox from '../../ui/Checkbox/Checkbox';
+import Button from '../../ui/Button/Button';
+import Input from '../../ui/Input/Input';
 
-// interface Permissions {
-//   [role: string]: string
-//   // ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages']
-// }
+import s from './Permissions.module.css';
+import { mapToObject } from '../../../pbUtils/pbUtils';
 
-type PolicyValue = pb.PermissionsSpecified
+export const actionsList = ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages'];
+export type AuthActionList = typeof actionsList[number];
+
+function authActionFromPb(authAction: pb.AuthAction): AuthActionList {
+  switch (authAction) {
+    case pb.AuthAction.AUTH_ACTION_PRODUCE:
+      return 'produce';
+    case pb.AuthAction.AUTH_ACTION_CONSUME:
+      return 'consume';
+    case pb.AuthAction.AUTH_ACTION_FUNCTIONS:
+      return 'functions';
+    case pb.AuthAction.AUTH_ACTION_SOURCES:
+      return 'sources';
+    case pb.AuthAction.AUTH_ACTION_SINKS:
+      return 'sinks';
+    case pb.AuthAction.AUTH_ACTION_PACKAGES:
+      return 'packages';
+    default:
+      throw new Error(`Unknown auth action: ${authAction}`);
+  }
+}
+
+function authActionToPb(authAction: AuthActionList): pb.AuthAction {
+  switch (authAction) {
+    case 'produce':
+      return pb.AuthAction.AUTH_ACTION_PRODUCE;
+    case 'consume':
+      return pb.AuthAction.AUTH_ACTION_CONSUME;
+    case 'functions':
+      return pb.AuthAction.AUTH_ACTION_FUNCTIONS;
+    case 'sources':
+      return pb.AuthAction.AUTH_ACTION_SOURCES;
+    case 'sinks':
+      return pb.AuthAction.AUTH_ACTION_SINKS;
+    case 'packages':
+      return pb.AuthAction.AUTH_ACTION_PACKAGES;
+    default:
+      throw new Error(`Unknown auth action: ${authAction}`);
+  }
+}
 
 interface PermissionsProps {
   tenant: string;
   namespace: string;
 }
 
+interface AuthAction {
+  role: string;
+  actions: {
+    [action: string]: boolean;
+    produce: boolean;
+    consume: boolean;
+    functions: boolean;
+    sources: boolean;
+    sinks: boolean;
+    packages: boolean;
+  }
+}
+
 const Permissions = (props: PermissionsProps) => {
-
-  interface Example {
-    [key: string]: string[]
-  }
-
-  const example: Example = {
-    "role_name": ['produce', 'consume'],
-    "other_role": ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages'],
-    "one_more_role": ['consume', 'sinks'],
-    "last_role": []
-  }
 
   const { notifyError } = Notifications.useContext();
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { mutate } = useSWRConfig();
+  const [formValue, setFormValue] = useState<AuthAction | undefined>(undefined);
+  const [authActionsList, setAuthActionsList] = useState<AuthAction[]>()
+
+  const defaultAuthAction: AuthAction = {
+    role: '',
+    actions: {
+      produce: false,
+      consume: false,
+      functions: false,
+      sources: false,
+      sinks: false,
+      packages: false
+    }
+  }
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.permissions._({ tenant: props.tenant, namespace: props.namespace });
 
-  const { data: permissions, error: permissionsError } = useSWR(
+  const { data: authActions, error: authActionsError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetPermissionsRequest();
@@ -49,48 +104,172 @@ const Permissions = (props: PermissionsProps) => {
         return;
       }
 
-      console.log(`asd: ${res}`);
-
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(res.getStatus()?.getMessage());
         return;
       }
 
-      let permissions = res.getSpecified();
-      // setResourceGroupsList(res.getResourceGroupsList())
+      const authActionsObject = mapToObject(res.getAuthActionsMap())
+      const authActions = Object.keys(authActionsObject).map(role => {
+        let authActionItem = { role: defaultAuthAction.role, actions: { ...defaultAuthAction.actions } };
 
-      // switch (res.getResourceGroupCase()) {
-      //   case pb.GetResourceGroupResponse.ResourceGroupCase.UNSPECIFIED: {
-      //     value = { type: 'undefined' };
-      //     break;
-      //   }
-      //   case pb.GetResourceGroupResponse.ResourceGroupCase.SPECIFIED: {
-      //     const resourceGroup = res.getSpecified()?.getResourceGroup() || '';
-      //     value = { type: 'specified-for-this-topic', resourceGroup: resourceGroup };
-      //     break;
-      //   }
-      // }
+        authActionItem.role = role
+        authActionsObject[role].getAuthActionsList().map((action) =>
+          authActionItem.actions[authActionFromPb(action)] = true
+        )
 
-      return permissions;
+        return authActionItem
+      })
+
+      setFormValue({ role: defaultAuthAction.role, actions: {...defaultAuthAction.actions} })
+      setAuthActionsList(authActions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
+      return authActions;
     }
   );
+  
+  const remove = async (role: string) => {
+    const req = new pb.RevokePermissionsRequest();
+    req.setNamespace(`${props.tenant}/${props.namespace}`);
+    req.setRole(role)
 
-  if (permissionsError) {
-    notifyError(`Unable to get permissions. ${permissionsError}`);
+    const res = await namespaceServiceClient.revokePermissions(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(res.getStatus()?.getMessage());
+      return;
+    }
+
+    await mutate(swrKey);
+  }
+
+  const create = async () => {
+    if (!formValue) {
+      return
+    }
+    let actions: AuthActionList[] = [];
+    for (let key in formValue.actions) {
+      if (formValue.actions[key] === true) {
+        actions.push(key)
+      }
+    }
+
+    const req = new pb.GrantPermissionsRequest();
+    req.setNamespace(`${props.tenant}/${props.namespace}`);
+    req.setRole(formValue.role)
+    req.setPermissionsList(actions.map(authActionToPb))
+
+    const res = await namespaceServiceClient.grantPermissions (req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(res.getStatus()?.getMessage());
+      return;
+    }
+
+    await mutate(swrKey);
+  }
+
+  if (authActionsError) {
+    notifyError(`Unable to get permissions. ${authActionsError}`);
   };
 
   return (
     <div>
-      {Object.keys(example).map(role => (
-        <div>
-          {role}
-          {example[role].map(pynkt => (
-            <div>
-              {pynkt}
-            </div>
-          ))}
-        </div>
-      ))}
+      <div className={s.ConfigurationTable}>
+        <table className={s.Table}>
+          <thead>
+            <tr className={s.Row}>
+              <th className={s.Cell} style={{ minWidth: '10ch' }}>Role</th>
+              <th className={s.Cell}>Produce</th>
+              <th className={s.Cell}>Consume</th>
+              <th className={s.Cell}>Functions</th>
+              <th className={s.Cell}>Sources</th>
+              <th className={s.Cell}>Sinks</th>
+              <th className={s.Cell}>Packages</th>
+              <th className={s.Cell}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {authActionsList?.map((permission, index) => (
+              <tr key={permission.role} className={s.Row}>
+                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                  {permission.role}
+                </td>
+                {actionsList.map(action => (
+                  <td key={action} className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                    <div className={`${s.ButtonBlock}`}>
+                      <Checkbox
+                        size='big'
+                        value={permission.actions[action]}
+                        onChange={(value) => {
+                          setAuthActionsList(Object.assign(
+                            [...authActionsList],
+                            { 
+                              [index]: {
+                                ...permission,
+                                actions: {
+                                  ...permission.actions,
+                                  [action]: value
+                                }
+                              }
+                            }
+                          ))
+                        }}
+                      />
+                    </div>
+                  </td>
+                ))}
+                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                  <div
+                    className={`${s.DeleteButton}`}
+                    onClick={() => remove(permission.role)}
+                  >
+                    X
+                  </div>
+                </td>
+              </tr>
+            ))}
+
+            {formValue &&
+              <tr className={s.Row}>
+                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                  <Input
+                    type="string"
+                    value={formValue.role || ''}
+                    onChange={(v) => setFormValue({ ...formValue, role: v})}
+                    placeholder="New role"
+                  />
+                </td>
+                {actionsList.map(action => (
+                  <td key={action} className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                    <div className={`${s.ButtonBlock}`}>
+                      <Checkbox
+                        size='big'
+                        value={formValue.actions[action]}
+                        onChange={(value) => {
+                          setFormValue({
+                            ...formValue,
+                            actions: {...formValue.actions, [action]: value}
+                          })
+                        }}
+                      />
+                    </div>
+                  </td>
+                ))}
+                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                  <div className={`${s.ButtonBlock}`}>
+                    <Button
+                      onClick={() => create()}
+                      type='primary'
+                      text='OK'
+                      buttonProps={{ type: 'submit' }}
+                    />
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
