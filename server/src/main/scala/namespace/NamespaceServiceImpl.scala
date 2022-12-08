@@ -1817,6 +1817,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
     override def setResourceGroup(request: SetResourceGroupRequest): Future[SetResourceGroupResponse] =
         try {
             logger.info(s"Setting resource group policy for namespace ${request.namespace}")
+            println(request.resourceGroup)
             adminClient.namespaces.setNamespaceResourceGroup(request.namespace, request.resourceGroup)
             Future.successful(SetResourceGroupResponse(status = Some(Status(code = Code.OK.index))))
         } catch {

@@ -18,7 +18,7 @@ import { routes } from '../../../routes';
 const policy = 'resourceGroup';
 
 type PolicyValue = { type: 'undefined' } | {
-  type: 'specified-for-this-topic',
+  type: 'specified-for-this-namespace',
   resourceGroup: string;
 };
 
@@ -60,7 +60,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         }
         case pb.GetResourceGroupResponse.ResourceGroupCase.SPECIFIED: {
           const resourceGroup = res.getSpecified()?.getResourceGroup() || '';
-          value = { type: 'specified-for-this-topic', resourceGroup: resourceGroup };
+          value = { type: 'specified-for-this-namespace', resourceGroup: resourceGroup };
           break;
         }
       }
@@ -99,7 +99,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
             break;
           }
-          case 'specified-for-this-topic': {
+          case 'specified-for-this-namespace': {
             const req = new pb.SetResourceGroupRequest();
             req.setNamespace(`${props.tenant}/${props.namespace}`);
             req.setResourceGroup(value.resourceGroup);
@@ -127,13 +127,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             <Select<PolicyValue['type']>
               list={[
                 { type: 'item', title: 'Undefined', value: 'undefined' },
-                { type: 'item', title: 'Specified for this topic', value: 'specified-for-this-topic' },
+                { type: 'item', title: 'Specified for this namespace', value: 'specified-for-this-namespace' },
               ]}
               value={value.type}
               onChange={(type) => {
-                if (type === 'specified-for-this-topic') {
+                if (type === 'specified-for-this-namespace') {
                   onChange({
-                    type: 'specified-for-this-topic', resourceGroup: ''
+                    type: 'specified-for-this-namespace', resourceGroup: resourceGroupsList[0]
                   });
                   return;
                 }
@@ -142,7 +142,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               }}
             />
           </div>
-          {value.type === 'specified-for-this-topic' &&
+          {value.type === 'specified-for-this-namespace' &&
             <div style={{ marginBottom: '12rem' }}>
               <ToolbarButton
                 text={'create resource group'}
@@ -152,7 +152,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               />
             </div>
           }
-          {value.type === 'specified-for-this-topic' && resourceGroupsList.length !== 0 && (
+          {value.type === 'specified-for-this-namespace' && resourceGroupsList.length !== 0 && (
             <div className={sf.FormItem}>
               <div className={sf.FormLabel}>Policy</div>
               <Select<string>
