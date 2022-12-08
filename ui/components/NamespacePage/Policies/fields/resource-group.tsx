@@ -15,6 +15,8 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
 import A from "../../../ui/A/A";
 
+import s from './resource-group.module.css';
+
 const policy = 'resourceGroup';
 
 type PolicyValue = { type: 'undefined' } | {
@@ -142,8 +144,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             />
           </div>
           {value.type === 'specified-for-this-namespace' &&
-            <div style={{backgroundColor: 'rgba(150, 150, 150, 0.2)', padding: '10px', borderRadius: '15px', marginBottom: '10px'}}>
-              <strong>If you do not have the required </strong>
+            <div className={s.MessageBlock}>
+              <strong>
+                If there is no desired resource group
+              </strong>
               <A isExternalLink target="_blank" href={routes.instance.resourceGroups.create._.get()}>
                 Create resource group
               </A>
