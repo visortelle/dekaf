@@ -142,7 +142,7 @@ const Permissions = (props: PermissionsProps) => {
     await mutate(swrKey);
   }
 
-  const create = async () => {
+  const grant = async () => {
     if (!formValue) {
       return
     }
@@ -219,7 +219,14 @@ const Permissions = (props: PermissionsProps) => {
                     </div>
                   </td>
                 ))}
-                <td></td>
+                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                  <Button
+                    onClick={() => grant()}
+                    type='primary'
+                    text='OK'
+                    buttonProps={{ type: 'submit' }}
+                  />
+                </td>
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   <div
                     className={`${s.DeleteButton}`}
@@ -260,7 +267,7 @@ const Permissions = (props: PermissionsProps) => {
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   <div className={`${s.ButtonBlock}`}>
                     <Button
-                      onClick={() => create()}
+                      onClick={() => grant()}
                       type='primary'
                       text='OK'
                       buttonProps={{ type: 'submit' }}
