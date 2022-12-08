@@ -185,7 +185,8 @@ const Permissions = (props: PermissionsProps) => {
               <th className={s.Cell}>Sources</th>
               <th className={s.Cell}>Sinks</th>
               <th className={s.Cell}>Packages</th>
-              <th className={s.Cell}></th>
+              <th className={s.Cell} />
+              <th className={s.Cell} />
             </tr>
           </thead>
           <tbody>
@@ -218,6 +219,7 @@ const Permissions = (props: PermissionsProps) => {
                     </div>
                   </td>
                 ))}
+                <td></td>
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   <div
                     className={`${s.DeleteButton}`}
