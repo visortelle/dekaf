@@ -116,9 +116,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             break;
           }
         }
-        // setTimeout(async () => {
-          await mutate(swrKey);
-        // }, 300);
+        
+        await mutate(swrKey);
       }}
     >
       {({ value, onChange }) => (
