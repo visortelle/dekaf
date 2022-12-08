@@ -5,7 +5,7 @@ import * as Notifications from '../../app/contexts/Notifications';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowIcon from './arrow.svg';
 import copyIcon from './copy.svg';
-import Link from '../../ui/LinkWithQuery/LinkWithQuery';
+import Link from '../Link/Link';
 import { routes } from '../../routes';
 import { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';

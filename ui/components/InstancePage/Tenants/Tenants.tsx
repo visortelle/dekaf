@@ -13,7 +13,7 @@ import { swrKeys } from '../../swrKeys';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
 import { isEqual, partition } from 'lodash';
 import Highlighter from "react-highlight-words";
-import LinkWithQuery from '../../ui/LinkWithQuery/LinkWithQuery';
+import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
 import { NamespaceIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
@@ -271,14 +271,14 @@ const Tenant: React.FC<TenantProps> = (props) => {
   return (
     <>
       <Td width={firstColumnWidth} title={props.tenant} style={{ position: 'sticky', left: 0 }}>
-        <LinkWithQuery to={routes.tenants.tenant.namespaces._.get({ tenant: props.tenant })} className="A">
+        <Link to={routes.tenants.tenant.namespaces._.get({ tenant: props.tenant })} className="A">
           <Highlighter
             highlightClassName="highlight-substring"
             searchWords={props.highlight.tenant}
             autoEscape={true}
             textToHighlight={props.tenant}
           />
-        </LinkWithQuery>
+        </Link>
       </Td>
       <Td width="4ch" title={`${props.namespacesCount?.toString()} namespaces`}>
         {props.namespacesCount !== undefined && <span className={cts.LazyContent}>{props.namespacesCount}</span>}
