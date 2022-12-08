@@ -36,6 +36,7 @@ import isALlowAutoUpdateSchemaField from './fields/is-allow-auto-update-schema';
 import schemaValidationEnforceField from './fields/schema-validation-enforce';
 import offloadPoliciesField from './fields/offload-policies/offload-policies';
 import publishRateField from './fields/publish-rate';
+import resourceGroupField from './fields/resource-group';
 
 import s from './Policies.module.css'
 
@@ -60,6 +61,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             compactionThresholdField,
             delayedDeliveryField,
             publishRateField,
+            resourceGroupField,
           ].map(field => field(props))}
         />
       </div>

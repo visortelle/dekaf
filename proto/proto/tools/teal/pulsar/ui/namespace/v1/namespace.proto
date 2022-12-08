@@ -1080,6 +1080,38 @@ message RemovePublishRateResponse {
   google.rpc.Status status = 1;
 }
 
+message ResourceGroupUnspecified {
+}
+message ResourceGroupSpecified {
+  string resource_group = 1;
+}
+message GetResourceGroupRequest {
+  string namespace = 1;
+  bool is_global = 2;
+}
+message GetResourceGroupResponse {
+  google.rpc.Status status = 1;
+  oneof resource_group {
+    ResourceGroupUnspecified unspecified = 2;
+    ResourceGroupSpecified specified = 3;
+  };
+  repeated string resource_groups = 4;
+}
+message SetResourceGroupRequest {
+  string namespace = 1;
+  string resource_group = 2;
+}
+message SetResourceGroupResponse {
+  google.rpc.Status status = 1;
+}
+message RemoveResourceGroupRequest {
+  string namespace = 1;
+  bool is_global = 2;
+}
+message RemoveResourceGroupResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -1222,4 +1254,8 @@ service NamespaceService {
   rpc GetPublishRate(GetPublishRateRequest) returns (GetPublishRateResponse);
   rpc SetPublishRate(SetPublishRateRequest) returns (SetPublishRateResponse);
   rpc RemovePublishRate(RemovePublishRateRequest) returns (RemovePublishRateResponse);
+
+  rpc GetResourceGroup(GetResourceGroupRequest) returns (GetResourceGroupResponse);
+  rpc SetResourceGroup(SetResourceGroupRequest) returns (SetResourceGroupResponse);
+  rpc RemoveResourceGroup(RemoveResourceGroupRequest) returns (RemoveResourceGroupResponse);
 }
