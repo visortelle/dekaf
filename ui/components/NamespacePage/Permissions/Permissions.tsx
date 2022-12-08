@@ -225,15 +225,14 @@ const Permissions = (props: PermissionsProps) => {
                     disabled={JSON.stringify(authActions[index].actions) === JSON.stringify(permission.actions)}
                     buttonProps={{ type: 'submit' }}
                   />
-                  {/* {console.log(JSON.stringify(authActions[index].actions), permission.actions)} */}
                 </td>
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <div
-                    className={`${s.DeleteButton}`}
-                    onClick={() => remove(permission.role)}
-                  >
-                    X
-                  </div>
+                  <Button
+                    onClick={() => grant(permission)}
+                    type='danger'
+                    text='Revoke'
+                    buttonProps={{ type: 'submit' }}
+                  />
                 </td>
               </tr>
             ))}
@@ -269,7 +268,7 @@ const Permissions = (props: PermissionsProps) => {
                     <Button
                       onClick={() => grant(formValue)}
                       type='primary'
-                      text='OK'
+                      text='Grant'
                       buttonProps={{ type: 'submit' }}
                       disabled={formValue.role.length < 1}
                     />
