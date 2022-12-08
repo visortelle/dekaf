@@ -74,6 +74,11 @@ message ResourceGroup {
   google.protobuf.Int32Value dispatch_rate_in_msgs = 4;
   google.protobuf.Int64Value dispatch_rate_in_bytes = 5;
 }
+message GetResourceGroupsListRequest {}
+message GetResourceGroupsListResponse {
+  google.rpc.Status status = 1;
+  repeated string resource_groups = 2;
+}
 message GetResourceGroupRequest {
   string name = 1;
 }
@@ -115,6 +120,7 @@ service BrokersService {
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
   rpc BacklogQuotaCheck(BacklogQuotaCheckRequest) returns (BacklogQuotaCheckResponse) {}
 
+  rpc GetResourceGroupsList(GetResourceGroupsListRequest) returns (GetResourceGroupsListResponse) {}
   rpc GetResourceGroups(GetResourceGroupsRequest) returns (GetResourceGroupsResponse) {}
   rpc GetResourceGroup(GetResourceGroupRequest) returns (GetResourceGroupResponse) {}
   rpc CreateResourceGroup(CreateResourceGroupRequest) returns (CreateResourceGroupResponse) {}
