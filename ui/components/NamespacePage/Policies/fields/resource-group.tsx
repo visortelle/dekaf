@@ -14,6 +14,8 @@ import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
+import { Link } from "react-router-dom";
+import Button from "../../../ui/Button/Button";
 
 const policy = 'resourceGroup';
 
@@ -143,18 +145,21 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             />
           </div>
           {value.type === 'specified-for-this-namespace' &&
-            <div style={{ marginBottom: '12rem' }}>
-              <ToolbarButton
-                text={'create resource group'}
-                onClick={() => undefined}
-                linkTo={routes.instance.resourceGroups.create._.get()}
-                type="primary"
-              />
+            <div style={{ marginBottom: '24rem' }}>
+              <Link
+                to={routes.instance.resourceGroups.create._.get()} 
+                target="_blank"
+              >
+                <Button 
+                  onClick={() => {}}
+                  type='primary'
+                  text='create resource group'
+                />
+              </Link>
             </div>
           }
           {value.type === 'specified-for-this-namespace' && resourceGroupsList.length !== 0 && (
             <div className={sf.FormItem}>
-              <div className={sf.FormLabel}>Policy</div>
               <Select<string>
                 list={resourceGroupsList.map(resourceGroup => { 
                   return {type: 'item', value: resourceGroup, title: resourceGroup}
