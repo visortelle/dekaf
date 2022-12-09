@@ -257,10 +257,8 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                     value={formValue.role || ''}
                     onChange={(v) => setFormValue({ ...formValue, role: v })}
                     placeholder='user-role'
-                    focusOnMount
                     inputProps={{
                       onKeyDown: (e) => {
-                        console.log('e', e);
                         if (e.key === 'Enter') {
                           grant(formValue)
                         }
