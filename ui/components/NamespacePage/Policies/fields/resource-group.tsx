@@ -7,16 +7,15 @@ import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
-import A from "../../../ui/A/A";
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
+import A from "../../../ui/A/A";
 
 import s from './resource-group.module.css';
-import LinkWithQuery from "../../../ui/LinkWithQuery/LinkWithQuery";
 
 const policy = 'resourceGroup';
 
@@ -149,11 +148,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               <strong>
                 If there is no desired resource group
               </strong>
-              <LinkWithQuery to={routes.instance.resourceGroups.create._.get()} target='_blank'>
-                <A isExternalLink>
-                  Create resource group
-                </A>
-              </LinkWithQuery>
+              <A isExternalLink target="_blank" href={routes.instance.resourceGroups.create._.get()}>
+                Create resource group
+              </A>
             </div>
           }
           {value.type === 'specified-for-this-namespace' && resourceGroupsList.length !== 0 && (
