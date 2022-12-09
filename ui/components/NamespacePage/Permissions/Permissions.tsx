@@ -197,7 +197,6 @@ const Permissions = (props: PermissionsProps) => {
                   <td key={action} className={`${s.Cell} ${s.DynamicConfigCell}`}>
                     <div className={`${s.ButtonBlock}`}>
                       <Checkbox
-                        size='big'
                         value={permission.actions[action]}
                         onChange={(value) => {
                           setPermissionsList(Object.assign(
@@ -251,7 +250,6 @@ const Permissions = (props: PermissionsProps) => {
                   <td key={action} className={`${s.Cell} ${s.DynamicConfigCell}`}>
                     <div className={`${s.ButtonBlock}`}>
                       <Checkbox
-                        size='big'
                         value={formValue.actions[action]}
                         onChange={(value) => {
                           setFormValue({
