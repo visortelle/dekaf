@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import useSWR, { useSWRConfig } from "swr";
+import _ from 'lodash';
 
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import Checkbox from '../../ui/Checkbox/Checkbox';
-import Button from '../../ui/Button/Button';
+import SmallButton from '../../ui/SmallButton/SmallButton';
 import Input from '../../ui/Input/Input';
 import { swrKeys } from '../../swrKeys';
 import { mapToObject } from '../../../pbUtils/pbUtils';
@@ -74,7 +75,7 @@ type Permission = {
 
 const Permissions = (props: PermissionsProps) => {
 
-  const { notifyError } = Notifications.useContext();
+  const { notifySuccess ,notifyError } = Notifications.useContext();
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { mutate } = useSWRConfig();
   const [formValue, setFormValue] = useState<Permission | undefined>(undefined);
@@ -124,6 +125,7 @@ const Permissions = (props: PermissionsProps) => {
 
       setFormValue({ role: defaultPermission.role, actions: {...defaultPermission.actions} })
       setPermissionsList(authActions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
+      
       return authActions;
     }
   );
@@ -139,6 +141,11 @@ const Permissions = (props: PermissionsProps) => {
       notifyError(res.getStatus()?.getMessage());
       return;
     }
+
+    notifySuccess(
+      <span>Successfully revoked permissions for role: <strong>{role}</strong></span>,
+      `permission-revoked-${role}`
+    );
 
     await mutate(swrKey);
   }
@@ -164,6 +171,11 @@ const Permissions = (props: PermissionsProps) => {
       return;
     }
 
+    notifySuccess(
+      <span>Successfully granted permissions for role: <strong>{permission.role}</strong></span>,
+      `permission-granted-${permission.role}`
+    );
+
     await mutate(swrKey);
   }
 
@@ -173,7 +185,7 @@ const Permissions = (props: PermissionsProps) => {
 
   return (
     <div>
-      <div className={s.ConfigurationTable}>
+      <div className={s.ConfigurationTable} style={{marginLeft: '-1px'}}>
         <table className={s.Table}>
           <thead>
             <tr className={s.Row}>
@@ -217,20 +229,22 @@ const Permissions = (props: PermissionsProps) => {
                   </td>
                 ))}
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <div className={`${s.ButtonsCase}`}>
-                    <Button
-                      onClick={() => grant(permission)}
-                      type='primary'
-                      text='update'
-                      disabled={JSON.stringify(permissions[index].actions) === JSON.stringify(permission.actions)}
-                      buttonProps={{ type: 'submit' }}
-                    />
-                    <Button
-                      onClick={() => revoke(permission.role)}
-                      type='danger'
-                      text='Revoke'
-                      buttonProps={{ type: 'submit' }}
-                    />
+                  <div className={`${s.ButtonsBlocks}`}>
+                    <div className={`${s.ButtonsBlock}`}>
+                      <SmallButton
+                        onClick={() => grant(permission)}
+                        type='primary'
+                        text='Update'
+                        disabled={_.isEqual(permissions[index].actions,permission.actions)}
+                      />
+                    </div>
+                    <div className={`${s.ButtonsBlock}`}>
+                      <SmallButton
+                        onClick={() => revoke(permission.role)}
+                        type='danger'
+                        text='Revoke'
+                      />
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -239,12 +253,14 @@ const Permissions = (props: PermissionsProps) => {
             {formValue &&
               <tr className={s.Row}>
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <Input
-                    type="string"
-                    value={formValue.role || ''}
-                    onChange={(v) => setFormValue({ ...formValue, role: v})}
-                    placeholder="New role"
-                  />
+                  <div>
+                    <Input
+                      type='string'
+                      value={formValue.role || ''}
+                      onChange={(v) => setFormValue({ ...formValue, role: v})}
+                      placeholder='user-role'
+                    />
+                  </div>
                 </td>
                 {actionsList.map(action => (
                   <td key={action} className={`${s.Cell} ${s.DynamicConfigCell}`}>
@@ -263,11 +279,10 @@ const Permissions = (props: PermissionsProps) => {
                 ))}
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   <div className={ permissionsList?.length && s.CompressionBlock || s.ButtonBlock }>
-                    <Button
+                    <SmallButton
                       onClick={() => grant(formValue)}
                       type='primary'
                       text='Grant'
-                      buttonProps={{ type: 'submit' }}
                       disabled={formValue.role.length < 1}
                     />
                   </div>

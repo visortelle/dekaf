@@ -107,15 +107,19 @@
   margin-bottom: 12rem;
 }
 
-.ButtonsCase {
+.ButtonsBlocks {
   display: flex;
   justify-content: space-around;
+  width: 100%;
+}
+.ButtonsBlock {
+  display: flex;
+  width: 49%;
 }
 
 .CompressionBlock {
   display: flex;
-  justify-content: center;
-  width: 50%;
+  width: 49%;
 }
 .ButtonBlock {
   display: flex;
