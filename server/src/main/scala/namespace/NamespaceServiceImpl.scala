@@ -1873,7 +1873,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 case pb.AuthAction.AUTH_ACTION_SINKS => AuthAction.sinks
                 case pb.AuthAction.AUTH_ACTION_PACKAGES => AuthAction.packages
         try {
-            adminClient.namespaces.grantPermissionOnNamespace(request.namespace, request.role, request.permissions.toList.map(authActionFromPb).toSet.asJava)
+            adminClient.namespaces.grantPermissionOnNamespace(request.namespace, request.role, request.authActions.toList.map(authActionFromPb).toSet.asJava)
 
             Future.successful(GrantPermissionsResponse(
                 status = Some(Status(code = Code.OK.index)),
@@ -1889,7 +1889,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
         try {
             adminClient.namespaces.revokePermissionsOnNamespace(request.namespace, request.role)
-            
+
             Future.successful(RevokePermissionsResponse(
                 status = Some(Status(code = Code.OK.index)),
             ))

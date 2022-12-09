@@ -62,12 +62,6 @@
   max-width: 200rem;
 }
 
-.ButtonBlock {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
 .DynamicConfigValue {
   display: flex;
   position: relative;
@@ -113,13 +107,20 @@
   margin-bottom: 12rem;
 }
 
-.DeleteButton {
+.ButtonsCase {
+  display: flex;
+  justify-content: space-around;
+}
+
+.CompressionBlock {
+  display: flex;
+  justify-content: center;
+  width: 50%;
+}
+.ButtonBlock {
+  display: flex;
+  justify-content: center;
   width: 100%;
-  font-size: 18pt;
-  font-weight: bold;
-  color: red;
-  text-align: center;
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
 }
 
 @keyframes fade-in {

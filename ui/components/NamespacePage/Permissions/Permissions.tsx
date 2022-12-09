@@ -3,20 +3,20 @@ import useSWR, { useSWRConfig } from "swr";
 
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import { swrKeys } from '../../swrKeys';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import Checkbox from '../../ui/Checkbox/Checkbox';
 import Button from '../../ui/Button/Button';
 import Input from '../../ui/Input/Input';
-
-import s from './Permissions.module.css';
+import { swrKeys } from '../../swrKeys';
 import { mapToObject } from '../../../pbUtils/pbUtils';
 
-export const actionsList = ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages'];
-export type AuthActionList = typeof actionsList[number];
+import s from './Permissions.module.css';
 
-function authActionFromPb(authAction: pb.AuthAction): AuthActionList {
+export const actionsList = ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages'];
+export type AuthAction = typeof actionsList[number];
+
+function authActionFromPb(authAction: pb.AuthAction): AuthAction {
   switch (authAction) {
     case pb.AuthAction.AUTH_ACTION_PRODUCE:
       return 'produce';
@@ -35,7 +35,7 @@ function authActionFromPb(authAction: pb.AuthAction): AuthActionList {
   }
 }
 
-function authActionToPb(authAction: AuthActionList): pb.AuthAction {
+function authActionToPb(authAction: AuthAction): pb.AuthAction {
   switch (authAction) {
     case 'produce':
       return pb.AuthAction.AUTH_ACTION_PRODUCE;
@@ -54,12 +54,12 @@ function authActionToPb(authAction: AuthActionList): pb.AuthAction {
   }
 }
 
-interface PermissionsProps {
+type PermissionsProps = {
   tenant: string;
   namespace: string;
 }
 
-interface Permission {
+type Permission = {
   role: string;
   actions: {
     [action: string]: boolean;
@@ -78,9 +78,9 @@ const Permissions = (props: PermissionsProps) => {
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { mutate } = useSWRConfig();
   const [formValue, setFormValue] = useState<Permission | undefined>(undefined);
-  const [permissionsList, setAuthActionsList] = useState<Permission[]>()
+  const [permissionsList, setPermissionsList] = useState<Permission[]>()
 
-  const defaultAuthAction: Permission = {
+  const defaultPermission: Permission = {
     role: '',
     actions: {
       produce: false,
@@ -94,12 +94,13 @@ const Permissions = (props: PermissionsProps) => {
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.permissions._({ tenant: props.tenant, namespace: props.namespace });
 
-  const { data: authActions, error: authActionsError } = useSWR(
+  const { data: permissions, error: authActionsError } = useSWR(
     swrKey,
     async () => {
       const req = new pb.GetPermissionsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       const res = await namespaceServiceClient.getPermissions(req, {});
+      
       if (res === undefined) {
         return;
       }
@@ -109,28 +110,28 @@ const Permissions = (props: PermissionsProps) => {
         return;
       }
 
-      const authActionsObject = mapToObject(res.getAuthActionsMap())
-      const authActions = Object.keys(authActionsObject).map(role => {
-        let authActionItem = { role: defaultAuthAction.role, actions: { ...defaultAuthAction.actions } };
+      const permissionsObject = mapToObject(res.getPermissionsMap())
+      const authActions = Object.keys(permissionsObject).map(role => {
+        let permissionsItem = { role: defaultPermission.role, actions: { ...defaultPermission.actions } };
 
-        authActionItem.role = role
-        authActionsObject[role].getAuthActionsList().map((action) =>
-          authActionItem.actions[authActionFromPb(action)] = true
+        permissionsItem.role = role
+        permissionsObject[role].getAuthActionsList().map((action) =>
+          permissionsItem.actions[authActionFromPb(action)] = true
         )
 
-        return authActionItem
+        return permissionsItem
       })
 
-      setFormValue({ role: defaultAuthAction.role, actions: {...defaultAuthAction.actions} })
-      setAuthActionsList(authActions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
+      setFormValue({ role: defaultPermission.role, actions: {...defaultPermission.actions} })
+      setPermissionsList(authActions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
       return authActions;
     }
   );
   
-  const remove = async (role: string) => {
+  const revoke = async (role: string) => {
     const req = new pb.RevokePermissionsRequest();
     req.setNamespace(`${props.tenant}/${props.namespace}`);
-    req.setRole(role)
+    req.setRole(role);
 
     const res = await namespaceServiceClient.revokePermissions(req, {});
 
@@ -153,8 +154,8 @@ const Permissions = (props: PermissionsProps) => {
 
     const req = new pb.GrantPermissionsRequest();
     req.setNamespace(`${props.tenant}/${props.namespace}`);
-    req.setRole(permission.role)
-    req.setPermissionsList(actions)
+    req.setRole(permission.role);
+    req.setAuthActionsList(actions);
 
     const res = await namespaceServiceClient.grantPermissions (req, {});
 
@@ -184,11 +185,10 @@ const Permissions = (props: PermissionsProps) => {
               <th className={s.Cell}>Sinks</th>
               <th className={s.Cell}>Packages</th>
               <th className={s.Cell} />
-              <th className={s.Cell} />
             </tr>
           </thead>
           <tbody>
-            {authActions && permissionsList?.map((permission, index) => (
+            {permissions && permissionsList?.map((permission, index) => (
               <tr key={permission.role} className={s.Row}>
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
                   {permission.role}
@@ -200,7 +200,7 @@ const Permissions = (props: PermissionsProps) => {
                         size='big'
                         value={permission.actions[action]}
                         onChange={(value) => {
-                          setAuthActionsList(Object.assign(
+                          setPermissionsList(Object.assign(
                             [...permissionsList],
                             { 
                               [index]: {
@@ -218,21 +218,21 @@ const Permissions = (props: PermissionsProps) => {
                   </td>
                 ))}
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <Button
-                    onClick={() => grant(permission)}
-                    type='primary'
-                    text='update'
-                    disabled={JSON.stringify(authActions[index].actions) === JSON.stringify(permission.actions)}
-                    buttonProps={{ type: 'submit' }}
-                  />
-                </td>
-                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <Button
-                    onClick={() => grant(permission)}
-                    type='danger'
-                    text='Revoke'
-                    buttonProps={{ type: 'submit' }}
-                  />
+                  <div className={`${s.ButtonsCase}`}>
+                    <Button
+                      onClick={() => grant(permission)}
+                      type='primary'
+                      text='update'
+                      disabled={JSON.stringify(permissions[index].actions) === JSON.stringify(permission.actions)}
+                      buttonProps={{ type: 'submit' }}
+                    />
+                    <Button
+                      onClick={() => revoke(permission.role)}
+                      type='danger'
+                      text='Revoke'
+                      buttonProps={{ type: 'submit' }}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -264,7 +264,7 @@ const Permissions = (props: PermissionsProps) => {
                   </td>
                 ))}
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <div className={`${s.ButtonBlock}`}>
+                  <div className={ permissionsList?.length && s.CompressionBlock || s.ButtonBlock }>
                     <Button
                       onClick={() => grant(formValue)}
                       type='primary'
