@@ -1,5 +1,5 @@
 import s from './Input.module.css';
-import { Attributes, HTMLAttributes, HTMLInputTypeAttribute, InputHTMLAttributes, useEffect, useRef } from 'react';
+import { HTMLInputTypeAttribute, InputHTMLAttributes, useEffect, useRef } from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import clearIcon from './clear.svg';
 
