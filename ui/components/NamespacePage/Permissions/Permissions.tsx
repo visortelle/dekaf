@@ -278,7 +278,7 @@ const Permissions = (props: PermissionsProps) => {
                   </td>
                 ))}
                 <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <div className={ permissionsList?.length && s.CompressionBlock || s.ButtonBlock }>
+                  <div className={ permissionsList?.length ? s.CompressionBlock : s.ButtonBlock }>
                     <SmallButton
                       onClick={() => grant(formValue)}
                       type='primary'
