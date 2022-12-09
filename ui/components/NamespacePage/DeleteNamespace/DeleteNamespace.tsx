@@ -43,7 +43,7 @@ const DeleteNamespace: React.FC<DeleteTopicProps> = (props) => {
     } catch (err) {
       notifyError(`Unable to delete namespace ${props.tenant}/${props.namespace}. ${err}`)
     }
-  }; 
+  };
 
   return (
     <div className={s.View}>
