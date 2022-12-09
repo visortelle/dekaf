@@ -6,6 +6,7 @@ import UploadZone from '../../../ui/UploadZone/UploadZone';
 import _ from 'lodash';
 import Select from '../../../ui/Select/Select';
 import Pre from '../../../ui/Pre/Pre';
+import A from '../../../ui/A/A';
 
 export type AvroEditorProps = {
   defaultSchemaDefinition: string | undefined;
@@ -89,7 +90,7 @@ const AvroEditor: React.FC<AvroEditorProps> = (props) => {
               onChange={(v) => setSchemaDefinition(v || '')}
             />
           </div>
-          <a className="A" style={{ marginLeft: 'auto' }} href="https://avro.apache.org/docs/current/spec.html" target="__blank">AVRO reference</a>
+          <A isExternalLink style={{ marginLeft: 'auto' }} href="https://avro.apache.org/docs/current/spec.html">AVRO reference</A>
         </div>
       )}
 

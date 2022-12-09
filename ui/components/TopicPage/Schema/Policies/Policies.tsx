@@ -9,7 +9,8 @@ import editIcon from './edit.svg';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { H3 } from '../../../ui/H/H';
 import Button from '../../../ui/Button/Button';
-import Link from '../../../ui/LinkWithQuery/LinkWithQuery';
+import Link from '../../../ui/Link/Link';
+import A from '../../../ui/A/A';
 import { routes } from '../../../routes';
 
 export type PoliciesProps = {
@@ -85,12 +86,14 @@ const Policies: React.FC<PoliciesProps> = (props) => {
     notifyError(`Unable to get deduplication: ${isAllowAutoUpdateSchemaError}`);
   }
 
-
   return (
     <div className={s.Policies}>
-      <a className={s.EditButton} title="Edit namespace level policies" href={routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant, namespace }) + '#schema'}>
-        <Button onClick={() => { }} title="Edit" type="regular" svgIcon={editIcon} />
-      </a>
+      <Link to={routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant, namespace })} target={'_blank'}>
+        <A isExternalLink className={s.EditLink}>
+          Edit policies
+        </A>
+      </Link>
+
       <div className={s.Header}>
         <H3>Related policies</H3>
       </div>
@@ -103,7 +106,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
       <div className={s.FormControl}>
         <strong>Validation enforce:</strong> {schemaValidationEnforce ? 'Enforced' : 'Not enforced'}
       </div>
-
     </div>
   );
 }
