@@ -203,7 +203,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
           <tbody>
             {permissions && permissionsList?.map((permission, index) => (
               <tr key={permission.role} className={s.Row}>
-                <td className={`${s.Cell}`}>
+                <td title={`${permission.role}`} className={`${s.Cell} ${s.RoleField}`}>
                   {permission.role}
                 </td>
                 {actionsList.map(action => (

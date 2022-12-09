@@ -68,6 +68,13 @@
   padding: 4rem 4rem;
 }
 
+.RoleField {
+  max-width: 50rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
