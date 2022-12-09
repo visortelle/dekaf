@@ -10,6 +10,7 @@ import { useSWRConfig } from 'swr';
 import { swrKeys } from '../../swrKeys';
 import { DeleteTenantRequest } from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import Checkbox from '../../ui/Checkbox/Checkbox';
 
 export type DeleteTenantProps = {
   tenant: string
@@ -61,7 +62,7 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
 
       <div className={s.Actions}>
         <div className={s.ActionCheckbox}>
-          <input type="checkbox" id="forceDelete" checked={forceDelete} onChange={() => setForceDelete(!forceDelete)} />
+          <Checkbox isInline id="forceDelete" checked={forceDelete} onChange={() => setForceDelete(!forceDelete)} />
           &nbsp;
           <label htmlFor="forceDelete">Delete a tenant forcefully by deleting all namespaces under it.</label>
         </div>

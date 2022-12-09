@@ -7,6 +7,10 @@
   position: relative;
 }
 
+.InlineCheckbox {
+  margin-bottom: 0.2em; /* Attempt to compensate line height. */
+}
+
 .Checkbox:hover {
   cursor: pointer;
 }
