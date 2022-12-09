@@ -126,6 +126,9 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
       setPermissionsList(authActions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
 
       return authActions;
+    },
+    {
+      dedupingInterval: 0 // Fix empty data on fast route change
     }
   );
 
