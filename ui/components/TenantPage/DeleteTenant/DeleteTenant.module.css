@@ -37,4 +37,6 @@
 
 .ActionCheckbox {
   margin-bottom: 12rem;
+  display: flex;
+  align-items: center;
 }

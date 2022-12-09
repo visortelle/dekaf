@@ -11,6 +11,7 @@ import { swrKeys } from '../../swrKeys';
 import { routes } from '../../routes';
 import { DeleteNamespaceRequest } from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import Checkbox from '../../ui/Checkbox/Checkbox';
 
 export type DeleteTopicProps = {
   tenant: string,
@@ -71,7 +72,7 @@ const DeleteNamespace: React.FC<DeleteTopicProps> = (props) => {
 
       <div className={s.Actions}>
         <div className={s.ActionCheckbox}>
-          <input type="checkbox" id="forceDelete" checked={forceDelete} onChange={() => setForceDelete(!forceDelete)} />
+          <Checkbox isInline id="forceDelete" checked={forceDelete} onChange={() => setForceDelete(!forceDelete)} />
           &nbsp;
           <label htmlFor="forceDelete">Delete namespace forcefully by force deleting all topics under it.</label>
         </div>

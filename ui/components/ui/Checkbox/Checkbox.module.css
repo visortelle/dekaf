@@ -1,0 +1,59 @@
+.Checkbox {
+  width: 22rem;
+  height: 22rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.InlineCheckbox {
+  margin-bottom: 0.2em; /* Attempt to compensate line height. */
+}
+
+.Checkbox:hover {
+  cursor: pointer;
+}
+
+.CheckboxInput {
+  all: unset;
+  appearance: none;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.CheckboxInput:active:after,
+.CheckboxInput:focus::after {
+  content: '';
+  outline: none;
+  position: absolute;
+  top: -2rem;
+  left: -2rem;
+  height: 100%;
+  width: 100%;
+  border: 2rem solid var(--accent-color-blue);
+  border-radius: 4rem;
+}
+
+.Checkbox svg {
+  width: 100%;
+  height: 100%;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  pointer-events: none; /* Prevent an additional outline appearing after click on the SVG element in Chromium. */
+}
+
+.Checked svg {
+  fill: var(--accent-color-blue);
+}
+
+.Unchecked svg {
+  fill: var(--text-color);
+}

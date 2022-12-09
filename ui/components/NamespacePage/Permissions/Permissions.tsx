@@ -210,7 +210,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                   <td key={action} className={`${s.Cell}`}>
                     <div className={`${s.ButtonBlock}`}>
                       <Checkbox
-                        value={permission.actions[action]}
+                        checked={permission.actions[action]}
                         onChange={(value) => {
                           setPermissionsList(Object.assign(
                             [...permissionsList],
@@ -253,14 +253,12 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
               <tr className={s.Row}>
                 <td className={`${s.Cell} ${s.NewRoleInputCell}`}>
                   <Input
-                    type='string'
+                    type='text'
                     value={formValue.role || ''}
                     onChange={(v) => setFormValue({ ...formValue, role: v })}
                     placeholder='user-role'
-                    focusOnMount
                     inputProps={{
                       onKeyDown: (e) => {
-                        console.log('e', e);
                         if (e.key === 'Enter') {
                           grant(formValue)
                         }
@@ -272,7 +270,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                   <td key={action} className={`${s.Cell}`}>
                     <div className={`${s.ButtonBlock}`}>
                       <Checkbox
-                        value={formValue.actions[action]}
+                        checked={formValue.actions[action]}
                         onChange={(value) => {
                           setFormValue({
                             ...formValue,
