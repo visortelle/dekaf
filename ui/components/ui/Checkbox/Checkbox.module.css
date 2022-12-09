@@ -4,12 +4,9 @@
 }
 
 .Checkbox {
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
+  clip-path: circle(0%);
   overflow: hidden;
   position: absolute;
-  width: 1px;
 }
 .CustomCheckbox {
   width: 100%;
