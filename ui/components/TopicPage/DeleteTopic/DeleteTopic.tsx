@@ -11,6 +11,7 @@ import { swrKeys } from '../../swrKeys';
 import { routes } from '../../routes';
 import { DeleteTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import Checkbox from '../../ui/Checkbox/Checkbox';
 
 export type DeleteTopicProps = {
   tenant: string,
@@ -81,7 +82,7 @@ const DeleteTopic: React.FC<DeleteTopicProps> = (props) => {
 
       <div className={s.Actions}>
         <div className={s.ActionCheckbox}>
-          <input type="checkbox" id="forceDelete" checked={forceDelete} onChange={() => setForceDelete(!forceDelete)} />
+          <Checkbox isInline id="forceDelete" checked={forceDelete} onChange={() => setForceDelete(!forceDelete)} />
           &nbsp;
           <label htmlFor="forceDelete">Close all producers, consumers, replicators, and delete topic forcefully.</label>
         </div>

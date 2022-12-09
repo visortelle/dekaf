@@ -63,7 +63,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
       <div>
         <span>Is global</span>
         <Checkbox
-          value={isGlobal}
+          checked={isGlobal}
           onChange={() => setIsGlobal(v => !v)}
         />
       </div>
