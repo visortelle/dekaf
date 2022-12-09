@@ -95,6 +95,13 @@ export const routes = {
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/create-topic`,
             },
           },
+          permissions: {
+            _: {
+              path: "/tenants/:tenant/namespaces/:namespace/permissions",
+              get: (props: { tenant: string; namespace: string }) =>
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/permissions`,
+            },
+          },
           topics: {
             _: {
               path: "/tenants/:tenant/namespaces/:namespace/topics",

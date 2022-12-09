@@ -139,6 +139,16 @@ export const swrKeys = {
             "namespaces",
           ],
           namespace: {
+            permissions: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "permissions",
+              ],
+            },
             nonPersistentTopics: {
               _: (props: { tenant: string; namespace: string }) => [
                 "pulsar",

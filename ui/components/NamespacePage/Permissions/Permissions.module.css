@@ -1,0 +1,78 @@
+.ConfigurationTable {
+  display: flex;
+}
+
+.Table {
+  font-size: 14rem;
+  border-spacing: 0;
+  border: 1px solid #ddd;
+  border-left: none;
+  border-right: none;
+  width: 100%;
+}
+
+.Cell {
+  padding: 4rem 12rem;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  border-right: none;
+  word-wrap: break-word;
+}
+
+.Table thead .Cell {
+  border-top: none;
+}
+
+.Table thead .Cell:first-child {
+  border-left: none;
+}
+
+.Row:last-child .Cell {
+  border-bottom: none;
+}
+
+.Row .Cell:first-child {
+  border-left: none;
+}
+
+.Row .Cell:last-child {
+  border-right: none;
+}
+
+.Row:hover .Cell {
+  background-color: #f5f5f5;
+}
+
+.Buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ButtonBlock {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.Button {
+  margin-right: 8rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.Button:last-child {
+  margin-right: 0;
+}
+
+.NewRoleInputCell {
+  padding: 4rem 4rem;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

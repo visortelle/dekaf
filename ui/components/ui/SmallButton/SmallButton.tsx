@@ -8,7 +8,9 @@ export type SmallButtonProps = {
   text?: string,
   title?: string,
   type?: 'regular' | 'primary' | 'danger',
-  disabled?: boolean
+  disabled?: boolean,
+  style?: React.CSSProperties,
+  className?: string,
 }
 
 const SmallButton = (props: SmallButtonProps) => {
@@ -22,9 +24,14 @@ const SmallButton = (props: SmallButtonProps) => {
   return (
     <button
       type="button"
-      className={`${s.Button} ${props.disabled ? s.DisabledButton : ''} ${props.text ? '' : s.ButtonWithoutText}`}
+      className={`
+        ${s.Button}
+        ${props.disabled ? s.DisabledButton : ''}
+        ${props.text ? '' : s.ButtonWithoutText}
+        ${props.className || ''}
+        `}
       onClick={props.onClick}
-      style={{ backgroundColor, color: textColor }}
+      style={{ backgroundColor, color: textColor, ...props.style }}
       disabled={props.disabled}
       title={props.title}
     >
