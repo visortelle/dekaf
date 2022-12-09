@@ -3,21 +3,18 @@ import s from './ProtobufNativeEditor.module.css'
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import uploadIcon from './upload.svg';
-import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import Select from '../../../ui/Select/Select';
 import { CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry as FileEntryPb } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import Pre from '../../../ui/Pre/Pre';
 import CodeEditor from '../../../ui/CodeEditor/CodeEditor';
 import Button from '../../../ui/Button/Button';
 import UploadZone, { FileEntry } from '../../../ui/UploadZone/UploadZone';
-import { useDebounce } from 'use-debounce';
+import A from '../../../ui/A/A';
 
 export type ProtobufNativeEditorProps = {
   onSchemaDefinition: (schema: Uint8Array | undefined) => void;
   onSchemaDefinitionError: (error: string) => void;
 };
-
-type UploadState = 'awaiting' | 'uploading' | 'done' | 'error';
 
 type Source = 'code-editor' | 'single-file' | 'directory';
 
@@ -153,7 +150,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
                 submitFiles([{ relativePath: 'schema.proto', content: codeEditorValue }]);
               }}
             />
-            <a className="A" href="https://developers.google.com/protocol-buffers/docs/proto3" target="__blank">Protobuf reference</a>
+            <A isExternalLink href="https://developers.google.com/protocol-buffers/docs/proto3">Protobuf reference</A>
           </div>
         </div>
       )}
