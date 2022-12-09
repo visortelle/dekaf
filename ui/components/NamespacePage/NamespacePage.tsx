@@ -1,14 +1,17 @@
 import React from 'react';
-import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
-import s from './NamespacePage.module.css'
-import Toolbar from '../ui/Toolbar/Toolbar';
+
 import Topics from './Topics/Topics';
 import Policies from './Policies/Policies';
+import CreateTopic from './CreateTopic/CreateTopic';
+import Permissions from './Permissions/Permissions';
 import DeleteNamespace from './DeleteNamespace/DeleteNamespace';
 import { routes } from '../routes';
-import CreateTopic from './CreateTopic/CreateTopic';
+import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
+import Toolbar from '../ui/Toolbar/Toolbar';
 
-export type NamespacePageView = 'topics' | 'policies' | 'delete-namespace' | 'create-topic';
+import s from './NamespacePage.module.css'
+
+export type NamespacePageView = 'topics' | 'policies' | 'permissions' | 'delete-namespace' | 'create-topic';
 export type NamespacePageProps = {
   view: NamespacePageView;
   tenant: string;
@@ -52,6 +55,12 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             type: 'regular'
           },
           {
+            linkTo: routes.tenants.tenant.namespaces.namespace.permissions._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Permissions',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
             linkTo: routes.tenants.tenant.namespaces.namespace.deleteNamespace._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Delete',
             onClick: () => { },
@@ -70,6 +79,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       {props.view === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'delete-namespace' && <DeleteNamespace tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} /> }
       {props.view === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
     </div>
   );

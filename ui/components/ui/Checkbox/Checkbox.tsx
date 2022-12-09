@@ -8,9 +8,9 @@ export type CheckboxProps = {
 }
 
 const Checkbox: React.FC<CheckboxProps> = (props) => {
+
   return (
     <input
-      className={s.Checkbox}
       onChange={() => props.onChange(!props.value)}
       type="checkbox"
       checked={props.value}

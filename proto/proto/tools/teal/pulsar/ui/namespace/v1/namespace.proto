@@ -1112,6 +1112,41 @@ message RemoveResourceGroupResponse {
   google.rpc.Status status = 1;
 }
 
+enum AuthAction {
+  AUTH_ACTION_UNSPECIFIED = 0;
+  AUTH_ACTION_PRODUCE = 1;
+  AUTH_ACTION_CONSUME = 2;
+  AUTH_ACTION_FUNCTIONS = 3;
+  AUTH_ACTION_SOURCES = 4;
+  AUTH_ACTION_SINKS = 5;
+  AUTH_ACTION_PACKAGES = 6;
+}
+message AuthActions {
+  repeated AuthAction auth_actions = 1;
+}
+message GetPermissionsRequest {
+  string namespace = 1;
+}
+message GetPermissionsResponse {
+  google.rpc.Status status = 1;
+  map<string, AuthActions> permissions = 2;
+}
+message GrantPermissionsRequest {
+  string namespace = 1;
+  string role = 2;
+  repeated AuthAction auth_actions = 3;
+}
+message GrantPermissionsResponse {
+  google.rpc.Status status = 1;
+}
+message RevokePermissionsRequest {
+  string namespace = 1;
+  string role = 2;
+}
+message RevokePermissionsResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -1258,4 +1293,8 @@ service NamespaceService {
   rpc GetResourceGroup(GetResourceGroupRequest) returns (GetResourceGroupResponse);
   rpc SetResourceGroup(SetResourceGroupRequest) returns (SetResourceGroupResponse);
   rpc RemoveResourceGroup(RemoveResourceGroupRequest) returns (RemoveResourceGroupResponse);
+
+  rpc GetPermissions(GetPermissionsRequest) returns (GetPermissionsResponse);
+  rpc GrantPermissions(GrantPermissionsRequest) returns (GrantPermissionsResponse);
+  rpc RevokePermissions(RevokePermissionsRequest) returns (RevokePermissionsResponse);
 }
