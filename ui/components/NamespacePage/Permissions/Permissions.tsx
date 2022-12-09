@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import useSWR, { useSWRConfig } from "swr";
 import _ from 'lodash';
 
@@ -73,9 +73,8 @@ type Permission = {
   }
 }
 
-const Permissions = (props: PermissionsProps) => {
-
-  const { notifySuccess ,notifyError } = Notifications.useContext();
+const Permissions: React.FC<PermissionsProps> = (props) => {
+  const { notifySuccess, notifyError } = Notifications.useContext();
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { mutate } = useSWRConfig();
   const [formValue, setFormValue] = useState<Permission | undefined>(undefined);
@@ -101,7 +100,7 @@ const Permissions = (props: PermissionsProps) => {
       const req = new pb.GetPermissionsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       const res = await namespaceServiceClient.getPermissions(req, {});
-      
+
       if (res === undefined) {
         return;
       }
@@ -123,13 +122,13 @@ const Permissions = (props: PermissionsProps) => {
         return permissionsItem
       })
 
-      setFormValue({ role: defaultPermission.role, actions: {...defaultPermission.actions} })
+      setFormValue({ role: defaultPermission.role, actions: { ...defaultPermission.actions } })
       setPermissionsList(authActions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
-      
+
       return authActions;
     }
   );
-  
+
   const revoke = async (role: string) => {
     const req = new pb.RevokePermissionsRequest();
     req.setNamespace(`${props.tenant}/${props.namespace}`);
@@ -151,7 +150,6 @@ const Permissions = (props: PermissionsProps) => {
   }
 
   const grant = async (permission: Permission) => {
-
     let actions: pb.AuthAction[] = [];
     for (let key in permission.actions) {
       if (permission.actions[key] === true) {
@@ -164,7 +162,7 @@ const Permissions = (props: PermissionsProps) => {
     req.setRole(permission.role);
     req.setAuthActionsList(actions);
 
-    const res = await namespaceServiceClient.grantPermissions (req, {});
+    const res = await namespaceServiceClient.grantPermissions(req, {});
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(res.getStatus()?.getMessage());
@@ -185,7 +183,7 @@ const Permissions = (props: PermissionsProps) => {
 
   return (
     <div>
-      <div className={s.ConfigurationTable} style={{marginLeft: '-1px'}}>
+      <div className={s.ConfigurationTable}>
         <table className={s.Table}>
           <thead>
             <tr className={s.Row}>
@@ -202,18 +200,18 @@ const Permissions = (props: PermissionsProps) => {
           <tbody>
             {permissions && permissionsList?.map((permission, index) => (
               <tr key={permission.role} className={s.Row}>
-                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                <td className={`${s.Cell}`}>
                   {permission.role}
                 </td>
                 {actionsList.map(action => (
-                  <td key={action} className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                  <td key={action} className={`${s.Cell}`}>
                     <div className={`${s.ButtonBlock}`}>
                       <Checkbox
                         value={permission.actions[action]}
                         onChange={(value) => {
                           setPermissionsList(Object.assign(
                             [...permissionsList],
-                            { 
+                            {
                               [index]: {
                                 ...permission,
                                 actions: {
@@ -228,23 +226,21 @@ const Permissions = (props: PermissionsProps) => {
                     </div>
                   </td>
                 ))}
-                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <div className={`${s.ButtonsBlocks}`}>
-                    <div className={`${s.ButtonsBlock}`}>
-                      <SmallButton
-                        onClick={() => grant(permission)}
-                        type='primary'
-                        text='Update'
-                        disabled={_.isEqual(permissions[index].actions,permission.actions)}
-                      />
-                    </div>
-                    <div className={`${s.ButtonsBlock}`}>
-                      <SmallButton
-                        onClick={() => revoke(permission.role)}
-                        type='danger'
-                        text='Revoke'
-                      />
-                    </div>
+                <td className={`${s.Cell}`}>
+                  <div className={`${s.Buttons}`}>
+                    <SmallButton
+                      onClick={() => grant(permission)}
+                      type='primary'
+                      text='Update'
+                      disabled={_.isEqual(permissions[index].actions, permission.actions)}
+                      className={s.Button}
+                    />
+                    <SmallButton
+                      onClick={() => revoke(permission.role)}
+                      type='danger'
+                      text='Revoke'
+                      className={s.Button}
+                    />
                   </div>
                 </td>
               </tr>
@@ -252,38 +248,46 @@ const Permissions = (props: PermissionsProps) => {
 
             {formValue &&
               <tr className={s.Row}>
-                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <div>
-                    <Input
-                      type='string'
-                      value={formValue.role || ''}
-                      onChange={(v) => setFormValue({ ...formValue, role: v})}
-                      placeholder='user-role'
-                    />
-                  </div>
+                <td className={`${s.Cell} ${s.NewRoleInputCell}`}>
+                  <Input
+                    type='string'
+                    value={formValue.role || ''}
+                    onChange={(v) => setFormValue({ ...formValue, role: v })}
+                    placeholder='user-role'
+                    focusOnMount
+                    inputProps={{
+                      onKeyDown: (e) => {
+                        console.log('e', e);
+                        if (e.key === 'Enter') {
+                          grant(formValue)
+                        }
+                      }
+                    }}
+                  />
                 </td>
                 {actionsList.map(action => (
-                  <td key={action} className={`${s.Cell} ${s.DynamicConfigCell}`}>
+                  <td key={action} className={`${s.Cell}`}>
                     <div className={`${s.ButtonBlock}`}>
                       <Checkbox
                         value={formValue.actions[action]}
                         onChange={(value) => {
                           setFormValue({
                             ...formValue,
-                            actions: {...formValue.actions, [action]: value}
+                            actions: { ...formValue.actions, [action]: value }
                           })
                         }}
                       />
                     </div>
                   </td>
                 ))}
-                <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
-                  <div className={ permissionsList?.length && s.CompressionBlock || s.ButtonBlock }>
+                <td className={`${s.Cell}`}>
+                  <div className={s.ButtonBlock}>
                     <SmallButton
                       onClick={() => grant(formValue)}
                       type='primary'
                       text='Grant'
                       disabled={formValue.role.length < 1}
+                      className={s.Button}
                     />
                   </div>
                 </td>
