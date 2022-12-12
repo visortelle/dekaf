@@ -23,6 +23,6 @@ Permissions are used to securely differentiate access rights to a product. With 
 
 3. Press on button **Permissions**, to open permission settings.
 
-  <img style="width: 450px" src="./assets/step-3.png" />
+  <img style="width: 700px" src="./assets/step-3.png" />
 
 On this page, using the comfortable interface, you can grant, revoke and update permissions.
