@@ -1,9 +1,8 @@
-# Specification
+## sbt project compiled with Scala 3
 
-## User documentation
+### Usage
 
-## Tests
+This is a normal sbt project. You can compile code with `sbt compile`, run it with `sbt run`, and `sbt console` will start a Scala 3 REPL.
 
-- [Playwright documentation](https://playwright.dev/docs/writing-tests)
-
-- [VSCode extension](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright)
+For more information on the sbt-dotty plugin, see the
+[scala3-example-project](https://github.com/scala/scala3-example-project/blob/main/README.md).

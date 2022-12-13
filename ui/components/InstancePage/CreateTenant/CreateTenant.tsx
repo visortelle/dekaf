@@ -75,6 +75,7 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
   const tenantNameInput = <Input value={tenantName} onChange={setTenantName} placeholder="tenant-1" />;
 
   const allowedClustersInput = <ListInput<string>
+    testId="clusters-input"
     value={allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <div>{v}</div>}
@@ -97,6 +98,7 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
   />
 
   const adminRolesInput = <ListInput<string>
+    testId="admin-roles-input"
     value={adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
