@@ -1,14 +1,12 @@
-import React, { KeyboardEventHandler, useState } from 'react';
+import React, { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import _ from 'lodash';
-import makeAnimated from 'react-select/animated';
 import CreatableSelect from 'react-select/creatable';
 
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
-import SmallButton from '../../ui/SmallButton/SmallButton';
 import Input from '../../ui/Input/Input';
 import { H1, H3 } from '../../ui/H/H';
 import { swrKeys } from '../../swrKeys';
