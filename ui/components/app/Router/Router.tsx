@@ -65,6 +65,7 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     { path: routes.tenants.tenant.namespaces.namespace.deleteNamespace._.path, element: withLayout(<RoutedNamespacePage view='delete-namespace' />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces.namespace.createTopic._.path, element: withLayout(<RoutedNamespacePage view='create-topic' />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces.namespace.permissions._.path, element: withLayout(<RoutedNamespacePage view='permissions' />, withLayoutProps) },
+    { path: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, element: withLayout(<RoutedNamespacePage view='subscription-permissions' />, withLayoutProps) },
 
     /* Tenants */
     { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RoutedTenantPage view={'configuration'} />, withLayoutProps) },

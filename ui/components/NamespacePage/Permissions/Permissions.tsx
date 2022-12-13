@@ -111,7 +111,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
       }
 
       const permissionsObject = mapToObject(res.getPermissionsMap())
-      const authActions = Object.keys(permissionsObject).map(role => {
+      const permissions = Object.keys(permissionsObject).map(role => {
         let permissionsItem = { role: defaultPermission.role, actions: { ...defaultPermission.actions } };
 
         permissionsItem.role = role
@@ -123,9 +123,9 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
       })
 
       setFormValue({ role: defaultPermission.role, actions: { ...defaultPermission.actions } })
-      setPermissionsList(authActions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
+      setPermissionsList(permissions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
 
-      return authActions;
+      return permissions;
     },
     {
       dedupingInterval: 0 // Fix empty data on fast route change

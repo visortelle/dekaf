@@ -1147,6 +1147,33 @@ message RevokePermissionsResponse {
   google.rpc.Status status = 1;
 }
 
+message Roles {
+  repeated string roles = 1;
+}
+message GetPermissionOnSubscriptionRequest {
+  string namespace = 1;
+}
+message GetPermissionOnSubscriptionResponse {
+  google.rpc.Status status = 1;
+  map<string, Roles> permissions = 2;
+  repeated string roles = 3;
+}
+message GrantPermissionOnSubscriptionRequest {
+  string namespace = 1;
+  string subscription = 2;
+  repeated string roles = 3;
+}
+message GrantPermissionOnSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+message RevokePermissionOnSubscriptionRequest {
+  string namespace = 1;
+  string subscription = 2;
+}
+message RevokePermissionOnSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -1297,4 +1324,8 @@ service NamespaceService {
   rpc GetPermissions(GetPermissionsRequest) returns (GetPermissionsResponse);
   rpc GrantPermissions(GrantPermissionsRequest) returns (GrantPermissionsResponse);
   rpc RevokePermissions(RevokePermissionsRequest) returns (RevokePermissionsResponse);
+
+  rpc GetPermissionOnSubscription(GetPermissionOnSubscriptionRequest) returns (GetPermissionOnSubscriptionResponse);
+  rpc GrantPermissionOnSubscription(GrantPermissionOnSubscriptionRequest) returns (GrantPermissionOnSubscriptionResponse);
+  rpc RevokePermissionOnSubscription(RevokePermissionOnSubscriptionRequest) returns (RevokePermissionOnSubscriptionResponse);
 }
