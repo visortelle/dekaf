@@ -1135,6 +1135,7 @@ message GrantPermissionsRequest {
   string namespace = 1;
   string role = 2;
   repeated AuthAction auth_actions = 3;
+  bool existence_check = 4;
 }
 message GrantPermissionsResponse {
   google.rpc.Status status = 1;
@@ -1162,6 +1163,7 @@ message GrantPermissionOnSubscriptionRequest {
   string namespace = 1;
   string subscription = 2;
   repeated string roles = 3;
+  bool existence_check = 4;
 }
 message GrantPermissionOnSubscriptionResponse {
   google.rpc.Status status = 1;

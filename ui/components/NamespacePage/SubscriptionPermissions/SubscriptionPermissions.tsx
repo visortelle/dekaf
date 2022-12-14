@@ -138,12 +138,13 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
     await mutate(swrKey);
   }
 
-  const grant = async (permission: Permission) => {
+  const grant = async (permission: Permission, check?: boolean) => {
 
     const req = new pb.GrantPermissionOnSubscriptionRequest();
     req.setNamespace(`${props.tenant}/${props.namespace}`);
     req.setSubscription(permission.subscription);
     req.setRolesList(permission.roles);
+    req.setExistenceCheck(check || false)
 
     const res = await namespaceServiceClient.grantPermissionOnSubscription(req, {});
 
@@ -163,23 +164,6 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
   if (authActionsError) {
     notifyError(`Unable to get permissions. ${authActionsError}`);
   };
-
-  const subscriptionMatchCheck = () => {
-    if (!permissionsList) {
-      return
-    }
-
-    const check = permissionsList.filter(permission => {
-      return permission.subscription === newPermission.subscription
-    });
-
-    if (check.length > 0) {
-      notifyError(`There are already assigned roles for this subscription: ${newPermission.subscription}. Please choose another subscription name.`)
-    } else {
-      grant(newPermission),
-      setNewPermission(defaultPermission)
-    }
-  }
 
   const handleKeyDown = (event: React.KeyboardEvent<Element>, index: number) => {
     if (!inputsValue || !permissionsList || inputsValue[index].length === 0) return;
@@ -333,7 +317,10 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
           <div className={`${s.Buttons}`}>
             <Button
               type='primary'
-              onClick={() => subscriptionMatchCheck()}
+              onClick={() => {
+                grant(newPermission, true),
+                setNewPermission(defaultPermission)
+              }}
               text='Grant'
               disabled={
                 newPermission.subscription.length === 0 ||

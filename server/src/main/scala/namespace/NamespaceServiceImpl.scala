@@ -1873,6 +1873,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 case pb.AuthAction.AUTH_ACTION_SINKS => AuthAction.sinks
                 case pb.AuthAction.AUTH_ACTION_PACKAGES => AuthAction.packages
         try {
+            val permissions = adminClient.namespaces.getPermissions(request.namespace).asScala.toMap
+
+            if permissions.exists(_._1 == request.role & request.existenceCheck) then
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = s"There are already granted permissions for this role: ${request.role}. Please choose another role name.")
+                return Future.successful(GrantPermissionsResponse(status = Some(status)))
+
             adminClient.namespaces.grantPermissionOnNamespace(request.namespace, request.role, request.authActions.toList.map(authActionFromPb).toSet.asJava)
 
             Future.successful(GrantPermissionsResponse(
@@ -1928,6 +1934,12 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         logger.debug(s"Granting subscription permissions for subscription ${request.subscription} for namespace: ${request.namespace}")
 
         try {
+            val permissions = adminClient.namespaces.getPermissionOnSubscription(request.namespace).asScala.toMap
+
+            if permissions.exists(_._1 == request.subscription & request.existenceCheck) then
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = s"There are already assigned roles for this subscription: ${request.subscription}. Please choose another subscription name.")
+                return Future.successful(GrantPermissionOnSubscriptionResponse(status = Some(status)))
+
             adminClient.namespaces.grantPermissionOnSubscription(request.namespace, request.subscription, request.roles.toSet.asJava)
             Future.successful(GrantPermissionOnSubscriptionResponse(
                 status = Some(Status(code = Code.OK.index)),

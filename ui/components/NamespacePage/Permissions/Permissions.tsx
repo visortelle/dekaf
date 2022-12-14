@@ -152,7 +152,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
     await mutate(swrKey);
   }
 
-  const grant = async (permission: Permission) => {
+  const grant = async (permission: Permission, check?: boolean) => {
     let actions: pb.AuthAction[] = [];
     for (let key in permission.actions) {
       if (permission.actions[key] === true) {
@@ -164,6 +164,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
     req.setNamespace(`${props.tenant}/${props.namespace}`);
     req.setRole(permission.role);
     req.setAuthActionsList(actions);
+    req.setExistenceCheck(check || false)
 
     const res = await namespaceServiceClient.grantPermissions(req, {});
 
@@ -183,23 +184,6 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
   if (authActionsError) {
     notifyError(`Unable to get permissions. ${authActionsError}`);
   };
-
-  const subscriptionMatchCheck = () => {
-    if (!permissionsList || !formValue) {
-      return
-    }
-
-    const check = permissionsList.filter(permission => {
-      return permission.role === formValue.role
-    });
-
-    if (check.length > 0) {
-      notifyError(`There are already granted permissions for this role: ${formValue.role}. Please choose another role name.`)
-    } else {
-      grant(formValue)
-    }
-  }
-
 
   return (
     <div>
@@ -277,7 +261,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                     inputProps={{
                       onKeyDown: (e) => {
                         if (e.key === 'Enter') {
-                          grant(formValue)
+                          grant(formValue, true)
                         }
                       }
                     }}
@@ -301,7 +285,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                 <td className={`${s.Cell}`}>
                   <div className={s.ButtonBlock}>
                     <SmallButton
-                      onClick={() => subscriptionMatchCheck()}
+                      onClick={() => grant(formValue, true)}
                       type='primary'
                       text='Grant'
                       disabled={formValue.role.length < 1}
