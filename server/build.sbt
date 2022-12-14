@@ -36,7 +36,7 @@ lazy val root = project
         "org.graalvm.js" % "js" % graalvmVersion,
 
         // ZIO
-        "dev.zio" %% "zio" % "2.0.4",
+        "dev.zio" %% "zio" % "2.0.5",
         "dev.zio" %% "zio-config" % zioConfigVersion,
         "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
         "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
