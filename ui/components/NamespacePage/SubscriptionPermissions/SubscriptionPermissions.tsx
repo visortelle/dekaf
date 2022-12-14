@@ -164,6 +164,23 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
     notifyError(`Unable to get permissions. ${authActionsError}`);
   };
 
+  const subscriptionMatchCheck = () => {
+    if (!permissionsList) {
+      return
+    }
+
+    const check = permissionsList.filter(permission => {
+      return permission.subscription === newPermission.subscription
+    });
+
+    if (check.length > 0) {
+      notifyError(`There are already assigned roles for this subscription: ${newPermission.subscription}. Please choose another subscription name.`)
+    } else {
+      grant(newPermission),
+      setNewPermission(defaultPermission)
+    }
+  }
+
   const handleKeyDown = (event: React.KeyboardEvent<Element>, index: number) => {
     if (!inputsValue || !permissionsList || inputsValue[index].length === 0) return;
     switch (event.key) {
@@ -316,10 +333,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
           <div className={`${s.Buttons}`}>
             <Button
               type='primary'
-              onClick={() => {
-                grant(newPermission),
-                setNewPermission(defaultPermission)
-              }}
+              onClick={() => subscriptionMatchCheck()}
               text='Grant'
               disabled={
                 newPermission.subscription.length === 0 ||

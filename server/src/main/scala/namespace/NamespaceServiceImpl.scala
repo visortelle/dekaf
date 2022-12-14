@@ -1873,8 +1873,6 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 case pb.AuthAction.AUTH_ACTION_SINKS => AuthAction.sinks
                 case pb.AuthAction.AUTH_ACTION_PACKAGES => AuthAction.packages
         try {
-            val permissions = adminClient.namespaces.getPermissions(request.namespace).asScala.toMap
-
             adminClient.namespaces.grantPermissionOnNamespace(request.namespace, request.role, request.authActions.toList.map(authActionFromPb).toSet.asJava)
 
             Future.successful(GrantPermissionsResponse(
@@ -1930,8 +1928,6 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         logger.debug(s"Granting subscription permissions for subscription ${request.subscription} for namespace: ${request.namespace}")
 
         try {
-            val permissions = adminClient.namespaces.getPermissionOnSubscription(request.namespace).asScala.toMap
-
             adminClient.namespaces.grantPermissionOnSubscription(request.namespace, request.subscription, request.roles.toSet.asJava)
             Future.successful(GrantPermissionOnSubscriptionResponse(
                 status = Some(Status(code = Code.OK.index)),

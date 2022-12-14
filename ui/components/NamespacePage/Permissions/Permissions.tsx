@@ -184,6 +184,23 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
     notifyError(`Unable to get permissions. ${authActionsError}`);
   };
 
+  const subscriptionMatchCheck = () => {
+    if (!permissionsList || !formValue) {
+      return
+    }
+
+    const check = permissionsList.filter(permission => {
+      return permission.role === formValue.role
+    });
+
+    if (check.length > 0) {
+      notifyError(`There are already granted permissions for this role: ${formValue.role}. Please choose another role name.`)
+    } else {
+      grant(formValue)
+    }
+  }
+
+
   return (
     <div>
       <div className={s.ConfigurationTable}>
@@ -284,7 +301,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                 <td className={`${s.Cell}`}>
                   <div className={s.ButtonBlock}>
                     <SmallButton
-                      onClick={() => grant(formValue)}
+                      onClick={() => subscriptionMatchCheck()}
                       type='primary'
                       text='Grant'
                       disabled={formValue.role.length < 1}
