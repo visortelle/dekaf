@@ -42,7 +42,6 @@ object ResourceGroupsPageSpec extends ZIOSpecDefault {
 
             val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
             val resourceGroups = adminClient.resourcegroups.getResourceGroups.asScala
-            val createdResourceGroup = adminClient.resourcegroups. getResourceGroup(resourceGroupName)
 
             page.waitForURL("/", new WaitForURLOptions().setTimeout(3000))
 
