@@ -11,7 +11,7 @@ export type InputProps = {
   clearable?: boolean,
   type?: HTMLInputTypeAttribute,
   inputProps?: InputHTMLAttributes<any>,
-  placeholder?: string
+  placeholder?: string,
 }
 const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount, type, inputProps }) => {
   const inputRef = useRef<HTMLInputElement>(null);

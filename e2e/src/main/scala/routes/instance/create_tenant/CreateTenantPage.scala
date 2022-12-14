@@ -14,6 +14,6 @@ case class CreateTenantPage(root: Locator):
     def setTenantName(tenantName: String): Unit = tenantNameInput.fill(tenantName)
     def addAdminRole(role: String): Unit = adminRoleInput.addItem(role)
     def addCluster(cluster: String): Unit = clustersInput.addItem(cluster)
-    def create(): Unit = 
+    def create(): Unit =
         createButton.click()
         root.page.waitForTimeout(1000)

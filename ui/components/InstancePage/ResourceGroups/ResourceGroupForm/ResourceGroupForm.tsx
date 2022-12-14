@@ -68,7 +68,7 @@ const ResourceGroupForm = (props: Props) => {
     const getDefaultFormValue = async (): Promise<Value | undefined> => {
       if (props.view.type === 'create') {
         return {
-          name: `new-resource-group-${Date.now()}`,
+          name: ``,
           dispatchRateInBytes: undefined,
           dispatchRateInMsgs: undefined,
           publishRateInBytes: undefined,
@@ -184,7 +184,7 @@ const ResourceGroupForm = (props: Props) => {
       type="number"
       value={formValue.publishRateInBytes || ''}
       onChange={(v) => setFormValue({ ...formValue, publishRateInBytes: v })}
-      placeholder="1024"
+      placeholder="2048"
     />
   );
   const publishRateInMsgsInput = (
@@ -192,7 +192,7 @@ const ResourceGroupForm = (props: Props) => {
       type="number"
       value={formValue.publishRateInMsgs || ''}
       onChange={(v) => setFormValue({ ...formValue, publishRateInMsgs: v })}
-      placeholder="100"
+      placeholder="200"
     />
   );
 
@@ -265,6 +265,7 @@ const ResourceGroupForm = (props: Props) => {
           type='primary'
           text='Create'
           buttonProps={{ type: 'submit' }}
+          disabled={formValue.name.length === 0}
         />
       )}
     </form>
