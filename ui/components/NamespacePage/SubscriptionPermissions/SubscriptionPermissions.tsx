@@ -9,14 +9,11 @@ import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrp
 import * as Notifications from '../../app/contexts/Notifications';
 import Input from '../../ui/Input/Input';
 import { H1, H3 } from '../../ui/H/H';
+import Button from '../../ui/Button/Button';
 import { swrKeys } from '../../swrKeys';
 import { mapToObject } from '../../../pbUtils/pbUtils';
 
 import s from './SubscriptionPermissions.module.css';
-import Button from '../../ui/Button/Button';
-
-export const actionsList = ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages'];
-export type AuthAction = typeof actionsList[number];
 
 type PermissionsProps = {
   tenant: string;
@@ -295,6 +292,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
             }}
           />
         </div>
+        
         <div className={`${s.RightSide}`}>
           <CreatableSelect
             isMulti
