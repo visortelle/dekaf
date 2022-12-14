@@ -1,14 +1,15 @@
-package pages.instance.create_tenant
+package routes.instance.create_tenant
 
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
 import zio.test.TestAspect.*
+
 import scala.jdk.CollectionConverters.*
-import _root_.pages.instance.InstancePage
-import _root_.pages.instance.create_tenant.CreateTenantPage
 import _root_.test_env.pulsarStandaloneEnv
+import com.microsoft.playwright.Page.WaitForURLOptions
 import net.datafaker.Faker
+import routes.InstancePage
 
 val faker = new Faker();
 
@@ -24,7 +25,7 @@ object CreateTenantPageSpec extends ZIOSpecDefault:
             val tenantToCreate = s"${faker.name.lastName}-${new java.util.Date().getTime}"
             createTenantPage.setTenantName(tenantToCreate)
 
-            val adminRoles = List.range(0, 10).map(i => s"${faker.company.profession}-${i}")
+            val adminRoles = List.range(0, 20).map(i => s"${faker.company.profession}-${i}")
             adminRoles.foreach(role => createTenantPage.addAdminRole(role))
 
             createTenantPage.create()
@@ -32,6 +33,8 @@ object CreateTenantPageSpec extends ZIOSpecDefault:
             val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
             val tenants = adminClient.tenants.getTenants.asScala
             val createdTenant = adminClient.tenants.getTenantInfo(tenantToCreate)
+
+            page.waitForURL("/", new WaitForURLOptions().setTimeout(3000))
 
             assertTrue(isCreateButtonDisabledIfNoTenantName) &&
                 assertTrue(tenants.contains(tenantToCreate)) &&

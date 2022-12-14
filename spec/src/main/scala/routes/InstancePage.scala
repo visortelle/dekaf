@@ -1,4 +1,4 @@
-package pages.instance
+package routes
 
 import com.microsoft.playwright.*
 import com.microsoft.playwright.Locator.GetByRoleOptions

@@ -5,7 +5,7 @@ import Configuration from './Configuration/Configuration';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import { routes } from '../routes';
 import Tenants from './Tenants/Tenants';
-import CreateTenant from './CreateTenant/CreateTenant';
+import CreateTenantPage from './CreateTenantPage/CreateTenantPage';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import ResourceGroups from './ResourceGroups/ResourceGroups';
 
@@ -75,7 +75,7 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
       {props.view.type === 'overview' && <Overview />}
       {props.view.type === 'configuration' && <Configuration />}
       {props.view.type === 'tenants' && <Tenants />}
-      {props.view.type === 'create-tenant' && <CreateTenant />}
+      {props.view.type === 'create-tenant' && <CreateTenantPage />}
       {props.view.type === 'resource-groups' && <ResourceGroups view={{ type: 'show-all-groups' }} />}
       {props.view.type === 'create-resource-group' && <ResourceGroups view={{ type: 'create' }} />}
       {props.view.type === 'edit-resource-group' && <ResourceGroups view={{ type: 'edit', groupName: props.view.groupName }} />}
