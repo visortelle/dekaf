@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import s from './CreateTenant.module.css'
+import s from './CreateTenantPage.module.css'
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
@@ -17,9 +17,7 @@ import { routes } from '../../routes';
 import { H1 } from '../../ui/H/H';
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 
-export type CreateTenantProps = {};
-
-const CreateTenant: React.FC<CreateTenantProps> = () => {
+const CreateTenantPage: React.FC = () => {
   const { notifyError } = Notifications.useContext();
   const { tenantServiceClient, clusterServiceClient } = PulsarGrpcClient.useContext();
   const [tenantName, setTenantName] = useState('');
@@ -75,6 +73,7 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
   const tenantNameInput = <Input value={tenantName} onChange={setTenantName} placeholder="tenant-1" />;
 
   const allowedClustersInput = <ListInput<string>
+    testId="clusters-input"
     value={allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <div>{v}</div>}
@@ -97,6 +96,7 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
   />
 
   const adminRolesInput = <ListInput<string>
+    testId="admin-roles-input"
     value={adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
     getId={(v) => v}
     renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
@@ -112,7 +112,7 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
   const isFormValid = tenantName.length > 0 && allowedClusters.length > 0;
 
   return (
-    <form className={s.CreateTenant} onSubmit={e => e.preventDefault()}>
+    <form className={s.CreateTenantPage} onSubmit={e => e.preventDefault()}>
       <div className={s.Title}>
         <H1>Create tenant</H1>
       </div>
@@ -154,4 +154,4 @@ const CreateTenant: React.FC<CreateTenantProps> = () => {
   );
 }
 
-export default CreateTenant;
+export default CreateTenantPage;

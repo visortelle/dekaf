@@ -20,6 +20,7 @@ export type ListValue<T> = {
   validate: (value: T) => Either.Either<Error, void>;
   onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
+  testId?: string;
 };
 
 function ListInput<T>(props: ListValue<T>): React.ReactElement {
@@ -43,7 +44,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
   }
 
   return (
-    <div className={s.ListField}>
+    <div className={s.ListField} data-testid={props.testId}>
       {props.value.length !== 0 && (
         <div className={s.ListFieldValues}>
           {props.value.map(v => {

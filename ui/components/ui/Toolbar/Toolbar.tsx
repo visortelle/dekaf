@@ -29,6 +29,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
       text={props.text}
       onClick={props.onClick}
       type={props.type}
+      testId={props.testId}
       disabled={props.disabled}
     />
   );
