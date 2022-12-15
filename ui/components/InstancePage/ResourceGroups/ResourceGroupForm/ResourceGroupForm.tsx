@@ -120,7 +120,7 @@ const ResourceGroupForm = (props: Props) => {
       return;
     }
 
-    await mutate(swrKeys.pulsar.brokers.resourceGroups);
+    await mutate(swrKeys.pulsar.brokers.resourceGroups._());
     navigate(routes.instance.resourceGroups._.get());
   }
 

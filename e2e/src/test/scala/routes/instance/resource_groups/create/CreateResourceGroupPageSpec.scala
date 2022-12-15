@@ -37,6 +37,7 @@ object CreateResourceGroupPageSpec extends ZIOSpecDefault {
 
             val publishRateInMsgs = s"${faker.number.randomNumber}"
             resourceGroupsPage.setPublishRateInMsgs(publishRateInMsgs)
+            
             resourceGroupsPage.create()
 
             val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
