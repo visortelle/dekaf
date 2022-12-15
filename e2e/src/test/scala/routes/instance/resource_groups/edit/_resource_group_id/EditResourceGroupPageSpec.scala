@@ -13,8 +13,8 @@ import net.datafaker.Faker
 
 val faker = new Faker();
 
-object DeleteResourceGroupPageSpec extends ZIOSpecDefault {
-    def spec: Spec[Any, Any] = suite("Delete resource group")(
+object EditResourceGroupPageSpec extends ZIOSpecDefault {
+    def spec: Spec[Any, Any] = suite("Edit Resource Group page")(
         test("User can delete resource group") {
             val page = pulsarStandaloneEnv.createNewPage()
             val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
