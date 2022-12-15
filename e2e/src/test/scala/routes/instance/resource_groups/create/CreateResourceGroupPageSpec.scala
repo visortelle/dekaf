@@ -6,7 +6,7 @@ import zio.test.Assertion.*
 import zio.test.TestAspect.*
 
 import scala.jdk.CollectionConverters.*
-import _root_.test_env.pulsarStandaloneEnv
+import _root_.test_env.{TestEnv, createPulsarStandaloneEnv}
 import com.microsoft.playwright.Page.WaitForURLOptions
 import net.datafaker.Faker
 
@@ -15,7 +15,8 @@ val faker = new Faker();
 object CreateResourceGroupPageSpec extends ZIOSpecDefault {
     def spec: Spec[Any, Any] = suite("Create resource group page")(
         test("User can create resource groupt") {
-            val page = pulsarStandaloneEnv.createNewPage()
+            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val page = testEnv.createNewPage()
             page.navigate("/instance/resource-groups")
 
             val resourceGroupsPage = CreateResourceGroupPage(page.locator("body"))
@@ -40,7 +41,7 @@ object CreateResourceGroupPageSpec extends ZIOSpecDefault {
 
             resourceGroupsPage.create()
 
-            val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
+            val adminClient = testEnv.createPulsarAdminClient()
             val resourceGroups = adminClient.resourcegroups.getResourceGroups.asScala
 
             page.waitForURL("/instance/resource-groups", new WaitForURLOptions().setTimeout(3000))
