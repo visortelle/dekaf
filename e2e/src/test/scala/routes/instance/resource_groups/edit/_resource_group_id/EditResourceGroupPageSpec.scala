@@ -6,7 +6,7 @@ import zio.test.Assertion.*
 import zio.test.TestAspect.*
 
 import scala.jdk.CollectionConverters.*
-import _root_.test_env.pulsarStandaloneEnv
+import _root_.test_env.{TestEnv, createPulsarStandaloneEnv}
 import com.microsoft.playwright.Page.WaitForURLOptions
 import org.apache.pulsar.common.policies.data.ResourceGroup
 import net.datafaker.Faker
@@ -16,8 +16,9 @@ val faker = new Faker();
 object EditResourceGroupPageSpec extends ZIOSpecDefault {
     def spec: Spec[Any, Any] = suite("Edit Resource Group page")(
         test("User can delete resource group") {
-            val page = pulsarStandaloneEnv.createNewPage()
-            val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
+            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val page = testEnv.createNewPage()
+            val adminClient = testEnv.createPulsarAdminClient()
 
             val testResourceGroupName = s"${faker.name.firstName()}-${java.util.Date().getTime}"
             adminClient.resourcegroups.createResourceGroup(testResourceGroupName, new ResourceGroup())
