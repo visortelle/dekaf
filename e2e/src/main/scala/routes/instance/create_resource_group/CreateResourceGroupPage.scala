@@ -1,17 +1,17 @@
-package routes.instance.resource_groups
+package routes.instance.create_resource_group
 
 import _root_.ui.ListInput
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Locator.{GetByPlaceholderOptions, GetByRoleOptions}
 import com.microsoft.playwright.options.AriaRole
 
-class ResourceGroupsPage (root: Locator):
+class CreateResourceGroupPage(root: Locator):
     val resourceGroupNameInput: Locator = root.getByPlaceholder("new-resource-group", new GetByPlaceholderOptions().setExact(true))
     val dispatchRateInBytesInput: Locator = root.getByPlaceholder("1024", new GetByPlaceholderOptions().setExact(true))
     val dispatchRateInMsgsInput: Locator = root.getByPlaceholder("100", new GetByPlaceholderOptions().setExact(true))
     val publishRateInBytesInput: Locator = root.getByPlaceholder("2048", new GetByPlaceholderOptions().setExact(true))
     val publishRateInMsgsInput: Locator = root.getByPlaceholder("200", new GetByPlaceholderOptions().setExact(true))
-    val LinkToCreateButton: Locator = root.getByTestId("resource-group-create-button")
+    val linkToCreateButton: Locator = root.getByTestId("resource-group-create-button")
 
     def setResourceGroupName(rate: String): Unit = resourceGroupNameInput.fill(rate)
     def setDispatchRateInBytes(rate: String): Unit = dispatchRateInBytesInput.fill(rate)
@@ -21,7 +21,7 @@ class ResourceGroupsPage (root: Locator):
     val createButton: Locator = root.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Create").setExact(true))
 
     def moveToCreate(): Unit =
-        LinkToCreateButton.click()
+        linkToCreateButton.click()
         root.page.waitForTimeout(1000)
 
     def create(): Unit =

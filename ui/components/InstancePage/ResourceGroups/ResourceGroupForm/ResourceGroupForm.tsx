@@ -162,7 +162,7 @@ const ResourceGroupForm = (props: Props) => {
       placeholder="new-resource-group"
     />
   );
-  const resourceGroupNameSpan = <span>{formValue.name}</span>;
+  const resourceGroupNameSpan = <span data-testid="resource-group-name">{formValue.name}</span>;
   const dispatchRateInBytesInput = (
     <Input
       type="number"

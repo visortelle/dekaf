@@ -1,4 +1,4 @@
-package routes.instance.resource_groups
+package routes.instance.create_resource_group
 
 import zio.*
 import zio.test.*
@@ -9,17 +9,16 @@ import scala.jdk.CollectionConverters.*
 import _root_.test_env.pulsarStandaloneEnv
 import com.microsoft.playwright.Page.WaitForURLOptions
 import net.datafaker.Faker
-import routes.InstancePage
 
 val faker = new Faker();
 
-object ResourceGroupsPageSpec extends ZIOSpecDefault {
+object CreateResourceGroupPageSpec extends ZIOSpecDefault {
     def spec: Spec[Any, Any] = suite("Create tenant page")(
         test("User can create tenant") {
             val page = pulsarStandaloneEnv.createNewPage()
             page.navigate("/instance/resource-groups")
 
-            val resourceGroupsPage = ResourceGroupsPage(page.locator("body"))
+            val resourceGroupsPage = CreateResourceGroupPage(page.locator("body"))
             resourceGroupsPage.moveToCreate()
 
             val isCreateButtonDisabledIfNoResourceGroupName = resourceGroupsPage.createButton.isDisabled
@@ -43,7 +42,7 @@ object ResourceGroupsPageSpec extends ZIOSpecDefault {
             val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
             val resourceGroups = adminClient.resourcegroups.getResourceGroups.asScala
 
-            page.waitForURL("/", new WaitForURLOptions().setTimeout(3000))
+            page.waitForURL("/instance/resource-groups", new WaitForURLOptions().setTimeout(3000))
 
             assertTrue(isCreateButtonDisabledIfNoResourceGroupName) &&
                 assertTrue(resourceGroups.contains(resourceGroupName))

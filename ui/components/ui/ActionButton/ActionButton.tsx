@@ -10,6 +10,7 @@ export type ActionButtonProps = {
   action: { type: 'predefined', action: 'edit' | 'close' }
   onClick: () => void;
   linkTo?: string;
+  testId?: string;
 };
 
 const ActionButton: React.FC<ActionButtonProps> = (props) => {
@@ -20,7 +21,7 @@ const ActionButton: React.FC<ActionButtonProps> = (props) => {
   }
 
   const button = (
-    <button type="button" className={s.ActionButton} onClick={props.onClick}>
+    <button type="button" className={s.ActionButton} onClick={props.onClick} data-testid={props.testId}>
       <SvgIcon svg={svgIcon} />
     </button>
   );
