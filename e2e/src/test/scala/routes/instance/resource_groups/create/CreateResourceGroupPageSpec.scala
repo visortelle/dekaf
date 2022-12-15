@@ -13,8 +13,8 @@ import net.datafaker.Faker
 val faker = new Faker();
 
 object CreateResourceGroupPageSpec extends ZIOSpecDefault {
-    def spec: Spec[Any, Any] = suite("Create tenant page")(
-        test("User can create tenant") {
+    def spec: Spec[Any, Any] = suite("Create resource group page")(
+        test("User can create resource groupt") {
             val page = pulsarStandaloneEnv.createNewPage()
             page.navigate("/instance/resource-groups")
 
@@ -26,18 +26,18 @@ object CreateResourceGroupPageSpec extends ZIOSpecDefault {
             val resourceGroupName = s"${faker.name.lastName}-${new java.util.Date().getTime}"
             resourceGroupsPage.setResourceGroupName(resourceGroupName)
 
-            val dispatchRateInBytes = s"${faker.number.randomNumber}"
+            val dispatchRateInBytes = s"${faker.number.numberBetween(0, Long.MaxValue)}"
             resourceGroupsPage.setDispatchRateInBytes(dispatchRateInBytes)
 
-            val dispatchRateInMsgs = s"${faker.number.randomNumber}"
+            val dispatchRateInMsgs = s"${faker.number.numberBetween(0, Int.MaxValue)}"
             resourceGroupsPage.setDispatchRateInMsgs(dispatchRateInMsgs)
 
-            val publishRateInBytes = s"${faker.number.randomNumber}"
+            val publishRateInBytes = s"${faker.number.numberBetween(0, Long.MaxValue)}"
             resourceGroupsPage.setPublishRateInBytes(publishRateInBytes)
 
-            val publishRateInMsgs = s"${faker.number.randomNumber}"
+            val publishRateInMsgs = s"${faker.number.numberBetween(0, Int.MaxValue)}"
             resourceGroupsPage.setPublishRateInMsgs(publishRateInMsgs)
-            
+
             resourceGroupsPage.create()
 
             val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()

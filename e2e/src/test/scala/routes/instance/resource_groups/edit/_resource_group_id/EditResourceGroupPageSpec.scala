@@ -15,6 +15,7 @@ val faker = new Faker();
 
 object EditResourceGroupPageSpec extends ZIOSpecDefault {
     def spec: Spec[Any, Any] = suite("Edit Resource Group page")(
+
         test("User can delete resource group") {
             val page = pulsarStandaloneEnv.createNewPage()
             val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
@@ -33,6 +34,42 @@ object EditResourceGroupPageSpec extends ZIOSpecDefault {
             page.waitForURL("/instance/resource-groups", new WaitForURLOptions().setTimeout(3000))
 
             assertTrue(isTestResourceGroupCreated) && assertTrue(isTestResourceGroupDeleted)
+        },
+
+        test("User can update resource group") {
+            val page = pulsarStandaloneEnv.createNewPage()
+            val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
+
+            val testResourceGroupName = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            adminClient.resourcegroups.createResourceGroup(testResourceGroupName, new ResourceGroup())
+            val isTestResourceGroupCreated = adminClient.resourcegroups.getResourceGroups.asScala.contains(testResourceGroupName)
+
+            page.navigate(s"/instance/resource-groups/edit/${testResourceGroupName}")
+            val editResourceGroupPage = EditResourceGroupPage(page.locator("body"))
+
+            val dispatchRateInBytes = s"${faker.number.numberBetween(0, Int.MaxValue)}"
+            editResourceGroupPage.setDispatchRateInBytes(dispatchRateInBytes)
+
+            val dispatchRateInMsgs = s"${faker.number.numberBetween(0, Int.MaxValue)}"
+            editResourceGroupPage.setDispatchRateInMsgs(dispatchRateInMsgs)
+
+            val publishRateInBytes = s"${faker.number.numberBetween(0, Int.MaxValue)}"
+            editResourceGroupPage.setPublishRateInBytes(publishRateInBytes)
+
+            val publishRateInMsgs = s"${faker.number.numberBetween(0, Int.MaxValue)}"
+            editResourceGroupPage.setPublishRateInMsgs(publishRateInMsgs)
+
+            editResourceGroupPage.saveButton.click()
+            page.waitForTimeout(1000)
+            val UpdatedResourceGroup = adminClient.resourcegroups.getResourceGroup(testResourceGroupName)
+
+            page.waitForURL("/instance/resource-groups", new WaitForURLOptions().setTimeout(3000))
+
+            assertTrue(isTestResourceGroupCreated) &&
+                assertTrue(UpdatedResourceGroup.getDispatchRateInBytes.toString == dispatchRateInBytes) &&
+                assertTrue(UpdatedResourceGroup.getDispatchRateInMsgs.toString == dispatchRateInMsgs) &&
+                assertTrue(UpdatedResourceGroup.getPublishRateInBytes.toString == publishRateInBytes) &&
+                assertTrue(UpdatedResourceGroup.getPublishRateInMsgs.toString == publishRateInMsgs)
         }
     )
 }
