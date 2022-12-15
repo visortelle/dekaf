@@ -1,4 +1,4 @@
-package routes.instance.create_resource_group
+package routes.instance.resource_groups.create
 
 import zio.*
 import zio.test.*
@@ -46,7 +46,6 @@ object CreateResourceGroupPageSpec extends ZIOSpecDefault {
 
             assertTrue(isCreateButtonDisabledIfNoResourceGroupName) &&
                 assertTrue(resourceGroups.contains(resourceGroupName))
-            // TODO - test allowed clusters input
         }
     )
 }

@@ -1,11 +1,11 @@
-package routes.instance.create_resource_group
+package routes.instance.resource_groups.create
 
 import _root_.ui.ListInput
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Locator.{GetByPlaceholderOptions, GetByRoleOptions}
 import com.microsoft.playwright.options.AriaRole
 
-class CreateResourceGroupPage(root: Locator):
+case class CreateResourceGroupPage(root: Locator):
     val resourceGroupNameInput: Locator = root.getByPlaceholder("new-resource-group", new GetByPlaceholderOptions().setExact(true))
     val dispatchRateInBytesInput: Locator = root.getByPlaceholder("1024", new GetByPlaceholderOptions().setExact(true))
     val dispatchRateInMsgsInput: Locator = root.getByPlaceholder("100", new GetByPlaceholderOptions().setExact(true))
