@@ -81,7 +81,7 @@ const ResourceGroups: React.FC<Props> = (props) => {
               </thead>
 
               <tbody>
-                {groupsToRender && groupsToRender.map((rg, index) => {
+                {groupsToRender && groupsToRender.map((rg) => {
                   const dispatchRateInBytes = rg.getDispatchRateInBytes()?.getValue();
                   const dispatchRateInMsgs = rg.getDispatchRateInMsgs()?.getValue();
                   const publishRateInBytes = rg.getPublishRateInBytes()?.getValue();
@@ -89,7 +89,7 @@ const ResourceGroups: React.FC<Props> = (props) => {
 
                   return (
                   <tr key={rg.getName()} className={sc.Row}>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-name-${index}`}>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-name`}>
                       {rg.getName()}
                     </td>
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
@@ -109,7 +109,7 @@ const ResourceGroups: React.FC<Props> = (props) => {
                         action={{ type: 'predefined', action: 'edit' }}
                         linkTo={routes.instance.resourceGroups.edit._.get({ groupName: rg.getName() })}
                         onClick={() => undefined}
-                        testId={`resource-group-edit-button-${index}`}
+                        testId={`resource-group-edit-button`}
                       />
                     </td>
                   </tr>

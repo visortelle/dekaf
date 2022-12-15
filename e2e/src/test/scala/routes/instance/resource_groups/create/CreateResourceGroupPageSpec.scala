@@ -6,17 +6,16 @@ import zio.test.Assertion.*
 import zio.test.TestAspect.*
 
 import scala.jdk.CollectionConverters.*
-import _root_.test_env.{TestEnv, createPulsarStandaloneEnv}
+import _root_.test_env.pulsarStandaloneEnv
 import com.microsoft.playwright.Page.WaitForURLOptions
 import net.datafaker.Faker
 
 val faker = new Faker();
 
 object CreateResourceGroupPageSpec extends ZIOSpecDefault {
-    def spec: Spec[Any, Any] = suite("Create tenant page")(
-        test("User can create tenant") {
-            val testEnv: TestEnv = createPulsarStandaloneEnv
-            val page = testEnv.createNewPage()
+    def spec: Spec[Any, Any] = suite("Create resource group page")(
+        test("User can create resource groupt") {
+            val page = pulsarStandaloneEnv.createNewPage()
             page.navigate("/instance/resource-groups")
 
             val resourceGroupsPage = CreateResourceGroupPage(page.locator("body"))
@@ -27,21 +26,21 @@ object CreateResourceGroupPageSpec extends ZIOSpecDefault {
             val resourceGroupName = s"${faker.name.lastName}-${new java.util.Date().getTime}"
             resourceGroupsPage.setResourceGroupName(resourceGroupName)
 
-            val dispatchRateInBytes = s"${faker.number.randomNumber}"
+            val dispatchRateInBytes = s"${faker.number.numberBetween(0, Long.MaxValue)}"
             resourceGroupsPage.setDispatchRateInBytes(dispatchRateInBytes)
 
-            val dispatchRateInMsgs = s"${faker.number.randomNumber}"
+            val dispatchRateInMsgs = s"${faker.number.numberBetween(0, Int.MaxValue)}"
             resourceGroupsPage.setDispatchRateInMsgs(dispatchRateInMsgs)
 
-            val publishRateInBytes = s"${faker.number.randomNumber}"
+            val publishRateInBytes = s"${faker.number.numberBetween(0, Long.MaxValue)}"
             resourceGroupsPage.setPublishRateInBytes(publishRateInBytes)
 
-            val publishRateInMsgs = s"${faker.number.randomNumber}"
+            val publishRateInMsgs = s"${faker.number.numberBetween(0, Int.MaxValue)}"
             resourceGroupsPage.setPublishRateInMsgs(publishRateInMsgs)
 
             resourceGroupsPage.create()
 
-            val adminClient = testEnv.createPulsarAdminClient()
+            val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
             val resourceGroups = adminClient.resourcegroups.getResourceGroups.asScala
 
             page.waitForURL("/instance/resource-groups", new WaitForURLOptions().setTimeout(3000))
