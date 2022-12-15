@@ -23,7 +23,6 @@ object EditResourceGroupPageSpec extends ZIOSpecDefault {
             adminClient.resourcegroups.createResourceGroup(testResourceGroupName, new ResourceGroup())
             val isTestResourceGroupCreated = adminClient.resourcegroups.getResourceGroups.asScala.contains(testResourceGroupName)
 
-
             page.navigate(s"/instance/resource-groups/edit/${testResourceGroupName}")
             val editResourceGroupPage = EditResourceGroupPage(page.locator("body"))
 

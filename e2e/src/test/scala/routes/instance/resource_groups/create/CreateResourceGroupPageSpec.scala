@@ -26,16 +26,16 @@ object CreateResourceGroupPageSpec extends ZIOSpecDefault {
             val resourceGroupName = s"${faker.name.lastName}-${new java.util.Date().getTime}"
             resourceGroupsPage.setResourceGroupName(resourceGroupName)
 
-            val dispatchRateInBytes = s"${faker.hashCode + 1}"
+            val dispatchRateInBytes = s"${faker.number.randomNumber}"
             resourceGroupsPage.setDispatchRateInBytes(dispatchRateInBytes)
 
-            val dispatchRateInMsgs = s"${faker.hashCode + 2}"
+            val dispatchRateInMsgs = s"${faker.number.randomNumber}"
             resourceGroupsPage.setDispatchRateInMsgs(dispatchRateInMsgs)
 
-            val publishRateInBytes = s"${faker.hashCode + 3}"
+            val publishRateInBytes = s"${faker.number.randomNumber}"
             resourceGroupsPage.setPublishRateInBytes(publishRateInBytes)
 
-            val publishRateInMsgs = s"${faker.hashCode + 4}"
+            val publishRateInMsgs = s"${faker.number.randomNumber}"
             resourceGroupsPage.setPublishRateInMsgs(publishRateInMsgs)
             resourceGroupsPage.create()
 
