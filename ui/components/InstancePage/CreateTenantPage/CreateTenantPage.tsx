@@ -70,7 +70,7 @@ const CreateTenantPage: React.FC = () => {
     navigate(routes.instance.tenants._.get());
   }
 
-  const tenantNameInput = <Input value={tenantName} onChange={setTenantName} placeholder="tenant-1" />;
+  const tenantNameInput = <Input value={tenantName} onChange={setTenantName} placeholder="tenant-1" testId="tenant-name" />;
 
   const allowedClustersInput = <ListInput<string>
     testId="clusters-input"

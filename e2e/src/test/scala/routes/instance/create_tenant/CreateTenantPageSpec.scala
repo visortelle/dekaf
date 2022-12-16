@@ -6,7 +6,7 @@ import zio.test.Assertion.*
 import zio.test.TestAspect.*
 
 import scala.jdk.CollectionConverters.*
-import _root_.test_env.pulsarStandaloneEnv
+import _root_.test_env.{TestEnv, createPulsarStandaloneEnv}
 import com.microsoft.playwright.Page.WaitForURLOptions
 import net.datafaker.Faker
 import routes.InstancePage
@@ -16,7 +16,8 @@ val faker = new Faker();
 object CreateTenantPageSpec extends ZIOSpecDefault:
     def spec: Spec[Any, Any] = suite("Create tenant page")(
         test("User can create tenant") {
-            val page = pulsarStandaloneEnv.createNewPage()
+            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val page = testEnv.createNewPage()
             page.navigate("/instance/create-tenant")
 
             val createTenantPage = CreateTenantPage(page.locator("body"))
@@ -30,7 +31,7 @@ object CreateTenantPageSpec extends ZIOSpecDefault:
 
             createTenantPage.create()
 
-            val adminClient = pulsarStandaloneEnv.createPulsarAdminClient()
+            val adminClient = testEnv.createPulsarAdminClient()
             val tenants = adminClient.tenants.getTenants.asScala
             val createdTenant = adminClient.tenants.getTenantInfo(tenantToCreate)
 

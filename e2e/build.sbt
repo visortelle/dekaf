@@ -17,7 +17,7 @@ lazy val root = project
       "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
       "dev.zio" %% "zio-test-magnolia" % zioVersion % Test,
       "com.dimafeng" %% "testcontainers-scala-scalatest" % "0.40.12" % Test,
-      
+
       "dev.zio" % "zio-direct_3" % "1.0.0-RC1",
       "com.microsoft.playwright" % "playwright" % "1.28.1",
       "net.datafaker" % "datafaker" % "1.7.0",

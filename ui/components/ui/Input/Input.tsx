@@ -11,9 +11,10 @@ export type InputProps = {
   clearable?: boolean,
   type?: HTMLInputTypeAttribute,
   inputProps?: InputHTMLAttributes<any>,
-  placeholder?: string
+  placeholder?: string,
+  testId?: string,
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount, type, inputProps }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, iconSvg, clearable, o
           }
         }}
         {...inputProps}
+        data-testid={testId}
       />
       {iconSvg && (<div className={s.InputIcon}>
         <SvgIcon svg={iconSvg} />
