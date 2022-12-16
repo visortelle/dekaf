@@ -160,6 +160,7 @@ const ResourceGroupForm = (props: Props) => {
       value={formValue.name}
       onChange={(v) => setFormValue({ ...formValue, name: v })}
       placeholder="new-resource-group"
+      testId="resource-group-name"
     />
   );
   const resourceGroupNameSpan = <span data-testid="resource-group-name">{formValue.name}</span>;
@@ -169,6 +170,7 @@ const ResourceGroupForm = (props: Props) => {
       value={formValue.dispatchRateInBytes || ''}
       onChange={(v) => setFormValue({ ...formValue, dispatchRateInBytes: v })}
       placeholder="1024"
+      testId="dispatch-rate-in-bytes"
     />
   );
   const dispatchRateInMsgsInput = (
@@ -177,6 +179,7 @@ const ResourceGroupForm = (props: Props) => {
       value={formValue.dispatchRateInMsgs || ''}
       onChange={(v) => setFormValue({ ...formValue, dispatchRateInMsgs: v })}
       placeholder="100"
+      testId="dispatch-rate-in-msgs"
     />
   );
   const publishRateInBytesInput = (
@@ -184,7 +187,8 @@ const ResourceGroupForm = (props: Props) => {
       type="number"
       value={formValue.publishRateInBytes || ''}
       onChange={(v) => setFormValue({ ...formValue, publishRateInBytes: v })}
-      placeholder="2048"
+      placeholder="1024"
+      testId="publish-rate-in-bytes"
     />
   );
   const publishRateInMsgsInput = (
@@ -192,7 +196,8 @@ const ResourceGroupForm = (props: Props) => {
       type="number"
       value={formValue.publishRateInMsgs || ''}
       onChange={(v) => setFormValue({ ...formValue, publishRateInMsgs: v })}
-      placeholder="200"
+      placeholder="100"
+      testId="publish-rate-in-msgs"
     />
   );
 

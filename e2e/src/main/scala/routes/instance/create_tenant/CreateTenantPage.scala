@@ -6,7 +6,7 @@ import com.microsoft.playwright.Locator.{GetByPlaceholderOptions, GetByRoleOptio
 import com.microsoft.playwright.options.AriaRole
 
 case class CreateTenantPage(root: Locator):
-    val tenantNameInput: Locator = root.getByPlaceholder("tenant-1", new GetByPlaceholderOptions().setExact(true))
+    val tenantNameInput: Locator = root.getByTestId("tenant-name")
     val adminRoleInput: ListInput = ListInput(root.getByTestId("admin-roles-input"))
     val clustersInput: ListInput = ListInput(root.getByTestId("clusters-input"))
     val createButton: Locator = root.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Create").setExact(true))

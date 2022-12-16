@@ -6,11 +6,11 @@ import com.microsoft.playwright.Locator.{GetByPlaceholderOptions, GetByRoleOptio
 import com.microsoft.playwright.options.AriaRole
 
 case class CreateResourceGroupPage(root: Locator):
-    val resourceGroupNameInput: Locator = root.getByPlaceholder("new-resource-group", new GetByPlaceholderOptions().setExact(true))
-    val dispatchRateInBytesInput: Locator = root.getByPlaceholder("1024", new GetByPlaceholderOptions().setExact(true))
-    val dispatchRateInMsgsInput: Locator = root.getByPlaceholder("100", new GetByPlaceholderOptions().setExact(true))
-    val publishRateInBytesInput: Locator = root.getByPlaceholder("2048", new GetByPlaceholderOptions().setExact(true))
-    val publishRateInMsgsInput: Locator = root.getByPlaceholder("200", new GetByPlaceholderOptions().setExact(true))
+    val resourceGroupNameInput: Locator = root.getByTestId("resource-group-name")
+    val dispatchRateInBytesInput: Locator = root.getByTestId("dispatch-rate-in-bytes")
+    val dispatchRateInMsgsInput: Locator = root.getByTestId("dispatch-rate-in-msgs")
+    val publishRateInBytesInput: Locator = root.getByTestId("publish-rate-in-bytes")
+    val publishRateInMsgsInput: Locator = root.getByTestId("publish-rate-in-msgs")
 
     def setResourceGroupName(rate: String): Unit = resourceGroupNameInput.fill(rate)
     def setDispatchRateInBytes(rate: String): Unit = dispatchRateInBytesInput.fill(rate)
