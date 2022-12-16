@@ -36,9 +36,9 @@ object ResourceGroupsPageSpec extends ZIOSpecDefault {
                 (resourceGroupName, resourceGroup)
             }).toMap
 
-            newResourceGroups.map(x =>
-                adminClient.resourcegroups.createResourceGroup(x._1, x._2)
-            )
+            newResourceGroups.foreach({ case (rgName, rg) =>
+                adminClient.resourcegroups.createResourceGroup(rgName, rg)
+            })
 
             page.navigate("/instance/resource-groups")
 
@@ -53,7 +53,7 @@ object ResourceGroupsPageSpec extends ZIOSpecDefault {
                 existResourceGroup.setPublishRateInMsgs(resourceGroupsPage.getPublishRateInMsgs(resourceGroup._1).replace(",", "").toInt)
 
                 (resourceGroupName, existResourceGroup)
-            }).toMap
+            })
 
             assertTrue(newResourceGroups == existResourceGroups)
         },
