@@ -11,7 +11,6 @@ case class CreateResourceGroupPage(root: Locator):
     val dispatchRateInMsgsInput: Locator = root.getByPlaceholder("100", new GetByPlaceholderOptions().setExact(true))
     val publishRateInBytesInput: Locator = root.getByPlaceholder("2048", new GetByPlaceholderOptions().setExact(true))
     val publishRateInMsgsInput: Locator = root.getByPlaceholder("200", new GetByPlaceholderOptions().setExact(true))
-    val linkToCreateButton: Locator = root.getByTestId("resource-group-create-button")
 
     def setResourceGroupName(rate: String): Unit = resourceGroupNameInput.fill(rate)
     def setDispatchRateInBytes(rate: String): Unit = dispatchRateInBytesInput.fill(rate)
@@ -19,10 +18,6 @@ case class CreateResourceGroupPage(root: Locator):
     def setPublishRateInBytes(rate: String): Unit = publishRateInBytesInput.fill(rate)
     def setPublishRateInMsgs(rate: String): Unit = publishRateInMsgsInput.fill(rate)
     val createButton: Locator = root.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Create").setExact(true))
-
-    def moveToCreate(): Unit =
-        linkToCreateButton.click()
-        root.page.waitForTimeout(1000)
 
     def create(): Unit =
         createButton.click()

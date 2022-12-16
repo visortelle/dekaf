@@ -14,13 +14,12 @@ val faker = new Faker();
 
 object CreateResourceGroupPageSpec extends ZIOSpecDefault {
     def spec: Spec[Any, Any] = suite("Create resource group page")(
-        test("User can create resource groupt") {
+        test("User can create resource group") {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
-            page.navigate("/instance/resource-groups")
+            page.navigate("/instance/resource-groups/create")
 
             val resourceGroupsPage = CreateResourceGroupPage(page.locator("body"))
-            resourceGroupsPage.moveToCreate()
 
             val isCreateButtonDisabledIfNoResourceGroupName = resourceGroupsPage.createButton.isDisabled
 
