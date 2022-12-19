@@ -5,6 +5,8 @@
 .Line {
   display: flex;
   width: 100%;
+  font-size: 14rem;
+  margin-bottom: 18rem;
 }
 .TableKeys {
   width: 90%;
@@ -18,5 +20,9 @@
 }
 .Field {
   width: 45%;
-  margin: 0rem 10rem 10rem 0rem;
+  margin-right: 2.5%;
+}
+
+.Button {
+  margin-top: 5.5rem;
 }

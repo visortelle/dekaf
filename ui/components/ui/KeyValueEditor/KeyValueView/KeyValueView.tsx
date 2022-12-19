@@ -125,15 +125,18 @@ const KeyValueView = (props: Props) => {
               })}
             />
           </div>
-          <Button
-            type="primary"
-            onClick={() => addNewKey()}
-            text="Add"
-            disabled={
-              newKeyValue.key.length === 0 ||
-              newKeyValue.value.length === 0
-            }
-          />
+          <div>
+            <SmallButton
+              onClick={() => addNewKey()}
+              type="primary"
+              text="Add"
+              className={s.Button}
+              disabled={
+                newKeyValue.key.length === 0 ||
+                newKeyValue.value.length === 0
+              }
+            />
+          </div>
         </div>
 
       </div>
