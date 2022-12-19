@@ -149,6 +149,16 @@ export const swrKeys = {
                 "permissions",
               ],
             },
+            subscriptionPermissions: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "subscriptionPermissions",
+              ],
+            },
             nonPersistentTopics: {
               _: (props: { tenant: string; namespace: string }) => [
                 "pulsar",

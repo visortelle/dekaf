@@ -111,7 +111,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
       }
 
       const permissionsObject = mapToObject(res.getPermissionsMap())
-      const authActions = Object.keys(permissionsObject).map(role => {
+      const permissions = Object.keys(permissionsObject).map(role => {
         let permissionsItem = { role: defaultPermission.role, actions: { ...defaultPermission.actions } };
 
         permissionsItem.role = role
@@ -123,9 +123,9 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
       })
 
       setFormValue({ role: defaultPermission.role, actions: { ...defaultPermission.actions } })
-      setPermissionsList(authActions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
+      setPermissionsList(permissions?.sort((a, b) => a.role.localeCompare(b.role, 'en', { numeric: true })))
 
-      return authActions;
+      return permissions;
     },
     {
       dedupingInterval: 0 // Fix empty data on fast route change
@@ -152,7 +152,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
     await mutate(swrKey);
   }
 
-  const grant = async (permission: Permission) => {
+  const grant = async (permission: Permission, check?: boolean) => {
     let actions: pb.AuthAction[] = [];
     for (let key in permission.actions) {
       if (permission.actions[key] === true) {
@@ -164,6 +164,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
     req.setNamespace(`${props.tenant}/${props.namespace}`);
     req.setRole(permission.role);
     req.setAuthActionsList(actions);
+    req.setExistenceCheck(check || false)
 
     const res = await namespaceServiceClient.grantPermissions(req, {});
 
@@ -260,7 +261,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                     inputProps={{
                       onKeyDown: (e) => {
                         if (e.key === 'Enter') {
-                          grant(formValue)
+                          grant(formValue, true)
                         }
                       }
                     }}
@@ -284,7 +285,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                 <td className={`${s.Cell}`}>
                   <div className={s.ButtonBlock}>
                     <SmallButton
-                      onClick={() => grant(formValue)}
+                      onClick={() => grant(formValue, true)}
                       type='primary'
                       text='Grant'
                       disabled={formValue.role.length < 1}

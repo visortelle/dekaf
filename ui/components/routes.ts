@@ -102,6 +102,13 @@ export const routes = {
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/permissions`,
             },
           },
+          subscriptionPermissions: {
+            _: {
+              path: "/tenants/:tenant/namespaces/:namespace/subscription-permissions",
+              get: (props: { tenant: string; namespace: string }) =>
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/subscription-permissions`,
+            },
+          },
           topics: {
             _: {
               path: "/tenants/:tenant/namespaces/:namespace/topics",

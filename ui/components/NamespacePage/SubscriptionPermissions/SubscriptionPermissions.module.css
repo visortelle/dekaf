@@ -1,0 +1,48 @@
+.SubscriptionsTable {
+  margin-bottom: 48rem;
+  padding: 24rem 12rem 0 12rem;
+}
+
+.Title {
+  padding: 24rem 12rem 24rem 0rem;
+}
+
+.Line {
+  display: flex;
+  width: 100%;
+  font-size: 14rem;
+  margin-bottom: 18rem;
+}
+.SubscriptionName {
+  max-width: 35%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 5%;
+}
+
+.LeftSide {
+  flex: 1 1 40%;
+  font-weight: bold;
+}
+.LeftSide > div {
+  max-width: 90%
+}
+
+.RightSide {
+  flex: 1 1 60%
+}
+
+.Buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8rem;
+}
+
+.Buttons > * {
+  margin-right: 12rem;
+}
+
+.Buttons > *:last-child {
+  margin-right: 0;
+}
