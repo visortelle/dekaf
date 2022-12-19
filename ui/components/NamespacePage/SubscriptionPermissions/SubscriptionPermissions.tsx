@@ -261,7 +261,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
               <Button
                 type='primary'
                 onClick={() => grant(permissionsList[index])}
-                text='Grant'
+                text='Update'
                 disabled={
                   permissionsList[index].roles === permissions[index].roles ||
                   permissionsList[index].roles.length === 0

@@ -1875,7 +1875,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try {
             val permissions = adminClient.namespaces.getPermissions(request.namespace).asScala.toMap
 
-            if permissions.exists(_._1 == request.role & request.existenceCheck) then
+            if permissions.exists(_._1 == request.role && request.existenceCheck) then
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = s"There are already granted permissions for this role: ${request.role}. Please choose another role name.")
                 return Future.successful(GrantPermissionsResponse(status = Some(status)))
 
@@ -1936,7 +1936,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         try {
             val permissions = adminClient.namespaces.getPermissionOnSubscription(request.namespace).asScala.toMap
 
-            if permissions.exists(_._1 == request.subscription & request.existenceCheck) then
+            if permissions.exists(_._1 == request.subscription && request.existenceCheck) then
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = s"There are already assigned roles for this subscription: ${request.subscription}. Please choose another subscription name.")
                 return Future.successful(GrantPermissionOnSubscriptionResponse(status = Some(status)))
 
