@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import ActionButton from '../../ActionButton/ActionButton';
 import Button from '../../Button/Button';
 import { H3 } from '../../H/H';
 import Input from '../../Input/Input';
@@ -10,7 +9,6 @@ import { KeyValues } from '../KeyValueEditor';
 import s from '../KeyValueEditor.module.css';
 
 type Props = {
-  addKeyValue: (key: string, value: string) => void,
   changeView: () => void,
   deleteKeyValue: (key: string) => void,
   convertFromArray: (array: string[][]) => void,
@@ -22,10 +20,13 @@ type NewKeyValue = {
   value: string,
 }
 
+type UnvalidKeys = {
+  [key: string]: number
+}
+
 const KeyValueView = (props: Props) => {
 
   const {
-    addKeyValue,
     changeView,
     deleteKeyValue,
     convertFromArray,
@@ -36,14 +37,68 @@ const KeyValueView = (props: Props) => {
 
   const [newKeyValue, setNewKeyValue] = useState<NewKeyValue>(defaultKeyValue)
   const [convertedKeyValues, setConvertedKeyValues] = useState<string[][]>(Object.entries(keyValues))
+  const [isValid, setIsValid] = useState(true)
+  const [unvalidKeys, setUnvalidKeys] = useState<UnvalidKeys>()
 
   const addNewKey = () => {
-    if (keyValues[newKeyValue.key] !== undefined) {
-      return;
-    }
-
-    addKeyValue(newKeyValue.key, newKeyValue.value)
+    setConvertedKeyValues([
+      ...convertedKeyValues,
+      [newKeyValue.key, newKeyValue.value]
+    ])
     setNewKeyValue(defaultKeyValue)
+  }
+
+  // const validityNewKey = (key: string) => {
+  //   if (convertedKeyValues.find((keyValue) => keyValue[0] === key)) {
+  //     return true
+  //   } else {
+  //     return false
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   const newUnvalidKeys: UnvalidKeys = {}
+  //   convertedKeyValues.map((сheckedKeyValue, checkedIndex) => {
+  //     convertedKeyValues.map((keyValue, index) => {
+  //       if (index !== checkedIndex && сheckedKeyValue[0] === keyValue[0]) {
+  //         setIsValid(false)
+  //         newUnvalidKeys[сheckedKeyValue[0]]= true
+  //       }
+  //     })
+  //   })
+
+  //   setUnvalidKeys(newUnvalidKeys)
+
+  // }, [convertedKeyValues])
+
+  const fieldValidity = (key: string, index?: number) => {
+    let repeating = 1;
+
+    convertedKeyValues.map((keyValue) => {
+      if (keyValue[0] === key) {
+        repeating++
+      }
+    })
+
+    if (newKeyValue.key === key && index) [
+      repeating++
+    ]
+
+    if (!unvalidKeys) {
+      setUnvalidKeys({[key]: repeating})
+    } else if (index) {
+      setUnvalidKeys({
+        ...unvalidKeys,
+        [key]: repeating,
+        [convertedKeyValues[index][0]]: unvalidKeys[convertedKeyValues[index][0]] - 1
+      })
+    } else {
+      setUnvalidKeys({
+        ...unvalidKeys,
+        [key]: repeating,
+        [newKeyValue.key]: unvalidKeys[newKeyValue.key] - 1
+      })
+    }
   }
 
   return (
@@ -53,11 +108,13 @@ const KeyValueView = (props: Props) => {
           type="primary"
           onClick={() => convertFromArray(convertedKeyValues)}
           text="Save"
+          disabled={!isValid}
         />
         <Button
           type="primary"
           onClick={() => changeView()}
           text="JSON view"
+          disabled={!isValid}
         />
       </div>
       <div style={{ padding: "0% 10%" }}>
@@ -74,14 +131,17 @@ const KeyValueView = (props: Props) => {
         {convertedKeyValues.map((keyValue, index) => (
           <div className={`${s.Line}`}>
 
-            <div className={`${s.Field}`}>
+            <div className={`${s.Field} ${unvalidKeys && unvalidKeys[keyValue[0]] > 1 && s.ErrorField}`}>
               <Input 
                 type="text"
                 value={keyValue[0]}
-                onChange={(v) => setConvertedKeyValues(Object.assign([
-                  ...convertedKeyValues],
-                  {[index]: [v, keyValue[1]]}
-                ))}
+                onChange={(v) => {
+                  setConvertedKeyValues(Object.assign([
+                    ...convertedKeyValues],
+                    {[index]: [v, keyValue[1]]}
+                  ))
+                  fieldValidity(v, index)
+                }}
               />
             </div>
             <div className={`${s.Field}`}>
@@ -93,7 +153,7 @@ const KeyValueView = (props: Props) => {
                 ))}
               />
             </div>
-            <div>
+            <div className={`${s.ButtonBlock}`}>
               <SmallButton
                 onClick={() => deleteKeyValue(keyValue[0])}
                 type='danger'
@@ -105,14 +165,17 @@ const KeyValueView = (props: Props) => {
         ))}
 
         <div className={`${s.Line}`}>
-          <div className={`${s.Field}`}>
+          <div className={`${s.Field} ${unvalidKeys && unvalidKeys[newKeyValue.key] > 1 && s.ErrorField}`}>
             <Input
               placeholder='new-key'
               value={newKeyValue.key}
-              onChange={(v) => setNewKeyValue({
-                ...newKeyValue,
-                key: v
-              })}
+              onChange={(v) => {
+                setNewKeyValue({
+                  ...newKeyValue,
+                  key: v
+                })
+                fieldValidity(v)
+              }}
             />
           </div>
           <div className={`${s.Field}`}>
@@ -125,7 +188,7 @@ const KeyValueView = (props: Props) => {
               })}
             />
           </div>
-          <div>
+          <div className={`${s.ButtonBlock}`}>
             <SmallButton
               onClick={() => addNewKey()}
               type="primary"
@@ -133,7 +196,8 @@ const KeyValueView = (props: Props) => {
               className={s.Button}
               disabled={
                 newKeyValue.key.length === 0 ||
-                newKeyValue.value.length === 0
+                newKeyValue.value.length === 0 ||
+                unvalidKeys && unvalidKeys[newKeyValue.key] > 0
               }
             />
           </div>

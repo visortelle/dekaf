@@ -15,13 +15,6 @@ const KeyValueEditor = () => {
   const [keyValues, setKeyValues] = useState<KeyValues>(examples)
   const [jsonView, setJsonView] = useState(false)
 
-  const addKeyValue = (key: string, value: string) => {
-    setKeyValues({
-      ...keyValues,
-      [key]: value
-    })
-  }
-
   const deleteKeyValue = (key: string) => {
     const purifiedKeyValue = {...keyValues};
     delete purifiedKeyValue[key];
@@ -44,7 +37,6 @@ const KeyValueEditor = () => {
       {!jsonView &&
         <KeyValueView
           keyValues={keyValues}
-          addKeyValue={addKeyValue}
           changeView={changeView}
           deleteKeyValue={deleteKeyValue}
           convertFromArray={convertFromArray}
