@@ -4,6 +4,7 @@ import ActionButton from '../../ActionButton/ActionButton';
 import Button from '../../Button/Button';
 import { H3 } from '../../H/H';
 import Input from '../../Input/Input';
+import SmallButton from '../../SmallButton/SmallButton';
 import { KeyValues } from '../KeyValueEditor';
 
 import s from '../KeyValueEditor.module.css';
@@ -12,6 +13,7 @@ type Props = {
   addKeyValue: (key: string, value: string) => void,
   changeView: () => void,
   deleteKeyValue: (key: string) => void,
+  convertFromArray: (array: string[][]) => void,
   keyValues: KeyValues,
 }
 
@@ -26,12 +28,14 @@ const KeyValueView = (props: Props) => {
     addKeyValue,
     changeView,
     deleteKeyValue,
+    convertFromArray,
     keyValues,
   } = props;
 
   const defaultKeyValue = { key: '', value: '' }
 
   const [newKeyValue, setNewKeyValue] = useState<NewKeyValue>(defaultKeyValue)
+  const [convertedKeyValues, setConvertedKeyValues] = useState<string[][]>(Object.entries(keyValues))
 
   const addNewKey = () => {
     if (keyValues[newKeyValue.key] !== undefined) {
@@ -45,6 +49,11 @@ const KeyValueView = (props: Props) => {
   return (
     <>
       <div className={`${s.Line} ${s.LinkButton}`}>
+        <Button
+          type="primary"
+          onClick={() => convertFromArray(convertedKeyValues)}
+          text="Save"
+        />
         <Button
           type="primary"
           onClick={() => changeView()}
@@ -62,35 +71,34 @@ const KeyValueView = (props: Props) => {
           </H3>
         </div>
         
-        {Object.keys(keyValues).map(key => (
+        {convertedKeyValues.map((keyValue, index) => (
           <div className={`${s.Line}`}>
-            {/* <Input 
-              type="text"
-              value={key}
-              onChange={(v) => delete Object.assign(keyValues, {[v]: keyValues[key] })[key]}
-            />
-            <Input
-              value={keyValues[key]}
-              onChange={(v) => setKeyValues({
-                ...keyValues,
-                [key]: v
-              })}
-            /> */}
-            <div className={`${s.Field}`}>
-              {key}
-            </div>
-            <div className={`${s.Field}`}>
-              {keyValues[key]}
-            </div>
 
-            <div>
-              <ActionButton
-                action={{ type: 'predefined', action: 'edit' }}
-                onClick={() => undefined}
+            <div className={`${s.Field}`}>
+              <Input 
+                type="text"
+                value={keyValue[0]}
+                onChange={(v) => setConvertedKeyValues(Object.assign([
+                  ...convertedKeyValues],
+                  {[index]: [v, keyValue[1]]}
+                ))}
               />
-              <ActionButton
-                action={{ type: 'predefined', action: "close" }}
-                onClick={() => deleteKeyValue(key)}
+            </div>
+            <div className={`${s.Field}`}>
+              <Input
+                value={keyValue[1]}
+                onChange={(v) => setConvertedKeyValues(Object.assign([
+                  ...convertedKeyValues],
+                  {[index]: [keyValue[0], v]}
+                ))}
+              />
+            </div>
+            <div>
+              <SmallButton
+                onClick={() => deleteKeyValue(keyValue[0])}
+                type='danger'
+                text='Delete'
+                className={s.Button}
               />
             </div>
           </div>

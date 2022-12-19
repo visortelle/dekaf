@@ -32,6 +32,9 @@ const KeyValueEditor = () => {
     setJsonView(!jsonView)
   }
 
+  const convertFromArray = (array: string[][]) => {
+    setKeyValues(Object.fromEntries(array))
+  }
   const convertFromJson = (json: string) => {
     setKeyValues(JSON.parse(json))
   }
@@ -44,6 +47,7 @@ const KeyValueEditor = () => {
           addKeyValue={addKeyValue}
           changeView={changeView}
           deleteKeyValue={deleteKeyValue}
+          convertFromArray={convertFromArray}
         />
       }
       {jsonView &&
