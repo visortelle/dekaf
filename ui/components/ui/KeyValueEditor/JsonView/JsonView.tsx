@@ -9,13 +9,12 @@ import s from '../KeyValueEditor.module.css';
 type Props = {
   keyValues: KeyValues,
   height: string,
-  changeView: () => void,
-  convertFromJson: (json: string) => void,
+  changeView: (array: KeyValues) => void,
 }
 
 const JsonView = (props: Props) => {
 
-  const { keyValues, changeView, convertFromJson, height } = props
+  const { keyValues, changeView, height } = props
 
   const [json, setJson] = useState(JSON.stringify(keyValues))
 
@@ -25,8 +24,7 @@ const JsonView = (props: Props) => {
         <Button
           type="primary"
           onClick={() => {
-            convertFromJson(json)
-            changeView()
+            changeView(JSON.parse(json))
           }}
           text="Key-Value view"
         />

@@ -42,12 +42,6 @@
   padding-right: 0;
 }
 
-.Buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .ButtonBlock {
   display: flex;
   justify-content: center;

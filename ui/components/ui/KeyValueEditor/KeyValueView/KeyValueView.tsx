@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 
 import Button from '../../Button/Button';
@@ -9,10 +10,11 @@ import { KeyValues } from '../KeyValueEditor';
 import s from '../KeyValueEditor.module.css';
 
 type Props = {
-  changeView: () => void,
+  changeView: (array: KeyValues) => void,
   deleteKeyValue: (key: string) => void,
-  convertFromArray: (array: string[][]) => void,
+  saveChanges: (array: KeyValues) => void,
   keyValues: KeyValues,
+  initialData: KeyValues,
 }
 
 type NewKeyValue = {
@@ -29,8 +31,9 @@ const KeyValueView = (props: Props) => {
   const {
     changeView,
     deleteKeyValue,
-    convertFromArray,
+    saveChanges,
     keyValues,
+    initialData,
   } = props;
 
   const defaultKeyValue = { key: '', value: '' }
@@ -47,29 +50,6 @@ const KeyValueView = (props: Props) => {
     ])
     setNewKeyValue(defaultKeyValue)
   }
-
-  // const validityNewKey = (key: string) => {
-  //   if (convertedKeyValues.find((keyValue) => keyValue[0] === key)) {
-  //     return true
-  //   } else {
-  //     return false
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   const newUnvalidKeys: UnvalidKeys = {}
-  //   convertedKeyValues.map((сheckedKeyValue, checkedIndex) => {
-  //     convertedKeyValues.map((keyValue, index) => {
-  //       if (index !== checkedIndex && сheckedKeyValue[0] === keyValue[0]) {
-  //         setIsValid(false)
-  //         newUnvalidKeys[сheckedKeyValue[0]]= true
-  //       }
-  //     })
-  //   })
-
-  //   setUnvalidKeys(newUnvalidKeys)
-
-  // }, [convertedKeyValues])
 
   const fieldValidity = (key: string, index?: number) => {
     let repeating = 1;
@@ -101,110 +81,109 @@ const KeyValueView = (props: Props) => {
     }
   }
 
+  useEffect(() => {
+    if (!unvalidKeys) {
+      return;
+    }
+
+    let valid = true
+    Object.keys(unvalidKeys).map(key => {
+      if (unvalidKeys[key] > 1 && key !== newKeyValue.key || unvalidKeys[key] > 2) {
+        valid = false
+      }
+    })
+
+    setIsValid(valid)
+  }, [unvalidKeys])
+
   return (
-    <>
-      <div className={`${s.Line} ${s.LinkButton}`}>
-        <Button
-          type="primary"
-          onClick={() => convertFromArray(convertedKeyValues)}
-          text="Save"
-          disabled={!isValid}
-        />
-        <Button
-          type="primary"
-          onClick={() => changeView()}
-          text="JSON view"
-          disabled={!isValid}
-        />
+    <div style={{ padding: "0% 10%" }}>
+
+      <div className={`${s.Line}  ${s.Titles}`}>
+        <H3>
+          KEY
+        </H3>
+        <H3>
+          VALUE
+        </H3>
       </div>
-      <div style={{ padding: "0% 10%" }}>
-
-        <div className={`${s.Line}  ${s.Titles}`}>
-          <H3>
-            KEY
-          </H3>
-          <H3>
-            VALUE
-          </H3>
-        </div>
-        
-        {convertedKeyValues.map((keyValue, index) => (
-          <div className={`${s.Line}`}>
-
-            <div className={`${s.Field} ${unvalidKeys && unvalidKeys[keyValue[0]] > 1 && s.ErrorField}`}>
-              <Input 
-                type="text"
-                value={keyValue[0]}
-                onChange={(v) => {
-                  setConvertedKeyValues(Object.assign([
-                    ...convertedKeyValues],
-                    {[index]: [v, keyValue[1]]}
-                  ))
-                  fieldValidity(v, index)
-                }}
-              />
-            </div>
-            <div className={`${s.Field}`}>
-              <Input
-                value={keyValue[1]}
-                onChange={(v) => setConvertedKeyValues(Object.assign([
-                  ...convertedKeyValues],
-                  {[index]: [keyValue[0], v]}
-                ))}
-              />
-            </div>
-            <div className={`${s.ButtonBlock}`}>
-              <SmallButton
-                onClick={() => deleteKeyValue(keyValue[0])}
-                type='danger'
-                text='Delete'
-                className={s.Button}
-              />
-            </div>
-          </div>
-        ))}
-
+      
+      {convertedKeyValues.map((keyValue, index) => (
         <div className={`${s.Line}`}>
-          <div className={`${s.Field} ${unvalidKeys && unvalidKeys[newKeyValue.key] > 1 && s.ErrorField}`}>
-            <Input
-              placeholder='new-key'
-              value={newKeyValue.key}
+
+          <div className={`${s.Field} ${unvalidKeys && unvalidKeys[keyValue[0]] > 1 && s.ErrorField}`}>
+            <Input 
+              type="text"
+              value={keyValue[0]}
               onChange={(v) => {
-                setNewKeyValue({
-                  ...newKeyValue,
-                  key: v
-                })
-                fieldValidity(v)
+                setConvertedKeyValues(Object.assign([
+                  ...convertedKeyValues],
+                  {[index]: [v, keyValue[1]]}
+                ))
+                fieldValidity(v, index)
               }}
             />
           </div>
           <div className={`${s.Field}`}>
             <Input
-              placeholder='new-value'
-              value={newKeyValue.value}
-              onChange={(v) => setNewKeyValue({
-                ...newKeyValue,
-                value: v
-              })}
+              value={keyValue[1]}
+              onChange={(v) => setConvertedKeyValues(Object.assign([
+                ...convertedKeyValues],
+                {[index]: [keyValue[0], v]}
+              ))}
             />
           </div>
           <div className={`${s.ButtonBlock}`}>
             <SmallButton
-              onClick={() => addNewKey()}
-              type="primary"
-              text="Add"
+              onClick={() => deleteKeyValue(keyValue[0])}
+              type='danger'
+              text='Delete'
               className={s.Button}
-              disabled={
-                newKeyValue.key.length === 0 ||
-                newKeyValue.value.length === 0 ||
-                unvalidKeys && unvalidKeys[newKeyValue.key] > 0
-              }
             />
           </div>
         </div>
+      ))}
 
+      <div className={`${s.Line}`}>
+        <div className={`${s.Field} ${unvalidKeys && unvalidKeys[newKeyValue.key] > 1 && s.ErrorField}`}>
+          <Input
+            placeholder='new-key'
+            value={newKeyValue.key}
+            onChange={(v) => {
+              setNewKeyValue({
+                ...newKeyValue,
+                key: v
+              })
+              fieldValidity(v)
+            }}
+          />
+        </div>
+        <div className={`${s.Field}`}>
+          <Input
+            placeholder='new-value'
+            value={newKeyValue.value}
+            onChange={(v) => setNewKeyValue({
+              ...newKeyValue,
+              value: v
+            })}
+          />
+        </div>
+        <div className={`${s.ButtonBlock}`}>
+          <SmallButton
+            onClick={() => addNewKey()}
+            type="primary"
+            text="Add"
+            className={s.Button}
+            disabled={
+              newKeyValue.key.length === 0 ||
+              newKeyValue.value.length === 0 ||
+              unvalidKeys && unvalidKeys[newKeyValue.key] > 1
+            }
+          />
+        </div>
       </div>
-    </>
+
+    </div>
   )
 }
 
