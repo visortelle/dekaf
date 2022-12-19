@@ -63,6 +63,7 @@ const ResourceGroups: React.FC<Props> = (props) => {
                 onClick={() => undefined}
                 linkTo={routes.instance.resourceGroups.create._.get()}
                 type="primary"
+                testId='resource-group-create-button'
               />
             </div>
           </div>
@@ -88,19 +89,19 @@ const ResourceGroups: React.FC<Props> = (props) => {
 
                   return (
                   <tr key={rg.getName()} className={sc.Row}>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-name-${rg.getName()}`}>
                       {rg.getName()}
                     </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-b-${rg.getName()}`}>
                       {dispatchRateInBytes === undefined ? '-' : i18n.formatLongNumber(dispatchRateInBytes)}
                     </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-m-${rg.getName()}`}>
                       {dispatchRateInMsgs === undefined ? '-' : i18n.formatLongNumber(dispatchRateInMsgs)}
                     </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-b-${rg.getName()}`}>
                       {publishRateInBytes === undefined ? '-' : i18n.formatLongNumber(publishRateInBytes)}
                     </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-m-${rg.getName()}`}>
                       {publishRateInMsgs === undefined ? '-' : i18n.formatLongNumber(publishRateInMsgs)}
                     </td>
                     <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
@@ -108,6 +109,7 @@ const ResourceGroups: React.FC<Props> = (props) => {
                         action={{ type: 'predefined', action: 'edit' }}
                         linkTo={routes.instance.resourceGroups.edit._.get({ groupName: rg.getName() })}
                         onClick={() => undefined}
+                        testId={`resource-group-edit-button-${rg.getName()}`}
                       />
                     </td>
                   </tr>

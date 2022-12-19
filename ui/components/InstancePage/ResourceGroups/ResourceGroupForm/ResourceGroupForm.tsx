@@ -68,7 +68,7 @@ const ResourceGroupForm = (props: Props) => {
     const getDefaultFormValue = async (): Promise<Value | undefined> => {
       if (props.view.type === 'create') {
         return {
-          name: `new-resource-group-${Date.now()}`,
+          name: ``,
           dispatchRateInBytes: undefined,
           dispatchRateInMsgs: undefined,
           publishRateInBytes: undefined,
@@ -120,7 +120,7 @@ const ResourceGroupForm = (props: Props) => {
       return;
     }
 
-    await mutate(swrKeys.pulsar.brokers.resourceGroups);
+    await mutate(swrKeys.pulsar.brokers.resourceGroups._());
     navigate(routes.instance.resourceGroups._.get());
   }
 
@@ -160,15 +160,17 @@ const ResourceGroupForm = (props: Props) => {
       value={formValue.name}
       onChange={(v) => setFormValue({ ...formValue, name: v })}
       placeholder="new-resource-group"
+      testId="resource-group-name"
     />
   );
-  const resourceGroupNameSpan = <span>{formValue.name}</span>;
+  const resourceGroupNameSpan = <span data-testid="resource-group-name">{formValue.name}</span>;
   const dispatchRateInBytesInput = (
     <Input
       type="number"
       value={formValue.dispatchRateInBytes || ''}
       onChange={(v) => setFormValue({ ...formValue, dispatchRateInBytes: v })}
       placeholder="1024"
+      testId="dispatch-rate-in-bytes"
     />
   );
   const dispatchRateInMsgsInput = (
@@ -177,6 +179,7 @@ const ResourceGroupForm = (props: Props) => {
       value={formValue.dispatchRateInMsgs || ''}
       onChange={(v) => setFormValue({ ...formValue, dispatchRateInMsgs: v })}
       placeholder="100"
+      testId="dispatch-rate-in-msgs"
     />
   );
   const publishRateInBytesInput = (
@@ -185,6 +188,7 @@ const ResourceGroupForm = (props: Props) => {
       value={formValue.publishRateInBytes || ''}
       onChange={(v) => setFormValue({ ...formValue, publishRateInBytes: v })}
       placeholder="1024"
+      testId="publish-rate-in-bytes"
     />
   );
   const publishRateInMsgsInput = (
@@ -193,6 +197,7 @@ const ResourceGroupForm = (props: Props) => {
       value={formValue.publishRateInMsgs || ''}
       onChange={(v) => setFormValue({ ...formValue, publishRateInMsgs: v })}
       placeholder="100"
+      testId="publish-rate-in-msgs"
     />
   );
 
@@ -265,6 +270,7 @@ const ResourceGroupForm = (props: Props) => {
           type='primary'
           text='Create'
           buttonProps={{ type: 'submit' }}
+          disabled={formValue.name.length === 0}
         />
       )}
     </form>
