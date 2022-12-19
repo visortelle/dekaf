@@ -64,13 +64,8 @@ const KeyValueView = (props: Props) => {
         
         {Object.keys(keyValues).map(key => (
           <div className={`${s.Line}`}>
-            <div className={`${s.Field}`}>
-              {key}
-            </div>
-            <div className={`${s.Field}`}>
-              {keyValues[key]}
-            </div>
-            {/* <Input
+            {/* <Input 
+              type="text"
               value={key}
               onChange={(v) => delete Object.assign(keyValues, {[v]: keyValues[key] })[key]}
             />
@@ -81,6 +76,13 @@ const KeyValueView = (props: Props) => {
                 [key]: v
               })}
             /> */}
+            <div className={`${s.Field}`}>
+              {key}
+            </div>
+            <div className={`${s.Field}`}>
+              {keyValues[key]}
+            </div>
+
             <div>
               <ActionButton
                 action={{ type: 'predefined', action: 'edit' }}

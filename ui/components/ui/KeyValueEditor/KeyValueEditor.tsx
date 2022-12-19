@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-import Button from '../Button/Button';
 import KeyValueView from './KeyValueView/KeyValueView';
 import JsonView from './JsonView/JsonView';
 
@@ -33,7 +32,7 @@ const KeyValueEditor = () => {
     setJsonView(!jsonView)
   }
 
-  const changeKeyValues = (json: string) => {
+  const convertFromJson = (json: string) => {
     setKeyValues(JSON.parse(json))
   }
 
@@ -51,7 +50,7 @@ const KeyValueEditor = () => {
         <JsonView
           keyValues={keyValues}
           changeView={changeView}
-          changeKeyValues={changeKeyValues}
+          convertFromJson={convertFromJson}
           height="50vh"
         />
       }

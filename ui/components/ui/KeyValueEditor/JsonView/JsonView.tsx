@@ -10,12 +10,12 @@ type Props = {
   keyValues: KeyValues,
   height: string,
   changeView: () => void,
-  changeKeyValues: (json: string) => void,
+  convertFromJson: (json: string) => void,
 }
 
 const JsonView = (props: Props) => {
 
-  const { keyValues, changeView, changeKeyValues, height } = props
+  const { keyValues, changeView, convertFromJson, height } = props
 
   const [json, setJson] = useState(JSON.stringify(keyValues))
 
@@ -25,7 +25,7 @@ const JsonView = (props: Props) => {
         <Button
           type="primary"
           onClick={() => {
-            changeKeyValues(json)
+            convertFromJson(json)
             changeView()
           }}
           text="Key-Value view"
