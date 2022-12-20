@@ -21,7 +21,7 @@ const JsonView: React.FC<JsonViewProps> = (props) => {
         language={'json'}
         height={props.height}
         width={props.width}
-        options={{ readOnly: props.readonly !== undefined ? props.readonly : true }}
+        options={{ readOnly: Boolean(props.readonly) }}
         onChange={props.onChange}
       />
     </div>
