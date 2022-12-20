@@ -6,7 +6,7 @@ import SmallButton from '../../SmallButton/SmallButton';
 import s from './KeyValueView.module.css';
 
 type Props = {
-  deleteKeyValue: (index: number) => void,
+  onDelete: (index: number) => void,
   convertedKeyValues: string[][],
   changeConvertedKeyValues: (array: string[][]) => void,
   changeValidity: (validity: boolean) => void,
@@ -18,32 +18,32 @@ type NewKeyValue = {
 }
 
 type UnvalidKeys = {
-  [key: string]: number
+  [key: string]: number,
 }
 
 const KeyValueView = (props: Props) => {
 
   const {
-    deleteKeyValue,
+    onDelete,
     convertedKeyValues,
     changeConvertedKeyValues,
-    changeValidity
+    changeValidity,
   } = props;
 
-  const defaultKeyValue = { key: '', value: '' }
+  const defaultKeyValue = { key: '', value: '' };
 
-  const [newKeyValue, setNewKeyValue] = useState<NewKeyValue>(defaultKeyValue)
-  const [unvalidKeys, setUnvalidKeys] = useState<UnvalidKeys>()
+  const [newKeyValue, setNewKeyValue] = useState<NewKeyValue>(defaultKeyValue);
+  const [unvalidKeys, setUnvalidKeys] = useState<UnvalidKeys>();
 
   const addNewKey = () => {
     changeConvertedKeyValues([
       ...convertedKeyValues,
       [newKeyValue.key, newKeyValue.value]
-    ])
-    setNewKeyValue(defaultKeyValue)
+    ]);
+    setNewKeyValue(defaultKeyValue);
   }
 
-  const fieldValidity = (key: string, index?: number) => {
+  const validateField = (key: string, index?: number) => {
     let repeating = 1;
 
     convertedKeyValues.map((keyValue) => {
@@ -83,20 +83,20 @@ const KeyValueView = (props: Props) => {
       if (unvalidKeys[key] > 1 && key !== newKeyValue.key || unvalidKeys[key] > 2) {
         valid = false
       }
-    })
+    });
 
-    changeValidity(valid)
+    changeValidity(valid);
   }, [unvalidKeys])
 
   return (
-    <div style={{ padding: "0% 10%" }}>
+    <div>
 
       <div className={`${s.Line}  ${s.Titles}`}>
         <span>
-          key
+          Key
         </span>
         <span>
-          value
+          Value
         </span>
       </div>
       
@@ -112,7 +112,7 @@ const KeyValueView = (props: Props) => {
                   ...convertedKeyValues],
                   {[index]: [v, keyValue[1]]}
                 ))
-                fieldValidity(v, index)
+                validateField(v, index)
               }}
             />
           </div>
@@ -127,7 +127,7 @@ const KeyValueView = (props: Props) => {
           </div>
           <div className={`${s.ButtonBlock}`}>
             <SmallButton
-              onClick={() => deleteKeyValue(index)}
+              onClick={() => onDelete(index)}
               type='danger'
               text='Delete'
               className={s.Button}
@@ -146,7 +146,7 @@ const KeyValueView = (props: Props) => {
                 ...newKeyValue,
                 key: v
               })
-              fieldValidity(v)
+              validateField(v)
             }}
           />
         </div>

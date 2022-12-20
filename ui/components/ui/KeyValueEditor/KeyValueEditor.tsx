@@ -6,7 +6,7 @@ import JsonView from '../JsonView/JsonView';
 import * as Notifications from '../../app/contexts/Notifications';
 import SmallButton from '../SmallButton/SmallButton';
 
-import s from './KeyValueEditor.module.css'
+import s from './KeyValueEditor.module.css';
 
 export type KeyValues = {
   [key: string]: string,
@@ -19,23 +19,23 @@ type Props = {
 }
 
 const KeyValueEditor = (props: Props) => {
-  const [initialData, setInitialData] = useState<KeyValues>(props.keyValues)
-  const [keyValues, setKeyValues] = useState<KeyValues>(initialData)
-  const [jsonView, setJsonView] = useState(false)
+  const [initialData, setInitialData] = useState<KeyValues>(props.keyValues);
+  const [keyValues, setKeyValues] = useState<KeyValues>(initialData);
+  const [jsonView, setJsonView] = useState(false);
 
-  const [convertedKeyValues, setConvertedKeyValues] = useState<string[][]>(Object.entries(keyValues))
-  const [isValid, setIsValid] = useState(true)
-  const [resetKey, setResetKey] = useState(0)
+  const [convertedKeyValues, setConvertedKeyValues] = useState<string[][]>(Object.entries(keyValues));
+  const [isValid, setIsValid] = useState(true);
+  const [resetKey, setResetKey] = useState(0);
 
   const { notifySuccess } = Notifications.useContext();
 
   const changeValidity = (validity: boolean) => {
-    setIsValid(validity)
+    setIsValid(validity);
   }
 
   const saveChanges = (array: KeyValues) => {
-    setInitialData(array)
-    setKeyValues(array)
+    setInitialData(array);
+    setKeyValues(array);
 
     notifySuccess(
       <span>Successfully save keys</span>,
@@ -44,29 +44,29 @@ const KeyValueEditor = (props: Props) => {
   }
 
   const changeConvertedKeyValues = (array: string[][]) => {
-    setConvertedKeyValues(array)
+    setConvertedKeyValues(array);
   }
-  const deleteKeyValue = (index: number) => {
-    const copyKeyValues = [...convertedKeyValues]
-    copyKeyValues.splice(index, 1)
-    setConvertedKeyValues(copyKeyValues)
+  const onDelete = (index: number) => {
+    const copyKeyValues = [...convertedKeyValues];
+    copyKeyValues.splice(index, 1);
+    setConvertedKeyValues(copyKeyValues);
   }
 
   const jsonValidation = (json?: string) => {
     try {
       if (json) {
-        const parsedJson = JSON.parse(json)
-        setIsValid(true)
-        setKeyValues(parsedJson)
+        const parsedJson = JSON.parse(json);
+        setIsValid(true);
+        setKeyValues(parsedJson);
       }
     } catch (err) {
-      setIsValid(false)
+      setIsValid(false);
     }
   }
 
   return (
     <div className={`${s.KeyValueEditor}`}>
-      <div className={`${s.Line} ${s.LinkButton}`}>
+      <div className={`${s.Line} ${s.LinkButtons}`}>
         <SmallButton
           type="regular"
           onClick={() => {
@@ -103,7 +103,7 @@ const KeyValueEditor = (props: Props) => {
       </div>
       {!jsonView &&
         <KeyValueView
-          deleteKeyValue={deleteKeyValue}
+          onDelete={onDelete}
           convertedKeyValues={convertedKeyValues}
           changeConvertedKeyValues={changeConvertedKeyValues}
           changeValidity={changeValidity}

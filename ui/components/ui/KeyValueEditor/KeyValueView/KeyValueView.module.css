@@ -4,19 +4,15 @@
   font-size: 14rem;
   margin-bottom: 8rem;
 }
-.TableKeys {
-  width: 90%;
-  padding: 0% 5%;
-}
 
 .Titles > span {
-  width: 45%;
-  margin-right: 2.5%;
+  width: calc(50% - 38rem);
+  margin-right: 8rem;
 }
 
 .Field {
-  width: 45%;
-  margin-right: 2.5%;
+  width: calc(50% - 8rem);
+  margin-right: 8rem;
 }
 .ErrorField > div > input {
   border-color: var(--accent-color-red)
