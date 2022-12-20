@@ -3,7 +3,6 @@ import _ from 'lodash';
 
 import KeyValueView from './KeyValueView/KeyValueView';
 import JsonView from '../JsonView/JsonView';
-import * as Notifications from '../../app/contexts/Notifications';
 import SmallButton from '../SmallButton/SmallButton';
 
 import s from './KeyValueEditor.module.css';
@@ -15,32 +14,25 @@ export type KeyValues = {
 type Props = {
   height?: string,
   width?: string,
-  keyValues: KeyValues
+  keyValues: KeyValues,
+  onSave: (keyValues: KeyValues) => void,
 }
 
 const KeyValueEditor = (props: Props) => {
-  const [initialData, setInitialData] = useState<KeyValues>(props.keyValues);
-  const [keyValues, setKeyValues] = useState<KeyValues>(initialData);
+  const [keyValues, setKeyValues] = useState<KeyValues>(props.keyValues);
   const [jsonView, setJsonView] = useState(false);
 
   const [convertedKeyValues, setConvertedKeyValues] = useState<string[][]>(Object.entries(keyValues));
   const [isValid, setIsValid] = useState(true);
   const [resetKey, setResetKey] = useState(0);
 
-  const { notifySuccess } = Notifications.useContext();
-
   const changeValidity = (validity: boolean) => {
     setIsValid(validity);
   }
 
   const saveChanges = (array: KeyValues) => {
-    setInitialData(array);
+    props.onSave(array);
     setKeyValues(array);
-
-    notifySuccess(
-      <span>Successfully save keys</span>,
-      `keys-save`
-    );
   }
 
   const changeConvertedKeyValues = (array: string[][]) => {
@@ -66,12 +58,43 @@ const KeyValueEditor = (props: Props) => {
 
   return (
     <div className={`${s.KeyValueEditor}`}>
-      <div className={`${s.Line} ${s.LinkButtons}`}>
+      <div className={`${s.Line} ${s.LinkButton} ${!jsonView && s.JsonViewButton}`}>
         <SmallButton
           type="regular"
           onClick={() => {
-            setKeyValues(initialData)
-            setConvertedKeyValues(Object.entries(initialData))
+            setJsonView(!jsonView)
+            jsonView ? setConvertedKeyValues(Object.entries(keyValues)) :
+            setKeyValues(Object.fromEntries(convertedKeyValues))
+          }}
+          text={jsonView ? 'Json display' : 'List display'}
+          disabled={!isValid}
+        />
+      </div>
+      {!jsonView &&
+        <KeyValueView
+          onDelete={onDelete}
+          convertedKeyValues={convertedKeyValues}
+          changeConvertedKeyValues={changeConvertedKeyValues}
+          changeValidity={changeValidity}
+          maxHeight={props.height || '50vh'}
+        />
+      }
+      {jsonView &&
+        <JsonView
+          key={resetKey}
+          json={JSON.stringify(keyValues)}
+          height={props.height || '50vh'}
+          width={props.width || '100%'}
+          readonly={false}
+          onChange={jsonValidation}
+        />
+      }
+      <div className={`${s.Line} ${s.LinkButtons} ${jsonView && s.JsonViewButtons}`}>
+        <SmallButton
+          type="regular"
+          onClick={() => {
+            setKeyValues(props.keyValues)
+            setConvertedKeyValues(Object.entries(props.keyValues))
             setResetKey(resetKey + 1)
             setIsValid(true)
           }}
@@ -86,39 +109,11 @@ const KeyValueEditor = (props: Props) => {
           text="Save"
           disabled={
             !isValid ||
-            jsonView ? _.isEqual(keyValues, initialData) :
-             _.isEqual(Object.fromEntries(convertedKeyValues), initialData) 
+            jsonView ? _.isEqual(keyValues, props.keyValues) :
+             _.isEqual(Object.fromEntries(convertedKeyValues), props.keyValues) 
           }
         />
-        <SmallButton
-          type="primary"
-          onClick={() => {
-            setJsonView(!jsonView)
-            jsonView ? setConvertedKeyValues(Object.entries(keyValues)) :
-            setKeyValues(Object.fromEntries(convertedKeyValues))
-          }}
-          text="json view"
-          disabled={!isValid}
-        />
       </div>
-      {!jsonView &&
-        <KeyValueView
-          onDelete={onDelete}
-          convertedKeyValues={convertedKeyValues}
-          changeConvertedKeyValues={changeConvertedKeyValues}
-          changeValidity={changeValidity}
-        />
-      }
-      {jsonView &&
-        <JsonView
-          key={resetKey}
-          json={JSON.stringify(keyValues)}
-          height={props.height || '50vh'}
-          width={props.width || '100%'}
-          readonly={false}
-          onChange={jsonValidation}
-        />
-      }
     </div>
   )
 }

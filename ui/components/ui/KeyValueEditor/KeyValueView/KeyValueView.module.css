@@ -1,3 +1,7 @@
+.List {
+  overflow: scroll;
+}
+
 .Line {
   display: flex;
   width: 100%;
@@ -8,12 +12,18 @@
 .Titles > span {
   width: calc(50% - 38rem);
   margin-right: 8rem;
+  font-weight: bold;
 }
 
 .Field {
-  width: calc(50% - 8rem);
+  width: calc(50% - 38rem);
+  max-width: calc(50% - 38rem);
   margin-right: 8rem;
 }
+.Field > div > input {
+  width: 100%;
+}
+
 .ErrorField > div > input {
   border-color: var(--accent-color-red)
 }

@@ -7,9 +7,10 @@ import s from './KeyValueView.module.css';
 
 type Props = {
   onDelete: (index: number) => void,
-  convertedKeyValues: string[][],
   changeConvertedKeyValues: (array: string[][]) => void,
   changeValidity: (validity: boolean) => void,
+  convertedKeyValues: string[][],
+  maxHeight: string,
 }
 
 type NewKeyValue = {
@@ -89,7 +90,7 @@ const KeyValueView = (props: Props) => {
   }, [unvalidKeys])
 
   return (
-    <div>
+    <div className={`${s.List}`} style={{ maxHeight: props.maxHeight }} >
 
       <div className={`${s.Line}  ${s.Titles}`}>
         <span>

@@ -1,5 +1,6 @@
 .KeyValueEditor {
   padding: 12rem 6rem;
+  position: relative;
 }
 
 .Line {
@@ -9,11 +10,27 @@
   margin-bottom: 8rem;
 }
 
+.LinkButton {
+  justify-content: flex-end;
+}
+.LinkButton > button {
+  max-width: 110rem;
+}
+.JsonViewButton {
+  position: absolute;
+  right: 5.5px;
+}
+
 .LinkButtons {
   justify-content: flex-end;
 }
+.LinkButtons > button:last-child {
+  margin-right: 5rem;
+}
 .LinkButtons > button {
-  margin-left: 8rem;
-  max-width: 100rem;
-  width: 100rem;
+  margin: 4rem;
+  max-width: 60rem;
+}
+.JsonViewButtons > button:last-child {
+  margin-right: 65rem;
 }
