@@ -1,0 +1,19 @@
+.KeyValueEditor {
+  padding: 12rem 6rem;
+}
+
+.Line {
+  display: flex;
+  width: 100%;
+  font-size: 14rem;
+  margin-bottom: 8rem;
+}
+
+.LinkButtons {
+  justify-content: flex-end;
+}
+.LinkButtons > button {
+  margin-left: 8rem;
+  max-width: 100rem;
+  width: 100rem;
+}

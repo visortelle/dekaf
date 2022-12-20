@@ -8,6 +8,7 @@ import Tenants from './Tenants/Tenants';
 import CreateTenantPage from './CreateTenantPage/CreateTenantPage';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import ResourceGroups from './ResourceGroups/ResourceGroups';
+import KeyValueEditor from '../ui/KeyValueEditor/KeyValueEditor';
 
 export type InstancePageView =
   { type: 'overview' } |
