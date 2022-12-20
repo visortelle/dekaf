@@ -36,7 +36,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
     async () => {
-      const req = new pb.GetBookieAffinityGroupRequest();
+      const req = new pb.GetPropertiesRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
       const res = await namespaceServiceClient.getBookieAffinityGroup(req, {});
