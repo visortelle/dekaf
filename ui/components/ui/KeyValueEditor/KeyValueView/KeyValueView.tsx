@@ -1,20 +1,15 @@
-import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 
-import Button from '../../Button/Button';
-import { H3 } from '../../H/H';
 import Input from '../../Input/Input';
 import SmallButton from '../../SmallButton/SmallButton';
-import { KeyValues } from '../KeyValueEditor';
 
-import s from '../KeyValueEditor.module.css';
+import s from './KeyValueView.module.css';
 
 type Props = {
-  changeView: (array: KeyValues) => void,
-  deleteKeyValue: (key: string) => void,
-  saveChanges: (array: KeyValues) => void,
-  keyValues: KeyValues,
-  initialData: KeyValues,
+  deleteKeyValue: (index: number) => void,
+  convertedKeyValues: string[][],
+  changeConvertedKeyValues: (array: string[][]) => void,
+  changeValidity: (validity: boolean) => void,
 }
 
 type NewKeyValue = {
@@ -29,22 +24,19 @@ type UnvalidKeys = {
 const KeyValueView = (props: Props) => {
 
   const {
-    changeView,
     deleteKeyValue,
-    saveChanges,
-    keyValues,
-    initialData,
+    convertedKeyValues,
+    changeConvertedKeyValues,
+    changeValidity
   } = props;
 
   const defaultKeyValue = { key: '', value: '' }
 
   const [newKeyValue, setNewKeyValue] = useState<NewKeyValue>(defaultKeyValue)
-  const [convertedKeyValues, setConvertedKeyValues] = useState<string[][]>(Object.entries(keyValues))
-  const [isValid, setIsValid] = useState(true)
   const [unvalidKeys, setUnvalidKeys] = useState<UnvalidKeys>()
 
   const addNewKey = () => {
-    setConvertedKeyValues([
+    changeConvertedKeyValues([
       ...convertedKeyValues,
       [newKeyValue.key, newKeyValue.value]
     ])
@@ -93,19 +85,19 @@ const KeyValueView = (props: Props) => {
       }
     })
 
-    setIsValid(valid)
+    changeValidity(valid)
   }, [unvalidKeys])
 
   return (
     <div style={{ padding: "0% 10%" }}>
 
       <div className={`${s.Line}  ${s.Titles}`}>
-        <H3>
-          KEY
-        </H3>
-        <H3>
-          VALUE
-        </H3>
+        <span>
+          key
+        </span>
+        <span>
+          value
+        </span>
       </div>
       
       {convertedKeyValues.map((keyValue, index) => (
@@ -116,7 +108,7 @@ const KeyValueView = (props: Props) => {
               type="text"
               value={keyValue[0]}
               onChange={(v) => {
-                setConvertedKeyValues(Object.assign([
+                changeConvertedKeyValues(Object.assign([
                   ...convertedKeyValues],
                   {[index]: [v, keyValue[1]]}
                 ))
@@ -127,7 +119,7 @@ const KeyValueView = (props: Props) => {
           <div className={`${s.Field}`}>
             <Input
               value={keyValue[1]}
-              onChange={(v) => setConvertedKeyValues(Object.assign([
+              onChange={(v) => changeConvertedKeyValues(Object.assign([
                 ...convertedKeyValues],
                 {[index]: [keyValue[0], v]}
               ))}
@@ -135,7 +127,7 @@ const KeyValueView = (props: Props) => {
           </div>
           <div className={`${s.ButtonBlock}`}>
             <SmallButton
-              onClick={() => deleteKeyValue(keyValue[0])}
+              onClick={() => deleteKeyValue(index)}
               type='danger'
               text='Delete'
               className={s.Button}

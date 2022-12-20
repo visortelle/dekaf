@@ -1,0 +1,38 @@
+.Line {
+  display: flex;
+  width: 100%;
+  font-size: 14rem;
+  margin-bottom: 8rem;
+}
+.TableKeys {
+  width: 90%;
+  padding: 0% 5%;
+}
+
+.Titles > span {
+  width: 45%;
+  margin-right: 2.5%;
+}
+
+.Field {
+  width: 45%;
+  margin-right: 2.5%;
+}
+.ErrorField > div > input {
+  border-color: var(--accent-color-red)
+}
+.ErrorField > div > input:focus {
+  border-color: var(--accent-color-red)
+}
+
+.Button {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.ButtonBlock {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60rem;
+}

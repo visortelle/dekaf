@@ -1,14 +1,19 @@
 import React from 'react';
-import s from './JsonView.module.css'
+
 import CodeEditor from '../CodeEditor/CodeEditor';
+
+import s from './JsonView.module.css'
 
 export type JsonViewProps = {
   json: string;
   height: string;
   width: string;
+  readonly?: boolean;
+  onChange?: (json?: string) => void;
 };
 
 const JsonView: React.FC<JsonViewProps> = (props) => {
+
   return (
     <div className={s.JsonView}>
       <CodeEditor
@@ -16,7 +21,8 @@ const JsonView: React.FC<JsonViewProps> = (props) => {
         language={'json'}
         height={props.height}
         width={props.width}
-        options={{ readOnly: true }}
+        options={{ readOnly: props.readonly !== undefined ? props.readonly : true }}
+        onChange={props.onChange}
       />
     </div>
   );

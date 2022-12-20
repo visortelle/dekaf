@@ -1,22 +1,11 @@
 .KeyValueEditor {
-  padding: 24rem 12rem;
-  padding-bottom: 48rem;
+  padding: 12rem 6rem;
 }
 
 .Line {
   display: flex;
   width: 100%;
   font-size: 14rem;
-  margin-bottom: 18rem;
-}
-
-.TableKeys {
-  width: 90%;
-  padding: 0% 5%;
-}
-
-.Titles > h3 {
-  width: 45%
 }
 
 .LinkButton {
@@ -24,27 +13,6 @@
 }
 .LinkButton > button {
   margin-left: 10rem;
-}
-
-.Field {
-  width: 45%;
-  margin-right: 2.5%;
-}
-.ErrorField > div > input {
-  border-color: var(--accent-color-red)
-}
-.ErrorField > div > input:focus {
-  border-color: var(--accent-color-red)
-}
-
-.Button {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.ButtonBlock {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60rem;
+  max-width: 100rem;
+  width: 100rem;
 }
