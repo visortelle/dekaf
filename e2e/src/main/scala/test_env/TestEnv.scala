@@ -28,7 +28,7 @@ case class TestEnv(config: TextEnvConfig):
             .setBaseURL(publicUrl)
         browser.newPage(newPageOptions)
 
-val pulsarStandaloneEnv = TestEnv(TextEnvConfig(
+def createPulsarStandaloneEnv = TestEnv(TextEnvConfig(
     pulsarClusters = List(
         PulsarCluster(
             brokersCount = 1,

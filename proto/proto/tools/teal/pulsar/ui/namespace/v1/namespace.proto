@@ -1135,6 +1135,7 @@ message GrantPermissionsRequest {
   string namespace = 1;
   string role = 2;
   repeated AuthAction auth_actions = 3;
+  bool existence_check = 4;
 }
 message GrantPermissionsResponse {
   google.rpc.Status status = 1;
@@ -1144,6 +1145,34 @@ message RevokePermissionsRequest {
   string role = 2;
 }
 message RevokePermissionsResponse {
+  google.rpc.Status status = 1;
+}
+
+message Roles {
+  repeated string roles = 1;
+}
+message GetPermissionOnSubscriptionRequest {
+  string namespace = 1;
+}
+message GetPermissionOnSubscriptionResponse {
+  google.rpc.Status status = 1;
+  map<string, Roles> permissions = 2;
+  repeated string roles = 3;
+}
+message GrantPermissionOnSubscriptionRequest {
+  string namespace = 1;
+  string subscription = 2;
+  repeated string roles = 3;
+  bool existence_check = 4;
+}
+message GrantPermissionOnSubscriptionResponse {
+  google.rpc.Status status = 1;
+}
+message RevokePermissionOnSubscriptionRequest {
+  string namespace = 1;
+  string subscription = 2;
+}
+message RevokePermissionOnSubscriptionResponse {
   google.rpc.Status status = 1;
 }
 
@@ -1297,4 +1326,8 @@ service NamespaceService {
   rpc GetPermissions(GetPermissionsRequest) returns (GetPermissionsResponse);
   rpc GrantPermissions(GrantPermissionsRequest) returns (GrantPermissionsResponse);
   rpc RevokePermissions(RevokePermissionsRequest) returns (RevokePermissionsResponse);
+
+  rpc GetPermissionOnSubscription(GetPermissionOnSubscriptionRequest) returns (GetPermissionOnSubscriptionResponse);
+  rpc GrantPermissionOnSubscription(GrantPermissionOnSubscriptionRequest) returns (GrantPermissionOnSubscriptionResponse);
+  rpc RevokePermissionOnSubscription(RevokePermissionOnSubscriptionRequest) returns (RevokePermissionOnSubscriptionResponse);
 }
