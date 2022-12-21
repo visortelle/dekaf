@@ -25,10 +25,10 @@
   justify-content: flex-end;
 }
 .LinkButtons > button:last-child {
-  margin-right: 5rem;
+  /* margin-right: 5rem; */
 }
 .LinkButtons > button {
-  margin: 4rem;
+  margin: 4rem 0 0 4rem;
   max-width: 60rem;
 }
 .JsonViewButtons > button:last-child {

@@ -15,6 +15,7 @@ type Props = {
   height?: string,
   width?: string,
   keyValues: KeyValues,
+  testId?: string,
   onSave: (keyValues: KeyValues) => void,
 }
 
@@ -68,6 +69,7 @@ const KeyValueEditor = (props: Props) => {
           }}
           text={jsonView ? 'Json display' : 'List display'}
           disabled={!isValid}
+          testId={`key-value-display-changer-${props.testId}`}
         />
       </div>
       {!jsonView &&
@@ -77,6 +79,7 @@ const KeyValueEditor = (props: Props) => {
           changeConvertedKeyValues={changeConvertedKeyValues}
           changeValidity={changeValidity}
           maxHeight={props.height || '50vh'}
+          testId={props.testId}
         />
       }
       {jsonView &&
@@ -99,6 +102,7 @@ const KeyValueEditor = (props: Props) => {
             setIsValid(true)
           }}
           text="Reset"
+          testId={`key-value-reset-${props.testId}`}
         />
         <SmallButton
           type="primary"
@@ -112,6 +116,7 @@ const KeyValueEditor = (props: Props) => {
             jsonView ? _.isEqual(keyValues, props.keyValues) :
              _.isEqual(Object.fromEntries(convertedKeyValues), props.keyValues) 
           }
+          testId={`key-value-save-${props.testId}`}
         />
       </div>
     </div>

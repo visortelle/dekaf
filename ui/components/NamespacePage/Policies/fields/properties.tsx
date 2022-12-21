@@ -76,6 +76,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       keyValues={initialValue}
       onSave={onSave}
       height="300rem"
+      testId="properties"
     />
   )
 }

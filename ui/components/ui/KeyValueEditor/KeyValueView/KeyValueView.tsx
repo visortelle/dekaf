@@ -11,6 +11,7 @@ type Props = {
   changeValidity: (validity: boolean) => void,
   convertedKeyValues: string[][],
   maxHeight: string,
+  testId?: string,
 }
 
 type NewKeyValue = {
@@ -115,6 +116,7 @@ const KeyValueView = (props: Props) => {
                 ))
                 validateField(v, index)
               }}
+              testId={`key-${keyValue[0]}-${props.testId}`}
             />
           </div>
           <div className={`${s.Field}`}>
@@ -124,6 +126,7 @@ const KeyValueView = (props: Props) => {
                 ...convertedKeyValues],
                 {[index]: [keyValue[0], v]}
               ))}
+              testId={`value-${keyValue[1]}-${props.testId}`}
             />
           </div>
           <div className={`${s.ButtonBlock}`}>
@@ -132,6 +135,7 @@ const KeyValueView = (props: Props) => {
               type='danger'
               text='Delete'
               className={s.Button}
+              testId={`key-value-delete-${keyValue[0]}-${props.testId}`}
             />
           </div>
         </div>
@@ -149,6 +153,7 @@ const KeyValueView = (props: Props) => {
               })
               validateField(v)
             }}
+            testId={`new-key-${props.testId}`}
           />
         </div>
         <div className={`${s.Field}`}>
@@ -159,6 +164,7 @@ const KeyValueView = (props: Props) => {
               ...newKeyValue,
               value: v
             })}
+            testId={`new-value-${props.testId}`}
           />
         </div>
         <div className={`${s.ButtonBlock}`}>
@@ -172,6 +178,7 @@ const KeyValueView = (props: Props) => {
               newKeyValue.value.length === 0 ||
               unvalidKeys && unvalidKeys[newKeyValue.key] > 1
             }
+            testId={`key-value-add-${props.testId}`}
           />
         </div>
       </div>
