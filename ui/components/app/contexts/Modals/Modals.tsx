@@ -1,11 +1,14 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import s from './Modals.module.css'
 import { motion, AnimatePresence } from "framer-motion"
-import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
-import closeIcon from './close.svg';
-import { H2 } from '../../../ui/H/H';
 import ReactTooltip from 'react-tooltip';
+
+import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
+import { H2 } from '../../../ui/H/H';
+
+import closeIcon from './close.svg';
+
+import s from './Modals.module.css'
 
 type ModalStackEntry = {
   id: string,
