@@ -11,7 +11,6 @@ import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrp
 import { DeleteTenantRequest } from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../swrKeys';
-import * as Modals from '../../app/contexts/Modals/Modals';
 
 import s from './DeleteTenant.module.css'
 
@@ -25,8 +24,6 @@ const DeleteTenant: React.FC<DeleteTenantProps> = (props) => {
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { tenantServiceClient } = PulsarGrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
-
-  const modals = Modals.useContext()
 
   const deleteTenant = async () => {
     try {

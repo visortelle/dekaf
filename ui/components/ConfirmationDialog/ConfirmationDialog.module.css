@@ -1,6 +1,20 @@
 .ConfirmationDialog {
-  border: 1px solid black;
-  background-color: white;
   padding: 24rem;
-  font-size: 14pt;
+  max-width: 450px;
+}
+
+.ActionButtons {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.ActionButtons > button {
+  margin: 4rem;
+}
+
+.ActionCheckbox {
+  margin: 12rem 0rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

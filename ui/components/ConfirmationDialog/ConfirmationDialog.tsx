@@ -7,89 +7,51 @@ import { DefaultProvider } from '../app/contexts/Modals/Modals';
 
 import s from './ConfirmationDialog.module.css';
 import ActionButton from '../ui/ActionButton/ActionButton';
+import Checkbox from '../ui/Checkbox/Checkbox';
 
 type Props = {
   description: ReactNode,
-  /* In order to prevent accidental unwanted actions, 
-     we can ask user to enter a specific string to confirm the action. */
   onConfirm: () => void,
   onCancel: () => void,
+  switchForceDelete?: () => void,
+  forceDelete?: boolean,
   guard?: string,
 }
 
 const ConfirmationDialog = (props: Props) => {
 
-
+  const { switchForceDelete, forceDelete } = props
 
   return (
     <DefaultProvider>
-      {/* <div className={`${s.ConfirmationDialog}`}>
-        <div>
-          <H3>
-            123
-          </H3>
-          <ActionButton 
-            action={{ type: 'predefined', action: 'close' }}
-            onClick={() => {}}
-          />
-        </div>
+      <div className={s.ConfirmationDialog}>
 
-        <div>
-          <span>
+        {props.description}
 
-          </span>
-          <span>
+        {switchForceDelete &&
+          <div className={s.ActionCheckbox}>
+            <Checkbox isInline id="forceDelete" checked={forceDelete} onChange={() => switchForceDelete()} />
+            &nbsp;
+            <label htmlFor="forceDelete">Delete forcefully by deleting all inside.</label>
+          </div>
+        }
 
-          </span>
-        </div>
-
-        <div>
-          <span>
-
-          </span>
-          <Input
-            value=""
-            onChange={() => {}}
-          />
-        </div>
-
-        <div>
+        <div className={s.ActionButtons}>
           <Button
-            onClick={() => {}}
             type="primary"
+            text={`Confirm`}
+            onClick={props.onConfirm}
           />
           <Button
-            onClick={() => {}}
-            type="primary"
+            type="danger"
+            text={`Cansel`}
+            onClick={props.onCancel}
           />
         </div>
-
-      </div> */}
-      <div></div>
+        
+      </div>
     </DefaultProvider>
   )
 }
-
-{/* <Button
-  onClick={() => modals.push({
-    id: 'delete-namespace',
-    title: `Delete namespace`,
-    content: (
-      <ConfirmationDialog
-        description={(
-          <div>This action <strong>cannot</strong> be undone.
-          <br />
-          <div>It will permanently delete the ${namespace} namespace and all its topics.</div>
-        )}
-        onConfirm={deleteNamespace} 
-        onCancel={modals.pop}
-        guard={`public/default`}
-      />
-    ),
-    styleMode: 'no-content-padding'
-  })}
-  text="View"
-  type='danger'
-/> */}
 
 export default ConfirmationDialog;
