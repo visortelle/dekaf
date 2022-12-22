@@ -15,10 +15,10 @@ case class Properties(root: Locator):
     val newValue: Locator = root.getByTestId("new-value-properties")
 
     def existingKey(name: String) =
-        root.getByTestId(s"key-${name}-properties").innerText()
+        root.getByTestId(s"key-${name}-properties")
 
     def existingValue(name: String) =
-        root.getByTestId(s"value-${name}-properties").innerText()
+        root.getByTestId(s"value-${name}-properties")
 
     def deleteButton(name: String) =
         root.getByTestId(s"key-value-delete-${name}-properties")

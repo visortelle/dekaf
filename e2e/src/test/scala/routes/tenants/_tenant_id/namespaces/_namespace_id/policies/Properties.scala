@@ -44,9 +44,10 @@ object PropertiesTest extends ZIOSpecDefault {
             createProperty.addButton.click()
             createProperty.saveButton.click()
 
-            val createdKey = createProperty.existingKey(key)
-            val createdValue = createProperty.existingValue(value)
+            val createdKey = createProperty.existingKey(key).innerText()
+            val createdValue = createProperty.existingValue(value).innerText()
 
+            page.waitForTimeout(1000)
             val savedPropertyValue = adminClient.namespaces.getProperty(s"${tenant}/${namespace}", key)
 
             assertTrue(createdKey == key) &&
@@ -76,19 +77,54 @@ object PropertiesTest extends ZIOSpecDefault {
             adminClient.namespaces.setProperty(s"${tenant}/${namespace}", key, value)
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/policies")
-
-            val createdKey = deleteProperty.existingKey(key)
-            val createdValue = deleteProperty.existingValue(value)
+            val createdKey = deleteProperty.existingKey(key).innerText()
+            val createdValue = deleteProperty.existingValue(value).innerText()
 
             deleteProperty.deleteButton(key).click()
+            deleteProperty.saveButton.click()
 
-//            val deletedKey = deleteProperty.existingKey(key)
+            page.waitForTimeout(1000)
             val isDeleted = adminClient.namespaces.getProperty(s"${tenant}/${namespace}", key)
 
-            assertTrue(createdKey == key) &&
-                assertTrue(createdValue == value) &&
-//                assertTrue(deletedKey == null) &&
+            assertTrue(createdKey == "") &&
+                assertTrue(createdValue == "") &&
                 assertTrue(isDeleted == null)
+        },
+        test ("User can edit properties") {
+            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val page = testEnv.createNewPage()
+            val adminClient = testEnv.createPulsarAdminClient()
+            val editProperty = Properties(page.locator("body"))
+
+            val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+
+            val key = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val value = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val config = TenantInfo.builder
+            config.adminRoles(Set("Admin").asJava)
+
+            val cluster = adminClient.clusters().getClusters.get(0)
+            config.allowedClusters(Set(cluster).asJava)
+
+            adminClient.tenants.createTenant(tenant, config.build)
+            adminClient.namespaces.createNamespace(s"${tenant}/${namespace}")
+            adminClient.namespaces.setProperty(s"${tenant}/${namespace}", key, value)
+
+            page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/policies")
+
+            val newKey = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val newValue = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+
+            editProperty.existingKey(key).fill(newKey)
+            editProperty.existingValue(value).fill(newValue)
+
+            editProperty.saveButton.click()
+
+            page.waitForTimeout(1000)
+            val isEditedValue = adminClient.namespaces.getProperty(s"${tenant}/${namespace}", newKey)
+
+            assertTrue(isEditedValue == newValue)
         }
     )
 }
