@@ -83,6 +83,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
               content: <DeleteDialog tenant={props.tenant} namespace={props.namespace} navigate={navigate} />,
               styleMode: 'no-content-padding'
             }),
+            testId: "namespace-page-delete-button"
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),

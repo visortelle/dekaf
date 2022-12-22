@@ -46,7 +46,7 @@ const ConfirmationDialog = (props: Props) => {
           <div className={s.ActionCheckbox}>
             <Checkbox isInline id="forceDelete" checked={forceDelete} onChange={() => switchForceDelete()} />
             &nbsp;
-            <label htmlFor="forceDelete">Delete forcefully by deleting all inside.</label>
+            <label data-testid="confirm-dialog-force-delete-checkbox" htmlFor="forceDelete">Delete forcefully by deleting all inside.</label>
           </div>
         }
 

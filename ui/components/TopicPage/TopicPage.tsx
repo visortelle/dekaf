@@ -94,6 +94,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           {
             text: 'Delete',
             type: 'danger',
+            testId: 'topic-page-delete-button',
             onClick: () => modals.push({
               id: 'delete-topic',
               title: `Delete topic`,
