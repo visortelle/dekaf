@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useNavigate } from 'react-router-dom';
 import * as Modals from '../app/contexts/Modals/Modals';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
@@ -21,6 +22,8 @@ export type TenantPageProps = {
 const TenantPage: React.FC<TenantPageProps> = (props) => {
 
   const modals = Modals.useContext();
+
+  const navigate = useNavigate()
 
   return (
     <div className={s.Page}>
@@ -60,7 +63,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
               onClick: () => modals.push({
                 id: 'delete-tenant',
                 title: `Delete tenant`,
-                content: <DeleteDialog tenant={props.tenant} />,
+                content: <DeleteDialog tenant={props.tenant} navigate={navigate} />,
                 styleMode: 'no-content-padding'
               }),
             },

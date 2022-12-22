@@ -3,22 +3,21 @@
   max-width: 450px;
 }
 
-.ActionButtons {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-.ActionButtons > button {
-  margin: 4rem;
-}
-
 .ActionCheckbox {
   margin: 12rem 0rem;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .Guard {
   margin-top: 10rem;
+}
+
+.ActionButtons {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+.ActionButtons > button {
+  margin: 4rem;
 }

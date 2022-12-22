@@ -1,5 +1,5 @@
 import React from 'react';
-import { redirect } from 'react-router-dom';
+import { NavigateFunction } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
 import * as Modals from '../../app/contexts/Modals/Modals';
@@ -11,7 +11,8 @@ import { swrKeys } from '../../swrKeys';
 import ConfirmationDialog from '../../ConfirmationDialog/ConfirmationDialog';
 
 export type DeleteTenantProps = {
-  tenant: string
+  tenant: string,
+  navigate: NavigateFunction,
 };
 
 const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
@@ -37,10 +38,11 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
 
       notifySuccess(`Tenant ${props.tenant} has been successfully deleted.`);
 
-      redirect(`/`);
-
       await mutate(swrKeys.pulsar.tenants._());
       await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+
+      props.navigate('/')
+      modals.pop()
     } catch (err) {
       notifyError(`Unable to delete tenant ${props.tenant}. ${err}`);
     }

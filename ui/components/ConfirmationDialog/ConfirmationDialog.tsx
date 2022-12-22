@@ -51,6 +51,11 @@ const ConfirmationDialog = (props: Props) => {
 
         <div className={s.ActionButtons}>
           <Button
+            type="regular"
+            text={`Cansel`}
+            onClick={() => props.onCancel()}
+          />
+          <Button
             type="primary"
             text={`Confirm`}
             onClick={() => props.onConfirm()}
@@ -58,11 +63,6 @@ const ConfirmationDialog = (props: Props) => {
               props.guard !== undefined &&
               props.guard !== guard
             }
-          />
-          <Button
-            type="danger"
-            text={`Cansel`}
-            onClick={() => props.onCancel()}
           />
         </div>
         

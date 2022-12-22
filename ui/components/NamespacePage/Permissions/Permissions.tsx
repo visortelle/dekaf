@@ -6,6 +6,7 @@ import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespa
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
+import * as Modals from '../../app/contexts/Modals/Modals';
 import Checkbox from '../../ui/Checkbox/Checkbox';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Input from '../../ui/Input/Input';
@@ -13,6 +14,7 @@ import { swrKeys } from '../../swrKeys';
 import { mapToObject } from '../../../pbUtils/pbUtils';
 
 import s from './Permissions.module.css';
+import RevokeDialog from './RevokeDialog/RevokeDialog';
 
 export const actionsList = ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages'];
 export type AuthAction = typeof actionsList[number];
@@ -77,6 +79,8 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
   const { notifySuccess, notifyError } = Notifications.useContext();
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { mutate } = useSWRConfig();
+  const modals = Modals.useContext();
+  
   const [formValue, setFormValue] = useState<Permission | undefined>(undefined);
   const [permissionsList, setPermissionsList] = useState<Permission[]>()
 
@@ -132,25 +136,25 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
     }
   );
 
-  const revoke = async (role: string) => {
-    const req = new pb.RevokePermissionsRequest();
-    req.setNamespace(`${props.tenant}/${props.namespace}`);
-    req.setRole(role);
+  // const revoke = async (role: string) => {
+  //   const req = new pb.RevokePermissionsRequest();
+  //   req.setNamespace(`${props.tenant}/${props.namespace}`);
+  //   req.setRole(role);
 
-    const res = await namespaceServiceClient.revokePermissions(req, {});
+  //   const res = await namespaceServiceClient.revokePermissions(req, {});
 
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(res.getStatus()?.getMessage());
-      return;
-    }
+  //   if (res.getStatus()?.getCode() !== Code.OK) {
+  //     notifyError(res.getStatus()?.getMessage());
+  //     return;
+  //   }
 
-    notifySuccess(
-      <span>Successfully revoked permissions for role: <strong>{role}</strong></span>,
-      `permission-revoked-${role}`
-    );
+  //   notifySuccess(
+  //     <span>Successfully revoked permissions for role: <strong>{role}</strong></span>,
+  //     `permission-revoked-${role}`
+  //   );
 
-    await mutate(swrKey);
-  }
+  //   await mutate(swrKey);
+  // }
 
   const grant = async (permission: Permission, check?: boolean) => {
     let actions: pb.AuthAction[] = [];
@@ -240,10 +244,21 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                       className={s.Button}
                     />
                     <SmallButton
-                      onClick={() => revoke(permission.role)}
                       type='danger'
                       text='Revoke'
                       className={s.Button}
+                      onClick={() => modals.push({
+                        id: 'revoke-permission',
+                        title: `Revoke permission`,
+                        content:
+                          <RevokeDialog
+                            role={permission.role}
+                            tenant={props.tenant}
+                            namespace={props.namespace}
+                            swrKey={swrKey}
+                          />,
+                        styleMode: 'no-content-padding'
+                      })}
                     />
                   </div>
                 </td>
