@@ -42,26 +42,27 @@ const _App: React.FC<AppProps> = (props) => {
         revalidateOnFocus: false,
         revalidateOnMount: true,
       }}>
-      <ReactTooltip
-        html={true}
-        event="click"
-        arrowColor='#fff'
-        backgroundColor='#fff'
-        textColor='var(--text-color)'
-        border={true}
-        borderColor="#ddd"
-      />
 
-      <Notifications.DefaultProvider>
-        <Modals.DefaultProvider>
-          <PulsarGrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, '')}/api`}>
+      <PulsarGrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, '')}/api`}>
+        <ReactTooltip
+          html={true}
+          event="click"
+          arrowColor='#fff'
+          backgroundColor='#fff'
+          textColor='var(--text-color)'
+          border={true}
+          borderColor="#ddd"
+        />
+
+        <Notifications.DefaultProvider>
+          <Modals.DefaultProvider>
             <BrokerConfig.DefaultProvider>
               <Router />
             </BrokerConfig.DefaultProvider>
-          </PulsarGrpcClient.DefaultProvider>
-        </Modals.DefaultProvider>
-      </Notifications.DefaultProvider>
-    </SWRConfig>
+          </Modals.DefaultProvider>
+        </Notifications.DefaultProvider>
+      </PulsarGrpcClient.DefaultProvider>
+    </SWRConfig >
   );
 }
 
