@@ -35,5 +35,42 @@ object NamespacesPageSpec extends ZIOSpecDefault {
 
             assertTrue(isTestResourceGroupCreated) && assertTrue(isTestResourceGroupDeleted)
         },
+
+        test("User can delete properties") {
+            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val page = testEnv.createNewPage()
+            val adminClient = testEnv.createPulsarAdminClient()
+            val deleteProperty = Properties(page.locator("body"))
+
+            val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+
+            val key = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val value = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val config = TenantInfo.builder
+            config.adminRoles(Set("Admin").asJava)
+
+            val cluster = adminClient.clusters().getClusters.get(0)
+            config.allowedClusters(Set(cluster).asJava)
+
+            adminClient.tenants.createTenant(tenant, config.build)
+            adminClient.namespaces.createNamespace(s"${tenant}/${namespace}")
+            adminClient.namespaces.setProperty(s"${tenant}/${namespace}", key, value)
+
+            page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/policies")
+            val createdKey = deleteProperty.existingKey(key).innerText()
+            val createdValue = deleteProperty.existingValue(value).innerText()
+
+            deleteProperty.deleteButton(key).click()
+            deleteProperty.saveButton.click()
+
+            page.waitForTimeout(1000)
+            val isDeleted = adminClient.namespaces.getProperty(s"${tenant}/${namespace}", key)
+
+            assertTrue(createdKey == "") &&
+                assertTrue(createdValue == "") &&
+                assertTrue(isDeleted == null)
+        },
+
     )
 }
