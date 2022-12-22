@@ -6,16 +6,6 @@ import com.microsoft.playwright.Locator.{GetByPlaceholderOptions, GetByRoleOptio
 import com.microsoft.playwright.options.AriaRole
 
 case class NamespacesPage(root: Locator):
-    val saveButton: Locator = root.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Save").setExact(true))
-    val deleteButton: Locator = root.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Delete").setExact(true))
-
-    val resourceGroupName: Locator = root.getByTestId("resource-group-name")
-    val dispatchRateInBytesInput: Locator = root.getByTestId("dispatch-rate-in-bytes")
-    val dispatchRateInMsgsInput: Locator = root.getByTestId("dispatch-rate-in-msgs")
-    val publishRateInBytesInput: Locator = root.getByTestId("publish-rate-in-bytes")
-    val publishRateInMsgsInput: Locator = root.getByTestId("publish-rate-in-msgs")
-
-    def setDispatchRateInBytes(rate: String): Unit = dispatchRateInBytesInput.fill(rate)
-    def setDispatchRateInMsgs(rate: String): Unit = dispatchRateInMsgsInput.fill(rate)
-    def setPublishRateInBytes(rate: String): Unit = publishRateInBytesInput.fill(rate)
-    def setPublishRateInMsgs(rate: String): Unit = publishRateInMsgsInput.fill(rate)
+    val deleteButton: Locator = root.getByTestId("tenant-page-delete-button")
+    val deleteConfirmButton: Locator = root.getByTestId("confirmation-dialog-confirm-button")
+    val deleteGuardInput: Locator = root.getByTestId("confirmation-dialog-guard-input")

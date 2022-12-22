@@ -1,11 +1,11 @@
 import React, { ReactNode, useState } from 'react';
 
-import Button from '../ui/Button/Button';
-import { DefaultProvider } from '../app/contexts/Modals/Modals';
+import Button from '../Button/Button';
+import { DefaultProvider } from '../../app/contexts/Modals/Modals';
 
 import s from './ConfirmationDialog.module.css';
-import Checkbox from '../ui/Checkbox/Checkbox';
-import Input from '../ui/Input/Input';
+import Checkbox from '../Checkbox/Checkbox';
+import Input from '../Input/Input';
 
 type Props = {
   description: ReactNode,
@@ -37,6 +37,7 @@ const ConfirmationDialog = (props: Props) => {
             value={guard}
             onChange={(v) => setGuard(v)}
             placeholder={props.guard}
+            testId="confirmation-dialog-guard-input"
           />
         </div>
         }
@@ -63,6 +64,7 @@ const ConfirmationDialog = (props: Props) => {
               props.guard !== undefined &&
               props.guard !== guard
             }
+            testId="confirmation-dialog-confirm-button"
           />
         </div>
         

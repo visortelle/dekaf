@@ -8,7 +8,7 @@ import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrp
 import { DeleteTenantRequest } from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../swrKeys';
-import ConfirmationDialog from '../../ConfirmationDialog/ConfirmationDialog';
+import ConfirmationDialog from '../../ui/ConfirmationDialog/ConfirmationDialog';
 
 export type DeleteTenantProps = {
   tenant: string,

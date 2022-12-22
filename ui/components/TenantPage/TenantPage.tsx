@@ -66,6 +66,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
                 content: <DeleteDialog tenant={props.tenant} navigate={navigate} />,
                 styleMode: 'no-content-padding'
               }),
+              testId: 'tenant-page-delete-button'
             },
             {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),

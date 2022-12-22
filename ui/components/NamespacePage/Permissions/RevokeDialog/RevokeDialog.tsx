@@ -6,7 +6,7 @@ import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Modals from '../../../app/contexts/Modals/Modals';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import ConfirmationDialog from '../../../ConfirmationDialog/ConfirmationDialog';
+import ConfirmationDialog from '../../../ui/ConfirmationDialog/ConfirmationDialog';
 
 type Props = {
   tenant: string,

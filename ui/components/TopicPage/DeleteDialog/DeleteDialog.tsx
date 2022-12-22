@@ -7,7 +7,7 @@ import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrp
 import * as Modals from '../../app/contexts/Modals/Modals';
 import { DeleteTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import ConfirmationDialog from '../../ConfirmationDialog/ConfirmationDialog';
+import ConfirmationDialog from '../../ui/ConfirmationDialog/ConfirmationDialog';
 import { swrKeys } from '../../swrKeys';
 import { routes } from '../../routes';
 

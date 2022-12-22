@@ -9,7 +9,7 @@ import * as Modals from '../../../../app/contexts/Modals/Modals';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { routes } from '../../../../routes';
 import { swrKeys } from '../../../../swrKeys';
-import ConfirmationDialog from '../../../../ConfirmationDialog/ConfirmationDialog';
+import ConfirmationDialog from '../../../../ui/ConfirmationDialog/ConfirmationDialog';
 
 type Props = {
   resourceGroup: string,
