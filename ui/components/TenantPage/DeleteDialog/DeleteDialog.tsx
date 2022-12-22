@@ -19,6 +19,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
   const { mutate } = useSWRConfig();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { tenantServiceClient } = PulsarGrpcClient.useContext();
+  const navigate = useNavigate();
 
   const [forceDelete, setForceDelete] = React.useState(false);
 
@@ -37,7 +38,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
 
       notifySuccess(`Tenant ${props.tenant} has been successfully deleted.`);
 
-      const navigate = useNavigate();
+      
       navigate(`/`);
 
       await mutate(swrKeys.pulsar.tenants._());
