@@ -15,20 +15,21 @@ export type DeleteTenantProps = {
 };
 
 const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
+  const modals = Modals.useContext();
   const { mutate } = useSWRConfig();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { tenantServiceClient } = PulsarGrpcClient.useContext();
-  const [forceDelete, setForceDelete] = React.useState(false);
 
-  const modals = Modals.useContext();
+  const [forceDelete, setForceDelete] = React.useState(false);
 
   const deleteTenant = async () => {
     try {
       const req = new DeleteTenantRequest();
       req.setTenantName(props.tenant);
       req.setForce(forceDelete);
-      console.log(props.tenant, forceDelete)
+
       const res = await tenantServiceClient.deleteTenant(req, {});
+
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to delete tenant: ${res.getStatus()?.getMessage()}`);
         return;
@@ -42,12 +43,12 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
       await mutate(swrKeys.pulsar.tenants._());
       await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
     } catch (err) {
-      notifyError(`Unable to delete tenant ${props.tenant}. ${err}`)
+      notifyError(`Unable to delete tenant ${props.tenant}. ${err}`);
     }
   };
 
   const switchForceDelete = () => {
-    setForceDelete(!forceDelete)
+    setForceDelete(!forceDelete);
   }
 
   return (
@@ -56,14 +57,14 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently delete the ${props.tenant} tenant and all its namespaces.</div>
+          <div>It will permanently delete the {props.tenant} tenant and all its namespaces.</div>
         </div>
       }
       forceDelete={forceDelete}
       switchForceDelete={switchForceDelete}
       onConfirm={deleteTenant} 
       onCancel={modals.pop}
-      guard={`public/default`}
+      guard={props.tenant}
     />
   );
 }

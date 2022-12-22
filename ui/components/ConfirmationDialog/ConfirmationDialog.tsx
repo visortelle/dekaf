@@ -1,13 +1,11 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 import Button from '../ui/Button/Button';
-import { H3 } from '../ui/H/H';
-import Input from '../ui/Input/Input';
 import { DefaultProvider } from '../app/contexts/Modals/Modals';
 
 import s from './ConfirmationDialog.module.css';
-import ActionButton from '../ui/ActionButton/ActionButton';
 import Checkbox from '../ui/Checkbox/Checkbox';
+import Input from '../ui/Input/Input';
 
 type Props = {
   description: ReactNode,
@@ -20,13 +18,28 @@ type Props = {
 
 const ConfirmationDialog = (props: Props) => {
 
-  const { switchForceDelete, forceDelete } = props
+  const { switchForceDelete, forceDelete } = props;
+
+  const [guard, setGuard] = useState('');
 
   return (
     <DefaultProvider>
       <div className={s.ConfirmationDialog}>
 
         {props.description}
+
+        {props.guard &&
+        <div className={`${s.Guard}`}>
+          <span>
+            Please type <strong>{props.guard}</strong> in the input to confirm.
+          </span>
+          <Input
+            value={guard}
+            onChange={(v) => setGuard(v)}
+            placeholder={props.guard}
+          />
+        </div>
+        }
 
         {switchForceDelete &&
           <div className={s.ActionCheckbox}>
@@ -40,12 +53,16 @@ const ConfirmationDialog = (props: Props) => {
           <Button
             type="primary"
             text={`Confirm`}
-            onClick={props.onConfirm}
+            onClick={() => props.onConfirm()}
+            disabled={
+              props.guard !== undefined &&
+              props.guard !== guard
+            }
           />
           <Button
             type="danger"
             text={`Cansel`}
-            onClick={props.onCancel}
+            onClick={() => props.onCancel()}
           />
         </div>
         

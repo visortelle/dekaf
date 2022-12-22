@@ -57,8 +57,6 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
     override def deleteTenant(request: pb.DeleteTenantRequest): Future[pb.DeleteTenantResponse] =
         logger.info(s"Deleting tenant: ${request.tenantName}")
-        val tenants = adminClient.tenants.getTenants()
-        println(s"${request.tenantName} ${request.force} ${tenants}")
         try {
             adminClient.tenants.deleteTenant(request.tenantName, request.force)
             val status: Status = Status(code = Code.OK.index)
