@@ -21,17 +21,17 @@ object PropertiesTest extends ZIOSpecDefault {
             val adminClient = testEnv.createPulsarAdminClient()
             val createProperty = Properties(page.locator("body"))
 
-//            val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
-//            val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
-            val tenant = "my-tenant"
-            val namespace = "my-namespace"
+            val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
 
-//            val config = TenantInfo.builder
-//            config.adminRoles(Set("Admin").asJava)
-//            config.allowedClusters(Set("Admin").asJava)
+            val config = TenantInfo.builder
+            config.adminRoles(Set("Admin").asJava)
 
-//            adminClient.tenants.createTenant(tenant, config.build)
-//            adminClient.namespaces.createNamespace(s"${tenant}/${namespace}")
+            val cluster = adminClient.clusters().getClusters.get(0)
+            config.allowedClusters(Set(cluster).asJava)
+
+            adminClient.tenants.createTenant(tenant, config.build)
+            adminClient.namespaces.createNamespace(s"${tenant}/${namespace}")
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/policies")
 
@@ -60,18 +60,19 @@ object PropertiesTest extends ZIOSpecDefault {
             val adminClient = testEnv.createPulsarAdminClient()
             val deleteProperty = Properties(page.locator("body"))
 
-//            val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
-//            val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
-            val tenant = "my-tenant"
-            val namespace = "my-namespace"
+            val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+
             val key = s"${faker.name.firstName()}-${java.util.Date().getTime}"
             val value = s"${faker.name.firstName()}-${java.util.Date().getTime}"
-//            val config = TenantInfo.builder
-//            config.adminRoles(Set("Admin").asJava)
-//            config.allowedClusters(Set("Admin").asJava)
+            val config = TenantInfo.builder
+            config.adminRoles(Set("Admin").asJava)
 
-//            adminClient.tenants.createTenant(tenant, config.build)
-//            adminClient.namespaces.createNamespace(s"${tenant}/${namespace}")
+            val cluster = adminClient.clusters().getClusters.get(0)
+            config.allowedClusters(Set(cluster).asJava)
+
+            adminClient.tenants.createTenant(tenant, config.build)
+            adminClient.namespaces.createNamespace(s"${tenant}/${namespace}")
             adminClient.namespaces.setProperty(s"${tenant}/${namespace}", key, value)
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/policies")
