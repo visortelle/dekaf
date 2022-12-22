@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { redirect } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
 import * as Modals from '../../app/contexts/Modals/Modals';
@@ -19,7 +19,6 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
   const { mutate } = useSWRConfig();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { tenantServiceClient } = PulsarGrpcClient.useContext();
-  const navigate = useNavigate();
 
   const [forceDelete, setForceDelete] = React.useState(false);
 
@@ -38,8 +37,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
 
       notifySuccess(`Tenant ${props.tenant} has been successfully deleted.`);
 
-      
-      navigate(`/`);
+      redirect(`/`);
 
       await mutate(swrKeys.pulsar.tenants._());
       await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
@@ -63,7 +61,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
       }
       forceDelete={forceDelete}
       switchForceDelete={switchForceDelete}
-      onConfirm={deleteTenant} 
+      onConfirm={deleteTenant}
       onCancel={modals.pop}
       guard={props.tenant}
     />
