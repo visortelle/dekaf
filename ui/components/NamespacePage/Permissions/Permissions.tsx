@@ -247,6 +247,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                       type='danger'
                       text='Revoke'
                       className={s.Button}
+                      testId="permission-revoke-button"
                       onClick={() => modals.push({
                         id: 'revoke-permission',
                         title: `Revoke permission`,
