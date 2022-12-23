@@ -59,6 +59,8 @@ object TopicPageSpec extends ZIOSpecDefault {
 
             page.waitForURL(s"tenants/${tenant}/namespaces/${namespace}/topics", new WaitForURLOptions().setTimeout(3000))
 
+//           TODO ADD TEST FOR FORCE DELETE WHEN WILL BE POSSIBLE CHANGE CLUSTER
+
             assertTrue(isDeleted == true) &&
                 assertTrue(isDisabled == true) &&
                 assertTrue(unDisabled == true)

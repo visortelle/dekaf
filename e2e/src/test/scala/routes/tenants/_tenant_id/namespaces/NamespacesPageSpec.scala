@@ -53,6 +53,8 @@ object NamespacesPageSpec extends ZIOSpecDefault {
 
             page.waitForURL("/", new WaitForURLOptions().setTimeout(3000))
 
+//          TODO ADD TEST FOR FORCE DELETE WHEN WILL BE POSSIBLE CHANGE CLUSTER
+
             assertTrue(isDeleted == true) &&
                 assertTrue(isDisabled == true) &&
                 assertTrue(unDisabled == true)
