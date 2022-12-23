@@ -20,7 +20,7 @@ object TopicPageSpec extends ZIOSpecDefault {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val adminClient = testEnv.createPulsarAdminClient()
-            val deleteTopic = TopicPage(page.locator("body"))
+            val topicPage = TopicPage(page.locator("body"))
 
             val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
             val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
@@ -37,15 +37,15 @@ object TopicPageSpec extends ZIOSpecDefault {
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/topics/non-persistent/${topic}/messages")
 
-            deleteTopic.deleteButton.click()
+            topicPage.deleteButton.click()
 
-            val isDisabled = deleteTopic.deleteConfirmButton.isDisabled
-            deleteTopic.deleteGuardInput.fill(topic)
+            val isDisabled = topicPage.deleteConfirmButton.isDisabled
+            topicPage.deleteGuardInput.fill(topic)
 
-            deleteTopic.forceDeleteCheckbox.click()
+            topicPage.forceDeleteCheckbox.click()
 
-            val unDisabled = !deleteTopic.deleteConfirmButton.isDisabled
-            deleteTopic.deleteConfirmButton.click()
+            val unDisabled = !topicPage.deleteConfirmButton.isDisabled
+            topicPage.deleteConfirmButton.click()
 
             page.waitForTimeout(1000)
 
@@ -54,23 +54,23 @@ object TopicPageSpec extends ZIOSpecDefault {
                     adminClient.namespaces.getTopics(s"${tenant}/${namespace}/${topic}")
                     false
                 } catch {
-                    case err => true
+                    case _ => true
                 }
 
             page.waitForURL(s"tenants/${tenant}/namespaces/${namespace}/topics", new WaitForURLOptions().setTimeout(3000))
 
-//           TODO ADD TEST FOR FORCE DELETE WHEN WILL BE POSSIBLE CHANGE CLUSTER
+            //           TODO ADD TEST FOR FORCE DELETE WHEN WILL BE POSSIBLE CHANGE CLUSTER
 
-            assertTrue(isDeleted == true) &&
-                assertTrue(isDisabled == true) &&
-                assertTrue(unDisabled == true)
+            assertTrue(isDeleted) &&
+                assertTrue(isDisabled) &&
+                assertTrue(unDisabled)
         },
 
-        test("User can't open policies in non-persisten topic'") {
+        test("User can't open the topic policies page for non-persistent topic") {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val adminClient = testEnv.createPulsarAdminClient()
-            val policiesButtonCheck = TopicPage(page.locator("body"))
+            val topicPage = TopicPage(page.locator("body"))
 
             val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
             val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
@@ -89,16 +89,47 @@ object TopicPageSpec extends ZIOSpecDefault {
 
             val buttonHiden =
                 try {
-                    val buttonExist = policiesButtonCheck.policiesButton.innerText()
+                    val buttonExist = topicPage.policiesButton.innerText()
                     false
                 } catch {
-                    err =>
+                    _ =>
                         true
                 }
 
+            assertTrue(buttonHiden)
+        },
 
+        test("User can open the topic policies page for persistent topic") {
+            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val page = testEnv.createNewPage()
+            val adminClient = testEnv.createPulsarAdminClient()
+            val topicPage = TopicPage(page.locator("body"))
 
-            assertTrue(buttonHiden == true)
+            val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+            val topic = s"${faker.name.firstName()}-${java.util.Date().getTime}"
+
+            val config = TenantInfo.builder
+            val cluster = adminClient.clusters().getClusters.get(0)
+
+            config.adminRoles(Set("Admin").asJava)
+            config.allowedClusters(Set(cluster).asJava)
+            adminClient.tenants.createTenant(tenant, config.build)
+            adminClient.namespaces.createNamespace(s"${tenant}/${namespace}")
+            adminClient.topics.createPartitionedTopic(s"${tenant}/${namespace}/${topic}", 1)
+
+            page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/topics/persistent/${topic}/messages")
+
+            val buttonHiden =
+                try {
+                    val buttonExist = topicPage.policiesButton.innerText()
+                    true
+                } catch {
+                    _ =>
+                        false
+                }
+
+            assertTrue(buttonHiden)
         },
 
     )
