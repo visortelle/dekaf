@@ -85,11 +85,16 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
             onClick: () => { },
             type: 'regular'
           },
+          props.topicType === 'persistent' ?
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
             text: 'Policies',
             onClick: () => { },
-            type: 'regular'
+            type: 'regular',
+            testId: 'topic-policies-button'
+          } : {
+            onClick: () => { },
+            type: 'regular',
           },
           {
             text: 'Delete',

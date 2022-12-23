@@ -30,6 +30,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
     try {
       const req = new DeleteTopicRequest();
       req.setTopicName(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      console.log(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`)
       req.setForce(forceDelete);
 
       const res = await topicServiceClient.deleteTopic(req, {});
