@@ -11,6 +11,7 @@ export type SmallButtonProps = {
   disabled?: boolean,
   style?: React.CSSProperties,
   className?: string,
+  testId?: string
 }
 
 const SmallButton = (props: SmallButtonProps) => {
@@ -34,6 +35,7 @@ const SmallButton = (props: SmallButtonProps) => {
       style={{ backgroundColor, color: textColor, ...props.style }}
       disabled={props.disabled}
       title={props.title}
+      data-testid={props.testId}
     >
       {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
       {props.text && <div>{props.text}</div>}

@@ -28,6 +28,9 @@ object EditResourceGroupPageSpec extends ZIOSpecDefault {
             val editResourceGroupPage = EditResourceGroupPage(page.locator("body"))
 
             editResourceGroupPage.deleteButton.click()
+            editResourceGroupPage.deleteGuardInput.fill(testResourceGroupName)
+            editResourceGroupPage.deleteConfirmButton.click()
+
             page.waitForTimeout(1000)
             val isTestResourceGroupDeleted = !adminClient.resourcegroups.getResourceGroups.asScala.contains(testResourceGroupName)
 

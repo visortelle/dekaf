@@ -46,13 +46,6 @@ export const routes = {
   },
   tenants: {
     tenant: {
-      deleteTenant: {
-        _: {
-          path: "tenants/:tenant/delete-tenant",
-          get: (props: { tenant: string }) =>
-            `/tenants/${props.tenant}/delete-tenant`,
-        },
-      },
       createNamespace: {
         _: {
           path: "tenants/:tenant/create-namespace",
@@ -79,13 +72,6 @@ export const routes = {
               path: "/tenants/:tenant/namespaces/:namespace/policies",
               get: (props: { tenant: string; namespace: string }) =>
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/policies`,
-            },
-          },
-          deleteNamespace: {
-            _: {
-              path: "/tenants/:tenant/namespaces/:namespace/delete-namespace",
-              get: (props: { tenant: string; namespace: string }) =>
-                `/tenants/${props.tenant}/namespaces/${props.namespace}/delete-namespace`,
             },
           },
           createTopic: {
@@ -163,18 +149,6 @@ export const routes = {
                       topic: string;
                     }) =>
                       `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/policies`,
-                  },
-                },
-                deleteTopic: {
-                  _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/delete-topic",
-                    get: (props: {
-                      tenant: string;
-                      namespace: string;
-                      topicType: "persistent" | "non-persistent";
-                      topic: string;
-                    }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/delete-topic`,
                   },
                 },
               },

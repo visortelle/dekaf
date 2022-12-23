@@ -1,14 +1,17 @@
 import React from 'react';
+
+import * as Modals from '../app/contexts/Modals/Modals';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import s from './TopicPage.module.css'
 import Toolbar from '../ui/Toolbar/Toolbar';
 import Session from './Messages/Messages';
 import Schema from './Schema/Schema';
 import Policies from './Policies/Policies';
-import DeleteTopic from './DeleteTopic/DeleteTopic';
+import DeleteDialog from './DeleteDialog/DeleteDialog';
 import { routes } from '../routes';
+import { useNavigate } from 'react-router';
 
-export type TopicPageView = 'messages' | 'overview' | 'producers' | 'consumers' | 'schema' | 'policies' | 'delete-topic';
+export type TopicPageView = 'messages' | 'overview' | 'producers' | 'consumers' | 'schema' | 'policies';
 export type TopicPageProps = {
   view: TopicPageView;
   tenant: string;
@@ -18,6 +21,10 @@ export type TopicPageProps = {
 };
 
 const TopicPage: React.FC<TopicPageProps> = (props) => {
+
+  const modals = Modals.useContext();
+  const navigate = useNavigate();
+
   const key = `${props.tenant}-${props.namespace}-${props.topic}`;
 
   return (
@@ -85,11 +92,23 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
             type: 'regular'
           },
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.deleteTopic._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
             text: 'Delete',
-            onClick: () => { },
-            type: 'danger'
-          }
+            type: 'danger',
+            testId: 'topic-page-delete-button',
+            onClick: () => modals.push({
+              id: 'delete-topic',
+              title: `Delete topic`,
+              content:
+                <DeleteDialog
+                  tenant={props.tenant}
+                  namespace={props.namespace}
+                  topic={props.topic}
+                  topicType={props.topicType}
+                  navigate={navigate}
+                />,
+              styleMode: 'no-content-padding'
+            }),
+          },
         ]}
       />
 
@@ -106,7 +125,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
       {props.view === 'schema' && <Schema key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
       {props.view === 'policies' && <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
-      {props.view === 'delete-topic' && <DeleteTopic key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />}
     </div>
   );
 }
