@@ -13,6 +13,7 @@ import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import * as Either from 'fp-ts/lib/Either';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import { isPlainObject } from 'lodash';
+import { Buffer } from 'buffer';
 
 export type ProducerPreset = {
   topic: string | undefined;
