@@ -151,18 +151,6 @@ export const routes = {
                       `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/policies`,
                   },
                 },
-                deleteTopic: {
-                  _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/delete-topic",
-                    get: (props: {
-                      tenant: string;
-                      namespace: string;
-                      topicType: "persistent" | "non-persistent";
-                      topic: string;
-                    }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/delete-topic`,
-                  },
-                },
               },
             },
           },
