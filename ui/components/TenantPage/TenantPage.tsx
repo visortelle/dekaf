@@ -1,21 +1,30 @@
 import React from 'react';
+
+import { useNavigate } from 'react-router-dom';
+import * as Modals from '../app/contexts/Modals/Modals';
+import Toolbar from '../ui/Toolbar/Toolbar';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
-import s from './TenantPage.module.css'
 import Configuration from './Configuration/Configuration';
 import Overview from './Overview/Overview';
 import Namespaces from './Namespaces/Namespaces';
-import DeleteTenant from './DeleteTenant/DeleteTenant';
+import DeleteDialog from './DeleteDialog/DeleteDialog';
 import CreateNamespace from './CreateNamespace/CreateNamespace';
-import Toolbar from '../ui/Toolbar/Toolbar';
 import { routes } from '../routes';
 
-export type TenantPageView = 'overview' | 'namespaces' | 'configuration' | 'delete-tenant' | 'create-namespace';
+import s from './TenantPage.module.css'
+
+export type TenantPageView = 'overview' | 'namespaces' | 'configuration' | 'create-namespace';
 export type TenantPageProps = {
   view: TenantPageView;
   tenant: string;
 };
 
 const TenantPage: React.FC<TenantPageProps> = (props) => {
+
+  const modals = Modals.useContext();
+
+  const navigate = useNavigate()
+
   return (
     <div className={s.Page}>
       <BreadCrumbsAtPageTop
@@ -49,10 +58,15 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
               type: 'regular'
             },
             {
-              linkTo: routes.tenants.tenant.deleteTenant._.get({ tenant: props.tenant }),
               text: 'Delete',
-              onClick: () => { },
-              type: 'danger'
+              type: 'danger',
+              onClick: () => modals.push({
+                id: 'delete-tenant',
+                title: `Delete tenant`,
+                content: <DeleteDialog tenant={props.tenant} navigate={navigate} />,
+                styleMode: 'no-content-padding'
+              }),
+              testId: 'tenant-page-delete-button'
             },
             {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),
@@ -64,11 +78,10 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
           ]}
         />
       </div>
-
+      
       {props.view === 'overview' && <Overview />}
       {props.view === 'namespaces' && <Namespaces tenant={props.tenant} />}
       {props.view === 'configuration' && <Configuration tenant={props.tenant} />}
-      {props.view === 'delete-tenant' && <DeleteTenant tenant={props.tenant} />}
       {props.view === 'create-namespace' && <CreateNamespace tenant={props.tenant} />}
     </div>
   );

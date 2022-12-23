@@ -4,20 +4,23 @@ import {
   Int32Value,
   Int64Value,
 } from "google-protobuf/google/protobuf/wrappers_pb";
+import { isEqual } from 'lodash';
+import { mutate } from 'swr';
+
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { H1 } from '../../../ui/H/H';
 import ConfigurationTable from '../../../ui/ConfigurationTable/ConfigurationTable';
 import Button from '../../../ui/Button/Button';
 import Input from '../../../ui/Input/Input';
+import * as Modals from '../../../app/contexts/Modals/Modals';
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { routes } from '../../../routes';
+import { swrKeys } from '../../../swrKeys';
+import DeleteDialog from './DeleteDialog/DeleteDialog';
 
 import s from './ResourceGroupForm.module.css';
-import { isEqual } from 'lodash';
-import { mutate } from 'swr';
-import { swrKeys } from '../../../swrKeys';
 
 type Value = {
   name: string;
@@ -58,7 +61,9 @@ type Props = {
 
 const ResourceGroupForm = (props: Props) => {
   const navigate = useNavigate();
-  const { notifySuccess, notifyError } = Notifications.useContext();
+  const modals = Modals.useContext();
+
+  const { notifyError } = Notifications.useContext();
   const { brokersServiceClient } = PulsarGrpcClient.useContext();
 
   const [formValue, setFormValue] = useState<Value | undefined>(undefined);
@@ -138,23 +143,6 @@ const ResourceGroupForm = (props: Props) => {
     navigate(routes.instance.resourceGroups._.get());
   }
 
-  const deleteResourceGroup = async () => {
-    const req = new pb.DeleteResourceGroupRequest()
-    req.setName(formValue.name)
-
-    const res = await brokersServiceClient.deleteResourceGroup(req, null).catch(err => { `Unable to delete resource group: ${err}` });
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to delete resource group: ${res.getStatus()?.getMessage()}`);
-      return;
-    }
-
-    notifySuccess(<span>Resource group <strong>{formValue.name}</strong> has been deleted</span>, `resource-group-deleted-${formValue.name}`);
-    await setTimeout(() => {
-      mutate(swrKeys.pulsar.brokers.resourceGroups._())
-    }, 300)
-    navigate(routes.instance.resourceGroups._.get());
-  }
-
   const resourceGroupNameInput = (
     <Input
       value={formValue.name}
@@ -210,10 +198,15 @@ const ResourceGroupForm = (props: Props) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               Update resource group
               <Button
-                onClick={deleteResourceGroup}
-                type='danger'
-                text='Delete'
                 buttonProps={{ type: 'submit' }}
+                text='Delete'
+                type='danger'
+                onClick={() => modals.push({
+                  id: 'delete-resource-group',
+                  title: `Delete resource group`,
+                  content: <DeleteDialog resourceGroup={formValue.name} navigate={navigate} />,
+                  styleMode: 'no-content-padding'
+                })}
               />
             </div>
           )}

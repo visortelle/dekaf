@@ -11,7 +11,7 @@ export type SmallButtonProps = {
   disabled?: boolean,
   style?: React.CSSProperties,
   className?: string,
-  testId?: string,
+  testId?: string
 }
 
 const SmallButton = (props: SmallButtonProps) => {

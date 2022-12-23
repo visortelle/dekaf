@@ -34,7 +34,6 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
                 Future.successful(pb.CreateTenantResponse(status = Some(status)))
         }
 
-
     override def updateTenant(request: pb.UpdateTenantRequest): Future[pb.UpdateTenantResponse] =
         logger.info(s"Updating tenant: ${request.tenantName}")
 
@@ -58,7 +57,6 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
     override def deleteTenant(request: pb.DeleteTenantRequest): Future[pb.DeleteTenantResponse] =
         logger.info(s"Deleting tenant: ${request.tenantName}")
-
         try {
             adminClient.tenants.deleteTenant(request.tenantName, request.force)
             val status: Status = Status(code = Code.OK.index)
