@@ -57,12 +57,10 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.path, element: withLayout(<RoutedTopicPage view='overview' />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.path, element: withLayout(<RoutedTopicPage view='schema' />, setScrollMode(withLayoutProps, 'page-own')) },
     { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.path, element: withLayout(<RoutedTopicPage view='policies' />, withLayoutProps) },
-    { path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.deleteTopic._.path, element: withLayout(<RoutedTopicPage view='delete-topic' />, withLayoutProps) },
 
     /* Namespaces */
     { path: routes.tenants.tenant.namespaces.namespace.topics._.path, element: withLayout(<RoutedNamespacePage view='topics' />, setScrollMode(withLayoutProps, 'page-own')) },
     { path: routes.tenants.tenant.namespaces.namespace.policies._.path, element: withLayout(<RoutedNamespacePage view='policies' />, withLayoutProps) },
-    { path: routes.tenants.tenant.namespaces.namespace.deleteNamespace._.path, element: withLayout(<RoutedNamespacePage view='delete-namespace' />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces.namespace.createTopic._.path, element: withLayout(<RoutedNamespacePage view='create-topic' />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces.namespace.permissions._.path, element: withLayout(<RoutedNamespacePage view='permissions' />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, element: withLayout(<RoutedNamespacePage view='subscription-permissions' />, withLayoutProps) },
@@ -70,7 +68,6 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     /* Tenants */
     { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RoutedTenantPage view={'configuration'} />, withLayoutProps) },
     { path: routes.tenants.tenant.createNamespace._.path, element: withLayout(<RoutedTenantPage view={'create-namespace'} />, withLayoutProps) },
-    { path: routes.tenants.tenant.deleteTenant._.path, element: withLayout(<RoutedTenantPage view={'delete-tenant'} />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces._.path, element: withLayout(<RoutedTenantPage view={'namespaces'} />, setScrollMode(withLayoutProps, 'page-own')) },
   ];
   const paths = getRoutes({ withLayout: () => <></>, withLayoutProps: defaultWithLayoutProps }).map(ro => ro.path).filter(p => p !== undefined) as string[];

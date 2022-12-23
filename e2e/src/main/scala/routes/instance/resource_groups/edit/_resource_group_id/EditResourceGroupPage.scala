@@ -8,6 +8,8 @@ import com.microsoft.playwright.options.AriaRole
 case class EditResourceGroupPage(root: Locator):
     val saveButton: Locator = root.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Save").setExact(true))
     val deleteButton: Locator = root.getByRole(AriaRole.BUTTON, new GetByRoleOptions().setName("Delete").setExact(true))
+    val deleteConfirmButton: Locator = root.getByTestId("confirmation-dialog-confirm-button")
+    val deleteGuardInput: Locator = root.getByTestId("confirmation-dialog-guard-input")
 
     val resourceGroupName: Locator = root.getByTestId("resource-group-name")
     val dispatchRateInBytesInput: Locator = root.getByTestId("dispatch-rate-in-bytes")
