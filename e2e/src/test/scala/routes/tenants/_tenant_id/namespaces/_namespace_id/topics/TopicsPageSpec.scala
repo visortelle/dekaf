@@ -16,7 +16,7 @@ val faker = new Faker();
 object TopicsPageSpec extends ZIOSpecDefault {
     def spec: Spec[Any, Any] = suite("Use namespaces page")(
 
-        test("User can delete tenant") {
+        test("User can delete namespace") {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val adminClient = testEnv.createPulsarAdminClient()
