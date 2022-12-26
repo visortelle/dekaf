@@ -1,19 +1,38 @@
+.List {
+  overflow-y: auto;
+}
+
 .Line {
   display: flex;
   width: 100%;
   font-size: 14rem;
   margin-bottom: 8rem;
+  z-index: 100;
+}
+
+.Titles {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 101;
+  padding-bottom: 5rem;
 }
 
 .Titles > span {
   width: calc(50% - 38rem);
   margin-right: 8rem;
+  font-weight: bold;
 }
 
 .Field {
-  width: calc(50% - 8rem);
+  width: calc(50% - 38rem);
+  max-width: calc(50% - 38rem);
   margin-right: 8rem;
 }
+.Field > div > input {
+  width: 100%;
+}
+
 .ErrorField > div > input {
   border-color: var(--accent-color-red)
 }
