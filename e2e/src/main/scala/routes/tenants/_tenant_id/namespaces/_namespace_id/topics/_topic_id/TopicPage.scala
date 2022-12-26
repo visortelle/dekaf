@@ -10,3 +10,4 @@ case class TopicPage(root: Locator):
     val deleteConfirmButton: Locator = root.getByTestId("confirmation-dialog-confirm-button")
     val deleteGuardInput: Locator = root.getByTestId("confirmation-dialog-guard-input")
     val forceDeleteCheckbox: Locator = root.getByTestId("confirm-dialog-force-delete-checkbox")
+    val policiesButton: Locator = root.getByTestId("topic-policies-button")
