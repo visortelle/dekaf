@@ -83,6 +83,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     <WithUpdateConfirmation<PolicyValue>
       initialValue={initialValue}
       onConfirm={async (v) => {
+        console.log(swrKey)
         if (v.type === 'inherited-from-broker-config') {
           const req = new pb.RemoveAutoTopicCreationRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
@@ -121,6 +122,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
+        console.log(swrKey)
         await mutate(swrKey);
       }}
     >

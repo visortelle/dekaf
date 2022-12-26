@@ -262,16 +262,17 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
 
 
-            val autoTopicCreation = if topicType == "partitioned" then
-                AutoTopicCreationOverride.builder
-                    .allowAutoTopicCreation(autoTopicCreationOverridePb.isAllowTopicCreation)
-                    .topicType(topicType)
-                    .defaultNumPartitions(autoTopicCreationOverridePb.defaultNumPartitions)
-                    .build else
-                AutoTopicCreationOverride.builder
-                    .allowAutoTopicCreation(autoTopicCreationOverridePb.isAllowTopicCreation)
-                    .topicType(topicType)
-                    .build
+            val autoTopicCreation =
+                if topicType == "partitioned" then
+                    AutoTopicCreationOverride.builder
+                        .allowAutoTopicCreation(autoTopicCreationOverridePb.isAllowTopicCreation)
+                        .topicType(topicType)
+                        .defaultNumPartitions(autoTopicCreationOverridePb.defaultNumPartitions)
+                        .build else
+                    AutoTopicCreationOverride.builder
+                        .allowAutoTopicCreation(autoTopicCreationOverridePb.isAllowTopicCreation)
+                        .topicType(topicType)
+                        .build
 
             adminClient.namespaces.setAutoTopicCreation(request.namespace, autoTopicCreation)
             Future.successful(SetAutoTopicCreationResponse(status = Some(Status(code = Code.OK.index))))
