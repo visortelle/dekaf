@@ -87,7 +87,7 @@ object TopicPageSpec extends ZIOSpecDefault {
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/topics/non-persistent/${topic}/messages")
 
-            val buttonHiden =
+            val buttonHidden =
                 try {
                     val buttonExist = topicPage.policiesButton.innerText()
                     false
@@ -96,7 +96,7 @@ object TopicPageSpec extends ZIOSpecDefault {
                         true
                 }
 
-            assertTrue(buttonHiden)
+            assertTrue(buttonHidden)
         },
 
         test("User can open the topic policies page for persistent topic") {
@@ -120,7 +120,7 @@ object TopicPageSpec extends ZIOSpecDefault {
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/topics/persistent/${topic}/messages")
 
-            val buttonHiden =
+            val buttonHidden =
                 try {
                     val buttonExist = topicPage.policiesButton.innerText()
                     true
@@ -129,7 +129,7 @@ object TopicPageSpec extends ZIOSpecDefault {
                         false
                 }
 
-            assertTrue(buttonHiden)
+            assertTrue(buttonHidden)
         },
 
     )
