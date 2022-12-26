@@ -13,7 +13,7 @@ require("esbuild")
     },
     minify: true,
     globalName: "pulsarUiEntrypoint",
-    sourcemap: 'both',
+    sourcemap: 'external',
     outdir,
     plugins: [
       cssModulesPlugin({
