@@ -1985,17 +1985,13 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
             val properties = request.properties.asJava
 
             val existingProperties = adminClient.namespaces.getProperties(request.namespace)
-            var newProperties = Map[String, String]()
-            properties.asScala.map((key, value) =>
-                if existingProperties.get(key) == null then
-                    newProperties += (key -> value)
-            )
-            adminClient.namespaces.setProperties(request.namespace, newProperties.asJava)
 
-            existingProperties.asScala.map((key, value) =>
+            existingProperties.asScala.map((key, _) =>
                 if properties.get(key) == null then
                     adminClient.namespaces.removeProperty(request.namespace, key)
             )
+
+            adminClient.namespaces.setProperties(request.namespace, request.properties.asJava)
 
             Future.successful(SetPropertiesResponse(
                 status = Some(Status(code = Code.OK.index)),

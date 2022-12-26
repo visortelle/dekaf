@@ -126,8 +126,8 @@ const KeyValueView = (props: Props) => {
           <div className={`${s.Field}`}>
             <Input
               value={keyValue[1]}
-              onChange={(v) => setConvertedKeyValues(Object.assign([
-                ...convertedKeyValues],
+              onChange={(v) => setConvertedKeyValues(Object.assign(
+                [...convertedKeyValues],
                 {[index]: [keyValue[0], v]}
               ))}
               testId={`value-${keyValue[1]}-${props.testId}`}
