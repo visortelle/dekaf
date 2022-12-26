@@ -20,7 +20,7 @@ object PermissionsPageSpec extends ZIOSpecDefault {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val adminClient = testEnv.createPulsarAdminClient()
-            val revokePermission = PermissionsPage(page.locator("body"))
+            val permissionsPage = PermissionsPage(page.locator("body"))
 
             val permission = s"${faker.name.firstName()}-${java.util.Date().getTime}"
 
@@ -38,8 +38,8 @@ object PermissionsPageSpec extends ZIOSpecDefault {
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/permissions/")
 
-            revokePermission.revokeButton.click()
-            revokePermission.revokeConfirmButton.click()
+            permissionsPage.revokeButton.click()
+            permissionsPage.revokeConfirmButton.click()
 
             page.waitForTimeout(1000)
 
