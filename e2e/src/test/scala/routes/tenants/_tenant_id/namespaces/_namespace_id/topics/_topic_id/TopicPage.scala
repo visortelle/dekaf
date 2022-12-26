@@ -20,7 +20,7 @@ object TopicPageSpec extends ZIOSpecDefault {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val adminClient = testEnv.createPulsarAdminClient()
-            val deleteTopic = TopicPage(page.locator("body"))
+            val topicPage = TopicPage(page.locator("body"))
 
             val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
             val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
@@ -37,15 +37,15 @@ object TopicPageSpec extends ZIOSpecDefault {
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/topics/persistent/${topic}/messages")
 
-            deleteTopic.deleteButton.click()
+            topicPage.deleteButton.click()
 
-            val isDisabled = deleteTopic.deleteConfirmButton.isDisabled
-            deleteTopic.deleteGuardInput.fill(topic)
+            val isDisabled = topicPage.deleteConfirmButton.isDisabled
+            topicPage.deleteGuardInput.fill(topic)
 
-            deleteTopic.forceDeleteCheckbox.click()
+            topicPage.forceDeleteCheckbox.click()
 
-            val unDisabled = !deleteTopic.deleteConfirmButton.isDisabled
-            deleteTopic.deleteConfirmButton.click()
+            val unDisabled = !topicPage.deleteConfirmButton.isDisabled
+            topicPage.deleteConfirmButton.click()
 
             page.waitForTimeout(1000)
 
@@ -54,16 +54,16 @@ object TopicPageSpec extends ZIOSpecDefault {
                     adminClient.topics.getPartitionedTopicMetadata(s"${tenant}/${namespace}/${topic}")
                     false
                 } catch {
-                    case err => true
+                    case _ => true
                 }
 
             page.waitForURL(s"tenants/${tenant}/namespaces/${namespace}/topics", new WaitForURLOptions().setTimeout(3000))
 
 //           TODO ADD TEST FOR FORCE DELETE WHEN WILL BE POSSIBLE CHANGE CLUSTER
 
-            assertTrue(isDeleted == true) &&
-                assertTrue(isDisabled == true) &&
-                assertTrue(unDisabled == true)
+            assertTrue(isDeleted) &&
+                assertTrue(isDisabled) &&
+                assertTrue(unDisabled)
         },
 
     )

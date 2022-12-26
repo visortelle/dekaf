@@ -21,7 +21,7 @@ object SchemaPageSpec extends ZIOSpecDefault {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val adminClient = testEnv.createPulsarAdminClient()
-            val deleteSchema = SchemaPage(page.locator("body"))
+            val schemaPage = SchemaPage(page.locator("body"))
 
             val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
             val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
@@ -63,8 +63,8 @@ object SchemaPageSpec extends ZIOSpecDefault {
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/topics/persistent/${topic}/schema")
 
-            deleteSchema.deleteButton.click()
-            deleteSchema.deleteConfirmButton.click()
+            schemaPage.deleteButton.click()
+            schemaPage.deleteConfirmButton.click()
 
             page.waitForTimeout(1000)
 
@@ -73,17 +73,17 @@ object SchemaPageSpec extends ZIOSpecDefault {
                     adminClient.schemas.getSchemaInfo(schemaName)
                     false
                 } catch {
-                    case err => true
+                    case _ => true
                 }
 
-            assertTrue(isDeleted == true)
+            assertTrue(isDeleted)
         },
 
         test("User can delete common schema") {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val adminClient = testEnv.createPulsarAdminClient()
-            val deleteSchema = SchemaPage(page.locator("body"))
+            val schemaPage = SchemaPage(page.locator("body"))
 
             val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
             val namespace = s"${faker.name.firstName()}-${java.util.Date().getTime}"
@@ -110,8 +110,8 @@ object SchemaPageSpec extends ZIOSpecDefault {
 
             page.navigate(s"/tenants/${tenant}/namespaces/${namespace}/topics/persistent/${topic}/schema")
 
-            deleteSchema.deleteButton.click()
-            deleteSchema.deleteConfirmButton.click()
+            schemaPage.deleteButton.click()
+            schemaPage.deleteConfirmButton.click()
 
             page.waitForTimeout(1000)
 
@@ -120,10 +120,10 @@ object SchemaPageSpec extends ZIOSpecDefault {
                     adminClient.schemas.getSchemaInfo(schemaName)
                     false
                 } catch {
-                    case err => true
+                    case _ => true
                 }
 
-            assertTrue(isDeleted == true)
+            assertTrue(isDeleted)
         },
     )
 }

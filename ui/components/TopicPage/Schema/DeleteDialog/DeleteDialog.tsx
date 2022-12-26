@@ -46,7 +46,7 @@ const DeleteDialog = (props: Props) => {
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently delete schema and all it versions</div>
+          <div>All schema versions will be permanently deleted.</div>
         </div>
       }
       onConfirm={deleteSchema}
