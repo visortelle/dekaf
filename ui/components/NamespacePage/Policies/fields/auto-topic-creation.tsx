@@ -20,6 +20,8 @@ export type PolicyValue = { type: 'inherited-from-broker-config' } | {
   topicType: TopicType;
 }
 
+type IsAllowAutoTopicCreation = 'true' | 'false'
+
 export type FieldInputProps = {
   tenant: string;
   namespace: string;
@@ -98,7 +100,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const autoTopicCreationOverride = new pb.AutoTopicCreationOverride();
           autoTopicCreationOverride.setIsAllowTopicCreation(v.isAllowAutoTopicCreation);
-          autoTopicCreationOverride.setDefaultNumPartitions(v.defaultNumPartitions);
+          
+          if (v.topicType === 'partitioned') {
+            autoTopicCreationOverride.setDefaultNumPartitions(v.defaultNumPartitions);
+          }
 
           switch (v.topicType) {
             case 'partitioned': autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED); break;
@@ -116,7 +121,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
-        mutate(swrKey);
+        await mutate(swrKey);
       }}
     >
       {({ value, onChange }) => {
@@ -146,6 +151,19 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             </div>
 
             {value.type === 'specified' && (
+              <div>
+                <div className={sf.FormItem}>
+                  <strong className={sf.FormLabel}>Allow</strong>
+                  <Select<IsAllowAutoTopicCreation>
+                    onChange={(v) => onChange({ ...value, isAllowAutoTopicCreation: v == 'true' })}
+                    value={`${value.isAllowAutoTopicCreation}`}
+                    list={[ { type: 'item', value: 'false', title: 'Disallowed' }, { type: 'item', value: 'true', title: 'Allowed' } ]}
+                  />
+                </div>
+              </div>
+            )}
+
+            {value.type === 'specified' && value.isAllowAutoTopicCreation === true && (
               <div className={sf.FormItem}>
                 <strong className={sf.FormLabel}>Topic type</strong>
                 <Select<TopicType>
@@ -156,7 +174,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               </div>
             )}
 
-            {value.type === 'specified' && value.topicType === 'partitioned' && (
+            {value.type === 'specified' && value.isAllowAutoTopicCreation === true && value.topicType === 'partitioned' && (
               <div className={sf.FormItem}>
                 <strong className={sf.FormLabel}>Num partitions</strong>
                 <Input
