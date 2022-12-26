@@ -1,5 +1,5 @@
 .List {
-  overflow: scroll;
+  overflow-y: auto;
 }
 
 .Line {
@@ -7,10 +7,15 @@
   width: 100%;
   font-size: 14rem;
   margin-bottom: 8rem;
+  z-index: 100;
 }
 
 .Titles {
-  
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 101;
+  padding-bottom: 5rem;
 }
 
 .Titles > span {

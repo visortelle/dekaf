@@ -19,6 +19,7 @@
 .JsonViewButton {
   position: absolute;
   right: 5.5px;
+  z-index:103;
 }
 
 .LinkButtons {

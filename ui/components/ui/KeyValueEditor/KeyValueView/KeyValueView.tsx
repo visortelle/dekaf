@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 
 import Input from '../../Input/Input';
 import SmallButton from '../../SmallButton/SmallButton';
+import { KeyValues } from '../KeyValueEditor';
 
 import s from './KeyValueView.module.css';
 
 type Props = {
-  onDelete: (index: number) => void,
-  changeConvertedKeyValues: (array: string[][]) => void,
+  onChange: (v: KeyValues) => void,
   changeValidity: (validity: boolean) => void,
-  convertedKeyValues: string[][],
   maxHeight: string,
   testId?: string,
+  value: KeyValues,
 }
 
 type NewKeyValue = {
@@ -25,20 +25,14 @@ type UnvalidKeys = {
 
 const KeyValueView = (props: Props) => {
 
-  const {
-    onDelete,
-    convertedKeyValues,
-    changeConvertedKeyValues,
-    changeValidity,
-  } = props;
-
   const defaultKeyValue = { key: '', value: '' };
 
   const [newKeyValue, setNewKeyValue] = useState<NewKeyValue>(defaultKeyValue);
   const [unvalidKeys, setUnvalidKeys] = useState<UnvalidKeys>();
+  const [convertedKeyValues, setConvertedKeyValues] = useState(Object.entries(props.value))
 
   const addNewKey = () => {
-    changeConvertedKeyValues([
+    setConvertedKeyValues([
       ...convertedKeyValues,
       [newKeyValue.key, newKeyValue.value]
     ]);
@@ -75,20 +69,30 @@ const KeyValueView = (props: Props) => {
     }
   }
 
+  const onDelete = (index: number) => {
+    const copyKeyValues = [...convertedKeyValues];
+    copyKeyValues.splice(index, 1);
+    setConvertedKeyValues(copyKeyValues);
+  }
+
   useEffect(() => {
     if (!unvalidKeys) {
       return;
     }
 
-    let valid = true
+    let valid = true;
     Object.keys(unvalidKeys).map(key => {
       if (unvalidKeys[key] > 1 && key !== newKeyValue.key || unvalidKeys[key] > 2) {
-        valid = false
+        valid = false;
       }
     });
 
-    changeValidity(valid);
-  }, [unvalidKeys])
+    props.changeValidity(valid);
+  }, [unvalidKeys]);
+
+  useEffect(() => {
+    props.onChange(Object.fromEntries(convertedKeyValues));
+  }, [convertedKeyValues]);
 
   return (
     <div className={`${s.List}`} style={{ maxHeight: props.maxHeight }} >
@@ -110,7 +114,7 @@ const KeyValueView = (props: Props) => {
               type="text"
               value={keyValue[0]}
               onChange={(v) => {
-                changeConvertedKeyValues(Object.assign([
+                setConvertedKeyValues(Object.assign([
                   ...convertedKeyValues],
                   {[index]: [v, keyValue[1]]}
                 ))
@@ -122,7 +126,7 @@ const KeyValueView = (props: Props) => {
           <div className={`${s.Field}`}>
             <Input
               value={keyValue[1]}
-              onChange={(v) => changeConvertedKeyValues(Object.assign([
+              onChange={(v) => setConvertedKeyValues(Object.assign([
                 ...convertedKeyValues],
                 {[index]: [keyValue[0], v]}
               ))}
