@@ -14,6 +14,7 @@ import * as Either from 'fp-ts/lib/Either';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import { isPlainObject } from 'lodash';
 import { Buffer } from 'buffer';
+import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
 
 export type ProducerPreset = {
   topic: string | undefined;
@@ -135,6 +136,10 @@ const Producer: React.FC<ProducerProps> = (props) => {
     }
   }
 
+  const changePropertiesJsonMap = async (v: string) => {
+    await setPropertiesJsonMap(v || "")
+  }
+
   return (
     <div
       className={s.Producer}
@@ -175,10 +180,9 @@ const Producer: React.FC<ProducerProps> = (props) => {
             </div>
             <div className={s.FormControl}>
               <strong>Properties</strong>
-              <CodeEditor
-                value={propertiesJsonMap}
-                onChange={v => setPropertiesJsonMap(v || '')}
-                language="json"
+              <KeyValueEditor
+                keyValues={JSON.parse(propertiesJsonMap)}
+                onSave={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
                 height="320rem"
               />
             </div>
