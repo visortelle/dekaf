@@ -3,7 +3,7 @@ import React from 'react';
 import * as Modals from '../app/contexts/Modals/Modals';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import s from './TopicPage.module.css'
-import Toolbar from '../ui/Toolbar/Toolbar';
+import Toolbar, { ToolbarButtonProps } from '../ui/Toolbar/Toolbar';
 import Session from './Messages/Messages';
 import Schema from './Schema/Schema';
 import Policies from './Policies/Policies';
@@ -26,6 +26,71 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
   const navigate = useNavigate();
 
   const key = `${props.tenant}-${props.namespace}-${props.topic}`;
+
+  let buttons: ToolbarButtonProps[] = [
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+      text: 'Messages',
+      onClick: () => { },
+      type: 'regular'
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+      text: 'Producers',
+      onClick: () => { },
+      type: 'regular'
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+      text: 'Consumers',
+      onClick: () => { },
+      type: 'regular'
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+      text: 'Overview',
+      onClick: () => { },
+      type: 'regular'
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+      text: 'Schema',
+      onClick: () => { },
+      type: 'regular'
+    }
+  ]
+
+  // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.10.2)
+  if (props.topicType === 'persistent') {
+    buttons = buttons.concat([
+      {
+        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
+        text: 'Policies',
+        onClick: () => { },
+        type: 'regular',
+        testId: 'topic-policies-button'
+      }
+    ]);
+  }
+
+  buttons = buttons.concat([{
+    text: 'Delete',
+    type: 'danger',
+    testId: 'topic-page-delete-button',
+    onClick: () => modals.push({
+      id: 'delete-topic',
+      title: `Delete topic`,
+      content:
+        <DeleteDialog
+          tenant={props.tenant}
+          namespace={props.namespace}
+          topic={props.topic}
+          topicType={props.topicType}
+          navigate={navigate}
+        />,
+      styleMode: 'no-content-padding'
+    }),
+  }]);
 
   return (
     <div className={s.Page}>
@@ -54,62 +119,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         ]}
       />
       <Toolbar
-        buttons={[
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            text: 'Messages',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            text: 'Producers',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            text: 'Consumers',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            text: 'Overview',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            text: 'Schema',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType }),
-            text: 'Policies',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
-            text: 'Delete',
-            type: 'danger',
-            testId: 'topic-page-delete-button',
-            onClick: () => modals.push({
-              id: 'delete-topic',
-              title: `Delete topic`,
-              content:
-                <DeleteDialog
-                  tenant={props.tenant}
-                  namespace={props.namespace}
-                  topic={props.topic}
-                  topicType={props.topicType}
-                  navigate={navigate}
-                />,
-              styleMode: 'no-content-padding'
-            }),
-          },
-        ]}
+        buttons={buttons}
       />
 
       {props.view === 'messages' && (

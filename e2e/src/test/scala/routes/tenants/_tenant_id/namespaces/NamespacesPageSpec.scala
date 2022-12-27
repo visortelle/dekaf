@@ -20,7 +20,7 @@ object NamespacesPageSpec extends ZIOSpecDefault {
             val testEnv: TestEnv = createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val adminClient = testEnv.createPulsarAdminClient()
-            val deleteTenant = NamespacesPage(page.locator("body"))
+            val namespacesPage = NamespacesPage(page.locator("body"))
 
             val tenant = s"${faker.name.firstName()}-${java.util.Date().getTime}"
 
@@ -33,13 +33,13 @@ object NamespacesPageSpec extends ZIOSpecDefault {
 
             page.navigate(s"/tenants/${tenant}/namespaces/")
 
-            deleteTenant.deleteButton.click()
+            namespacesPage.deleteButton.click()
 
-            val isDisabled = deleteTenant.deleteConfirmButton.isDisabled
-            deleteTenant.deleteGuardInput.fill(tenant)
+            val isDisabled = namespacesPage.deleteConfirmButton.isDisabled
+            namespacesPage.deleteGuardInput.fill(tenant)
 
-            val unDisabled = !deleteTenant.deleteConfirmButton.isDisabled
-            deleteTenant.deleteConfirmButton.click()
+            val unDisabled = !namespacesPage.deleteConfirmButton.isDisabled
+            namespacesPage.deleteConfirmButton.click()
 
             page.waitForTimeout(1000)
 
@@ -48,16 +48,16 @@ object NamespacesPageSpec extends ZIOSpecDefault {
                     adminClient.tenants.getTenantInfo(tenant)
                     false
                 } catch {
-                    case err => true
+                    case _ => true
                 }
 
             page.waitForURL("/", new WaitForURLOptions().setTimeout(3000))
 
 //          TODO ADD TEST FOR FORCE DELETE WHEN WILL BE POSSIBLE CHANGE CLUSTER
 
-            assertTrue(isDeleted == true) &&
-                assertTrue(isDisabled == true) &&
-                assertTrue(unDisabled == true)
+            assertTrue(isDeleted) &&
+                assertTrue(isDisabled) &&
+                assertTrue(unDisabled)
         },
 
     )

@@ -19,26 +19,26 @@ object CreateResourceGroupPageSpec extends ZIOSpecDefault {
             val page = testEnv.createNewPage()
             page.navigate("/instance/resource-groups/create")
 
-            val resourceGroupsPage = CreateResourceGroupPage(page.locator("body"))
+            val createResourceGroupPage = CreateResourceGroupPage(page.locator("body"))
 
-            val isCreateButtonDisabledIfNoResourceGroupName = resourceGroupsPage.createButton.isDisabled
+            val isCreateButtonDisabledIfNoResourceGroupName = createResourceGroupPage.createButton.isDisabled
 
             val resourceGroupName = s"${faker.name.lastName}-${new java.util.Date().getTime}"
-            resourceGroupsPage.setResourceGroupName(resourceGroupName)
+            createResourceGroupPage.setResourceGroupName(resourceGroupName)
 
             val dispatchRateInBytes = s"${faker.number.numberBetween(0, Long.MaxValue)}"
-            resourceGroupsPage.setDispatchRateInBytes(dispatchRateInBytes)
+            createResourceGroupPage.setDispatchRateInBytes(dispatchRateInBytes)
 
             val dispatchRateInMsgs = s"${faker.number.numberBetween(0, Int.MaxValue)}"
-            resourceGroupsPage.setDispatchRateInMsgs(dispatchRateInMsgs)
+            createResourceGroupPage.setDispatchRateInMsgs(dispatchRateInMsgs)
 
             val publishRateInBytes = s"${faker.number.numberBetween(0, Long.MaxValue)}"
-            resourceGroupsPage.setPublishRateInBytes(publishRateInBytes)
+            createResourceGroupPage.setPublishRateInBytes(publishRateInBytes)
 
             val publishRateInMsgs = s"${faker.number.numberBetween(0, Int.MaxValue)}"
-            resourceGroupsPage.setPublishRateInMsgs(publishRateInMsgs)
+            createResourceGroupPage.setPublishRateInMsgs(publishRateInMsgs)
 
-            resourceGroupsPage.create()
+            createResourceGroupPage.create()
 
             val adminClient = testEnv.createPulsarAdminClient()
             val resourceGroups = adminClient.resourcegroups.getResourceGroups.asScala

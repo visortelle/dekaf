@@ -62,7 +62,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
     const req = new TestCompatibilityRequest();
     req.setTopic(props.topic);
     req.setSchemaInfo(schemaInfo);
-
+    
     const res = await schemaServiceClient.testCompatibility(req, {}).catch(err => notifyError(err));
     if (res === undefined) {
       return;

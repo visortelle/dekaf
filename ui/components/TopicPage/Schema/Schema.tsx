@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import s from './Schema.module.css'
+import useSWR, { mutate } from 'swr';
+
+import * as Modals from '../../app/contexts/Modals/Modals';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
-import useSWR, { mutate } from 'swr';
-import { swrKeys } from '../../swrKeys';
-import { DeleteSchemaRequest, GetLatestSchemaInfoRequest, ListSchemasRequest, SchemaInfo, SchemaType } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
+import { usePrevious } from '../../app/hooks/use-previous';
+import { GetLatestSchemaInfoRequest, ListSchemasRequest, SchemaInfo, SchemaType } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import CreateSchema from './CreateSchema/CreateSchema';
 import { schemaTypes, SchemaTypeT } from './types';
 import SmallButton from '../../ui/SmallButton/SmallButton';
+import { swrKeys } from '../../swrKeys';
 import SchemaEntry from './SchemaEntry/SchemaEntry';
-import { usePrevious } from '../../app/hooks/use-previous';
+import DeleteDialog from './DeleteDialog/DeleteDialog';
+
+import s from './Schema.module.css';
 
 export type SchemaProps = {
   tenant: string,
@@ -19,7 +23,7 @@ export type SchemaProps = {
   topicType: 'persistent' | 'non-persistent'
 };
 
-type CurrentView = { type: 'create-schema' } | { type: 'schema-entry', topic: string, schemaVersion: number, schemaInfo: SchemaInfo };
+export type CurrentView = { type: 'create-schema' } | { type: 'schema-entry', topic: string, schemaVersion: number, schemaInfo: SchemaInfo };
 
 const Schema: React.FC<SchemaProps> = (props) => {
   const [defaultNewSchemaType, setDefaultNewSchemaType] = useState<SchemaTypeT>('SCHEMA_TYPE_NONE');
@@ -27,7 +31,8 @@ const Schema: React.FC<SchemaProps> = (props) => {
   const [currentView, setCurrentView] = useState<CurrentView>({ type: 'create-schema' });
 
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
-  const { notifySuccess, notifyError } = Notifications.useContext();
+  const { notifyError } = Notifications.useContext();
+  const modals = Modals.useContext();
 
   const topic = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
@@ -91,6 +96,10 @@ const Schema: React.FC<SchemaProps> = (props) => {
     await mutate(swrKeys.pulsar.schemas.listSchemas._(topic));
   }
 
+  const changeView = (type: CurrentView) => {
+    setCurrentView(type)
+  }
+
   return (
     <div className={s.Schema}>
       <div className={s.Schemas}>
@@ -107,25 +116,18 @@ const Schema: React.FC<SchemaProps> = (props) => {
               text='Delete'
               type='danger'
               disabled={schemas === undefined ? true : schemas?.getSchemasList().length === 0}
-              onClick={async () => {
-                const req = new DeleteSchemaRequest();
-                req.setTopic(props.topic);
-                const res = await schemaServiceClient.deleteSchema(req, {}).catch(err => notifyError(err));
-
-                if (res === undefined) {
-                  return;
-                }
-
-                if (res.getStatus()?.getCode() === Code.OK) {
-                  notifySuccess('Successfully deleted the topic schema');
-                } else {
-                  notifyError(res.getStatus()?.getMessage());
-                }
-
-                await refetchData();
-
-                setCurrentView({ type: 'create-schema' });
-              }}
+              testId= 'schema-delete-button'
+              onClick={() => modals.push({
+                id: 'delete-schema',
+                title: `Delete schema`,
+                content:
+                  <DeleteDialog
+                    topic={topic}
+                    refetchData={refetchData}
+                    changeView={changeView}
+                  />,
+                styleMode: 'no-content-padding'
+              })}
             />
           </div>
         </div>
