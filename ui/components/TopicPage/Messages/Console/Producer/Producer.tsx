@@ -1,19 +1,23 @@
 import React, { useCallback, useEffect } from 'react';
+import { isPlainObject } from 'lodash';
+import { Buffer } from 'buffer';
+import { nanoid } from 'nanoid';
+import * as Either from 'fp-ts/lib/Either';
+
 import Button from '../../../../ui/Button/Button';
 import Input from '../../../../ui/Input/Input';
-import s from './Producer.module.css'
-import sendIcon from './icons/send.svg';
 import Select from '../../../../ui/Select/Select';
 import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';
-import { nanoid } from 'nanoid';
 import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, ProducerMessage, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
-import * as Either from 'fp-ts/lib/Either';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
-import { isPlainObject } from 'lodash';
-import { Buffer } from 'buffer';
+import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
+
+import sendIcon from './icons/send.svg';
+
+import s from './Producer.module.css'
 
 export type ProducerPreset = {
   topic: string | undefined;
@@ -51,7 +55,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
         notifyError(validationErr);
         return;
       }
-
+      
       const isValid = Object.entries(properties).every(([_, value]) => typeof value === 'string');
       if (!isValid) {
         notifyError(validationErr);
@@ -135,6 +139,10 @@ const Producer: React.FC<ProducerProps> = (props) => {
     }
   }
 
+  const changePropertiesJsonMap = async (v: string) => {
+    await setPropertiesJsonMap(v || "")
+  }
+
   return (
     <div
       className={s.Producer}
@@ -175,10 +183,9 @@ const Producer: React.FC<ProducerProps> = (props) => {
             </div>
             <div className={s.FormControl}>
               <strong>Properties</strong>
-              <CodeEditor
-                value={propertiesJsonMap}
-                onChange={v => setPropertiesJsonMap(v || '')}
-                language="json"
+              <KeyValueEditor
+                value={JSON.parse(propertiesJsonMap)}
+                onChange={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
                 height="320rem"
               />
             </div>
