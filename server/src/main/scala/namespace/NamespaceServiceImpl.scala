@@ -260,15 +260,14 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED => "non-partitioned"
                 case _                                                                            => "non-partitioned"
 
-
-
             val autoTopicCreation =
                 if topicType == "partitioned" then
                     AutoTopicCreationOverride.builder
                         .allowAutoTopicCreation(autoTopicCreationOverridePb.isAllowTopicCreation)
                         .topicType(topicType)
                         .defaultNumPartitions(autoTopicCreationOverridePb.defaultNumPartitions)
-                        .build else
+                        .build
+                    else
                     AutoTopicCreationOverride.builder
                         .allowAutoTopicCreation(autoTopicCreationOverridePb.isAllowTopicCreation)
                         .topicType(topicType)

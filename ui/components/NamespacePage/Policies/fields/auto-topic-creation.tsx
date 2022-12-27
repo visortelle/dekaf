@@ -1,14 +1,15 @@
+import useSWR, { useSWRConfig } from "swr";
+
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Input from "../../../ui/ConfigurationTable/Input/Input";
 import Select from '../../../ui/Select/Select';
-import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import { swrKeys } from '../../../swrKeys';
 
 const policy = 'autoTopicCreation';
 
@@ -31,6 +32,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
+
+  const defaultNumPartitions = 4;
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
 
@@ -56,18 +59,21 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           let topicType: TopicType = 'non-partitioned';
           switch (autoTopicCreationOverride.getTopicType()) {
-            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED: topicType = 'partitioned'; break;
-            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED: topicType = 'non-partitioned'; break;
+            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED: topicType = 'partitioned';
+            break;
+            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED: topicType = 'non-partitioned';
+            break;
           }
 
           v = {
             type: 'specified',
             isAllowAutoTopicCreation: autoTopicCreationOverride.getIsAllowTopicCreation(),
-            defaultNumPartitions: autoTopicCreationOverride.getDefaultNumPartitions(),
+            defaultNumPartitions: autoTopicCreationOverride.getDefaultNumPartitions() || defaultNumPartitions,
             topicType
           }
         }; break;
       };
+
       return v;
     }
   );
@@ -83,7 +89,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     <WithUpdateConfirmation<PolicyValue>
       initialValue={initialValue}
       onConfirm={async (v) => {
-        console.log(swrKey)
+
         if (v.type === 'inherited-from-broker-config') {
           const req = new pb.RemoveAutoTopicCreationRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
@@ -122,8 +128,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
         }
 
-        console.log(swrKey)
-        await mutate(swrKey);
+        mutate(swrKey);
       }}
     >
       {({ value, onChange }) => {
@@ -157,7 +162,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                 <div className={sf.FormItem}>
                   <strong className={sf.FormLabel}>Allow</strong>
                   <Select<IsAllowAutoTopicCreation>
-                    onChange={(v) => onChange({ ...value, isAllowAutoTopicCreation: v == 'true' })}
+                    onChange={(v) => onChange({ ...value, isAllowAutoTopicCreation: v == 'true', defaultNumPartitions: defaultNumPartitions})}
                     value={`${value.isAllowAutoTopicCreation}`}
                     list={[ { type: 'item', value: 'false', title: 'Disallowed' }, { type: 'item', value: 'true', title: 'Allowed' } ]}
                   />
@@ -169,7 +174,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               <div className={sf.FormItem}>
                 <strong className={sf.FormLabel}>Topic type</strong>
                 <Select<TopicType>
-                  onChange={(v) => onChange({ ...value, topicType: v })}
+                  onChange={(v) => onChange({ ...value, topicType: v, defaultNumPartitions: defaultNumPartitions })}
                   value={value.topicType}
                   list={[{ type: 'item', value: 'non-partitioned', title: 'Non-partitioned' }, { type: 'item', value: 'partitioned', title: 'Partitioned' }]}
                 />
