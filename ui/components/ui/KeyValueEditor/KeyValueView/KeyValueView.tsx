@@ -19,7 +19,7 @@ type NewKeyValue = {
   value: string,
 }
 
-type UnvalidKeys = {
+type InvalidKeys = {
   [key: string]: number,
 }
 
@@ -28,7 +28,7 @@ const KeyValueView = (props: Props) => {
   const defaultKeyValue = { key: '', value: '' };
 
   const [newKeyValue, setNewKeyValue] = useState<NewKeyValue>(defaultKeyValue);
-  const [unvalidKeys, setUnvalidKeys] = useState<UnvalidKeys>();
+  const [invalidKeys, setInvalidKeys] = useState<InvalidKeys>();
   const [convertedKeyValues, setConvertedKeyValues] = useState(Object.entries(props.value))
 
   const addNewKey = () => {
@@ -52,19 +52,19 @@ const KeyValueView = (props: Props) => {
       repeating++
     ]
 
-    if (!unvalidKeys) {
-      setUnvalidKeys({[key]: repeating})
+    if (!invalidKeys) {
+      setInvalidKeys({ [key]: repeating })
     } else if (index) {
-      setUnvalidKeys({
-        ...unvalidKeys,
+      setInvalidKeys({
+        ...invalidKeys,
         [key]: repeating,
-        [convertedKeyValues[index][0]]: unvalidKeys[convertedKeyValues[index][0]] - 1
+        [convertedKeyValues[index][0]]: invalidKeys[convertedKeyValues[index][0]] - 1
       })
     } else {
-      setUnvalidKeys({
-        ...unvalidKeys,
+      setInvalidKeys({
+        ...invalidKeys,
         [key]: repeating,
-        [newKeyValue.key]: unvalidKeys[newKeyValue.key] - 1
+        [newKeyValue.key]: invalidKeys[newKeyValue.key] - 1
       })
     }
   }
@@ -76,19 +76,19 @@ const KeyValueView = (props: Props) => {
   }
 
   useEffect(() => {
-    if (!unvalidKeys) {
+    if (!invalidKeys) {
       return;
     }
 
     let valid = true;
-    Object.keys(unvalidKeys).map(key => {
-      if (unvalidKeys[key] > 1 && key !== newKeyValue.key || unvalidKeys[key] > 2) {
+    Object.keys(invalidKeys).map(key => {
+      if (invalidKeys[key] > 1 && key !== newKeyValue.key || invalidKeys[key] > 2) {
         valid = false;
       }
     });
 
     props.changeValidity(valid);
-  }, [unvalidKeys]);
+  }, [invalidKeys]);
 
   useEffect(() => {
     props.onChange(Object.fromEntries(convertedKeyValues));
@@ -96,8 +96,7 @@ const KeyValueView = (props: Props) => {
 
   return (
     <div className={`${s.List}`} style={{ maxHeight: props.maxHeight }} >
-
-      <div className={`${s.Line}  ${s.Titles}`}>
+      <div className={`${s.Row} ${s.Header}`}>
         <span>
           Key
         </span>
@@ -105,88 +104,90 @@ const KeyValueView = (props: Props) => {
           Value
         </span>
       </div>
-      
-      {convertedKeyValues.map((keyValue, index) => (
-        <div className={`${s.Line}`}>
 
-          <div className={`${s.Field} ${unvalidKeys && unvalidKeys[keyValue[0]] > 1 && s.ErrorField}`}>
-            <Input 
-              type="text"
-              value={keyValue[0]}
+      <div className={s.Rows}>
+        {convertedKeyValues.map((keyValue, index) => (
+          <div className={`${s.Row}`}>
+
+            <div className={`${s.Field}`}>
+              <Input
+                type="text"
+                value={keyValue[0]}
+                onChange={(v) => {
+                  setConvertedKeyValues(Object.assign([
+                    ...convertedKeyValues],
+                    { [index]: [v, keyValue[1]] }
+                  ))
+                  validateField(v, index)
+                }}
+                testId={`key-${keyValue[0]}-${props.testId}`}
+                isError={invalidKeys && invalidKeys[keyValue[0]] > 1}
+              />
+            </div>
+            <div className={`${s.Field}`}>
+              <Input
+                value={keyValue[1]}
+                onChange={(v) => setConvertedKeyValues(Object.assign(
+                  [...convertedKeyValues],
+                  { [index]: [keyValue[0], v] }
+                ))}
+                testId={`value-${keyValue[1]}-${props.testId}`}
+              />
+            </div>
+            <div className={`${s.ButtonBlock}`}>
+              <SmallButton
+                onClick={() => onDelete(index)}
+                type='danger'
+                text='Delete'
+                className={s.Button}
+                testId={`key-value-delete-${keyValue[0]}-${props.testId}`}
+              />
+            </div>
+          </div>
+        ))}
+
+        <div className={`${s.Row}`}>
+          <div className={`${s.Field} ${invalidKeys && invalidKeys[newKeyValue.key] > 1 && s.ErrorField}`}>
+            <Input
+              placeholder='New key'
+              value={newKeyValue.key}
               onChange={(v) => {
-                setConvertedKeyValues(Object.assign([
-                  ...convertedKeyValues],
-                  {[index]: [v, keyValue[1]]}
-                ))
-                validateField(v, index)
+                setNewKeyValue({
+                  ...newKeyValue,
+                  key: v
+                })
+                validateField(v)
               }}
-              testId={`key-${keyValue[0]}-${props.testId}`}
+              testId={`new-key-${props.testId}`}
             />
           </div>
           <div className={`${s.Field}`}>
             <Input
-              value={keyValue[1]}
-              onChange={(v) => setConvertedKeyValues(Object.assign(
-                [...convertedKeyValues],
-                {[index]: [keyValue[0], v]}
-              ))}
-              testId={`value-${keyValue[1]}-${props.testId}`}
+              placeholder='New value'
+              value={newKeyValue.value}
+              onChange={(v) => setNewKeyValue({
+                ...newKeyValue,
+                value: v
+              })}
+              testId={`new-value-${props.testId}`}
             />
           </div>
           <div className={`${s.ButtonBlock}`}>
             <SmallButton
-              onClick={() => onDelete(index)}
-              type='danger'
-              text='Delete'
+              onClick={() => addNewKey()}
+              type="primary"
+              text="Add"
               className={s.Button}
-              testId={`key-value-delete-${keyValue[0]}-${props.testId}`}
+              disabled={
+                newKeyValue.key.length === 0 ||
+                newKeyValue.value.length === 0 ||
+                invalidKeys && invalidKeys[newKeyValue.key] > 1
+              }
+              testId={`key-value-add-${props.testId}`}
             />
           </div>
         </div>
-      ))}
-
-      <div className={`${s.Line}`}>
-        <div className={`${s.Field} ${unvalidKeys && unvalidKeys[newKeyValue.key] > 1 && s.ErrorField}`}>
-          <Input
-            placeholder='new-key'
-            value={newKeyValue.key}
-            onChange={(v) => {
-              setNewKeyValue({
-                ...newKeyValue,
-                key: v
-              })
-              validateField(v)
-            }}
-            testId={`new-key-${props.testId}`}
-          />
-        </div>
-        <div className={`${s.Field}`}>
-          <Input
-            placeholder='new-value'
-            value={newKeyValue.value}
-            onChange={(v) => setNewKeyValue({
-              ...newKeyValue,
-              value: v
-            })}
-            testId={`new-value-${props.testId}`}
-          />
-        </div>
-        <div className={`${s.ButtonBlock}`}>
-          <SmallButton
-            onClick={() => addNewKey()}
-            type="primary"
-            text="Add"
-            className={s.Button}
-            disabled={
-              newKeyValue.key.length === 0 ||
-              newKeyValue.value.length === 0 ||
-              unvalidKeys && unvalidKeys[newKeyValue.key] > 1
-            }
-            testId={`key-value-add-${props.testId}`}
-          />
-        </div>
       </div>
-
     </div>
   )
 }

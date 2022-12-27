@@ -1,8 +1,9 @@
 .List {
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.Line {
+.Row {
   display: flex;
   width: 100%;
   font-size: 14rem;
@@ -10,15 +11,22 @@
   z-index: 100;
 }
 
-.Titles {
-  position: sticky;
+.Row:last-child {
+  margin-bottom: 0;
+}
+
+.Rows {
+  overflow-y: auto;
+}
+
+.Header {
   top: 0;
   background-color: #fff;
   z-index: 101;
   padding-bottom: 5rem;
 }
 
-.Titles > span {
+.Header > span {
   width: calc(50% - 38rem);
   margin-right: 8rem;
   font-weight: bold;
@@ -31,13 +39,6 @@
 }
 .Field > div > input {
   width: 100%;
-}
-
-.ErrorField > div > input {
-  border-color: var(--accent-color-red)
-}
-.ErrorField > div > input:focus {
-  border-color: var(--accent-color-red)
 }
 
 .Button {
