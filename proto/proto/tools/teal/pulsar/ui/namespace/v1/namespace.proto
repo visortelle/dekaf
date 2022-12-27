@@ -1176,6 +1176,21 @@ message RevokePermissionOnSubscriptionResponse {
   google.rpc.Status status = 1;
 }
 
+message GetPropertiesRequest {
+  string namespace = 1;
+}
+message GetPropertiesResponse {
+  google.rpc.Status status = 1;
+  map<string, string> properties = 2;
+}
+message SetPropertiesRequest {
+  string namespace = 1;
+  map<string, string> properties = 2;
+}
+message SetPropertiesResponse {
+  google.rpc.Status status = 1;
+}
+
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
@@ -1330,4 +1345,7 @@ service NamespaceService {
   rpc GetPermissionOnSubscription(GetPermissionOnSubscriptionRequest) returns (GetPermissionOnSubscriptionResponse);
   rpc GrantPermissionOnSubscription(GrantPermissionOnSubscriptionRequest) returns (GrantPermissionOnSubscriptionResponse);
   rpc RevokePermissionOnSubscription(RevokePermissionOnSubscriptionRequest) returns (RevokePermissionOnSubscriptionResponse);
+
+  rpc GetProperties(GetPropertiesRequest) returns (GetPropertiesResponse);
+  rpc SetProperties(SetPropertiesRequest) returns (SetPropertiesResponse);
 }
