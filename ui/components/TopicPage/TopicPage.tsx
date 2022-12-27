@@ -60,7 +60,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     }
   ]
 
-  const personButtons: ToolbarButtonProps[] = 
+  const privateButtons: ToolbarButtonProps[] = 
     props.topicType === 'persistent' ?
     [
       {
@@ -101,7 +101,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       <Toolbar
         buttons={[
           ...commonButtons,
-          ...personButtons,
+          ...privateButtons,
           {
             text: 'Delete',
             type: 'danger',
