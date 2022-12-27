@@ -97,10 +97,10 @@ const KeyValueView = (props: Props) => {
   return (
     <div className={`${s.List}`} style={{ maxHeight: props.maxHeight }} >
       <div className={`${s.Row} ${s.Header}`}>
-        <span>
+        <span className={s.ColumnName}>
           Key
         </span>
-        <span>
+        <span className={s.ColumnName}>
           Value
         </span>
       </div>

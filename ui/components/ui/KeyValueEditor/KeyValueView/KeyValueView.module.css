@@ -26,7 +26,7 @@
   padding-bottom: 5rem;
 }
 
-.Header > span {
+.ColumnName {
   width: calc(50% - 38rem);
   margin-right: 8rem;
   font-weight: bold;
