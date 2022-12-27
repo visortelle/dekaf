@@ -7,6 +7,7 @@ export type InputProps = {
   value: string,
   onChange: (v: string) => void,
   isError?: boolean,
+  isSmall?: boolean,
   iconSvg?: string,
   focusOnMount?: boolean
   clearable?: boolean,
@@ -15,7 +16,7 @@ export type InputProps = {
   placeholder?: string,
   testId?: string,
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, iconSvg, cle
     <div className={s.Input}>
       <input
         ref={inputRef}
-        className={`${s.InputInput} ${isError ? s.InputInputWithError : ''} ${iconSvg ? s.InputInputWithIcon : ''} ${clearable ? s.InputInputClearable : ''}`}
+        className={`${s.InputInput} ${isSmall ? s.SmallInputInput : ''} ${isError ? s.InputInputWithError : ''} ${iconSvg ? s.InputInputWithIcon : ''} ${clearable ? s.InputInputClearable : ''}`}
         type={type || 'text'}
         value={value}
         onChange={(e) => onChange(e.target.value)}

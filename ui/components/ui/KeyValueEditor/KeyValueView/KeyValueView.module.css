@@ -37,9 +37,6 @@
   max-width: calc(50% - 38rem);
   margin-right: 8rem;
 }
-.Field > div > input {
-  width: 100%;
-}
 
 .Button {
   padding-left: 0;

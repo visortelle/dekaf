@@ -53,7 +53,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   const onSave = async (properties: Properties) => {
-
     const req = new pb.SetPropertiesRequest();
     req.setNamespace(`${props.tenant}/${props.namespace}`);
 
@@ -65,8 +64,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to set properties. ${res.getStatus()?.getMessage()}`);
     }
-
-    notifySuccess( <span>Successfully saved properties</span> );
 
     mutate(swrKey);
   }

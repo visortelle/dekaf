@@ -108,9 +108,9 @@ const KeyValueView = (props: Props) => {
       <div className={s.Rows}>
         {convertedKeyValues.map((keyValue, index) => (
           <div className={`${s.Row}`}>
-
             <div className={`${s.Field}`}>
               <Input
+                isSmall
                 type="text"
                 value={keyValue[0]}
                 onChange={(v) => {
@@ -126,6 +126,7 @@ const KeyValueView = (props: Props) => {
             </div>
             <div className={`${s.Field}`}>
               <Input
+                isSmall
                 value={keyValue[1]}
                 onChange={(v) => setConvertedKeyValues(Object.assign(
                   [...convertedKeyValues],
@@ -149,6 +150,7 @@ const KeyValueView = (props: Props) => {
         <div className={`${s.Row}`}>
           <div className={`${s.Field} ${invalidKeys && invalidKeys[newKeyValue.key] > 1 && s.ErrorField}`}>
             <Input
+              isSmall
               placeholder='New key'
               value={newKeyValue.key}
               onChange={(v) => {
@@ -163,6 +165,7 @@ const KeyValueView = (props: Props) => {
           </div>
           <div className={`${s.Field}`}>
             <Input
+              isSmall
               placeholder='New value'
               value={newKeyValue.value}
               onChange={(v) => setNewKeyValue({
