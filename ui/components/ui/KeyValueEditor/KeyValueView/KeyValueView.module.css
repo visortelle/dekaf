@@ -1,24 +1,41 @@
-.Line {
+.List {
+  display: flex;
+  flex-direction: column;
+}
+
+.Row {
   display: flex;
   width: 100%;
   font-size: 14rem;
   margin-bottom: 8rem;
+  z-index: 100;
 }
 
-.Titles > span {
+.Row:last-child {
+  margin-bottom: 0;
+}
+
+.Rows {
+  overflow-y: auto;
+}
+
+.Header {
+  top: 0;
+  background-color: #fff;
+  z-index: 101;
+  padding-bottom: 5rem;
+}
+
+.ColumnName {
   width: calc(50% - 38rem);
   margin-right: 8rem;
+  font-weight: bold;
 }
 
 .Field {
-  width: calc(50% - 8rem);
+  width: calc(50% - 38rem);
+  max-width: calc(50% - 38rem);
   margin-right: 8rem;
-}
-.ErrorField > div > input {
-  border-color: var(--accent-color-red)
-}
-.ErrorField > div > input:focus {
-  border-color: var(--accent-color-red)
 }
 
 .Button {

@@ -37,6 +37,7 @@ import schemaValidationEnforceField from './fields/schema-validation-enforce';
 import offloadPoliciesField from './fields/offload-policies/offload-policies';
 import publishRateField from './fields/publish-rate';
 import resourceGroupField from './fields/resource-group';
+import propertiesField from './fields/properties';
 
 import s from './Policies.module.css'
 
@@ -62,6 +63,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
             delayedDeliveryField,
             publishRateField,
             resourceGroupField,
+            propertiesField,
           ].map(field => field(props))}
         />
       </div>

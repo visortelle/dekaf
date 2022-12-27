@@ -35,6 +35,16 @@
   color: var(--text-color);
   caret-color: var(--text-color);
   transition: var(--transition-short);
+  width: 100%;
+}
+
+.InputInput.SmallInputInput {
+  height: 28rem;
+}
+
+.InputInput.InputInputWithError,
+.InputInput.InputInputWithError:focus {
+  border-color: var(--accent-color-red);
 }
 
 .InputInputWithIcon {
