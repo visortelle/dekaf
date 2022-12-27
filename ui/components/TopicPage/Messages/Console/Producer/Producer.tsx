@@ -184,8 +184,8 @@ const Producer: React.FC<ProducerProps> = (props) => {
             <div className={s.FormControl}>
               <strong>Properties</strong>
               <KeyValueEditor
-                keyValues={JSON.parse(propertiesJsonMap)}
-                onSave={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
+                value={JSON.parse(propertiesJsonMap)}
+                onChange={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
                 height="320rem"
               />
             </div>
