@@ -1,4 +1,5 @@
 import useSWR, { useSWRConfig } from "swr";
+import stringify from 'safe-stable-stringify';
 
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
@@ -8,6 +9,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import KeyValueEditor from '../../../ui/KeyValueEditor/KeyValueEditor';
 import { swrKeys } from '../../../swrKeys';
 import { mapToObject } from '../../../../pbUtils/pbUtils';
+import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 
 const policy = 'properties';
 
@@ -69,12 +71,20 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   }
 
   return (
-    <KeyValueEditor
-      keyValues={initialValue}
-      onSave={onSave}
-      height="300rem"
-      testId="properties"
-    />
+    <WithUpdateConfirmation<Properties>
+      key={stringify(initialValue)}
+      initialValue={initialValue}
+      onConfirm={onSave}
+    >
+      {({ value, onChange }) => (
+        <KeyValueEditor
+          value={value}
+          onChange={onChange}
+          height="300rem"
+          testId="properties"
+        />
+      )}
+    </WithUpdateConfirmation>
   )
 }
 
