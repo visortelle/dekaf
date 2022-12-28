@@ -1,12 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import s from './Filter.module.css'
 import * as t from './types';
 import Select from '../../../../ui/Select/Select';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
+import { Monaco } from '@monaco-editor/react';
+import { IRange } from 'monaco-editor';
 
 export type FilterProps = {
   value: t.Filter;
   onChange: (value: t.Filter) => void;
+  fullMonaco?: (monaco: Monaco) => void
 };
 
 const defaultJsValue = `(val, msg, agg) => {
@@ -14,6 +17,7 @@ const defaultJsValue = `(val, msg, agg) => {
 }`;
 
 const Filter: React.FC<FilterProps> = (props) => {
+
   useEffect(() => {
     if (props.value.value !== undefined) {
       return
@@ -44,6 +48,7 @@ const Filter: React.FC<FilterProps> = (props) => {
           onChange={v => props.onChange({ ...props.value, value: v || '' })}
           height="180rem"
           language="javascript"
+          fullMonaco={props.fullMonaco}
         />
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { isPlainObject } from 'lodash';
 import { Buffer } from 'buffer';
 import { nanoid } from 'nanoid';
@@ -14,6 +14,11 @@ import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
+
+
+
+import { Monaco } from '@monaco-editor/react';
+import { IRange } from 'monaco-editor';
 
 import sendIcon from './icons/send.svg';
 
@@ -143,6 +148,171 @@ const Producer: React.FC<ProducerProps> = (props) => {
     await setPropertiesJsonMap(v || "")
   }
 
+
+
+
+  // const [monaco, setMonaco] = useState<Monaco | null>(null);
+
+  // useEffect(() => {
+
+  //   console.log("I'm working 2 =)")
+
+  //   if (!monaco) {
+  //     return
+  //   }
+
+  //   const createDependencyProposals = (range: IRange) => {
+  //     return [
+  //       {
+  //         label: 'properties',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'properties()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'eventTime',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'eventTime()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'publishTime',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'publishTime()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'brokerPublishTime',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'brokerPublishTime()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'messageId',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'messageId()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'sequenceId',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'sequenceId()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'producerName',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'producerName()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'key',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'key()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'orderingKey',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'orderingKey()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'topic',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'topic()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'size',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'size()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'redeliveryCount',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'redeliveryCount()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'schemaVersion',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'schemaVersion()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'isReplicated',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'isReplicated()',
+  //         range: range
+  //       },
+  //       {
+  //         label: 'replicatedFrom',
+  //         kind: monaco.languages.CompletionItemKind.Function,
+  //         documentation: 'More about ...',
+  //         insertText: 'replicatedFrom()',
+  //         range: range
+  //       },
+  //     ];
+  //   }
+    
+  //   monaco.languages.typescript.javascriptDefaults.setCompilerOptions({})
+
+  //   monaco.languages.registerCompletionItemProvider('javascript', {
+  //     provideCompletionItems: function (model, position) {
+    
+  //       const textUntilPosition = model.getValueInRange({
+  //         startLineNumber: 1,
+  //         startColumn: 1,
+  //         endLineNumber: position.lineNumber,
+  //         endColumn: position.column
+  //       })
+  //       const match = textUntilPosition.match(
+  //         /msg.*/
+  //       )
+  //       if (!match) {
+  //         return { suggestions: [] };
+  //       }
+  //       const word = model.getWordUntilPosition(position);
+  //       const range = {
+  //         startLineNumber: position.lineNumber,
+  //         endLineNumber: position.lineNumber,
+  //         startColumn: word.startColumn,
+  //         endColumn: word.endColumn
+  //       }
+  //       return {
+  //         suggestions: createDependencyProposals(range)
+  //       }
+  //     },
+      
+  //   });
+
+  // }, [monaco])
+
+
+  // const fullMonaco = (monaco: Monaco) => {
+  //   setMonaco(monaco)
+  // }
+
+
+
+
+
   return (
     <div
       className={s.Producer}
@@ -205,6 +375,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   onChange={v => setValue(v || '')}
                   language="json"
                   height="480rem"
+                  // fullMonaco={fullMonaco}
                 />
               )}
               {valueType === 'bytes-hex' && (
@@ -212,6 +383,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   value={value}
                   onChange={v => setValue(v || '')}
                   height="480rem"
+                  // fullMonaco={fullMonaco}
                 />
               )}
             </div>
