@@ -3,7 +3,8 @@ import useSWR, { useSWRConfig } from "swr";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import sf from '../../../ui/ConfigurationTable/form.module.css';
+import FormItem from "../../../ui/ConfigurationTable/FormItem/FormItem";
+import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
 import Input from "../../../ui/ConfigurationTable/Input/Input";
 import Select from '../../../ui/Select/Select';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
@@ -60,9 +61,9 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           let topicType: TopicType = 'non-partitioned';
           switch (autoTopicCreationOverride.getTopicType()) {
             case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED: topicType = 'partitioned';
-            break;
+              break;
             case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED: topicType = 'non-partitioned';
-            break;
+              break;
           }
 
           v = {
@@ -107,13 +108,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
           const autoTopicCreationOverride = new pb.AutoTopicCreationOverride();
           autoTopicCreationOverride.setIsAllowTopicCreation(v.isAllowAutoTopicCreation);
-          
-          if (v.topicType === 'partitioned') {
-            autoTopicCreationOverride.setDefaultNumPartitions(v.defaultNumPartitions);
-          }
 
           switch (v.topicType) {
-            case 'partitioned': autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED); break;
+            case 'partitioned': {
+              autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED)
+              autoTopicCreationOverride.setDefaultNumPartitions(v.defaultNumPartitions);
+            }; break;
             case 'non-partitioned': autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED); break;
           }
           req.setAutoTopicCreationOverride(autoTopicCreationOverride);
@@ -134,7 +134,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       {({ value, onChange }) => {
         return (
           <>
-            <div className={sf.FormItem}>
+            <FormItem>
               <Select<PolicyValue['type']>
                 onChange={(v) => {
                   if (v === 'inherited-from-broker-config') {
@@ -155,35 +155,33 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   { type: 'item', value: 'specified', title: 'Specified for this namespace' }
                 ]}
               />
-            </div>
+            </FormItem>
 
             {value.type === 'specified' && (
-              <div>
-                <div className={sf.FormItem}>
-                  <strong className={sf.FormLabel}>Allow</strong>
-                  <Select<IsAllowAutoTopicCreation>
-                    onChange={(v) => onChange({ ...value, isAllowAutoTopicCreation: v == 'true', defaultNumPartitions: defaultNumPartitions})}
-                    value={`${value.isAllowAutoTopicCreation}`}
-                    list={[ { type: 'item', value: 'false', title: 'Disallowed' }, { type: 'item', value: 'true', title: 'Allowed' } ]}
-                  />
-                </div>
-              </div>
+              <FormItem>
+                <FormLabel content="Allow" />
+                <Select<IsAllowAutoTopicCreation>
+                  onChange={(v) => onChange({ ...value, isAllowAutoTopicCreation: v == 'true', defaultNumPartitions: defaultNumPartitions })}
+                  value={`${value.isAllowAutoTopicCreation}`}
+                  list={[{ type: 'item', value: 'false', title: 'Disallowed' }, { type: 'item', value: 'true', title: 'Allowed' }]}
+                />
+              </FormItem>
             )}
 
-            {value.type === 'specified' && value.isAllowAutoTopicCreation === true && (
-              <div className={sf.FormItem}>
-                <strong className={sf.FormLabel}>Topic type</strong>
+            {value.type === 'specified' && value.isAllowAutoTopicCreation && (
+              <FormItem>
+                <FormLabel content="Topic type" />
                 <Select<TopicType>
                   onChange={(v) => onChange({ ...value, topicType: v, defaultNumPartitions: defaultNumPartitions })}
                   value={value.topicType}
                   list={[{ type: 'item', value: 'non-partitioned', title: 'Non-partitioned' }, { type: 'item', value: 'partitioned', title: 'Partitioned' }]}
                 />
-              </div>
+              </FormItem>
             )}
 
-            {value.type === 'specified' && value.isAllowAutoTopicCreation === true && value.topicType === 'partitioned' && (
-              <div className={sf.FormItem}>
-                <strong className={sf.FormLabel}>Num partitions</strong>
+            {value.type === 'specified' && value.isAllowAutoTopicCreation && value.topicType === 'partitioned' && (
+              <FormItem>
+                <FormLabel content="Num partitions" />
                 <Input
                   type='number'
                   onChange={(v) => {
@@ -195,7 +193,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                   value={String(value.defaultNumPartitions)}
                   inputProps={{ min: 1 }}
                 />
-              </div>
+              </FormItem>
             )}
           </>
         );
