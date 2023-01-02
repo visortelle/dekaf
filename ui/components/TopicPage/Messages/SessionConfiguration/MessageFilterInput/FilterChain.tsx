@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import s from './FilterChain.module.css'
-import * as t from './types';
-import Filter from './Filter';
-import Button from '../../../../ui/Button/Button';
-import SmallButton from '../../../../ui/SmallButton/SmallButton';
-import deleteIcon from './icons/delete.svg';
-import enableIcon from './icons/enable.svg';
-import { v4 as uuid } from 'uuid';
-import { cloneDeep } from 'lodash';
-import Select from '../../../../ui/Select/Select';
 import { Monaco } from '@monaco-editor/react';
 import { IRange } from 'monaco-editor';
+import { v4 as uuid } from 'uuid';
+import { cloneDeep } from 'lodash';
+
+import Button from '../../../../ui/Button/Button';
+import SmallButton from '../../../../ui/SmallButton/SmallButton';
+import Select from '../../../../ui/Select/Select';
+import * as t from './types';
+import Filter from './Filter';
+import deleteIcon from './icons/delete.svg';
+import enableIcon from './icons/enable.svg';
+
+import s from './FilterChain.module.css';
 
 export type FilterChainProps = {
   value: t.Chain;
@@ -19,16 +21,10 @@ export type FilterChainProps = {
 
 const FilterChain: React.FC<FilterChainProps> = (props) => {
 
-
-
-
-
   const [monaco, setMonaco] = useState<Monaco | null>(null);
 
   useEffect(() => {
-
-    console.log("I'm working 2 =)")
-
+    
     if (!monaco) {
       return
     }
@@ -143,10 +139,11 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       ];
     }
     
-    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({})
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({ noLib: false, allowNonTsExtensions: true })
 
-    monaco.languages.registerCompletionItemProvider('javascript', {
-      provideCompletionItems: function (model, position) {
+    const register = monaco.languages.registerCompletionItemProvider('javascript', {
+      triggerCharacters: ["."],
+      provideCompletionItems: (model, position) => {
     
         const textUntilPosition = model.getValueInRange({
           startLineNumber: 1,
@@ -155,11 +152,12 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           endColumn: position.column
         })
         const match = textUntilPosition.match(
-          /msg.*/
+          /msg\./
         )
         if (!match) {
           return { suggestions: [] };
         }
+        
         const word = model.getWordUntilPosition(position);
         const range = {
           startLineNumber: position.lineNumber,
@@ -174,19 +172,19 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       
     });
 
+    return () => {
+      register.dispose()
+    }
   }, [monaco])
 
 
-  const fullMonaco = (monaco: Monaco) => {
+  const autoComplete = (monaco: Monaco) => {
     setMonaco(monaco)
   }
 
-
-
-
-  
   return (
     <div className={s.FilterChain}>
+
       <div style={{ marginBottom: '12rem' }}>
         <Select<'all' | 'any'>
           list={[
@@ -197,6 +195,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           onChange={v => props.onChange({ ...props.value, mode: v })}
         />
       </div>
+
       {Object.entries(props.value.filters).map(([entryId, entry], index) => {
         const isDisabled = props.value.disabledFilters.includes(entryId);
         return (
@@ -205,7 +204,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
               <Filter
                 value={entry.filter}
                 onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
-                fullMonaco={index === 0 && fullMonaco}
+                autoComplete={index === 0 ? autoComplete : undefined}
               />
             </div>
             <div className={s.EntryButtons}>
@@ -239,6 +238,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           </div>
         );
       })}
+
       <SmallButton
         onClick={() => {
           const newFilter: t.Filter = { value: undefined };
@@ -248,6 +248,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         text="Add filter"
         type='primary'
       />
+      
     </div>
   );
 }
