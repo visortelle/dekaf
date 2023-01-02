@@ -205,7 +205,6 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   onChange={v => setValue(v || '')}
                   language="json"
                   height="480rem"
-                  // fullMonaco={fullMonaco}
                 />
               )}
               {valueType === 'bytes-hex' && (
@@ -213,7 +212,6 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   value={value}
                   onChange={v => setValue(v || '')}
                   height="480rem"
-                  // fullMonaco={fullMonaco}
                 />
               )}
             </div>

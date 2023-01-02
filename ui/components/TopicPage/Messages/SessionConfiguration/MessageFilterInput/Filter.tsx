@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Monaco } from '@monaco-editor/react';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import * as t from './types';

@@ -1,6 +1,5 @@
 import React from 'react';
 import Editor, { EditorProps, Monaco } from '@monaco-editor/react';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import s from './CodeEditor.module.css'
 
