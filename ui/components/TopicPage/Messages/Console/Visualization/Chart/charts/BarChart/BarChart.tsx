@@ -1,18 +1,25 @@
 import React, { useMemo } from 'react';
 import s from './BarChart.module.css'
 import { Bar } from 'react-chartjs-2';
-import {Chart as ChartJs, CategoryScale, LinearScale, BarElement, LogarithmicScale, TimeSeriesScale, TimeScale} from 'chart.js';
+import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, LogarithmicScale, TimeSeriesScale, TimeScale } from 'chart.js';
 import ZoomPlugin from 'chartjs-plugin-zoom';
-import sampleData from '../sample-data.json';
 import { getTheme } from '../theme';
+import { MessageDescriptor } from '../../../../../types';
+import { get } from 'lodash';
 
 ChartJs.register(CategoryScale, LinearScale, LogarithmicScale, BarElement, ZoomPlugin);
 
 export type BarChartProps = {
+  y: string;
+  data: any[];
 };
 
 const BarChart: React.FC<BarChartProps> = (props) => {
   const theme = useMemo(() => getTheme(), []);
+  const data = (props.data as MessageDescriptor[]).map((entry) => ({
+    x: entry.publishTime === undefined ? 'unknown' : entry.publishTime.toISOString(),
+    y: entry.jsonValue
+  }));
 
   return (
     <div className={s.BarChart}>
@@ -20,16 +27,15 @@ const BarChart: React.FC<BarChartProps> = (props) => {
         data={{
           datasets: [
             {
-              data: sampleData.map(s => s.y),
+              data: data.map(s => get(s, props.y)),
               animation: false,
               backgroundColor: theme.blueColor,
               borderRadius: 4
             },
           ],
-          labels: sampleData.map(s => s.x.toString()),
+          labels: data.map(s => s.x.toString()),
         }}
         options={{
-          normalized: true,
           responsive: true,
           maintainAspectRatio: false,
           // scales: {
