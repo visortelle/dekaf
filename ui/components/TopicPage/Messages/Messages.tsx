@@ -516,6 +516,7 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionConfig={props.config}
         sessionSubscriptionName={subscriptionName}
         topicsInternalStats={topicsInternalStats}
+        messages={messages}
       />
     </div>
   );
@@ -527,7 +528,7 @@ type SessionControllerProps = {
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
   const [config, setConfig] = useState<SessionConfig>(props.config);
-  const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
+  const [isShowConsole, setIsShowConsole] = useState<boolean>(true);
 
   return (
     <Session

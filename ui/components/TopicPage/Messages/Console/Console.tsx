@@ -2,7 +2,7 @@ import React from 'react';
 
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
 import Producer from './Producer/Producer';
-import { SessionConfig, SessionState } from '../types';
+import { MessageDescriptor, SessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import EnteringFromBottomDiv from '../../../ui/animations/EnteringFromBottomDiv';
@@ -10,6 +10,7 @@ import EnteringFromBottomDiv from '../../../ui/animations/EnteringFromBottomDiv'
 import closeIcon from './close.svg';
 
 import s from './Console.module.css'
+import Visualization from './Visualization/Visualization';
 
 export type ConsoleProps = {
   isShow: boolean;
@@ -20,15 +21,19 @@ export type ConsoleProps = {
   sessionState: SessionState;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   onSessionStateChange: (state: SessionState) => void;
+  messages: MessageDescriptor[];
 };
 
+type TabName = 'producer' | 'cursors' | 'visualization';
+
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<'cursors' | 'producer'>('producer');
+  const [activeTab, setActiveTab] = React.useState<TabName>('visualization');
 
   return (
     <EnteringFromBottomDiv className={s.Console} isVisible={props.isShow} motionKey='consumer-console'>
       <div className={s.Tabs}>
         <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Produce message</div>
+        <div className={`${s.Tab} ${activeTab === 'visualization' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('visualization')}>Visualize messages</div>
         {/* <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div> */}
 
         <div className={s.CloseConsole} title="Close" onClick={props.onClose}>
@@ -38,6 +43,10 @@ const Console: React.FC<ConsoleProps> = (props) => {
 
       <TabContent isShow={activeTab === 'cursors'}>
         <CursorsTab {...props} />
+      </TabContent>
+
+      <TabContent isShow={activeTab === 'visualization'}>
+        <Visualization messages={props.messages} />
       </TabContent>
 
       <TabContent isShow={activeTab === 'producer'}>

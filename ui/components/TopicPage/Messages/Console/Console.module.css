@@ -4,6 +4,7 @@
   border-top: 1px solid #ddd;
   height: 480rem;
   background-color: #fff;
+  overflow: auto;
 }
 
 .Tabs {
