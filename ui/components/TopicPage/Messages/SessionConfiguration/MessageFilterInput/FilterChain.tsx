@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { Monaco } from '@monaco-editor/react';
-import { IRange } from 'monaco-editor';
+import React from 'react';
 import { v4 as uuid } from 'uuid';
 import { cloneDeep } from 'lodash';
 
@@ -9,6 +7,9 @@ import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from './types';
 import Filter from './Filter';
+import dependencies from './dependecies';
+import FiltersEditor from './FiltersEditor/FiltersEditor';
+import * as Modals from '../../../../app/contexts/Modals/Modals';
 import deleteIcon from './icons/delete.svg';
 import enableIcon from './icons/enable.svg';
 
@@ -19,168 +20,11 @@ export type FilterChainProps = {
   onChange: (value: t.Chain) => void;
 };
 
+export const USER = 'user1';
+
 const FilterChain: React.FC<FilterChainProps> = (props) => {
 
-  const [monaco, setMonaco] = useState<Monaco | null>(null);
-
-  useEffect(() => {
-    
-    if (!monaco) {
-      return
-    }
-
-    const createDependencyProposals = (range: IRange) => {
-      return [
-        {
-          label: 'properties',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'properties()',
-          range: range
-        },
-        {
-          label: 'eventTime',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'eventTime()',
-          range: range
-        },
-        {
-          label: 'publishTime',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'publishTime()',
-          range: range
-        },
-        {
-          label: 'brokerPublishTime',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'brokerPublishTime()',
-          range: range
-        },
-        {
-          label: 'messageId',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'messageId()',
-          range: range
-        },
-        {
-          label: 'sequenceId',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'sequenceId()',
-          range: range
-        },
-        {
-          label: 'producerName',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'producerName()',
-          range: range
-        },
-        {
-          label: 'key',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'key()',
-          range: range
-        },
-        {
-          label: 'orderingKey',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'orderingKey()',
-          range: range
-        },
-        {
-          label: 'topic',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'topic()',
-          range: range
-        },
-        {
-          label: 'size',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'size()',
-          range: range
-        },
-        {
-          label: 'redeliveryCount',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'redeliveryCount()',
-          range: range
-        },
-        {
-          label: 'schemaVersion',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'schemaVersion()',
-          range: range
-        },
-        {
-          label: 'isReplicated',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'isReplicated()',
-          range: range
-        },
-        {
-          label: 'replicatedFrom',
-          kind: monaco.languages.CompletionItemKind.Function,
-          documentation: 'More about ...',
-          insertText: 'replicatedFrom()',
-          range: range
-        },
-      ];
-    }
-    
-    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({ noLib: false, allowNonTsExtensions: true })
-
-    const register = monaco.languages.registerCompletionItemProvider('javascript', {
-      triggerCharacters: ["."],
-      provideCompletionItems: (model, position) => {
-    
-        const textUntilPosition = model.getValueInRange({
-          startLineNumber: 1,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column
-        })
-        const match = textUntilPosition.match(
-          /msg\./
-        )
-        if (!match) {
-          return { suggestions: [] };
-        }
-        
-        const word = model.getWordUntilPosition(position);
-        const range = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,
-          endColumn: word.endColumn
-        }
-        return {
-          suggestions: createDependencyProposals(range)
-        }
-      },
-      
-    });
-
-    return () => {
-      register.dispose()
-    }
-  }, [monaco])
-
-
-  const autoComplete = (monaco: Monaco) => {
-    setMonaco(monaco)
-  }
+  const modals = Modals.useContext();
 
   return (
     <div className={s.FilterChain}>
@@ -196,15 +40,16 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         />
       </div>
 
-      {Object.entries(props.value.filters).map(([entryId, entry], index) => {
+      {props.value.filters[USER] && Object.entries(props.value.filters[USER]).map(([entryId, entry], index) => {
         const isDisabled = props.value.disabledFilters.includes(entryId);
         return (
           <div key={entryId} className={s.Entry}>
             <div className={s.EntryFilter}>
               <Filter
                 value={entry.filter}
-                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
-                autoComplete={index === 0 ? autoComplete : undefined}
+                onChange={(f) => props.onChange({ ...props.value, filters: { [USER]: { [entryId]: { ...entry, filter: f }  } } })}
+                // ...props.value.filters, [entryId]: { ...entry, filter: f } 
+                autoCompleteConfig={index === 0 ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
               />
             </div>
             <div className={s.EntryButtons}>
@@ -222,6 +67,45 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                 />
               </div>
 
+              <div className={s.EntryButton}>
+                <Button
+                  text="Save"
+                  onClick={() => modals.push({
+                    id: 'edit-filter',
+                    title: `Message filter browser`,
+                    content:
+                      <FiltersEditor
+                        filters={props.value.filters}
+                        user={USER}
+                        // user={USER}
+                        // newFilters={props.value.filters}
+                        // filters={filters}
+                        // users={users}
+                        // filter={{ entryId: entryId, entry: entry.filter.value || '' }}
+                        // onChange={props.onChange}
+                        // onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
+
+                        // onChange={(entryId, entry, description) => props.onChange({
+                        //   ...props.value,
+                        //   filters: {
+                        //     ...props.value.filters,
+                        //     [entryId]: {
+                        //       filter: {
+                        //         value: entry,
+                        //         description: description
+                        //       }
+                        //     }
+                        //   }
+                        // })}
+                      />,
+                    styleMode: 'no-content-padding'
+                  })}
+          
+                  title={isDisabled ? 'Enable filter' : 'Disable filter'}
+                  type={isDisabled ? 'regular' : 'primary'}
+                />
+              </div>
+
               <div className={s.EntryButton} style={{ marginTop: 'auto' }}>
                 <Button
                   svgIcon={deleteIcon}
@@ -229,6 +113,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                     const newFilters = cloneDeep(props.value.filters);
                     delete newFilters[entryId];
                     props.onChange({ ...props.value, filters: newFilters });
+                    console.log({ ...props.value, filters: newFilters })
                   }}
                   type="danger"
                   title="Delete filter"
@@ -241,14 +126,34 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
 
       <SmallButton
         onClick={() => {
-          const newFilter: t.Filter = { value: undefined };
-          const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [uuid()]: { filter: newFilter } } };
+          const newFilter: t.Filter = { value: undefined, description: undefined };
+          const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [USER]:{ ...props.value.filters[USER], [uuid()]: { filter: newFilter } }} };
           props.onChange(newChain);
+          // console.log( props.value.filters[USER], {[uuid()]: { filter: newFilter } })
+          // console.log({[USER]:{ ...props.value.filters[USER], [uuid()]: { filter: newFilter } }})
+          // console.log(newChain)
+          // console.log(props.value.filters[USER])
         }}
         text="Add filter"
         type='primary'
       />
-      
+      <SmallButton
+        onClick={() => modals.push({
+          id: 'filter-editor',
+          title: `Message filter browser`,
+          content:
+            <FiltersEditor
+              filters={props.value.filters}
+              user={USER}
+              // onChange={props.onChange}
+              // onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
+            />,
+          styleMode: 'no-content-padding'
+        })}
+
+        text="Choose filter"
+        type='primary'
+      />
     </div>
   );
 }

@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { v4 as uuid } from 'uuid';
 
 import * as Modals from '../app/contexts/Modals/Modals';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
-import s from './TopicPage.module.css'
 import Toolbar, { ToolbarButtonProps } from '../ui/Toolbar/Toolbar';
 import Session from './Messages/Messages';
 import Schema from './Schema/Schema';
 import Policies from './Policies/Policies';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
 import { routes } from '../routes';
-import { useNavigate } from 'react-router';
+
+import { MessageFilters } from './Messages/SessionConfiguration/MessageFilterInput/types';
+
+import s from './TopicPage.module.css'
 
 export type TopicPageView = 'messages' | 'overview' | 'producers' | 'consumers' | 'schema' | 'policies';
 export type TopicPageProps = {
@@ -92,6 +96,36 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     }),
   }]);
 
+  const [messageFilters, setMessageFilters] = useState<MessageFilters>();
+
+  useEffect(() => {
+    // if (localStorage.getItem('messageFilters')) {
+    //   return;
+    // }
+
+    const messageFilters: MessageFilters = {
+      admin: {
+        [uuid()]: {
+          filter: {
+            description: uuid(),
+            value: uuid(),
+          }
+        },
+        [uuid()]: {
+          filter: {
+            description: uuid(),
+            value: uuid(),
+          }
+        },
+      }
+    }
+    localStorage.setItem('messageFilters', JSON.stringify(messageFilters));
+  }, []);
+
+  useEffect(() => {
+    setMessageFilters(JSON.parse(localStorage.getItem('messageFilters') || ''));
+  }, []);
+
   return (
     <div className={s.Page}>
       <BreadCrumbsAtPageTop
@@ -122,13 +156,13 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         buttons={buttons}
       />
 
-      {props.view === 'messages' && (
+      {props.view === 'messages' && messageFilters && (
         <Session
           key={key}
           config={{
             topicsSelector: { type: 'by-names', topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] },
             startFrom: { type: 'latest' },
-            messageFilter: { filters: {}, disabledFilters: [], mode: 'all' },
+            messageFilter: { filters: messageFilters, disabledFilters: [], mode: 'all' },
           }}
         />
       )}

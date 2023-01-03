@@ -1,7 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { motion, AnimatePresence } from "framer-motion"
-import ReactTooltip from 'react-tooltip';
+import { motion } from 'framer-motion';
 
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import { H2 } from '../../../ui/H/H';
@@ -14,7 +13,7 @@ type ModalStackEntry = {
   id: string,
   title: string,
   content: ReactNode,
-  styleMode?: 'no-content-padding'
+  styleMode?: 'no-content-padding',
 }
 
 type ModalStack = ModalStackEntry[];

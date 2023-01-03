@@ -9,12 +9,12 @@ import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrp
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { GetResourceGroupsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-
-import s from './ResourceGroups.module.css';
-import sc from '../Configuration/Configuration.module.css';
 import { H1 } from '../../ui/H/H';
 import ActionButton from '../../ui/ActionButton/ActionButton';
 import { ToolbarButton } from '../../ui/Toolbar/Toolbar';
+
+import s from './ResourceGroups.module.css';
+import sc from '../Configuration/Configuration.module.css';
 
 type View = FormView | { type: 'show-all-groups' };
 

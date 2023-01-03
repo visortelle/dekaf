@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { Monaco } from '@monaco-editor/react';
 
-import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
+import CodeEditor, { AutoCompleteConfig } from '../../../../ui/CodeEditor/CodeEditor';
 import * as t from './types';
 
 import s from './Filter.module.css'
@@ -9,12 +8,14 @@ import s from './Filter.module.css'
 export type FilterProps = {
   value: t.Filter;
   onChange: (value: t.Filter) => void;
-  autoComplete?: (monaco: Monaco) => void,
+  autoCompleteConfig?: AutoCompleteConfig;
 };
 
 const defaultJsValue = `(val, msg, agg) => {
   return true;
 }`;
+
+const defaultDescription = 'description'
 
 const Filter: React.FC<FilterProps> = (props) => {
 
@@ -22,7 +23,7 @@ const Filter: React.FC<FilterProps> = (props) => {
     if (props.value.value !== undefined) {
       return
     }
-    props.onChange({ ...props.value, value: defaultJsValue });
+    props.onChange({ ...props.value, value: defaultJsValue, description: defaultDescription });
   }, []);
 
   return (
@@ -33,7 +34,7 @@ const Filter: React.FC<FilterProps> = (props) => {
           onChange={v => props.onChange({ ...props.value, value: v || '' })}
           height="180rem"
           language="javascript"
-          autoComplete={props.autoComplete}
+          autoCompleteConfig={props.autoCompleteConfig}
         />
       </div>
     </div>

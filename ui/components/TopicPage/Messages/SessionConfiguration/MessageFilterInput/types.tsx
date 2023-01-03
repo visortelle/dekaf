@@ -2,14 +2,19 @@ export type JsonType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'n
 
 export type Filter = {
   value: string | undefined;
+  description: string | undefined;
 }
 
 export type ChainEntry = {
   filter: Filter;
 }
 
+export type MessageFilters = {
+  [userName: string]: Record<string, ChainEntry>
+}
+
 export type Chain = {
-  filters: Record<string, ChainEntry>;
+  filters: MessageFilters;
   disabledFilters: string[];
   mode: 'all' | 'any';
 }

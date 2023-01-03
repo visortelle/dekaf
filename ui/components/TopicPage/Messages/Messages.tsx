@@ -354,10 +354,13 @@ const Session: React.FC<SessionProps> = (props) => {
 
       Object.entries(props.config.messageFilter.filters)
         .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
-        .forEach(([filterId, filter]) => {
-          const filterPb = new MessageFilter();
-          filterPb.setValue(filter.filter.value || '');
-          messageFilterChain.getFiltersMap().set(filterId, filterPb);
+        .forEach(([filterId, filters]) => {
+          Object.keys(filters).map((filter) => {
+            const filterPb = new MessageFilter();
+            filterPb.setValue(filter);
+            filterPb.setValue(filters[filter].filter.value || '');
+            messageFilterChain.getFiltersMap().set(filterId, filterPb);
+          })
         });
 
       const resumeReq = new ResumeRequest();
@@ -542,6 +545,7 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       config={config}
       onConfigChange={(v) => {
         setConfig(v);
+        // console.log(v.messageFilter, config)
       }}
     />
   );
