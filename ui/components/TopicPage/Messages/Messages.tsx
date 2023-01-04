@@ -110,7 +110,6 @@ const Session: React.FC<SessionProps> = (props) => {
   if (topicsInternalStatsError || (topicsInternalStats && topicsInternalStats?.getStatus()?.getCode() !== Code.OK)) {
     notifyError(`Unable to get topics internal stats. ${topicsInternalStatsError}`);
   }
-  console.log('msgs count', messages.length);
 
   const scrollToBottom = () => {
     const scrollParent = tableRef.current?.children[0];
@@ -398,10 +397,10 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
-    if (e.deltaY < 0) {
+    if (e.deltaY < 0 && sessionState === 'running') {
       setSessionState('pausing');
     }
-  }, []);
+  }, [sessionState]);
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, style?: React.CSSProperties }) => {
     const handleColumnHeaderClick = () => {
@@ -477,6 +476,7 @@ const Session: React.FC<SessionProps> = (props) => {
             data={sortedMessages}
             totalCount={sortedMessages.length}
             itemContent={itemContent}
+            increaseViewportBy={{ top: 500, bottom: 500 }}
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
