@@ -9,7 +9,8 @@ export type VisualizationProps = {
 };
 
 const Visualization: React.FC<VisualizationProps> = (props) => {
-  const [messages] = useDebounce(props.messages, chooseDebounceDelay(props.messages.length));
+  const [messages] = useDebounce(props.messages, chooseDebounceDelay(props.messages.length), { maxWait: 2000 });
+  // const messages = props.messages;
 
   return (
     <div className={s.Visualization}>
@@ -27,7 +28,7 @@ const Visualization: React.FC<VisualizationProps> = (props) => {
 function chooseDebounceDelay(itemsCount: number) {
   if (itemsCount > 1000) {
     return 1000;
-  } else if (itemsCount > 300) {
+  } else if (itemsCount > 500) {
     return 500;
   } else {
     return 100;

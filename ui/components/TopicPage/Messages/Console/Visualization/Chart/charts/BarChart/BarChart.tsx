@@ -20,6 +20,10 @@ const BarChart: React.FC<BarChartProps> = (props) => {
     y: entry.jsonValue
   }));
 
+  console.log('datale', data)
+  console.log('datalength', data.length)
+  console.log('data', data.length > 1 && data[data.length - 1].y);
+
   return (
     <div className={s.BarChart}>
       <Bar

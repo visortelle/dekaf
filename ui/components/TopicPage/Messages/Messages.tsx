@@ -110,6 +110,7 @@ const Session: React.FC<SessionProps> = (props) => {
   if (topicsInternalStatsError || (topicsInternalStats && topicsInternalStats?.getStatus()?.getCode() !== Code.OK)) {
     notifyError(`Unable to get topics internal stats. ${topicsInternalStatsError}`);
   }
+  console.log('msgs count', messages.length);
 
   const scrollToBottom = () => {
     const scrollParent = tableRef.current?.children[0];
@@ -127,10 +128,13 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     setMessages((messages) => {
-      const newMessages = messages.concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)));
+      const newMessages = messages
+        .concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)))
+        .slice(-displayMessagesLimit);
+
       messagesBuffer.current = [];
       scrollToBottom();
-      return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
+      return newMessages;
     });
   }, messagesLoadedPerSecond.now > 0 ? 500 : false);
 
