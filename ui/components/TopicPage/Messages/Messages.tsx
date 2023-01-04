@@ -61,7 +61,7 @@ export type SessionProps = {
   onSetIsShowConsole: (v: boolean) => void;
 };
 
-type Content = 'messages' | 'configuration';
+type View = 'messages' | 'configuration';
 type MessagesPerSecond = { prev: number, now: number };
 
 const displayMessagesLimit = 10000;
@@ -127,10 +127,13 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     setMessages((messages) => {
-      const newMessages = messages.concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)));
+      const newMessages = messages
+        .concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)))
+        .slice(-displayMessagesLimit);
+
       messagesBuffer.current = [];
       scrollToBottom();
-      return newMessages.slice(newMessages.length - displayMessagesLimit, newMessages.length);
+      return newMessages;
     });
   }, messagesLoadedPerSecond.now > 0 ? 500 : false);
 
@@ -301,7 +304,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const handleVisibilityChange = useCallback(() => {
     if (document.visibilityState === 'hidden') {
       setSessionStateBeforeWindowBlur(sessionState);
-      setSessionState('paused');
+      setSessionState('pausing');
       return;
     }
 
@@ -326,7 +329,7 @@ const Session: React.FC<SessionProps> = (props) => {
       initializeSession();
     }
 
-    if (sessionState === 'paused') {
+    if (sessionState === 'pausing') {
       console.info(`%cPausing session: ${props.sessionKey}`, consoleCss);
 
       const pauseReq = new PauseRequest();
@@ -385,12 +388,19 @@ const Session: React.FC<SessionProps> = (props) => {
     ReactTooltip.rebuild();
   }, [sessionState]);
 
+  useEffect(() => {
+    if (sessionState === 'pausing' && messagesLoadedPerSecond.now === 0) {
+      setSessionState('paused');
+      scrollToBottom();
+    }
+  }, [sessionState, messagesLoadedPerSecond]);
+
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
-    if (e.deltaY < 0) {
-      setSessionState('paused');
+    if (e.deltaY < 0 && sessionState === 'running') {
+      setSessionState('pausing');
     }
-  }, []);
+  }, [sessionState]);
 
   const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, style?: React.CSSProperties }) => {
     const handleColumnHeaderClick = () => {
@@ -420,19 +430,11 @@ const Session: React.FC<SessionProps> = (props) => {
     );
   }, [sort]);
 
-  const content: Content = sessionState === 'new' ? 'configuration' : 'messages';
+  const currentView: View = sessionState === 'new' ? 'configuration' : 'messages';
   const sortedMessages = useMemo(() => {
     const msgs = sessionState === 'running' ? messages.slice(messages.length - displayMessagesRunningLimit) : messages;
     return sortMessages(msgs, sort);
   }, [messages, sort, sessionState]);
-
-  const pausingSession = useMemo(() => sessionState !== 'running' && (messagesLoadedPerSecond.now > 0), [messagesLoadedPerSecond, sessionState]);
-  const prevPausingSession = usePrevious(pausingSession);
-  useEffect(() => {
-    if (prevPausingSession && !pausingSession) {
-      scrollToBottom();
-    }
-  }, [pausingSession, prevPausingSession]);
 
   return (
     <div className={s.Messages}>
@@ -448,7 +450,7 @@ const Session: React.FC<SessionProps> = (props) => {
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
       />
 
-      {content === 'messages' && messages.length === 0 && (
+      {currentView === 'messages' && messages.length === 0 && (
         <div className={s.NoMessages}>
           {sessionState === 'initializing' && 'Initializing session.'}
           {sessionState === 'awaiting-initial-cursor-positions' && 'Awaiting for initial cursor positions.'}
@@ -456,14 +458,14 @@ const Session: React.FC<SessionProps> = (props) => {
           {sessionState === 'paused' && 'No messages where loaded.'}
         </div>
       )}
-      {content === 'messages' && messages.length > 0 && (
+      {currentView === 'messages' && messages.length > 0 && (
         <div
           className={cts.Table}
           style={{ position: 'relative' }}
           ref={tableRef}
           onWheel={onWheel}
         >
-          {pausingSession && (
+          {sessionState === 'pausing' && (
             <div className={s.TableSpinner}>
               <div className={s.TableSpinnerContent}>Pausing session...</div>
             </div>
@@ -474,6 +476,7 @@ const Session: React.FC<SessionProps> = (props) => {
             data={sortedMessages}
             totalCount={sortedMessages.length}
             itemContent={itemContent}
+            increaseViewportBy={{ top: 500, bottom: 500 }}
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
@@ -499,7 +502,7 @@ const Session: React.FC<SessionProps> = (props) => {
         </div>
       )}
 
-      {content === 'configuration' && (
+      {currentView === 'configuration' && (
         <SessionConfiguration
           config={props.config}
           onConfigChange={props.onConfigChange}
@@ -516,6 +519,7 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionConfig={props.config}
         sessionSubscriptionName={subscriptionName}
         topicsInternalStats={topicsInternalStats}
+        messages={messages}
       />
     </div>
   );
@@ -527,7 +531,7 @@ type SessionControllerProps = {
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
   const [config, setConfig] = useState<SessionConfig>(props.config);
-  const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
+  const [isShowConsole, setIsShowConsole] = useState<boolean>(true);
 
   return (
     <Session

@@ -29,7 +29,6 @@ import java.time.Instant
 type JsonValue = Option[String]
 
 case class JsonMessage(
-    properties: Map[String, String],
     eventTime: Option[Long],
     publishTime: Option[Long],
     brokerPublishTime: Option[Long],
@@ -43,7 +42,8 @@ case class JsonMessage(
     redeliveryCount: Option[Int],
     schemaVersion: Option[Long],
     isReplicated: Option[Boolean],
-    replicatedFrom: Option[String]
+    replicatedFrom: Option[String],
+    properties: Map[String, String],
 )
 
 def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, JsonValue) =
@@ -52,7 +52,7 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
         case Some(v) => v.asScala.toMap
         case _       => Map.empty
     val eventTime = Option(msg.getEventTime) match
-        case Some(v) => if v > 0 then Some(v) else None
+        case Some(v) if v > 0 => Some(v)
         case _       => None
     val publishTime = Option(msg.getPublishTime)
     val brokerPublishTime = msg.getBrokerPublishTime.toScala.map(_.toLong)
@@ -90,9 +90,9 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
       properties = properties,
       value = Option(msg.getValue).map(ByteString.copyFrom),
       jsonValue,
-      eventTime = eventTime.map(v => timestamp.Timestamp(Instant.ofEpochMilli(v))),
-      publishTime = publishTime.map(v => timestamp.Timestamp(Instant.ofEpochMilli(v))),
-      brokerPublishTime = brokerPublishTime.map(v => timestamp.Timestamp(Instant.ofEpochMilli(v))),
+      eventTime = eventTime,
+      publishTime = publishTime,
+      brokerPublishTime = brokerPublishTime,
       messageId = messageId.map(ByteString.copyFrom),
       sequenceId = sequenceId,
       producerName = producerName,
