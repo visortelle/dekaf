@@ -1,11 +1,11 @@
 .Button {
   position: relative;
-  padding: 8px 12px;
+  padding: 8rem 12rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: 4rem;
+  font-size: 14rem;
   user-select: none;
   transition: var(--transition-short);
   border: none;
