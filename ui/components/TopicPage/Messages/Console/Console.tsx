@@ -45,7 +45,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
         <CursorsTab {...props} />
       </TabContent>
 
-      <TabContent isShow={activeTab === 'visualization'}>
+      <TabContent isShow={activeTab === 'visualization'} isRenderAlways>
         <Visualization
           messages={props.messages}
           isVisible={activeTab === 'visualization'}

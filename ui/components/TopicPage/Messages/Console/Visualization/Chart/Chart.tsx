@@ -9,6 +9,10 @@ export type ChartProps = {
 };
 
 const Chart: React.FC<ChartProps> = (props) => {
+  if (props.messages.length === 0) {
+    return <div className={s.NoData}>No data to show.</div>;
+  }
+
   return (
     <div className={s.Chart}>
       <BarChart data={props.messages} />
