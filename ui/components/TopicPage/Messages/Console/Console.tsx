@@ -2,7 +2,8 @@ import React from 'react';
 
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
 import Producer from './Producer/Producer';
-import { SessionConfig, SessionState } from '../types';
+import Visualization from './Visualization/Visualization';
+import { MessageDescriptor, SessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import EnteringFromBottomDiv from '../../../ui/animations/EnteringFromBottomDiv';
@@ -20,15 +21,19 @@ export type ConsoleProps = {
   sessionState: SessionState;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   onSessionStateChange: (state: SessionState) => void;
+  messages: MessageDescriptor[];
 };
 
+type TabName = 'producer' | 'cursors' | 'visualization';
+
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<'cursors' | 'producer'>('producer');
+  const [activeTab, setActiveTab] = React.useState<TabName>('visualization');
 
   return (
     <EnteringFromBottomDiv className={s.Console} isVisible={props.isShow} motionKey='consumer-console'>
       <div className={s.Tabs}>
-        <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Produce message</div>
+        <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Produce</div>
+        <div className={`${s.Tab} ${activeTab === 'visualization' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('visualization')}>Visualize</div>
         {/* <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div> */}
 
         <div className={s.CloseConsole} title="Close" onClick={props.onClose}>
@@ -36,8 +41,16 @@ const Console: React.FC<ConsoleProps> = (props) => {
         </div>
       </div>
 
-      <TabContent isShow={activeTab === 'cursors'}>
+      <TabContent isShow={activeTab === 'cursors'} isRenderAlways>
         <CursorsTab {...props} />
+      </TabContent>
+
+      <TabContent isShow={activeTab === 'visualization'} isRenderAlways>
+        <Visualization
+          messages={props.messages}
+          isVisible={activeTab === 'visualization'}
+          sessionState={props.sessionState}
+        />
       </TabContent>
 
       <TabContent isShow={activeTab === 'producer'}>
@@ -49,16 +62,20 @@ const Console: React.FC<ConsoleProps> = (props) => {
         />
       </TabContent>
 
-
     </EnteringFromBottomDiv>
   );
 }
 
 type TabContentProps = {
   isShow: boolean;
+  isRenderAlways?: boolean;
   children: React.ReactNode;
 }
 const TabContent: React.FC<TabContentProps> = (props) => {
+  if (!props.isShow && !props.isRenderAlways) {
+    return <></>;
+  }
+
   return (
     <div style={{ display: props.isShow ? 'flex' : 'none', flex: '1', overflow: 'hidden' }}>
       {props.children}

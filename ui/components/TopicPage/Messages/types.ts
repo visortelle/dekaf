@@ -2,8 +2,9 @@ import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
 import * as messageFilter from "../Messages/SessionConfiguration/MessageFilterInput/types";
 
 export type SessionState =
-  | "running"
   | "paused"
+  | "pausing"
+  | "running"
   | "got-initial-cursor-positions"
   | "awaiting-initial-cursor-positions"
   | "initializing"
@@ -40,23 +41,25 @@ export type SessionConfig = {
   messageFilter: messageFilter.Chain;
 };
 
+type Nullable<T> = T | null;
 export type MessageDescriptor = {
-  messageId: Uint8Array;
-  value: Uint8Array;
-  jsonValue: string;
-  brokerPublishTime: Date | undefined;
-  eventTime: Date | undefined;
-  isReplicated: boolean;
-  key: string;
-  orderingKey: Uint8Array;
-  producerName: string;
-  properties: string;
-  publishTime: Date | undefined;
-  redeliveryCount: number;
-  replicatedFrom: string;
-  schemaVersion: number;
-  sequenceId: number;
-  size: number;
-  topic: string;
-  aggregate: string;
+  messageId: Nullable<Uint8Array>;
+  eventTime: Nullable<number>;
+  publishTime: Nullable<number>;
+  brokerPublishTime: Nullable<number>;
+  sequenceId: Nullable<number>;
+  producerName: Nullable<string>;
+  key: Nullable<string>;
+  orderingKey: Nullable<Uint8Array>;
+  topic: Nullable<string>;
+  size: Nullable<number>;
+  redeliveryCount: Nullable<number>;
+  schemaVersion: Nullable<number>;
+  isReplicated: Nullable<boolean>;
+  replicatedFrom: Nullable<string>;
+  properties: Record<string, string>;
+
+  value: Nullable<Uint8Array>;
+  jsonValue: Nullable<string>;
+  jsonAggregate: Nullable<string>;
 };

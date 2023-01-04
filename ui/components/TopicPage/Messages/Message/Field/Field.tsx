@@ -2,7 +2,7 @@ import * as Notifications from '../../../../app/contexts/Notifications';
 import s from './Field.module.css';
 
 export type FieldProps = {
-  value: string | React.ReactElement | undefined,
+  value?: string | React.ReactElement,
   tooltip: string | undefined,
   isShowTooltips: boolean,
   rawValue?: string,
