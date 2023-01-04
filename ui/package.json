@@ -55,6 +55,7 @@
     "@types/react-dom": "18.0.5",
     "@types/react-highlight-words": "^0.16.4",
     "@types/uuid": "^8.3.4",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.86",
     "alias-hq": "^5.4.0",
     "esbuild": "^0.15.16",
     "esbuild-css-modules-plugin": "^2.6.2",

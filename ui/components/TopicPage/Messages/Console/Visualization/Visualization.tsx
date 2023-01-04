@@ -6,11 +6,15 @@ import { useDebounce } from 'use-debounce'
 
 export type VisualizationProps = {
   messages: MessageDescriptor[];
+  isAutoUpdateEnabled: boolean;
 };
 
 const Visualization: React.FC<VisualizationProps> = (props) => {
-  const [messages] = useDebounce(props.messages, chooseDebounceDelay(props.messages.length), { maxWait: 2000 });
-  // const messages = props.messages;
+  const [messages] = useDebounce(
+    props.messages,
+    chooseDebounceDelay(props.messages.length),
+    { maxWait: props.isAutoUpdateEnabled ? undefined : 3000 }
+  );
 
   return (
     <div className={s.Visualization}>
@@ -26,7 +30,9 @@ const Visualization: React.FC<VisualizationProps> = (props) => {
 }
 
 function chooseDebounceDelay(itemsCount: number) {
-  if (itemsCount > 1000) {
+  if (itemsCount > 5000) {
+    return 3000;
+  } else if (itemsCount > 1000) {
     return 1000;
   } else if (itemsCount > 500) {
     return 500;

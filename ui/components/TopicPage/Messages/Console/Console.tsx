@@ -46,7 +46,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
       </TabContent>
 
       <TabContent isShow={activeTab === 'visualization'}>
-        <Visualization messages={props.messages} />
+        <Visualization messages={props.messages} isAutoUpdateEnabled={props.sessionState === 'running'} />
       </TabContent>
 
       <TabContent isShow={activeTab === 'producer'}>

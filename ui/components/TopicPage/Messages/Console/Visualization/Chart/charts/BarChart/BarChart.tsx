@@ -17,12 +17,8 @@ const BarChart: React.FC<BarChartProps> = (props) => {
   const theme = useMemo(() => getTheme(), []);
   const data = (props.data as MessageDescriptor[]).map((entry) => ({
     x: entry.publishTime === null ? 'unknown' : entry.publishTime,
-    y: entry.jsonValue
+    y: entry.key
   }));
-
-  console.log('datale', data)
-  console.log('datalength', data.length)
-  console.log('data', data.length > 1 && data[data.length - 1].y);
 
   return (
     <div className={s.BarChart}>
@@ -66,6 +62,7 @@ const BarChart: React.FC<BarChartProps> = (props) => {
                   enabled: true,
                 },
                 mode: 'x',
+                scaleMode: 'x',
               }
             }
           },
