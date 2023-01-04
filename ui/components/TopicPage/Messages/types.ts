@@ -59,7 +59,7 @@ export type MessageDescriptor = {
   replicatedFrom: Nullable<string>;
   properties: Record<string, string>;
 
-  value: Nullable<Uint8Array>;
-  jsonValue: Nullable<string>;
-  jsonAggregate: Nullable<string>;
+  bytes: Nullable<Uint8Array>;
+  value: Nullable<string>; // JSON string
+  accumulator: Nullable<string>; // JSON string
 };

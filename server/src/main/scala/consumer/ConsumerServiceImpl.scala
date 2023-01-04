@@ -88,12 +88,12 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     processedMessagesCount =
                         processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-                    val (message, jsonMessage, jsonValue) = serializeMessage(schemasByTopic, msg)
+                    val (messagePb, jsonMessage, jsonValue) = serializeMessage(schemasByTopic, msg)
 
-                    val (filterResult, jsonAggregate) =
+                    val (filterResult, jsonAccumulator) =
                         getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
-                    
-                    val messageToSend = message.withJsonAggregate(jsonAggregate)
+
+                    val messageToSend = messagePb.withAccumulator(jsonAccumulator)
 
                     val messages = filterResult match
                         case Right(true) => Seq(messageToSend)

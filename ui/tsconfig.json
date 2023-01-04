@@ -16,6 +16,6 @@
     "incremental": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "components/TopicPage/Messages/Console/Visualization/Chart/chartjs-worker.js"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }

@@ -481,9 +481,9 @@ const Session: React.FC<SessionProps> = (props) => {
             fixedHeaderContent={() => (
               <tr>
                 <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
-                <Th title="" style={{ position: 'sticky', left: '290rem', zIndex: 10 }} />
+                <Th title="" style={{ position: 'sticky', left: '225rem', zIndex: 10 }} />
                 <Th title="Key" sortKey="key" />
-                <Th title="Value as JSON" sortKey="jsonValue" />
+                <Th title="Value" sortKey="value" />
                 <Th title="Topic" sortKey="topic" />
                 <Th title="Producer" sortKey="producerName" />
                 <Th title="Schema version" sortKey="schemaVersion" />
@@ -495,7 +495,7 @@ const Session: React.FC<SessionProps> = (props) => {
                 <Th title="Sequence Id" sortKey="sequenceId" />
                 <Th title="Ordering key" />
                 <Th title="Redelivery count" sortKey="redeliveryCount" />
-                <Th title="Aggregate" sortKey="aggregate" />
+                <Th title="Accumulator" sortKey="accumulator" />
               </tr>
             )}
           />

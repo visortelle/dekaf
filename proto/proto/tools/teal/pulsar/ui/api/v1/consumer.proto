@@ -14,9 +14,11 @@ message MessageId {
 }
 
 message Message {
+  google.protobuf.BytesValue bytes = 4; // value as raw bytes
+  google.protobuf.StringValue value = 5; // value serialized as JSON
+  google.protobuf.StringValue accumulator = 50; // not a part of Pulsar message
+
   map<string, string> properties = 1;
-  google.protobuf.BytesValue value = 4;
-  google.protobuf.StringValue json_value = 5;
 
   google.protobuf.Int64Value event_time = 7;
   google.protobuf.Int64Value publish_time = 6;
@@ -34,8 +36,6 @@ message Message {
 
   google.protobuf.BoolValue is_replicated = 20;
   google.protobuf.StringValue replicated_from = 21;
-
-  google.protobuf.StringValue json_aggregate = 50; // not a part of Pulsar message
 }
 
 enum SubscriptionMode {

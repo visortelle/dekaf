@@ -10,15 +10,15 @@ import io.circe.syntax.*
 import io.circe.generic.auto.*
 
 type JsonString = String
-type JsonAggregate = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
-type FilterTestResult = (Either[String, Boolean], JsonAggregate)
+type JsonAccumulator = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
+type FilterTestResult = (Either[String, Boolean], JsonAccumulator)
 
-val JsonAggregateVarName = "agg"
+val JsonAccumulatorVarName = "jsonAccumulator"
 
 class MessageFilter():
     private val context = Context.newBuilder("js").build
 
-    context.eval("js",s"globalThis.${JsonAggregateVarName} = {}") // Create empty fold-like accumulator variable.
+    context.eval("js",s"globalThis.${JsonAccumulatorVarName} = {}") // Create empty fold-like accumulator variable.
 
     def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)
@@ -27,10 +27,11 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
     val evalCode =
         s"""
           | (() => {
-          |    const val = ${jsonValue.getOrElse("undefined")};
-          |    const msg = ${jsonMessage.asJson};
+          |    const message = ${jsonMessage.asJson};
+          |    message.value = ${jsonValue.getOrElse("undefined")};
+          |    message.accumulator = globalThis.${JsonAccumulatorVarName};
           |
-          |    return (${filterCode})(val, msg, globalThis.${JsonAggregateVarName});
+          |    return (${filterCode})(message);
           | })();
           |""".stripMargin
 
@@ -40,7 +41,7 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
         case err => Left(s"Message filter JS error: ${err.getMessage}")
     }
 
-    val cumulativeJsonState = context.eval("js", s"JSON.stringify(globalThis.${JsonAggregateVarName})").asString
+    val cumulativeJsonState = context.eval("js", s"JSON.stringify(globalThis.${JsonAccumulatorVarName})").asString
 
     (testResult, cumulativeJsonState)
 

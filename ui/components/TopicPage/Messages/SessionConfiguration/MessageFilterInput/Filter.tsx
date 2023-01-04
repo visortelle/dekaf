@@ -9,7 +9,7 @@ export type FilterProps = {
   onChange: (value: t.Filter) => void;
 };
 
-const defaultJsValue = `(val, msg, agg) => {
+const defaultJsValue = `(message) => {
     return true;
 }`;
 

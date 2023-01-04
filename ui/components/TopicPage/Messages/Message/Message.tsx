@@ -3,7 +3,7 @@ import * as I18n from '../../../app/contexts/I18n/I18n';
 import * as Modals from '../../../app/contexts/Modals/Modals';
 import { routes } from '../../../routes';
 import { parseTopic } from '../../../pulsar/parse-topic';
-import { AggregateField, BrokerPublishTimeField, EventTimeField, help, JsonValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from './fields';
+import { AccumulatorField, BrokerPublishTimeField, EventTimeField, help, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from './fields';
 import Field from './Field/Field';
 import cts from "../../../ui/ChildrenTable/ChildrenTable.module.css";
 import { MessageDescriptor } from '../types';
@@ -26,10 +26,10 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
 
   return (
     <>
-      <Td width="265rem" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
+      <Td width="200rem" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
         <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />
       </Td>
-      <Td width="48rem" style={{ position: 'sticky', left: '290rem', zIndex: 1 }}>
+      <Td width="48rem" style={{ position: 'sticky', left: '225rem', zIndex: 1 }}>
         <SmallButton
           onClick={() => modals.push({
             id: 'message-details',
@@ -45,7 +45,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
       <Td width='30ch'>
-        <JsonValueField isShowTooltips={props.isShowTooltips} message={props.message} />
+        <ValueField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
       <Td width='60ch'>
         <TopicField isShowTooltips={props.isShowTooltips} message={props.message} topicHref={topicHref || undefined} />
@@ -87,7 +87,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <RedeliveryCountField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
       <Td width='50ch'>
-        <AggregateField isShowTooltips={props.isShowTooltips} message={props.message} />
+        <AccumulatorField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
     </>
   );

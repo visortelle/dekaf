@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect } from 'react';
 import s from './MessageDetails.module.css'
 import { MessageDescriptor } from '../../types';
 import JsonView from '../../../../ui/JsonView/JsonView';
-import { AggregateField, BrokerPublishTimeField, EventTimeField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from '../fields';
+import { AccumulatorField, BrokerPublishTimeField, EventTimeField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from '../fields';
 import ReactTooltip from 'react-tooltip';
 
 export type MessageDetailsProps = {
@@ -31,12 +31,12 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
         <Field title={'Sequence Id'} value={<SequenceIdField isShowTooltips={true} message={props.message} />} />
         <Field title={'Ordering key'} value={<OrderingKeyField isShowTooltips={true} message={props.message} />} />
         <Field title={'Redelivery count'} value={<RedeliveryCountField isShowTooltips={true} message={props.message} />} />
-        <Field title={'Aggregate'} value={<AggregateField isShowTooltips={true} message={props.message} />} />
+        <Field title={'Aggregate'} value={<AccumulatorField isShowTooltips={true} message={props.message} />} />
       </div>
       <div className={s.RightColumn}>
         <Field
           title='Value as JSON'
-          value={<JsonView json={props.message.jsonValue === null ? undefined : props.message.jsonValue} width="480rem" height="480rem" />}
+          value={<JsonView json={props.message.value === null ? undefined : props.message.value} width="480rem" height="480rem" />}
         />
       </div>
     </div>

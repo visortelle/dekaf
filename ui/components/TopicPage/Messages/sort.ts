@@ -7,7 +7,6 @@ export type SortKey =
   | "topic"
   | "producerName"
   | "value"
-  | "jsonValue"
   | "schemaVersion"
   | "size"
   | "properties"
@@ -17,7 +16,7 @@ export type SortKey =
   | "sequenceId"
   | "orderingKey"
   | "redeliveryCount"
-  | "aggregate";
+  | "accumulator";
 
 export type Sort = { key: SortKey; direction: "asc" | "desc" };
 
@@ -67,9 +66,9 @@ export const sortMessages = (
     return s(messages, [], sortFn);
   }
 
-  if (sort.key === "jsonValue") {
+  if (sort.key === "value") {
     const sortFn: SortFn = (a, b) =>
-      (a.jsonValue || "").localeCompare(b.jsonValue || "", "en", {
+      (a.value || "").localeCompare(b.value || "", "en", {
         numeric: true,
       });
     return s(messages, [], sortFn);
@@ -110,7 +109,8 @@ export const sortMessages = (
       messages,
       (m) => m.brokerPublishTime !== undefined
     );
-    const sortFn: SortFn = (a, b) => (a.brokerPublishTime || 0) - (b.brokerPublishTime || 0);
+    const sortFn: SortFn = (a, b) =>
+      (a.brokerPublishTime || 0) - (b.brokerPublishTime || 0);
     return s(defs, undefs, sortFn);
   }
 
@@ -125,10 +125,10 @@ export const sortMessages = (
     return s(messages, [], sortFn);
   }
 
-  if (sort.key === "aggregate") {
+  if (sort.key === "accumulator") {
     const sortFn: SortFn = (a, b) => {
-      const aStr = JSON.stringify(a.properties);
-      const bStr = JSON.stringify(b.properties);
+      const aStr = JSON.stringify(a.accumulator);
+      const bStr = JSON.stringify(b.accumulator);
       return aStr.localeCompare(bStr, "en", { numeric: true });
     };
 
