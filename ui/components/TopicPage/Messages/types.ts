@@ -2,8 +2,9 @@ import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
 import * as messageFilter from "../Messages/SessionConfiguration/MessageFilterInput/types";
 
 export type SessionState =
-  | "running"
   | "paused"
+  | "pausing"
+  | "running"
   | "got-initial-cursor-positions"
   | "awaiting-initial-cursor-positions"
   | "initializing"

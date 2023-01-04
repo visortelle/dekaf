@@ -2,6 +2,7 @@ import React from 'react';
 
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
 import Producer from './Producer/Producer';
+import Visualization from './Visualization/Visualization';
 import { MessageDescriptor, SessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
@@ -10,7 +11,6 @@ import EnteringFromBottomDiv from '../../../ui/animations/EnteringFromBottomDiv'
 import closeIcon from './close.svg';
 
 import s from './Console.module.css'
-import Visualization from './Visualization/Visualization';
 
 export type ConsoleProps = {
   isShow: boolean;
@@ -41,12 +41,16 @@ const Console: React.FC<ConsoleProps> = (props) => {
         </div>
       </div>
 
-      <TabContent isShow={activeTab === 'cursors'}>
+      <TabContent isShow={activeTab === 'cursors'} isRenderAlways>
         <CursorsTab {...props} />
       </TabContent>
 
       <TabContent isShow={activeTab === 'visualization'}>
-        <Visualization messages={props.messages} isAutoUpdateEnabled={props.sessionState === 'running'} />
+        <Visualization
+          messages={props.messages}
+          isVisible={activeTab === 'visualization'}
+          sessionState={props.sessionState}
+        />
       </TabContent>
 
       <TabContent isShow={activeTab === 'producer'}>
@@ -58,16 +62,20 @@ const Console: React.FC<ConsoleProps> = (props) => {
         />
       </TabContent>
 
-
     </EnteringFromBottomDiv>
   );
 }
 
 type TabContentProps = {
   isShow: boolean;
+  isRenderAlways?: boolean;
   children: React.ReactNode;
 }
 const TabContent: React.FC<TabContentProps> = (props) => {
+  if (!props.isShow && !props.isRenderAlways) {
+    return <></>;
+  }
+
   return (
     <div style={{ display: props.isShow ? 'flex' : 'none', flex: '1', overflow: 'hidden' }}>
       {props.children}

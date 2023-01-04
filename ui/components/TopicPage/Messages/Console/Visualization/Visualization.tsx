@@ -1,30 +1,42 @@
-import React from 'react';
-import { MessageDescriptor } from '../../types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { MessageDescriptor, SessionState } from '../../types';
 import Chart from './Chart/Chart';
 import s from './Visualization.module.css'
 import { useDebounce } from 'use-debounce'
 
 export type VisualizationProps = {
   messages: MessageDescriptor[];
-  isAutoUpdateEnabled: boolean;
+  isVisible: boolean;
+  sessionState: SessionState;
 };
 
 const Visualization: React.FC<VisualizationProps> = (props) => {
-  const [messages] = useDebounce(
+  const [messagesDebounced] = useDebounce(
     props.messages,
     chooseDebounceDelay(props.messages.length),
-    { maxWait: props.isAutoUpdateEnabled ? undefined : 3000 }
+    { maxWait: 3000 }
   );
+
+  const [messages, setMessages] = useState<VisualizationProps['messages']>([]);
+
+  useEffect(() => {
+    if (props.isVisible && props.sessionState !== 'pausing') {
+      setMessages(messagesDebounced);
+    }
+  }, [props.sessionState, props.isVisible, messagesDebounced]);
 
   return (
     <div className={s.Visualization}>
       <div>
         <h2>Visualization</h2>
       </div>
-      <Chart
-        type='bar'
-        messages={messages}
-      />
+
+      {props.isVisible && (
+        <Chart
+          type='bar'
+          messages={messages}
+        />
+      )}
     </div>
   );
 }
