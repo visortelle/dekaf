@@ -1,43 +1,144 @@
 import React, { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { cloneDeep } from 'lodash';
 
 import { DefaultProvider, useContext } from '../../../../../app/contexts/Modals/Modals';
 import Button from '../../../../../ui/Button/Button';
 import { H3 } from '../../../../../ui/H/H';
+import Input from '../../../../../ui/Input/Input';
 import Filter from '../Filter';
-import { Filter as FilterValue } from '../types';
 import * as t from '../types';
 
 import s from './FiltersEditor.module.css';
-// import { FilterConfigurations, FilterType } from '../FilterChain';
-import Input from '../../../../../ui/Input/Input';
 
 type Props = {
-  // newFilters?: Record<string, t.ChainEntry>
-  // filter?: {
-  //   entryId: string,
-  //   entry: string,
-  // },
+  editableFilter?: string,
   user: string,
-  filters: t.MessageFilters
-  onChange?: (entryId: string, entry: string, description: string) => void;
-
-  // onChange: ({[entryId: string]: { filter: { value: entry, description: description } }}) => void
+  filters: t.MessageFilters,
+  onChange: (f: t.MessageFilters) => void,
 }
 
 const FiltersEditor = (props: Props) => {
   const modals = useContext();
 
   const [activeUser, setActiveUser] = useState<string>(props.user);
-  const [activeFilter, setActiveFilter] = useState<string>();
-  // const [filterValue, setFilterValue] = useState<FilterValue>({ value: '' });
+  const [activeFilter, setActiveFilter] = useState<string | undefined>(props.editableFilter);
+  const [filters, setFilters] = useState(props.filters)
 
-  // const { filters,  onChange } = props;
+  const changeEntryId = (value: string) => {
+    if (!activeFilter || !activeUser) {
+      return
+    }
+
+    setActiveFilter(value);
+
+    Object.keys(props.filters[activeUser]).map(filterName => {
+      if (filterName === value) {
+        return;
+      }
+    })
+
+    const newFilters = cloneDeep(filters[activeUser]);
+    newFilters[value] = props.filters[activeUser][activeFilter];
+
+    if (!newFilters[value]) {
+      newFilters[value] = filters[activeUser][activeFilter]
+    }
+    delete newFilters[activeFilter];
+
+
+    setFilters({
+      ...props.filters,
+      [activeUser]:  newFilters
+    })
+
+    props.onChange({
+      ...props.filters,
+      [activeUser]:  newFilters
+    })
+  }
+
+  const changeDescription = (value: string) => {
+    if (!activeUser || !activeFilter) {
+      return;
+    }
+
+    const newDescription = {
+      ...filters,
+      [activeUser]: {
+        ...filters[activeUser],
+        [activeFilter]: {
+          filter: {
+            ...filters[activeUser][activeFilter].filter, description: value
+          }
+        }
+      }
+    }
+
+    setFilters(newDescription)
+    props.onChange(newDescription)
+  }
+
+  const changeEntry = (value: string) => {
+    if (!activeUser || !activeFilter) {
+      return;
+    }
+
+    const newEntry = {  ...filters, [activeUser]: { ...filters[activeUser], [activeFilter]: { filter: { ...filters[activeUser][activeFilter].filter, value: value} } } }
+    
+    setFilters(newEntry)
+    props.onChange(newEntry)
+  }
+
+  const deleteFilter = () => {
+    if (!activeUser || !activeFilter) {
+      return;
+    }
+
+    const newFilters = cloneDeep(filters[activeUser]);
+    delete newFilters[activeFilter];
+
+    setFilters({
+      ...props.filters,
+      [activeUser]:  newFilters
+    })
+
+    props.onChange({
+      ...props.filters,
+      [activeUser]:  newFilters
+    })
+  }
+
+  const duplicateFilter = () => {
+    if (!activeUser || !activeFilter) {
+      return;
+    }
+
+    const newFilters = cloneDeep(filters[activeUser]);
+
+    let counter = 0;
+    Object.keys(newFilters).map(filter => {
+      if (filter === `${activeFilter}-duplicate-${counter}`) {
+        counter++
+      }
+    })
+    newFilters[`${activeFilter}-duplicate-${counter}`] = newFilters[activeFilter];
+
+    newFilters[activeUser]
+    setFilters({
+      ...props.filters,
+      [activeUser]:  newFilters
+    })
+
+    props.onChange({
+      ...props.filters,
+      [activeUser]:  newFilters
+    })
+  }
 
   useEffect(() => {
-    console.log(props)
-  }, [])
-
+    console.log(filters)
+  }, [filters])
+ 
   return (
     <DefaultProvider>
       <div className={`${s.FiltersEditor}`}>
@@ -47,7 +148,7 @@ const FiltersEditor = (props: Props) => {
               Recently used
             </H3>
             {Object.keys(props.filters).map(user => (
-              <span>
+              <span onClick={() => setActiveUser(user)}>
                 {user}
               </span>
             ))}
@@ -57,29 +158,21 @@ const FiltersEditor = (props: Props) => {
             <H3>
               Filters
             </H3>
-            {activeUser && Object.keys(props.filters).map((user) => (
-              <div>
-                <p>{user}</p>
-                {Object.keys(props.filters[user]).map(filter => (
-                  <p onClick={() => setActiveFilter(filter)}>
-                    {filter}
-                  </p>
-                ))}
-                {/* <p onClick={() => setActiveFilter(props.filters[user]])}>
-                  {props.filters[user][index]}
-                </p> */}
-              </div>
+            {activeUser && Object.keys(filters[activeUser]).map(filter => (
+              <p onClick={() => setActiveFilter(filter)}>
+                {filter}
+              </p>
             ))}
             <div>
               <Button
                 type='danger'
                 text='Delete'
-                onClick={() => {}}
+                onClick={() => deleteFilter()}
               />
               <Button
                 type='primary'
                 text='Duplicate'
-                onClick={() => {}}
+                onClick={() => duplicateFilter()}
               />
               <Button
                 type='primary'
@@ -97,20 +190,14 @@ const FiltersEditor = (props: Props) => {
               <>
                 <Input
                   value={activeFilter}
-                  onChange={(value) => {
-                    // props.onChange({})
-                    // props.onChange &&
-                    // props.onChange({ description: activeFilter.description, value: value })
-                  }}
+                  onChange={(value) => {changeEntryId(value)}}
                 />
-
-                <Input
-                  value={props.filters[activeUser][activeFilter].filter.description || ''}
-                  onChange={(value) => {
-                    // props.onChange &&
-                    // props.onChange({ value: activeFilter, description: value })
-                  }}
-                />
+                {filters[activeUser][activeFilter] &&
+                  <Input
+                    value={filters[activeUser][activeFilter].filter.description || 'Have not description'}
+                    onChange={(value) => changeDescription(value)}
+                  />
+                }
               </>
             }
           </div>
@@ -120,13 +207,10 @@ const FiltersEditor = (props: Props) => {
               json code editor
             </H3>
             {activeFilter &&
+              filters[activeUser][activeFilter] &&
               <Filter
-                value={props.filters[activeUser][activeFilter].filter}
-                onChange={(v) => {} }
-                  // onChange &&
-                  // onChange(activeFilter.entryId, v.description || 'a', v.value || 'a')}
-                // onChange={(v) => {setActiveFilter({ ...activeFilter, entry: v.value || '' })}}
-                // }
+                value={filters[activeUser][activeFilter].filter.value || ''}
+                onChange={(value) => changeEntry(value)}
               />
             }
           </div>

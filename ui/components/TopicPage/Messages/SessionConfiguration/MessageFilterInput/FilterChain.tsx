@@ -1,6 +1,6 @@
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, filter } from 'lodash';
 
 import Button from '../../../../ui/Button/Button';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
@@ -46,9 +46,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           <div key={entryId} className={s.Entry}>
             <div className={s.EntryFilter}>
               <Filter
-                value={entry.filter}
-                onChange={(f) => props.onChange({ ...props.value, filters: { [USER]: { [entryId]: { ...entry, filter: f }  } } })}
-                // ...props.value.filters, [entryId]: { ...entry, filter: f } 
+                value={entry.filter.value || ''}
+                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [USER]: { ...props.value.filters[USER], [entryId]: { ...entry, filter: { ...props.value.filters[USER][entryId].filter, value: f } } } } })}
                 autoCompleteConfig={index === 0 ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
               />
             </div>
@@ -77,26 +76,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                       <FiltersEditor
                         filters={props.value.filters}
                         user={USER}
-                        // user={USER}
-                        // newFilters={props.value.filters}
-                        // filters={filters}
-                        // users={users}
-                        // filter={{ entryId: entryId, entry: entry.filter.value || '' }}
-                        // onChange={props.onChange}
-                        // onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
-
-                        // onChange={(entryId, entry, description) => props.onChange({
-                        //   ...props.value,
-                        //   filters: {
-                        //     ...props.value.filters,
-                        //     [entryId]: {
-                        //       filter: {
-                        //         value: entry,
-                        //         description: description
-                        //       }
-                        //     }
-                        //   }
-                        // })}
+                        editableFilter={entryId}
+                        onChange={(f) => props.onChange({ ...props.value, filters: f })}
                       />,
                     styleMode: 'no-content-padding'
                   })}
@@ -110,10 +91,9 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                 <Button
                   svgIcon={deleteIcon}
                   onClick={() => {
-                    const newFilters = cloneDeep(props.value.filters);
+                    const newFilters = cloneDeep(props.value.filters[USER]);
                     delete newFilters[entryId];
-                    props.onChange({ ...props.value, filters: newFilters });
-                    console.log({ ...props.value, filters: newFilters })
+                    props.onChange({ ...props.value, filters: { ...props.value.filters, [USER]: newFilters} });
                   }}
                   type="danger"
                   title="Delete filter"
@@ -129,10 +109,6 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           const newFilter: t.Filter = { value: undefined, description: undefined };
           const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [USER]:{ ...props.value.filters[USER], [uuid()]: { filter: newFilter } }} };
           props.onChange(newChain);
-          // console.log( props.value.filters[USER], {[uuid()]: { filter: newFilter } })
-          // console.log({[USER]:{ ...props.value.filters[USER], [uuid()]: { filter: newFilter } }})
-          // console.log(newChain)
-          // console.log(props.value.filters[USER])
         }}
         text="Add filter"
         type='primary'
@@ -145,8 +121,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
             <FiltersEditor
               filters={props.value.filters}
               user={USER}
-              // onChange={props.onChange}
-              // onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
+              onChange={(f) => (props.onChange({ ...props.value, filters: f }))}
             />,
           styleMode: 'no-content-padding'
         })}

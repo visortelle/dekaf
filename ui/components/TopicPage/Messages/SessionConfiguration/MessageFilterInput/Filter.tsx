@@ -6,8 +6,8 @@ import * as t from './types';
 import s from './Filter.module.css'
 
 export type FilterProps = {
-  value: t.Filter;
-  onChange: (value: t.Filter) => void;
+  value: string;
+  onChange: (value: string) => void;
   autoCompleteConfig?: AutoCompleteConfig;
 };
 
@@ -15,23 +15,21 @@ const defaultJsValue = `(val, msg, agg) => {
   return true;
 }`;
 
-const defaultDescription = 'description'
-
 const Filter: React.FC<FilterProps> = (props) => {
 
   useEffect(() => {
-    if (props.value.value !== undefined) {
+    if (props.value) {
       return
     }
-    props.onChange({ ...props.value, value: defaultJsValue, description: defaultDescription });
+    props.onChange(defaultJsValue);
   }, []);
 
   return (
     <div className={s.Filter}>
       <div className={s.FormControl}>
         <CodeEditor
-          value={props.value.value}
-          onChange={v => props.onChange({ ...props.value, value: v || '' })}
+          value={props.value}
+          onChange={v => props.onChange(v || '')}
           height="180rem"
           language="javascript"
           autoCompleteConfig={props.autoCompleteConfig}

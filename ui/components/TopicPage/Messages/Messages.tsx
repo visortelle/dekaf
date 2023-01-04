@@ -352,16 +352,17 @@ const Session: React.FC<SessionProps> = (props) => {
       const messageFilterChain = new MessageFilterChain();
       messageFilterChain.setMode(props.config.messageFilter.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
 
-      Object.entries(props.config.messageFilter.filters)
-        .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
-        .forEach(([filterId, filters]) => {
-          Object.keys(filters).map((filter) => {
-            const filterPb = new MessageFilter();
-            filterPb.setValue(filter);
-            filterPb.setValue(filters[filter].filter.value || '');
-            messageFilterChain.getFiltersMap().set(filterId, filterPb);
-          })
-        });
+      //TODO FIX
+      // Object.entries(props.config.messageFilter.filters)
+      //   .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
+      //   .forEach(([filterId, filters]) => {
+      //     Object.keys(filters).map((filter) => {
+      //       const filterPb = new MessageFilter();
+      //       filterPb.setValue(filter);
+      //       filterPb.setValue(filters[filter].filter.value || '');
+      //       messageFilterChain.getFiltersMap().set(filterId, filterPb);
+      //     })
+      //   });
 
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
@@ -532,6 +533,10 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [config, setConfig] = useState<SessionConfig>(props.config);
   const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
+  // useEffect(() => {
+  //   console.log(config.messageFilter.filters['user1'], 'use-effectx')
+  // }, [config])
+
   return (
     <Session
       key={sessionKey}
@@ -545,7 +550,6 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       config={config}
       onConfigChange={(v) => {
         setConfig(v);
-        // console.log(v.messageFilter, config)
       }}
     />
   );
