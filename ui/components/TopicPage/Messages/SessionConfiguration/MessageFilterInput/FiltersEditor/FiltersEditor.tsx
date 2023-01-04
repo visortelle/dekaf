@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { cloneDeep } from 'lodash';
 
-import { DefaultProvider, useContext } from '../../../../../app/contexts/Modals/Modals';
+import { DefaultProvider } from '../../../../../app/contexts/Modals/Modals';
 import Button from '../../../../../ui/Button/Button';
 import { H3 } from '../../../../../ui/H/H';
 import Input from '../../../../../ui/Input/Input';
@@ -18,7 +18,6 @@ type Props = {
 }
 
 const FiltersEditor = (props: Props) => {
-  const modals = useContext();
 
   const [activePackage, setActivePackage] = useState<string>(props.package);
   const [activeFilter, setActiveFilter] = useState<string | undefined>(props.editableFilter);
@@ -35,7 +34,7 @@ const FiltersEditor = (props: Props) => {
       if (filterName === value) {
         return;
       }
-    })
+    });
 
     const newFilters = cloneDeep(filters[activePackage]);
     newFilters[value] = props.filters[activePackage][activeFilter];
@@ -43,18 +42,9 @@ const FiltersEditor = (props: Props) => {
     if (!newFilters[value]) {
       newFilters[value] = filters[activePackage][activeFilter]
     }
+
     delete newFilters[activeFilter];
-
-
-    setFilters({
-      ...props.filters,
-      [activePackage]:  newFilters
-    })
-
-    props.onChange({
-      ...props.filters,
-      [activePackage]:  newFilters
-    })
+    updateFilters(newFilters);
   }
 
   const changeDescription = (value: string) => {
@@ -97,17 +87,7 @@ const FiltersEditor = (props: Props) => {
     const newFilters = cloneDeep(filters[activePackage]);
     delete newFilters[activeFilter];
 
-    setFilters({
-      ...props.filters,
-      [activePackage]:  newFilters
-    })
-
-    setActiveFilter('')
-
-    props.onChange({
-      ...props.filters,
-      [activePackage]:  newFilters
-    })
+    updateFilters(newFilters, '');
   }
 
   const duplicateFilter = () => {
@@ -122,21 +102,10 @@ const FiltersEditor = (props: Props) => {
       if (filter === `${activeFilter}-duplicate-${counter}`) {
         counter++
       }
-    })
+    });
     newFilters[`${activeFilter}-duplicate-${counter}`] = newFilters[activeFilter];
 
-    newFilters[activePackage]
-    setFilters({
-      ...props.filters,
-      [activePackage]:  newFilters
-    })
-
-    props.onChange({
-      ...props.filters,
-      [activePackage]:  newFilters
-    })
-
-    setActiveFilter(`${activeFilter}-duplicate-${counter}`)
+    updateFilters(newFilters, `${activeFilter}-duplicate-${counter}`);
   }
 
   const createNewFilter = () => {
@@ -151,26 +120,27 @@ const FiltersEditor = (props: Props) => {
       if (filter === `new-filter-${counter}`) {
         counter++
       }
-    })
+    });
     newFilters[`new-filter-${counter}`] = {filter: { description: '', value: defaultJsValue }};
 
-    newFilters[activePackage]
+    updateFilters(newFilters, `new-filter-${counter}`);
+  }
+
+  const updateFilters = (newFilters:Record<string, t.ChainEntry>, filterName?: string) => {
     setFilters({
       ...props.filters,
-      [activePackage]:  newFilters
+      [activePackage]:  newFilters,
     })
 
     props.onChange({
       ...props.filters,
-      [activePackage]:  newFilters
+      [activePackage]:  newFilters,
     })
 
-    setActiveFilter(`new-filter-${counter}`)
+    if (filterName !== undefined) {
+      setActiveFilter(filterName);
+    }
   }
-
-  useEffect(() => {
-    console.log(filters)
-  }, [filters])
  
   return (
     <DefaultProvider>
@@ -221,7 +191,7 @@ const FiltersEditor = (props: Props) => {
             <H3>
               Filter description
             </H3>
-            {activeFilter ?
+            {activeFilter !== undefined ?
               <>
                 <Input
                   value={activeFilter}
