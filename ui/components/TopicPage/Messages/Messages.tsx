@@ -394,7 +394,7 @@ const Session: React.FC<SessionProps> = (props) => {
       setSessionState('paused');
       scrollToBottom();
     }
-  }, [sessionState, messagesLoadedPerSecond.now]);
+  }, [sessionState, messagesLoadedPerSecond]);
 
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {

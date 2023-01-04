@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MessageDescriptor, SessionState } from '../../types';
 import Chart from './Chart/Chart';
 import s from './Visualization.module.css'
@@ -14,7 +14,7 @@ const Visualization: React.FC<VisualizationProps> = (props) => {
   const [messagesDebounced] = useDebounce(
     props.messages,
     chooseDebounceDelay(props.messages.length),
-    { maxWait: 3000 }
+    { maxWait: 3000, leading: true, trailing: true }
   );
 
   const [messages, setMessages] = useState<VisualizationProps['messages']>([]);
