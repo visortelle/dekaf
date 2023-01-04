@@ -10,14 +10,13 @@ import { get } from 'lodash';
 ChartJs.register(CategoryScale, LinearScale, LogarithmicScale, BarElement, ZoomPlugin);
 
 export type BarChartProps = {
-  y: string;
   data: any[];
 };
 
 const BarChart: React.FC<BarChartProps> = (props) => {
   const theme = useMemo(() => getTheme(), []);
   const data = (props.data as MessageDescriptor[]).map((entry) => ({
-    x: entry.publishTime === undefined ? 'unknown' : entry.publishTime.toISOString(),
+    x: entry.publishTime === null ? 'unknown' : entry.publishTime,
     y: entry.jsonValue
   }));
 
@@ -27,7 +26,7 @@ const BarChart: React.FC<BarChartProps> = (props) => {
         data={{
           datasets: [
             {
-              data: data.map(s => get(s, props.y)),
+              data: data.map(s => s.y),
               animation: false,
               backgroundColor: theme.blueColor,
               borderRadius: 4

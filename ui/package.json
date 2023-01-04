@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "node ./build.js --watch",
-    "build": "tsc --noEmit && node ./build.js",
+    "build": "npm run check-ts && node ./build.js",
+    "check-ts": "tsc --noEmit",
     "test": "jest"
   },
   "dependencies": {
