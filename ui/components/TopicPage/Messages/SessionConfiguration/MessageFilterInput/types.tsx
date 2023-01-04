@@ -10,7 +10,7 @@ export type ChainEntry = {
 }
 
 export type MessageFilters = {
-  [userName: string]: Record<string, ChainEntry>
+  [filterPackage: string]: Record<string, ChainEntry>
 }
 
 export type Chain = {

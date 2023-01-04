@@ -28,3 +28,7 @@
 .EntryButton:last-child {
   margin-bottom: 0;
 }
+
+.Buttons > button {
+  margin: 0 5px;
+}

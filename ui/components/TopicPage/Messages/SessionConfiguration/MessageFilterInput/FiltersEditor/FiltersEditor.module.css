@@ -1,9 +1,40 @@
 .FiltersEditor {
   display: flex;
-  padding: 10rem;
+  padding: 10px;
+  height: 70vh;
 }
 
 .Column {
-  min-width: 200px;
-  border: 1px solid black
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border: 1px solid black;
+  min-width: 300rem;
+}
+
+.Inactive {
+  padding: 2px 5px;
+}
+
+.Active {
+  background-color: var(--accent-color-blue);
+  color: #fff;
+}
+
+.Filters {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
+.Buttons {
+  display: flex;
+  flex: 0 0 auto;
+}
+.Buttons > button {
+  margin: 0 5px;
+}
+
+.JsonEditor {
+  width: 400rem;
 }

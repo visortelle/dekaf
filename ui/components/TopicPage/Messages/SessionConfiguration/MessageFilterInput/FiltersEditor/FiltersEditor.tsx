@@ -5,14 +5,14 @@ import { DefaultProvider, useContext } from '../../../../../app/contexts/Modals/
 import Button from '../../../../../ui/Button/Button';
 import { H3 } from '../../../../../ui/H/H';
 import Input from '../../../../../ui/Input/Input';
-import Filter from '../Filter';
+import Filter, { defaultJsValue } from '../Filter';
 import * as t from '../types';
 
 import s from './FiltersEditor.module.css';
 
 type Props = {
   editableFilter?: string,
-  user: string,
+  package: string,
   filters: t.MessageFilters,
   onChange: (f: t.MessageFilters) => void,
 }
@@ -20,55 +20,55 @@ type Props = {
 const FiltersEditor = (props: Props) => {
   const modals = useContext();
 
-  const [activeUser, setActiveUser] = useState<string>(props.user);
+  const [activePackage, setActivePackage] = useState<string>(props.package);
   const [activeFilter, setActiveFilter] = useState<string | undefined>(props.editableFilter);
   const [filters, setFilters] = useState(props.filters)
 
   const changeEntryId = (value: string) => {
-    if (!activeFilter || !activeUser) {
+    if (!activeFilter || !activePackage) {
       return
     }
 
     setActiveFilter(value);
 
-    Object.keys(props.filters[activeUser]).map(filterName => {
+    Object.keys(props.filters[activePackage]).map(filterName => {
       if (filterName === value) {
         return;
       }
     })
 
-    const newFilters = cloneDeep(filters[activeUser]);
-    newFilters[value] = props.filters[activeUser][activeFilter];
+    const newFilters = cloneDeep(filters[activePackage]);
+    newFilters[value] = props.filters[activePackage][activeFilter];
 
     if (!newFilters[value]) {
-      newFilters[value] = filters[activeUser][activeFilter]
+      newFilters[value] = filters[activePackage][activeFilter]
     }
     delete newFilters[activeFilter];
 
 
     setFilters({
       ...props.filters,
-      [activeUser]:  newFilters
+      [activePackage]:  newFilters
     })
 
     props.onChange({
       ...props.filters,
-      [activeUser]:  newFilters
+      [activePackage]:  newFilters
     })
   }
 
   const changeDescription = (value: string) => {
-    if (!activeUser || !activeFilter) {
+    if (!activePackage || !activeFilter) {
       return;
     }
 
     const newDescription = {
       ...filters,
-      [activeUser]: {
-        ...filters[activeUser],
+      [activePackage]: {
+        ...filters[activePackage],
         [activeFilter]: {
           filter: {
-            ...filters[activeUser][activeFilter].filter, description: value
+            ...filters[activePackage][activeFilter].filter, description: value
           }
         }
       }
@@ -79,41 +79,43 @@ const FiltersEditor = (props: Props) => {
   }
 
   const changeEntry = (value: string) => {
-    if (!activeUser || !activeFilter) {
+    if (!activePackage || !activeFilter) {
       return;
     }
 
-    const newEntry = {  ...filters, [activeUser]: { ...filters[activeUser], [activeFilter]: { filter: { ...filters[activeUser][activeFilter].filter, value: value} } } }
+    const newEntry = {  ...filters, [activePackage]: { ...filters[activePackage], [activeFilter]: { filter: { ...filters[activePackage][activeFilter].filter, value: value} } } }
     
     setFilters(newEntry)
     props.onChange(newEntry)
   }
 
   const deleteFilter = () => {
-    if (!activeUser || !activeFilter) {
+    if (!activePackage || !activeFilter) {
       return;
     }
 
-    const newFilters = cloneDeep(filters[activeUser]);
+    const newFilters = cloneDeep(filters[activePackage]);
     delete newFilters[activeFilter];
 
     setFilters({
       ...props.filters,
-      [activeUser]:  newFilters
+      [activePackage]:  newFilters
     })
+
+    setActiveFilter('')
 
     props.onChange({
       ...props.filters,
-      [activeUser]:  newFilters
+      [activePackage]:  newFilters
     })
   }
 
   const duplicateFilter = () => {
-    if (!activeUser || !activeFilter) {
+    if (!activePackage || !activeFilter) {
       return;
     }
 
-    const newFilters = cloneDeep(filters[activeUser]);
+    const newFilters = cloneDeep(filters[activePackage]);
 
     let counter = 0;
     Object.keys(newFilters).map(filter => {
@@ -123,16 +125,47 @@ const FiltersEditor = (props: Props) => {
     })
     newFilters[`${activeFilter}-duplicate-${counter}`] = newFilters[activeFilter];
 
-    newFilters[activeUser]
+    newFilters[activePackage]
     setFilters({
       ...props.filters,
-      [activeUser]:  newFilters
+      [activePackage]:  newFilters
     })
 
     props.onChange({
       ...props.filters,
-      [activeUser]:  newFilters
+      [activePackage]:  newFilters
     })
+
+    setActiveFilter(`${activeFilter}-duplicate-${counter}`)
+  }
+
+  const createNewFilter = () => {
+    if (!activePackage) {
+      return;
+    }
+
+    const newFilters = cloneDeep(filters[activePackage]);
+
+    let counter = 0;
+    Object.keys(newFilters).map(filter => {
+      if (filter === `new-filter-${counter}`) {
+        counter++
+      }
+    })
+    newFilters[`new-filter-${counter}`] = {filter: { description: '', value: defaultJsValue }};
+
+    newFilters[activePackage]
+    setFilters({
+      ...props.filters,
+      [activePackage]:  newFilters
+    })
+
+    props.onChange({
+      ...props.filters,
+      [activePackage]:  newFilters
+    })
+
+    setActiveFilter(`new-filter-${counter}`)
   }
 
   useEffect(() => {
@@ -145,25 +178,27 @@ const FiltersEditor = (props: Props) => {
 
           <div className={`${s.Column}`}>
             <H3>
-              Recently used
+              Packages
             </H3>
-            {Object.keys(props.filters).map(user => (
-              <span onClick={() => setActiveUser(user)}>
-                {user}
+            {Object.keys(props.filters).map(filterPackage => (
+              <span onClick={() => setActivePackage(filterPackage)} className={`${s.Inactive} ${activePackage === filterPackage && s.Active}`}>
+                {filterPackage}
               </span>
             ))}
           </div>
 
           <div className={`${s.Column}`}>
-            <H3>
-              Filters
-            </H3>
-            {activeUser && Object.keys(filters[activeUser]).map(filter => (
-              <p onClick={() => setActiveFilter(filter)}>
-                {filter}
-              </p>
-            ))}
-            <div>
+            <div className={`${s.Filters}`}>
+              <H3>
+                Filters
+              </H3>
+              {activePackage && Object.keys(filters[activePackage]).map(filter => (
+                <span onClick={() => setActiveFilter(filter)} className={`${s.Inactive} ${activeFilter === filter && s.Active}`}>
+                  {filter}
+                </span>
+              ))}
+            </div>
+            <div className={`${s.Buttons}`}>
               <Button
                 type='danger'
                 text='Delete'
@@ -177,7 +212,7 @@ const FiltersEditor = (props: Props) => {
               <Button
                 type='primary'
                 text='Create new'
-                onClick={() => {}}
+                onClick={() => createNewFilter()}
               />
             </div>
           </div>
@@ -186,36 +221,39 @@ const FiltersEditor = (props: Props) => {
             <H3>
               Filter description
             </H3>
-            {activeFilter &&
+            {activeFilter ?
               <>
                 <Input
                   value={activeFilter}
                   onChange={(value) => {changeEntryId(value)}}
                 />
-                {filters[activeUser][activeFilter] &&
+                {filters[activePackage][activeFilter] &&
                   <Input
-                    value={filters[activeUser][activeFilter].filter.description || 'Have not description'}
+                    value={filters[activePackage][activeFilter].filter.description || 'Have not description'}
                     onChange={(value) => changeDescription(value)}
                   />
                 }
-              </>
+              </> :
+              <span>
+                Choose filter
+              </span>
             }
           </div>
 
-          <div className={`${s.Column}`}>
+          <div className={`${s.Column} ${s.JsonEditor}`}>
             <H3>
               json code editor
             </H3>
-            {activeFilter &&
-              filters[activeUser][activeFilter] &&
+            {activeFilter && filters[activePackage][activeFilter] ?
               <Filter
-                value={filters[activeUser][activeFilter].filter.value || ''}
+                value={filters[activePackage][activeFilter].filter.value || ''}
                 onChange={(value) => changeEntry(value)}
-              />
+              /> :
+              <span>
+                Choose filter
+              </span>
             }
           </div>
-
-          <div onClick={() => modals.pop()}>X</div>
       </div>
     </DefaultProvider>
   )
