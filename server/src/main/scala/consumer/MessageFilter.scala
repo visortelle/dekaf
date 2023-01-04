@@ -29,7 +29,7 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
           | (() => {
           |    const message = ${jsonMessage.asJson};
           |    message.value = ${jsonValue.getOrElse("undefined")};
-          |    message.accumulator = globalThis.${JsonAccumulatorVarName};
+          |    message.accum = globalThis.${JsonAccumulatorVarName};
           |
           |    return (${filterCode})(message);
           | })();

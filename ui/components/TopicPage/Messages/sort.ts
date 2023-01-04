@@ -127,8 +127,8 @@ export const sortMessages = (
 
   if (sort.key === "accumulator") {
     const sortFn: SortFn = (a, b) => {
-      const aStr = JSON.stringify(a.accumulator);
-      const bStr = JSON.stringify(b.accumulator);
+      const aStr = JSON.stringify(a.accum);
+      const bStr = JSON.stringify(b.accum);
       return aStr.localeCompare(bStr, "en", { numeric: true });
     };
 

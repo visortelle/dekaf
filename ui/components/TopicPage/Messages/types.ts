@@ -61,5 +61,5 @@ export type MessageDescriptor = {
 
   bytes: Nullable<Uint8Array>;
   value: Nullable<string>; // JSON string
-  accumulator: Nullable<string>; // JSON string
+  accum: Nullable<string>; // JSON string
 };

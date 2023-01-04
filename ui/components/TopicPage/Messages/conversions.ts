@@ -24,6 +24,6 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
     sequenceId: message.getSequenceId()?.getValue() ?? null,
     size: message.getSize()?.getValue() ?? null,
     topic: message.getTopic()?.getValue() ?? null,
-    accumulator: message.getAccumulator()?.getValue() ?? null,
+    accum: message.getAccumulator()?.getValue() ?? null,
   };
 }
