@@ -25,13 +25,14 @@ const Chart: React.FC<ChartProps> = (props) => {
 
   return (
     <div className={s.Chart}>
-      <BarChart
+      <BarChart<MessageDescriptor>
         data={props.messages}
         config={{
           dimensions,
-          getLabel: (entry: MessageDescriptor) => entry.publishTime === null ? '-' : new Date(entry.publishTime).toISOString(),
+          getLabel: (entry) => entry.publishTime === null ? '-' : new Date(entry.publishTime).toISOString(),
           name: 'My bar chart',
         }}
+        onEntryClick={(entry) => console.log(entry)}
       />
     </div>
   );
