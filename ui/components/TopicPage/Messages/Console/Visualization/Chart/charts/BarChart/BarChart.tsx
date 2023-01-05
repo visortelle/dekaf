@@ -28,6 +28,7 @@ export type BarChartProps<EntryT> = {
 export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
   const theme = useMemo(() => getTheme(), []);
   const chartRef = useRef<ChartJs>();
+  const isPreventChangeCursor = useRef(false);
 
   const palette = useMemo(() => theme.getRandomColors(props.config.dimensions.length), [props.config.dimensions]);
 
@@ -66,9 +67,11 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
               },
               onHover: function (e) {
                 (e.native?.target as any).style.cursor = 'pointer';
+                isPreventChangeCursor.current = true;
               },
               onLeave: function (e) {
                 (e.native?.target as any).style.cursor = 'default';
+                isPreventChangeCursor.current = false;
               }
             },
             tooltip: {
@@ -107,7 +110,7 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
           }
         }}
         onMouseMove={(e) => {
-          if (props.onEntryClick === undefined) {
+          if (props.onEntryClick === undefined || isPreventChangeCursor.current) {
             return;
           }
 
