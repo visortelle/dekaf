@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
-import { v4 as uuid } from 'uuid';
 
 import * as Modals from '../app/contexts/Modals/Modals';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
@@ -10,8 +9,6 @@ import Schema from './Schema/Schema';
 import Policies from './Policies/Policies';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
 import { routes } from '../routes';
-
-import { MessageFilters } from './Messages/SessionConfiguration/MessageFilterInput/types';
 
 import s from './TopicPage.module.css'
 
@@ -96,15 +93,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     }),
   }]);
 
-  const [messageFilters, setMessageFilters] = useState<MessageFilters>({});
-
-  useEffect(() => {
-    const filters = localStorage.getItem('messageFilters')
-    if (filters) {
-      setMessageFilters(JSON.parse(filters));
-    }
-  }, []);
-
   return (
     <div className={s.Page}>
       <BreadCrumbsAtPageTop
@@ -135,13 +123,13 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         buttons={buttons}
       />
 
-      {props.view === 'messages' && messageFilters && (
+      {props.view === 'messages' && (
         <Session
           key={key}
           config={{
             topicsSelector: { type: 'by-names', topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] },
             startFrom: { type: 'latest' },
-            messageFilter: { filters: messageFilters, disabledFilters: [], mode: 'all' },
+            messageFilter: { filters: {}, disabledFilters: [], mode: 'all' },
           }}
         />
       )}

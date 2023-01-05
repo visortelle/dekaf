@@ -147,6 +147,21 @@ const FiltersEditor = (props: Props) => {
 
 
 
+
+
+
+  // const [messageFilters, setMessageFilters] = useState<MessageFilters>({});
+
+  // useEffect(() => {
+  //   const filters = localStorage.getItem('messageFilters')
+  //   if (filters) {
+  //     setMessageFilters(JSON.parse(filters));
+  //   }
+  // }, []);
+
+
+
+
   // useEffect(() => {
   //   // if (localStorage.getItem('messageFilters')) {
   //   //   return;
