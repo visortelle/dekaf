@@ -13,8 +13,8 @@ import s from './FiltersEditor.module.css';
 type Props = {
   editableFilter?: string,
   package: string,
-  filters: t.MessageFilters,
-  onChange: (f: t.MessageFilters) => void,
+  filters: Record<string, t.ChainEntry>,
+  onChange: (f: Record<string, t.ChainEntry>) => void,
 }
 
 const FiltersEditor = (props: Props) => {

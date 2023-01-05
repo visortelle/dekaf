@@ -44,8 +44,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           <div key={entryId} className={s.Entry}>
             <div className={s.EntryFilter}>
               <Filter
-                value={entry.filter.value || ''}
-                onChange={(f) => props.onChange({ ...props.value, filters: {  ...props.value.filters, [entryId]: { ...entry, filter: { ...props.value.filters[entryId].filter, value: f } } } } )}
+                value={entry.filter}
+                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
                 autoCompleteConfig={index === 0 ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
               />
             </div>
