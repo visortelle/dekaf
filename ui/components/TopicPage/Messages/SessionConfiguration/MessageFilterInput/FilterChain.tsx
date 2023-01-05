@@ -20,8 +20,6 @@ export type FilterChainProps = {
   onChange: (value: t.Chain) => void;
 };
 
-export const PACKAGE = 'package1';
-
 const FilterChain: React.FC<FilterChainProps> = (props) => {
 
   const modals = Modals.useContext();
@@ -40,14 +38,14 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         />
       </div>
 
-      {props.value.filters[PACKAGE] && Object.entries(props.value.filters[PACKAGE]).map(([entryId, entry], index) => {
+      {props.value.filters && Object.entries(props.value.filters).map(([entryId, entry], index) => {
         const isDisabled = props.value.disabledFilters.includes(entryId);
         return (
           <div key={entryId} className={s.Entry}>
             <div className={s.EntryFilter}>
               <Filter
                 value={entry.filter.value || ''}
-                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [PACKAGE]: { ...props.value.filters[PACKAGE], [entryId]: { ...entry, filter: { ...props.value.filters[PACKAGE][entryId].filter, value: f } } } } })}
+                onChange={(f) => props.onChange({ ...props.value, filters: {  ...props.value.filters, [entryId]: { ...entry, filter: { ...props.value.filters[entryId].filter, value: f } } } } )}
                 autoCompleteConfig={index === 0 ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
               />
             </div>
