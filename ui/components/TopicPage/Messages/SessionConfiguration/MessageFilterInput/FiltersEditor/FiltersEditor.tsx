@@ -98,13 +98,13 @@ const FiltersEditor = (props: Props) => {
       [activeCollection]: {
         ...listFilters[activeCollection],
         [activeFilter]: {
-          ...listFilters[activeCollection][activeFilter],
           filter: { ...listFilters[activeCollection][activeFilter].filter, value: value }
         }
       } 
     })
 
-    console.log('filter: ', activeFilter, 'code: ', value)
+    console.log(activeFilter, value)
+    console.log(listFilters[activeCollection][activeFilter].filter.value)
   }
 
   const onDuplicateFilter = () => {
@@ -254,7 +254,9 @@ const FiltersEditor = (props: Props) => {
               </H3>
               {activeCollection && listFilters[activeCollection] && Object.keys(listFilters[activeCollection]).map(filter => (
                 <span
-                  onClick={() => setActiveFilter(filter)}
+                  onClick={() => {
+                    setActiveFilter(filter);
+                  }}
                   className={`${s.Inactive} ${activeFilter === filter && s.Active}`}
                 >
                   {filter}
