@@ -3,12 +3,11 @@ import s from './BarChart.module.css'
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, LogarithmicScale, TimeSeriesScale, TimeScale } from 'chart.js';
 import ZoomPlugin from 'chartjs-plugin-zoom';
-import { getTheme } from '../theme';
+import { getTheme } from '../../theme';
 
 ChartJs.register(CategoryScale, LinearScale, LogarithmicScale, BarElement, ZoomPlugin);
 
 type Dimension = {
-  color: string,
   getValue: (entry: any) => number | null
 }
 
@@ -22,23 +21,22 @@ export type BarChartProps = {
   config: Config;
 };
 
-const datasetConfig = {
-  animation: false,
-  borderRadius: 4
-} as const;
-
 const BarChart: React.FC<BarChartProps> = (props) => {
   const theme = useMemo(() => getTheme(), []);
+
+  const palette = useMemo(() => theme.getRandomColors(props.config.dimensions.length), [props.config.dimensions]);
+  console.log(palette)
 
   return (
     <div className={s.BarChart}>
       <Bar
         data={{
-          datasets: props.config.dimensions.map(dimension => {
+          datasets: props.config.dimensions.map((dimension, i) => {
             return {
               data: props.data.map(dimension.getValue),
-              backgroundColor: dimension.color,
-              ...datasetConfig,
+              backgroundColor: palette[i],
+              animation: false,
+              borderRadius: 4,
             }
           }),
           labels: props.data.map(props.config.getLabel),

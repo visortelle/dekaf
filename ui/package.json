@@ -15,6 +15,7 @@
     "buffer": "^6.0.3",
     "chart.js": "^4.1.1",
     "chartjs-plugin-zoom": "^2.0.0",
+    "chroma-js": "^2.4.2",
     "dayjs": "^1.11.3",
     "detect-browser": "^5.3.0",
     "fp-ts": "^2.12.1",
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.4",
+    "@types/chroma-js": "^2.1.4",
     "@types/google-protobuf": "^3.15.6",
     "@types/lodash": "^4.14.182",
     "@types/node": "17.0.36",
