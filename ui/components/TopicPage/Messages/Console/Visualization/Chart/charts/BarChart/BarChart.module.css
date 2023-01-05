@@ -5,12 +5,3 @@
   display: flex;
   flex-direction: column;
 }
-
-.Controls {
-  margin-bottom: 12rem;
-}
-
-.Chart {
-  position: relative;
-  flex: 1;
-}
