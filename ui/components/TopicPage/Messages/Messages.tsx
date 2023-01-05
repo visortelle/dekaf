@@ -352,17 +352,13 @@ const Session: React.FC<SessionProps> = (props) => {
       const messageFilterChain = new MessageFilterChain();
       messageFilterChain.setMode(props.config.messageFilter.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
 
-      //TODO FIX
-      // Object.entries(props.config.messageFilter.filters)
-      //   .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
-      //   .forEach(([filterId, filters]) => {
-      //     Object.keys(filters).map((filter) => {
-      //       const filterPb = new MessageFilter();
-      //       filterPb.setValue(filter);
-      //       filterPb.setValue(filters[filter].filter.value || '');
-      //       messageFilterChain.getFiltersMap().set(filterId, filterPb);
-      //     })
-      //   });
+      Object.entries(props.config.messageFilter.filters)
+        .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
+        .forEach(([filterId, filter]) => {
+          const filterPb = new MessageFilter();
+          filterPb.setValue(filter.filter.value || '');
+          messageFilterChain.getFiltersMap().set(filterId, filterPb);
+        });
 
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName);
