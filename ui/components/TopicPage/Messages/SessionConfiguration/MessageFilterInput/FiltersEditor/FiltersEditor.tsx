@@ -103,6 +103,8 @@ const FiltersEditor = (props: Props) => {
         }
       } 
     })
+
+    console.log('filter: ', activeFilter, 'code: ', value)
   }
 
   const onDuplicateFilter = () => {
@@ -308,7 +310,7 @@ const FiltersEditor = (props: Props) => {
             <H3>
               Json code editor
             </H3>
-            {activeFilter && activeCollection && listFilters[activeCollection][activeFilter] ?
+            {activeFilter !== undefined && activeCollection && listFilters[activeCollection][activeFilter] ?
               <Filter
                 value={listFilters[activeCollection][activeFilter].filter.value || ''}
                 onChange={(value) => onChangeEntry(value)}
