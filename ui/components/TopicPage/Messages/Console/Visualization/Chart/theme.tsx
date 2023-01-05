@@ -1,11 +1,15 @@
 import { remToPx } from "../../../../../ui/rem-to-px";
 import chroma from "chroma-js";
+import { Chart as ChartJs} from 'chart.js';
+
+ChartJs.defaults.font = {
+  family: 'Fira Code',
+  size: remToPx(14),
+}
 
 const palette = ['#276ff4', '#00ab28', '#fe6e6e', '#f8cf06', '#9d50ff', '#1d9d6'];
 
 export const getTheme = () => ({
-  fontFamily: 'Fira Code',
-  fontSize: remToPx(12),
   getRandomColors: (count: number) => generateRandomColors(count, palette)
 });
 

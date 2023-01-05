@@ -16,10 +16,10 @@ const Chart: React.FC<ChartProps> = (props) => {
 
   const dimensions = useMemo(() => {
     return [
-      { getValue: (entry: MessageDescriptor) => Number(entry.key) },
-      { getValue: (entry: MessageDescriptor) => entry.size === null ? null : entry.size * 1000000 },
-      { getValue: (entry: MessageDescriptor) => entry.size === null ? null : entry.size * 1000003 },
-      { getValue: (entry: MessageDescriptor) => entry.size === null ? null : entry.size * k * 1000007 }
+      { getValue: (entry: MessageDescriptor) => Number(entry.key), name: 'Dimension 1' },
+      { getValue: (entry: MessageDescriptor) => entry.size === null ? null : entry.size * 1000000, name: 'Dimension 2' },
+      { getValue: (entry: MessageDescriptor) => entry.size === null ? null : entry.size * 1000003, name: 'Dimension 3' },
+      { getValue: (entry: MessageDescriptor) => entry.size === null ? null : entry.size * k * 1000007, name: 'Some new dim' }
     ]
   }, []);
 
@@ -30,6 +30,7 @@ const Chart: React.FC<ChartProps> = (props) => {
         config={{
           dimensions,
           getLabel: (entry: MessageDescriptor) => entry.publishTime === null ? '-' : new Date(entry.publishTime).toISOString(),
+          name: 'My bar chart',
         }}
       />
     </div>
