@@ -529,6 +529,10 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [config, setConfig] = useState<SessionConfig>(props.config);
   const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
+  useEffect(() => {
+    console.log(config.messageFilter.filters)
+  }, [])
+
   return (
     <Session
       key={sessionKey}

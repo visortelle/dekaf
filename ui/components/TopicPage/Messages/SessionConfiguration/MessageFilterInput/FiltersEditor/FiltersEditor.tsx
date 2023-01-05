@@ -12,137 +12,136 @@ import s from './FiltersEditor.module.css';
 
 type Props = {
   editableFilter?: string,
-  package: string,
   filters: Record<string, t.ChainEntry>,
   onChange: (f: Record<string, t.ChainEntry>) => void,
 }
 
 const FiltersEditor = (props: Props) => {
 
-  const [activePackage, setActivePackage] = useState<string>(props.package);
+  const [activePackage, setActivePackage] = useState<string>();
   const [activeFilter, setActiveFilter] = useState<string | undefined>(props.editableFilter);
   const [filters, setFilters] = useState(props.filters)
 
-  const changeEntryId = (value: string) => {
-    if (!activeFilter || !activePackage) {
-      return
-    }
+  // const changeEntryId = (value: string) => {
+  //   if (!activeFilter || !activePackage) {
+  //     return
+  //   }
 
-    setActiveFilter(value);
+  //   setActiveFilter(value);
 
-    Object.keys(props.filters[activePackage]).map(filterName => {
-      if (filterName === value) {
-        return;
-      }
-    });
+  //   Object.keys(props.filters[activePackage]).map(filterName => {
+  //     if (filterName === value) {
+  //       return;
+  //     }
+  //   });
 
-    const newFilters = cloneDeep(filters[activePackage]);
-    newFilters[value] = props.filters[activePackage][activeFilter];
+  //   const newFilters = cloneDeep(filters[activePackage]);
+  //   newFilters[value] = props.filters[activePackage][activeFilter];
 
-    if (!newFilters[value]) {
-      newFilters[value] = filters[activePackage][activeFilter]
-    }
+  //   if (!newFilters[value]) {
+  //     newFilters[value] = filters[activePackage][activeFilter]
+  //   }
 
-    delete newFilters[activeFilter];
-    updateFilters(newFilters);
-  }
+  //   delete newFilters[activeFilter];
+  //   updateFilters(newFilters);
+  // }
 
-  const changeDescription = (value: string) => {
-    if (!activePackage || !activeFilter) {
-      return;
-    }
+  // const changeDescription = (value: string) => {
+  //   if (!activePackage || !activeFilter) {
+  //     return;
+  //   }
 
-    const newDescription = {
-      ...filters,
-      [activePackage]: {
-        ...filters[activePackage],
-        [activeFilter]: {
-          filter: {
-            ...filters[activePackage][activeFilter].filter, description: value
-          }
-        }
-      }
-    }
+  //   const newDescription = {
+  //     ...filters,
+  //     [activePackage]: {
+  //       ...filters[activePackage],
+  //       [activeFilter]: {
+  //         filter: {
+  //           ...filters[activePackage][activeFilter].filter, description: value
+  //         }
+  //       }
+  //     }
+  //   }
 
-    setFilters(newDescription)
-    props.onChange(newDescription)
-  }
+  //   setFilters(newDescription)
+  //   props.onChange(newDescription)
+  // }
 
-  const changeEntry = (value: string) => {
-    if (!activePackage || !activeFilter) {
-      return;
-    }
+  // const changeEntry = (value: string) => {
+  //   if (!activePackage || !activeFilter) {
+  //     return;
+  //   }
 
-    const newEntry = {  ...filters, [activePackage]: { ...filters[activePackage], [activeFilter]: { filter: { ...filters[activePackage][activeFilter].filter, value: value} } } }
+  //   const newEntry = {  ...filters, [activePackage]: { ...filters[activePackage], [activeFilter]: { filter: { ...filters[activePackage][activeFilter].filter, value: value} } } }
     
-    setFilters(newEntry)
-    props.onChange(newEntry)
-  }
+  //   setFilters(newEntry)
+  //   props.onChange(newEntry)
+  // }
 
-  const deleteFilter = () => {
-    if (!activePackage || !activeFilter) {
-      return;
-    }
+  // const deleteFilter = () => {
+  //   if (!activePackage || !activeFilter) {
+  //     return;
+  //   }
 
-    const newFilters = cloneDeep(filters[activePackage]);
-    delete newFilters[activeFilter];
+  //   const newFilters = cloneDeep(filters[activePackage]);
+  //   delete newFilters[activeFilter];
 
-    updateFilters(newFilters, '');
-  }
+  //   updateFilters(newFilters, '');
+  // }
 
-  const duplicateFilter = () => {
-    if (!activePackage || !activeFilter) {
-      return;
-    }
+  // const duplicateFilter = () => {
+  //   if (!activePackage || !activeFilter) {
+  //     return;
+  //   }
 
-    const newFilters = cloneDeep(filters[activePackage]);
+  //   const newFilters = cloneDeep(filters[activePackage]);
 
-    let counter = 0;
-    Object.keys(newFilters).map(filter => {
-      if (filter === `${activeFilter}-duplicate-${counter}`) {
-        counter++
-      }
-    });
-    newFilters[`${activeFilter}-duplicate-${counter}`] = newFilters[activeFilter];
+  //   let counter = 0;
+  //   Object.keys(newFilters).map(filter => {
+  //     if (filter === `${activeFilter}-duplicate-${counter}`) {
+  //       counter++
+  //     }
+  //   });
+  //   newFilters[`${activeFilter}-duplicate-${counter}`] = newFilters[activeFilter];
 
-    updateFilters(newFilters, `${activeFilter}-duplicate-${counter}`);
-  }
+  //   updateFilters(newFilters, `${activeFilter}-duplicate-${counter}`);
+  // }
 
-  const createNewFilter = () => {
-    if (!activePackage) {
-      return;
-    }
+  // const createNewFilter = () => {
+  //   if (!activePackage) {
+  //     return;
+  //   }
 
-    const newFilters = cloneDeep(filters[activePackage]);
+  //   const newFilters = cloneDeep(filters[activePackage]);
 
-    let counter = 0;
-    Object.keys(newFilters).map(filter => {
-      if (filter === `new-filter-${counter}`) {
-        counter++
-      }
-    });
-    newFilters[`new-filter-${counter}`] = {filter: { description: '', value: defaultJsValue }};
+  //   let counter = 0;
+  //   Object.keys(newFilters).map(filter => {
+  //     if (filter === `new-filter-${counter}`) {
+  //       counter++
+  //     }
+  //   });
+  //   newFilters[`new-filter-${counter}`] = {filter: { description: '', value: defaultJsValue }};
 
-    updateFilters(newFilters, `new-filter-${counter}`);
-  }
+  //   updateFilters(newFilters, `new-filter-${counter}`);
+  // }
 
-  const updateFilters = (newFilters:Record<string, t.ChainEntry>, filterName?: string) => {
-    setFilters({
-      ...props.filters,
-      [activePackage]:  newFilters,
-    })
+  // const updateFilters = (newFilters:Record<string, t.ChainEntry>, filterName?: string) => {
+  //   setFilters({
+  //     ...props.filters,
+  //     [activePackage]:  newFilters,
+  //   })
 
-    props.onChange({
-      ...props.filters,
-      [activePackage]:  newFilters,
-    })
+  //   props.onChange({
+  //     ...props.filters,
+  //     [activePackage]:  newFilters,
+  //   })
 
-    if (filterName !== undefined) {
-      setActiveFilter(filterName);
-    }
+  //   if (filterName !== undefined) {
+  //     setActiveFilter(filterName);
+  //   }
 
-    localStorage.removeItem('messageFilters')
-  }
+  //   localStorage.removeItem('messageFilters')
+  // }
 
 
 
@@ -215,7 +214,7 @@ const FiltersEditor = (props: Props) => {
               ))}
             </div>
             <div className={`${s.Buttons}`}>
-              <Button
+              {/* <Button
                 type='danger'
                 text='Delete'
                 onClick={() => deleteFilter()}
@@ -229,7 +228,7 @@ const FiltersEditor = (props: Props) => {
                 type='primary'
                 text='Create new'
                 onClick={() => createNewFilter()}
-              />
+              /> */}
             </div>
           </div>
 
@@ -239,7 +238,7 @@ const FiltersEditor = (props: Props) => {
             </H3>
             {activeFilter !== undefined ?
               <>
-                <Input
+                {/* <Input
                   value={activeFilter}
                   onChange={(value) => {changeEntryId(value)}}
                 />
@@ -248,7 +247,7 @@ const FiltersEditor = (props: Props) => {
                     value={filters[activePackage][activeFilter].filter.description || 'Have not description'}
                     onChange={(value) => changeDescription(value)}
                   />
-                }
+                } */}
               </> :
               <span>
                 Choose filter
@@ -260,7 +259,7 @@ const FiltersEditor = (props: Props) => {
             <H3>
               json code editor
             </H3>
-            {activeFilter && filters[activePackage][activeFilter] ?
+            {/* {activeFilter && filters[activePackage][activeFilter] ?
               <Filter
                 value={filters[activePackage][activeFilter].filter.value || ''}
                 onChange={(value) => changeEntry(value)}
@@ -268,7 +267,7 @@ const FiltersEditor = (props: Props) => {
               <span>
                 Choose filter
               </span>
-            }
+            } */}
           </div>
       </div>
     </DefaultProvider>

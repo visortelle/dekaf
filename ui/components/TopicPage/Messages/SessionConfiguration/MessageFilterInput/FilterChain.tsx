@@ -44,8 +44,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           <div key={entryId} className={s.Entry}>
             <div className={s.EntryFilter}>
               <Filter
-                value={entry.filter}
-                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
+                value={entry.filter.value || ''}
+                onChange={(f) => props.onChange({...props.value, filters: { ...props.value.filters, [entryId]: {filter: { value: f }}  } })}
                 autoCompleteConfig={index === 0 ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
               />
             </div>
@@ -73,7 +73,6 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                     content:
                       <FiltersEditor
                         filters={props.value.filters}
-                        package={PACKAGE}
                         editableFilter={entryId}
                         onChange={(f) => props.onChange({ ...props.value, filters: f })}
                       />,
@@ -89,9 +88,9 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                 <Button
                   svgIcon={deleteIcon}
                   onClick={() => {
-                    const newFilters = cloneDeep(props.value.filters[PACKAGE]);
+                    const newFilters = cloneDeep(props.value.filters);
                     delete newFilters[entryId];
-                    props.onChange({ ...props.value, filters: { ...props.value.filters, [PACKAGE]: newFilters} });
+                    props.onChange({ ...props.value, filters: newFilters });
                   }}
                   type="danger"
                   title="Delete filter"
@@ -104,8 +103,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       <div className={`${s.Buttons}`}>
         <SmallButton
           onClick={() => {
-            const newFilter: t.Filter = { value: undefined, description: undefined };
-            const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [PACKAGE]:{ ...props.value.filters[PACKAGE], [uuid()]: { filter: newFilter } }} };
+            const newFilter: t.Filter = { value: undefined };
+            const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [uuid()]: { filter: newFilter } } };
             props.onChange(newChain);
           }}
           text="Add filter"
@@ -118,7 +117,6 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
             content:
               <FiltersEditor
                 filters={props.value.filters}
-                package={PACKAGE}
                 onChange={(f) => (props.onChange({ ...props.value, filters: f }))}
               />,
             styleMode: 'no-content-padding'
