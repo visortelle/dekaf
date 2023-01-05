@@ -96,34 +96,13 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     }),
   }]);
 
-  const [messageFilters, setMessageFilters] = useState<MessageFilters>();
+  const [messageFilters, setMessageFilters] = useState<MessageFilters>({});
 
   useEffect(() => {
-    // if (localStorage.getItem('messageFilters')) {
-    //   return;
-    // }
-
-    const messageFilters: MessageFilters = {
-      admin: {
-        [uuid()]: {
-          filter: {
-            description: uuid(),
-            value: uuid(),
-          }
-        },
-        [uuid()]: {
-          filter: {
-            description: uuid(),
-            value: uuid(),
-          }
-        },
-      }
+    const filters = localStorage.getItem('messageFilters')
+    if (filters) {
+      setMessageFilters(JSON.parse(filters));
     }
-    localStorage.setItem('messageFilters', JSON.stringify(messageFilters));
-  }, []);
-
-  useEffect(() => {
-    setMessageFilters(JSON.parse(localStorage.getItem('messageFilters') || ''));
   }, []);
 
   return (

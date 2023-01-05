@@ -140,7 +140,38 @@ const FiltersEditor = (props: Props) => {
     if (filterName !== undefined) {
       setActiveFilter(filterName);
     }
+
+    localStorage.removeItem('messageFilters')
   }
+
+
+
+
+  // useEffect(() => {
+  //   // if (localStorage.getItem('messageFilters')) {
+  //   //   return;
+  //   // }
+
+  //   const messageFilters: MessageFilters = {
+  //     admin: {
+  //       [uuid()]: {
+  //         filter: {
+  //           description: uuid(),
+  //           value: uuid(),
+  //         }
+  //       },
+  //       [uuid()]: {
+  //         filter: {
+  //           description: uuid(),
+  //           value: uuid(),
+  //         }
+  //       },
+  //     }
+  //   }
+  //   localStorage.setItem('messageFilters', JSON.stringify(messageFilters));
+  // }, []);
+
+
  
   return (
     <DefaultProvider>
@@ -162,7 +193,7 @@ const FiltersEditor = (props: Props) => {
               <H3>
                 Filters
               </H3>
-              {activePackage && Object.keys(filters[activePackage]).map(filter => (
+              {activePackage && filters[activePackage] && Object.keys(filters[activePackage]).map(filter => (
                 <span onClick={() => setActiveFilter(filter)} className={`${s.Inactive} ${activeFilter === filter && s.Active}`}>
                   {filter}
                 </span>
