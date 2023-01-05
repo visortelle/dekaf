@@ -38,7 +38,7 @@ case class JsonMessage(
     key: Option[String],
     orderingKey: Option[Array[Byte]],
     topic: Option[String],
-    size: Int,
+    size: Option[Int],
     redeliveryCount: Option[Int],
     schemaVersion: Option[Long],
     isReplicated: Option[Boolean],
@@ -60,7 +60,7 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
     val sequenceId = Option(msg.getSequenceId)
     val producerName = Option(msg.getProducerName)
     val key = Option(msg.getKey)
-    val size = msg.size
+    val size = Option(msg.size)
     val orderingKey = Option(msg.getOrderingKey)
     val topic = Option(msg.getTopicName)
     val redeliveryCount = Option(msg.getRedeliveryCount)
@@ -102,7 +102,8 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
       redeliveryCount = redeliveryCount,
       schemaVersion = schemaVersion,
       isReplicated = isReplicated,
-      replicatedFrom = replicatedFrom
+      replicatedFrom = replicatedFrom,
+      size = size
     )
     (messagePb, jsonMessage, jsonValue)
 

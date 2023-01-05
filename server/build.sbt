@@ -1,6 +1,6 @@
 val scala3Version = "3.2.1"
 val graalvmVersion = "22.3.0"
-val pulsarVersion = "2.10.2"
+val pulsarVersion = "2.10.3"
 val circeVersion = "0.14.3"
 val zioConfigVersion = "3.0.2"
 

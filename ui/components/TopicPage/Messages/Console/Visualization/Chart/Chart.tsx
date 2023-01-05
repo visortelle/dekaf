@@ -13,9 +13,20 @@ const Chart: React.FC<ChartProps> = (props) => {
     return <div className={s.NoData}>No data to show.</div>;
   }
 
+  console.log('msgs', props.messages);
+
   return (
     <div className={s.Chart}>
-      <BarChart data={props.messages} />
+      <BarChart
+        data={props.messages}
+        config={{
+          dimensions: [
+            {color: 'red', getValue: (entry: MessageDescriptor) => Number(entry.key)},
+            {color: 'blue', getValue: (entry: MessageDescriptor) => entry.size},
+          ],
+          getLabel: (entry: MessageDescriptor) => entry.publishTime === null ? '-' : new Date(entry.publishTime).toISOString(),
+        }}
+      />
     </div>
   );
 }
