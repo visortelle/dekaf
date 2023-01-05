@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { cloneDeep } from 'lodash';
 
 import { DefaultProvider } from '../../../../../app/contexts/Modals/Modals';
@@ -16,190 +16,233 @@ type Props = {
   onChange: (f: Record<string, t.ChainEntry>) => void,
 }
 
+
+type Filter = {
+  value: string | undefined;
+  description: string;
+}
+
+type ChainEntry = {
+  filter: Filter;
+}
+
+type ListFilters = {
+  [collection: string]: Record<string, ChainEntry>
+}
+
 const FiltersEditor = (props: Props) => {
 
-  const [activePackage, setActivePackage] = useState<string>();
+  const [activeCollection, setActiveCollection] = useState<string>();
   const [activeFilter, setActiveFilter] = useState<string | undefined>(props.editableFilter);
-  const [filters, setFilters] = useState(props.filters)
+  const [listFilters, setListFilters] = useState<ListFilters>({});
+  // const [filters, setFilters] = useState(props.filters)
 
-  // const changeEntryId = (value: string) => {
-  //   if (!activeFilter || !activePackage) {
-  //     return
-  //   }
+  useEffect(() => {
+    const filters = localStorage.getItem('messageFilters')
+    if (filters) {
+      setListFilters(JSON.parse(filters));
+    }
+  }, []);
 
-  //   setActiveFilter(value);
+  const onSave = () => {
+    localStorage.setItem('messageFilters', JSON.stringify(listFilters));
+  }
 
-  //   Object.keys(props.filters[activePackage]).map(filterName => {
-  //     if (filterName === value) {
-  //       return;
-  //     }
-  //   });
+  const onChangeEntryId = (value: string) => {
+    if (!activeFilter || !activeCollection) {
+      return
+    }
 
-  //   const newFilters = cloneDeep(filters[activePackage]);
-  //   newFilters[value] = props.filters[activePackage][activeFilter];
+    setActiveFilter(value);
 
-  //   if (!newFilters[value]) {
-  //     newFilters[value] = filters[activePackage][activeFilter]
-  //   }
+    Object.keys(listFilters[activeCollection]).map(filterName => {
+      if (filterName === value) {
+        return;
+      }
+    });
 
-  //   delete newFilters[activeFilter];
-  //   updateFilters(newFilters);
-  // }
+    const newFilters = cloneDeep(listFilters[activeCollection]);
+    newFilters[value] = listFilters[activeCollection][activeFilter];
+    delete newFilters[activeFilter];
 
-  // const changeDescription = (value: string) => {
-  //   if (!activePackage || !activeFilter) {
-  //     return;
-  //   }
+    setListFilters({ ...listFilters, [activeCollection]: newFilters});
+  }
 
-  //   const newDescription = {
-  //     ...filters,
-  //     [activePackage]: {
-  //       ...filters[activePackage],
-  //       [activeFilter]: {
-  //         filter: {
-  //           ...filters[activePackage][activeFilter].filter, description: value
-  //         }
-  //       }
-  //     }
-  //   }
+  const onChangeDescription = (value: string) => {
+    if (!activeCollection || !activeFilter) {
+      return;
+    }
 
-  //   setFilters(newDescription)
-  //   props.onChange(newDescription)
-  // }
+    const newDescription = {
+      ...listFilters,
+      [activeCollection]: {
+        ...listFilters[activeCollection],
+        [activeFilter]: {
+          filter: {
+            ...listFilters[activeCollection][activeFilter].filter, description: value
+          }
+        }
+      }
+    }
 
-  // const changeEntry = (value: string) => {
-  //   if (!activePackage || !activeFilter) {
-  //     return;
-  //   }
+    setListFilters(newDescription)
+  }
 
-  //   const newEntry = {  ...filters, [activePackage]: { ...filters[activePackage], [activeFilter]: { filter: { ...filters[activePackage][activeFilter].filter, value: value} } } }
+  const onChangeEntry = (value: string) => {
+    if (!activeCollection || !activeFilter) {
+      return;
+    }
+
+    setListFilters({
+      ...listFilters,
+      [activeCollection]: {
+        ...listFilters[activeCollection],
+        [activeFilter]: {
+          ...listFilters[activeCollection][activeFilter],
+          filter: { ...listFilters[activeCollection][activeFilter].filter, value: value }
+        }
+      } 
+    })
+  }
+
+  const onDuplicateFilter = () => {
+    if (!activeCollection || !activeFilter) {
+      return;
+    }
+
+    const newFilters = cloneDeep(listFilters[activeCollection]);
+
+    let counter = 0;
+    Object.keys(newFilters).map(filter => {
+      if (filter === `${activeFilter}-duplicate-${counter}`) {
+        counter++
+      }
+    });
+    newFilters[`${activeFilter}-duplicate-${counter}`] = newFilters[activeFilter];
+
+    setListFilters( { ...listFilters, [activeCollection]: newFilters })
+
+    setActiveFilter(`${activeFilter}-duplicate-${counter}`)
+  }
+
+  const createNewFilter = () => {
+    if (!activeCollection) {
+      return;
+    }
+
+    let counter = 0;
+    Object.keys(listFilters[activeCollection]).map(_ => {
+      Object.keys(listFilters[activeCollection]).filter(filter => {
+        if (filter === `new-filter-${counter}`) {
+          counter++
+        }
+      })
+    });
+
+    const newFilter = `new-filter-${counter}`;
+    setListFilters({
+      ...listFilters,
+      [activeCollection]: {
+        ...listFilters[activeCollection],
+        [newFilter]: {
+          filter: { description: '', value: defaultJsValue }
+        }
+      }
+    })
     
-  //   setFilters(newEntry)
-  //   props.onChange(newEntry)
-  // }
+    setActiveFilter(newFilter)
+  }
 
-  // const deleteFilter = () => {
-  //   if (!activePackage || !activeFilter) {
-  //     return;
-  //   }
+  const deleteFilter = () => {
+    if (!activeCollection || !activeFilter) {
+      return;
+    }
 
-  //   const newFilters = cloneDeep(filters[activePackage]);
-  //   delete newFilters[activeFilter];
+    const newFilters = cloneDeep(listFilters[activeCollection]);
+    delete newFilters[activeFilter];
 
-  //   updateFilters(newFilters, '');
-  // }
+    setListFilters({ ...listFilters, [activeCollection]: newFilters });
 
-  // const duplicateFilter = () => {
-  //   if (!activePackage || !activeFilter) {
-  //     return;
-  //   }
+    setActiveFilter(undefined)
+  }
 
-  //   const newFilters = cloneDeep(filters[activePackage]);
+  const createNewCollection = () => {
+    let counter = 0;
+    Object.keys(listFilters).map(collection => {
+      if (collection === `new-collection-${counter}`) {
+        counter++
+      }
+    });
+    const newCollection = `new-collection-${counter}`;
+    setListFilters({ ...listFilters, [newCollection]: {} })
 
-  //   let counter = 0;
-  //   Object.keys(newFilters).map(filter => {
-  //     if (filter === `${activeFilter}-duplicate-${counter}`) {
-  //       counter++
-  //     }
-  //   });
-  //   newFilters[`${activeFilter}-duplicate-${counter}`] = newFilters[activeFilter];
+    setActiveCollection(newCollection)
+  }
 
-  //   updateFilters(newFilters, `${activeFilter}-duplicate-${counter}`);
-  // }
+  const onDuplicateCollection = () => {
+    if (!activeCollection) {
+      return;
+    }
 
-  // const createNewFilter = () => {
-  //   if (!activePackage) {
-  //     return;
-  //   }
+    const newCollections = cloneDeep(listFilters);
 
-  //   const newFilters = cloneDeep(filters[activePackage]);
+    let counter = 0;
+    Object.keys(newCollections).map(filter => {
+      if (filter === `${activeCollection}-duplicate-${counter}`) {
+        counter++
+      }
+    });
+    newCollections[`${activeCollection}-duplicate-${counter}`] = newCollections[activeCollection];
 
-  //   let counter = 0;
-  //   Object.keys(newFilters).map(filter => {
-  //     if (filter === `new-filter-${counter}`) {
-  //       counter++
-  //     }
-  //   });
-  //   newFilters[`new-filter-${counter}`] = {filter: { description: '', value: defaultJsValue }};
+    setListFilters(newCollections)
+  }
 
-  //   updateFilters(newFilters, `new-filter-${counter}`);
-  // }
+  const deleteCollection = () => {
+    if (!activeCollection) {
+      return;
+    }
 
-  // const updateFilters = (newFilters:Record<string, t.ChainEntry>, filterName?: string) => {
-  //   setFilters({
-  //     ...props.filters,
-  //     [activePackage]:  newFilters,
-  //   })
+    const newFilters = cloneDeep(listFilters);
+    delete newFilters[activeCollection];
 
-  //   props.onChange({
-  //     ...props.filters,
-  //     [activePackage]:  newFilters,
-  //   })
+    setListFilters(newFilters);
 
-  //   if (filterName !== undefined) {
-  //     setActiveFilter(filterName);
-  //   }
+    setActiveCollection(undefined)
+  }
 
-  //   localStorage.removeItem('messageFilters')
-  // }
-
-
-
-
-
-
-
-  // const [messageFilters, setMessageFilters] = useState<MessageFilters>({});
-
-  // useEffect(() => {
-  //   const filters = localStorage.getItem('messageFilters')
-  //   if (filters) {
-  //     setMessageFilters(JSON.parse(filters));
-  //   }
-  // }, []);
-
-
-
-
-  // useEffect(() => {
-  //   // if (localStorage.getItem('messageFilters')) {
-  //   //   return;
-  //   // }
-
-  //   const messageFilters: MessageFilters = {
-  //     admin: {
-  //       [uuid()]: {
-  //         filter: {
-  //           description: uuid(),
-  //           value: uuid(),
-  //         }
-  //       },
-  //       [uuid()]: {
-  //         filter: {
-  //           description: uuid(),
-  //           value: uuid(),
-  //         }
-  //       },
-  //     }
-  //   }
-  //   localStorage.setItem('messageFilters', JSON.stringify(messageFilters));
-  // }, []);
-
-
- 
   return (
     <DefaultProvider>
       <div className={`${s.FiltersEditor}`}>
 
           <div className={`${s.Column}`}>
-            <H3>
-              Packages
-            </H3>
-            {Object.keys(props.filters).map(filterPackage => (
-              <span onClick={() => setActivePackage(filterPackage)} className={`${s.Inactive} ${activePackage === filterPackage && s.Active}`}>
-                {filterPackage}
-              </span>
-            ))}
+            <div className={`${s.Collections}`}>
+              <H3>
+                Collections
+              </H3>
+              {Object.keys(listFilters).map(collection => (
+                <span onClick={() => setActiveCollection(collection)} className={`${s.Inactive} ${activeCollection === collection && s.Active}`}>
+                  {collection}
+                </span>
+              ))}
+            </div>
+            <div className={`${s.Buttons}`}>
+               <Button
+                type='danger'
+                text='Delete'
+                onClick={() => deleteCollection()}
+                disabled={!activeFilter}
+              />
+              <Button
+                type='primary'
+                text='Duplicate'
+                onClick={() => onDuplicateCollection()}
+              />
+              <Button
+                type='primary'
+                text='Create new'
+                onClick={() => createNewCollection()}
+              />
+            </div>
           </div>
 
           <div className={`${s.Column}`}>
@@ -207,28 +250,34 @@ const FiltersEditor = (props: Props) => {
               <H3>
                 Filters
               </H3>
-              {activePackage && filters[activePackage] && Object.keys(filters[activePackage]).map(filter => (
-                <span onClick={() => setActiveFilter(filter)} className={`${s.Inactive} ${activeFilter === filter && s.Active}`}>
+              {activeCollection && listFilters[activeCollection] && Object.keys(listFilters[activeCollection]).map(filter => (
+                <span
+                  onClick={() => setActiveFilter(filter)}
+                  className={`${s.Inactive} ${activeFilter === filter && s.Active}`}
+                >
                   {filter}
                 </span>
               ))}
             </div>
             <div className={`${s.Buttons}`}>
-              {/* <Button
+              <Button
                 type='danger'
                 text='Delete'
                 onClick={() => deleteFilter()}
+                disabled={!activeFilter}
               />
               <Button
                 type='primary'
                 text='Duplicate'
-                onClick={() => duplicateFilter()}
+                onClick={() => onDuplicateFilter()}
+                disabled={!activeFilter}
               />
               <Button
                 type='primary'
                 text='Create new'
                 onClick={() => createNewFilter()}
-              /> */}
+                disabled={!activeCollection}
+              />
             </div>
           </div>
 
@@ -236,18 +285,18 @@ const FiltersEditor = (props: Props) => {
             <H3>
               Filter description
             </H3>
-            {activeFilter !== undefined ?
+            {activeFilter !== undefined && activeCollection !== undefined && listFilters[activeCollection][activeFilter] ?
               <>
-                {/* <Input
+                <Input
                   value={activeFilter}
-                  onChange={(value) => {changeEntryId(value)}}
+                  onChange={(value) => {onChangeEntryId(value)}}
                 />
-                {filters[activePackage][activeFilter] &&
+                {listFilters[activeCollection][activeFilter] &&
                   <Input
-                    value={filters[activePackage][activeFilter].filter.description || 'Have not description'}
-                    onChange={(value) => changeDescription(value)}
+                    value={listFilters[activeCollection][activeFilter].filter.description || 'Have not description'}
+                    onChange={(value) => onChangeDescription(value)}
                   />
-                } */}
+                }
               </> :
               <span>
                 Choose filter
@@ -257,21 +306,27 @@ const FiltersEditor = (props: Props) => {
 
           <div className={`${s.Column} ${s.JsonEditor}`}>
             <H3>
-              json code editor
+              Json code editor
             </H3>
-            {/* {activeFilter && filters[activePackage][activeFilter] ?
+            {activeFilter && activeCollection && listFilters[activeCollection][activeFilter] ?
               <Filter
-                value={filters[activePackage][activeFilter].filter.value || ''}
-                onChange={(value) => changeEntry(value)}
+                value={listFilters[activeCollection][activeFilter].filter.value || ''}
+                onChange={(value) => onChangeEntry(value)}
               /> :
               <span>
                 Choose filter
               </span>
-            } */}
+            }
           </div>
+
+          <Button
+            type='primary'
+            text='Save'
+            onClick={() => onSave()}
+          />
       </div>
     </DefaultProvider>
   )
 }
 
-export default FiltersEditor
+export default FiltersEditor;

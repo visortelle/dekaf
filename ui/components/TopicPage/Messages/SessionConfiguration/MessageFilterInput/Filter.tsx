@@ -20,6 +20,7 @@ const Filter: React.FC<FilterProps> = (props) => {
     if (props.value) {
       return
     }
+
     props.onChange(defaultJsValue);
   }, []);
 
