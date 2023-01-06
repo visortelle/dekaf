@@ -19,7 +19,8 @@ export type AutoCompleteConfig = {
   kind: 'Function' | 'Value' | 'Method' | 'Constructor' | 'Field' | 'Variable' | 'Class' | 'Struct' | 'Interface' | 'Module' | 'Property' | 'Event' | 'Operator' | 'Unit' | 'Constant' | 'Enum' | 'EnumMember' | 'Keyword' | 'Text' | 'Color' | 'File' | 'Reference' | 'Customcolor' | 'Folder' | 'TypeParameter' | 'User' | 'Issue' | 'Snippet'
 }
 export type CodeEditorProps = EditorProps & {
-  autoCompleteConfig?: AutoCompleteConfig
+  autoCompleteConfig?: AutoCompleteConfig,
+  key?: string
 };
 
 const CodeEditor: React.FC<CodeEditorProps> = (props) => {
@@ -88,7 +89,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
   }, [])
 
   return (
-    <div className={s.CodeEditor}>
+    <div className={s.CodeEditor} key={props.key}>
       <Editor
         beforeMount={(monaco) => addAutoComplition(monaco)}
         options={{

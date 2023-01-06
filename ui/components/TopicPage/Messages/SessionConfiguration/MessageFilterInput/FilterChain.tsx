@@ -1,6 +1,6 @@
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { cloneDeep, filter } from 'lodash';
+import { cloneDeep } from 'lodash';
 
 import Button from '../../../../ui/Button/Button';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';

@@ -20,6 +20,10 @@
   background-color: var(--accent-color-blue);
   color: #fff;
 }
+.Empty {
+  background-color: var(--accent-color-red);
+  color: #fff;
+}
 .Collections, .Filters {
   display: flex;
   flex-direction: column;

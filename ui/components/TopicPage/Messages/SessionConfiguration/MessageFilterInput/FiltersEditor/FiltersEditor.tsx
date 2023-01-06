@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { cloneDeep } from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 import { DefaultProvider } from '../../../../../app/contexts/Modals/Modals';
 import Button from '../../../../../ui/Button/Button';
@@ -16,18 +17,22 @@ type Props = {
   onChange: (f: Record<string, t.ChainEntry>) => void,
 }
 
-
-type Filter = {
-  value: string | undefined;
+type EditorFilter = t.Filter & {
   description: string;
+  name: string;
 }
 
 type ChainEntry = {
-  filter: Filter;
+  filter: EditorFilter;
+}
+
+type Collection = {
+  name: string,
+  filters: Record<string, ChainEntry>
 }
 
 type ListFilters = {
-  [collection: string]: Record<string, ChainEntry>
+  [collection: string]: Collection
 }
 
 const FiltersEditor = (props: Props) => {
@@ -35,10 +40,11 @@ const FiltersEditor = (props: Props) => {
   const [activeCollection, setActiveCollection] = useState<string>();
   const [activeFilter, setActiveFilter] = useState<string | undefined>(props.editableFilter);
   const [listFilters, setListFilters] = useState<ListFilters>({});
-  // const [filters, setFilters] = useState(props.filters)
+  const [usedFilters, setUsedFilters] = useState(props.filters);
 
   useEffect(() => {
-    const filters = localStorage.getItem('messageFilters')
+    const filters = localStorage.getItem('messageFilters');
+
     if (filters) {
       setListFilters(JSON.parse(filters));
     }
@@ -48,22 +54,13 @@ const FiltersEditor = (props: Props) => {
     localStorage.setItem('messageFilters', JSON.stringify(listFilters));
   }
 
-  const onChangeEntryId = (value: string) => {
-    if (!activeFilter || !activeCollection) {
+  const onChangeEntryName = (value: string) => {
+    if (activeFilter === undefined || !activeCollection) {
       return
     }
 
-    setActiveFilter(value);
-
-    Object.keys(listFilters[activeCollection]).map(filterName => {
-      if (filterName === value) {
-        return;
-      }
-    });
-
     const newFilters = cloneDeep(listFilters[activeCollection]);
-    newFilters[value] = listFilters[activeCollection][activeFilter];
-    delete newFilters[activeFilter];
+    newFilters.filters[activeFilter].filter.name = value
 
     setListFilters({ ...listFilters, [activeCollection]: newFilters});
   }
@@ -73,19 +70,26 @@ const FiltersEditor = (props: Props) => {
       return;
     }
 
-    const newDescription = {
-      ...listFilters,
-      [activeCollection]: {
-        ...listFilters[activeCollection],
-        [activeFilter]: {
-          filter: {
-            ...listFilters[activeCollection][activeFilter].filter, description: value
-          }
-        }
-      }
-    }
+    const newDescription = cloneDeep(listFilters);
+    newDescription[activeCollection].filters[activeFilter].filter.description = value
 
-    setListFilters(newDescription)
+    // const newDescription = {
+    //   ...listFilters,
+    //   [activeCollection]: {
+    //     ...listFilters[activeCollection],
+    //     filters: {
+    //       ...listFilters[activeCollection].filters,
+    //       [activeFilter]: {
+    //         ...listFilters[activeCollection].filters[activeFilter],
+    //         filter: {
+    //           ...listFilters[activeCollection].filters[activeFilter].filter, description: value
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+
+    setListFilters(newDescription);
   }
 
   const onChangeEntry = (value: string) => {
@@ -97,14 +101,15 @@ const FiltersEditor = (props: Props) => {
       ...listFilters,
       [activeCollection]: {
         ...listFilters[activeCollection],
-        [activeFilter]: {
-          filter: { ...listFilters[activeCollection][activeFilter].filter, value: value }
+        filters: {
+          ...listFilters[activeCollection].filters,
+          [activeFilter]: {
+            ...listFilters[activeCollection].filters[activeFilter],
+            filter: { ...listFilters[activeCollection].filters[activeFilter].filter, value: value }
+          }
         }
       } 
     })
-
-    console.log(activeFilter, value)
-    console.log(listFilters[activeCollection][activeFilter].filter.value)
   }
 
   const onDuplicateFilter = () => {
@@ -113,44 +118,33 @@ const FiltersEditor = (props: Props) => {
     }
 
     const newFilters = cloneDeep(listFilters[activeCollection]);
+    const newFilter = uuid();
 
-    let counter = 0;
-    Object.keys(newFilters).map(filter => {
-      if (filter === `${activeFilter}-duplicate-${counter}`) {
-        counter++
-      }
-    });
-    newFilters[`${activeFilter}-duplicate-${counter}`] = newFilters[activeFilter];
-
-    setListFilters( { ...listFilters, [activeCollection]: newFilters })
-
-    setActiveFilter(`${activeFilter}-duplicate-${counter}`)
+    newFilters.filters[newFilter] = cloneDeep(newFilters.filters[activeFilter]);
+    newFilters.filters[newFilter].filter.name += '-dublicate';
+    setListFilters({ ...listFilters, [activeCollection]: newFilters });
+    setActiveFilter(newFilter);
   }
 
   const createNewFilter = () => {
     if (!activeCollection) {
       return;
     }
+    
+    const newFilter = uuid();
 
-    let counter = 0;
-    Object.keys(listFilters[activeCollection]).map(_ => {
-      Object.keys(listFilters[activeCollection]).filter(filter => {
-        if (filter === `new-filter-${counter}`) {
-          counter++
-        }
-      })
-    });
-
-    const newFilter = `new-filter-${counter}`;
     setListFilters({
       ...listFilters,
       [activeCollection]: {
         ...listFilters[activeCollection],
-        [newFilter]: {
-          filter: { description: '', value: defaultJsValue }
+        filters: {
+          ...listFilters[activeCollection].filters,
+          [newFilter] : {
+            filter: { description: '', value: defaultJsValue, name: 'new filter' }
+          }
         }
       }
-    })
+    });
     
     setActiveFilter(newFilter)
   }
@@ -161,7 +155,7 @@ const FiltersEditor = (props: Props) => {
     }
 
     const newFilters = cloneDeep(listFilters[activeCollection]);
-    delete newFilters[activeFilter];
+    delete newFilters.filters[activeFilter];
 
     setListFilters({ ...listFilters, [activeCollection]: newFilters });
 
@@ -169,16 +163,13 @@ const FiltersEditor = (props: Props) => {
   }
 
   const createNewCollection = () => {
-    let counter = 0;
-    Object.keys(listFilters).map(collection => {
-      if (collection === `new-collection-${counter}`) {
-        counter++
-      }
-    });
-    const newCollection = `new-collection-${counter}`;
-    setListFilters({ ...listFilters, [newCollection]: {} })
+    const newCollection = uuid();
+    setListFilters({ ...listFilters, [newCollection]: {
+      name: 'new collection',
+      filters: {}
+    }})
 
-    setActiveCollection(newCollection)
+    setActiveCollection(newCollection);
   }
 
   const onDuplicateCollection = () => {
@@ -187,16 +178,12 @@ const FiltersEditor = (props: Props) => {
     }
 
     const newCollections = cloneDeep(listFilters);
+    const newCollection = uuid();
 
-    let counter = 0;
-    Object.keys(newCollections).map(filter => {
-      if (filter === `${activeCollection}-duplicate-${counter}`) {
-        counter++
-      }
-    });
-    newCollections[`${activeCollection}-duplicate-${counter}`] = newCollections[activeCollection];
-
-    setListFilters(newCollections)
+    newCollections[newCollection] = cloneDeep(newCollections[activeCollection]);
+    newCollections[newCollection].name += '-dublicate';
+    setListFilters(newCollections);
+    setActiveCollection(newCollection);
   }
 
   const deleteCollection = () => {
@@ -212,6 +199,17 @@ const FiltersEditor = (props: Props) => {
     setActiveCollection(undefined)
   }
 
+  const useFilter = () => {
+    if (!activeCollection || !activeFilter) {
+      return;
+    }
+
+    const newFilter: string = listFilters[activeCollection].filters[activeFilter].filter.value || '';
+    const newChain: Record<string, t.ChainEntry> = { ...usedFilters,  [uuid()]: { filter: { value: newFilter } } };
+    props.onChange(newChain);
+    setUsedFilters(newChain);
+  }
+
   return (
     <DefaultProvider>
       <div className={`${s.FiltersEditor}`}>
@@ -222,8 +220,8 @@ const FiltersEditor = (props: Props) => {
                 Collections
               </H3>
               {Object.keys(listFilters).map(collection => (
-                <span onClick={() => setActiveCollection(collection)} className={`${s.Inactive} ${activeCollection === collection && s.Active}`}>
-                  {collection}
+                <span onClick={() => {setActiveCollection(collection), setActiveFilter(undefined)}} className={`${s.Inactive} ${activeCollection === collection && s.Active}`}>
+                  {listFilters[collection].name}
                 </span>
               ))}
             </div>
@@ -232,12 +230,13 @@ const FiltersEditor = (props: Props) => {
                 type='danger'
                 text='Delete'
                 onClick={() => deleteCollection()}
-                disabled={!activeFilter}
+                disabled={!activeCollection}
               />
               <Button
                 type='primary'
                 text='Duplicate'
                 onClick={() => onDuplicateCollection()}
+                disabled={!activeCollection}
               />
               <Button
                 type='primary'
@@ -252,14 +251,15 @@ const FiltersEditor = (props: Props) => {
               <H3>
                 Filters
               </H3>
-              {activeCollection && listFilters[activeCollection] && Object.keys(listFilters[activeCollection]).map(filter => (
+              {activeCollection && listFilters[activeCollection].filters && Object.keys(listFilters[activeCollection].filters).map(filter => (
                 <span
                   onClick={() => {
                     setActiveFilter(filter);
                   }}
-                  className={`${s.Inactive} ${activeFilter === filter && s.Active}`}
+                  className={`${s.Inactive} ${activeFilter === filter && s.Active} ${filter.length === 0 && s.Empty}`}
                 >
-                  {filter}
+                  {listFilters[activeCollection].filters[filter].filter.name}
+                  {listFilters[activeCollection].filters[filter].filter.name.length === 0 && 'write filter name'}
                 </span>
               ))}
             </div>
@@ -289,16 +289,18 @@ const FiltersEditor = (props: Props) => {
             <H3>
               Filter description
             </H3>
-            {activeFilter !== undefined && activeCollection !== undefined && listFilters[activeCollection][activeFilter] ?
+            {activeFilter && activeCollection && listFilters[activeCollection].filters[activeFilter] ?
               <>
                 <Input
-                  value={activeFilter}
-                  onChange={(value) => {onChangeEntryId(value)}}
+                  value={listFilters[activeCollection].filters[activeFilter].filter.name}
+                  onChange={(value) => {onChangeEntryName(value)}}
+                  placeholder="message-filter"
                 />
-                {listFilters[activeCollection][activeFilter] &&
+                {listFilters[activeCollection].filters[activeFilter] &&
                   <Input
-                    value={listFilters[activeCollection][activeFilter].filter.description || 'Have not description'}
+                    value={listFilters[activeCollection].filters[activeFilter].filter.description || ''}
                     onChange={(value) => onChangeDescription(value)}
+                    placeholder="useful filter"
                   />
                 }
               </> :
@@ -306,16 +308,17 @@ const FiltersEditor = (props: Props) => {
                 Choose filter
               </span>
             }
-          </div>
+          </div> 
 
           <div className={`${s.Column} ${s.JsonEditor}`}>
             <H3>
               Json code editor
             </H3>
-            {activeFilter && activeCollection && listFilters[activeCollection][activeFilter] ?
+            {activeFilter && activeCollection ?
               <Filter
-                value={listFilters[activeCollection][activeFilter].filter.value || ''}
+                value={listFilters[activeCollection].filters[activeFilter].filter.value || ''}
                 onChange={(value) => onChangeEntry(value)}
+                key={`${activeCollection}-${activeFilter}`}
               /> :
               <span>
                 Choose filter
@@ -327,6 +330,11 @@ const FiltersEditor = (props: Props) => {
             type='primary'
             text='Save'
             onClick={() => onSave()}
+          />
+          <Button
+            type='primary'
+            text='Use'
+            onClick={() => useFilter()}
           />
       </div>
     </DefaultProvider>
