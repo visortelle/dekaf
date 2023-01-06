@@ -42,7 +42,7 @@ const Chart: React.FC<ChartProps> = (props) => {
         data={props.messages}
         config={{
           dimensions,
-          getLabel: (entry) => entry.publishTime === null ? '-' : new Date(entry.publishTime).toISOString(),
+          getLabel: (message) => message.uiIndex.toString(),
           name: 'My bar chart',
         }}
         onEntryClick={showMessageDetails}

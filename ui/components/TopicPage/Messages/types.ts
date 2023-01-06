@@ -62,4 +62,5 @@ export type MessageDescriptor = {
   bytes: Nullable<Uint8Array>;
   value: Nullable<string>; // JSON string
   accum: Nullable<string>; // JSON string
+  uiIndex: number; // Not a part of Pulsar message.
 };

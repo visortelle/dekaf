@@ -49,6 +49,7 @@ import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import ReactTooltip from 'react-tooltip';
+import { remToPx } from '../../ui/rem-to-px';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 
@@ -130,6 +131,8 @@ const Session: React.FC<SessionProps> = (props) => {
       const newMessages = messages
         .concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)))
         .slice(-displayMessagesLimit);
+
+      newMessages.forEach((message, i) => message.uiIndex = i + 1);
 
       messagesBuffer.current = [];
       scrollToBottom();
@@ -395,7 +398,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
   }, [sessionState, messagesLoadedPerSecond]);
 
-  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
+  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isSessionPaused={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
       setSessionState('pausing');
@@ -480,8 +483,9 @@ const Session: React.FC<SessionProps> = (props) => {
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
-                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
-                <Th title="" style={{ position: 'sticky', left: '225rem', zIndex: 10 }} />
+                <Th title="#" sortKey="uiIndex" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
+                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} />
+                <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} />
                 <Th title="Key" sortKey="key" />
                 <Th title="Value" sortKey="value" />
                 <Th title="Topic" sortKey="topic" />

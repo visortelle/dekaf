@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import s from './BarChart.module.css'
 import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, LogarithmicScale, TimeSeriesScale, TimeScale, Legend, Tooltip } from 'chart.js';
+import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, LogarithmicScale, TimeSeriesScale, TimeScale, Legend, Tooltip, Decimation } from 'chart.js';
 import ZoomPlugin from 'chartjs-plugin-zoom';
 import { getTheme } from '../../theme';
 import { remToPx } from '../../../../../../../ui/rem-to-px';
 import { Config } from './types';
 
-ChartJs.register(CategoryScale, LinearScale, LogarithmicScale, Legend, BarElement, ZoomPlugin, Tooltip);
+ChartJs.register(CategoryScale, LinearScale, LogarithmicScale, Legend, BarElement, ZoomPlugin, Tooltip, Decimation);
 
 export type BarChartProps<EntryT> = {
   data: EntryT[];
@@ -34,6 +34,7 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
               animation: false,
               borderRadius: remToPx(4),
               label: dimension.name,
+              indexAxis: 'x'
             }
           }),
           labels: props.data.map(props.config.getLabel),
@@ -45,6 +46,9 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
             mode: 'index',
           },
           plugins: {
+            decimation: {
+              enabled: true,
+            },
             legend: {
               display: true,
               title: {
@@ -69,6 +73,11 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
               animation: false,
               cornerRadius: remToPx(4),
               padding: remToPx(12),
+              callbacks: {
+                title: (context) => {
+                  return `#${props.data[context[0].dataIndex].uiIndex}`
+                }
+              }
             },
             zoom: {
               pan: {
@@ -78,14 +87,14 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
               zoom: {
                 wheel: {
                   enabled: true,
-                  speed: 0.5
+                  speed: 0.5,
                 },
                 pinch: {
                   enabled: true,
                 },
                 mode: 'x',
                 scaleMode: 'x',
-              }
+              },
             }
           },
         }}

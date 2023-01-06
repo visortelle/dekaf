@@ -2,6 +2,7 @@ import { partition } from "lodash";
 import { MessageDescriptor } from "./types";
 
 export type SortKey =
+  | "uiIndex"
   | "publishTime"
   | "key"
   | "topic"
@@ -34,6 +35,11 @@ export const sortMessages = (
     let result = defs.sort(sortFn);
     result = sort.direction === "asc" ? result : result.reverse();
     return result.concat(undefs);
+  }
+
+  if (sort.key === "uiIndex") {
+    const sortFn: SortFn = (a, b) => a.uiIndex - b.uiIndex;
+    return s(messages, [], sortFn);
   }
 
   if (sort.key === "publishTime") {
