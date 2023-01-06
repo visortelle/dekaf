@@ -13,17 +13,6 @@
   overflow: hidden;
 }
 
-.Presets {
-  width: 180rem;
-  height: 100%;
-  padding: 12rem 12rem 12rem 0;
-  background-color: #f5f5f5;
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 38rem;
-}
-
 .Config {
   margin-left: 180rem;
   overflow: auto;

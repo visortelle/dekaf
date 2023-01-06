@@ -20,7 +20,7 @@ const defaultValue: Value = {
   hexStringToBytes: (hexString) => hexStringToBytes(hexString),
   formatCount: (count) => count === 0 ? String(0) : numeral(count).format(count < 1000 ? '0a' : '0.00a'),
   formatCountRate: (countPerSecond) => countPerSecond === 0 ? String(0) : numeral(countPerSecond).format(countPerSecond < 1000 ? '0a' : '0.00a') + '/s',
-  formatDate: (date) => dayjs(date).format('MMM DD, YYYY HH:mm:ss UTCZ'),
+  formatDate: (date) => dayjs(date).format('MMM DD, YYYY HH:mm:ss'),
   formatLongNumber: (longNumber) => numeral(longNumber).format('0,0'),
 };
 

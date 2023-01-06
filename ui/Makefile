@@ -16,6 +16,10 @@ clean:
 dev:
 	npm run dev
 
+.PHONY: dev-prod-build
+dev-prod-build:
+	npm run dev-prod-build
+
 .PHONY: test
 test:
 	npm run test
