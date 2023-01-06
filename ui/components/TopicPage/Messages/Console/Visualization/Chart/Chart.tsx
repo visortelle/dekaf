@@ -43,14 +43,16 @@ const Chart: React.FC<ChartProps> = (props) => {
     }
   }, [dimensions]);
 
-  if (props.messages.length === 0) {
+  const messages = useMemo(() => props.messages.slice(-10000), [props.messages]); // perf optimization
+
+  if (messages.length === 0) {
     return <div className={s.NoData}>No data to show.</div>;
   }
 
   return (
     <div className={s.Chart}>
       <BarChart
-        data={props.messages}
+        data={messages}
         config={config}
         isRealTime={props.sessionState === 'running'}
         onEntryClick={showMessageDetails}

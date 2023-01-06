@@ -25,7 +25,11 @@ def buildConsumer(
     var consumer = client.newConsumer
         .consumerName(consumerName)
         .receiverQueueSize(50) // Too big queue causes long time messages loading after consumer pause.
+        .maxPendingChunkedMessage(2)
+        .autoAckOldestChunkedMessageOnQueueFull(true)
+        .expireTimeOfIncompleteChunkedMessage(1, java.util.concurrent.TimeUnit.MINUTES)
         .messageListener(listener)
+        .ackTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
         .startPaused(request.startPaused.getOrElse(true))
         .subscriptionName(request.subscriptionName.getOrElse(consumerName))
 

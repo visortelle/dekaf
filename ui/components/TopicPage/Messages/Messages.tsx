@@ -65,8 +65,8 @@ export type SessionProps = {
 type View = 'messages' | 'configuration';
 type MessagesPerSecond = { prev: number, now: number };
 
-const displayMessagesLimit = 10000;
-const displayMessagesRunningLimit = 250; // too many items leads to table blinking.
+const displayMessagesLimit = 10_000;
+const displayMessagesRealTimeLimit = 250; // too many items leads to table blinking.
 
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
@@ -394,7 +394,7 @@ const Session: React.FC<SessionProps> = (props) => {
   useEffect(() => {
     if (sessionState === 'pausing' && messagesLoadedPerSecond.now === 0) {
       setSessionState('paused');
-      scrollToBottom();
+      setTimeout(scrollToBottom, 500);
     }
   }, [sessionState, messagesLoadedPerSecond]);
 
@@ -435,7 +435,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const currentView: View = sessionState === 'new' ? 'configuration' : 'messages';
   const sortedMessages = useMemo(() => {
-    const msgs = sessionState === 'running' ? messages.slice(messages.length - displayMessagesRunningLimit) : messages;
+    const msgs = sessionState === 'running' ? messages.slice(messages.length - displayMessagesRealTimeLimit) : messages;
     return sortMessages(msgs, sort);
   }, [messages, sort, sessionState]);
 
