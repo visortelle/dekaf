@@ -7,7 +7,6 @@ import ReactTooltip from 'react-tooltip';
 
 export type MessageDetailsProps = {
   message: MessageDescriptor;
-  topicHref?: string;
 };
 
 const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
@@ -20,7 +19,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
       <div className={s.LeftColumn}>
         <Field title={'Publish time'} value={<PublishTimeField isShowTooltips={true} message={props.message} />} />
         <Field title={'Key'} value={<KeyField isShowTooltips={true} message={props.message} />} />
-        <Field title={'Topic'} value={<TopicField isShowTooltips={true} message={props.message} topicHref={props.topicHref} />} />
+        <Field title={'Topic'} value={<TopicField isShowTooltips={true} message={props.message} />} />
         <Field title={'Producer'} value={<ProducerNameField isShowTooltips={true} message={props.message} />} />
         <Field title={'Schema version'} value={<SchemaVersionField isShowTooltips={true} message={props.message} />} />
         <Field title={'Size'} value={<SizeField isShowTooltips={true} message={props.message} />} />

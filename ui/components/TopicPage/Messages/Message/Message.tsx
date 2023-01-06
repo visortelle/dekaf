@@ -1,10 +1,6 @@
-import React, { useCallback, useEffect } from 'react';
-import * as I18n from '../../../app/contexts/I18n/I18n';
+import React from 'react';
 import * as Modals from '../../../app/contexts/Modals/Modals';
-import { routes } from '../../../routes';
-import { parseTopic } from '../../../pulsar/parse-topic';
 import { AccumulatorField, BrokerPublishTimeField, EventTimeField, help, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from './fields';
-import Field from './Field/Field';
 import cts from "../../../ui/ChildrenTable/ChildrenTable.module.css";
 import { MessageDescriptor } from '../types';
 import SmallButton from '../../../ui/SmallButton/SmallButton';
@@ -17,59 +13,59 @@ export type MessageProps = {
 
 const MessageComponent: React.FC<MessageProps> = (props) => {
   const msg = props.message;
-  const i18n = I18n.useContext();
   const modals = Modals.useContext();
-
-  const topicPath = msg.topic === null ? null : parseTopic(msg.topic);
-  const topicHref = topicPath === null ? null :
-    routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
 
   return (
     <>
       <Td width="200rem" style={{ position: 'sticky', left: 0, zIndex: 1 }}>
         <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />
       </Td>
+
       <Td width="48rem" style={{ position: 'sticky', left: '225rem', zIndex: 1 }}>
         <SmallButton
           onClick={() => modals.push({
             id: 'message-details',
             title: `Message details`,
-            content: <MessageDetails message={props.message} topicHref={topicHref || undefined} />,
+            content: <MessageDetails message={props.message} />,
             styleMode: 'no-content-padding'
           })}
           text="View"
           type='primary'
         />
       </Td>
+
       <Td width='20ch'>
         <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='30ch'>
         <ValueField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='60ch'>
-        <TopicField isShowTooltips={props.isShowTooltips} message={props.message} topicHref={topicHref || undefined} />
+        <TopicField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='50ch'>
         <ProducerNameField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
-      {/* <Td width='30ch'>
-        <Field isShowTooltips={props.isShowTooltips} title="Value" value={value === undefined ? undefined : i18n.bytesToHexString(value, 'hex-with-space')} rawValue={i18n.bytesToHexString(value, 'hex-no-space')} tooltip={help.value} />
-      </Td> */}
       <Td width='8ch'>
         <SchemaVersionField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='12ch'>
         <SizeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='30ch'>
         <PropertiesField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='30ch'>
         <EventTimeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='30ch'>
         <BrokerPublishTimeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -77,15 +73,18 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td width='40ch'>
         <MessageIdField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='10ch'>
         <SequenceIdField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
       <Td width='10ch'>
         <OrderingKeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='10ch'>
         <RedeliveryCountField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
+
       <Td width='50ch'>
         <AccumulatorField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>

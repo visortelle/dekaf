@@ -1,23 +1,13 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import s from './BarChart.module.css'
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, LogarithmicScale, TimeSeriesScale, TimeScale, Legend, Tooltip } from 'chart.js';
 import ZoomPlugin from 'chartjs-plugin-zoom';
 import { getTheme } from '../../theme';
 import { remToPx } from '../../../../../../../ui/rem-to-px';
+import { Config } from './types';
 
 ChartJs.register(CategoryScale, LinearScale, LogarithmicScale, Legend, BarElement, ZoomPlugin, Tooltip);
-
-type Dimension<EntryT> = {
-  getValue: (entry: EntryT) => number | null,
-  name: string
-}
-
-type Config<EntryT> = {
-  name: string,
-  dimensions: Dimension<EntryT>[],
-  getLabel: (entry: EntryT) => string,
-}
 
 export type BarChartProps<EntryT> = {
   data: EntryT[];

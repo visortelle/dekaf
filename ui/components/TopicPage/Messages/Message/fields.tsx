@@ -3,6 +3,8 @@ import { MessageDescriptor } from '../types';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import Field from './Field/Field';
 import s from './Message.module.css'
+import { routes } from '../../../routes';
+import { parseTopic } from '../../../pulsar/parse-topic';
 
 export type FieldName =
   'messageId' |
@@ -88,9 +90,14 @@ export const ValueField: React.FC<FieldProps> = (props) => {
   return <Field isShowTooltips={props.isShowTooltips} title="Value as JSON" value={jsonValue} rawValue={jsonValue} tooltip={help.jsonValue} />
 }
 
-export const TopicField: React.FC<FieldProps & { topicHref?: string }> = (props) => {
+export const TopicField: React.FC<FieldProps> = (props) => {
   const topic = props.message.topic === null ? undefined : props.message.topic;
-  return <Field isShowTooltips={props.isShowTooltips} value={topic} valueHref={props.topicHref} tooltip={help.topic} />
+  const topicPath = props.message.topic === null ? undefined : parseTopic(props.message.topic);
+  const topicHref = topicPath === undefined ?
+    undefined :
+    routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
+
+  return <Field isShowTooltips={props.isShowTooltips} value={topic} valueHref={topicHref} tooltip={help.topic} />
 }
 
 export const ProducerNameField: React.FC<FieldProps> = (props) => {

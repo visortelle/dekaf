@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import s from './Chart.module.css'
 import BarChart from './charts/BarChart/BarChart';
 import { MessageDescriptor } from '../../../types';
+import * as Modals from '../../../../../app/contexts/Modals/Modals';
+import MessageDetails from '../../../../Messages/Message/MessageDetails/MessageDetails';
 
 export type ChartProps = {
   type: 'bar',
@@ -10,6 +12,8 @@ export type ChartProps = {
 
 const k = Math.random()
 const Chart: React.FC<ChartProps> = (props) => {
+  const modals = Modals.useContext();
+
   if (props.messages.length === 0) {
     return <div className={s.NoData}>No data to show.</div>;
   }
@@ -23,6 +27,15 @@ const Chart: React.FC<ChartProps> = (props) => {
     ]
   }, []);
 
+  const showMessageDetails = (message: MessageDescriptor) => {
+    modals.push({
+      id: 'message-details',
+      title: `Message details`,
+      content: <MessageDetails message={message} />,
+      styleMode: 'no-content-padding'
+    })
+  }
+
   return (
     <div className={s.Chart}>
       <BarChart<MessageDescriptor>
@@ -32,7 +45,7 @@ const Chart: React.FC<ChartProps> = (props) => {
           getLabel: (entry) => entry.publishTime === null ? '-' : new Date(entry.publishTime).toISOString(),
           name: 'My bar chart',
         }}
-        onEntryClick={(entry) => console.log(entry)}
+        onEntryClick={showMessageDetails}
       />
     </div>
   );
