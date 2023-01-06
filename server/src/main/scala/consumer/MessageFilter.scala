@@ -9,16 +9,28 @@ import org.graalvm.polyglot.proxy.*
 import io.circe.syntax.*
 import io.circe.generic.auto.*
 
+import _root_.config.readConfigAsync
+import scala.concurrent.Await
+import scala.concurrent.duration.{Duration, SECONDS}
+
 type JsonString = String
 type JsonAccumulator = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
 type FilterTestResult = (Either[String, Boolean], JsonAccumulator)
 
 val JsonAccumulatorVarName = "jsonAccumulator"
 
+val config = Await.result(readConfigAsync, Duration(10, SECONDS))
+val jsLibsBundle = os.read(os.Path.expandUser(config.library, os.pwd) / "js" / "dist" / "libs.js")
+
 class MessageFilter():
     private val context = Context.newBuilder("js").build
 
     context.eval("js",s"globalThis.${JsonAccumulatorVarName} = {}") // Create empty fold-like accumulator variable.
+
+    // Load JS libraries.
+    context.eval("js", jsLibsBundle)
+    // Make JSs libraries available in the global scope.
+    context.eval("js", "Object.entries(globalThis.jsLibs).map(([k, v]) => globalThis[k] = v)")
 
     def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)

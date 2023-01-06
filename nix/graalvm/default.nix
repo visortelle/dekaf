@@ -21,22 +21,22 @@ let
     sha256 = "sha256-1iLZ+PQJEjtix7SAqMkYe6iZEbTgZKjZLm8ppwg3wKE=";
   };
 
-  graaljs_linux_arm64 = {
+  js_linux_arm64 = {
     url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-linux-aarch64-22.3.0.jar";
     sha256 = "";
   };
 
-  graaljs_linux_x86_64 = {
+  js_linux_x86_64 = {
     url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-linux-amd64-22.3.0.jar";
     sha256 = "sha256-QlROK3LZd/nQBn9FFiE3QzKpc5083Th5tBGoKH8YSvM=";
   };
 
-  graaljs_darwin_x86_64 = {
+  js_darwin_x86_64 = {
     url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-darwin-amd64-22.3.0.jar";
     sha256 = "sha256-u+K/MExdj+ubd6ABtMKs46mDFT6ooqGnj03g0Wilv8A=";
   };
 
-  graaljs_darwin_arm64 = {
+  js_darwin_arm64 = {
     url = "https://github.com/oracle/graaljs/releases/download/vm-22.3.0/js-installable-svm-java17-darwin-aarch64-22.3.0.jar";
     sha256 = "sha256-7Qi91WKRF17Ik5PFWvrh4pmjytDwiek6zpJ02nVCG8U=";
   };
@@ -58,12 +58,11 @@ stdenv.mkDerivation rec {
   else if system == "aarch64-darwin" then src_darwin_arm64
   else throw "Unsupported system");
 
-  graaljs_jar = fetchurl (if system == "x86_64-linux" then graaljs_linux_x86_64
-  else if system == "aarch64-linux" then graaljs_linux_arm64
-  else if system == "x86_64-darwin" then graaljs_darwin_x86_64
-  else if system == "aarch64-darwin" then graaljs_darwin_arm64
+  js_jar = fetchurl (if system == "x86_64-linux" then js_linux_x86_64
+  else if system == "aarch64-linux" then js_linux_arm64
+  else if system == "x86_64-darwin" then js_darwin_x86_64
+  else if system == "aarch64-darwin" then js_darwin_arm64
   else throw "Unsupported system");
-
 
   runtimeLibraryPath = lib.makeLibraryPath ([ zlib ]);
   buildInputs = [ file ];
@@ -86,7 +85,7 @@ stdenv.mkDerivation rec {
       patchelf $out/bin/java --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)"
     fi
 
-    $out/bin/gu -L install ${graaljs_jar}
+    $out/bin/gu -L install ${js_jar}
   '';
 
   outputs = [ "out" ];

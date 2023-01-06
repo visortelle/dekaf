@@ -30,7 +30,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
         <Field title={'Sequence Id'} value={<SequenceIdField isShowTooltips={true} message={props.message} />} />
         <Field title={'Ordering key'} value={<OrderingKeyField isShowTooltips={true} message={props.message} />} />
         <Field title={'Redelivery count'} value={<RedeliveryCountField isShowTooltips={true} message={props.message} />} />
-        <Field title={'Aggregate'} value={<AccumulatorField isShowTooltips={true} message={props.message} />} />
+        <Field title={'Accumulator'} value={<AccumulatorField isShowTooltips={true} message={props.message} />} />
       </div>
       <div className={s.RightColumn}>
         <Field

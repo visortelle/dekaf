@@ -35,7 +35,9 @@ case class Config(
     @describe("When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.")
     publicUrl: String,
     @describe("The Pulsar instances configuration")
-    pulsarInstances: List[PulsarInstanceConfig]
+    pulsarInstances: List[PulsarInstanceConfig],
+    @describe("Path to the library directory that contains user-defined objects like message filters, visualizations, etc.")
+    library: String
 )
 
 val defaultConfig = Config(
@@ -54,7 +56,8 @@ val defaultConfig = Config(
       brokerServiceUrl = "pulsar://localhost:6650",
       webServiceUrl = "http://localhost:8080"
     )
-  )
+  ),
+  library = "./library"
 )
 
 val configDescriptor = descriptor[Config].default(defaultConfig)
@@ -76,3 +79,5 @@ val readConfig =
         ).memoize
         config <- configMemo
     yield config
+
+def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))

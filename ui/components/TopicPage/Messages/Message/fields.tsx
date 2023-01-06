@@ -152,5 +152,5 @@ export const RedeliveryCountField: React.FC<FieldProps> = (props) => {
 }
 
 export const AccumulatorField: React.FC<FieldProps> = (props) => {
-  return <Field isShowTooltips={props.isShowTooltips} title="Aggregate" value={props.message.accum === null ? undefined : props.message.accum} rawValue={props.message.accum === null ? undefined : props.message.accum} tooltip={help.accumulator} />
+  return <Field isShowTooltips={props.isShowTooltips} title="Accumulator" value={props.message.accum === null ? undefined : props.message.accum} rawValue={props.message.accum === null ? undefined : props.message.accum} tooltip={help.accumulator} />
 }
