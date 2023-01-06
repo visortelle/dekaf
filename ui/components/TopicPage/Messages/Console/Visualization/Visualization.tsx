@@ -31,6 +31,7 @@ const Visualization: React.FC<VisualizationProps> = (props) => {
         <Chart
           type='bar'
           messages={messages}
+          sessionState={props.sessionState}
         />
       )}
     </div>

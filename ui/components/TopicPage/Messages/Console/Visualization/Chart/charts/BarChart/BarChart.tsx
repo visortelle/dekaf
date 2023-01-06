@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import s from './BarChart.module.css'
 import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, LogarithmicScale, TimeSeriesScale, TimeScale, Legend, Tooltip, Decimation } from 'chart.js';
+import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, LogarithmicScale, Legend, Tooltip, Decimation } from 'chart.js';
 import ZoomPlugin from 'chartjs-plugin-zoom';
 import { getTheme } from '../../theme';
 import { remToPx } from '../../../../../../../ui/rem-to-px';
 import { Config } from './types';
+import { downSample } from '../../down-sample';
+import { usePrevious } from '../../../../../../../app/hooks/use-previous';
 
 ChartJs.register(CategoryScale, LinearScale, LogarithmicScale, Legend, BarElement, ZoomPlugin, Tooltip, Decimation);
 
@@ -13,14 +15,28 @@ export type BarChartProps<EntryT> = {
   data: EntryT[];
   config: Config<EntryT>;
   onEntryClick?: (entry: EntryT) => void;
+  isRealTime?: boolean;
 };
 
 export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
   const theme = useMemo(() => getTheme(), []);
   const chartRef = useRef<ChartJs>();
+  const prevIsRealTime = usePrevious(props.isRealTime);
   const isPreventChangeCursor = useRef(false);
 
   const palette = useMemo(() => theme.getRandomColors(props.config.dimensions.length), [props.config.dimensions]);
+
+  const data = useMemo(() => {
+    return props.isRealTime ? downSample(props.data, 1000) : props.data;
+  }, [props.data, props.isRealTime, props.config]);
+
+  useEffect(() => {
+    // As we down-sample data in real-time mode, we need to reset zoom,
+    // otherwise we'll see much less part of the chart.
+    if (props.isRealTime && !prevIsRealTime) {
+      chartRef.current?.resetZoom();
+    }
+  }, [props.isRealTime, prevIsRealTime]);
 
   return (
     <div className={s.BarChart}>
@@ -29,15 +45,14 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
         data={{
           datasets: props.config.dimensions.map((dimension, i) => {
             return {
-              data: props.data.map(dimension.getValue),
+              data: data.map(dimension.getValue),
               backgroundColor: palette[i],
               animation: false,
               borderRadius: remToPx(4),
               label: dimension.name,
-              indexAxis: 'x'
             }
           }),
-          labels: props.data.map(props.config.getLabel),
+          labels: data.map(props.config.getLabel),
         }}
         options={{
           responsive: true,
@@ -46,9 +61,6 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
             mode: 'index',
           },
           plugins: {
-            decimation: {
-              enabled: true,
-            },
             legend: {
               display: true,
               title: {
@@ -73,11 +85,7 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
               animation: false,
               cornerRadius: remToPx(4),
               padding: remToPx(12),
-              callbacks: {
-                title: (context) => {
-                  return `#${props.data[context[0].dataIndex].uiIndex}`
-                }
-              }
+
             },
             zoom: {
               pan: {
@@ -105,7 +113,7 @@ export function BarChart<EntryT>(props: BarChartProps<EntryT>) {
 
           const pointUnderCursor = chartRef.current?.getElementsAtEventForMode(e.nativeEvent, 'nearest', { intersect: true }, true)[0];
           if (pointUnderCursor !== undefined) {
-            props.onEntryClick(props.data[pointUnderCursor.index]);
+            props.onEntryClick(data[pointUnderCursor.index]);
           }
         }}
         onMouseMove={(e) => {

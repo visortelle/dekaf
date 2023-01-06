@@ -132,7 +132,7 @@ const Session: React.FC<SessionProps> = (props) => {
         .concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)))
         .slice(-displayMessagesLimit);
 
-      newMessages.forEach((message, i) => message.uiIndex = i + 1);
+      newMessages.forEach((message, i) => message.index = (i + 1));
 
       messagesBuffer.current = [];
       scrollToBottom();
@@ -483,7 +483,7 @@ const Session: React.FC<SessionProps> = (props) => {
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
-                <Th title="#" sortKey="uiIndex" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
+                <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
                 <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} />
                 <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} />
                 <Th title="Key" sortKey="key" />

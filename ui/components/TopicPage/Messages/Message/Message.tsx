@@ -19,7 +19,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   return (
     <>
       <Td width="35rem" className={s.IndexField}>
-        {props.message.uiIndex}
+        {props.message.index}
       </Td>
 
       <Td width="200rem" className={s.PublishTimeField}>

@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node ./build.js --watch",
+    "dev": "node ./build.js --watch --dev",
+    "dev-prod-build": "node ./build.js --watch",
     "build": "npm run check-ts && node ./build.js",
     "check-ts": "tsc --noEmit",
     "test": "jest"
@@ -13,7 +14,7 @@
     "@react-hook/timeout": "^2.1.1",
     "batchelorjs": "^2.0.0",
     "buffer": "^6.0.3",
-    "chart.js": "^4.1.1",
+    "chart.js": "^4.1.2",
     "chartjs-plugin-datalabels": "^2.2.0",
     "chartjs-plugin-zoom": "^2.0.0",
     "chroma-js": "^2.4.2",
