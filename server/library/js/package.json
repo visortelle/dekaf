@@ -1,0 +1,20 @@
+{
+  "name": "graaljs-packages",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm i && rm -rf ./dist && node ./build.js"
+  },
+  "keywords": [],
+  "author": "visortelle",
+  "license": "ISC",
+  "dependencies": {
+    "dayjs": "^1.11.7",
+    "lodash": "^4.17.21",
+    "simple-statistics": "^7.8.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.16.14"
+  }
+}

@@ -9,16 +9,28 @@ import org.graalvm.polyglot.proxy.*
 import io.circe.syntax.*
 import io.circe.generic.auto.*
 
-type JsonString = String
-type JsonAggregate = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
-type FilterTestResult = (Either[String, Boolean], JsonAggregate)
+import _root_.config.readConfigAsync
+import scala.concurrent.Await
+import scala.concurrent.duration.{Duration, SECONDS}
 
-val JsonAggregateVarName = "agg"
+type JsonString = String
+type JsonAccumulator = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
+type FilterTestResult = (Either[String, Boolean], JsonAccumulator)
+
+val JsonAccumulatorVarName = "jsonAccumulator"
+
+val config = Await.result(readConfigAsync, Duration(10, SECONDS))
+val jsLibsBundle = os.read(os.Path.expandUser(config.library, os.pwd) / "js" / "dist" / "libs.js")
 
 class MessageFilter():
     private val context = Context.newBuilder("js").build
 
-    context.eval("js",s"globalThis.${JsonAggregateVarName} = {}") // Create empty fold-like accumulator variable.
+    context.eval("js",s"globalThis.${JsonAccumulatorVarName} = {}") // Create empty fold-like accumulator variable.
+
+    // Load JS libraries.
+    context.eval("js", jsLibsBundle)
+    // Make JSs libraries available in the global scope.
+    context.eval("js", "Object.entries(globalThis.jsLibs).map(([k, v]) => globalThis[k] = v)")
 
     def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)
@@ -27,10 +39,11 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
     val evalCode =
         s"""
           | (() => {
-          |    const val = ${jsonValue.getOrElse("undefined")};
-          |    const msg = ${jsonMessage.asJson};
+          |    const message = ${jsonMessage.asJson};
+          |    message.value = ${jsonValue.getOrElse("undefined")};
+          |    message.accum = globalThis.${JsonAccumulatorVarName};
           |
-          |    return (${filterCode})(val, msg, globalThis.${JsonAggregateVarName});
+          |    return (${filterCode})(message);
           | })();
           |""".stripMargin
 
@@ -40,7 +53,7 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
         case err => Left(s"Message filter JS error: ${err.getMessage}")
     }
 
-    val cumulativeJsonState = context.eval("js", s"JSON.stringify(globalThis.${JsonAggregateVarName})").asString
+    val cumulativeJsonState = context.eval("js", s"JSON.stringify(globalThis.${JsonAccumulatorVarName})").asString
 
     (testResult, cumulativeJsonState)
 

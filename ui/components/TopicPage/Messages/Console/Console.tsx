@@ -24,17 +24,18 @@ export type ConsoleProps = {
   messages: MessageDescriptor[];
 };
 
-type TabName = 'producer' | 'cursors' | 'visualization';
+type TabName = 'producer' | 'cursors' | 'visualize' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabName>('visualization');
+  const [activeTab, setActiveTab] = React.useState<TabName>('visualize');
 
   return (
     <EnteringFromBottomDiv className={s.Console} isVisible={props.isShow} motionKey='consumer-console'>
       <div className={s.Tabs}>
         <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Produce</div>
-        <div className={`${s.Tab} ${activeTab === 'visualization' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('visualization')}>Visualize</div>
-        {/* <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div> */}
+        <div className={`${s.Tab} ${activeTab === 'visualize' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('visualize')}>Visualize</div>
+        <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div>
+        <div className={`${s.Tab} ${activeTab === 'export' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('export')}>Export</div>
 
         <div className={s.CloseConsole} title="Close" onClick={props.onClose}>
           <SvgIcon svg={closeIcon} />
@@ -45,10 +46,10 @@ const Console: React.FC<ConsoleProps> = (props) => {
         <CursorsTab {...props} />
       </TabContent>
 
-      <TabContent isShow={activeTab === 'visualization'} isRenderAlways>
+      <TabContent isShow={activeTab === 'visualize'} isRenderAlways>
         <Visualization
           messages={props.messages}
-          isVisible={activeTab === 'visualization'}
+          isVisible={activeTab === 'visualize'}
           sessionState={props.sessionState}
         />
       </TabContent>

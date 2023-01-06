@@ -3,11 +3,13 @@ import { MessageDescriptor } from '../types';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import Field from './Field/Field';
 import s from './Message.module.css'
+import { routes } from '../../../routes';
+import { parseTopic } from '../../../pulsar/parse-topic';
 
 export type FieldName =
   'messageId' |
+  'bytes' |
   'value' |
-  'jsonValue' |
   'brokerPublishTime' |
   'eventTime' |
   'isReplicated' |
@@ -21,7 +23,7 @@ export type FieldName =
   'schemaVersion' |
   'sequenceId' |
   'size' |
-  'jsonAggregate' |
+  'accumulator' |
   'topic';
 
 const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
@@ -48,8 +50,8 @@ const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
       <strong>Note that only if the feature is enabled in the broker then the value is available.</strong>
     </div>
   ),
+  bytes: <span>Raw message value in bytes.</span>,
   value: <span>The de-serialized value of the message, according the configured schema.</span>,
-  jsonValue: <span>The de-serialized value of the message, according the configured schema.</span>,
   isReplicated: <span>Check whether the message is replicated from other cluster.</span>, // TODO - geo replication
   orderingKey: <span>Ordering key of the message.</span>,
   redeliveryCount: (
@@ -60,7 +62,7 @@ const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
     </div>
   ),
   replicatedFrom: <span>Name of cluster, from which the message is replicated.</span>, // TODO - geo replication
-  jsonAggregate: <span>Cumulative state to produce user-defined calculations, preserved between messages.</span>
+  accumulator: <span>Cumulative state to produce user-defined calculations, preserved between messages.</span>
 }
 export const help = Object.keys(helpJsx).reduce<Record<string, string | undefined>>((acc, curr) => {
   const tt = helpJsx[curr as FieldName];
@@ -83,14 +85,19 @@ export const KeyField: React.FC<FieldProps> = (props) => {
   return <Field isShowTooltips={props.isShowTooltips} title="Key" value={key} rawValue={key} tooltip={help.key} />
 }
 
-export const JsonValueField: React.FC<FieldProps> = (props) => {
-  const jsonValue = props.message.jsonValue === null ? undefined : props.message.jsonValue;
+export const ValueField: React.FC<FieldProps> = (props) => {
+  const jsonValue = props.message.value === null ? undefined : props.message.value;
   return <Field isShowTooltips={props.isShowTooltips} title="Value as JSON" value={jsonValue} rawValue={jsonValue} tooltip={help.jsonValue} />
 }
 
-export const TopicField: React.FC<FieldProps & { topicHref?: string }> = (props) => {
+export const TopicField: React.FC<FieldProps> = (props) => {
   const topic = props.message.topic === null ? undefined : props.message.topic;
-  return <Field isShowTooltips={props.isShowTooltips} value={topic} valueHref={props.topicHref} tooltip={help.topic} />
+  const topicPath = props.message.topic === null ? undefined : parseTopic(props.message.topic);
+  const topicHref = topicPath === undefined ?
+    undefined :
+    routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
+
+  return <Field isShowTooltips={props.isShowTooltips} value={topic} valueHref={topicHref} tooltip={help.topic} />
 }
 
 export const ProducerNameField: React.FC<FieldProps> = (props) => {
@@ -144,6 +151,6 @@ export const RedeliveryCountField: React.FC<FieldProps> = (props) => {
   return <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={props.message.redeliveryCount === null ? undefined : i18n.formatLongNumber(props.message.redeliveryCount)} rawValue={props.message.redeliveryCount === null ? undefined : String(props.message.redeliveryCount)} tooltip={help.redeliveryCount} />
 }
 
-export const AggregateField: React.FC<FieldProps> = (props) => {
-  return <Field isShowTooltips={props.isShowTooltips} title="Aggregate" value={props.message.jsonAggregate === null ? undefined : props.message.jsonAggregate} rawValue={props.message.jsonAggregate === null ? undefined : props.message.jsonAggregate} tooltip={help.jsonAggregate} />
+export const AccumulatorField: React.FC<FieldProps> = (props) => {
+  return <Field isShowTooltips={props.isShowTooltips} title="Accumulator" value={props.message.accum === null ? undefined : props.message.accum} rawValue={props.message.accum === null ? undefined : props.message.accum} tooltip={help.accumulator} />
 }

@@ -38,12 +38,12 @@ case class JsonMessage(
     key: Option[String],
     orderingKey: Option[Array[Byte]],
     topic: Option[String],
-    size: Int,
+    size: Option[Int],
     redeliveryCount: Option[Int],
     schemaVersion: Option[Long],
     isReplicated: Option[Boolean],
     replicatedFrom: Option[String],
-    properties: Map[String, String],
+    properties: Map[String, String]
 )
 
 def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, JsonValue) =
@@ -53,14 +53,14 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
         case _       => Map.empty
     val eventTime = Option(msg.getEventTime) match
         case Some(v) if v > 0 => Some(v)
-        case _       => None
+        case _                => None
     val publishTime = Option(msg.getPublishTime)
     val brokerPublishTime = msg.getBrokerPublishTime.toScala.map(_.toLong)
     val messageId = Option(msg.getMessageId.toByteArray)
     val sequenceId = Option(msg.getSequenceId)
     val producerName = Option(msg.getProducerName)
     val key = Option(msg.getKey)
-    val size = msg.size
+    val size = Option(msg.size)
     val orderingKey = Option(msg.getOrderingKey)
     val topic = Option(msg.getTopicName)
     val redeliveryCount = Option(msg.getRedeliveryCount)
@@ -86,10 +86,10 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
       replicatedFrom = Option(msg.getReplicatedFrom)
     )
 
-    val message = consumerPb.Message(
+    val messagePb = consumerPb.Message(
       properties = properties,
-      value = Option(msg.getValue).map(ByteString.copyFrom),
-      jsonValue,
+      bytes = Option(msg.getValue).map(ByteString.copyFrom),
+      value = jsonValue,
       eventTime = eventTime,
       publishTime = publishTime,
       brokerPublishTime = brokerPublishTime,
@@ -102,9 +102,10 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
       redeliveryCount = redeliveryCount,
       schemaVersion = schemaVersion,
       isReplicated = isReplicated,
-      replicatedFrom = replicatedFrom
+      replicatedFrom = replicatedFrom,
+      size = size
     )
-    (message, jsonMessage, jsonValue)
+    (messagePb, jsonMessage, jsonValue)
 
 def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[String] =
     val msgValue = msg.getValue
