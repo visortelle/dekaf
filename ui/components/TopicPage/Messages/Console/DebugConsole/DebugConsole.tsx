@@ -37,7 +37,7 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
     <div className={s.DebugConsole}>
       <div className={s.Toolbar}>
         <div className={s.SearchQueryInput}>
-          <Input value={searchQuery} onChange={(v) => setSearchQuery(v)} placeholder="Search query" />
+          <Input value={searchQuery} onChange={(v) => setSearchQuery(v)} placeholder="Search in logs" clearable />
         </div>
       </div>
 
