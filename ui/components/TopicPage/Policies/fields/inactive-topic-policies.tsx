@@ -168,18 +168,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             </div>
             {value.type === 'specified-for-this-topic' && (
               <div>
-                <strong className={sf.FormLabel}>Delete mode</strong>
-                <div className={sf.FormItem}>
-                  <Select<InactiveTopicDeleteMode>
-                    list={[
-                      { type: 'item', value: 'delete_when_no_subscriptions', title: 'Delete when no subscriptions' },
-                      { type: 'item', value: 'delete_when_subscriptions_caught_up', title: 'Delete when subscriptions caught up' }
-                    ]}
-                    onChange={(v) => onChange({ ...value, inactiveTopicDeleteMode: v })}
-                    value={value.inactiveTopicDeleteMode}
-                  />
-                </div>
-
                 <strong className={sf.FormLabel}>Delete while inactive</strong>
                 <div className={sf.FormItem}>
                   <Select<'true' | 'false'>
@@ -189,6 +177,18 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                     ]}
                     onChange={(v) => onChange({ ...value, deleteWhileInactive: v === 'true' })}
                     value={value.deleteWhileInactive ? 'true' : 'false'}
+                  />
+                </div>
+
+                <strong className={sf.FormLabel}>Delete mode</strong>
+                <div className={sf.FormItem}>
+                  <Select<InactiveTopicDeleteMode>
+                    list={[
+                      { type: 'item', value: 'delete_when_no_subscriptions', title: 'Delete when no subscriptions' },
+                      { type: 'item', value: 'delete_when_subscriptions_caught_up', title: 'Delete when subscriptions caught up' }
+                    ]}
+                    onChange={(v) => onChange({ ...value, inactiveTopicDeleteMode: v })}
+                    value={value.inactiveTopicDeleteMode}
                   />
                 </div>
 

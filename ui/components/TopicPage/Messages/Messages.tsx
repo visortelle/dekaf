@@ -65,7 +65,7 @@ export type SessionProps = {
 type View = 'messages' | 'configuration';
 type MessagesPerSecond = { prev: number, now: number };
 
-const displayMessagesLimit = 10_000;
+const displayMessagesLimit = 10000;
 const displayMessagesRealTimeLimit = 250; // too many items leads to table blinking.
 
 const Session: React.FC<SessionProps> = (props) => {
@@ -394,7 +394,7 @@ const Session: React.FC<SessionProps> = (props) => {
   useEffect(() => {
     if (sessionState === 'pausing' && messagesLoadedPerSecond.now === 0) {
       setSessionState('paused');
-      setTimeout(scrollToBottom, 500);
+      setTimeout(scrollToBottom, 250);
     }
   }, [sessionState, messagesLoadedPerSecond]);
 
@@ -454,7 +454,7 @@ const Session: React.FC<SessionProps> = (props) => {
       />
 
       {currentView === 'messages' && messages.length === 0 && (
-        <div className={s.NoMessages}>
+        <div className={s.NoDataToShow}>
           {sessionState === 'initializing' && 'Initializing session.'}
           {sessionState === 'awaiting-initial-cursor-positions' && 'Awaiting for initial cursor positions.'}
           {sessionState === 'running' && 'Awaiting for new messages...'}
@@ -479,7 +479,6 @@ const Session: React.FC<SessionProps> = (props) => {
             data={sortedMessages}
             totalCount={sortedMessages.length}
             itemContent={itemContent}
-            increaseViewportBy={{ top: 500, bottom: 500 }}
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
