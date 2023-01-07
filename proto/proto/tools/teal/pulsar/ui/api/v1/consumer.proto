@@ -14,9 +14,20 @@ message MessageId {
 }
 
 message Message {
-  google.protobuf.BytesValue bytes = 4; // value as raw bytes
-  google.protobuf.StringValue value = 5; // value serialized as JSON
-  google.protobuf.StringValue accumulator = 50; // not a part of Pulsar message
+   // Message value as raw bytes.
+  google.protobuf.BytesValue bytes = 4;
+
+  // Message value serialized as JSON.
+  google.protobuf.StringValue value = 5;
+
+  // The state, accumulated during applying message filters for all messages sequencially.
+  // Not a part of Pulsar message.
+  google.protobuf.StringValue accumulator = 50;
+
+  // Evaluated message filter code can produce logs or errors.
+  // We need to store them in the message to be able to show them in the UI.
+  // It is not a part of Pulsar message.
+  google.protobuf.StringValue filter_logs = 51;
 
   map<string, string> properties = 1;
 

@@ -63,4 +63,5 @@ export type MessageDescriptor = {
   value: Nullable<string>; // JSON string
   accum: Nullable<string>; // JSON string
   index: number; // Not a part of Pulsar message.
+  filterLogs: Nullable<string>; // Not a part of Pulsar message.
 };

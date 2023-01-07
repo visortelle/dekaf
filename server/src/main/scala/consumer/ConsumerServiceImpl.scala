@@ -3,23 +3,7 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    MessageFilterChain,
-    PauseRequest,
-    PauseResponse,
-    ResumeRequest,
-    ResumeResponse,
-    SeekRequest,
-    SeekResponse,
-    SkipMessagesRequest,
-    SkipMessagesResponse,
-    TopicsSelector
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
@@ -37,6 +21,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilter as MessageFilterPb
 import org.apache.pulsar.client.api.{Message, MessageId}
 import consumer.MessageFilter
 
+import java.io.ByteArrayOutputStream
 import java.util.UUID
 import java.time.Instant
 
@@ -93,7 +78,9 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     val (filterResult, jsonAccumulator) =
                         getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
 
-                    val messageToSend = messagePb.withAccumulator(jsonAccumulator)
+                    val messageToSend = messagePb
+                        .withAccumulator(jsonAccumulator)
+                        .withFilterLogs(messageFilter.getLogs())
 
                     val messages = filterResult match
                         case Right(true) => Seq(messageToSend)
@@ -146,7 +133,9 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandler.onNext = _ => ()
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
-        messageFilters = messageFilters + (consumerName -> MessageFilter())
+
+        val messageFilterOut = new ByteArrayOutputStream()
+        messageFilters = messageFilters + (consumerName -> MessageFilter(MessageFilterConfig(out = messageFilterOut)))
 
         val topicsToConsume = request.topicsSelector match
             case Some(ts) =>

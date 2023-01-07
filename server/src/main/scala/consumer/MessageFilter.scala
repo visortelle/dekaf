@@ -22,15 +22,24 @@ val JsonAccumulatorVarName = "jsonAccumulator"
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.library, os.pwd) / "js" / "dist" / "libs.js")
 
-class MessageFilter():
-    private val context = Context.newBuilder("js").build
+case class MessageFilterConfig(
+    out: java.io.OutputStream
+)
+
+class MessageFilter(config: MessageFilterConfig):
+    private val context = Context.newBuilder("js")
+        .out(config.out)
+        .err(config.out)
+        .build
 
     context.eval("js",s"globalThis.${JsonAccumulatorVarName} = {}") // Create empty fold-like accumulator variable.
 
     // Load JS libraries.
     context.eval("js", jsLibsBundle)
-    // Make JSs libraries available in the global scope.
+    // Make JS libraries available in the global scope.
     context.eval("js", "Object.entries(globalThis.jsLibs).map(([k, v]) => globalThis[k] = v)")
+    
+    def getLogs(): String = config.out.toString
 
     def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)
