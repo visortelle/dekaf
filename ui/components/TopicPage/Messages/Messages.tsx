@@ -479,7 +479,6 @@ const Session: React.FC<SessionProps> = (props) => {
             data={sortedMessages}
             totalCount={sortedMessages.length}
             itemContent={itemContent}
-            increaseViewportBy={{ top: 500, bottom: 500 }}
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>

@@ -62,7 +62,7 @@ class MessageFilter(config: MessageFilterConfig):
       |console.error = (...args) => _consoleError('[ERROR]', ...args);
       |globalThis.logError = console.error;
       |
-      |console.debug = (...args) => _consoleLog('[DEBUG]', ...(args.map(stringify)));
+      |console.debug = (...args) => _consoleLog('[DEBUG]', ...(args.map(arg => stringify(arg, null, 4))));
       |globalThis.logDebug = console.debug;
       """.stripMargin
     )
