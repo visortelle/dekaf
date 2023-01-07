@@ -140,7 +140,7 @@ const MetricsTable: React.FC<MetricsTableProps> = (props) => {
               highlightClassName="highlight-substring"
               searchWords={props.highlightDimensions}
               autoEscape={true}
-              textToHighlight={stringify(m.dimensions)}
+              textToHighlight={stringify(m.dimensions) || ''}
             />
           </div>
           <table className={s.Table}>

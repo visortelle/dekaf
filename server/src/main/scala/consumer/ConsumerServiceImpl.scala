@@ -37,6 +37,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilter as MessageFilterPb
 import org.apache.pulsar.client.api.{Message, MessageId}
 import consumer.MessageFilter
 
+import java.io.ByteArrayOutputStream
 import java.util.UUID
 import java.time.Instant
 
@@ -85,15 +86,16 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 handler.onNext = (msg: Message[Array[Byte]]) =>
                     logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId}")
 
-                    processedMessagesCount =
-                        processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
+                    processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
                     val (messagePb, jsonMessage, jsonValue) = serializeMessage(schemasByTopic, msg)
 
                     val (filterResult, jsonAccumulator) =
                         getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
 
-                    val messageToSend = messagePb.withAccumulator(jsonAccumulator)
+                    val messageToSend = messagePb
+                        .withAccumulator(jsonAccumulator)
+                        .withDebugStdout(messageFilter.getStdout())
 
                     val messages = filterResult match
                         case Right(true) => Seq(messageToSend)
@@ -146,7 +148,10 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandler.onNext = _ => ()
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
-        messageFilters = messageFilters + (consumerName -> MessageFilter())
+
+        messageFilters = messageFilters + (consumerName -> MessageFilter(
+          MessageFilterConfig(stdout = new ByteArrayOutputStream())
+        ))
 
         val topicsToConsume = request.topicsSelector match
             case Some(ts) =>
@@ -157,9 +162,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
 
-        getSchemasByTopic(topicsToConsume).foreach((topicName, schemasByVersion) =>
-            schemasByTopic = schemasByTopic + (topicName -> schemasByVersion)
-        )
+        getSchemasByTopic(topicsToConsume).foreach((topicName, schemasByVersion) => schemasByTopic = schemasByTopic + (topicName -> schemasByVersion))
 
         topics = topics + (consumerName -> topicsToConsume)
 

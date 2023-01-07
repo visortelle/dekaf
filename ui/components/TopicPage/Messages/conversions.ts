@@ -7,7 +7,7 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
   );
 
   return {
-    index: -1, // This value will be redefined in other place.
+    index: -1, // This value will be set in another place.
     messageId: message.getMessageId()?.getValue_asU8() ?? null,
     bytes: message.getBytes()?.getValue_asU8() ?? null,
     value: message.getValue()?.getValue() ?? null,
@@ -26,5 +26,6 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
     size: message.getSize()?.getValue() ?? null,
     topic: message.getTopic()?.getValue() ?? null,
     accum: message.getAccumulator()?.getValue() ?? null,
+    debugStdout: message.getDebugStdout()?.getValue() ?? null,
   };
 }

@@ -1,0 +1,49 @@
+.DebugConsole {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.NoDataToShow {
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rem;
+  border-radius: 8rem;
+  margin: 12rem;
+}
+
+.Toolbar {
+  padding: 8rem 12rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.SearchQueryInput {
+  max-width: 480rem;
+  margin-right: 12rem;
+}
+
+.Logs {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 24rem;
+}
+
+.LogLine {
+  width: 100%;
+  display: flex;
+  border-bottom: 1px solid #ddd;
+}
+
+.LogLineMessageIndex {
+  width: 60rem;
+  padding: 2rem 8rem;
+  border-right: 1px solid #ddd;
+}
+
+.LogLineLogMessage {
+  margin: 0;
+  padding: 2rem 8rem;
+  flex: 1;
+}

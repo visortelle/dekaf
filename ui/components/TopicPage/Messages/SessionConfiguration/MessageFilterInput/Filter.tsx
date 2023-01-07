@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import s from './Filter.module.css'
 import * as t from './types';
-import Select from '../../../../ui/Select/Select';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 
 export type FilterProps = {
@@ -10,7 +9,7 @@ export type FilterProps = {
 };
 
 const defaultJsValue = `({ value, accum }) => {
-    return true;
+    return true
 }`;
 
 const Filter: React.FC<FilterProps> = (props) => {
@@ -23,21 +22,6 @@ const Filter: React.FC<FilterProps> = (props) => {
 
   return (
     <div className={s.Filter}>
-      {/* <div className={s.FormControl}>
-        <Select<t.FilterLanguage>
-          list={[
-            { type: 'item', title: 'JavaScript', value: 'js' },
-            { type: 'item', title: 'Python', value: 'python' },
-          ]}
-          onChange={v => props.onChange({
-            ...props.value,
-            language: v,
-            value: getDefaultValue(v),
-          })}
-          value={props.value.language}
-        />
-      </div> */}
-
       <div className={s.FormControl}>
         <CodeEditor
           value={props.value.value}

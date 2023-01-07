@@ -6,6 +6,16 @@ val zioConfigVersion = "3.0.2"
 
 maintainer := "kiryl_valkovich@teal.tools"
 
+val javaOpts = Seq(
+  "-Dpolyglot.engine.WarnInterpreterOnly=false"
+)
+
+run / fork := true
+run / javaOptions ++= javaOpts
+
+reStart / fork := true
+reStart / javaOptions ++= javaOpts
+
 lazy val root = project
     .enablePlugins(JavaAppPackaging)
     .enablePlugins(UniversalPlugin)
@@ -16,6 +26,7 @@ lazy val root = project
       name := "pulsar-ui",
       scalaVersion := scala3Version,
       Compile / mainClass := Some("main.Main"),
+      Universal / javaOptions ++= javaOpts,
       buildInfoPackage := "buildinfo",
       buildInfoOptions += BuildInfoOption.BuildTime,
       buildInfoOptions += BuildInfoOption.ToMap,
