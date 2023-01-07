@@ -26,6 +26,6 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
     size: message.getSize()?.getValue() ?? null,
     topic: message.getTopic()?.getValue() ?? null,
     accum: message.getAccumulator()?.getValue() ?? null,
-    filterLogs: message.getFilterLogs()?.getValue() ?? null,
+    debugStdout: message.getDebugStdout()?.getValue() ?? null,
   };
 }

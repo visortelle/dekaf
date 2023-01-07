@@ -3,6 +3,7 @@ import React from 'react';
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
 import Producer from './Producer/Producer';
 import Visualization from './Visualization/Visualization';
+import DebugConsole from './DebugConsole/DebugConsole';
 import { MessageDescriptor, SessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
@@ -24,18 +25,23 @@ export type ConsoleProps = {
   messages: MessageDescriptor[];
 };
 
-type TabName = 'producer' | 'cursors' | 'visualize' | 'export';
+type TabName = 'producer' | 'cursors' | 'visualize' | 'debug-console' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
   const [activeTab, setActiveTab] = React.useState<TabName>('visualize');
 
   return (
-    <EnteringFromBottomDiv className={s.Console} isVisible={props.isShow} motionKey='consumer-console'>
+    <EnteringFromBottomDiv
+      className={`${s.Console} ${props.isShow ? s.VisibleConsole : ''}`}
+      isVisible={props.isShow}
+      motionKey='consumer-console'
+    >
       <div className={s.Tabs}>
         <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Produce</div>
         <div className={`${s.Tab} ${activeTab === 'visualize' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('visualize')}>Visualize</div>
         <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div>
         <div className={`${s.Tab} ${activeTab === 'export' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('export')}>Export</div>
+        <div className={`${s.Tab} ${activeTab === 'debug-console' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('debug-console')}>Debug console</div>
 
         <div className={s.CloseConsole} title="Close" onClick={props.onClose}>
           <SvgIcon svg={closeIcon} />
@@ -54,13 +60,17 @@ const Console: React.FC<ConsoleProps> = (props) => {
         />
       </TabContent>
 
-      <TabContent isShow={activeTab === 'producer'}>
+      <TabContent isShow={activeTab === 'producer'} isRenderAlways>
         <Producer
           preset={{
             topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
             key: ''
           }}
         />
+      </TabContent>
+
+      <TabContent isShow={activeTab === 'debug-console'}>
+        <DebugConsole messages={props.messages} sessionState={props.sessionState} />
       </TabContent>
 
     </EnteringFromBottomDiv>

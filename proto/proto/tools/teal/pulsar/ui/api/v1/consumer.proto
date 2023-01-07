@@ -26,8 +26,8 @@ message Message {
 
   // Evaluated message filter code can produce logs or errors.
   // We need to store them in the message to be able to show them in the UI.
-  // It is not a part of Pulsar message.
-  google.protobuf.StringValue filter_logs = 51;
+  // Both, stdout and stderr are stored in the same field.
+  google.protobuf.StringValue debug_stdout = 51;
 
   map<string, string> properties = 1;
 
