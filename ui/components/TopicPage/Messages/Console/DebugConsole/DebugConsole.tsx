@@ -9,6 +9,7 @@ export type DebugConsoleProps = {
   messages: MessageDescriptor[],
   sessionState: SessionState,
   consumerName: string,
+  isVisible: boolean,
 };
 
 const DebugConsole: React.FC<DebugConsoleProps> = (props) => {
@@ -16,22 +17,20 @@ const DebugConsole: React.FC<DebugConsoleProps> = (props) => {
 
   return (
     <div className={s.DebugConsole}>
-      {view === 'logs' && (
-        <DebugLogs
-          messages={props.messages}
-          sessionState={props.sessionState}
-          view={view}
-          onSwitchView={(view) => setView(view)}
-        />
-      )}
-      {view === 'expression-inspector' && (
-        <ExpressionInspector
-          view={view}
-          onSwitchView={(view) => setView(view)}
-          consumerName={props.consumerName}
-          sessionState={props.sessionState}
-        />
-      )}
+      <DebugLogs
+        messages={props.messages}
+        sessionState={props.sessionState}
+        view={view}
+        onSwitchView={(view) => setView(view)}
+        isVisible={view === 'logs'}
+      />
+      <ExpressionInspector
+        view={view}
+        onSwitchView={(view) => setView(view)}
+        consumerName={props.consumerName}
+        sessionState={props.sessionState}
+        isVisible={view === 'expression-inspector'}
+      />
     </div>
   );
 }

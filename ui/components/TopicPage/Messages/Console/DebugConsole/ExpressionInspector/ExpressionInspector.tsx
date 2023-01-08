@@ -18,6 +18,7 @@ export type ExpressionInspectorProps = {
   sessionState: SessionState,
   view: DebugConsoleView,
   onSwitchView: (view: DebugConsoleView) => void,
+  isVisible: boolean,
 };
 
 const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
@@ -54,6 +55,10 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
 
     setLogs((logs) => logs.concat([result]));
     setTimeout(() => logEntriesRef.current?.scrollTo(0, logEntriesRef.current.scrollHeight), 0);
+  }
+
+  if (!props.isVisible) {
+    return <></>;
   }
 
   return (

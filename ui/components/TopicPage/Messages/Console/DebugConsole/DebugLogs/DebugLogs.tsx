@@ -14,6 +14,7 @@ export type DebugLogsProps = {
   sessionState: SessionState,
   view: DebugConsoleView,
   onSwitchView: (view: DebugConsoleView) => void,
+  isVisible: boolean,
 };
 
 const displayLogEntriesRealTimeLimit = 250; // too many items leads to table blinking.
@@ -36,6 +37,10 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
 
   if (props.sessionState === 'running') {
     messagesWithLogs = messagesWithLogs.slice(-displayLogEntriesRealTimeLimit);
+  }
+
+  if (!props.isVisible) {
+    return <></>;
   }
 
   return (
