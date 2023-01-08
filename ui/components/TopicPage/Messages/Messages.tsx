@@ -523,6 +523,7 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionSubscriptionName={subscriptionName}
         topicsInternalStats={topicsInternalStats}
         messages={messages}
+        consumerName={consumerName}
       />
     </div>
   );

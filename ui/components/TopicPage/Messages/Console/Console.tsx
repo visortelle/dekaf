@@ -23,6 +23,7 @@ export type ConsoleProps = {
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   onSessionStateChange: (state: SessionState) => void;
   messages: MessageDescriptor[];
+  consumerName: string;
 };
 
 type TabName = 'producer' | 'cursors' | 'visualize' | 'debug-console' | 'export';
@@ -70,7 +71,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
       </TabContent>
 
       <TabContent isShow={activeTab === 'debug-console'}>
-        <DebugConsole messages={props.messages} sessionState={props.sessionState} />
+        <DebugConsole messages={props.messages} sessionState={props.sessionState} consumerName={props.consumerName} />
       </TabContent>
 
     </EnteringFromBottomDiv>

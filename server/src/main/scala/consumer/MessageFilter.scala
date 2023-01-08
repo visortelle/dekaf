@@ -75,6 +75,23 @@ class MessageFilter(config: MessageFilterConfig):
     def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)
 
+    def runCode(code: String): String = context
+        .eval(
+          "js",
+          s"""
+           |(function(){
+           |  let result;
+           |  try {
+           |    result = inspect($code);
+           |  } catch (e) {
+           |    result = e.toString();
+           |  }
+           |  return result
+           |})();
+          """.stripMargin
+        )
+        .asString()
+
 def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
     val evalCode =
         s"""
@@ -82,6 +99,8 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
           |    const message = ${jsonMessage.asJson};
           |    message.value = ${jsonValue.getOrElse("undefined")};
           |    message.accum = globalThis.$JsonAccumulatorVarName;
+          |
+          |    globalThis.lastMessage = message; // For debug on the client side.
           |
           |    return ($filterCode)(message);
           | })();
