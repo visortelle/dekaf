@@ -65,7 +65,15 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
           customScrollParent={scrollParentRef.current || undefined}
           components={{
             EmptyPlaceholder: () => <div className={s.NoDataToShow} style={{ width: 'calc(100% - 24rem)' }}>
-              Message filters errors and console output will be shown here.
+              Message filters errors and console output will be shown here.<br /><br />
+              Use the following functions to log messages:<br />
+              <ul className={s.NoDataToShowFunctions}>
+                <li className={s.NoDataToShowFunction}><code>log(a)</code></li>
+                <li className={s.NoDataToShowFunction}><code>logInfo(a)</code></li>
+                <li className={s.NoDataToShowFunction}><code>logWarn(a)</code></li>
+                <li className={s.NoDataToShowFunction}><code>logError(a)</code></li>
+                <li className={s.NoDataToShowFunction}>Use <code>logDebug(a)</code> to print the argument(s) as JSON.</li>
+              </ul>
             </div>
           }}
           totalCount={messagesWithLogs.length}

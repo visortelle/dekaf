@@ -6,13 +6,18 @@
 }
 
 .NoDataToShow {
-  background-color: #f5f5f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12rem;
-  border-radius: 8rem;
-  margin: 12rem;
+  padding: 24rem 12rem;
+  text-align: left;
+}
+
+.NoDataToShowFunctions {
+  text-align: left;
+  max-width: 60ch;
+}
+
+.NoDataToShowFunction {
+  margin-bottom: 8rem;
+  list-style: disc;
 }
 
 .SearchQueryInput {

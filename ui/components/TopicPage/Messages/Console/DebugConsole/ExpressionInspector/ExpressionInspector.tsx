@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import Toolbar from '../Toolbar/Toolbar';
 import { DebugConsoleView } from '../types';
 import s from './ExpressionInspector.module.css'
@@ -11,9 +11,11 @@ import CodeEditor from '../../../../../ui/CodeEditor/CodeEditor';
 import runIcon from './run.svg';
 import clearIcon from './clear.svg';
 import { getLogColor, parseLogLine } from '../../logging/loggin';
+import { SessionState } from '../../../types';
 
 export type ExpressionInspectorProps = {
   consumerName: string,
+  sessionState: SessionState,
   view: DebugConsoleView,
   onSwitchView: (view: DebugConsoleView) => void,
 };
@@ -24,6 +26,13 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const [logs, setLogs] = React.useState<string[]>([]);
   const logEntriesRef = React.useRef<HTMLDivElement>(null);
+  const [isConsumerCreated, setIsConsumerCreated] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isConsumerCreated && props.sessionState === 'running') {
+      setIsConsumerCreated(true);
+    }
+  }, [props.sessionState, isConsumerCreated]);
 
   const runCode = async () => {
     const req = new pb.RunCodeRequest();
@@ -46,7 +55,6 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
     setLogs((logs) => logs.concat([result]));
     setTimeout(() => logEntriesRef.current?.scrollTo(0, logEntriesRef.current.scrollHeight), 0);
   }
-  console.log('logs', logs)
 
   return (
     <div
@@ -58,7 +66,14 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
       }}
     >
       <Toolbar onSwitchView={props.onSwitchView} view={props.view}>
-
+        <div>
+          Run any JavaScript expression in the context of the session. Try <code>jsLibs</code> <code>2 + 2</code> or <code>lastMessage</code>.
+        </div>
+        {!isConsumerCreated && (
+          <div style={{ color: 'var(--accent-color-red)' }}>
+            You should first initiate the session to be able run any expression.
+          </div>
+        )}
       </Toolbar>
 
       <div className={s.Inspector}>
@@ -108,6 +123,7 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
             size='small'
             svgIcon={runIcon}
             onClick={runCode}
+            disabled={!isConsumerCreated}
           />
         </div>
       </div>

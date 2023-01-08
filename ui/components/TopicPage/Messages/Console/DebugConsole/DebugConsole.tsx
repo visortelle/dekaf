@@ -25,7 +25,12 @@ const DebugConsole: React.FC<DebugConsoleProps> = (props) => {
         />
       )}
       {view === 'expression-inspector' && (
-        <ExpressionInspector view={view} onSwitchView={(view) => setView(view)} consumerName={props.consumerName} />
+        <ExpressionInspector
+          view={view}
+          onSwitchView={(view) => setView(view)}
+          consumerName={props.consumerName}
+          sessionState={props.sessionState}
+        />
       )}
     </div>
   );
