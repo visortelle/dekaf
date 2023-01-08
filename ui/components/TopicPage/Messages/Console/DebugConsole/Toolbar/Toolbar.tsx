@@ -23,7 +23,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         />
         <Tab
           onClick={() => props.onSwitchView('expression-inspector')}
-          title="Expression Inspector"
+          title="Expression tester"
           isActive={props.view === 'expression-inspector'}
         />
       </div>
