@@ -17,7 +17,7 @@ type JsonString = String
 type JsonAccumulator = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
 type FilterTestResult = (Either[String, Boolean], JsonAccumulator)
 
-val JsonAccumulatorVarName = "jsonAccumulator"
+val JsonAccumulatorVarName = "accum"
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.library, os.pwd) / "js" / "dist" / "libs.js")
@@ -75,22 +75,12 @@ class MessageFilter(config: MessageFilterConfig):
     def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)
 
-    def runCode(code: String): String = context
-        .eval(
-          "js",
-          s"""
-           |(function(){
-           |  let result;
-           |  try {
-           |    result = inspect($code);
-           |  } catch (e) {
-           |    result = e.toString();
-           |  }
-           |  return result
-           |})();
-          """.stripMargin
-        )
-        .asString()
+    def runCode(code: String): String =
+        try
+            context.eval("js", s"inspect($code);").asString()
+        catch {
+            case err: Throwable => s"[ERROR] ${err.getMessage()}"
+        }
 
 def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
     val evalCode =

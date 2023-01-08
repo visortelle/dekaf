@@ -20,13 +20,12 @@ const DebugConsole: React.FC<DebugConsoleProps> = (props) => {
         <DebugLogs
           messages={props.messages}
           sessionState={props.sessionState}
-          consumerName={props.consumerName}
           view={view}
           onSwitchView={(view) => setView(view)}
         />
       )}
       {view === 'expression-inspector' && (
-        <ExpressionInspector view={view} onSwitchView={(view) => setView(view)} />
+        <ExpressionInspector view={view} onSwitchView={(view) => setView(view)} consumerName={props.consumerName} />
       )}
     </div>
   );
