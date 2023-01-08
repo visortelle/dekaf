@@ -47,6 +47,7 @@
 .LogEntries {
   flex: 1;
   overflow: auto;
+  margin-bottom: -1px;
 }
 
 .ClearLogsButton {
@@ -58,10 +59,6 @@
 .LogEntry {
   border-bottom: 1px solid #ddd;
   padding: 12rem 0;
-}
-
-.LogEntry:last-child {
-  margin-bottom: 12px;
 }
 
 .LogEntryLine {

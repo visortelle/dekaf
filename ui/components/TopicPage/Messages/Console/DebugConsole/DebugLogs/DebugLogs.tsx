@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { MessageDescriptor, SessionState } from '../../../types';
 import s from './DebugLogs.module.css'
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
@@ -24,11 +24,11 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [searchQueryDebounced] = useDebounce(searchQuery, 400);
 
+  const scrollToBottom = useCallback(() => virtuosoRef.current?.scrollToIndex({ index: props.messages.length - 1 }), [virtuosoRef.current]);
+
   useEffect(() => {
     if (props.sessionState === 'paused') {
-      setTimeout(() => {
-        virtuosoRef.current?.scrollToIndex({ index: props.messages.length - 1 });
-      }, 250);
+      setTimeout(scrollToBottom, 250);
     }
   }, [props.sessionState]);
 
@@ -70,6 +70,7 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
           }}
           totalCount={messagesWithLogs.length}
           followOutput={props.sessionState === 'running'}
+          atBottomThreshold={20}
         />
       </div>
     </div>

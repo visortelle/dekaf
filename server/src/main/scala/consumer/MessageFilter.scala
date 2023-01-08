@@ -1,8 +1,6 @@
 package consumer
 
-import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChain
-import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
-import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilter as MessageFilterPb
+import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import com.typesafe.scalalogging.Logger
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.proxy.*
@@ -103,20 +101,23 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
             case err => Left(s"Message filter JS error: ${err.getMessage}")
         }
 
-    val cumulativeJsonState = context.eval("js", s"JSON.stringify(globalThis.$JsonAccumulatorVarName)").asString
+    val cumulativeJsonState = context.eval("js", s"stringify(globalThis.$JsonAccumulatorVarName)").asString
 
     (testResult, cumulativeJsonState)
 
-def getFilterTestResult(filter: MessageFilterPb, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
+def getFilterTestResult(filter: pb.MessageFilter, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
     messageFilter.test(filter.value, jsonMessage, jsonValue)
 
 def getFilterChainTestResult(
-    filterChain: Option[MessageFilterChain],
+    filterChain: Option[pb.MessageFilterChain],
     messageFilter: MessageFilter,
     jsonMessage: JsonMessage,
     jsonValue: JsonValue
 ): FilterTestResult =
-    val chain = filterChain.getOrElse(MessageFilterChain(filters = Map.empty, mode = MESSAGE_FILTER_CHAIN_MODE_ALL))
+    val chain = filterChain.getOrElse(pb.MessageFilterChain(
+        filters = Map.empty,
+        mode = pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL)
+    )
 
     val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilter, jsonMessage, jsonValue))
 
@@ -125,8 +126,10 @@ def getFilterChainTestResult(
         case Some(Left(err), _) => Left(err)
         case _ =>
             chain.mode match
-                case MESSAGE_FILTER_CHAIN_MODE_ALL => Right(filterResults.forall(fr => fr._1.getOrElse(false)))
-                case MESSAGE_FILTER_CHAIN_MODE_ANY => Right(filterResults.exists(fr => fr._1.getOrElse(false)))
+                case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL =>
+                    Right(filterResults.forall(fr => fr._1.getOrElse(false)))
+                case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY =>
+                    Right(filterResults.exists(fr => fr._1.getOrElse(false)))
 
     if filterResults.nonEmpty then
         val (_, jsonAggregate) = filterResults.last
