@@ -7,7 +7,7 @@ import Highlighter from 'react-highlight-words';
 import { useDebounce } from 'use-debounce';
 import { DebugConsoleView } from '../types';
 import Toolbar from '../Toolbar/Toolbar';
-import { getLogColor, LogLevel, parseLogLine } from '../../logs/logs';
+import { getLogColor, LogLevel, parseLogLine } from '../../logging/loggin';
 
 export type DebugLogsProps = {
   messages: MessageDescriptor[],

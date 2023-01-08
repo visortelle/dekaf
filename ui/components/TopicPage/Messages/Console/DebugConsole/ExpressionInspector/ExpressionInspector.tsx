@@ -10,7 +10,7 @@ import Button from '../../../../../ui/Button/Button';
 import CodeEditor from '../../../../../ui/CodeEditor/CodeEditor';
 import runIcon from './run.svg';
 import clearIcon from './clear.svg';
-import { getLogColor, parseLogLine } from '../../logs/logs';
+import { getLogColor, parseLogLine } from '../../logging/loggin';
 
 export type ExpressionInspectorProps = {
   consumerName: string,
