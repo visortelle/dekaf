@@ -46,6 +46,7 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
     setLogs((logs) => logs.concat([result]));
     setTimeout(() => logEntriesRef.current?.scrollTo(0, logEntriesRef.current.scrollHeight), 0);
   }
+  console.log('logs', logs)
 
   return (
     <div

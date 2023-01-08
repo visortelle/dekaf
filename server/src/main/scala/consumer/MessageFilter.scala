@@ -114,10 +114,12 @@ def getFilterChainTestResult(
     jsonMessage: JsonMessage,
     jsonValue: JsonValue
 ): FilterTestResult =
-    val chain = filterChain.getOrElse(pb.MessageFilterChain(
-        filters = Map.empty,
-        mode = pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL)
-    )
+    var chain = filterChain.getOrElse(pb.MessageFilterChain(filters = Map.empty, mode = pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL))
+
+    // Each message filters mutate global state.
+    // For example: it stores the last message in the global variable `lastMessage`.
+    // To make it work properly, at least one filter should always present.
+    chain = chain.withFilters(chain.filters + ("dummy" -> pb.MessageFilter(value = "() => true")))
 
     val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilter, jsonMessage, jsonValue))
 
