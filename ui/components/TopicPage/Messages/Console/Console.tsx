@@ -23,6 +23,7 @@ export type ConsoleProps = {
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   onSessionStateChange: (state: SessionState) => void;
   messages: MessageDescriptor[];
+  consumerName: string;
 };
 
 type TabName = 'producer' | 'cursors' | 'visualize' | 'debug-console' | 'export';
@@ -39,9 +40,9 @@ const Console: React.FC<ConsoleProps> = (props) => {
       <div className={s.Tabs}>
         <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Produce</div>
         <div className={`${s.Tab} ${activeTab === 'visualize' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('visualize')}>Visualize</div>
+        <div className={`${s.Tab} ${activeTab === 'debug-console' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('debug-console')}>Filters debugger</div>
         <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div>
         <div className={`${s.Tab} ${activeTab === 'export' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('export')}>Export</div>
-        <div className={`${s.Tab} ${activeTab === 'debug-console' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('debug-console')}>Debug console</div>
 
         <div className={s.CloseConsole} title="Close" onClick={props.onClose}>
           <SvgIcon svg={closeIcon} />
@@ -69,8 +70,13 @@ const Console: React.FC<ConsoleProps> = (props) => {
         />
       </TabContent>
 
-      <TabContent isShow={activeTab === 'debug-console'}>
-        <DebugConsole messages={props.messages} sessionState={props.sessionState} />
+      <TabContent isShow={activeTab === 'debug-console'} isRenderAlways>
+        <DebugConsole
+          messages={props.messages}
+          sessionState={props.sessionState}
+          consumerName={props.consumerName}
+          isVisible={activeTab === 'debug-console'}
+        />
       </TabContent>
 
     </EnteringFromBottomDiv>

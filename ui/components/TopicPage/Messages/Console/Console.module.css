@@ -3,6 +3,7 @@
   flex-direction: column;
   background-color: #fff;
   overflow: auto;
+  margin-top: auto;
 }
 
 .VisibleConsole {

@@ -181,6 +181,16 @@ message SkipMessagesResponse {
   google.rpc.Status status = 1;
 }
 
+message RunCodeRequest {
+  string consumer_name = 1;
+  string code = 2;
+}
+
+message RunCodeResponse {
+  google.rpc.Status status = 1;
+  google.protobuf.StringValue result = 2;
+}
+
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
@@ -188,4 +198,5 @@ service ConsumerService {
   rpc Pause(PauseRequest) returns (PauseResponse);
   rpc Seek(SeekRequest) returns (SeekResponse);
   rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
+  rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
 }
