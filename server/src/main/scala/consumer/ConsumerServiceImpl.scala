@@ -3,23 +3,7 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    MessageFilterChain,
-    PauseRequest,
-    PauseResponse,
-    ResumeRequest,
-    ResumeResponse,
-    SeekRequest,
-    SeekResponse,
-    SkipMessagesRequest,
-    SkipMessagesResponse,
-    TopicsSelector
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
@@ -33,7 +17,6 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
-import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilter as MessageFilterPb
 import org.apache.pulsar.client.api.{Message, MessageId}
 import consumer.MessageFilter
 
@@ -241,3 +224,21 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     override def skipMessages(request: SkipMessagesRequest): Future[SkipMessagesResponse] =
         val status: Status = Status(code = Code.OK.index)
         Future.successful(SkipMessagesResponse(status = Some(status)))
+
+    override def runCode(request: RunCodeRequest): Future[RunCodeResponse] =
+        val messageFilter = messageFilters.get(request.consumerName) match
+            case Some(f) => f
+            case _ =>
+                val status: Status = Status(
+                    code = Code.FAILED_PRECONDITION.index,
+                    message = s"Message filter context isn't found for consumer: ${request.consumerName}"
+                )
+                return Future.successful(RunCodeResponse(status = Some(status)))
+
+        val result = messageFilter.runCode(request.code)
+
+        val status: Status = Status(code = Code.OK.index)
+        val response = RunCodeResponse(status = Some(status), result = Some(result))
+        Future.successful(response)
+
+

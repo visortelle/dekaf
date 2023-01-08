@@ -1,0 +1,69 @@
+.ExpressionInspector {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.Toolbar {
+  height: 38rem;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+  align-items: center;
+  padding: 0 12rem;
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.ToolbarControl {
+  margin-right: 12rem;
+}
+
+.Inspector {
+  display: flex;
+  gap: 12rem;
+  flex: 1;
+  padding: 12rem;
+  overflow: hidden;
+  margin-bottom: 38rem;
+}
+
+.CodeEditor {
+  flex: 1 1 50%;
+  overflow: hidden;
+  display: flex;
+}
+
+.Logs {
+  display: flex;
+  flex: 1 1 50%;
+  border: 1px solid #ddd;
+  border-radius: 4rem;
+  position: relative;
+}
+
+.LogEntries {
+  flex: 1;
+  overflow: auto;
+  margin-bottom: -1px;
+}
+
+.ClearLogsButton {
+  position: absolute;
+  top: 12rem;
+  right: 24rem;
+}
+
+.LogEntry {
+  border-bottom: 1px solid #ddd;
+  padding: 12rem 0;
+}
+
+.LogEntryLine {
+  padding: 4rem 12rem;
+  line-height: 1;
+  margin: 0;
+  overflow: visible;
+}
