@@ -372,7 +372,7 @@ const FiltersEditor = (props: Props) => {
             {activeFilter && activeCollection ?
               <Filter
                 value={listFilters[activeCollection].filters[activeFilter].filter}
-                onChange={(value) =>  onChangeFilter({ ...value })}
+                onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, ...value })}
               /> :
               <span>
                 Choose filter

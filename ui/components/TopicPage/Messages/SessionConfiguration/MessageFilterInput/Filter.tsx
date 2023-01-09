@@ -1,14 +1,16 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { EditorFilter } from './FiltersEditor/FiltersEditor';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import dependencies from './dependecies';
+import * as t from './types';
 
 import s from './Filter.module.css'
 
+
 export type FilterProps = {
-  value: EditorFilter;
-  onChange: (value: EditorFilter) => void;
+  value: t.Filter;
+  onChange: (value: t.Filter) => void;
   autoCompleteConfig?: boolean;
 };
 
