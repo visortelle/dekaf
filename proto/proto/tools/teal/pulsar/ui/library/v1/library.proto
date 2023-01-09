@@ -9,7 +9,7 @@ message Collection {
   string id = 1; // UUID
   string name = 2;
   string description = 3;
-  repeated string library_item_ids = 4;
+  repeated string collection_item_ids = 4;
 }
 
 message CreateCollectionRequest {
