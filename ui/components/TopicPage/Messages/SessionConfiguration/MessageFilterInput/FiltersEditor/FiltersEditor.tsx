@@ -23,7 +23,7 @@ type Props = {
   onChange: (f: Record<string, t.ChainEntry>) => void,
 }
 
-type EditorFilter = t.Filter & {
+export type EditorFilter = t.Filter & {
   description: string,
   name: string,
 }
@@ -70,6 +70,7 @@ const FiltersEditor = (props: Props) => {
   }
 
   const onSave = () => {
+    console.log(listFilters)
     localStorage.setItem('messageFilters', JSON.stringify(listFilters));
   }
 
@@ -81,6 +82,7 @@ const FiltersEditor = (props: Props) => {
     const chainClone = cloneDeep(listFilters);
 
     chainClone[activeCollection].filters[newFilterId] = {filter: { ...newFilter, value: props.entry }}
+
 
     localStorage.setItem(
       'messageFilters',
@@ -165,13 +167,13 @@ const FiltersEditor = (props: Props) => {
     setActiveFilter(undefined);
   }
 
-  const onChangeFilter = (value: string, property: 'name' | 'description' | 'value') => {
+  const onChangeFilter = (value: EditorFilter) => {
     if (activeFilter === undefined || !activeCollection) {
       return;
     }
 
     const newFilters = cloneDeep(listFilters);
-    newFilters[activeCollection].filters[activeFilter].filter[property] = value;
+    newFilters[activeCollection].filters[activeFilter].filter = value;
 
     setListFilters(newFilters);
   }
@@ -327,13 +329,13 @@ const FiltersEditor = (props: Props) => {
               <span>Name</span>
               <Input
                 value={listFilters[activeCollection].filters[activeFilter].filter.name}
-                onChange={(value) =>  onChangeFilter(value, 'name')}
+                onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, value })}
                 placeholder="message-filter"
               />
               <span>Description</span>
               <Input
                 value={listFilters[activeCollection].filters[activeFilter].filter.description || ''}
-                onChange={(value) =>  onChangeFilter(value, 'description')}
+                onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, value })}
                 placeholder="useful filter"
               />
             </> :
@@ -369,9 +371,8 @@ const FiltersEditor = (props: Props) => {
             </H3>
             {activeFilter && activeCollection ?
               <Filter
-                value={listFilters[activeCollection].filters[activeFilter].filter.value || ''}
-                onChange={(value) =>  onChangeFilter(value, 'value')}
-                
+                value={listFilters[activeCollection].filters[activeFilter].filter}
+                onChange={(value) =>  onChangeFilter({ ...value })}
               /> :
               <span>
                 Choose filter
