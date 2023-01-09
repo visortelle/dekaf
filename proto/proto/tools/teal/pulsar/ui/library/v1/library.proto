@@ -44,22 +44,22 @@ message DeleteCollectionResponse {
 enum LibraryItemType {
   LIBRARY_ITEM_TYPE_UNSPECIFIED = 0;
   LIBRARY_ITEM_TYPE_MESSAGE_FILTER = 1;
-  LIBRARY_ITEM_TYPE_CONSUMER_SEESION = 2;
-  LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION = 3;
-  LIBRARY_ITEM_TYPE_PRODUCER = 4;
+  LIBRARY_ITEM_TYPE_CONSUMER_SEESION_CONFIG = 2;
+  LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION_CONFIG = 3;
+  LIBRARY_ITEM_TYPE_PRODUCER_CONFIG = 4;
 }
 
 message LibraryItemMessageFilter {
   string code = 1;
 }
 
-message LibraryItemConsumerSession {
+message LibraryItemConsumerSessionConfig {
 }
 
-message LibraryItemMessagesVisualization {
+message LibraryItemMessagesVisualizationConfig {
 }
 
-message LibraryItemProducer {
+message LibraryItemProducerConfig {
 }
 
 enum RequirementType {
@@ -99,9 +99,9 @@ message LibraryItem {
   repeated Requirement requirements = 4;
   oneof library_item {
     LibraryItemMessageFilter message_filter = 5;
-    LibraryItemConsumerSession consumer_session = 6;
-    LibraryItemMessagesVisualization messages_visualization = 7;
-    LibraryItemProducer producer = 8;
+    LibraryItemConsumerSessionConfig consumer_session_config = 6;
+    LibraryItemMessagesVisualizationConfig messages_visualization_config = 7;
+    LibraryItemProducerConfig producer_config = 8;
   }
 }
 
