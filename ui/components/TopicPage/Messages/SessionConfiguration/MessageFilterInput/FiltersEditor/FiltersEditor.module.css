@@ -1,6 +1,6 @@
 .FiltersEditor {
   display: flex;
-  padding: 10px;
+  padding: 12rem;
   height: 70vh;
 }
 
@@ -40,4 +40,38 @@
 
 .JsonEditor {
   width: 400rem;
+}
+
+.RenameWindow {
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid black;
+  padding: 6rem;
+  margin-left: 200px;
+  z-index: 500;
+  font-size: 14pt;
+  width: 300rem;
+}
+.HeadRenameWindow {
+  display: flex;
+  margin-bottom: 10rem;
+}
+.RenameWindowButtons {
+  display: flex;
+  justify-content: flex-end;
+}
+.RenameWindowButtons > button {
+  margin: 6rem;
+}
+
+.MainButtons {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+.MainButtons > button:last-child {
+  margin-right: 12rem;
+}
+.MainButtons > button {
+  margin: 0 6rem 6rem 6rem;
 }

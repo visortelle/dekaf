@@ -12,6 +12,7 @@ import FiltersEditor from './FiltersEditor/FiltersEditor';
 import * as Modals from '../../../../app/contexts/Modals/Modals';
 import deleteIcon from './icons/delete.svg';
 import enableIcon from './icons/enable.svg';
+import saveIcon from './icons/save.svg';
 
 import s from './FilterChain.module.css';
 
@@ -66,21 +67,20 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
 
               <div className={s.EntryButton}>
                 <Button
-                  text="Save"
+                  svgIcon={saveIcon}
                   onClick={() => modals.push({
                     id: 'edit-filter',
                     title: `Message filter browser`,
                     content:
                       <FiltersEditor
                         filters={props.value.filters}
-                        editableFilter={entryId}
                         onChange={(f) => props.onChange({ ...props.value, filters: f })}
+                        entry={entry.filter.value }
                       />,
                     styleMode: 'no-content-padding'
                   })}
-          
-                  title={isDisabled ? 'Enable filter' : 'Disable filter'}
-                  type={isDisabled ? 'regular' : 'primary'}
+                  title="save filter"
+                  type='primary'
                 />
               </div>
 
