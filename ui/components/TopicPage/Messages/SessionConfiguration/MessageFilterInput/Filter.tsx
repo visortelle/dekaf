@@ -8,7 +8,6 @@ export type FilterProps = {
   value: string;
   onChange: (value: string) => void;
   autoCompleteConfig?: AutoCompleteConfig;
-  key?: string;
 };
 
 export const defaultJsValue = `(val, msg, agg) => {
@@ -34,7 +33,6 @@ const Filter: React.FC<FilterProps> = (props) => {
           height="180rem"
           language="javascript"
           autoCompleteConfig={props.autoCompleteConfig}
-          key={props.key}
         />
       </div>
     </div>

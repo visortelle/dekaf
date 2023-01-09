@@ -361,7 +361,7 @@ const FiltersEditor = (props: Props) => {
         }
 
         {!props.entry &&
-          <div className={`${s.Column} ${s.JsonEditor}`}>
+          <div className={`${s.Column} ${s.JsonEditor}`} key={`${activeCollection}-${activeFilter}`}>
             <H3>
               Json code editor
             </H3>
@@ -369,7 +369,7 @@ const FiltersEditor = (props: Props) => {
               <Filter
                 value={listFilters[activeCollection].filters[activeFilter].filter.value || ''}
                 onChange={(value) =>  onChangeFilter(value, 'value')}
-                key={`${activeCollection}-${activeFilter}`}
+                
               /> :
               <span>
                 Choose filter

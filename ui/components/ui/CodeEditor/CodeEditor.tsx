@@ -19,7 +19,6 @@ export type AutoCompleteConfig = {
 }
 export type CodeEditorProps = EditorProps & {
   autoCompleteConfig?: AutoCompleteConfig,
-  key?: string
 };
 
 const CodeEditor: React.FC<CodeEditorProps> = (props) => {
@@ -88,7 +87,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
   }, [])
 
   return (
-    <div className={s.CodeEditor} key={props.key}>
+    <div className={s.CodeEditor}>
       <Editor
         beforeMount={(monaco) => addAutoComplition(monaco)}
         options={{
