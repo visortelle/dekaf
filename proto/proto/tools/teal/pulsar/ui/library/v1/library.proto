@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.library.v1;
+
+import "google/rpc/status.proto";
+
+message Collection {
+  string id = 1; // UUID
+  string name = 2;
+  string description = 3;
+  repeated string library_item_ids = 4;
+}
+
+message CreateCollectionRequest {
+  Collection collection = 1;
+}
+message CreateCollectionResponse {
+  google.rpc.Status status = 1;
+  string id = 2;
+}
+
+message ListCollectionsRequest {}
+message ListCollectionsResponse {
+  google.rpc.Status status = 1;
+  repeated Collection collections = 2;
+}
+
+message UpdateCollectionRequest {
+  Collection collection = 1;
+}
+message UpdateCollectionResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteCollectionRequest {
+  string id = 1;
+  bool is_force = 2;
+}
+message DeleteCollectionResponse {
+  google.rpc.Status status = 1;
+}
+
+enum LibraryItemType {
+  LIBRARY_ITEM_TYPE_UNSPECIFIED = 0;
+  LIBRARY_ITEM_TYPE_MESSAGE_FILTER = 1;
+  LIBRARY_ITEM_TYPE_CONSUMER_SEESION = 2;
+  LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION = 3;
+  LIBRARY_ITEM_TYPE_PRODUCER = 4;
+}
+
+message LibraryItemMessageFilter {
+  string code = 1;
+}
+
+message LibraryItemConsumerSession {
+}
+
+message LibraryItemMessagesVisualization {
+}
+
+message LibraryItemProducer {
+}
+
+enum RequirementType {
+  REQUIREMENT_TYPE_UNSPECIFIED = 0;
+  REQUIREMENT_TYPE_APP_VERSION = 1;
+  REQUIREMENT_TYPE_NPM_PACKAGE = 2;
+}
+
+message NpmPackageRequirement {
+  string scope = 1;
+  string package_name = 2;
+  string version = 3;
+}
+
+message Requirement {
+  string id = 1; // UUID
+  RequirementType type = 2;
+  oneof requirement {
+    NpmPackageRequirement npm_package = 3;
+    string app_version = 4;
+  }
+}
+
+message LibraryItem {
+  string id = 1; // UUID
+  string name = 2;
+  string description = 3;
+  string topic_pattern = 10; // RexEx
+  repeated Requirement requirements = 4;
+  oneof library_item {
+    LibraryItemMessageFilter message_filter = 5;
+    LibraryItemConsumerSession consumer_session = 6;
+    LibraryItemMessagesVisualization messages_visualization = 7;
+    LibraryItemProducer producer = 8;
+  }
+}
+
+message CreateLibraryItemRequest {
+  LibraryItem library_item = 1;
+}
+
+message CreateLibraryItemResponse {
+  google.rpc.Status status = 1;
+  string id = 2;
+}
+
+message ListLibraryItemsRequest {
+  string collection_id = 1;
+}
+message ListLibraryItemsResponse {
+  google.rpc.Status status = 1;
+  repeated LibraryItem library_items = 2;
+}
+
+message UpdateLibraryItemRequest {
+  LibraryItem library_item = 1;
+}
+message UpdateLibraryItemResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteLibraryItemRequest {
+  string id = 1;
+  bool is_force = 2;
+}
+message DeleteLibraryItemResponse {
+  google.rpc.Status status = 1;
+}
+
+service LibraryService {
+  rpc CreateCollection(CreateCollectionRequest) returns (CreateCollectionResponse);
+  rpc ListCollections(ListCollectionsRequest) returns (ListCollectionsResponse);
+  rpc UpdateCollection(UpdateCollectionRequest) returns (UpdateCollectionResponse);
+  rpc DeleteCollection(DeleteCollectionRequest) returns (DeleteCollectionResponse);
+
+  rpc CreateLibraryItem(CreateLibraryItemRequest) returns (CreateLibraryItemResponse);
+  rpc ListLibraryItems(ListLibraryItemsRequest) returns (ListLibraryItemsResponse);
+  rpc UpdateLibraryItem(UpdateLibraryItemRequest) returns (UpdateLibraryItemResponse);
+  rpc DeleteLibraryItem(DeleteLibraryItemRequest) returns (DeleteLibraryItemResponse);
+}
