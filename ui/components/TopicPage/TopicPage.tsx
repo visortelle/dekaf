@@ -61,7 +61,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
     }
   ]
 
-  // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.10.2)
+  // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.10.3)
   if (props.topicType === 'persistent') {
     buttons = buttons.concat([
       {

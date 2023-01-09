@@ -2,12 +2,12 @@ import { partition } from "lodash";
 import { MessageDescriptor } from "./types";
 
 export type SortKey =
+  | "index"
   | "publishTime"
   | "key"
   | "topic"
   | "producerName"
   | "value"
-  | "jsonValue"
   | "schemaVersion"
   | "size"
   | "properties"
@@ -17,7 +17,7 @@ export type SortKey =
   | "sequenceId"
   | "orderingKey"
   | "redeliveryCount"
-  | "aggregate";
+  | "accumulator";
 
 export type Sort = { key: SortKey; direction: "asc" | "desc" };
 
@@ -35,6 +35,11 @@ export const sortMessages = (
     let result = defs.sort(sortFn);
     result = sort.direction === "asc" ? result : result.reverse();
     return result.concat(undefs);
+  }
+
+  if (sort.key === "index") {
+    const sortFn: SortFn = (a, b) => a.index - b.index;
+    return s(messages, [], sortFn);
   }
 
   if (sort.key === "publishTime") {
@@ -67,9 +72,9 @@ export const sortMessages = (
     return s(messages, [], sortFn);
   }
 
-  if (sort.key === "jsonValue") {
+  if (sort.key === "value") {
     const sortFn: SortFn = (a, b) =>
-      (a.jsonValue || "").localeCompare(b.jsonValue || "", "en", {
+      (a.value || "").localeCompare(b.value || "", "en", {
         numeric: true,
       });
     return s(messages, [], sortFn);
@@ -110,7 +115,8 @@ export const sortMessages = (
       messages,
       (m) => m.brokerPublishTime !== undefined
     );
-    const sortFn: SortFn = (a, b) => (a.brokerPublishTime || 0) - (b.brokerPublishTime || 0);
+    const sortFn: SortFn = (a, b) =>
+      (a.brokerPublishTime || 0) - (b.brokerPublishTime || 0);
     return s(defs, undefs, sortFn);
   }
 
@@ -125,10 +131,10 @@ export const sortMessages = (
     return s(messages, [], sortFn);
   }
 
-  if (sort.key === "aggregate") {
+  if (sort.key === "accumulator") {
     const sortFn: SortFn = (a, b) => {
-      const aStr = JSON.stringify(a.properties);
-      const bStr = JSON.stringify(b.properties);
+      const aStr = JSON.stringify(a.accum);
+      const bStr = JSON.stringify(b.accum);
       return aStr.localeCompare(bStr, "en", { numeric: true });
     };
 

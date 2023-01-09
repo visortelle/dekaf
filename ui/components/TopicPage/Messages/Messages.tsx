@@ -49,6 +49,7 @@ import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import ReactTooltip from 'react-tooltip';
+import { remToPx } from '../../ui/rem-to-px';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 
@@ -65,7 +66,7 @@ type View = 'messages' | 'configuration';
 type MessagesPerSecond = { prev: number, now: number };
 
 const displayMessagesLimit = 10000;
-const displayMessagesRunningLimit = 250; // too many items leads to table blinking.
+const displayMessagesRealTimeLimit = 250; // too many items leads to table blinking.
 
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
@@ -130,6 +131,8 @@ const Session: React.FC<SessionProps> = (props) => {
       const newMessages = messages
         .concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)))
         .slice(-displayMessagesLimit);
+
+      newMessages.forEach((message, i) => message.index = (i + 1));
 
       messagesBuffer.current = [];
       scrollToBottom();
@@ -391,11 +394,11 @@ const Session: React.FC<SessionProps> = (props) => {
   useEffect(() => {
     if (sessionState === 'pausing' && messagesLoadedPerSecond.now === 0) {
       setSessionState('paused');
-      scrollToBottom();
+      setTimeout(scrollToBottom, 250);
     }
   }, [sessionState, messagesLoadedPerSecond]);
 
-  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={sessionState !== 'running'} />, [sessionState]);
+  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isSessionPaused={sessionState !== 'running'} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
       setSessionState('pausing');
@@ -432,7 +435,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const currentView: View = sessionState === 'new' ? 'configuration' : 'messages';
   const sortedMessages = useMemo(() => {
-    const msgs = sessionState === 'running' ? messages.slice(messages.length - displayMessagesRunningLimit) : messages;
+    const msgs = sessionState === 'running' ? messages.slice(messages.length - displayMessagesRealTimeLimit) : messages;
     return sortMessages(msgs, sort);
   }, [messages, sort, sessionState]);
 
@@ -451,7 +454,7 @@ const Session: React.FC<SessionProps> = (props) => {
       />
 
       {currentView === 'messages' && messages.length === 0 && (
-        <div className={s.NoMessages}>
+        <div className={s.NoDataToShow}>
           {sessionState === 'initializing' && 'Initializing session.'}
           {sessionState === 'awaiting-initial-cursor-positions' && 'Awaiting for initial cursor positions.'}
           {sessionState === 'running' && 'Awaiting for new messages...'}
@@ -476,14 +479,14 @@ const Session: React.FC<SessionProps> = (props) => {
             data={sortedMessages}
             totalCount={sortedMessages.length}
             itemContent={itemContent}
-            increaseViewportBy={{ top: 500, bottom: 500 }}
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
-                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
-                <Th title="" style={{ position: 'sticky', left: '290rem', zIndex: 10 }} />
+                <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
+                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} />
+                <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} />
                 <Th title="Key" sortKey="key" />
-                <Th title="Value as JSON" sortKey="jsonValue" />
+                <Th title="Value" sortKey="value" />
                 <Th title="Topic" sortKey="topic" />
                 <Th title="Producer" sortKey="producerName" />
                 <Th title="Schema version" sortKey="schemaVersion" />
@@ -495,7 +498,7 @@ const Session: React.FC<SessionProps> = (props) => {
                 <Th title="Sequence Id" sortKey="sequenceId" />
                 <Th title="Ordering key" />
                 <Th title="Redelivery count" sortKey="redeliveryCount" />
-                <Th title="Aggregate" sortKey="aggregate" />
+                <Th title="Accumulator" sortKey="accumulator" />
               </tr>
             )}
           />
@@ -520,6 +523,7 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionSubscriptionName={subscriptionName}
         topicsInternalStats={topicsInternalStats}
         messages={messages}
+        consumerName={consumerName}
       />
     </div>
   );

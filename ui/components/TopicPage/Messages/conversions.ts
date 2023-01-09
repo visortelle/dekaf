@@ -7,9 +7,10 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
   );
 
   return {
+    index: -1, // This value will be set in another place.
     messageId: message.getMessageId()?.getValue_asU8() ?? null,
-    value: message.getValue()?.getValue_asU8() ?? null,
-    jsonValue: message.getJsonValue()?.getValue() ?? null,
+    bytes: message.getBytes()?.getValue_asU8() ?? null,
+    value: message.getValue()?.getValue() ?? null,
     brokerPublishTime: message.getBrokerPublishTime()?.getValue() ?? null,
     eventTime: message.getEventTime()?.getValue() ?? null,
     isReplicated: message.getIsReplicated()?.getValue() ?? null,
@@ -24,6 +25,7 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
     sequenceId: message.getSequenceId()?.getValue() ?? null,
     size: message.getSize()?.getValue() ?? null,
     topic: message.getTopic()?.getValue() ?? null,
-    jsonAggregate: message.getJsonAggregate()?.getValue() ?? null,
+    accum: message.getAccumulator()?.getValue() ?? null,
+    debugStdout: message.getDebugStdout()?.getValue() ?? null,
   };
 }

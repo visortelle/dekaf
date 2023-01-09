@@ -27,14 +27,11 @@ const Visualization: React.FC<VisualizationProps> = (props) => {
 
   return (
     <div className={s.Visualization}>
-      <div>
-        <h2>Visualization</h2>
-      </div>
-
       {props.isVisible && (
         <Chart
           type='bar'
           messages={messages}
+          sessionState={props.sessionState}
         />
       )}
     </div>

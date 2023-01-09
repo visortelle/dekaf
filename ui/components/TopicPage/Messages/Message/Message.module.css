@@ -11,3 +11,23 @@
 .ShowMoreButton {
   display: none;
 }
+
+/* Fields */
+.IndexField {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.PublishTimeField {
+  position: sticky;
+  left: 60rem;
+  z-index: 1;
+}
+
+.ViewMessageDetailsField {
+  position: sticky;
+  left: 285rem;
+  z-index: 1;
+}
+

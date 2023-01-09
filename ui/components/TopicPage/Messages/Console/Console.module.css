@@ -1,15 +1,20 @@
 .Console {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid #ddd;
-  height: 480rem;
   background-color: #fff;
   overflow: auto;
+  margin-top: auto;
+}
+
+.VisibleConsole {
+  border-top: 1px solid #ddd;
+  height: 480rem;
 }
 
 .Tabs {
   display: flex;
   background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
 }
 
 .Tab {
@@ -18,13 +23,15 @@
   background-color: #f5f5f5;
 }
 
-.Tab:hover {
+.Tab:hover:not(.ActiveTab) {
   opacity: 0.5;
   cursor: pointer;
 }
 
 .ActiveTab {
   background-color: #fff;
+  border-bottom: 1px solid #fff;
+  margin-bottom: -1px;
 }
 
 .SubscriptionsCursors {

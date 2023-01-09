@@ -3,23 +3,7 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    MessageFilterChain,
-    PauseRequest,
-    PauseResponse,
-    ResumeRequest,
-    ResumeResponse,
-    SeekRequest,
-    SeekResponse,
-    SkipMessagesRequest,
-    SkipMessagesResponse,
-    TopicsSelector
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
@@ -33,10 +17,10 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
-import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilter as MessageFilterPb
 import org.apache.pulsar.client.api.{Message, MessageId}
 import consumer.MessageFilter
 
+import java.io.ByteArrayOutputStream
 import java.util.UUID
 import java.time.Instant
 
@@ -85,15 +69,16 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 handler.onNext = (msg: Message[Array[Byte]]) =>
                     logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId}")
 
-                    processedMessagesCount =
-                        processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
+                    processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-                    val (message, jsonMessage, jsonValue) = serializeMessage(schemasByTopic, msg)
+                    val (messagePb, jsonMessage, jsonValue) = serializeMessage(schemasByTopic, msg)
 
-                    val (filterResult, jsonAggregate) =
+                    val (filterResult, jsonAccumulator) =
                         getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
-                    
-                    val messageToSend = message.withJsonAggregate(jsonAggregate)
+
+                    val messageToSend = messagePb
+                        .withAccumulator(jsonAccumulator)
+                        .withDebugStdout(messageFilter.getStdout())
 
                     val messages = filterResult match
                         case Right(true) => Seq(messageToSend)
@@ -146,7 +131,10 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandler.onNext = _ => ()
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
-        messageFilters = messageFilters + (consumerName -> MessageFilter())
+
+        messageFilters = messageFilters + (consumerName -> MessageFilter(
+          MessageFilterConfig(stdout = new ByteArrayOutputStream())
+        ))
 
         val topicsToConsume = request.topicsSelector match
             case Some(ts) =>
@@ -157,9 +145,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
 
-        getSchemasByTopic(topicsToConsume).foreach((topicName, schemasByVersion) =>
-            schemasByTopic = schemasByTopic + (topicName -> schemasByVersion)
-        )
+        getSchemasByTopic(topicsToConsume).foreach((topicName, schemasByVersion) => schemasByTopic = schemasByTopic + (topicName -> schemasByVersion))
 
         topics = topics + (consumerName -> topicsToConsume)
 
@@ -238,3 +224,21 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     override def skipMessages(request: SkipMessagesRequest): Future[SkipMessagesResponse] =
         val status: Status = Status(code = Code.OK.index)
         Future.successful(SkipMessagesResponse(status = Some(status)))
+
+    override def runCode(request: RunCodeRequest): Future[RunCodeResponse] =
+        val messageFilter = messageFilters.get(request.consumerName) match
+            case Some(f) => f
+            case _ =>
+                val status: Status = Status(
+                    code = Code.FAILED_PRECONDITION.index,
+                    message = s"Message filter context isn't found for consumer: ${request.consumerName}"
+                )
+                return Future.successful(RunCodeResponse(status = Some(status)))
+
+        val result = messageFilter.runCode(request.code)
+
+        val status: Status = Status(code = Code.OK.index)
+        val response = RunCodeResponse(status = Some(status), result = Some(result))
+        Future.successful(response)
+
+

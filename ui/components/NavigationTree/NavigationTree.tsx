@@ -398,7 +398,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
                   <span>No items found. <br />Try another filter query.</span>
                 </div>
               }}
-              overscan={{ main: window.innerHeight / 2, reverse: window.innerHeight / 2 }}
+              increaseViewportBy={{ top: window.innerHeight / 2, bottom: window.innerHeight / 2 }}
               totalCount={plainTree.length}
               itemsRendered={(items) => {
                 const isShouldUpdate = scrollToPath.state === 'finished' && !isEqual(itemsRendered, items)

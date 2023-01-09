@@ -3,6 +3,8 @@ import React, { useEffect } from 'react';
 import CodeEditor, { AutoCompleteConfig } from '../../../../ui/CodeEditor/CodeEditor';
 
 import s from './Filter.module.css'
+import * as t from './types';
+import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 
 export type FilterProps = {
   value: string;
@@ -10,8 +12,8 @@ export type FilterProps = {
   autoCompleteConfig?: AutoCompleteConfig;
 };
 
-export const defaultJsValue = `(val, msg, agg) => {
-  return true;
+const defaultJsValue = `({ value, accum }) => {
+    return true
 }`;
 
 const Filter: React.FC<FilterProps> = (props) => {

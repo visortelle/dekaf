@@ -13,6 +13,9 @@ const outdir = path.resolve(
   "dist"
 );
 
+const isDevelopment = process.argv.includes("--dev");
+const isWatch = process.argv.includes("--watch");
+
 require("esbuild")
   .build({
     target: ["chrome100"],
@@ -21,9 +24,9 @@ require("esbuild")
     loader: {
       ".svg": "text",
     },
-    minify: true,
+    minify: !isDevelopment,
     globalName: "pulsarUiEntrypoint",
-    sourcemap: "external",
+    sourcemap: isDevelopment ? "both" : false,
     outdir,
     plugins: [
       cssModulesPlugin({
@@ -31,8 +34,10 @@ require("esbuild")
         v2: true,
       }),
     ],
-    define: { "process.env.NODE_ENV": '"production"' },
-    watch: process.argv.includes("--watch"),
+    define: {
+      "process.env.NODE_ENV": isDevelopment ? '"development"' : '"production"',
+    },
+    watch: isWatch,
     logLevel: "info",
   })
   .catch(() => process.exit(1));
