@@ -6,7 +6,7 @@ import { DefaultProvider } from '../../../../../app/contexts/Modals/Modals';
 import Button from '../../../../../ui/Button/Button';
 import { H3 } from '../../../../../ui/H/H';
 import Input from '../../../../../ui/Input/Input';
-import WithUpdateConfirmation from '../../../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import ActionButton from '../../../../../ui/ActionButton/ActionButton';
 import Filter, { defaultJsValue } from '../Filter';
 import * as t from '../types';
 
@@ -16,7 +16,6 @@ import duplicateIcon from '../icons/duplicate.svg';
 import editIcon from '../icons/edit.svg';
 
 import s from './FiltersEditor.module.css';
-import ActionButton from '../../../../../ui/ActionButton/ActionButton';
 
 type Props = {
   entry?: string,

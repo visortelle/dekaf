@@ -9,7 +9,6 @@ export type Dependencies = {
   label: string,
   documentation: string,
   insertText: string,
-  // kind: monaco.languages.CompletionItemKind,
 }
 
 export type AutoCompleteConfig = {

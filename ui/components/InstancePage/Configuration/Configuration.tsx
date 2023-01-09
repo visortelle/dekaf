@@ -18,9 +18,9 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Input from '../../ui/Input/Input';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Button from '../../ui/Button/Button';
+import ActionButton from '../../ui/ActionButton/ActionButton';
 
 import s from './Configuration.module.css';
-import ActionButton from '../../ui/ActionButton/ActionButton';
 
 const Configuration = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
