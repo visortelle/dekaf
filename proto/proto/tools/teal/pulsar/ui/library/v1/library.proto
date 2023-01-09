@@ -4,6 +4,7 @@ package tools.teal.pulsar.ui.library.v1;
 
 import "google/rpc/status.proto";
 
+// Users can organize library items into collections.
 message Collection {
   string id = 1; // UUID
   string name = 2;
