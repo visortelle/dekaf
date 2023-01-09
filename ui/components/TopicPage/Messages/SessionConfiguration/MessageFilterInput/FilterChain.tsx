@@ -7,7 +7,6 @@ import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from './types';
 import Filter from './Filter';
-import dependencies from './dependecies';
 import FiltersEditor from './FiltersEditor/FiltersEditor';
 import * as Modals from '../../../../app/contexts/Modals/Modals';
 import deleteIcon from './icons/delete.svg';
@@ -46,8 +45,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
             <div className={s.EntryFilter}>
               <Filter
                 value={entry.filter.value || ''}
-                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: {filter: { value: f }}  } })}
-                autoCompleteConfig={index === 0 ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
+                  onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: {filter: { value: f }}  } })}
+                  autoCompleteConfig={index === 0}
               />
             </div>
             <div className={s.EntryButtons}>

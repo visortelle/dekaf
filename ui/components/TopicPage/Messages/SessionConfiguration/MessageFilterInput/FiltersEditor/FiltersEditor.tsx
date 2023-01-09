@@ -199,6 +199,7 @@ const FiltersEditor = (props: Props) => {
             </H3>
             {Object.keys(listFilters).map(collection => (
               <span
+                key={collection}
                 onClick={() => {setActiveCollection(collection), setActiveFilter(undefined)}}
                 className={`${s.Inactive} ${activeCollection === collection && s.Active}`}
               >
@@ -280,6 +281,7 @@ const FiltersEditor = (props: Props) => {
             {activeCollection && listFilters[activeCollection].filters &&
               Object.keys(listFilters[activeCollection].filters).map(filter => (
                 <span
+                  key={filter}
                   onClick={() => {
                     setActiveFilter(filter);
                   }}

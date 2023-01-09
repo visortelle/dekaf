@@ -1,25 +1,25 @@
 import React, { useEffect } from 'react';
 
-import CodeEditor, { AutoCompleteConfig } from '../../../../ui/CodeEditor/CodeEditor';
-import * as t from './types';
+import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
+import dependencies from './dependecies';
 
 import s from './Filter.module.css'
 
 export type FilterProps = {
   value: string;
   onChange: (value: string) => void;
-  autoCompleteConfig?: AutoCompleteConfig;
+  autoCompleteConfig?: boolean;
 };
 
 export const defaultJsValue = `({ value, accum }) => {
-    return true
+  return true
 }`;
 
 const Filter: React.FC<FilterProps> = (props) => {
 
   useEffect(() => {
     if (props.value) {
-      return
+      return;
     }
 
     props.onChange(defaultJsValue);
@@ -33,7 +33,7 @@ const Filter: React.FC<FilterProps> = (props) => {
           onChange={v => props.onChange(v || '')}
           height="180rem"
           language="javascript"
-          autoCompleteConfig={props.autoCompleteConfig}
+          autoCompleteConfig={props.autoCompleteConfig ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
         />
       </div>
     </div>
