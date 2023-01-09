@@ -16,7 +16,7 @@ type FilterTestResult = (Either[String, Boolean], JsonAggregate)
 val JsonAggregateVarName = "agg"
 
 class MessageFilter():
-    val context = Context.newBuilder("js").build
+    private val context = Context.newBuilder("js").build
 
     context.eval("js",s"globalThis.${JsonAggregateVarName} = {}") // Create empty fold-like accumulator variable.
 

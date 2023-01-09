@@ -20,8 +20,9 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   const i18n = I18n.useContext();
   const modals = Modals.useContext();
 
-  const topicPath = parseTopic(msg.topic);
-  const topicHref = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
+  const topicPath = msg.topic === null ? null : parseTopic(msg.topic);
+  const topicHref = topicPath === null ? null :
+    routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
 
   return (
     <>
@@ -33,7 +34,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
           onClick={() => modals.push({
             id: 'message-details',
             title: `Message details`,
-            content: <MessageDetails message={props.message} topicHref={topicHref} />,
+            content: <MessageDetails message={props.message} topicHref={topicHref || undefined} />,
             styleMode: 'no-content-padding'
           })}
           text="View"
@@ -47,7 +48,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <JsonValueField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
       <Td width='60ch'>
-        <TopicField isShowTooltips={props.isShowTooltips} message={props.message} topicHref={topicHref} />
+        <TopicField isShowTooltips={props.isShowTooltips} message={props.message} topicHref={topicHref || undefined} />
       </Td>
 
       <Td width='50ch'>

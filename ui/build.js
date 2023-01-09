@@ -1,7 +1,17 @@
-const path = require('path');
+const path = require("path");
 const cssModulesPlugin = require("esbuild-css-modules-plugin");
 
-const outdir = path.resolve(__dirname, '..', 'server', 'src', 'main', 'resources', 'ui', 'static', 'dist');
+const outdir = path.resolve(
+  __dirname,
+  "..",
+  "server",
+  "src",
+  "main",
+  "resources",
+  "ui",
+  "static",
+  "dist"
+);
 
 require("esbuild")
   .build({
@@ -13,15 +23,16 @@ require("esbuild")
     },
     minify: true,
     globalName: "pulsarUiEntrypoint",
-    sourcemap: 'external',
+    sourcemap: "external",
     outdir,
     plugins: [
       cssModulesPlugin({
         usePascalCase: true,
-        v2: true
+        v2: true,
       }),
     ],
+    define: { "process.env.NODE_ENV": '"production"' },
     watch: process.argv.includes("--watch"),
-    logLevel: 'info'
+    logLevel: "info",
   })
   .catch(() => process.exit(1));

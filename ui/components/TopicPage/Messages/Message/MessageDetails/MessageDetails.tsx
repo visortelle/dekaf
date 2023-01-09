@@ -7,7 +7,7 @@ import ReactTooltip from 'react-tooltip';
 
 export type MessageDetailsProps = {
   message: MessageDescriptor;
-  topicHref: string;
+  topicHref?: string;
 };
 
 const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
@@ -36,7 +36,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
       <div className={s.RightColumn}>
         <Field
           title='Value as JSON'
-          value={<JsonView json={props.message.jsonValue} width="480rem" height="480rem" />}
+          value={<JsonView json={props.message.jsonValue === null ? undefined : props.message.jsonValue} width="480rem" height="480rem" />}
         />
       </div>
     </div>
