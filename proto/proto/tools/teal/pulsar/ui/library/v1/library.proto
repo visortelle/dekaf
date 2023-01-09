@@ -82,11 +82,19 @@ message Requirement {
   }
 }
 
+message AccessConfig {
+  repeated string user_read_roles = 1;
+  repeated string user_write_roles = 2;
+  repeated string topic_patterns = 3; // Regular expression that defines the topics this library item applies to.
+}
+
 message LibraryItem {
   string id = 1; // UUID
   string name = 2;
   string description = 3;
-  string topic_pattern = 10; // RexEx
+  string schema_version = 11; // To support breaking changes. Always "v1-beta for now."
+  string version = 12; // Semver version.
+  AccessConfig access_config = 15;
   repeated Requirement requirements = 4;
   oneof library_item {
     LibraryItemMessageFilter message_filter = 5;
