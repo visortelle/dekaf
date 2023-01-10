@@ -17,6 +17,7 @@ import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
 import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
 import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats.BrokerStatsServiceGrpc
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.TopicpoliciesServiceGrpc
+import com.tools.teal.pulsar.ui.library.v1.library.LibraryServiceGrpc
 import _root_.config.readConfig
 import _root_.consumer.ConsumerServiceImpl
 import _root_.topic.TopicServiceImpl
@@ -30,7 +31,6 @@ import _root_.brokers.BrokersServiceImpl
 import _root_.brokerstats.BrokerStatsServiceImpl
 import _root_.topicpolicies.TopicpoliciesServiceImpl
 import _root_.library.LibraryServiceImpl
-import com.tools.teal.pulsar.ui.library.v1.library.LibraryServiceGrpc
 
 object GrpcServer extends ZIOAppDefault:
     private def createGrpcServer(port: Int) = ServerBuilder

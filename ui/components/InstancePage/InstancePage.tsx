@@ -8,7 +8,7 @@ import Tenants from './Tenants/Tenants';
 import CreateTenantPage from './CreateTenantPage/CreateTenantPage';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import ResourceGroups from './ResourceGroups/ResourceGroups';
-import KeyValueEditor from '../ui/KeyValueEditor/KeyValueEditor';
+import TestComponent from './TestComponent/TestComponent';
 
 export type InstancePageView =
   { type: 'overview' } |
@@ -80,6 +80,8 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
       {props.view.type === 'resource-groups' && <ResourceGroups view={{ type: 'show-all-groups' }} />}
       {props.view.type === 'create-resource-group' && <ResourceGroups view={{ type: 'create' }} />}
       {props.view.type === 'edit-resource-group' && <ResourceGroups view={{ type: 'edit', groupName: props.view.groupName }} />}
+    
+      <TestComponent />
     </div>
   );
 }

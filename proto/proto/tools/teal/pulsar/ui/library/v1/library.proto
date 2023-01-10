@@ -108,7 +108,6 @@ message LibraryItem {
 message CreateLibraryItemRequest {
   LibraryItem library_item = 1;
 }
-
 message CreateLibraryItemResponse {
   google.rpc.Status status = 1;
   string id = 2;
