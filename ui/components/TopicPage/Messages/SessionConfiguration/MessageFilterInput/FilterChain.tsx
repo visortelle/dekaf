@@ -1,14 +1,19 @@
-import React, { useEffect } from 'react';
-import s from './FilterChain.module.css'
-import * as t from './types';
-import Filter from './Filter';
-import Button from '../../../../ui/Button/Button';
-import SmallButton from '../../../../ui/SmallButton/SmallButton';
-import deleteIcon from './icons/delete.svg';
-import enableIcon from './icons/enable.svg';
+import React from 'react';
 import { v4 as uuid } from 'uuid';
 import { cloneDeep } from 'lodash';
+
+import Button from '../../../../ui/Button/Button';
+import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
+import * as t from './types';
+import Filter from './Filter';
+import FiltersEditor from './FiltersEditor/FiltersEditor';
+import * as Modals from '../../../../app/contexts/Modals/Modals';
+import deleteIcon from './icons/delete.svg';
+import enableIcon from './icons/enable.svg';
+import saveIcon from './icons/save.svg';
+
+import s from './FilterChain.module.css';
 
 export type FilterChainProps = {
   value: t.Chain;
@@ -16,8 +21,12 @@ export type FilterChainProps = {
 };
 
 const FilterChain: React.FC<FilterChainProps> = (props) => {
+
+  const modals = Modals.useContext();
+
   return (
     <div className={s.FilterChain}>
+
       <div style={{ marginBottom: '12rem' }}>
         <Select<'all' | 'any'>
           list={[
@@ -28,14 +37,16 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           onChange={v => props.onChange({ ...props.value, mode: v })}
         />
       </div>
-      {Object.entries(props.value.filters).map(([entryId, entry], i) => {
+
+      {props.value.filters && Object.entries(props.value.filters).map(([entryId, entry], index) => {
         const isDisabled = props.value.disabledFilters.includes(entryId);
         return (
           <div key={entryId} className={s.Entry}>
             <div className={s.EntryFilter}>
               <Filter
                 value={entry.filter}
-                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { ...entry, filter: f } } })}
+                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: {filter: f}  } })}
+                autoCompleteConfig={index === 0}
               />
             </div>
             <div className={s.EntryButtons}>
@@ -50,6 +61,25 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                   }}
                   title={isDisabled ? 'Enable filter' : 'Disable filter'}
                   type={isDisabled ? 'regular' : 'primary'}
+                />
+              </div>
+
+              <div className={s.EntryButton}>
+                <Button
+                  svgIcon={saveIcon}
+                  onClick={() => modals.push({
+                    id: 'edit-filter',
+                    title: `Message filter browser`,
+                    content:
+                      <FiltersEditor
+                        filters={props.value.filters}
+                        onChange={(f) => props.onChange({ ...props.value, filters: f })}
+                        entry={entry.filter.value }
+                      />,
+                    styleMode: 'no-content-padding'
+                  })}
+                  title="save filter"
+                  type='primary'
                 />
               </div>
 
@@ -69,15 +99,32 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           </div>
         );
       })}
-      <SmallButton
-        onClick={() => {
-          const newFilter: t.Filter = { value: undefined };
-          const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [uuid()]: { filter: newFilter } } };
-          props.onChange(newChain);
-        }}
-        text="Add filter"
-        type='primary'
-      />
+      <div className={`${s.Buttons}`}>
+        <SmallButton
+          onClick={() => {
+            const newFilter: t.Filter = { value: undefined };
+            const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [uuid()]: { filter: newFilter } } };
+            props.onChange(newChain);
+          }}
+          text="Add filter"
+          type='primary'
+        />
+        <SmallButton
+          onClick={() => modals.push({
+            id: 'filter-editor',
+            title: `Message filter browser`,
+            content:
+              <FiltersEditor
+                filters={props.value.filters}
+                onChange={(f) => (props.onChange({ ...props.value, filters: f }))}
+              />,
+            styleMode: 'no-content-padding'
+          })}
+
+          text="Choose filter"
+          type='primary'
+        />
+      </div>
     </div>
   );
 }
