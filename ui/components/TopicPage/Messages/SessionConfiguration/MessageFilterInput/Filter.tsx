@@ -28,8 +28,7 @@ const Filter: React.FC<FilterProps> = (props) => {
           onChange={v => props.onChange({ ...props.value, value: v || '' })}
           height="180rem"
           language="javascript"
-
-          //TODO REMOVE AUTOCOMPLETE FROM HERE WHEN IT IS POSSIBLE TO TRANSFER IN ANOTHER WAY
+          // TODO remove the autocomplete configuration, when it will be possible to select\configure it directly in the codeEditor.
           autoCompleteConfig={props.autoCompleteConfig ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
         />
       </div>
