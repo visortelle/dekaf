@@ -1,12 +1,10 @@
 import React from 'react';
 
-import { EditorFilter } from './FiltersEditor/FiltersEditor';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import dependencies from './dependecies';
 import * as t from './types';
 
 import s from './Filter.module.css'
-
 
 export type FilterProps = {
   value: t.Filter;
