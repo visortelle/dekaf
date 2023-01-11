@@ -27,7 +27,7 @@ export type ProducerPreset = {
 type ValueType = 'bytes-hex' | 'json';
 
 export type ProducerProps = {
-  preset: ProducerPreset
+  preset: ProducerPreset;
 };
 
 const Producer: React.FC<ProducerProps> = (props) => {

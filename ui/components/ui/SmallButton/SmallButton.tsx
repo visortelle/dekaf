@@ -1,5 +1,7 @@
 import React from 'react';
+
 import SvgIcon from '../SvgIcon/SvgIcon';
+
 import s from './SmallButton.module.css';
 
 export type SmallButtonProps = {

@@ -1,15 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 
 import * as Modals from '../app/contexts/Modals/Modals';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
-import s from './TopicPage.module.css'
 import Toolbar, { ToolbarButtonProps } from '../ui/Toolbar/Toolbar';
 import Session from './Messages/Messages';
 import Schema from './Schema/Schema';
 import Policies from './Policies/Policies';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
 import { routes } from '../routes';
-import { useNavigate } from 'react-router';
+
+import s from './TopicPage.module.css'
 
 export type TopicPageView = 'messages' | 'overview' | 'producers' | 'consumers' | 'schema' | 'policies';
 export type TopicPageProps = {

@@ -40,7 +40,7 @@ const JsonView: React.FC<JsonViewProps> = (props) => {
           JSON.stringify(JSON.parse(props.json), null, 2) :
           JSON.stringify(props.value, null, 2)
         }
-        language={'json'}
+        language='json'
         height={props.height}
         width={props.width}
         options={{ readOnly: Boolean(props.readonly) }}
