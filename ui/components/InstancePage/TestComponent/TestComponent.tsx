@@ -22,28 +22,32 @@ const TestComponent = () => {
   const { data: availableDynamicConfigKeys, error: availableDynamicConfigKeysError } = useSWR(
     swrKeys.pulsar.brokers.availableDynamicConfigKeys._(),
     async () => {
-      const collection = new Collection();
-      collection.setName('user name');
-      collection.setDescription('very complicated description');
-      collection.setCollectionItemIdsList(['first', 'item', 'second', 'item'])
+      const createCollection = new Collection();
+      createCollection.setName('user name');
+      createCollection.setDescription('very complicated description');
+      createCollection.setCollectionItemIdsList(['first', 'item', 'second', 'item']);
 
       const req = new CreateCollectionRequest();
-      req.setCollection(collection)
+      req.setCollection(createCollection);
+      const res = await libraryServiceClient.createCollection(req, {}).catch(err => notifyError(`Error: ${err}`));
 
       const req2 = new ListCollectionsRequest();
+      const res2 = await libraryServiceClient.listCollections(req2, {});
+      console.log(res2.getCollectionsList());
+
+      const updateCollection = new Collection();
+      updateCollection.setId('76ca6564-24c7-456f-b619-eac59519a25b');
+      updateCollection.setName('user name');
+      updateCollection.setDescription('very complicated description');
+      updateCollection.setCollectionItemIdsList(['first', 'item', 'second', 'item']);
       const req3 = new UpdateCollectionRequest();
+      req3.setCollection(updateCollection);
+      const res3 = await libraryServiceClient.updateCollection(req3, {}).catch(err => notifyError(`Error: ${err}`));
+
       const req4 = new DeleteCollectionRequest();
-      const res = await libraryServiceClient.createCollection(req, {}).catch(err => notifyError(`Error: ${err}`));
-      const res2 = await libraryServiceClient.listCollections(req2, {}).catch(err => notifyError(`Error: ${err}`));
+      req4.setId('id')
+      req4.setIsForce(true)
       const res4 = await libraryServiceClient.deleteCollection(req4, {}).catch(err => notifyError(`Error: ${err}`));
-      // if (res === undefined) {
-      //   return [];
-      // }
-      // if (res.getStatus()?.getCode() !== Code.OK) {
-      //   notifyError(`Unable to get available dynamic configuration keys: ${res.getStatus()?.getMessage()}`);
-      //   return [];
-      // }
-      // return res.getNamesList();
     }
   );
   
