@@ -135,8 +135,11 @@ const FiltersEditor = (props: Props) => {
       Object.keys(collections).map(async (collection) => {
         const req = new pb.ListLibraryItemsRequest();
         req.setCollectionId(collection)
-        const res = await libraryServiceClient.listCollections(req, {});
-        console.log(res.getCollectionsList())
+        req.setItemsType(libraryItemToPb('message_filter'))
+        const res = await libraryServiceClient.listLibraryItems(req, {});
+        res.getLibraryItemsList().map(item => {
+          console.log(item)
+        })
       })
 
       setListFilters(collections);
@@ -330,7 +333,7 @@ const FiltersEditor = (props: Props) => {
     const res = await libraryServiceClient.createLibraryItem(req, {});
 
     if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to delete collection: ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to create filter: ${res.getStatus()?.getMessage()}`);
     }
 
     await mutate(swrKey);

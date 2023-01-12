@@ -145,9 +145,9 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
                 Future.successful(DeleteCollectionResponse(status = Some(status)))
         }
 
-//    enum LibraryItemType {
-//        case message_filter, consumer_session_config, messages_visualization_config, producer_config, unspecified
-//    }
+    enum LibraryItemType {
+        case message_filter, consumer_session_config, messages_visualization_config, producer_config, unspecified
+    }
 
     enum RequirementType {
         case app_version, npm_package, unspecified
@@ -159,14 +159,14 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
 //        requirement: AppVersion | NpmPackage,
         requirement: Requirement.Requirement
      )
-    case class LibraryItemType(
+    case class LibraryItemObject(
       id: String,
       name: String,
       description: String,
       schemaVersion: String,
       version: String,
       accessConfig: AccessConfig,
-      requirements: Array[RequirementObject],
+      requirements: Array[Requirement],
       libraryItem:  LibraryItem.LibraryItem,
     )
     override def createLibraryItem(request: CreateLibraryItemRequest): Future[CreateLibraryItemResponse] =
@@ -176,17 +176,15 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
                     val status = Status(code = Code.FAILED_PRECONDITION.index, message = "err")
                     Future.successful(CreateCollectionResponse(status = Some(status)))
                 case Some(v) =>
-
-//                    def listLibraryItemFromPb(libraryPb: pb.LibraryItem.LibraryItem): LibraryItemType = libraryPb match
-//                        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER =>
-//                            LibraryItemType.message_filter
-//                        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_CONFIG =>
-//                            LibraryItemType.producer_config
-//                        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION_CONFIG =>
-//                            LibraryItemType.messages_visualization_config
-//                        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG =>
-//                            LibraryItemType.consumer_session_config
-//                        case _ => LibraryItemType.unspecified
+                    var libraryItemType = "trash"
+                    if v.libraryItem.messageFilter != None then
+                        libraryItemType = "message_filter"
+                    else if v.libraryItem.producerConfig != None then
+                        libraryItemType = "producer_config"
+                    else if v.libraryItem.consumerSessionConfig != None then
+                        libraryItemType = "consumer_session_config"
+                    else if v.libraryItem.messagesVisualizationConfig != None then
+                        libraryItemType = "messages_visualization_config"
 
                     def requirementTypeFromPb(typePb: pb.RequirementType): RequirementType = typePb match
                         case pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION => RequirementType.app_version
@@ -204,13 +202,13 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
                         val libraryFolder = new File(s"${library}/libraryItems/")
                         libraryFolder.mkdir()
 
-                    val libraryItemsPath = Paths.get(s"${library}/libraryItems/${v.libraryItem}")
+                    val libraryItemsPath = Paths.get(s"${library}/libraryItems/${libraryItemType}")
                     if (!Files.isDirectory(libraryItemsPath))
-                        val libraryFolder = new File(s"${library}/libraryItems/${v.libraryItem}")
+                        val libraryFolder = new File(s"${library}/libraryItems/${libraryItemType}")
                         libraryFolder.mkdir()
 
                     val libraryItemId = UUID.randomUUID().toString
-                    val f = new File(s"${library}/libraryItems/${v.libraryItem}/${libraryItemId}.json")
+                    val f = new File(s"${library}/libraryItems/${libraryItemType}/${libraryItemId}.json")
 
                     if (!f.isFile)
                         request.libraryItem match
@@ -227,20 +225,22 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
                                     case Some(v) => v
                                     case None => pb.AccessConfig()
 
-                                val libraryItemObject = LibraryItemType(
+                                val libraryItemObject = LibraryItemObject(
                                     libraryItemId,
                                     v.name,
                                     v.description,
                                     v.schemaVersion,
                                     v.version,
                                     accessConfig,
-                                    requirements.toArray,
+//                                    v.accessConfig,
+//                                    requirements.toArray,
+                                    v.requirements.toArray,
                                     v.libraryItem,
                                 )
 
                                 val json: String = gson.toJson(libraryItemObject)
-                                val file = new FileWriter(s"${library}/libraryItems/${v.libraryItem}/${libraryItemId}.json", false)
-
+//                                val file = new FileWriter(s"${library}/libraryItems/${libraryItemType}/${libraryItemId}.json", false)
+                                val file = new FileWriter(s"./library/libraryItems/message_filter/c265535a-eeb9-4417-ad24-d09b12309033.json")
                                 file.write(json)
                                 file.close()
 
@@ -254,26 +254,7 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
 
     override def listLibraryItems(request: ListLibraryItemsRequest): Future[ListLibraryItemsResponse] =
         try {
-            val collectionObject = gson.fromJson(new FileReader(s"${library}/collections/${request.collectionId}.json"), classOf[CollectionType])
-
-            val libraryItemsList = collectionObject.collectionItemIds.map(collectionItem =>
-                val item = gson.fromJson(new FileReader(s"${library}/libraryItems/${request.itemsType}/${collectionItem}.json"), classOf[LibraryItem])
-                LibraryItem(
-                  item.id,
-                  item.name,
-                item.version,
-                item.description,
-                item.schemaVersion,
-                item.accessConfig,
-                item.requirements,
-                item.libraryItem,
-                )
-            ).toSeq
-
-//            val dir = Paths.get(s"${library}/libraryItems/")
-//            val stream = Files.newDirectoryStream(dir, "*.json").asScala
-
-//            def listLibraryItemFromPb(itemPb: pb.LibraryItem): LibraryItem = policyPb match
+//            def listLibraryItemFromPb(itemPb: pb.LibraryItem): LibraryItem = itemPb match
 //                case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION =>
 //                    RetentionPolicy.consumer_backlog_eviction
 //                case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD =>
@@ -281,6 +262,67 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
 //                case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION =>
 //                    RetentionPolicy.producer_exception
 //                case _ => RetentionPolicy.producer_request_hold
+            def listLibraryItemFromPb(libraryPb: pb.LibraryItemType): LibraryItemType = libraryPb match
+                case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER =>
+                    LibraryItemType.message_filter
+                case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_CONFIG =>
+                    LibraryItemType.producer_config
+                case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION_CONFIG =>
+                    LibraryItemType.messages_visualization_config
+                case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG =>
+                    LibraryItemType.consumer_session_config
+                case _ => LibraryItemType.unspecified
+
+            val collectionObject = gson.fromJson(new FileReader(s"${library}/collections/${request.collectionId}.json"), classOf[CollectionType])
+
+            println("I'm a live")
+            val libraryItemsList = collectionObject.collectionItemIds.toList.map(collectionItem =>
+                println(collectionItem)
+
+
+                val rootPath = Paths.get(s"${library}")
+                if (!Files.isDirectory(rootPath)) {
+                    println("where root?")
+                }
+
+                val rootLibraryItemsPath = Paths.get(s"${library}/libraryItems/")
+                if (!Files.isDirectory(rootLibraryItemsPath))
+                    println("where package after root?")
+
+                val libraryItemsPath = Paths.get(s"${library}/libraryItems/${listLibraryItemFromPb(request.itemsType)}")
+                if (!Files.isDirectory(libraryItemsPath))
+                    println("where type package?")
+
+                val libraryItemsPath2 = Paths.get(s"${library}/libraryItems/${listLibraryItemFromPb(request.itemsType)}/${collectionItem}.json")
+                if (!Files.isDirectory(libraryItemsPath2))
+                    println("where file?")
+                    println(s"${library}/libraryItems/${listLibraryItemFromPb(request.itemsType)}/${collectionItem}.json")
+                    println(s"./library/libraryItems/message_filter/${collectionItem}.json")
+                    println(s"${library}/libraryItems/${listLibraryItemFromPb(request.itemsType)}/${collectionItem}.json" == s"./library/libraryItems/message_filter/${collectionItem}.json")
+                    println(new File(".").getAbsolutePath)
+
+                val item = gson.fromJson(new FileReader(s"${library}/libraryItems/${listLibraryItemFromPb(request.itemsType)}/${collectionItem}.json"), classOf[LibraryItemObject])
+                println(item)
+                LibraryItem(
+                    item.id,
+                    item.name,
+                    item.version,
+                    item.description,
+                    item.schemaVersion,
+                    Option(item.accessConfig),
+                    item.requirements.toSeq,
+                    item.libraryItem,
+                )
+            )
+
+            println("I'm DEAD")
+            println(s"items:  ${libraryItemsList}")
+
+
+//            val dir = Paths.get(s"${library}/libraryItems/")
+//            val stream = Files.newDirectoryStream(dir, "*.json").asScala
+
+
 
 //            val libraryItemsList = stream.map(p => {
 //                val libraryItemsObject = gson.fromJson(new FileReader(p.toString), classOf[LibraryItem])
