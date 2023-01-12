@@ -6,17 +6,42 @@ import Select from '../../../../ui/Select/Select';
 import { MessageDescriptor, SessionState } from '../../types';
 import CsvConfigInput from './CsvConfigInput/CsvConfigInput';
 import s from './MessagesExporter.module.css'
-import { ExportConfig, Chunking, Format, CsvConfig } from './types';
+import { ExportConfig, Format, CsvConfig } from './types';
 import useLocalStorage from 'use-local-storage-state';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { localStorageKeys } from '../../../../local-storage-keys';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { ErrorBoundary } from 'react-error-boundary';
+import MessageFieldsConfig from './MessageFieldsConfig/MessageFieldsConfig';
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[],
   sessionState: SessionState,
   isVisible: boolean
+};
+
+const defaultFieldsConfig: MessageFieldsConfig = {
+  fields: [
+    { id: 'messageId', name: 'Message Id', isActive: true },
+    { id: 'eventTime', name: 'Event time', isActive: true },
+    { id: 'publishTime', name: 'Publish time', isActive: true },
+    { id: 'brokerPublishTime', name: 'Broker publish time', isActive: true },
+    { id: 'sequenceId', name: 'Sequence Id', isActive: true },
+    { id: 'producerName', name: 'Producer name', isActive: true },
+    { id: 'key', name: 'Key', isActive: true },
+    { id: 'orderingKey', name: 'Ordering key', isActive: true },
+    { id: 'topic', name: 'Topic', isActive: true },
+    { id: 'size', name: 'Size', isActive: true },
+    { id: 'redeliveryCount', name: 'Redelivery count', isActive: true },
+    { id: 'schemaVersion', name: 'Schema version', isActive: true },
+    { id: 'isReplicated', name: 'Is replicated', isActive: true },
+    { id: 'replicatedFrom', name: 'Replicated from', isActive: true },
+    { id: 'properties', name: 'Properties', isActive: true },
+    { id: 'bytes', name: 'Bytes', isActive: true },
+    { id: 'value', name: 'Value', isActive: true },
+    { id: 'accum', name: 'Accum', isActive: true },
+    { id: 'index', name: 'Index', isActive: true },
+  ]
 };
 
 const defaultCsvConfig: CsvConfig = {
@@ -31,10 +56,10 @@ const defaultCsvConfig: CsvConfig = {
 
 const defaultExportConfig: ExportConfig = {
   format: { type: 'json' },
-  chunking: { type: 'no-chunking' },
   data: [{ type: 'whole-message' }],
   dateFormat: 'iso',
   csvConfig: defaultCsvConfig,
+  fields: defaultFieldsConfig,
 };
 
 const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig, onConfigChange: (config: ExportConfig) => void }> = (props) => {
@@ -107,25 +132,17 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
         </div>
       </FormItem>
 
-      <FormItem>
-        <FormLabel content="Group by" help="Each group will be exported as a separate file." />
-        <Select<Chunking['type']>
-          list={[
-            { type: 'item', value: 'no-chunking', title: 'Don\'t group' },
-            { type: 'item', value: 'file-per-message', title: 'File per message' },
-            { type: 'item', value: 'by-message-key', title: 'Group by message key' },
-            { type: 'item', value: 'by-topic-and-partition', title: 'Group by topic' },
-            { type: 'item', value: 'by-producer-name', title: 'Group by producer name' },
-          ]}
-          onChange={(v) => props.onConfigChange({ ...props.config, chunking: { type: v } })}
-          value={props.config.chunking.type}
-        />
+      {(props.config.format.type === 'json' || props.config.format.type === 'csv') && (
+        <FormItem>
+        <FormLabel content="Message fields" />
+        <div className={s.MessageFieldsConfig}>
+          <MessageFieldsConfig
+            value={props.config.fields}
+            onChange={(v) => props.onConfigChange({ ...props.config, fields: v })}
+          />
+        </div>
       </FormItem>
-
-      <FormItem>
-        <FormLabel content="Message value" />
-        <Checkbox onChange={() => { }} checked={false} />
-      </FormItem>
+      )}
     </div>
   );
 }
@@ -148,7 +165,7 @@ const MessagesExporter = (props: MessagesExporterProps) => {
       onError={() => {
         setConfig(defaultExportConfig);
         setErrorKey(errorKey + 1);
-        notifyInfo('Invalid export config. Resetting to default.');
+        notifyInfo('Invalid export config. Resetting to default. Try to reload the page if the problem persists.');
       }}
       fallback={<></>}
     >

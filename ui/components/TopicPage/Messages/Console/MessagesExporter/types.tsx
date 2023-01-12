@@ -1,3 +1,5 @@
+import { MessageDescriptor } from "../../types";
+
 export type CsvConfig = {
   quotes: boolean,
   quoteChar: string,
@@ -15,8 +17,17 @@ export type CsvConfig = {
   },
 }
 
+export type MessageField = {
+  id: keyof MessageDescriptor,
+  name: string,
+  isActive: boolean,
+};
+export type MessageFieldsConfig = {
+  fields: MessageField[],
+}
+
 export type Format = {
-  type: 'json'
+  type: 'json',
 } | {
   type: 'json-values-only',
 } | {
@@ -33,16 +44,12 @@ export type Format = {
   type: 'bytes',
 };
 
-export type Chunking = {
-  type: 'no-chunking' | 'by-message-key' | 'by-topic-and-partition' | 'by-producer-name' | 'file-per-message',
-};
-
 export type ExportConfig = {
   format: Format,
-  chunking: Chunking,
   data: Data[],
   dateFormat: 'unix-epoch' | 'iso',
   csvConfig: CsvConfig,
+  fields: MessageFieldsConfig,
 }
 
 export type Data = {

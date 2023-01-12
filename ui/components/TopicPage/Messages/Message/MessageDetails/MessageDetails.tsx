@@ -49,6 +49,7 @@ type FieldProps = {
 const Field: React.FC<FieldProps> = (props) => {
   return (
     <div className={s.Field}>
+      {/* TODO - fix tooltips */}
       <TooltipWrapper html={renderToStaticMarkup(props.help)} className={s.TooltipWrapper}>
         <div className={s.FieldTitle}>{props.title}</div>
       </TooltipWrapper>

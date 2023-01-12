@@ -13,3 +13,7 @@
   position: absolute;
   z-index: 10;
 }
+
+.MessageFieldsConfig {
+  padding-bottom: 24rem;
+}
