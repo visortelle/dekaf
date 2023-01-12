@@ -48,8 +48,10 @@ import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
-import ReactTooltip from 'react-tooltip';
 import { remToPx } from '../../ui/rem-to-px';
+import { help } from './Message/fields';
+import { TooltipWrapper } from 'react-tooltip';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 
@@ -387,8 +389,6 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState === 'new' && prevSessionState !== undefined) {
       cleanup();
     }
-
-    ReactTooltip.rebuild();
   }, [sessionState]);
 
   useEffect(() => {
@@ -398,14 +398,15 @@ const Session: React.FC<SessionProps> = (props) => {
     }
   }, [sessionState, messagesLoadedPerSecond]);
 
-  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isSessionPaused={sessionState !== 'running'} />, [sessionState]);
+  const isShowTooltips = sessionState !== 'running' && sessionState !== 'pausing';
+  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={isShowTooltips} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
       setSessionState('pausing');
     }
   }, [sessionState]);
 
-  const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, style?: React.CSSProperties }) => {
+  const Th = useCallback((props: { title: React.ReactNode, help: React.ReactElement, sortKey?: SortKey, style?: React.CSSProperties }) => {
     const handleColumnHeaderClick = () => {
       if (props.sortKey === undefined) {
         return;
@@ -420,15 +421,17 @@ const Session: React.FC<SessionProps> = (props) => {
 
     return (
       <th className={cts.Th} style={props.style} onClick={handleColumnHeaderClick}>
-        <div className={props.sortKey === undefined ? '' : cts.SortableTh}>
-          {props.title}
+        <TooltipWrapper html={renderToStaticMarkup(props.help)}>
+          <div className={props.sortKey === undefined ? '' : cts.SortableTh}>
+            {props.title}
 
-          {sort.key === props.sortKey && (
-            <div className={cts.SortableThIcon}>
-              <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
-            </div>
-          )}
-        </div>
+            {sort.key === props.sortKey && (
+              <div className={cts.SortableThIcon}>
+                <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
+              </div>
+            )}
+          </div>
+        </TooltipWrapper>
       </th>
     );
   }, [sort]);
@@ -482,23 +485,23 @@ const Session: React.FC<SessionProps> = (props) => {
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
-                <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
-                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} />
-                <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} />
-                <Th title="Key" sortKey="key" />
-                <Th title="Value" sortKey="value" />
-                <Th title="Topic" sortKey="topic" />
-                <Th title="Producer" sortKey="producerName" />
-                <Th title="Schema version" sortKey="schemaVersion" />
-                <Th title="Size" sortKey="size" />
-                <Th title="Properties" sortKey="properties" />
-                <Th title="Event time" sortKey="eventTime" />
-                <Th title="Broker pub. time" sortKey="brokerPublishTime" />
-                <Th title="Message Id" />
-                <Th title="Sequence Id" sortKey="sequenceId" />
-                <Th title="Ordering key" />
-                <Th title="Redelivery count" sortKey="redeliveryCount" />
-                <Th title="Accumulator" sortKey="accumulator" />
+                <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} help={<>Message index in this view.</>} />
+                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} help={help.publishTime} />
+                <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} help={<></>} />
+                <Th title="Key" sortKey="key" help={help.key} />
+                <Th title="Value" sortKey="value" help={help.value} />
+                <Th title="Topic" sortKey="topic" help={help.topic} />
+                <Th title="Producer" sortKey="producerName" help={help.producerName} />
+                <Th title="Schema version" sortKey="schemaVersion" help={help.schemaVersion} />
+                <Th title="Size" sortKey="size" help={help.size} />
+                <Th title="Properties" sortKey="properties" help={help.propertiesMap} />
+                <Th title="Event time" sortKey="eventTime" help={help.eventTime} />
+                <Th title="Broker pub. time" sortKey="brokerPublishTime" help={help.brokerPublishTime} />
+                <Th title="Message Id" help={help.messageId} />
+                <Th title="Sequence Id" sortKey="sequenceId" help={help.sequenceId} />
+                <Th title="Ordering key" help={help.orderingKey} />
+                <Th title="Redelivery count" sortKey="redeliveryCount" help={help.redeliveryCount} />
+                <Th title="Accumulator" sortKey="accumulator" help={help.accumulator} />
               </tr>
             )}
           />

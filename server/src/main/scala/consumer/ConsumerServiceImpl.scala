@@ -172,7 +172,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     try
                         consumer.unsubscribe()
                     catch
-                        // Unsubscribe fails on partitioned topics in most cases. Anyway we can' handle it meaningfully.
+                        // Unsubscribe fails on partitioned topics in most cases. Anyway we can't handle it meaningfully.
                         _ => ()
                     finally ()
                 case _ => ()

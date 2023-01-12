@@ -1,0 +1,15 @@
+.MessagesExporter {
+  display: flex;
+  flex: 1;
+  overflow: auto;
+  padding: 24rem;
+  gap: 24rem;
+  position: relative;
+}
+
+.ResetSettingsButton {
+  top: 24rem;
+  right: 24rem;
+  position: absolute;
+  z-index: 10;
+}

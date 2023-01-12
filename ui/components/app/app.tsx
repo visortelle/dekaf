@@ -5,11 +5,11 @@ import * as PulsarGrpcClient from './contexts/PulsarGrpcClient/PulsarGrpcClient'
 import * as Modals from './contexts/Modals/Modals';
 import * as BrokerConfig from './contexts/BrokersConfig';
 import * as I18n from './contexts/I18n/I18n';
-import ReactTooltip from 'react-tooltip';
 import 'react-toastify/dist/ReactToastify.css';
 import { SWRConfig } from 'swr';
-import useInterval from './hooks/use-interval';
 import Router from './Router/Router'
+import { TooltipProvider } from 'react-tooltip';
+import Tooltip from '../ui/Tooltip/Tooltip';
 
 type AppProps = {
   config: AppContext.Config;
@@ -30,8 +30,6 @@ const App: React.FC<AppProps> = (props) => {
 export const hideShowProgressIndicatorHeader = 'x-hide-show-progress-indicator';
 
 const _App: React.FC<AppProps> = (props) => {
-  useInterval(() => ReactTooltip.rebuild(), 2000); // Fix react-tooltip doesn't hide.
-
   return (
     <SWRConfig
       value={{
@@ -43,20 +41,13 @@ const _App: React.FC<AppProps> = (props) => {
       }}>
 
       <PulsarGrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, '')}/api`}>
-        <ReactTooltip
-          html={true}
-          event="click"
-          arrowColor='#fff'
-          backgroundColor='#fff'
-          textColor='var(--text-color)'
-          border={true}
-          borderColor="#ddd"
-        />
-
         <Notifications.DefaultProvider>
           <Modals.DefaultProvider>
             <BrokerConfig.DefaultProvider>
-              <Router />
+              <TooltipProvider>
+                <Router />
+                <Tooltip />
+              </TooltipProvider>
             </BrokerConfig.DefaultProvider>
           </Modals.DefaultProvider>
         </Notifications.DefaultProvider>

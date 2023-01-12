@@ -4,6 +4,7 @@ import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
 import Producer from './Producer/Producer';
 import Visualization from './Visualization/Visualization';
 import DebugConsole from './DebugConsole/DebugConsole';
+import MessagesExporter from './MessagesExporter/MessagesExporter';
 import { MessageDescriptor, SessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
@@ -29,7 +30,7 @@ export type ConsoleProps = {
 type TabName = 'producer' | 'cursors' | 'visualize' | 'debug-console' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabName>('visualize');
+  const [activeTab, setActiveTab] = React.useState<TabName>('export');
 
   return (
     <EnteringFromBottomDiv
@@ -78,6 +79,15 @@ const Console: React.FC<ConsoleProps> = (props) => {
           isVisible={activeTab === 'debug-console'}
         />
       </TabContent>
+
+      <TabContent isShow={activeTab === 'export'} isRenderAlways>
+        <MessagesExporter
+          messages={props.messages}
+          sessionState={props.sessionState}
+          isVisible={activeTab === 'export'}
+        />
+      </TabContent>
+
 
     </EnteringFromBottomDiv>
   );
