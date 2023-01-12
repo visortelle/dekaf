@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { cloneDeep } from 'lodash';
+import useSWR, { useSWRConfig } from "swr";
 import { v4 as uuid } from 'uuid';
 
 import { DefaultProvider } from '../../../../../app/contexts/Modals/Modals';
+import * as PulsarGrpcClient from '../../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as Notifications from '../../../../../app/contexts/Notifications';
 import Button from '../../../../../ui/Button/Button';
 import { H3 } from '../../../../../ui/H/H';
 import Input from '../../../../../ui/Input/Input';
 import ActionButton from '../../../../../ui/ActionButton/ActionButton';
 import Filter, { defaultJsValue } from '../Filter';
 import * as t from '../types';
+import { swrKeys } from '../../../../../swrKeys';
+import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
+import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
 
 import deleteIcon from '../icons/delete.svg';
 import createIcon from '../icons/create.svg';
@@ -24,8 +30,8 @@ type Props = {
 }
 
 export type EditorFilter = t.Filter & {
-  description: string,
   name: string,
+  description: string,
 }
 
 type ChainEntry = {
@@ -34,29 +40,109 @@ type ChainEntry = {
 
 type Collection = {
   name: string,
+  description: string,
   filters: Record<string, ChainEntry>,
 }
 
-type ListFilters = {
+type CollectionsFilters = {
   [collection: string]: Collection,
 }
+
+type LibraryItem = 'message_filter' | 'consumer_session_config' | 'messages_visualization_config' | 'producer_config';
+type Requirement = 'app_version' | 'npm_package';
 
 const FiltersEditor = (props: Props) => {
 
   const [activeCollection, setActiveCollection] = useState<string>();
   const [activeFilter, setActiveFilter] = useState<string | undefined>();
-  const [listFilters, setListFilters] = useState<ListFilters>({});
+  const [listFilters, setListFilters] = useState<CollectionsFilters>({});
   const [usedFilters, setUsedFilters] = useState(props.filters);
   const [newFilter, setNewFilter] = useState({ name: 'new filter', description: '' });
   const [renameCollection, setRenameCollection] = useState<string | undefined>();
 
-  useEffect(() => {
-    const filters = localStorage.getItem('messageFilters');
+  const { notifyError } = Notifications.useContext();
+  const { libraryServiceClient } = PulsarGrpcClient.useContext();
+  const { mutate } = useSWRConfig();
 
-    if (filters) {
-      setListFilters(JSON.parse(filters));
+  const swrKey = swrKeys.pulsar.filters._();
+
+  const libraryItemFromPb = (libraryItemPb: pb.LibraryItemType): LibraryItem  => {
+    switch (libraryItemPb) {
+      case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG: return 'consumer_session_config';
+      case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION_CONFIG: return 'messages_visualization_config';
+      case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER: return 'message_filter';
+      case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_CONFIG: return 'producer_config';
+      default: throw new Error(`Unknown library item: ${libraryItemPb}`);
     }
-  }, []);
+  }
+  const libraryItemToPb = (value: LibraryItem): pb.LibraryItemType => {
+    switch (value) {
+      case 'consumer_session_config':
+        return pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG;
+      case 'messages_visualization_config':
+        return pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION_CONFIG;
+      case 'message_filter':
+        return pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER;
+      case 'producer_config':
+        return pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_CONFIG;
+    }
+  }
+
+  const requirementFromPb = (requirementPb: pb.RequirementType): Requirement => {
+    switch (requirementPb) {
+      case pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION: return 'app_version';
+      case pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE: return 'npm_package';
+      default: throw new Error(`Unknown requirement item: ${requirementPb}`);
+    }
+  }
+  const requirementToPb = (value: Requirement): pb.RequirementType => {
+    switch (value) {
+      case 'app_version':
+        return pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION;
+      case 'npm_package':
+        return pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE;
+    }
+  }
+
+  const { data: collections, error: getCollectionsError } = useSWR(
+    swrKey,
+    async () => {
+      const req = new pb.ListCollectionsRequest();
+      const res = await libraryServiceClient.listCollections(req, {});
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get list collections: ${res.getStatus()?.getMessage()}`);
+      }
+
+      const collectionsList = res.getCollectionsList();
+      let collections: CollectionsFilters = {};
+
+      collectionsList.map(collection => {
+        const id = collection.getId();
+        const itemList = collection.getCollectionItemIdsList();
+
+        collections[id] = {
+          name: collection.getName(),
+          description: collection.getDescription(),
+          filters: {},
+        }
+
+        itemList.map(filter => {
+          collections[id].filters[filter] = { filter: { name: "filter name", value: "code", description: "info" }};
+        });
+      });
+
+      Object.keys(collections).map(async (collection) => {
+        const req = new pb.ListLibraryItemsRequest();
+        req.setCollectionId(collection)
+        const res = await libraryServiceClient.listCollections(req, {});
+        console.log(res.getCollectionsList())
+      })
+
+      setListFilters(collections);
+      return collections;
+    }
+  );
 
   const useFilter = () => {
     if (!activeCollection || !activeFilter) {
@@ -69,12 +155,86 @@ const FiltersEditor = (props: Props) => {
     setUsedFilters(newChain);
   }
 
-  const onSave = () => {
-    console.log(listFilters)
-    localStorage.setItem('messageFilters', JSON.stringify(listFilters));
+  const onCreateCollection = async () => {
+    const collection = new pb.Collection()
+    collection.setName("new collection");
+    collection.setDescription("");
+
+    const req = new pb.CreateCollectionRequest();
+    req.setCollection(collection);
+    const res = await libraryServiceClient.createCollection(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to create collection: ${res.getStatus()?.getMessage()}`);
+    }
+
+    await mutate(swrKey);
   }
 
-  const onSaveNewFilter = () => {
+  const onUpdateCollection = async (newName?: string) => {
+    if (!activeCollection) {
+      return;
+    }
+
+    const updateCollection = new pb.Collection();
+    updateCollection.setId(activeCollection);
+    updateCollection.setName(newName || listFilters[activeCollection].name);
+    updateCollection.setDescription(listFilters[activeCollection].description);
+    updateCollection.setCollectionItemIdsList(Object.keys(listFilters[activeCollection].filters));
+
+    const req = new pb.UpdateCollectionRequest();
+    req.setCollection(updateCollection);
+    const res = await libraryServiceClient.updateCollection(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to save collection: ${res.getStatus()?.getMessage()}`);
+    }
+
+    await mutate(swrKey);
+  }
+
+  const onDuplicateCollection = async () => {
+    if (!activeCollection) {
+      return;
+    }
+
+    const collection = new pb.Collection();
+    collection.setName(`${listFilters[activeCollection].name}-dublicate`);
+    collection.setDescription(listFilters[activeCollection].description);
+    collection.setCollectionItemIdsList(Object.keys(listFilters[activeCollection].filters));
+
+    const req = new pb.CreateCollectionRequest();
+    req.setCollection(collection);
+    const res = await libraryServiceClient.createCollection(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to create collection: ${res.getStatus()?.getMessage()}`);
+    }
+
+    setActiveCollection(undefined);
+    setActiveFilter(undefined);
+    await mutate(swrKey);
+  }
+
+  const onDeleteCollection = async () => {
+    if (!activeCollection) {
+      return;
+    }
+
+    const req = new pb.DeleteCollectionRequest();
+    req.setId(activeCollection);
+    const res = await libraryServiceClient.deleteCollection(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to delete collection: ${res.getStatus()?.getMessage()}`);
+    }
+
+    setActiveCollection(undefined);
+    setActiveFilter(undefined);
+    await mutate(swrKey);
+  }
+
+  const onSaveFilter = () => {
     if (!props.entry || !activeCollection || !listFilters[activeCollection].filters) {
       return;
     }
@@ -82,12 +242,6 @@ const FiltersEditor = (props: Props) => {
     const chainClone = cloneDeep(listFilters);
 
     chainClone[activeCollection].filters[newFilterId] = {filter: { ...newFilter, value: props.entry }}
-
-
-    localStorage.setItem(
-      'messageFilters',
-      JSON.stringify(chainClone)
-    );
   }
 
   const onDuplicateFilter = () => {
@@ -104,18 +258,82 @@ const FiltersEditor = (props: Props) => {
     setActiveFilter(newFilter);
   }
 
-  const createNewFilter = () => {
+  const createFilter = async () => {
     if (!activeCollection) {
       return;
     }
     
-    const newFilter = uuid();
-    const withNewFilter = cloneDeep(listFilters);
+    // const newFilter = uuid();
+    // const withNewFilter = cloneDeep(listFilters);
 
-    withNewFilter[activeCollection].filters[newFilter] = {filter: { description: '', value: defaultJsValue, name: 'new filter' }}
+    // withNewFilter[activeCollection].filters[newFilter] = {filter: { description: '', value: defaultJsValue, name: 'new filter' }}
 
-    setListFilters(withNewFilter);
-    setActiveFilter(newFilter);
+    // setListFilters(withNewFilter);
+    // setActiveFilter(newFilter);
+
+
+    const req = new pb.CreateLibraryItemRequest();
+    const libraryItem = new pb.LibraryItem();
+
+    libraryItem.setName("New library item");
+    libraryItem.setDescription("Description");
+    libraryItem.setVersion("v1-beta");
+    libraryItem.setSchemaVersion("v1-beta");
+
+    const accessConfig = new pb.AccessConfig();
+    accessConfig.setTopicPatternsList(['']);
+    accessConfig.setUserReadRolesList(['']);
+    accessConfig.setUserWriteRolesList(['']);
+    libraryItem.setAccessConfig(accessConfig);
+
+    const requirement = new pb.Requirement();
+    //get id on back
+    requirement.setType(requirementToPb('app_version'));
+
+    const requir = true;
+    if (requir) {
+      const npmPackage = new pb.NpmPackageRequirement()
+      npmPackage.setScope("Scope")
+      npmPackage.setPackageName("Package-1")
+      npmPackage.setVersion("v1-beta")
+  
+      requirement.setNpmPackage(npmPackage);
+    } else {
+      requirement.setAppVersion("v1-beta");
+    } 
+
+    libraryItem.setRequirementsList([requirement]);
+
+    type ItemTypes = 'messageFilter' | 'consumerSessionConfig' | 'messageVizualizationConfig' | 'producerConfig'
+    let itemType: ItemTypes = 'messageFilter'
+    switch (itemType) {
+      case 'messageFilter':
+        const messageFilter = new pb.LibraryItemMessageFilter();
+        messageFilter.setCode("")
+        libraryItem.setMessageFilter(messageFilter);    
+        break;
+      // case 'consumerSessionConfig':
+      //   const consumerSessionConfig = new pb.LibraryItemConsumerSessionConfig();
+      //   libraryItem.setConsumerSessionConfig(consumerSessionConfig);
+      //   break;
+      // case 'messageVizualizationConfig':
+      //   const messageVizualizationConfig = new pb.LibraryItemMessagesVisualizationConfig();
+      //   libraryItem.setMessagesVisualizationConfig(messageVizualizationConfig);
+      //   break;
+      // case 'producerConfig':
+      //   const producerConfig = new pb.LibraryItemProducerConfig();
+      //   libraryItem.setProducerConfig(producerConfig);
+      //   break;
+    }
+
+    req.setLibraryItem(libraryItem)
+    const res = await libraryServiceClient.createLibraryItem(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to delete collection: ${res.getStatus()?.getMessage()}`);
+    }
+
+    await mutate(swrKey);
   }
 
   const onDeleteFilter = () => {
@@ -130,43 +348,6 @@ const FiltersEditor = (props: Props) => {
     setActiveFilter(undefined);
   }
 
-  const onCreateNewCollection = () => {
-    const newCollection = uuid();
-    setListFilters({ ...listFilters, [newCollection]: {
-      name: 'new collection',
-      filters: {},
-    }})
-
-    setActiveCollection(newCollection);
-  }
-
-  const onDuplicateCollection = () => {
-    if (!activeCollection) {
-      return;
-    }
-
-    const newCollections = cloneDeep(listFilters);
-    const newCollection = uuid();
-
-    newCollections[newCollection] = cloneDeep(newCollections[activeCollection]);
-    newCollections[newCollection].name += '-duplicate';
-    setListFilters(newCollections);
-    setActiveCollection(newCollection);
-  }
-
-  const onDeleteCollection = () => {
-    if (!activeCollection) {
-      return;
-    }
-
-    const newFilters = cloneDeep(listFilters);
-    delete newFilters[activeCollection];
-
-    setListFilters(newFilters);
-    setActiveCollection(undefined);
-    setActiveFilter(undefined);
-  }
-
   const onChangeFilter = (value: EditorFilter) => {
     if (activeFilter === undefined || !activeCollection) {
       return;
@@ -178,17 +359,65 @@ const FiltersEditor = (props: Props) => {
     setListFilters(newFilters);
   }
 
-  const onRenameCollection = () => {
-    if (!activeCollection || !renameCollection) {
-      return;
-    }
+  // useEffect(() => {
+  //   const deleteME = async () => {
+  //     const req = new pb.CreateLibraryItemRequest();
+  //     const libraryItem = new pb.LibraryItem();
 
-    const newCollections = cloneDeep(listFilters);
+  //     //get id on back
+  //     libraryItem.setName("New library item");
+  //     libraryItem.setDescription("Description");
+  //     libraryItem.setVersion("v1-beta");
+  //     libraryItem.setSchemaVersion("v1-beta");
 
-    newCollections[activeCollection].name = renameCollection;
-    setListFilters(newCollections);
-    setActiveCollection(renameCollection)
-  }
+  //     const accessConfig = new pb.AccessConfig();
+  //     accessConfig.setTopicPatternsList([]);
+  //     accessConfig.setUserReadRolesList([]);
+  //     accessConfig.setUserWriteRolesList([]);
+  //     libraryItem.setAccessConfig(accessConfig);
+
+  //     const requirement = new pb.Requirement();
+  //     //get id on back
+  //     requirement.setType(requirementToPb('app_version'));
+  //     // one of start
+  //     const npmPackage = new pb.NpmPackageRequirement()
+  //     npmPackage.setScope("Scope")
+  //     npmPackage.setPackageName("Package-1")
+  //     npmPackage.setVersion("v1-beta")
+
+  //     requirement.setNpmPackage(npmPackage);
+  //     requirement.setAppVersion("v1-beta");
+
+  //     // one of end
+
+  //     libraryItem.setRequirementsList([requirement]);
+
+  //     // one of start
+  //     const messageFilter = new pb.LibraryItemMessageFilter();
+  //     messageFilter.setCode("")
+  //     libraryItem.setMessageFilter(messageFilter);
+
+  //     const consumerSessionConfig = new pb.LibraryItemConsumerSessionConfig();
+  //     libraryItem.setConsumerSessionConfig(consumerSessionConfig);
+
+  //     const messageVizualizationConfig = new pb.LibraryItemMessagesVisualizationConfig();
+  //     libraryItem.setMessagesVisualizationConfig(messageVizualizationConfig);
+
+  //     const producerConfig = new pb.LibraryItemProducerConfig();
+  //     libraryItem.setProducerConfig(producerConfig);
+
+  //     // one of end
+
+  //     req.setLibraryItem(libraryItem)
+  //     const res = await libraryServiceClient.createLibraryItem(req, {});
+
+  //     if (res.getStatus()?.getCode() !== Code.OK) {
+  //       notifyError(`Unable to delete collection: ${res.getStatus()?.getMessage()}`);
+  //     }
+  //   }
+
+  //   deleteME();
+  // }, [])
 
   return (
     <DefaultProvider>
@@ -227,14 +456,14 @@ const FiltersEditor = (props: Props) => {
             />
             <Button
               svgIcon={createIcon}
-              onClick={() => onCreateNewCollection()}
+              onClick={() => onCreateCollection()}
               type='primary'
               title="Create collection"
             />
 
             <Button
               svgIcon={editIcon}
-              onClick={() => setRenameCollection(activeCollection)}
+              onClick={() => activeCollection && setRenameCollection(listFilters[activeCollection].name)}
               type='regular'
               title="Rename collection"
               disabled={!activeCollection}
@@ -258,13 +487,13 @@ const FiltersEditor = (props: Props) => {
                 <div className={s.RenameWindowButtons}>
                   <Button
                     type="regular"
-                    onClick={() => setRenameCollection(activeCollection)}
-                    disabled={renameCollection === activeCollection}
+                    onClick={() => setRenameCollection(listFilters[activeCollection].name)}
+                    disabled={renameCollection === listFilters[activeCollection].name}
                     text="Reset"
                   />
                   <Button
                     type="primary"
-                    onClick={() => onRenameCollection()}
+                    onClick={() => onUpdateCollection(renameCollection)}
                     disabled={!renameCollection}
                     text="Rename"
                   />
@@ -312,7 +541,7 @@ const FiltersEditor = (props: Props) => {
             />
             <Button
               svgIcon={createIcon}
-              onClick={() => createNewFilter()}
+              onClick={() => createFilter()}
               type='primary'
               title="Create filter"
               disabled={!activeCollection}
@@ -329,13 +558,13 @@ const FiltersEditor = (props: Props) => {
               <span>Name</span>
               <Input
                 value={listFilters[activeCollection].filters[activeFilter].filter.name}
-                onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, value })}
+                onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, name: value })}
                 placeholder="message-filter"
               />
               <span>Description</span>
               <Input
                 value={listFilters[activeCollection].filters[activeFilter].filter.description || ''}
-                onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, value })}
+                onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, description: value })}
                 placeholder="useful filter"
               />
             </> :
@@ -386,7 +615,7 @@ const FiltersEditor = (props: Props) => {
         <Button
           type='primary'
           text='Save'
-          onClick={() => {props.entry ? onSaveNewFilter() : onSave()}}
+          onClick={() => {props.entry ? onSaveFilter() : onUpdateCollection()}}
         />
         {!props.entry &&
           <Button

@@ -2,6 +2,12 @@ import stringify from "safe-stable-stringify";
 
 export const swrKeys = {
   pulsar: {
+    filters: {
+      _: () => [
+        "pulsar",
+        "filters",
+      ],
+    },
     schemas: {
       getLatestSchemaInfo: {
         _: (topic: string) => [

@@ -5,10 +5,8 @@ import com.typesafe.scalalogging.Logger
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.library.v1.library as pb
-import com.tools.teal.pulsar.ui.library.v1.library.{ Collection, CreateCollectionRequest, CreateCollectionResponse, CreateLibraryItemRequest, CreateLibraryItemResponse, DeleteCollectionRequest, DeleteCollectionResponse, DeleteLibraryItemRequest, DeleteLibraryItemResponse, LibraryServiceGrpc, ListCollectionsRequest, ListCollectionsResponse, ListLibraryItemsRequest, ListLibraryItemsResponse, UpdateCollectionRequest, UpdateCollectionResponse, UpdateLibraryItemRequest, UpdateLibraryItemResponse}
+import com.tools.teal.pulsar.ui.library.v1.library.{AccessConfig, Collection, CreateCollectionRequest, CreateCollectionResponse, CreateLibraryItemRequest, CreateLibraryItemResponse, DeleteCollectionRequest, DeleteCollectionResponse, DeleteLibraryItemRequest, DeleteLibraryItemResponse, LibraryItem, LibraryServiceGrpc, ListCollectionsRequest, ListCollectionsResponse, ListLibraryItemsRequest, ListLibraryItemsResponse, Requirement, UpdateCollectionRequest, UpdateCollectionResponse, UpdateLibraryItemRequest, UpdateLibraryItemResponse}
 import org.apache.pulsar.client.api.SubscriptionType
-import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AuthAction, AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, OffloadPolicies, OffloadedReadPriority, PersistencePolicies, Policies, PublishRate, RetentionPolicies, SubscribeRate, SubscriptionAuthMode}
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
@@ -16,6 +14,7 @@ import scala.concurrent.Future
 import _root_.config.readConfigAsync
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.{Gson, JsonObject}
+import com.tools.teal.pulsar.ui.library.v1.library.Requirement.Requirement.{AppVersion, NpmPackage}
 
 import java.nio.file.{Files, Paths}
 import java.io.*
@@ -23,9 +22,8 @@ import java.util.UUID
 import java.util.stream.Collectors
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
-
 import scala.reflect.ClassTag
-import scala.reflect._
+import scala.reflect.*
 
 class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
 
@@ -147,8 +145,105 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
                 Future.successful(DeleteCollectionResponse(status = Some(status)))
         }
 
+//    enum LibraryItemType {
+//        case message_filter, consumer_session_config, messages_visualization_config, producer_config, unspecified
+//    }
+
+    enum RequirementType {
+        case app_version, npm_package, unspecified
+    }
+    type RequirementObjectType = "app_version" | "npm_pachage" | "unspecified"
+    case class RequirementObject (
+        id: String,
+        `type`: String,
+//        requirement: AppVersion | NpmPackage,
+        requirement: Requirement.Requirement
+     )
+    case class LibraryItemType(
+      id: String,
+      name: String,
+      description: String,
+      schemaVersion: String,
+      version: String,
+      accessConfig: AccessConfig,
+      requirements: Array[RequirementObject],
+      libraryItem:  LibraryItem.LibraryItem,
+    )
     override def createLibraryItem(request: CreateLibraryItemRequest): Future[CreateLibraryItemResponse] =
         try {
+            val libraryItem = request.libraryItem match
+                case None =>
+                    val status = Status(code = Code.FAILED_PRECONDITION.index, message = "err")
+                    Future.successful(CreateCollectionResponse(status = Some(status)))
+                case Some(v) =>
+
+//                    def listLibraryItemFromPb(libraryPb: pb.LibraryItem.LibraryItem): LibraryItemType = libraryPb match
+//                        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER =>
+//                            LibraryItemType.message_filter
+//                        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_CONFIG =>
+//                            LibraryItemType.producer_config
+//                        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION_CONFIG =>
+//                            LibraryItemType.messages_visualization_config
+//                        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG =>
+//                            LibraryItemType.consumer_session_config
+//                        case _ => LibraryItemType.unspecified
+
+                    def requirementTypeFromPb(typePb: pb.RequirementType): RequirementType = typePb match
+                        case pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION => RequirementType.app_version
+                        case pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE => RequirementType.npm_package
+                        case _ => RequirementType.unspecified
+
+                    val rootPath = Paths.get(s"${library}")
+                    if (!Files.isDirectory(rootPath)) {
+                        val rootFolder = new File(s"${library}")
+                        rootFolder.mkdir()
+                    }
+
+                    val rootLibraryItemsPath = Paths.get(s"${library}/libraryItems/")
+                    if (!Files.isDirectory(rootLibraryItemsPath))
+                        val libraryFolder = new File(s"${library}/libraryItems/")
+                        libraryFolder.mkdir()
+
+                    val libraryItemsPath = Paths.get(s"${library}/libraryItems/${v.libraryItem}")
+                    if (!Files.isDirectory(libraryItemsPath))
+                        val libraryFolder = new File(s"${library}/libraryItems/${v.libraryItem}")
+                        libraryFolder.mkdir()
+
+                    val libraryItemId = UUID.randomUUID().toString
+                    val f = new File(s"${library}/libraryItems/${v.libraryItem}/${libraryItemId}.json")
+
+                    if (!f.isFile)
+                        request.libraryItem match
+                            case Some(v) =>
+                                val requirements = v.requirements.map(requirement =>
+                                    RequirementObject (
+                                        requirement.id,
+                                        requirementTypeFromPb(requirement.`type`).toString,
+//                                        requirement.`type`,
+                                        requirement.requirement,
+                                    )
+                                )
+                                val accessConfig = v.accessConfig match
+                                    case Some(v) => v
+                                    case None => pb.AccessConfig()
+
+                                val libraryItemObject = LibraryItemType(
+                                    libraryItemId,
+                                    v.name,
+                                    v.description,
+                                    v.schemaVersion,
+                                    v.version,
+                                    accessConfig,
+                                    requirements.toArray,
+                                    v.libraryItem,
+                                )
+
+                                val json: String = gson.toJson(libraryItemObject)
+                                val file = new FileWriter(s"${library}/libraryItems/${v.libraryItem}/${libraryItemId}.json", false)
+
+                                file.write(json)
+                                file.close()
+
             val status = Status(code = Code.OK.index)
             Future.successful(CreateLibraryItemResponse(status = Some(status)))
         } catch {
@@ -159,8 +254,54 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
 
     override def listLibraryItems(request: ListLibraryItemsRequest): Future[ListLibraryItemsResponse] =
         try {
+            val collectionObject = gson.fromJson(new FileReader(s"${library}/collections/${request.collectionId}.json"), classOf[CollectionType])
+
+            val libraryItemsList = collectionObject.collectionItemIds.map(collectionItem =>
+                val item = gson.fromJson(new FileReader(s"${library}/libraryItems/${request.itemsType}/${collectionItem}.json"), classOf[LibraryItem])
+                LibraryItem(
+                  item.id,
+                  item.name,
+                item.version,
+                item.description,
+                item.schemaVersion,
+                item.accessConfig,
+                item.requirements,
+                item.libraryItem,
+                )
+            ).toSeq
+
+//            val dir = Paths.get(s"${library}/libraryItems/")
+//            val stream = Files.newDirectoryStream(dir, "*.json").asScala
+
+//            def listLibraryItemFromPb(itemPb: pb.LibraryItem): LibraryItem = policyPb match
+//                case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION =>
+//                    RetentionPolicy.consumer_backlog_eviction
+//                case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_REQUEST_HOLD =>
+//                    RetentionPolicy.producer_request_hold
+//                case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_PRODUCER_EXCEPTION =>
+//                    RetentionPolicy.producer_exception
+//                case _ => RetentionPolicy.producer_request_hold
+
+//            val libraryItemsList = stream.map(p => {
+//                val libraryItemsObject = gson.fromJson(new FileReader(p.toString), classOf[LibraryItem])
+//                LibraryItem (
+//                    libraryItemsObject.id,
+//                    libraryItemsObject.name,
+//                    libraryItemsObject.description,
+//                    libraryItemsObject.version,
+//                    libraryItemsObject.schemaVersion,
+//
+//                    libraryItemsObject.accessConfig,
+//                    libraryItemsObject.requirements,
+//                    libraryItemsObject.libraryItem,
+//                )
+//            }).toSeq
+
             val status = Status(code = Code.OK.index)
-            Future.successful(ListLibraryItemsResponse(status = Some(status)))
+            Future.successful(ListLibraryItemsResponse(
+                status = Some(status),
+                libraryItems = libraryItemsList
+            ))
         } catch {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
@@ -179,6 +320,9 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
 
     override def deleteLibraryItem(request: DeleteLibraryItemRequest): Future[DeleteLibraryItemResponse] =
         try {
+            val f = new File(s"${library}/libraryItems/${request.id}.json")
+            f.delete()
+
             val status = Status(code = Code.OK.index)
             Future.successful(DeleteLibraryItemResponse(status = Some(status)))
         } catch {
