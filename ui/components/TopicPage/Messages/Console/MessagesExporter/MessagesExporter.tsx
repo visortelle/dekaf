@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import Checkbox from '../../../../ui/Checkbox/Checkbox';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import Select from '../../../../ui/Select/Select';
 import { MessageDescriptor, SessionState } from '../../types';
 import CsvConfigInput from './CsvConfigInput/CsvConfigInput';
 import s from './MessagesExporter.module.css'
-import { ExportConfig, Format, CsvConfig } from './types';
+import { ExportConfig, Format, CsvConfig, JsonConfig } from './types';
 import useLocalStorage from 'use-local-storage-state';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { localStorageKeys } from '../../../../local-storage-keys';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { ErrorBoundary } from 'react-error-boundary';
 import MessageFieldsConfig from './MessageFieldsConfig/MessageFieldsConfig';
+import JsonConfigInput from './JsonConfigInput/JsonConfigInput';
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[],
@@ -54,11 +54,16 @@ const defaultCsvConfig: CsvConfig = {
   escapeFormulae: { type: 'true' },
 }
 
+const defaultJsonConfig: JsonConfig = {
+  formatting: 'minified',
+};
+
 const defaultExportConfig: ExportConfig = {
   format: { type: 'json' },
   data: [{ type: 'whole-message' }],
   dateFormat: 'iso',
   csvConfig: defaultCsvConfig,
+  jsonConfig: defaultJsonConfig,
   fields: defaultFieldsConfig,
 };
 
@@ -113,15 +118,11 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
             />
           </FormItem>
 
-          {(
-            props.config.format.type === 'csv' ||
-            props.config.format.type === 'csv-values-only' ||
-            props.config.format.type === 'csv-bytes-only'
-          ) && (
+          {isCsvOutput(props.config) && (
               <CsvConfigInput
                 value={props.config.csvConfig}
                 onChange={(v) => {
-                  if (props.config.format.type !== 'csv') {
+                  if (!isCsvOutput(props.config)) {
                     return;
                   }
 
@@ -129,19 +130,32 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
                 }}
               />
             )}
+
+            {isJsonOutput(props.config) && (
+              <JsonConfigInput
+                value={props.config.jsonConfig}
+                onChange={(v) => {
+                  if (!isJsonOutput(props.config)) {
+                    return;
+                  }
+
+                  props.onConfigChange({ ...props.config, jsonConfig: v })
+                }}
+              />
+            )}
         </div>
       </FormItem>
 
-      {(props.config.format.type === 'json' || props.config.format.type === 'csv') && (
+      {isMessageFieldsConfigurable(props.config) && (
         <FormItem>
-        <FormLabel content="Message fields" />
-        <div className={s.MessageFieldsConfig}>
-          <MessageFieldsConfig
-            value={props.config.fields}
-            onChange={(v) => props.onConfigChange({ ...props.config, fields: v })}
-          />
-        </div>
-      </FormItem>
+          <FormLabel content="Message fields" />
+          <div className={s.MessageFieldsConfig}>
+            <MessageFieldsConfig
+              value={props.config.fields}
+              onChange={(v) => props.onConfigChange({ ...props.config, fields: v })}
+            />
+          </div>
+        </FormItem>
       )}
     </div>
   );
@@ -172,6 +186,18 @@ const MessagesExporter = (props: MessagesExporterProps) => {
       <_MessagesExporter key={errorKey} {...props} config={config} onConfigChange={setConfig} />
     </ErrorBoundary>
   );
+}
+
+function isCsvOutput(config: ExportConfig): boolean {
+  return config.format.type === 'csv' || config.format.type === 'csv-values-only' || config.format.type === 'csv-bytes-only';
+}
+
+function isJsonOutput(config: ExportConfig): boolean {
+  return config.format.type === 'json' || config.format.type === 'json-values-only' || config.format.type === 'json-bytes-only';
+}
+
+function isMessageFieldsConfigurable(config: ExportConfig): boolean {
+  return config.format.type === 'json' || config.format.type === 'csv';
 }
 
 export default MessagesExporter;

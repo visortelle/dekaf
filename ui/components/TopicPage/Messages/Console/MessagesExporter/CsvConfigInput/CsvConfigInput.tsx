@@ -13,7 +13,7 @@ export type CsvConfigInputProps = {
   onChange: (v: CsvConfig) => void,
 };
 
-const badDelimiters = [`\r`, `\n`, `"`, `\ufeff`];
+const badDelimiters = [`\\r`, `\\n`, `"`, `\\ufeff`];
 
 const CsvConfigInput: React.FC<CsvConfigInputProps> = (props) => {
   return (
@@ -62,7 +62,7 @@ const CsvConfigInput: React.FC<CsvConfigInputProps> = (props) => {
           help={(
             <>
               <div>The delimiting character. Multi-character delimiters are supported.</div>
-              <div>Can't contain the following characters: {badDelimiters.map(d => <code>{d}</code>)}</div>
+              <div>Can't contain the following characters: {badDelimiters.map(d => <span><code>{d}</code> </span>)}</div>
             </>
           )}
         />

@@ -23,7 +23,7 @@ function BodyPortal({ children }: { children: React.ReactNode }) {
 const Tooltip: React.FC<TooltipProps> = (props) => {
   return (
     <BodyPortal>
-      <ReactTooltip className={s.Tooltip} clickable />
+      <ReactTooltip className={s.Tooltip} clickable delayShow={250}/>
     </BodyPortal>
   );
 }
