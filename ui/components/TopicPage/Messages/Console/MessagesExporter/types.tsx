@@ -1,9 +1,5 @@
 import { MessageDescriptor } from "../../types";
 
-export type JsonConfig = {
-  formatting: 'minified' | 'human-readable',
-};
-
 export type CsvConfig = {
   quotes: boolean,
   quoteChar: string,
@@ -53,7 +49,6 @@ export type ExportConfig = {
   data: Data[],
   dateFormat: 'unix-epoch' | 'iso',
   csvConfig: CsvConfig,
-  jsonConfig: JsonConfig,
   fields: MessageFieldsConfig
 }
 

@@ -65,3 +65,5 @@ export type MessageDescriptor = {
   index: number; // Not a part of Pulsar message.
   debugStdout: Nullable<string>; // Not a part of Pulsar message.
 };
+
+export type PartialMessageDescriptor = Partial<MessageDescriptor>;

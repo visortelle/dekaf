@@ -55,6 +55,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@types/chroma-js": "^2.1.4",
     "@types/google-protobuf": "^3.15.6",

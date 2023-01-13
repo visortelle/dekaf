@@ -5,14 +5,13 @@ import Select from '../../../../ui/Select/Select';
 import { MessageDescriptor, SessionState } from '../../types';
 import CsvConfigInput from './CsvConfigInput/CsvConfigInput';
 import s from './MessagesExporter.module.css'
-import { ExportConfig, Format, CsvConfig, JsonConfig } from './types';
+import { ExportConfig, Format, CsvConfig } from './types';
 import useLocalStorage from 'use-local-storage-state';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { localStorageKeys } from '../../../../local-storage-keys';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { ErrorBoundary } from 'react-error-boundary';
 import MessageFieldsConfig from './MessageFieldsConfig/MessageFieldsConfig';
-import JsonConfigInput from './JsonConfigInput/JsonConfigInput';
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[],
@@ -54,16 +53,11 @@ const defaultCsvConfig: CsvConfig = {
   escapeFormulae: { type: 'true' },
 }
 
-const defaultJsonConfig: JsonConfig = {
-  formatting: 'minified',
-};
-
 const defaultExportConfig: ExportConfig = {
   format: { type: 'json' },
   data: [{ type: 'whole-message' }],
   dateFormat: 'iso',
   csvConfig: defaultCsvConfig,
-  jsonConfig: defaultJsonConfig,
   fields: defaultFieldsConfig,
 };
 
@@ -127,19 +121,6 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
                   }
 
                   props.onConfigChange({ ...props.config, csvConfig: v })
-                }}
-              />
-            )}
-
-            {isJsonOutput(props.config) && (
-              <JsonConfigInput
-                value={props.config.jsonConfig}
-                onChange={(v) => {
-                  if (!isJsonOutput(props.config)) {
-                    return;
-                  }
-
-                  props.onConfigChange({ ...props.config, jsonConfig: v })
                 }}
               />
             )}
