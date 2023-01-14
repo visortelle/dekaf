@@ -1,4 +1,4 @@
-import { MessageDescriptor, PartialMessageDescriptor } from "../../../types";
+import { MessageDescriptor } from "../../../types";
 import { ExportConfig } from "../types";
 import { takeMessageFields } from "./lib";
 
@@ -7,7 +7,7 @@ type GetJsonFileContentProps = {
   config: ExportConfig;
 };
 
-export function getJsonFileContent(props: GetJsonFileContentProps): Uint8Array {
+export function genJsonFileContent(props: GetJsonFileContentProps): Uint8Array {
   const messages = takeMessageFields(props.messages, props.config.fields);
   return serializeBigArray(messages);
 }
@@ -15,9 +15,12 @@ export function getJsonFileContent(props: GetJsonFileContentProps): Uint8Array {
 export function serializeBigArray<T>(arr: T[]): Uint8Array {
   const textEncoder = new TextEncoder();
 
+  if (arr.length === 0) {
+    return textEncoder.encode("[]");
+  }
+
   const uint8messages = arr.map<Uint8Array>((message) => {
     const serializedMessage = JSON.stringify(message);
-
     return textEncoder.encode(serializedMessage);
   });
 

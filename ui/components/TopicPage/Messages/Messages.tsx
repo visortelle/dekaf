@@ -67,7 +67,6 @@ export type SessionProps = {
 type View = 'messages' | 'configuration';
 type MessagesPerSecond = { prev: number, now: number };
 
-const displayMessagesLimit = 10000;
 const displayMessagesRealTimeLimit = 250; // too many items leads to table blinking.
 
 const Session: React.FC<SessionProps> = (props) => {
@@ -80,10 +79,11 @@ const Session: React.FC<SessionProps> = (props) => {
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);
-  const [consumerName, setConsumerName] = useState<string>('__xray_con_' + nanoid());
-  const [subscriptionName, setSubscriptionName] = useState<string>('__xray_sub_' + nanoid());
+  const consumerName = useRef<string>('__xray_con_' + nanoid());
+  const subscriptionName = useRef<string>('__xray_sub_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
+  const [displayMessagesLimit, setDisplayMessagesLimit] = useState<number>(10000);
   const [messagesLoaded, setMessagesLoaded] = useState<number>(0);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
   const [messagesProcessedPerSecond, setMessagesProcessedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
@@ -145,10 +145,10 @@ const Session: React.FC<SessionProps> = (props) => {
   const applyConfig = async () => {
     if (startFrom.type === 'messageId') {
       const seekReq = new SeekRequest();
-      seekReq.setConsumerName(consumerName);
+      seekReq.setConsumerName(consumerName.current);
       seekReq.setMessageId(i18n.hexStringToBytes(startFrom.hexString));
       const res = await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by messageId. Consumer: ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to seek by messageId. Consumer: ${consumerName.current}. ${err}`));
 
       if (res !== undefined) {
         const status = res.getStatus();
@@ -156,7 +156,7 @@ const Session: React.FC<SessionProps> = (props) => {
         if (code === Code.INVALID_ARGUMENT) {
           notifyError(
             <div>
-              Unable to seek by messageId. Consumer: {consumerName}.<br /><br />
+              Unable to seek by messageId. Consumer: {consumerName.current}.<br /><br />
               Possible reasons:<br />
               - Message with such id doesn&apos;t exist specified.<br />
               - Some of the topics are partitioned.
@@ -182,10 +182,10 @@ const Session: React.FC<SessionProps> = (props) => {
 
       const seekReq = new SeekRequest();
       const timestamp = Timestamp.fromDate(fromDate);
-      seekReq.setConsumerName(consumerName);
+      seekReq.setConsumerName(consumerName.current);
       seekReq.setTimestamp(timestamp);
       await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
     }
   }
 
@@ -227,9 +227,9 @@ const Session: React.FC<SessionProps> = (props) => {
 
     async function deleteConsumer() {
       const deleteConsumerReq = new DeleteConsumerRequest();
-      deleteConsumerReq.setConsumerName(consumerName);
+      deleteConsumerReq.setConsumerName(consumerName.current);
       await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to delete consumer ${consumerName.current}. ${err}`));
     }
 
     deleteConsumer(); // Don't await this
@@ -269,15 +269,15 @@ const Session: React.FC<SessionProps> = (props) => {
       }
 
       req.setTopicsSelector(topicSelector)
-      req.setConsumerName(consumerName);
+      req.setConsumerName(consumerName.current);
       req.setStartPaused(true);
-      req.setSubscriptionName(subscriptionName);
+      req.setSubscriptionName(subscriptionName.current);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
       req.setSubscriptionMode(SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE);
       req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
-      const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
+      const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
       if (res === undefined) {
         return;
       }
@@ -302,7 +302,7 @@ const Session: React.FC<SessionProps> = (props) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
     };
-  }, [props.config, subscriptionName]);
+  }, [props.config, subscriptionName.current]);
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
@@ -338,9 +338,9 @@ const Session: React.FC<SessionProps> = (props) => {
       console.info(`%cPausing session: ${props.sessionKey}`, consoleCss);
 
       const pauseReq = new PauseRequest();
-      pauseReq.setConsumerName(consumerName);
+      pauseReq.setConsumerName(consumerName.current);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to pause consumer ${consumerName.current}. ${err}`));
 
       return;
     }
@@ -369,7 +369,7 @@ const Session: React.FC<SessionProps> = (props) => {
         });
 
       const resumeReq = new ResumeRequest();
-      resumeReq.setConsumerName(consumerName);
+      resumeReq.setConsumerName(consumerName.current);
       resumeReq.setMessageFilterChain(messageFilterChain);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler);
@@ -382,8 +382,8 @@ const Session: React.FC<SessionProps> = (props) => {
       console.info(`%c--------------------`, consoleCss);
       console.info(`%cStarting new consumer session: ${props.sessionKey}`, consoleCss);
       console.info('%cSession config: %o', consoleCss, props.config);
-      console.info('%cConsumer name:', consoleCss, consumerName);
-      console.info('%cSubscription name:', consoleCss, subscriptionName);
+      console.info('%cConsumer name:', consoleCss, consumerName.current);
+      console.info('%cSubscription name:', consoleCss, subscriptionName.current);
     }
 
     if (sessionState === 'new' && prevSessionState !== undefined) {
@@ -454,6 +454,8 @@ const Session: React.FC<SessionProps> = (props) => {
         messagesProcessed={messagesProcessed.current}
         onStopSession={props.onStopSession}
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
+        displayMessagesLimit={displayMessagesLimit}
+        onDisplayMessagesLimitChange={setDisplayMessagesLimit}
       />
 
       {currentView === 'messages' && messages.length === 0 && (
@@ -523,10 +525,10 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionState={sessionState}
         onSessionStateChange={setSessionState}
         sessionConfig={props.config}
-        sessionSubscriptionName={subscriptionName}
+        sessionSubscriptionName={subscriptionName.current}
         topicsInternalStats={topicsInternalStats}
         messages={messages}
-        consumerName={consumerName}
+        consumerName={consumerName.current}
       />
     </div>
   );

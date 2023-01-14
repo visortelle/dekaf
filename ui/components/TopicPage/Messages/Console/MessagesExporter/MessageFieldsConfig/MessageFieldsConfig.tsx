@@ -6,7 +6,6 @@ import {
   closestCenter,
   KeyboardSensor,
   MouseSensor,
-  PointerSensorOptions,
   useSensor,
   useSensors,
   DragEndEvent,

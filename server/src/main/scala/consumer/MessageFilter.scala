@@ -119,7 +119,8 @@ def getFilterChainTestResult(
     // Each message filters mutate global state.
     // For example: it stores the last message in the global variable `lastMessage`.
     // To make it work properly, at least one filter should always present.
-    chain = chain.withFilters(chain.filters + ("dummy" -> pb.MessageFilter(value = "() => true")))
+    if (chain.filters.size == 0)
+        chain = chain.withFilters(chain.filters + ("dummy" -> pb.MessageFilter(value = "() => true")))
 
     val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilter, jsonMessage, jsonValue))
 

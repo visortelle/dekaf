@@ -1,20 +1,12 @@
-import { faker } from "@faker-js/faker";
 import { serializeBigArray } from "./json";
 
-// describe('Export messages as JSON', () => {
-//   it('should export messages as JSON file', () => {
-
-//   });
-// })
-
 describe("serializeBigArray", () => {
-  it("should serialize array of objects as minified JSON", () => {
+  it("serialize array of objects as minified JSON", () => {
     const got = serializeBigArray(
       [
         { name: "John", age: 42 },
         { name: "Jane", age: 42 },
-      ],
-      { formatting: "minified" }
+      ]
     );
 
     expect(new TextDecoder().decode(got)).toBe(
@@ -22,7 +14,7 @@ describe("serializeBigArray", () => {
     );
   });
 
-  it("should handle big arrays", () => {
+  it("handle big arrays", () => {
     const bytesInKb = 1024;
     const megabytesCount = 256;
 
@@ -32,12 +24,15 @@ describe("serializeBigArray", () => {
       })
     );
 
-    const got = serializeBigArray(bigArray, {
-      formatting: "minified",
-    });
+    const got = serializeBigArray(bigArray);
 
     console.log("gto.length", got.length);
 
     expect(got.length).toBeGreaterThanOrEqual(megabytesCount * bytesInKb);
+  });
+
+  it("return [] if no data to serialize", () => {
+    const got = serializeBigArray([]);
+    expect(new TextDecoder().decode(got)).toBe("[]");
   });
 });

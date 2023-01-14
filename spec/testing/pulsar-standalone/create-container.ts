@@ -3,7 +3,7 @@ import portfinder from "portfinder";
 import path from "path";
 import { ContentToCopy, FileToCopy } from "testcontainers/dist/docker/types";
 
-const pulsarVersion = "2.10.3";
+const pulsarVersion = "2.11.0";
 
 export type PulsarStandaloneContainer = {
   brokerServiceUrl: string;

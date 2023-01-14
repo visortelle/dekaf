@@ -3,12 +3,12 @@ import { MessageFieldsConfig } from "../types";
 
 export function takeMessageFields(
   messages: MessageDescriptor[],
-  config: MessageFieldsConfig
+  fieldsConfig: MessageFieldsConfig
 ): PartialMessageDescriptor[] {
   return messages.map((message) => {
     let partialMessage: PartialMessageDescriptor = {};
 
-    config.fields.forEach((field) => {
+    fieldsConfig.fields.forEach((field) => {
       if (!field.isActive) {
         return;
       }

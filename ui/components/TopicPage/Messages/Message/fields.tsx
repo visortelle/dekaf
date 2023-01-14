@@ -80,8 +80,8 @@ export const KeyField: React.FC<FieldProps> = (props) => {
 }
 
 export const ValueField: React.FC<FieldProps> = (props) => {
-  const value = props.message.value === null ? undefined : props.message.value;
-  return <Field isShowTooltips={props.isShowTooltips} title="Value (JSON)" value={value} rawValue={value} tooltip={help.value} />
+  const value = props.message.value === null ? undefined : limitString(props.message.value, 100);
+  return <Field isShowTooltips={props.isShowTooltips} title="Value" value={value} rawValue={value} tooltip={help.value} />
 }
 
 export const TopicField: React.FC<FieldProps> = (props) => {
@@ -147,4 +147,11 @@ export const RedeliveryCountField: React.FC<FieldProps> = (props) => {
 
 export const AccumulatorField: React.FC<FieldProps> = (props) => {
   return <Field isShowTooltips={props.isShowTooltips} title="Accumulator" value={props.message.accum === null ? undefined : props.message.accum} rawValue={props.message.accum === null ? undefined : props.message.accum} tooltip={help.accumulator} />
+}
+
+function limitString(str: string, limit: number): string {
+  if (str.length > limit) {
+    return str.slice(0, limit) + '...';
+  }
+  return str;
 }

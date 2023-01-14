@@ -1,6 +1,6 @@
 val scala3Version = "3.2.1"
 val zioVersion = "2.0.5"
-val pulsarVersion = "2.10.3"
+val pulsarVersion = "2.11.0"
 
 Test / fork := true
 

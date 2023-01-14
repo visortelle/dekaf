@@ -10,6 +10,7 @@ import { SessionState, SessionConfig } from './types';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
 import SmallButton from '../../ui/SmallButton/SmallButton';
+import Input from '../../ui/Input/Input';
 
 export type ToolbarProps = {
   sessionState: SessionState;
@@ -21,6 +22,8 @@ export type ToolbarProps = {
   messagesLoadedPerSecond: { prev: number, now: number };
   messagesProcessedPerSecond: { prev: number, now: number };
   onToggleConsoleClick: () => void;
+  displayMessagesLimit: number;
+  onDisplayMessagesLimitChange: (limit: number) => void;
 };
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
@@ -119,6 +122,19 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           <div className={s.MessagesLoadedStat}>
             <strong className={s.MessagesLoadedStatValue}>{i18n.formatLongNumber(props.messagesLoadedPerSecond.now)}</strong>
             <span className={s.MessagesLoadedStatTitle}>&nbsp;per second</span>
+          </div>
+        </div>
+
+        <div className={s.MessagesLoadedStats}>
+          <div className={s.MessagesLoadedStat}>
+            <strong className={s.MessagesLoadedStatValue}>
+              <Input
+                type="number"
+                value={props.displayMessagesLimit}
+                onChange={v => props.onDisplayMessagesLimitChange(Number(v))}
+              />
+            </strong>
+            <span className={s.MessagesLoadedStatTitle}>&nbsp; max messages shown</span>
           </div>
         </div>
       </div>

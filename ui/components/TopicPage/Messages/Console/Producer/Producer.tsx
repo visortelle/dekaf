@@ -34,7 +34,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
   const [key, setKey] = React.useState<string>(props.preset.key);
   const [valueType, setValueType] = React.useState<ValueType>('json');
   const [value, setValue] = React.useState<string>('');
-  const [producerName, setProducerName] = React.useState<string>(`__xray_prod_` + nanoid());
+  const producerName = React.useRef<string>(`__xray_prod_` + nanoid());
   const [eventTime, setEventTime] = React.useState<Date | undefined>(undefined);
   const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>("{}");
   const { notifyError, notifySuccess } = Notifications.useContext();
@@ -42,7 +42,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
 
   const sendMessage = async () => {
     const sendReq: SendRequest = new SendRequest();
-    sendReq.setProducerName(producerName);
+    sendReq.setProducerName(producerName.current);
 
     const messageValue = valueToBytes(value, valueType);
 
@@ -55,7 +55,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
         notifyError(validationErr);
         return;
       }
-      
+
       const isValid = Object.entries(properties).every(([_, value]) => typeof value === 'string');
       if (!isValid) {
         notifyError(validationErr);
@@ -106,11 +106,11 @@ const Producer: React.FC<ProducerProps> = (props) => {
 
   const cleanup = useCallback(async () => {
     const deleteProducerRequest = new DeleteProducerRequest();
-    deleteProducerRequest.setProducerName(producerName);
+    deleteProducerRequest.setProducerName(producerName.current);
     const res = await producerServiceClient.deleteProducer(deleteProducerRequest, {});
 
     if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to delete producer ${producerName}: ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to delete producer ${producerName.current}: ${res.getStatus()?.getMessage()}`);
     }
   }, [producerName]);
 
@@ -130,12 +130,12 @@ const Producer: React.FC<ProducerProps> = (props) => {
     }
 
     const createProducerReq: CreateProducerRequest = new CreateProducerRequest();
-    createProducerReq.setProducerName(producerName);
+    createProducerReq.setProducerName(producerName.current);
     createProducerReq.setTopic(props.preset.topic);
-    const res = await producerServiceClient.createProducer(createProducerReq, {}).catch(err => notifyError(`Unable to create producer ${producerName}: ${err}`));
+    const res = await producerServiceClient.createProducer(createProducerReq, {}).catch(err => notifyError(`Unable to create producer ${producerName.current}: ${err}`));
 
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to create producer ${producerName}: ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to create producer ${producerName.current}: ${res.getStatus()?.getMessage()}`);
     }
   }
 

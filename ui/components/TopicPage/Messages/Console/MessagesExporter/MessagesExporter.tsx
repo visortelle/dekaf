@@ -12,6 +12,10 @@ import { localStorageKeys } from '../../../../local-storage-keys';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { ErrorBoundary } from 'react-error-boundary';
 import MessageFieldsConfig from './MessageFieldsConfig/MessageFieldsConfig';
+import Button from '../../../../ui/Button/Button';
+import { genJsonFileContent } from './exporters/json';
+import exportIcon from './export.svg';
+import { saveFile } from './files';
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[],
@@ -62,6 +66,8 @@ const defaultExportConfig: ExportConfig = {
 };
 
 const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig, onConfigChange: (config: ExportConfig) => void }> = (props) => {
+  const [lastProcessedMessageIndex, setLastProcessedMessageIndex] = useState<undefined | number>();
+
   if (!props.isVisible) {
     return <></>;
   }
@@ -70,8 +76,8 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
     <div className={s.MessagesExporter}>
       <div className={s.ResetSettingsButton}>
         <SmallButton
-          type='primary'
-          text='Reset settings'
+          type='regular'
+          text='Reset export configuration'
           onClick={() => props.onConfigChange(defaultExportConfig)}
         />
       </div>
@@ -113,17 +119,17 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
           </FormItem>
 
           {isCsvOutput(props.config) && (
-              <CsvConfigInput
-                value={props.config.csvConfig}
-                onChange={(v) => {
-                  if (!isCsvOutput(props.config)) {
-                    return;
-                  }
+            <CsvConfigInput
+              value={props.config.csvConfig}
+              onChange={(v) => {
+                if (!isCsvOutput(props.config)) {
+                  return;
+                }
 
-                  props.onConfigChange({ ...props.config, csvConfig: v })
-                }}
-              />
-            )}
+                props.onConfigChange({ ...props.config, csvConfig: v })
+              }}
+            />
+          )}
         </div>
       </FormItem>
 
@@ -138,6 +144,30 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
           </div>
         </FormItem>
       )}
+
+      <FormItem>
+        <Button
+          type='primary'
+          text='Export'
+          svgIcon={exportIcon}
+          onClick={() => {
+            switch (props.config.format.type) {
+              case 'json': {
+                const fileContent = genJsonFileContent({
+                  messages: props.messages,
+                  config: props.config,
+                });
+                const fileContentBlob = new Blob([fileContent], { type: 'application/json' });
+                saveFile(fileContentBlob, 'messages.json');
+              }; break;
+              default: console.log('Not implemented');
+            }
+          }}
+        />
+        {lastProcessedMessageIndex !== undefined && (
+          <div>Messages processed: {lastProcessedMessageIndex + 1} / {props.messages.length}</div>
+        )}
+      </FormItem>
     </div>
   );
 }
@@ -172,11 +202,6 @@ const MessagesExporter = (props: MessagesExporterProps) => {
 function isCsvOutput(config: ExportConfig): boolean {
   return config.format.type === 'csv' || config.format.type === 'csv-values-only' || config.format.type === 'csv-bytes-only';
 }
-
-function isJsonOutput(config: ExportConfig): boolean {
-  return config.format.type === 'json' || config.format.type === 'json-values-only' || config.format.type === 'json-bytes-only';
-}
-
 function isMessageFieldsConfigurable(config: ExportConfig): boolean {
   return config.format.type === 'json' || config.format.type === 'csv';
 }

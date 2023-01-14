@@ -7,7 +7,7 @@ import _root_.client.client
 import com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector
 import com.typesafe.scalalogging.Logger
 
-import scala.concurrent.duration.MILLISECONDS
+import scala.concurrent.duration.{MILLISECONDS, SECONDS}
 import scala.jdk.CollectionConverters.*
 
 def buildConsumer(
@@ -24,7 +24,9 @@ def buildConsumer(
 
     var consumer = client.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(50) // Too big queue causes long time messages loading after consumer pause.
+        .receiverQueueSize(1) // Too big queue causes long time messages loading after consumer pause.
+        .batchReceivePolicy(BatchReceivePolicy.builder().maxNumMessages(1).timeout(10, SECONDS).build())
+        .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)
         .expireTimeOfIncompleteChunkedMessage(1, java.util.concurrent.TimeUnit.MINUTES)
