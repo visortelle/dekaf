@@ -13,9 +13,8 @@ import * as Notifications from '../../../../app/contexts/Notifications';
 import { ErrorBoundary } from 'react-error-boundary';
 import MessageFieldsConfig from './MessageFieldsConfig/MessageFieldsConfig';
 import Button from '../../../../ui/Button/Button';
-import { genJsonFileContent } from './exporters/json';
 import exportIcon from './export.svg';
-import { saveFile } from './files';
+import * as jsonExporter from './exporters/json';
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[],
@@ -151,14 +150,15 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
           text='Export'
           svgIcon={exportIcon}
           onClick={() => {
+            const exportName = `messages-${new Date().toISOString()}`;
+
             switch (props.config.format.type) {
               case 'json': {
-                const fileContent = genJsonFileContent({
+                jsonExporter.exportMessages({
                   messages: props.messages,
                   config: props.config,
+                  exportName,
                 });
-                const fileContentBlob = new Blob([fileContent], { type: 'application/json' });
-                saveFile(fileContentBlob, 'messages.json');
               }; break;
               default: console.log('Not implemented');
             }

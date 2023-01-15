@@ -24,7 +24,7 @@ def buildConsumer(
 
     var consumer = client.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(1) // Too big queue causes long time messages loading after consumer pause.
+        .receiverQueueSize(50) // Too big queue causes long time messages loading after consumer pause.
         .batchReceivePolicy(BatchReceivePolicy.builder().maxNumMessages(1).timeout(10, SECONDS).build())
         .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)

@@ -1,56 +1,54 @@
 import { MessageDescriptor } from "../../../types";
 import { ExportConfig } from "../types";
-import { takeMessageFields } from "./lib";
+import {
+  takeMessageFields,
+  serializeBigArray,
+  splitMessagesToChunks,
+  MessagesChunk,
+} from "./lib/lib";
+import { saveZipFile, File } from "./lib/files";
 
-type GetJsonFileContentProps = {
-  messages: MessageDescriptor[];
+type GenJsonFileProps = {
+  chunk: MessagesChunk;
   config: ExportConfig;
 };
 
-export function genJsonFileContent(props: GetJsonFileContentProps): Uint8Array {
-  const messages = takeMessageFields(props.messages, props.config.fields);
-  return serializeBigArray(messages);
-}
+export function genJsonFile(props: GenJsonFileProps): File {
+  const messages = takeMessageFields(props.chunk.messages, props.config.fields);
+  const content = new Blob([serializeBigArray(messages)], {
+    type: "application/json",
+  });
 
-export function serializeBigArray<T>(arr: T[]): Uint8Array {
-  const textEncoder = new TextEncoder();
-
-  if (arr.length === 0) {
-    return textEncoder.encode("[]");
+  let name = '';
+  switch(props.chunk.messages.length) {
+    case 0: name = '-.json'; break;
+    case 1: name = `${props.chunk.from + 1}.json`; break;
+    default: name = `${props.chunk.from + 1}-${props.chunk.to}.json`; break;
   }
 
-  const uint8messages = arr.map<Uint8Array>((message) => {
-    const serializedMessage = JSON.stringify(message);
-    return textEncoder.encode(serializedMessage);
-  });
+  return {
+    content,
+    name,
+  };
+}
 
-  const bracketsCharsCount = 2; // '[' and ']'
-  const commasCount = uint8messages.length - 1;
-  const extraCharsCount = bracketsCharsCount + commasCount;
-  const commaAsUint8Array = textEncoder.encode(",");
-  const mergedArray = new Uint8Array(
-    uint8messages.reduce((acc, cur) => acc + cur.length, extraCharsCount)
-  );
+type GenJsonFilesProps = {
+  messages: MessageDescriptor[];
+  config: ExportConfig;
+};
+export function genJsonFiles(props: GenJsonFilesProps): File[] {
+  const maxChunkSize = 100 * 1024 * 1024;
+  const chunks = splitMessagesToChunks(props.messages, maxChunkSize);
+  return chunks.map((chunk) => genJsonFile({ chunk, config: props.config }));
+}
 
-  let mergedLength = 0;
+export type ExportMessagesProps = {
+  messages: MessageDescriptor[];
+  config: ExportConfig;
+  exportName: string;
+};
 
-  mergedArray.set(textEncoder.encode("["), mergedLength);
-  mergedLength += 1;
-
-  uint8messages.forEach((uint8message, i) => {
-    mergedArray.set(uint8message, mergedLength);
-    mergedLength += uint8message.length;
-
-    // Add comma, except for the last message.
-    if (i !== uint8messages.length - 1) {
-      mergedArray.set(commaAsUint8Array, mergedLength);
-      mergedLength += 1;
-      return;
-    }
-  });
-
-  mergedArray.set(textEncoder.encode("]"), mergedLength);
-  mergedLength += 1;
-
-  return mergedArray;
+export function exportMessages(props: ExportMessagesProps) {
+  const files = genJsonFiles(props);
+  saveZipFile(files, `${props.exportName}`);
 }
