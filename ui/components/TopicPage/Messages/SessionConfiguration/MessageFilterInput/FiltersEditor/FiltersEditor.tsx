@@ -299,7 +299,6 @@ const FiltersEditor = (props: Props) => {
       npmPackage.setScope("Scope")
       npmPackage.setPackageName("Package-1")
       npmPackage.setVersion("v1-beta")
-  
       requirement.setNpmPackage(npmPackage);
     } else {
       requirement.setAppVersion("v1-beta");

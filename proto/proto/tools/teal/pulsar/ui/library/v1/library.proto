@@ -62,11 +62,6 @@ message LibraryItemMessagesVisualizationConfig {
 message LibraryItemProducerConfig {
 }
 
-enum RequirementType {
-  REQUIREMENT_TYPE_UNSPECIFIED = 0;
-  REQUIREMENT_TYPE_APP_VERSION = 1;
-  REQUIREMENT_TYPE_NPM_PACKAGE = 2;
-}
 
 message NpmPackageRequirement {
   string scope = 1;
@@ -74,12 +69,15 @@ message NpmPackageRequirement {
   string version = 3;
 }
 
+
+message AppVersion {
+  string version = 1;
+}
+
 message Requirement {
-  string id = 1; // UUID
-  RequirementType type = 2;
   oneof requirement {
     NpmPackageRequirement npm_package = 3;
-    string app_version = 4;
+    AppVersion app_version = 4;
   }
 }
 

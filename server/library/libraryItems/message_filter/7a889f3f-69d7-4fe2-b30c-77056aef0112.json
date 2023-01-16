@@ -1,0 +1,36 @@
+{
+  "id" : "7a889f3f-69d7-4fe2-b30c-77056aef0112",
+  "name" : "New library item",
+  "description" : "Description",
+  "schemaVersion" : "v1-beta",
+  "version" : "v1-beta",
+  "accessConfig" : {
+    "userReadRoles" : [
+      ""
+    ],
+    "userWriteRoles" : [
+      ""
+    ],
+    "topicPatterns" : [
+      ""
+    ]
+  },
+  "requirements" : [
+    {
+      "id" : "97b4c891-7fe2-4c56-8698-262c081875e4",
+      "type" : {
+        "app_version" : {
+          
+        }
+      },
+      "requirement" : {
+        "scope" : "Scope",
+        "packageName" : "Package-1",
+        "version" : "v1-beta"
+      }
+    }
+  ],
+  "libraryItem" : {
+    "code" : ""
+  }
+}

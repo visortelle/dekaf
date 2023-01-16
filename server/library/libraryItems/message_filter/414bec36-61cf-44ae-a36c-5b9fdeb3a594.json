@@ -1,5 +1,5 @@
 {
-  "id" : "5fbac3e5-72a6-4290-b085-59b5f016ce98",
+  "id" : "414bec36-61cf-44ae-a36c-5b9fdeb3a594",
   "name" : "New library item",
   "description" : "Description",
   "schemaVersion" : "v1-beta",
@@ -17,7 +17,7 @@
   },
   "requirements" : [
     {
-      "id" : "27e8f755-368b-444a-96cc-1dc7402c8775",
+      "id" : "8d154924-cc76-4f12-bf35-2b4abaa0fbe0",
       "type" : {
         "app_version" : {
           
@@ -29,5 +29,8 @@
         "version" : "v1-beta"
       }
     }
-  ]
+  ],
+  "libraryItem" : {
+    "code" : ""
+  }
 }
