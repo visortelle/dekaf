@@ -234,24 +234,24 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
 //                        case pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE => RequirementVersion.npm_package
 //                        case _ => RequirementVersion.unspecified
 
+
+                    def requirementFromPb(requirementPb: pb.Requirement): Requirement = requirementPb.requirement match
+                        case pb.Requirement.Requirement.NpmPackage(v) =>
+                            NpmPackage(
+                                "npm_package",
+                                v.scope,
+                                v.packageName,
+                                v.version,
+                            )
+                        case pb.Requirement.Requirement.AppVersion(v) =>
+                            AppVersion(
+                                `type` = "app_version",
+                                version = v.version,
+                            )
+
                     request.libraryItem match
                         case Some(v) =>
-                            val requirements: Array[Requirement] = v.requirements.map(requirement =>
-                               requirement.requirement match
-                                   case Some(v: pb.Requirement.Requirement.NpmPackage) =>
-                                        NpmPackage (
-                                            "npm_package",
-                                            v.value.scope,
-                                            v.value.packageName,
-                                            v.value.version,
-                                        )
-                                   case Some(v: pb.Requirement.Requirement.AppVersion) =>
-                                        AppVersion(
-                                            "app_version",
-                                            v.value.version
-                                        )
-                                   case _ => AppVersion( `type` = "app_version", version = "asd")
-                            ).toArray
+                            val requirements: Array[Requirement] = v.requirements.map(requirementFromPb).toArray
 
                             val accessConfig = v.accessConfig match
                                 case Some(v) => AccessConfigType(
