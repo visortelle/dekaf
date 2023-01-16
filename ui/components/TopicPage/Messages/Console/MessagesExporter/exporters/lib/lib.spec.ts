@@ -86,7 +86,6 @@ describe("splitMessagesToChunks", () => {
     );
 
     const approxMessagesSize = sizeof(messages);
-    console.log("SIZE", approxMessagesSize);
 
     const maxChunkSize = 16 * bytesInMb;
     const chunks = splitMessagesToChunks(messages, maxChunkSize);
@@ -102,25 +101,22 @@ describe("splitMessagesToChunks", () => {
     );
     expect(messagesCountInChunks).toBe(messages.length);
 
+    // Messages in chunks are the same as in input.
+    const messagesInChunks = chunks.reduce<MessageDescriptor[]>(
+      (acc, chunk) => acc.concat(chunk.messages),
+      []
+    );
+    expect(messagesInChunks).toEqual(messages);
+
     // Check that there are enough chunks. We can't rely on the exact count,
     // because we can't 100% rely on the message size calculations.
     const expectedMinChunksCount = Math.ceil(approxMessagesSize / maxChunkSize);
     expect(chunks.length).toBeGreaterThanOrEqual(expectedMinChunksCount);
 
-    // Check message indexes in first chunk.
-    const firstChunk = chunks[0];
-    expect(firstChunk.messages[0].index).toEqual(1);
-    expect(firstChunk.messages[firstChunk.messages.length - 1].index).toEqual(
-      firstChunk.messages.length
-    );
-
-    // Check message indexes in last chunk.
-    const lastChunk = chunks[chunks.length - 1];
-    expect(lastChunk.messages[0].index).toEqual(
-      messages.length - lastChunk.messages.length + 1
-    );
-    expect(lastChunk.messages[lastChunk.messages.length - 1].index).toEqual(
-      messages.length
-    );
+    // Check message indexes for each chunk.
+    chunks.forEach((chunk, i) => {
+      expect(chunk.messages[0].index).toBe(chunk.from);
+      expect(chunk.messages[chunk.messages.length - 1].index).toBe(chunk.to);
+    });
   });
 });

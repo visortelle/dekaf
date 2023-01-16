@@ -31,19 +31,22 @@ export type MessagesChunk = {
 
 export function splitMessagesToChunks(messages: MessageDescriptor[], maxChunkSize: number): MessagesChunk[] {
   const chunks: MessagesChunk[] = [];
+  let lastMessageIndex = 0;
   let fromIndex = 0;
   let toIndex = 0;
   let chunkSize = 0;
 
   messages.forEach((message, i) => {
+    lastMessageIndex = i;
     const messageSize = sizeof(message);
     const isChunkReady = chunkSize + messageSize > maxChunkSize;
 
     if (isChunkReady) {
+      const messagesToAdd = messages.slice(fromIndex, toIndex);
       chunks.push({
-        from: fromIndex + 1,
-        to: toIndex + 1,
-        messages: messages.slice(fromIndex, toIndex),
+        from: messagesToAdd[0].index,
+        to: messagesToAdd[messagesToAdd.length - 1].index,
+        messages: messagesToAdd
       });
 
       fromIndex = i;
@@ -56,9 +59,9 @@ export function splitMessagesToChunks(messages: MessageDescriptor[], maxChunkSiz
   });
 
   chunks.push({
-    from: fromIndex,
-    to: messages.length,
-    messages: messages.slice(fromIndex),
+    from: messages[lastMessageIndex].index,
+    to: messages[messages.length - 1].index,
+    messages: messages.slice(lastMessageIndex),
   });
 
   return chunks;
@@ -71,17 +74,17 @@ export function serializeBigArray<T>(arr: T[]): Uint8Array {
     return textEncoder.encode("[]");
   }
 
-  const uint8messages = arr.map<Uint8Array>((message) => {
+  const serializedItems = arr.map<Uint8Array>((message) => {
     const serializedMessage = JSON.stringify(message);
     return textEncoder.encode(serializedMessage);
   });
 
   const bracketsCharsCount = 2; // '[' and ']'
-  const commasCount = uint8messages.length - 1;
+  const commasCount = serializedItems.length - 1;
   const extraCharsCount = bracketsCharsCount + commasCount;
   const commaAsUint8Array = textEncoder.encode(",");
   const mergedArray = new Uint8Array(
-    uint8messages.reduce((acc, cur) => acc + cur.length, extraCharsCount)
+    serializedItems.reduce((acc, cur) => acc + cur.length, extraCharsCount)
   );
 
   let mergedLength = 0;
@@ -89,12 +92,12 @@ export function serializeBigArray<T>(arr: T[]): Uint8Array {
   mergedArray.set(textEncoder.encode("["), mergedLength);
   mergedLength += 1;
 
-  uint8messages.forEach((uint8message, i) => {
+  serializedItems.forEach((uint8message, i) => {
     mergedArray.set(uint8message, mergedLength);
     mergedLength += uint8message.length;
 
     // Add comma, except for the last message.
-    if (i !== uint8messages.length - 1) {
+    if (i !== serializedItems.length - 1) {
       mergedArray.set(commaAsUint8Array, mergedLength);
       mergedLength += 1;
       return;

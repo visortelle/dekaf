@@ -23,7 +23,7 @@ export function genJsonFile(props: GenJsonFileProps): File {
   switch(props.chunk.messages.length) {
     case 0: name = '-.json'; break;
     case 1: name = `${props.chunk.from + 1}.json`; break;
-    default: name = `${props.chunk.from + 1}-${props.chunk.to}.json`; break;
+    default: name = `${props.chunk.from}-${props.chunk.to}.json`; break;
   }
 
   return {

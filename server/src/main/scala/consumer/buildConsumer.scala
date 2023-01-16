@@ -102,3 +102,5 @@ def buildConsumer(
         case _ => ()
 
     Right(consumer)
+
+os.write
