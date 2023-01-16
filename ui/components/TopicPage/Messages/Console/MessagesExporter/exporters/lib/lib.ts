@@ -1,6 +1,6 @@
 import { MessageDescriptor, PartialMessageDescriptor } from "../../../../types";
 import { MessageFieldsConfig } from "../../types";
-import sizeof from 'object-sizeof';
+import sizeof from "object-sizeof";
 
 export function takeMessageFields(
   messages: MessageDescriptor[],
@@ -23,30 +23,50 @@ export function takeMessageFields(
 
 export type MessagesChunk = {
   // Indexed from 1, to use same index as user sees on the UI.
-  from: number,
+  from: number;
   // Indexed from 1, to use same index as user sees on the UI.
-  to: number,
+  to: number;
   messages: MessageDescriptor[];
 };
 
-export function splitMessagesToChunks(messages: MessageDescriptor[], maxChunkSize: number): MessagesChunk[] {
-  const chunks: MessagesChunk[] = [];
+export function splitMessagesToChunks(
+  messages: MessageDescriptor[],
+  maxBytesPerChunk: number
+): MessagesChunk[] {
+  if (messages.length === 0) {
+    return [];
+  }
+
+  if (messages.length === 1) {
+    return [
+      {
+        from: messages[0].index,
+        to: messages[0].index,
+        messages,
+      },
+    ];
+  }
+
+  let chunks: MessagesChunk[] = [];
   let lastMessageIndex = 0;
   let fromIndex = 0;
   let toIndex = 0;
   let chunkSize = 0;
 
   messages.forEach((message, i) => {
-    lastMessageIndex = i;
     const messageSize = sizeof(message);
-    const isChunkReady = chunkSize + messageSize > maxChunkSize;
 
-    if (isChunkReady) {
+    const isChunkFilled =
+      chunkSize !== 0 && chunkSize + messageSize > maxBytesPerChunk;
+
+    if (isChunkFilled) {
+      lastMessageIndex = i;
+
       const messagesToAdd = messages.slice(fromIndex, toIndex);
       chunks.push({
         from: messagesToAdd[0].index,
         to: messagesToAdd[messagesToAdd.length - 1].index,
-        messages: messagesToAdd
+        messages: messagesToAdd,
       });
 
       fromIndex = i;

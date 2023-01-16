@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { MessageFieldsConfig } from "./types";
 
-export function randMessageFieldsConfig(): MessageFieldsConfig {
+export function genMessageFieldsConfig(): MessageFieldsConfig {
   return {
     fields: [
       {

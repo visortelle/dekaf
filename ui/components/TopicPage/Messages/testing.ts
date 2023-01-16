@@ -1,9 +1,9 @@
-import { MessageDescriptor } from "./types";
+import { MessageDescriptor, PartialMessageDescriptor } from "./types";
 import { faker } from "@faker-js/faker";
 
 const textEncoder = new TextEncoder();
 
-export function randMessageDescriptor(
+export function genMessageDescriptor(
   override?: Partial<MessageDescriptor>
 ): MessageDescriptor {
   return {
@@ -27,6 +27,34 @@ export function randMessageDescriptor(
     size: faker.datatype.number(),
     topic: faker.name.firstName(),
     value: faker.datatype.string(),
-    ...override
+    ...override,
+  };
+}
+
+export function genEmptyMessageDescriptor(
+  override?: PartialMessageDescriptor
+): MessageDescriptor {
+  return {
+    value: "",
+    bytes: Uint8Array.from([]),
+    accum: "",
+    orderingKey: null,
+    brokerPublishTime: 0,
+    debugStdout: "",
+    eventTime: 0,
+    index: 0,
+    isReplicated: false,
+    key: null,
+    messageId: Uint8Array.from([]),
+    producerName: "",
+    properties: {},
+    publishTime: 0,
+    redeliveryCount: 0,
+    replicatedFrom: "",
+    size: 0,
+    schemaVersion: 0,
+    sequenceId: 0,
+    topic: "",
+    ...override,
   };
 }
