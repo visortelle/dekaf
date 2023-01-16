@@ -1,0 +1,33 @@
+{
+  "id" : "5fbac3e5-72a6-4290-b085-59b5f016ce98",
+  "name" : "New library item",
+  "description" : "Description",
+  "schemaVersion" : "v1-beta",
+  "version" : "v1-beta",
+  "accessConfig" : {
+    "userReadRoles" : [
+      ""
+    ],
+    "userWriteRoles" : [
+      ""
+    ],
+    "topicPatterns" : [
+      ""
+    ]
+  },
+  "requirements" : [
+    {
+      "id" : "27e8f755-368b-444a-96cc-1dc7402c8775",
+      "type" : {
+        "app_version" : {
+          
+        }
+      },
+      "requirement" : {
+        "scope" : "Scope",
+        "packageName" : "Package-1",
+        "version" : "v1-beta"
+      }
+    }
+  ]
+}
