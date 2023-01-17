@@ -118,39 +118,42 @@ const FiltersEditor = (props: Props) => {
       const collectionsList = res.getCollectionsList();
       let collections: CollectionsFilters = {};
 
-      collectionsList.map(collection => {
+      collectionsList.map(async collection => {
         const id = collection.getId();
+        const req = new pb.ListLibraryItemsRequest();
+
+        req.setCollectionId(id);
+        req.setItemsType(libraryItemToPb('message_filter'));
+
+        const res = await libraryServiceClient.listLibraryItems(req, {});
+        
+        let filters: Record<string, ChainEntry> = {}
+        res.getLibraryItemsList().map(item => {
+          const id = item.getId();
+
+            filters[id] = {
+              filter: {
+                name: item.getName(),
+                description: item.getDescription(),
+                value: item.getMessageFilter()?.getCode(),
+              }
+          }
+        })
 
         collections[id] = {
           name: collection.getName(),
           description: collection.getDescription(),
-          filters: {},
+          filters: filters,
         }
       });
 
-      Object.keys(collections).map(async (collection) => {
-        const req = new pb.ListLibraryItemsRequest();
-        req.setCollectionId(collection);
-        req.setItemsType(libraryItemToPb('message_filter'));
-        const res = await libraryServiceClient.listLibraryItems(req, {});
-        res.getLibraryItemsList().map(item => {
-          const id = item.getId();
-          collections[collection].filters[id] = {
-            filter: {
-              name: item.getName(),
-              description: item.getDescription(),
-              value: item.getMessageFilter()?.getCode(),
-            }
-          }
-        })
-      })
+ 
 
       setListFilters(collections);
+      console.log(collections)
       return collections;
     }
   );
-
-  useEffect(() => console.log(listFilters), [listFilters])
 
   const useFilter = () => {
     if (!activeCollection || !activeFilter) {
@@ -451,7 +454,6 @@ const FiltersEditor = (props: Props) => {
     }
 
     setActiveFilter(undefined);
-    
     await mutate(swrKey);
   }
 
@@ -486,9 +488,15 @@ const FiltersEditor = (props: Props) => {
     setListFilters(newFilters);
   }
 
+  useEffect(() => {
+    console.log(Object.keys(listFilters))
+    console.log(activeCollection)
+    console.log(activeCollection && listFilters[activeCollection].filters)
+  }, [listFilters, activeCollection])
+
   return (
     <DefaultProvider>
-      <div className={`${s.FiltersEditor}`} key={stringify(collections)}>
+      <div className={`${s.FiltersEditor}`}>
 
         <div className={`${s.Column}`}>
           <div className={`${s.Collections}`}>

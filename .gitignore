@@ -114,3 +114,7 @@ project
 
 # Nix
 result
+
+server/library/collections/
+
+server/library/libraryItems/
