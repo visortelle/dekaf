@@ -288,9 +288,9 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
                     LibraryItemType.consumer_session_config
                 case _ => LibraryItemType.unspecified
 
-            def requirementToPb(requirement: Requirement): pb.Requirement = requirement match
+            def requirementToPb(requirement: Requirement) = requirement match
                 case NpmPackage("npm_package", scope, packageName, version) => NpmPackageRequirement(scope, packageName, version)
-                case AppVersion => pb.AppVersion()
+                case AppVersion("app_version", version) => pb.AppVersion(version)
 
             val collectionJson = os.read(os.pwd/"library"/"collections"/s"${request.collectionId}.json")
             val collection = decode[CollectionType](collectionJson) match
@@ -309,7 +309,7 @@ class LibraryServiceImpl extends LibraryServiceGrpc.LibraryService:
                     item.accessConfig.topicPatterns.toSeq,
                 )
 
-                val requirements: Array[pb.Requirement] = item.requirements.map(requirementToPb)
+                val requirements: Seq[pb.Requirement] = item.requirements.map(requirementToPb)
 
                 val libraryItem: pb.LibraryItem.LibraryItem = item.libraryItem match
                     case MessageFilter => pb.LibraryItem.LibraryItem.MessageFilter()
