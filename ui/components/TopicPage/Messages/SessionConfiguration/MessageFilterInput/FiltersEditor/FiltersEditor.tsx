@@ -88,21 +88,21 @@ const FiltersEditor = (props: Props) => {
     }
   }
 
-  const requirementFromPb = (requirementPb: pb.RequirementType): Requirement => {
-    switch (requirementPb) {
-      case pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION: return 'app_version';
-      case pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE: return 'npm_package';
-      default: throw new Error(`Unknown requirement item: ${requirementPb}`);
-    }
-  }
-  const requirementToPb = (value: Requirement): pb.RequirementType => {
-    switch (value) {
-      case 'app_version':
-        return pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION;
-      case 'npm_package':
-        return pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE;
-    }
-  }
+  // const requirementFromPb = (requirementPb: pb.RequirementType): Requirement => {
+  //   switch (requirementPb) {
+  //     case pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION: return 'app_version';
+  //     case pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE: return 'npm_package';
+  //     default: throw new Error(`Unknown requirement item: ${requirementPb}`);
+  //   }
+  // }
+  // const requirementToPb = (value: Requirement): pb.RequirementType => {
+  //   switch (value) {
+  //     case 'app_version':
+  //       return pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION;
+  //     case 'npm_package':
+  //       return pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE;
+  //   }
+  // }
 
   const { data: collections, error: getCollectionsError } = useSWR(
     swrKey,
@@ -115,6 +115,8 @@ const FiltersEditor = (props: Props) => {
       }
 
       const collectionsList = res.getCollectionsList();
+      console.log(res)
+      console.log(collectionsList)
       let collections: CollectionsFilters = {};
 
       collectionsList.map(collection => {
@@ -291,7 +293,7 @@ const FiltersEditor = (props: Props) => {
 
     const requirement = new pb.Requirement();
     //get id on back
-    requirement.setType(requirementToPb('app_version'));
+    // requirement.setType(requirementToPb('app_version'));
 
     const requir = true;
     if (requir) {
@@ -301,7 +303,7 @@ const FiltersEditor = (props: Props) => {
       npmPackage.setVersion("v1-beta")
       requirement.setNpmPackage(npmPackage);
     } else {
-      requirement.setAppVersion("v1-beta");
+      // requirement.setAppVersion("v1-beta");
     } 
 
     libraryItem.setRequirementsList([requirement]);

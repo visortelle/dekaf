@@ -1,5 +1,5 @@
 {
-  "id" : "414bec36-61cf-44ae-a36c-5b9fdeb3a594",
+  "id" : "08ceb4c3-2b0d-4b81-b78a-78f6b3bd6f25",
   "name" : "New library item",
   "description" : "Description",
   "schemaVersion" : "v1-beta",
@@ -17,17 +17,10 @@
   },
   "requirements" : [
     {
-      "id" : "8d154924-cc76-4f12-bf35-2b4abaa0fbe0",
-      "type" : {
-        "app_version" : {
-          
-        }
-      },
-      "requirement" : {
-        "scope" : "Scope",
-        "packageName" : "Package-1",
-        "version" : "v1-beta"
-      }
+      "type" : "npm_package",
+      "scope" : "Scope",
+      "packageName" : "Package-1",
+      "version" : "v1-beta"
     }
   ],
   "libraryItem" : {
