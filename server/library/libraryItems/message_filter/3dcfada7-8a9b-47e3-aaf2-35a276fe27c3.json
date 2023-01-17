@@ -1,0 +1,29 @@
+{
+  "id" : "3dcfada7-8a9b-47e3-aaf2-35a276fe27c3",
+  "name" : "New library item",
+  "description" : "v1-betaasdasd",
+  "schemaVersion" : "v1-beta",
+  "version" : "v1-beta",
+  "accessConfig" : {
+    "userReadRoles" : [
+      ""
+    ],
+    "userWriteRoles" : [
+      ""
+    ],
+    "topicPatterns" : [
+      ""
+    ]
+  },
+  "requirements" : [
+    {
+      "type" : "npm_package",
+      "scope" : "Scope",
+      "packageName" : "Package-1",
+      "version" : "v1-beta"
+    }
+  ],
+  "libraryItem" : {
+    "code" : "SADsadas"
+  }
+}

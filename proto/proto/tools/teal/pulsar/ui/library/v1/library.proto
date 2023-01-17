@@ -53,22 +53,17 @@ message LibraryItemMessageFilter {
   string code = 1;
 }
 
-message LibraryItemConsumerSessionConfig {
-}
+message LibraryItemConsumerSessionConfig {}
 
-message LibraryItemMessagesVisualizationConfig {
-}
+message LibraryItemMessagesVisualizationConfig {}
 
-message LibraryItemProducerConfig {
-}
-
+message LibraryItemProducerConfig {}
 
 message NpmPackageRequirement {
   string scope = 1;
   string package_name = 2;
   string version = 3;
 }
-
 
 message AppVersion {
   string version = 1;
@@ -105,6 +100,7 @@ message LibraryItem {
 
 message CreateLibraryItemRequest {
   LibraryItem library_item = 1;
+  string collection_id = 2;
 }
 message CreateLibraryItemResponse {
   google.rpc.Status status = 1;
@@ -130,6 +126,8 @@ message UpdateLibraryItemResponse {
 message DeleteLibraryItemRequest {
   string id = 1;
   bool is_force = 2;
+  LibraryItemType items_type = 3;
+  string collection_id = 4;
 }
 message DeleteLibraryItemResponse {
   google.rpc.Status status = 1;

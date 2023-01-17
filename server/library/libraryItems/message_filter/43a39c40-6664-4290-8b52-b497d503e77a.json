@@ -1,0 +1,29 @@
+{
+  "id" : "43a39c40-6664-4290-8b52-b497d503e77a",
+  "name" : "Flurtershyseqweeqwewqewqeqqw",
+  "description" : "bugabugaasd",
+  "schemaVersion" : "v1-beta",
+  "version" : "v1-beta",
+  "accessConfig" : {
+    "userReadRoles" : [
+      ""
+    ],
+    "userWriteRoles" : [
+      ""
+    ],
+    "topicPatterns" : [
+      ""
+    ]
+  },
+  "requirements" : [
+    {
+      "type" : "npm_package",
+      "scope" : "Scope",
+      "packageName" : "Package-1",
+      "version" : "v1-beta"
+    }
+  ],
+  "libraryItem" : {
+    "code" : "PochitosSSSasd"
+  }
+}

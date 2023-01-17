@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { cloneDeep } from 'lodash';
+import _, { cloneDeep } from 'lodash';
 import useSWR, { useSWRConfig } from "swr";
 import { v4 as uuid } from 'uuid';
+import stringify from "safe-stable-stringify";
 
 import { DefaultProvider } from '../../../../../app/contexts/Modals/Modals';
 import * as PulsarGrpcClient from '../../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
@@ -10,7 +11,7 @@ import Button from '../../../../../ui/Button/Button';
 import { H3 } from '../../../../../ui/H/H';
 import Input from '../../../../../ui/Input/Input';
 import ActionButton from '../../../../../ui/ActionButton/ActionButton';
-import Filter, { defaultJsValue } from '../Filter';
+import Filter from '../Filter';
 import * as t from '../types';
 import { swrKeys } from '../../../../../swrKeys';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
@@ -115,32 +116,32 @@ const FiltersEditor = (props: Props) => {
       }
 
       const collectionsList = res.getCollectionsList();
-      console.log(res)
-      console.log(collectionsList)
       let collections: CollectionsFilters = {};
 
       collectionsList.map(collection => {
         const id = collection.getId();
-        const itemList = collection.getCollectionItemIdsList();
 
         collections[id] = {
           name: collection.getName(),
           description: collection.getDescription(),
           filters: {},
         }
-
-        itemList.map(filter => {
-          collections[id].filters[filter] = { filter: { name: "filter name", value: "code", description: "info" }};
-        });
       });
 
       Object.keys(collections).map(async (collection) => {
         const req = new pb.ListLibraryItemsRequest();
-        req.setCollectionId(collection)
-        req.setItemsType(libraryItemToPb('message_filter'))
+        req.setCollectionId(collection);
+        req.setItemsType(libraryItemToPb('message_filter'));
         const res = await libraryServiceClient.listLibraryItems(req, {});
         res.getLibraryItemsList().map(item => {
-          console.log(item)
+          const id = item.getId();
+          collections[collection].filters[id] = {
+            filter: {
+              name: item.getName(),
+              description: item.getDescription(),
+              value: item.getMessageFilter()?.getCode(),
+            }
+          }
         })
       })
 
@@ -148,6 +149,8 @@ const FiltersEditor = (props: Props) => {
       return collections;
     }
   );
+
+  useEffect(() => console.log(listFilters), [listFilters])
 
   const useFilter = () => {
     if (!activeCollection || !activeFilter) {
@@ -176,16 +179,22 @@ const FiltersEditor = (props: Props) => {
     await mutate(swrKey);
   }
 
-  const onUpdateCollection = async (newName?: string) => {
+  type UpdateCollectionProps = {
+    name?: string,
+    description?: string,
+    item?: string,
+  }
+
+  const onUpdateCollection = async (collectionData: UpdateCollectionProps) => {
     if (!activeCollection) {
       return;
     }
 
     const updateCollection = new pb.Collection();
     updateCollection.setId(activeCollection);
-    updateCollection.setName(newName || listFilters[activeCollection].name);
-    updateCollection.setDescription(listFilters[activeCollection].description);
-    updateCollection.setCollectionItemIdsList(Object.keys(listFilters[activeCollection].filters));
+    updateCollection.setName(collectionData.name || listFilters[activeCollection].name);
+    updateCollection.setDescription(collectionData.description || listFilters[activeCollection].description);
+    updateCollection.setCollectionItemIdsList(collectionData.item ? [ ...Object.keys(listFilters[activeCollection].filters), collectionData.item ] : Object.keys(listFilters[activeCollection].filters));
 
     const req = new pb.UpdateCollectionRequest();
     req.setCollection(updateCollection);
@@ -239,43 +248,10 @@ const FiltersEditor = (props: Props) => {
     await mutate(swrKey);
   }
 
-  const onSaveFilter = () => {
-    if (!props.entry || !activeCollection || !listFilters[activeCollection].filters) {
-      return;
-    }
-    const newFilterId = uuid();
-    const chainClone = cloneDeep(listFilters);
-
-    chainClone[activeCollection].filters[newFilterId] = {filter: { ...newFilter, value: props.entry }}
-  }
-
-  const onDuplicateFilter = () => {
-    if (!activeCollection || !activeFilter) {
-      return;
-    }
-
-    const newFilters = cloneDeep(listFilters[activeCollection]);
-    const newFilter = uuid();
-
-    newFilters.filters[newFilter] = cloneDeep(newFilters.filters[activeFilter]);
-    newFilters.filters[newFilter].filter.name += '-duplicate';
-    setListFilters({ ...listFilters, [activeCollection]: newFilters });
-    setActiveFilter(newFilter);
-  }
-
-  const createFilter = async () => {
+  const onCreateFilter = async () => {
     if (!activeCollection) {
       return;
     }
-    
-    // const newFilter = uuid();
-    // const withNewFilter = cloneDeep(listFilters);
-
-    // withNewFilter[activeCollection].filters[newFilter] = {filter: { description: '', value: defaultJsValue, name: 'new filter' }}
-
-    // setListFilters(withNewFilter);
-    // setActiveFilter(newFilter);
-
 
     const req = new pb.CreateLibraryItemRequest();
     const libraryItem = new pb.LibraryItem();
@@ -292,15 +268,13 @@ const FiltersEditor = (props: Props) => {
     libraryItem.setAccessConfig(accessConfig);
 
     const requirement = new pb.Requirement();
-    //get id on back
-    // requirement.setType(requirementToPb('app_version'));
 
     const requir = true;
     if (requir) {
-      const npmPackage = new pb.NpmPackageRequirement()
-      npmPackage.setScope("Scope")
-      npmPackage.setPackageName("Package-1")
-      npmPackage.setVersion("v1-beta")
+      const npmPackage = new pb.NpmPackageRequirement();
+      npmPackage.setScope("Scope");
+      npmPackage.setPackageName("Package-1");
+      npmPackage.setVersion("v1-beta");
       requirement.setNpmPackage(npmPackage);
     } else {
       // requirement.setAppVersion("v1-beta");
@@ -308,12 +282,12 @@ const FiltersEditor = (props: Props) => {
 
     libraryItem.setRequirementsList([requirement]);
 
-    type ItemTypes = 'messageFilter' | 'consumerSessionConfig' | 'messageVizualizationConfig' | 'producerConfig'
-    let itemType: ItemTypes = 'messageFilter'
+    type ItemTypes = 'messageFilter' | 'consumerSessionConfig' | 'messageVizualizationConfig' | 'producerConfig';
+    let itemType: ItemTypes = 'messageFilter';
     switch (itemType) {
       case 'messageFilter':
         const messageFilter = new pb.LibraryItemMessageFilter();
-        messageFilter.setCode("")
+        messageFilter.setCode("");
         libraryItem.setMessageFilter(messageFilter);    
         break;
       // case 'consumerSessionConfig':
@@ -330,26 +304,175 @@ const FiltersEditor = (props: Props) => {
       //   break;
     }
 
-    req.setLibraryItem(libraryItem)
+    req.setLibraryItem(libraryItem);
+    req.setCollectionId(activeCollection);
     const res = await libraryServiceClient.createLibraryItem(req, {});
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to create filter: ${res.getStatus()?.getMessage()}`);
     }
 
+    setActiveFilter(undefined);
     await mutate(swrKey);
   }
 
-  const onDeleteFilter = () => {
+  const onDuplicateFilter = async () => {
     if (!activeCollection || !activeFilter) {
       return;
     }
 
-    const newFilters = cloneDeep(listFilters[activeCollection]);
-    delete newFilters.filters[activeFilter];
+    const req = new pb.CreateLibraryItemRequest();
+    const libraryItem = new pb.LibraryItem();
 
-    setListFilters({ ...listFilters, [activeCollection]: newFilters });
+    libraryItem.setName(listFilters[activeCollection].filters[activeFilter].filter.name);
+    libraryItem.setDescription(listFilters[activeCollection].filters[activeFilter].filter.description);
+    libraryItem.setVersion("v1-beta");
+    libraryItem.setSchemaVersion("v1-beta");
+
+    const accessConfig = new pb.AccessConfig();
+    accessConfig.setTopicPatternsList(['']);
+    accessConfig.setUserReadRolesList(['']);
+    accessConfig.setUserWriteRolesList(['']);
+    libraryItem.setAccessConfig(accessConfig);
+
+    const requirement = new pb.Requirement();
+
+    const requir = true;
+    if (requir) {
+      const npmPackage = new pb.NpmPackageRequirement();
+      npmPackage.setScope("Scope");
+      npmPackage.setPackageName("Package-1");
+      npmPackage.setVersion("v1-beta");
+
+      requirement.setNpmPackage(npmPackage);
+    } else {
+      // requirement.setAppVersion("v1-beta");
+    } 
+
+    libraryItem.setRequirementsList([requirement]);
+
+    type ItemTypes = 'messageFilter' | 'consumerSessionConfig' | 'messageVizualizationConfig' | 'producerConfig';
+    let itemType: ItemTypes = 'messageFilter';
+    switch (itemType) {
+      case 'messageFilter':
+        const messageFilter = new pb.LibraryItemMessageFilter();
+        messageFilter.setCode(listFilters[activeCollection].filters[activeFilter].filter.value || "");
+        libraryItem.setMessageFilter(messageFilter);    
+        break;
+      // case 'consumerSessionConfig':
+      //   const consumerSessionConfig = new pb.LibraryItemConsumerSessionConfig();
+      //   libraryItem.setConsumerSessionConfig(consumerSessionConfig);
+      //   break;
+      // case 'messageVizualizationConfig':
+      //   const messageVizualizationConfig = new pb.LibraryItemMessagesVisualizationConfig();
+      //   libraryItem.setMessagesVisualizationConfig(messageVizualizationConfig);
+      //   break;
+      // case 'producerConfig':
+      //   const producerConfig = new pb.LibraryItemProducerConfig();
+      //   libraryItem.setProducerConfig(producerConfig);
+      //   break;
+    }
+
+    req.setLibraryItem(libraryItem);
+    req.setCollectionId(activeCollection);
+    const res = await libraryServiceClient.createLibraryItem(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to duplicate filter: ${res.getStatus()?.getMessage()}`);
+    }
+
     setActiveFilter(undefined);
+    await mutate(swrKey);
+  }
+
+  const onSaveFilter = async () => {
+    if (!activeCollection || !activeFilter) {
+      return;
+    }
+
+    const req = new pb.UpdateLibraryItemRequest();
+    const libraryItem = new pb.LibraryItem();
+
+    libraryItem.setId(activeFilter);
+    libraryItem.setName(listFilters[activeCollection].filters[activeFilter].filter.name);
+    libraryItem.setDescription(listFilters[activeCollection].filters[activeFilter].filter.description);
+    libraryItem.setVersion("v1-beta");
+    libraryItem.setSchemaVersion("v1-beta");
+
+    const accessConfig = new pb.AccessConfig();
+    accessConfig.setTopicPatternsList(['']);
+    accessConfig.setUserReadRolesList(['']);
+    accessConfig.setUserWriteRolesList(['']);
+    libraryItem.setAccessConfig(accessConfig);
+
+    const requirement = new pb.Requirement();
+
+    const requir = true;
+    if (requir) {
+      const npmPackage = new pb.NpmPackageRequirement();
+      npmPackage.setScope("Scope");
+      npmPackage.setPackageName("Package-1");
+      npmPackage.setVersion("v1-beta");
+
+      requirement.setNpmPackage(npmPackage);
+    } else {
+      // requirement.setAppVersion("v1-beta");
+    } 
+
+    libraryItem.setRequirementsList([requirement]);
+
+    type ItemTypes = 'messageFilter' | 'consumerSessionConfig' | 'messageVizualizationConfig' | 'producerConfig';
+    let itemType: ItemTypes = 'messageFilter';
+    switch (itemType) {
+      case 'messageFilter':
+        const messageFilter = new pb.LibraryItemMessageFilter();
+        messageFilter.setCode(listFilters[activeCollection].filters[activeFilter].filter.value || "");
+        libraryItem.setMessageFilter(messageFilter);    
+        break;
+      // case 'consumerSessionConfig':
+      //   const consumerSessionConfig = new pb.LibraryItemConsumerSessionConfig();
+      //   libraryItem.setConsumerSessionConfig(consumerSessionConfig);
+      //   break;
+      // case 'messageVizualizationConfig':
+      //   const messageVizualizationConfig = new pb.LibraryItemMessagesVisualizationConfig();
+      //   libraryItem.setMessagesVisualizationConfig(messageVizualizationConfig);
+      //   break;
+      // case 'producerConfig':
+      //   const producerConfig = new pb.LibraryItemProducerConfig();
+      //   libraryItem.setProducerConfig(producerConfig);
+      //   break;
+    }
+
+    req.setLibraryItem(libraryItem);
+    const res = await libraryServiceClient.updateLibraryItem(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to update filter: ${res.getStatus()?.getMessage()}`);
+    }
+
+    setActiveFilter(undefined);
+    
+    await mutate(swrKey);
+  }
+
+  const onDeleteFilter = async () => {
+    if (!activeCollection || !activeFilter) {
+      return;
+    }
+
+    const req = new pb.DeleteLibraryItemRequest();
+    req.setId(activeFilter);
+    req.setCollectionId(activeCollection);
+
+    const res = await libraryServiceClient.deleteLibraryItem(req, {});
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to delete filter: ${res.getStatus()?.getMessage()}`);
+    }
+
+    setActiveFilter(undefined);
+
+    await mutate(swrKey);
   }
 
   const onChangeFilter = (value: EditorFilter) => {
@@ -363,69 +486,9 @@ const FiltersEditor = (props: Props) => {
     setListFilters(newFilters);
   }
 
-  // useEffect(() => {
-  //   const deleteME = async () => {
-  //     const req = new pb.CreateLibraryItemRequest();
-  //     const libraryItem = new pb.LibraryItem();
-
-  //     //get id on back
-  //     libraryItem.setName("New library item");
-  //     libraryItem.setDescription("Description");
-  //     libraryItem.setVersion("v1-beta");
-  //     libraryItem.setSchemaVersion("v1-beta");
-
-  //     const accessConfig = new pb.AccessConfig();
-  //     accessConfig.setTopicPatternsList([]);
-  //     accessConfig.setUserReadRolesList([]);
-  //     accessConfig.setUserWriteRolesList([]);
-  //     libraryItem.setAccessConfig(accessConfig);
-
-  //     const requirement = new pb.Requirement();
-  //     //get id on back
-  //     requirement.setType(requirementToPb('app_version'));
-  //     // one of start
-  //     const npmPackage = new pb.NpmPackageRequirement()
-  //     npmPackage.setScope("Scope")
-  //     npmPackage.setPackageName("Package-1")
-  //     npmPackage.setVersion("v1-beta")
-
-  //     requirement.setNpmPackage(npmPackage);
-  //     requirement.setAppVersion("v1-beta");
-
-  //     // one of end
-
-  //     libraryItem.setRequirementsList([requirement]);
-
-  //     // one of start
-  //     const messageFilter = new pb.LibraryItemMessageFilter();
-  //     messageFilter.setCode("")
-  //     libraryItem.setMessageFilter(messageFilter);
-
-  //     const consumerSessionConfig = new pb.LibraryItemConsumerSessionConfig();
-  //     libraryItem.setConsumerSessionConfig(consumerSessionConfig);
-
-  //     const messageVizualizationConfig = new pb.LibraryItemMessagesVisualizationConfig();
-  //     libraryItem.setMessagesVisualizationConfig(messageVizualizationConfig);
-
-  //     const producerConfig = new pb.LibraryItemProducerConfig();
-  //     libraryItem.setProducerConfig(producerConfig);
-
-  //     // one of end
-
-  //     req.setLibraryItem(libraryItem)
-  //     const res = await libraryServiceClient.createLibraryItem(req, {});
-
-  //     if (res.getStatus()?.getCode() !== Code.OK) {
-  //       notifyError(`Unable to delete collection: ${res.getStatus()?.getMessage()}`);
-  //     }
-  //   }
-
-  //   deleteME();
-  // }, [])
-
   return (
     <DefaultProvider>
-      <div className={`${s.FiltersEditor}`}>
+      <div className={`${s.FiltersEditor}`} key={stringify(collections)}>
 
         <div className={`${s.Column}`}>
           <div className={`${s.Collections}`}>
@@ -497,7 +560,7 @@ const FiltersEditor = (props: Props) => {
                   />
                   <Button
                     type="primary"
-                    onClick={() => onUpdateCollection(renameCollection)}
+                    onClick={() => onUpdateCollection({ name: renameCollection})}
                     disabled={!renameCollection}
                     text="Rename"
                   />
@@ -545,7 +608,7 @@ const FiltersEditor = (props: Props) => {
             />
             <Button
               svgIcon={createIcon}
-              onClick={() => createFilter()}
+              onClick={() => onCreateFilter()}
               type='primary'
               title="Create filter"
               disabled={!activeCollection}
@@ -619,7 +682,8 @@ const FiltersEditor = (props: Props) => {
         <Button
           type='primary'
           text='Save'
-          onClick={() => {props.entry ? onSaveFilter() : onUpdateCollection()}}
+          // onClick={() => {props.entry ? onSaveFilter() : onUpdateCollection({})}}
+          onClick={() => onSaveFilter()}
         />
         {!props.entry &&
           <Button
