@@ -130,7 +130,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             <strong className={s.MessagesLoadedStatValue}>
               <Input
                 type="number"
-                value={props.displayMessagesLimit}
+                value={String(props.displayMessagesLimit)}
                 onChange={v => props.onDisplayMessagesLimitChange(Number(v))}
               />
             </strong>
