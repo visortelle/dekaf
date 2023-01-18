@@ -1,17 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useSWRConfig } from 'swr';
+import { v4 as uuid } from 'uuid';
+import { cloneDeep } from 'lodash';
 
 import ActionButton from '../../../../../../ui/ActionButton/ActionButton';
 import Button from '../../../../../../ui/Button/Button';
 import { H3 } from '../../../../../../ui/H/H';
 import Input from '../../../../../../ui/Input/Input';
+import * as pb from '../../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
+import { Code } from '../../../../../../../grpc-web/google/rpc/code_pb';
+import * as Notifications from '../../../../../../app/contexts/Notifications';
+import * as PulsarGrpcClient from '../../../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import { swrKeys } from '../../../../../../swrKeys';
+import { CollectionsFilters } from '../FiltersEditor';
 
 import deleteIcon from '../../icons/delete.svg';
 import createIcon from '../../icons/create.svg';
 import duplicateIcon from '../../icons/duplicate.svg';
 import editIcon from '../../icons/edit.svg';
 
-const Collections = () => {
+import s from '../FiltersEditor.module.css';
 
+type Props = {
+  activeCollection: string | undefined,
+  activeFilter: string | undefined,
+  listFilters: CollectionsFilters,
+  entry?: string,
+
+  setActiveCollection: (collection: undefined | string) => void,
+  setActiveFilter: (filter: undefined | string) => void,
+  setListFilters: (filters: CollectionsFilters) => void,
+}
+
+const Collections = (props: Props) => {
+
+  const { libraryServiceClient } = PulsarGrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
+  const { mutate } = useSWRConfig();
+
+  const swrKey = swrKeys.pulsar.filters._();
+
+  const { activeCollection, listFilters, entry, activeFilter, setActiveCollection, setActiveFilter, setListFilters, } = props;
+
+  const [renameCollection, setRenameCollection] = useState<string | undefined>();
 
   const onCreateCollection = async () => {
     const collection = new pb.Collection()
@@ -33,6 +64,38 @@ const Collections = () => {
     name?: string,
     description?: string,
     item?: string,
+  }
+
+  const addNewFilter = (collection: string) => {
+    if (props.entry != undefined) {
+      const newFilterId = uuid().toString();
+
+      const newCollection = cloneDeep(listFilters);
+
+      if (activeCollection && activeFilter) {
+        delete newCollection[activeCollection].filters[activeFilter];
+      }
+
+      newCollection[collection].filters[newFilterId] = {
+        schemaVersion: "",
+        version: "",
+        accessConfig: {
+          userReadRoles: [],
+          userWriteRoles: [],
+          topicPatterns: []
+        },
+        filter: {
+          name: "New filter",
+          description: "",
+          value: props.entry,
+        },
+        requirements: [],
+        libraryItem: { code: props.entry }
+      }
+
+      setListFilters(newCollection);
+      setActiveFilter(newFilterId);
+    }
   }
 
   const onUpdateCollection = async (collectionData: UpdateCollectionProps) => {
@@ -94,6 +157,18 @@ const Collections = () => {
     setActiveCollection(undefined);
     setActiveFilter(undefined);
     await mutate(swrKey);
+  }
+
+  const switchCollection = (collection: string) => {
+    if (entry == undefined) {
+      setActiveFilter(undefined);
+    }
+
+    if (entry != undefined) {
+      addNewFilter(collection);
+    }
+
+    setActiveCollection(collection);
   }
 
   return (

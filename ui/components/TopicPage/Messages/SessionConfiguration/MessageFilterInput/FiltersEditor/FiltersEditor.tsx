@@ -8,21 +8,16 @@ import * as PulsarGrpcClient from '../../../../../app/contexts/PulsarGrpcClient/
 import * as Notifications from '../../../../../app/contexts/Notifications';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import Button from '../../../../../ui/Button/Button';
-import { H3 } from '../../../../../ui/H/H';
 import Input from '../../../../../ui/Input/Input';
-import ActionButton from '../../../../../ui/ActionButton/ActionButton';
 import Filter from '../Filter';
 import * as t from '../types';
 import { swrKeys } from '../../../../../swrKeys';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
 
-import deleteIcon from '../icons/delete.svg';
-import createIcon from '../icons/create.svg';
-import duplicateIcon from '../icons/duplicate.svg';
-import editIcon from '../icons/edit.svg';
-
 import s from './FiltersEditor.module.css';
+import Collections from './Collections/Collections';
+import Filters from './Filters/Filters';
 
 type Props = {
   entry?: string,
@@ -72,7 +67,7 @@ type Collection = {
   filters: Record<string, ChainEntry>,
 }
 
-type CollectionsFilters = {
+export type CollectionsFilters = {
   [collection: string]: Collection,
 }
 
@@ -84,7 +79,6 @@ const FiltersEditor = (props: Props) => {
   const [activeFilter, setActiveFilter] = useState<string | undefined>();
   const [listFilters, setListFilters] = useState<CollectionsFilters>({});
   const [usedFilters, setUsedFilters] = useState(props.filters);
-  const [renameCollection, setRenameCollection] = useState<string | undefined>();
 
   const { notifyError } = Notifications.useContext();
   const { libraryServiceClient } = PulsarGrpcClient.useContext();
@@ -112,38 +106,6 @@ const FiltersEditor = (props: Props) => {
         return pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER;
       case 'producer_config':
         return pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_CONFIG;
-    }
-  }
-
-  const addNewFilter = (collection: string) => {
-    if (props.entry != undefined) {
-      const newFilterId = uuid().toString();
-
-      const newCollection = cloneDeep(listFilters);
-
-      if (activeCollection && activeFilter) {
-        delete newCollection[activeCollection].filters[activeFilter];
-      }
-
-      newCollection[collection].filters[newFilterId] = {
-        schemaVersion: "",
-        version: "",
-        accessConfig: {
-          userReadRoles: [],
-          userWriteRoles: [],
-          topicPatterns: []
-        },
-        filter: {
-          name: "New filter",
-          description: "",
-          value: props.entry,
-        },
-        requirements: [],
-        libraryItem: { code: props.entry }
-      }
-
-      setListFilters(newCollection);
-      setActiveFilter(newFilterId);
     }
   }
 
@@ -298,56 +260,6 @@ const FiltersEditor = (props: Props) => {
     await mutate(swrKey);
   }
 
-  const onDuplicateFilter = async () => {
-    if (!activeCollection || !activeFilter) {
-      return;
-    }
-
-    const req = new pb.CreateLibraryItemRequest();
-    const libraryItem = new pb.LibraryItem();
-
-    libraryItem.setName(listFilters[activeCollection].filters[activeFilter].filter.name);
-    libraryItem.setDescription(listFilters[activeCollection].filters[activeFilter].filter.description);
-    libraryItem.setVersion("v1-beta");
-    libraryItem.setSchemaVersion("v1-beta");
-
-    const accessConfig = new pb.AccessConfig();
-    accessConfig.setTopicPatternsList(['']);
-    accessConfig.setUserReadRolesList(['']);
-    accessConfig.setUserWriteRolesList(['']);
-    libraryItem.setAccessConfig(accessConfig);
-
-    const requirement = new pb.Requirement();
-
-    const requir = true;
-    if (requir) {
-      const npmPackage = new pb.NpmPackageRequirement();
-      npmPackage.setScope("Scope");
-      npmPackage.setPackageName("Package-1");
-      npmPackage.setVersion("v1-beta");
-
-      requirement.setNpmPackage(npmPackage);
-    } else {
-      // requirement.setAppVersion("v1-beta");
-    } 
-
-    libraryItem.setRequirementsList([requirement]);
-
-    const messageFilter = new pb.LibraryItemMessageFilter();
-    messageFilter.setCode(listFilters[activeCollection].filters[activeFilter].filter.value || "");
-    libraryItem.setMessageFilter(messageFilter);    
-
-    req.setLibraryItem(libraryItem);
-    req.setCollectionId(activeCollection);
-    const res = await libraryServiceClient.createLibraryItem(req, {});
-
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to duplicate filter: ${res.getStatus()?.getMessage()}`);
-    }
-
-    await mutate(swrKey);
-  }
-
   const onUpdateFilter = async () => {
     if (!activeCollection || !activeFilter) {
       return;
@@ -398,25 +310,6 @@ const FiltersEditor = (props: Props) => {
     await mutate(swrKey);
   }
 
-  const onDeleteFilter = async () => {
-    if (!activeCollection || !activeFilter) {
-      return;
-    }
-
-    const req = new pb.DeleteLibraryItemRequest();
-    req.setId(activeFilter);
-    req.setCollectionId(activeCollection);
-
-    const res = await libraryServiceClient.deleteLibraryItem(req, {});
-
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to delete filter: ${res.getStatus()?.getMessage()}`);
-    }
-
-    setActiveFilter(undefined);
-    await mutate(swrKey);
-  }
-
   const onChangeFilter = (value: EditorFilter) => {
     if (activeFilter === undefined || !activeCollection) {
       return;
@@ -428,67 +321,27 @@ const FiltersEditor = (props: Props) => {
     setListFilters(newFilters);
   }
 
-
-  const switchCollection = (collection: string) => {
-    if (props.entry == undefined) {
-      setActiveFilter(undefined);
-    }
-
-    if (props.entry != undefined) {
-      addNewFilter(collection);
-    }
-
-    setActiveCollection(collection);
-  }
-
   return (
     <DefaultProvider>
       <div className={`${s.FiltersEditor}`}>
 
-   
+        <Collections
+          activeCollection={activeCollection}
+          activeFilter={activeFilter}
+          listFilters={listFilters}
+          setActiveCollection={setActiveCollection}
+          setActiveFilter={setActiveFilter}
+          setListFilters={setListFilters}
+        />
 
-        <div className={`${s.Column}`}>
-          <div className={`${s.Filters}`}>
-            <H3>
-              Filters
-            </H3>
-            {activeCollection && listFilters[activeCollection].filters &&
-              Object.keys(listFilters[activeCollection].filters).map(filter => (
-                <span
-                  key={filter}
-                  onClick={() => { props.entry == undefined && setActiveFilter(filter) }}
-                  className={`${s.Inactive} ${activeFilter === filter && s.Active} ${filter.length === 0 && s.Empty}`}
-                >
-                  {listFilters[activeCollection].filters[filter].filter.name}
-                  {listFilters[activeCollection].filters[filter].filter.name.length === 0 && 'write filter name'}
-                </span>
-              ))
-            }
-          </div>
-          <div className={`${s.Buttons}`}>
-            <Button
-              svgIcon={deleteIcon}
-              onClick={() => onDeleteFilter()}
-              type="danger"
-              title="Delete filter"
-              disabled={!activeFilter || props.entry != undefined}
-            />
-            <Button
-              svgIcon={duplicateIcon}
-              onClick={() => onDuplicateFilter()}
-              type="primary"
-              title="Duplicate filter"
-              disabled={!activeFilter || props.entry != undefined}
-            />
-            <Button
-              svgIcon={createIcon}
-              onClick={() => onCreateFilter()}
-              type='primary'
-              title="Create filter"
-              disabled={!activeCollection || props.entry != undefined}
-            />
-          </div>
-        </div>
+        {/* Filters */}
+        <Filters
+          activeCollection={activeCollection}
+          activeFilter={activeFilter}
+          listFilters={listFilters}
+          setActiveFilter={setActiveFilter}
+          onCreateFilter={onCreateFilter}
+        />
 
         <div className={`${s.Column}`}>
           {activeFilter && activeCollection && listFilters[activeCollection].filters[activeFilter] ?
