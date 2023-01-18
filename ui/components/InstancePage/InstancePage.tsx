@@ -1,14 +1,16 @@
 import React from 'react';
-import s from './InstancePage.module.css'
-import Overview from './Overview/Overview';
-import Configuration from './Configuration/Configuration';
+
 import Toolbar from '../ui/Toolbar/Toolbar';
-import { routes } from '../routes';
+import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
+import Head from '../ui/Head/Head';
 import Tenants from './Tenants/Tenants';
 import CreateTenantPage from './CreateTenantPage/CreateTenantPage';
-import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import ResourceGroups from './ResourceGroups/ResourceGroups';
-import KeyValueEditor from '../ui/KeyValueEditor/KeyValueEditor';
+import Overview from './Overview/Overview';
+import Configuration from './Configuration/Configuration';
+import { routes } from '../routes';
+
+import s from './InstancePage.module.css'
 
 export type InstancePageView =
   { type: 'overview' } |
@@ -26,6 +28,7 @@ export type InstancePageProps = {
 const InstancePage: React.FC<InstancePageProps> = (props) => {
   return (
     <div className={s.Page}>
+      <Head page='instance' />
       <div className={s.PageContent}>
         <BreadCrumbsAtPageTop
           crumbs={[

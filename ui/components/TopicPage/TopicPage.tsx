@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import Helmet from 'react-helmet'
 
 import * as Modals from '../app/contexts/Modals/Modals';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
@@ -12,6 +11,7 @@ import DeleteDialog from './DeleteDialog/DeleteDialog';
 import { routes } from '../routes';
 
 import s from './TopicPage.module.css'
+import Head from '../ui/Head/Head';
 
 export type TopicPageView = 'messages' | 'overview' | 'producers' | 'consumers' | 'schema' | 'policies';
 export type TopicPageProps = {
@@ -96,14 +96,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   return (
     <div className={s.Page}>
+      <Head page='topic' />
 
-
-      <Helmet>
-        <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:8090/ui/static/favicon/new-favicon.png?v=3" />
-        <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:8090/ui/static/favicon/new-favicon.png?v=3" />
-      </Helmet>
-
-      {/* <Helmet link={[{"href": "./favicon2.ico"}]} /> */}
       <BreadCrumbsAtPageTop
         crumbs={[
           {

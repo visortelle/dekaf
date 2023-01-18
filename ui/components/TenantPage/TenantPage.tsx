@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import * as Modals from '../app/contexts/Modals/Modals';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
+import Head from '../ui/Head/Head';
 import Configuration from './Configuration/Configuration';
 import Overview from './Overview/Overview';
 import Namespaces from './Namespaces/Namespaces';
@@ -11,7 +12,7 @@ import DeleteDialog from './DeleteDialog/DeleteDialog';
 import CreateNamespace from './CreateNamespace/CreateNamespace';
 import { routes } from '../routes';
 
-import s from './TenantPage.module.css'
+import s from './TenantPage.module.css';
 
 export type TenantPageView = 'overview' | 'namespaces' | 'configuration' | 'create-namespace';
 export type TenantPageProps = {
@@ -27,6 +28,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
 
   return (
     <div className={s.Page}>
+      <Head page='tenant' />
       <BreadCrumbsAtPageTop
         crumbs={[
           {

@@ -9,6 +9,7 @@ import DeleteDialog from './DeleteDialog/DeleteDialog'
 import SubscriptionPermissions from './SubscriptionPermissions/SubscriptionPermissions';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import Toolbar from '../ui/Toolbar/Toolbar';
+import Head from '../ui/Head/Head';
 import * as Modals from '../app/contexts/Modals/Modals';
 import { routes } from '../routes';
 
@@ -29,6 +30,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
 
   return (
     <div className={s.Page}>
+      <Head page='namespace' />
       <BreadCrumbsAtPageTop
         crumbs={[
           {
