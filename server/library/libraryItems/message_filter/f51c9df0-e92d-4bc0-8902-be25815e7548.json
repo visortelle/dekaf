@@ -1,0 +1,29 @@
+{
+  "id" : "f51c9df0-e92d-4bc0-8902-be25815e7548",
+  "name" : "New filterdsfsd",
+  "description" : "fdsfdsfdsf",
+  "schemaVersion" : "v1-beta",
+  "version" : "v1-beta",
+  "accessConfig" : {
+    "userReadRoles" : [
+      ""
+    ],
+    "userWriteRoles" : [
+      ""
+    ],
+    "topicPatterns" : [
+      ""
+    ]
+  },
+  "requirements" : [
+    {
+      "type" : "npm_package",
+      "scope" : "Scope",
+      "packageName" : "Package-1",
+      "version" : "v1-beta"
+    }
+  ],
+  "libraryItem" : {
+    "code" : "fdsfsfsdf"
+  }
+}

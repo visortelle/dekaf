@@ -1,0 +1,29 @@
+{
+  "id" : "972ca7e9-dde6-49d1-be29-981d7f710563",
+  "name" : "asdadNew library item",
+  "description" : "Description",
+  "schemaVersion" : "v1-beta",
+  "version" : "v1-beta",
+  "accessConfig" : {
+    "userReadRoles" : [
+      ""
+    ],
+    "userWriteRoles" : [
+      ""
+    ],
+    "topicPatterns" : [
+      ""
+    ]
+  },
+  "requirements" : [
+    {
+      "type" : "npm_package",
+      "scope" : "Scope",
+      "packageName" : "Package-1",
+      "version" : "v1-beta"
+    }
+  ],
+  "libraryItem" : {
+    "code" : "dadsa"
+  }
+}

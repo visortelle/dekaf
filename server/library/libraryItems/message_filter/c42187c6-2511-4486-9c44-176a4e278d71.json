@@ -1,0 +1,29 @@
+{
+  "id" : "c42187c6-2511-4486-9c44-176a4e278d71",
+  "name" : "New library item",
+  "description" : "Descriptiondasdas",
+  "schemaVersion" : "v1-beta",
+  "version" : "v1-beta",
+  "accessConfig" : {
+    "userReadRoles" : [
+      ""
+    ],
+    "userWriteRoles" : [
+      ""
+    ],
+    "topicPatterns" : [
+      ""
+    ]
+  },
+  "requirements" : [
+    {
+      "type" : "npm_package",
+      "scope" : "Scope",
+      "packageName" : "Package-1",
+      "version" : "v1-beta"
+    }
+  ],
+  "libraryItem" : {
+    "code" : "dsad"
+  }
+}
