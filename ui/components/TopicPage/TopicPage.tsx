@@ -97,7 +97,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
   return (
     <div className={s.Page}>
       <Head page='topic' />
-
       <BreadCrumbsAtPageTop
         crumbs={[
           {
