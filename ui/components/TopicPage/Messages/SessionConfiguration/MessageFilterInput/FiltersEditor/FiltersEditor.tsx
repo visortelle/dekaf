@@ -35,8 +35,35 @@ export type EditorFilter = t.Filter & {
   description: string,
 }
 
+type AccessConfig = {
+  userReadRoles: string[],
+  userWriteRoles: string[],
+  topicPatterns: string[],
+}
+
+type NpmPackage = {
+  scope: string,
+  packageName: string,
+  version: string,
+}
+
+type AppVersion = {
+  version: string,
+}
+
+type Requirement = NpmPackage | AppVersion
+
+type MessageFilter = {
+  code: string,
+}
+
 type ChainEntry = {
   filter: EditorFilter,
+  schemaVersion: string,
+  version: string,
+  accessConfig: AccessConfig,
+  requirements: Requirement[],
+  libraryItem: MessageFilter,
 }
 
 type Collection = {
@@ -50,7 +77,7 @@ type CollectionsFilters = {
 }
 
 type LibraryItem = 'message_filter' | 'consumer_session_config' | 'messages_visualization_config' | 'producer_config';
-type Requirement = 'app_version' | 'npm_package';
+// type Requirement = 'app_version' | 'npm_package';
 
 const FiltersEditor = (props: Props) => {
 
@@ -118,7 +145,7 @@ const FiltersEditor = (props: Props) => {
       const collectionsList = res.getCollectionsList();
       let collections: CollectionsFilters = {};
 
-      collectionsList.map(async collection => {
+      await Promise.all(collectionsList.map(async collection => {
         const id = collection.getId();
         const req = new pb.ListLibraryItemsRequest();
 
@@ -127,30 +154,47 @@ const FiltersEditor = (props: Props) => {
 
         const res = await libraryServiceClient.listLibraryItems(req, {});
         
-        let filters: Record<string, ChainEntry> = {}
-        res.getLibraryItemsList().map(item => {
+        let filters: Record<string, ChainEntry> = {};
+        const _ = res.getLibraryItemsList().map(item => {
           const id = item.getId();
-
-            filters[id] = {
-              filter: {
-                name: item.getName(),
-                description: item.getDescription(),
-                value: item.getMessageFilter()?.getCode(),
+          const requirements = item.getRequirementsList().map(requirement => {
+            if (requirement.getAppVersion()) {
+              return { version: requirement.getAppVersion()?.toString() || '' }
+            } else {
+              return {
+                scope: requirement.getNpmPackage()?.getScope() || '',
+                version: requirement.getNpmPackage()?.getVersion() || '',
+                packageName: requirement.getNpmPackage()?.getPackageName() || ''
               }
+            }
+          })
+
+
+          filters[id] = {
+            filter: {
+              name: item.getName(),
+              description: item.getDescription(),
+              value: item.getMessageFilter()?.getCode(),
+            },
+            schemaVersion: item.getSchemaVersion(),
+            version: item.getVersion(),
+            accessConfig: {
+              userReadRoles: item.getAccessConfig()?.getUserReadRolesList() || [],
+              userWriteRoles: item.getAccessConfig()?.getUserWriteRolesList() || [],
+              topicPatterns: item.getAccessConfig()?.getTopicPatternsList() || []},
+            requirements: requirements,
+            libraryItem: { code: item.getLibraryItemCase().toString()}, // TODO FIX, WRONG DATA
           }
         })
-
         collections[id] = {
           name: collection.getName(),
           description: collection.getDescription(),
           filters: filters,
         }
-      });
+      }));
 
- 
-
-      setListFilters(collections);
       console.log(collections)
+      setListFilters(collections);
       return collections;
     }
   );
@@ -228,8 +272,6 @@ const FiltersEditor = (props: Props) => {
       notifyError(`Unable to create collection: ${res.getStatus()?.getMessage()}`);
     }
 
-    setActiveCollection(undefined);
-    setActiveFilter(undefined);
     await mutate(swrKey);
   }
 
@@ -315,7 +357,6 @@ const FiltersEditor = (props: Props) => {
       notifyError(`Unable to create filter: ${res.getStatus()?.getMessage()}`);
     }
 
-    setActiveFilter(undefined);
     await mutate(swrKey);
   }
 
@@ -384,7 +425,6 @@ const FiltersEditor = (props: Props) => {
       notifyError(`Unable to duplicate filter: ${res.getStatus()?.getMessage()}`);
     }
 
-    setActiveFilter(undefined);
     await mutate(swrKey);
   }
 
@@ -453,7 +493,6 @@ const FiltersEditor = (props: Props) => {
       notifyError(`Unable to update filter: ${res.getStatus()?.getMessage()}`);
     }
 
-    setActiveFilter(undefined);
     await mutate(swrKey);
   }
 
@@ -473,7 +512,6 @@ const FiltersEditor = (props: Props) => {
     }
 
     setActiveFilter(undefined);
-
     await mutate(swrKey);
   }
 
@@ -487,12 +525,6 @@ const FiltersEditor = (props: Props) => {
 
     setListFilters(newFilters);
   }
-
-  useEffect(() => {
-    console.log(Object.keys(listFilters))
-    console.log(activeCollection)
-    console.log(activeCollection && listFilters[activeCollection].filters)
-  }, [listFilters, activeCollection])
 
   return (
     <DefaultProvider>
