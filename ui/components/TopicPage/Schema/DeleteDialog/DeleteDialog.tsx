@@ -51,6 +51,7 @@ const DeleteDialog = (props: Props) => {
       }
       onConfirm={deleteSchema}
       onCancel={modals.pop}
+      type='danger'
     />
   );
 }

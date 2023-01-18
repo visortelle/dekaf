@@ -66,6 +66,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
       onConfirm={deleteTenant}
       onCancel={modals.pop}
       guard={props.tenant}
+      type='danger'
     />
   );
 }
