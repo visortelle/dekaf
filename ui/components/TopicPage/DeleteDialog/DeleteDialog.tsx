@@ -69,6 +69,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
       onConfirm={deleteTopic}
       onCancel={modals.pop}
       guard={props.topic}
+      type='danger'
     />
   );
 }

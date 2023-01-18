@@ -53,6 +53,7 @@ const RevokeDialog = (props: Props) => {
       }
       onConfirm={revoke}
       onCancel={modals.pop}
+      type='danger'
     />
   );
 }
