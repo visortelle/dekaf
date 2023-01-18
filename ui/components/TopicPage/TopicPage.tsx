@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router';
 import useSWR from 'swr';
 
 import * as Modals from '../app/contexts/Modals/Modals';
-import * as PulsarGrpcClient from '../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as Notifications from '../app/contexts/Notifications';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import Toolbar, { ToolbarButtonProps } from '../ui/Toolbar/Toolbar';
 import Session from './Messages/Messages';
@@ -12,9 +10,6 @@ import Schema from './Schema/Schema';
 import Policies from './Policies/Policies';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
 import { routes } from '../routes';
-import { swrKeys } from '../swrKeys';
-import * as pb from '../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
-import { Code } from '../../grpc-web/google/rpc/code_pb';
 
 import s from './TopicPage.module.css'
 
@@ -31,8 +26,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   const modals = Modals.useContext();
   const navigate = useNavigate();
-  const { notifyError } = Notifications.useContext();
-  const { libraryServiceClient } = PulsarGrpcClient.useContext();
 
   const key = `${props.tenant}-${props.namespace}-${props.topic}`;
 

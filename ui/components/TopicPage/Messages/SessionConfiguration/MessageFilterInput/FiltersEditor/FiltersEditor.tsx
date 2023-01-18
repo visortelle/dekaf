@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import _, { cloneDeep } from 'lodash';
 import useSWR, { useSWRConfig } from "swr";
 import { v4 as uuid } from 'uuid';
-import stringify from "safe-stable-stringify";
 
 import { DefaultProvider } from '../../../../../app/contexts/Modals/Modals';
 import * as PulsarGrpcClient from '../../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../../../../app/contexts/Notifications';
+import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import Button from '../../../../../ui/Button/Button';
 import { H3 } from '../../../../../ui/H/H';
 import Input from '../../../../../ui/Input/Input';
@@ -77,7 +77,6 @@ type CollectionsFilters = {
 }
 
 type LibraryItem = 'message_filter' | 'consumer_session_config' | 'messages_visualization_config' | 'producer_config';
-// type Requirement = 'app_version' | 'npm_package';
 
 const FiltersEditor = (props: Props) => {
 
@@ -85,24 +84,24 @@ const FiltersEditor = (props: Props) => {
   const [activeFilter, setActiveFilter] = useState<string | undefined>();
   const [listFilters, setListFilters] = useState<CollectionsFilters>({});
   const [usedFilters, setUsedFilters] = useState(props.filters);
-  const [newFilter, setNewFilter] = useState({ name: 'new filter', description: '' });
   const [renameCollection, setRenameCollection] = useState<string | undefined>();
 
   const { notifyError } = Notifications.useContext();
   const { libraryServiceClient } = PulsarGrpcClient.useContext();
   const { mutate } = useSWRConfig();
+  const modals = Modals.useContext();
 
   const swrKey = swrKeys.pulsar.filters._();
 
-  const libraryItemFromPb = (libraryItemPb: pb.LibraryItemType): LibraryItem  => {
-    switch (libraryItemPb) {
-      case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG: return 'consumer_session_config';
-      case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION_CONFIG: return 'messages_visualization_config';
-      case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER: return 'message_filter';
-      case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_CONFIG: return 'producer_config';
-      default: throw new Error(`Unknown library item: ${libraryItemPb}`);
-    }
-  }
+  // const libraryItemFromPb = (libraryItemPb: pb.LibraryItemType): LibraryItem  => {
+  //   switch (libraryItemPb) {
+  //     case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG: return 'consumer_session_config';
+  //     case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGES_VISUALIZATION_CONFIG: return 'messages_visualization_config';
+  //     case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER: return 'message_filter';
+  //     case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_CONFIG: return 'producer_config';
+  //     default: throw new Error(`Unknown library item: ${libraryItemPb}`);
+  //   }
+  // }
   const libraryItemToPb = (value: LibraryItem): pb.LibraryItemType => {
     switch (value) {
       case 'consumer_session_config':
@@ -116,21 +115,37 @@ const FiltersEditor = (props: Props) => {
     }
   }
 
-  // const requirementFromPb = (requirementPb: pb.RequirementType): Requirement => {
-  //   switch (requirementPb) {
-  //     case pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION: return 'app_version';
-  //     case pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE: return 'npm_package';
-  //     default: throw new Error(`Unknown requirement item: ${requirementPb}`);
-  //   }
-  // }
-  // const requirementToPb = (value: Requirement): pb.RequirementType => {
-  //   switch (value) {
-  //     case 'app_version':
-  //       return pb.RequirementType.REQUIREMENT_TYPE_APP_VERSION;
-  //     case 'npm_package':
-  //       return pb.RequirementType.REQUIREMENT_TYPE_NPM_PACKAGE;
-  //   }
-  // }
+  const addNewFilter = (collection: string) => {
+    if (props.entry != undefined) {
+      const newFilterId = uuid().toString();
+
+      const newCollection = cloneDeep(listFilters);
+
+      if (activeCollection && activeFilter) {
+        delete newCollection[activeCollection].filters[activeFilter];
+      }
+
+      newCollection[collection].filters[newFilterId] = {
+        schemaVersion: "",
+        version: "",
+        accessConfig: {
+          userReadRoles: [],
+          userWriteRoles: [],
+          topicPatterns: []
+        },
+        filter: {
+          name: "New filter",
+          description: "",
+          value: props.entry,
+        },
+        requirements: [],
+        libraryItem: { code: props.entry }
+      }
+
+      setListFilters(newCollection);
+      setActiveFilter(newFilterId);
+    }
+  }
 
   const { data: collections, error: getCollectionsError } = useSWR(
     swrKey,
@@ -169,7 +184,6 @@ const FiltersEditor = (props: Props) => {
             }
           })
 
-
           filters[id] = {
             filter: {
               name: item.getName(),
@@ -183,9 +197,10 @@ const FiltersEditor = (props: Props) => {
               userWriteRoles: item.getAccessConfig()?.getUserWriteRolesList() || [],
               topicPatterns: item.getAccessConfig()?.getTopicPatternsList() || []},
             requirements: requirements,
-            libraryItem: { code: item.getLibraryItemCase().toString()}, // TODO FIX, WRONG DATA
+            libraryItem: { code: item.getLibraryItemCase().toString()}, 
           }
         })
+
         collections[id] = {
           name: collection.getName(),
           description: collection.getDescription(),
@@ -193,7 +208,28 @@ const FiltersEditor = (props: Props) => {
         }
       }));
 
-      console.log(collections)
+      if (props.entry != undefined && activeCollection) {
+        const newFilterId = uuid().toString();
+
+        collections[activeCollection].filters[newFilterId] = {
+          schemaVersion: "",
+          version: "",
+          accessConfig: {
+            userReadRoles: [],
+            userWriteRoles: [],
+            topicPatterns: []
+          },
+          filter: {
+            name: "New filter",
+            description: "",
+            value: props.entry,
+          },
+          requirements: [],
+          libraryItem: { code: props.entry }
+        }
+        setActiveFilter(newFilterId)
+      }
+
       setListFilters(collections);
       return collections;
     }
@@ -293,7 +329,7 @@ const FiltersEditor = (props: Props) => {
     await mutate(swrKey);
   }
 
-  const onCreateFilter = async () => {
+  const onCreateFilter = async (filled?: boolean) => {
     if (!activeCollection) {
       return;
     }
@@ -301,8 +337,8 @@ const FiltersEditor = (props: Props) => {
     const req = new pb.CreateLibraryItemRequest();
     const libraryItem = new pb.LibraryItem();
 
-    libraryItem.setName("New library item");
-    libraryItem.setDescription("Description");
+    libraryItem.setName(filled && activeFilter ? listFilters[activeCollection].filters[activeFilter].filter.name : "New library item");
+    libraryItem.setDescription(filled && activeFilter ? listFilters[activeCollection].filters[activeFilter].filter.description : "Description");
     libraryItem.setVersion("v1-beta");
     libraryItem.setSchemaVersion("v1-beta");
 
@@ -327,27 +363,9 @@ const FiltersEditor = (props: Props) => {
 
     libraryItem.setRequirementsList([requirement]);
 
-    type ItemTypes = 'messageFilter' | 'consumerSessionConfig' | 'messageVizualizationConfig' | 'producerConfig';
-    let itemType: ItemTypes = 'messageFilter';
-    switch (itemType) {
-      case 'messageFilter':
-        const messageFilter = new pb.LibraryItemMessageFilter();
-        messageFilter.setCode("");
-        libraryItem.setMessageFilter(messageFilter);    
-        break;
-      // case 'consumerSessionConfig':
-      //   const consumerSessionConfig = new pb.LibraryItemConsumerSessionConfig();
-      //   libraryItem.setConsumerSessionConfig(consumerSessionConfig);
-      //   break;
-      // case 'messageVizualizationConfig':
-      //   const messageVizualizationConfig = new pb.LibraryItemMessagesVisualizationConfig();
-      //   libraryItem.setMessagesVisualizationConfig(messageVizualizationConfig);
-      //   break;
-      // case 'producerConfig':
-      //   const producerConfig = new pb.LibraryItemProducerConfig();
-      //   libraryItem.setProducerConfig(producerConfig);
-      //   break;
-    }
+    const messageFilter = new pb.LibraryItemMessageFilter();
+    messageFilter.setCode(filled && activeFilter && listFilters[activeCollection].filters[activeFilter].filter.value || "");
+    libraryItem.setMessageFilter(messageFilter);
 
     req.setLibraryItem(libraryItem);
     req.setCollectionId(activeCollection);
@@ -356,6 +374,8 @@ const FiltersEditor = (props: Props) => {
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to create filter: ${res.getStatus()?.getMessage()}`);
     }
+
+    filled && modals.pop();
 
     await mutate(swrKey);
   }
@@ -395,27 +415,9 @@ const FiltersEditor = (props: Props) => {
 
     libraryItem.setRequirementsList([requirement]);
 
-    type ItemTypes = 'messageFilter' | 'consumerSessionConfig' | 'messageVizualizationConfig' | 'producerConfig';
-    let itemType: ItemTypes = 'messageFilter';
-    switch (itemType) {
-      case 'messageFilter':
-        const messageFilter = new pb.LibraryItemMessageFilter();
-        messageFilter.setCode(listFilters[activeCollection].filters[activeFilter].filter.value || "");
-        libraryItem.setMessageFilter(messageFilter);    
-        break;
-      // case 'consumerSessionConfig':
-      //   const consumerSessionConfig = new pb.LibraryItemConsumerSessionConfig();
-      //   libraryItem.setConsumerSessionConfig(consumerSessionConfig);
-      //   break;
-      // case 'messageVizualizationConfig':
-      //   const messageVizualizationConfig = new pb.LibraryItemMessagesVisualizationConfig();
-      //   libraryItem.setMessagesVisualizationConfig(messageVizualizationConfig);
-      //   break;
-      // case 'producerConfig':
-      //   const producerConfig = new pb.LibraryItemProducerConfig();
-      //   libraryItem.setProducerConfig(producerConfig);
-      //   break;
-    }
+    const messageFilter = new pb.LibraryItemMessageFilter();
+    messageFilter.setCode(listFilters[activeCollection].filters[activeFilter].filter.value || "");
+    libraryItem.setMessageFilter(messageFilter);    
 
     req.setLibraryItem(libraryItem);
     req.setCollectionId(activeCollection);
@@ -428,7 +430,7 @@ const FiltersEditor = (props: Props) => {
     await mutate(swrKey);
   }
 
-  const onSaveFilter = async () => {
+  const onUpdateFilter = async () => {
     if (!activeCollection || !activeFilter) {
       return;
     }
@@ -464,27 +466,9 @@ const FiltersEditor = (props: Props) => {
 
     libraryItem.setRequirementsList([requirement]);
 
-    type ItemTypes = 'messageFilter' | 'consumerSessionConfig' | 'messageVizualizationConfig' | 'producerConfig';
-    let itemType: ItemTypes = 'messageFilter';
-    switch (itemType) {
-      case 'messageFilter':
-        const messageFilter = new pb.LibraryItemMessageFilter();
-        messageFilter.setCode(listFilters[activeCollection].filters[activeFilter].filter.value || "");
-        libraryItem.setMessageFilter(messageFilter);    
-        break;
-      // case 'consumerSessionConfig':
-      //   const consumerSessionConfig = new pb.LibraryItemConsumerSessionConfig();
-      //   libraryItem.setConsumerSessionConfig(consumerSessionConfig);
-      //   break;
-      // case 'messageVizualizationConfig':
-      //   const messageVizualizationConfig = new pb.LibraryItemMessagesVisualizationConfig();
-      //   libraryItem.setMessagesVisualizationConfig(messageVizualizationConfig);
-      //   break;
-      // case 'producerConfig':
-      //   const producerConfig = new pb.LibraryItemProducerConfig();
-      //   libraryItem.setProducerConfig(producerConfig);
-      //   break;
-    }
+    const messageFilter = new pb.LibraryItemMessageFilter();
+    messageFilter.setCode(listFilters[activeCollection].filters[activeFilter].filter.value || "");
+    libraryItem.setMessageFilter(messageFilter);    
 
     req.setLibraryItem(libraryItem);
     const res = await libraryServiceClient.updateLibraryItem(req, {});
@@ -526,6 +510,19 @@ const FiltersEditor = (props: Props) => {
     setListFilters(newFilters);
   }
 
+
+  const switchCollection = (collection: string) => {
+    if (props.entry == undefined) {
+      setActiveFilter(undefined);
+    }
+
+    if (props.entry != undefined) {
+      addNewFilter(collection);
+    }
+
+    setActiveCollection(collection);
+  }
+
   return (
     <DefaultProvider>
       <div className={`${s.FiltersEditor}`}>
@@ -538,7 +535,7 @@ const FiltersEditor = (props: Props) => {
             {Object.keys(listFilters).map(collection => (
               <span
                 key={collection}
-                onClick={() => {setActiveCollection(collection), setActiveFilter(undefined)}}
+                onClick={() => switchCollection(collection)}
                 className={`${s.Inactive} ${activeCollection === collection && s.Active}`}
               >
                 {listFilters[collection].name}
@@ -620,9 +617,7 @@ const FiltersEditor = (props: Props) => {
               Object.keys(listFilters[activeCollection].filters).map(filter => (
                 <span
                   key={filter}
-                  onClick={() => {
-                    setActiveFilter(filter);
-                  }}
+                  onClick={() => { props.entry == undefined && setActiveFilter(filter) }}
                   className={`${s.Inactive} ${activeFilter === filter && s.Active} ${filter.length === 0 && s.Empty}`}
                 >
                   {listFilters[activeCollection].filters[filter].filter.name}
@@ -637,29 +632,26 @@ const FiltersEditor = (props: Props) => {
               onClick={() => onDeleteFilter()}
               type="danger"
               title="Delete filter"
-              disabled={!activeFilter}
+              disabled={!activeFilter || props.entry != undefined}
             />
             <Button
               svgIcon={duplicateIcon}
               onClick={() => onDuplicateFilter()}
               type="primary"
               title="Duplicate filter"
-              disabled={!activeFilter}
+              disabled={!activeFilter || props.entry != undefined}
             />
             <Button
               svgIcon={createIcon}
               onClick={() => onCreateFilter()}
               type='primary'
               title="Create filter"
-              disabled={!activeCollection}
+              disabled={!activeCollection || props.entry != undefined}
             />
           </div>
         </div>
 
         <div className={`${s.Column}`}>
-          <H3>
-            Filter info
-          </H3>
           {activeFilter && activeCollection && listFilters[activeCollection].filters[activeFilter] ?
             <>
               <span>Name</span>
@@ -680,52 +672,27 @@ const FiltersEditor = (props: Props) => {
             </span>
           }
         </div>
-        {props.entry &&
-          <div className={`${s.Column}`}>
-            <H3>
-              New filter info
-            </H3>
-            <span>Name</span>
-            <Input
-              value={newFilter.name}
-              onChange={(value) => setNewFilter({...newFilter, name: value})}
-              placeholder="message-filter"
-            />
-            <span>Description</span>
-            <Input
-              value={newFilter.description}
-              onChange={(value) => setNewFilter({...newFilter, description: value})}
-              placeholder="useful filter"
-            />
-          </div>
-        }
 
-        {!props.entry &&
-          <div className={`${s.Column} ${s.JsonEditor}`} key={`${activeCollection}-${activeFilter}`}>
-            <H3>
-              Json code editor
-            </H3>
-            {activeFilter && activeCollection ?
-              <Filter
-                value={listFilters[activeCollection].filters[activeFilter].filter}
-                onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, ...value })}
-              /> :
-              <span>
-                Choose filter
-              </span>
-            }
-          </div>
-        }
+        <div className={`${s.Column} ${s.JsonEditor}`} key={`${activeCollection}-${activeFilter}`}>
+          {activeFilter && activeCollection ?
+            <Filter
+              value={listFilters[activeCollection].filters[activeFilter].filter}
+              onChange={(value) =>  onChangeFilter({ ...listFilters[activeCollection].filters[activeFilter].filter, ...value })}
+            /> :
+            <span>
+              Choose filter
+            </span>
+          }
+        </div>
 
       </div>
       <div className={s.MainButtons}>
         <Button
           type='primary'
           text='Save'
-          // onClick={() => {props.entry ? onSaveFilter() : onUpdateCollection({})}}
-          onClick={() => onSaveFilter()}
+          onClick={() => props.entry != undefined ? onCreateFilter(true) : onUpdateFilter()}
         />
-        {!props.entry &&
+        {props.entry == undefined &&
           <Button
             type='primary'
             text='Use'

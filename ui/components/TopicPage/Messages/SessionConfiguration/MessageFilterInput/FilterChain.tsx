@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { v4 as uuid } from 'uuid';
 import { cloneDeep } from 'lodash';
-import useSWR from 'swr';
 
 import Button from '../../../../ui/Button/Button';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
@@ -10,11 +9,6 @@ import * as t from './types';
 import Filter from './Filter';
 import FiltersEditor from './FiltersEditor/FiltersEditor';
 import * as Modals from '../../../../app/contexts/Modals/Modals';
-import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as Notifications from '../../../../app/contexts/Notifications';
-import { swrKeys } from '../../../../swrKeys';
-import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
-import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 
 import deleteIcon from './icons/delete.svg';
 import enableIcon from './icons/enable.svg';
@@ -30,26 +24,6 @@ export type FilterChainProps = {
 const FilterChain: React.FC<FilterChainProps> = (props) => {
 
   const modals = Modals.useContext();
-  const { notifyError } = Notifications.useContext();
-  const { libraryServiceClient } = PulsarGrpcClient.useContext();
-
-  // const { data: collections, error: getCollectionsError } = useSWR(
-  //   swrKeys.pulsar.tenants.tenant.namespaces.namespace.filters._({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal  }),
-  //   async () => {
-  //     const req = new pb.ListCollectionsRequest();
-  //     const res = await libraryServiceClient.listCollections(req, {});
-
-  //     if (res.getStatus()?.getCode() !== Code.OK) {
-  //       notifyError(`Unable to get deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
-  //     }
-
-  //     return res.getCollectionsList();
-  //   }
-  // );
-
-  // useEffect(() => {
-  //   console.log(collections)
-  // }, [collections]);
 
   return (
     <div className={s.FilterChain}>
@@ -101,7 +75,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                       <FiltersEditor
                         filters={props.value.filters}
                         onChange={(f) => props.onChange({ ...props.value, filters: f })}
-                        entry={entry.filter.value }
+                        entry={entry.filter.value || ''}
                       />,
                     styleMode: 'no-content-padding'
                   })}
