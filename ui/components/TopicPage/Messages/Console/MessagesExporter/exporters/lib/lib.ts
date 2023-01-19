@@ -22,11 +22,11 @@ export function takeMessageFields(
 }
 
 export type MessagesChunk = {
-  messages: MessageDescriptor[];
+  messages: PartialMessageDescriptor[];
 };
 
 export function splitMessagesToChunks(
-  messages: MessageDescriptor[],
+  messages: PartialMessageDescriptor[],
   maxBytesPerChunk: number
 ): MessagesChunk[] {
   if (messages.length === 0) {

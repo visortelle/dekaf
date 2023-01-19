@@ -12,13 +12,19 @@ import { partialMessageDescriptorToJson } from "../../../conversions";
 export type GenJsonFileProps = {
   chunk: MessagesChunk;
   config: ExportConfig;
+
+  // In case there are no indexes in first and last messages in a chunk,
+  // we can use this as a fallback for the file name.
+  fileNameFallback: string;
 };
 
 export function genJsonFile(props: GenJsonFileProps): File {
-  const messages = takeMessageFields(props.chunk.messages, props.config.fields);
-  const content = new Blob([serializeBigArray(messages, partialMessageDescriptorToJson)], {
-    type: "application/json",
-  });
+  const content = new Blob(
+    [serializeBigArray(props.chunk.messages, partialMessageDescriptorToJson)],
+    {
+      type: "application/json",
+    }
+  );
 
   let name = "";
   switch (props.chunk.messages.length) {
@@ -26,9 +32,19 @@ export function genJsonFile(props: GenJsonFileProps): File {
       name = "-.json";
       break;
     default:
-      name = `${props.chunk.messages[0].index}-${
-        props.chunk.messages[props.chunk.messages.length - 1].index
-      }.json`;
+      {
+        const firstMessageIndex = props.chunk.messages[0].index;
+        const lastMessageIndex =
+          props.chunk.messages[props.chunk.messages.length - 1].index;
+        const isUseFileNameFallback =
+          firstMessageIndex === undefined || lastMessageIndex === undefined;
+
+        name = isUseFileNameFallback
+          ? props.fileNameFallback
+          : `${props.chunk.messages[0].index}-${
+              props.chunk.messages[props.chunk.messages.length - 1].index
+            }.json`;
+      }
       break;
   }
 
@@ -44,8 +60,12 @@ type GenJsonFilesProps = {
 };
 export function genJsonFiles(props: GenJsonFilesProps): File[] {
   const maxChunkSize = 100 * 1024 * 1024;
-  const chunks = splitMessagesToChunks(props.messages, maxChunkSize);
-  return chunks.map((chunk) => genJsonFile({ chunk, config: props.config }));
+  const messages = takeMessageFields(props.messages, props.config.fields);
+  const chunks = splitMessagesToChunks(messages, maxChunkSize);
+
+  return chunks.map((chunk, i) =>
+    genJsonFile({ chunk, config: props.config, fileNameFallback: `chunk-${i}.json` })
+  );
 }
 
 export type ExportMessagesProps = {

@@ -3,7 +3,7 @@ import {
   genMessageDescriptor,
 } from "../../../../testing";
 import { genMessageFieldsConfig } from "../../testing";
-import { MessageDescriptor } from "../../../../types";
+import { MessageDescriptor, PartialMessageDescriptor } from "../../../../types";
 import { MessageFieldsConfig } from "../../types";
 import {
   takeMessageFields,
@@ -154,7 +154,7 @@ describe("splitMessagesToChunks", () => {
       const chunks = splitMessagesToChunks(messages, maxBytesPerChunk);
 
       // Messages in chunks are the same as input.
-      const messagesInChunks = chunks.reduce<MessageDescriptor[]>(
+      const messagesInChunks = chunks.reduce<PartialMessageDescriptor[]>(
         (acc, chunk) => acc.concat(chunk.messages),
         []
       );
