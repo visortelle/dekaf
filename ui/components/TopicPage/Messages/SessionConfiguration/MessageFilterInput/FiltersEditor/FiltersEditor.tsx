@@ -7,17 +7,17 @@ import { DefaultProvider } from '../../../../../app/contexts/Modals/Modals';
 import * as PulsarGrpcClient from '../../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
 import * as Notifications from '../../../../../app/contexts/Notifications';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
-import Button from '../../../../../ui/Button/Button';
 import Input from '../../../../../ui/Input/Input';
 import Filter from '../Filter';
 import * as t from '../types';
 import { swrKeys } from '../../../../../swrKeys';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
-
-import s from './FiltersEditor.module.css';
 import Collections from './Collections/Collections';
 import Filters from './Filters/Filters';
+import MainButtons from './MainButtons/MainButtons';
+
+import s from './FiltersEditor.module.css';
 
 type Props = {
   entry?: string,
@@ -85,7 +85,7 @@ const FiltersEditor = (props: Props) => {
   const { mutate } = useSWRConfig();
   const modals = Modals.useContext();
 
-  const swrKey = swrKeys.pulsar.filters._();
+  const swrKey = swrKeys.pulsar.library.filters._();
 
   // const libraryItemFromPb = (libraryItemPb: pb.LibraryItemType): LibraryItem  => {
   //   switch (libraryItemPb) {
@@ -197,18 +197,6 @@ const FiltersEditor = (props: Props) => {
     }
   );
 
-  const useFilter = () => {
-    if (!activeCollection || !activeFilter) {
-      return;
-    }
-
-    const newFilter: string = listFilters[activeCollection].filters[activeFilter].filter.value || '';
-    const newChain: Record<string, t.ChainEntry> = { ...usedFilters,  [uuid()]: { filter: { value: newFilter } } };
-    props.onChange(newChain);
-    setUsedFilters(newChain);
-  }
-
-
   const onCreateFilter = async (filled?: boolean) => {
     if (!activeCollection) {
       return;
@@ -256,56 +244,6 @@ const FiltersEditor = (props: Props) => {
     }
 
     filled && modals.pop();
-
-    await mutate(swrKey);
-  }
-
-  const onUpdateFilter = async () => {
-    if (!activeCollection || !activeFilter) {
-      return;
-    }
-
-    const req = new pb.UpdateLibraryItemRequest();
-    const libraryItem = new pb.LibraryItem();
-
-    libraryItem.setId(activeFilter);
-    libraryItem.setName(listFilters[activeCollection].filters[activeFilter].filter.name);
-    libraryItem.setDescription(listFilters[activeCollection].filters[activeFilter].filter.description);
-    libraryItem.setVersion("v1-beta");
-    libraryItem.setSchemaVersion("v1-beta");
-
-    const accessConfig = new pb.AccessConfig();
-    accessConfig.setTopicPatternsList(['']);
-    accessConfig.setUserReadRolesList(['']);
-    accessConfig.setUserWriteRolesList(['']);
-    libraryItem.setAccessConfig(accessConfig);
-
-    const requirement = new pb.Requirement();
-
-    const requir = true;
-    if (requir) {
-      const npmPackage = new pb.NpmPackageRequirement();
-      npmPackage.setScope("Scope");
-      npmPackage.setPackageName("Package-1");
-      npmPackage.setVersion("v1-beta");
-
-      requirement.setNpmPackage(npmPackage);
-    } else {
-      // requirement.setAppVersion("v1-beta");
-    } 
-
-    libraryItem.setRequirementsList([requirement]);
-
-    const messageFilter = new pb.LibraryItemMessageFilter();
-    messageFilter.setCode(listFilters[activeCollection].filters[activeFilter].filter.value || "");
-    libraryItem.setMessageFilter(messageFilter);    
-
-    req.setLibraryItem(libraryItem);
-    const res = await libraryServiceClient.updateLibraryItem(req, {});
-
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to update filter: ${res.getStatus()?.getMessage()}`);
-    }
 
     await mutate(swrKey);
   }
@@ -378,20 +316,18 @@ const FiltersEditor = (props: Props) => {
         </div>
 
       </div>
-      <div className={s.MainButtons}>
-        <Button
-          type='primary'
-          text='Save'
-          onClick={() => props.entry != undefined ? onCreateFilter(true) : onUpdateFilter()}
-        />
-        {props.entry == undefined &&
-          <Button
-            type='primary'
-            text='Use'
-            onClick={() => useFilter()}
-          />
-        }
-      </div>
+
+      <MainButtons
+        entry={props.entry}
+        activeCollection={activeCollection}
+        activeFilter={activeFilter}
+        listFilters={listFilters}
+        usedFilters={usedFilters}
+        onChange={props.onChange}
+        onCreateFilter={onCreateFilter}
+        setUsedFilters={setUsedFilters}
+      />
+
     </DefaultProvider>
   )
 }

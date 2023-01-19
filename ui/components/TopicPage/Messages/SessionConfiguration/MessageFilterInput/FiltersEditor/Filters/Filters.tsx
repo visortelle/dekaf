@@ -32,7 +32,7 @@ const Filters = (props: Props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const swrKey = swrKeys.pulsar.filters._();
+  const swrKey = swrKeys.pulsar.library.filters._();
 
   const { activeCollection, listFilters, activeFilter, entry, setActiveFilter, onCreateFilter } = props;
 
