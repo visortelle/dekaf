@@ -45,7 +45,7 @@ describe("serializeBigArray", () => {
     const got = serializeBigArray([
       { name: "John", age: 42 },
       { name: "Jane", age: 42 },
-    ]);
+    ], JSON.stringify);
 
     expect(new TextDecoder().decode(got)).toBe(
       '[{"name":"John","age":42},{"name":"Jane","age":42}]'
@@ -62,12 +62,12 @@ describe("serializeBigArray", () => {
       })
     );
 
-    const got = serializeBigArray(bigArray);
+    const got = serializeBigArray(bigArray, JSON.stringify);
     expect(got.length).toBeGreaterThanOrEqual(megabytesCount * bytesInKb);
   });
 
   it("return [] if no data to serialize", () => {
-    const got = serializeBigArray([]);
+    const got = serializeBigArray([], JSON.stringify);
     expect(new TextDecoder().decode(got)).toBe("[]");
   });
 });
@@ -173,12 +173,6 @@ describe("splitMessagesToChunks", () => {
       if (expectedChunksCount !== undefined) {
         expect(chunks.length).toBe(expectedChunksCount);
       }
-
-      // Check message indexes for each chunk.
-      chunks.forEach((chunk) => {
-        expect(chunk.messages[0].index).toBe(chunk.from);
-        expect(chunk.messages[chunk.messages.length - 1].index).toBe(chunk.to);
-      });
     }
   );
 });

@@ -7,23 +7,29 @@ import {
   MessagesChunk,
 } from "./lib/lib";
 import { saveZipFile, File } from "./lib/files";
+import { partialMessageDescriptorToJson } from "../../../conversions";
 
-type GenJsonFileProps = {
+export type GenJsonFileProps = {
   chunk: MessagesChunk;
   config: ExportConfig;
 };
 
 export function genJsonFile(props: GenJsonFileProps): File {
   const messages = takeMessageFields(props.chunk.messages, props.config.fields);
-  const content = new Blob([serializeBigArray(messages)], {
+  const content = new Blob([serializeBigArray(messages, partialMessageDescriptorToJson)], {
     type: "application/json",
   });
 
-  let name = '';
-  switch(props.chunk.messages.length) {
-    case 0: name = '-.json'; break;
-    case 1: name = `${props.chunk.from + 1}.json`; break;
-    default: name = `${props.chunk.from}-${props.chunk.to}.json`; break;
+  let name = "";
+  switch (props.chunk.messages.length) {
+    case 0:
+      name = "-.json";
+      break;
+    default:
+      name = `${props.chunk.messages[0].index}-${
+        props.chunk.messages[props.chunk.messages.length - 1].index
+      }.json`;
+      break;
   }
 
   return {

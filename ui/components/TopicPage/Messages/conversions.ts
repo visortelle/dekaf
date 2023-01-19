@@ -1,5 +1,5 @@
 import { Message } from "../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { MessageDescriptor } from "./types";
+import { MessageDescriptor, PartialMessageDescriptor } from "./types";
 
 export function messageDescriptorFromPb(message: Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(
@@ -28,4 +28,58 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
     accum: message.getAccumulator()?.getValue() ?? null,
     debugStdout: message.getDebugStdout()?.getValue() ?? null,
   };
+}
+
+export function partialMessageDescriptorToJson(
+  message: PartialMessageDescriptor
+): string {
+  let messageId: undefined | null | number[];
+  if (message.messageId === undefined) {
+    messageId = undefined;
+  } else if (message.messageId === null) {
+    messageId = null;
+  } else {
+    messageId = Array.from(message.messageId);
+  }
+
+  let bytes: undefined | null | number[];
+  if (message.bytes === undefined) {
+    bytes = undefined;
+  } else if (message.bytes === null) {
+    bytes = null;
+  } else {
+    bytes = Array.from(message.bytes);
+  }
+
+  let orderingKey: undefined | null | number[];
+  if (message.orderingKey === undefined) {
+    orderingKey = undefined;
+  } else if (message.orderingKey === null) {
+    orderingKey = null;
+  } else {
+    orderingKey = Array.from(message.orderingKey);
+  }
+
+  return JSON.stringify({
+    index: message.index,
+    messageId,
+    bytes,
+    value: message.value,
+    brokerPublishTime: message.brokerPublishTime,
+    debugStdout: message.debugStdout,
+    eventTime: message.eventTime,
+    isReplicated: message.isReplicated,
+    key: message.key,
+    orderingKey,
+    producerName: message.producerName,
+    properties: message.properties,
+    publishTime: message.publishTime,
+    redeliveryCount: message.redeliveryCount,
+    replicatedFrom: message.replicatedFrom,
+    schemaVersion: message.schemaVersion,
+    sequenceId: message.sequenceId,
+    size: message.size,
+    topic: message.topic,
+    accum: message.accum,
+  });
 }

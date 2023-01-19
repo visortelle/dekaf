@@ -22,10 +22,6 @@ export function takeMessageFields(
 }
 
 export type MessagesChunk = {
-  // Indexed from 1, to use same index as user sees on the UI.
-  from: number;
-  // Indexed from 1, to use same index as user sees on the UI.
-  to: number;
   messages: MessageDescriptor[];
 };
 
@@ -40,8 +36,6 @@ export function splitMessagesToChunks(
   if (messages.length === 1) {
     return [
       {
-        from: messages[0].index,
-        to: messages[0].index,
         messages,
       },
     ];
@@ -64,8 +58,6 @@ export function splitMessagesToChunks(
 
       const messagesToAdd = messages.slice(fromIndex, toIndex);
       chunks.push({
-        from: messagesToAdd[0].index,
-        to: messagesToAdd[messagesToAdd.length - 1].index,
         messages: messagesToAdd,
       });
 
@@ -79,24 +71,22 @@ export function splitMessagesToChunks(
   });
 
   chunks.push({
-    from: messages[lastMessageIndex].index,
-    to: messages[messages.length - 1].index,
     messages: messages.slice(lastMessageIndex),
   });
 
   return chunks;
 }
 
-export function serializeBigArray<T>(arr: T[]): Uint8Array {
+export function serializeBigArray<T>(arr: T[], serialize: (item: T) => string): Uint8Array {
   const textEncoder = new TextEncoder();
 
   if (arr.length === 0) {
     return textEncoder.encode("[]");
   }
 
-  const serializedItems = arr.map<Uint8Array>((message) => {
-    const serializedMessage = JSON.stringify(message);
-    return textEncoder.encode(serializedMessage);
+  const serializedItems = arr.map<Uint8Array>((item) => {
+    const serializedItem = serialize(item);
+    return textEncoder.encode(serializedItem);
   });
 
   const bracketsCharsCount = 2; // '[' and ']'

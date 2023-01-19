@@ -5,7 +5,7 @@ import Select from '../../../../ui/Select/Select';
 import { MessageDescriptor, SessionState } from '../../types';
 import CsvConfigInput from './CsvConfigInput/CsvConfigInput';
 import s from './MessagesExporter.module.css'
-import { ExportConfig, Format, CsvConfig } from './types';
+import { ExportConfig, Format } from './types';
 import useLocalStorage from 'use-local-storage-state';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import { localStorageKeys } from '../../../../local-storage-keys';
@@ -15,53 +15,12 @@ import MessageFieldsConfig from './MessageFieldsConfig/MessageFieldsConfig';
 import Button from '../../../../ui/Button/Button';
 import exportIcon from './export.svg';
 import * as jsonExporter from './exporters/json';
+import { defaultExportConfig } from './defaults';
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[],
   sessionState: SessionState,
   isVisible: boolean
-};
-
-const defaultFieldsConfig: MessageFieldsConfig = {
-  fields: [
-    { id: 'messageId', name: 'Message Id', isActive: true },
-    { id: 'eventTime', name: 'Event time', isActive: true },
-    { id: 'publishTime', name: 'Publish time', isActive: true },
-    { id: 'brokerPublishTime', name: 'Broker publish time', isActive: true },
-    { id: 'sequenceId', name: 'Sequence Id', isActive: true },
-    { id: 'producerName', name: 'Producer name', isActive: true },
-    { id: 'key', name: 'Key', isActive: true },
-    { id: 'orderingKey', name: 'Ordering key', isActive: true },
-    { id: 'topic', name: 'Topic', isActive: true },
-    { id: 'size', name: 'Size', isActive: true },
-    { id: 'redeliveryCount', name: 'Redelivery count', isActive: true },
-    { id: 'schemaVersion', name: 'Schema version', isActive: true },
-    { id: 'isReplicated', name: 'Is replicated', isActive: true },
-    { id: 'replicatedFrom', name: 'Replicated from', isActive: true },
-    { id: 'properties', name: 'Properties', isActive: true },
-    { id: 'bytes', name: 'Bytes', isActive: true },
-    { id: 'value', name: 'Value', isActive: true },
-    { id: 'accum', name: 'Accum', isActive: true },
-    { id: 'index', name: 'Index', isActive: true },
-  ]
-};
-
-const defaultCsvConfig: CsvConfig = {
-  quotes: true,
-  quoteChar: '"',
-  escapeChar: '"',
-  delimiter: ',',
-  header: true,
-  newline: '\r\n',
-  escapeFormulae: { type: 'true' },
-}
-
-const defaultExportConfig: ExportConfig = {
-  format: { type: 'json' },
-  data: [{ type: 'whole-message' }],
-  dateFormat: 'iso',
-  csvConfig: defaultCsvConfig,
-  fields: defaultFieldsConfig,
 };
 
 const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig, onConfigChange: (config: ExportConfig) => void }> = (props) => {
@@ -134,7 +93,9 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
 
       {isMessageFieldsConfigurable(props.config) && (
         <FormItem>
-          <FormLabel content="Message fields" />
+          <FormLabel
+            content={`Message fields ${props.config.fields.fields.filter(f => f.isActive).length} of ${props.config.fields.fields.length}`}
+          />
           <div className={s.MessageFieldsConfig}>
             <MessageFieldsConfig
               value={props.config.fields}
