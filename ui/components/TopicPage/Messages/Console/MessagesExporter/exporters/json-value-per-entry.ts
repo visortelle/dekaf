@@ -7,7 +7,7 @@ import {
 } from "./lib/lib";
 import { saveZipFile, File } from "./lib/files";
 
-export type GenJsonFileProps = {
+export type GenFileProps = {
   chunk: MessagesChunk;
   config: ExportConfig;
 
@@ -16,17 +16,14 @@ export type GenJsonFileProps = {
   fileNameFallback: string;
 };
 
-export function genJsonFile(props: GenJsonFileProps): File {
+export function genFile(props: GenFileProps): File {
   const messages = props.chunk.messages.filter(
     (msg) => msg.value !== null && msg.value !== undefined
   );
 
-  const content = new Blob(
-    [serializeBigArray(messages, (msg) => msg.value!)],
-    {
-      type: "application/json",
-    }
-  );
+  const content = new Blob([serializeBigArray(messages, (msg) => msg.value!)], {
+    type: "application/json",
+  });
 
   let name = "";
   switch (props.chunk.messages.length) {
@@ -56,17 +53,17 @@ export function genJsonFile(props: GenJsonFileProps): File {
   };
 }
 
-type GenJsonFilesProps = {
+type GenFilesProps = {
   messages: MessageDescriptor[];
   config: ExportConfig;
 };
-export function genJsonFiles(props: GenJsonFilesProps): File[] {
+export function genFiles(props: GenFilesProps): File[] {
   const maxChunkSize = 100 * 1024 * 1024;
   const messages = props.messages.map((msg) => ({ value: msg.value }));
   const chunks = splitMessagesToChunks(messages, maxChunkSize);
 
   return chunks.map((chunk, i) =>
-    genJsonFile({
+    genFile({
       chunk,
       config: props.config,
       fileNameFallback: `chunk-${i}.json`,
@@ -81,6 +78,6 @@ export type ExportMessagesProps = {
 };
 
 export function exportMessages(props: ExportMessagesProps) {
-  const files = genJsonFiles(props);
+  const files = genFiles(props);
   saveZipFile(files, `${props.exportName}`);
 }

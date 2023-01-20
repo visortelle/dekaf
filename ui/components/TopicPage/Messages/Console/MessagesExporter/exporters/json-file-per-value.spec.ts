@@ -2,28 +2,19 @@ import { genMessageDescriptor } from "../../../testing";
 import { MessageDescriptor } from "../../../types";
 import { genExportConfig } from "../testing";
 import { ExportConfig } from "../types";
-import { genJsonFiles } from "./json-file-per-value";
+import { genFiles } from "./json-file-per-value";
 
-describe("genJsonFiles", () => {
+describe("genFiles", () => {
   it("generates .json files", async () => {
-    const messageValue = JSON.stringify(
-      Array.from({ length: 1024 * 10 }).map((_, i) => i)
-    );
-    const messages = Array.from({ length: 100 }).map((_, i) =>
-      genMessageDescriptor({ index: i, value: messageValue })
-    );
+    const messageValue = JSON.stringify(Array.from({ length: 1024 * 10 }).map((_, i) => i));
+    const messages = Array.from({ length: 100 }).map((_, i) => genMessageDescriptor({ index: i, value: messageValue }));
 
     const config: ExportConfig = genExportConfig();
 
-    const got = genJsonFiles({ messages, config });
+    const got = genFiles({ messages, config });
     expect(got.length).toEqual(messages.length);
     expect(got.every((file) => file.name.endsWith(".json"))).toBe(true);
-    expect(got.every((file) => file.content.type === "application/json")).toBe(
-      true
-    );
-    expect(got.every((file) => file.content.size < 1024 * 1024 * 100)).toBe(
-      true
-    );
+    expect(got.every((file) => file.content.type === "application/json")).toBe(true);
 
     for (let i = 0; i < messages.length; i++) {
       const message = messages[i];
@@ -44,7 +35,7 @@ describe("genJsonFiles", () => {
 
     const config: ExportConfig = genExportConfig();
 
-    const got = genJsonFiles({ messages, config });
+    const got = genFiles({ messages, config });
 
     expect(got.length).toEqual(2);
 
@@ -58,7 +49,7 @@ describe("genJsonFiles", () => {
   it("produces 0 files if no messages given", async () => {
     const messages: MessageDescriptor[] = [];
     const config: ExportConfig = genExportConfig();
-    const got = genJsonFiles({ messages, config });
+    const got = genFiles({ messages, config });
 
     expect(got).toEqual([]);
   });

@@ -8,11 +8,13 @@ type GenFilesProps = {
 };
 export function genFiles(props: GenFilesProps): File[] {
   return props.messages
-    .filter((msg) => msg.value !== null && msg.value !== undefined)
+    .filter((msg) => msg.rawValue !== null)
     .map((msg) => ({
-      name: `${msg.index}.json`,
-      content: new Blob([msg.value!], {
-        type: "application/json",
+      name: `${msg.index}${
+        props.config.filePerRawValueConfig.fileExtension === "" ? "" : `.${props.config.filePerRawValueConfig.fileExtension}`
+      }`,
+      content: new Blob([msg.rawValue || new Uint8Array(0)], {
+        type: "application/octet-stream",
       }),
     }));
 }

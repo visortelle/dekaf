@@ -2,15 +2,11 @@ import { genMessageDescriptor } from "../../../testing";
 import { MessageDescriptor } from "../../../types";
 import { genExportConfig, genMessageFieldsConfig } from "../testing";
 import { ExportConfig } from "../types";
-import {
-  genJsonFile,
-  genJsonFiles,
-  GenJsonFileProps,
-} from "./json-value-per-entry";
+import { genFile, genFiles, GenFileProps } from "./json-value-per-entry";
 
-describe("genJsonFile", () => {
+describe("genFile", () => {
   type TestDataEntry = {
-    props: GenJsonFileProps;
+    props: GenFileProps;
     expectedFileName: string;
     expectedParsedJson: any;
   };
@@ -38,44 +34,33 @@ describe("genJsonFile", () => {
 
   const testData: TestDataEntry[] = [testDataEntry1];
 
-  it.each(testData)(
-    "should generate .json file from chunk",
-    async ({ props, expectedFileName, expectedParsedJson }) => {
-      const file = genJsonFile(props);
-      const messagesInFile = JSON.parse(await file.content.text());
+  it.each(testData)("should generate .json file from chunk", async ({ props, expectedFileName, expectedParsedJson }) => {
+    const file = genFile(props);
+    const messagesInFile = JSON.parse(await file.content.text());
 
-      expect(file.name).toEqual(expectedFileName);
-      expect(messagesInFile).toEqual(expectedParsedJson);
-    }
-  );
+    expect(file.name).toEqual(expectedFileName);
+    expect(messagesInFile).toEqual(expectedParsedJson);
+  });
 });
 
-describe("genJsonFiles", () => {
+describe("genFiles", () => {
   it("generates .json files", async () => {
-    const messageValue = JSON.stringify(
-      Array.from({ length: 1024 * 10 }).map((_, i) => i)
-    );
-    const messages = Array.from({ length: 1024 * 100 }).map((_, i) =>
-      genMessageDescriptor({ index: i, value: messageValue })
-    );
+    const messageValue = JSON.stringify(Array.from({ length: 1024 * 10 }).map((_, i) => i));
+    const messages = Array.from({ length: 1024 * 100 }).map((_, i) => genMessageDescriptor({ index: i, value: messageValue }));
 
     const config: ExportConfig = genExportConfig();
 
-    const got = genJsonFiles({ messages, config });
+    const got = genFiles({ messages, config });
     expect(got.length).toBeGreaterThan(10);
     expect(got.every((file) => file.name.endsWith(".json"))).toBe(true);
-    expect(got.every((file) => file.content.type === "application/json")).toBe(
-      true
-    );
-    expect(got.every((file) => file.content.size < 1024 * 1024 * 100)).toBe(
-      true
-    );
+    expect(got.every((file) => file.content.type === "application/json")).toBe(true);
+    expect(got.every((file) => file.content.size < 1024 * 1024 * 100)).toBe(true);
   });
 
   it("produces 0 files if no messages given", async () => {
     const messages: MessageDescriptor[] = [];
     const config: ExportConfig = genExportConfig();
-    const got = genJsonFiles({ messages, config });
+    const got = genFiles({ messages, config });
 
     expect(got).toEqual([]);
   });
