@@ -14,8 +14,9 @@ import { ErrorBoundary } from 'react-error-boundary';
 import MessageFieldsConfig from './MessageFieldsConfig/MessageFieldsConfig';
 import Button from '../../../../ui/Button/Button';
 import exportIcon from './export.svg';
-import * as jsonExporter from './exporters/json';
 import { defaultExportConfig } from './defaults';
+import * as jsonExporter from './exporters/json';
+import * as jsonValuesExporter from './exporters/json-values';
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[],
@@ -116,6 +117,13 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
             switch (props.config.format.type) {
               case 'json': {
                 jsonExporter.exportMessages({
+                  messages: props.messages,
+                  config: props.config,
+                  exportName,
+                });
+              }; break;
+              case 'json-values-only': {
+                jsonValuesExporter.exportMessages({
                   messages: props.messages,
                   config: props.config,
                   exportName,
