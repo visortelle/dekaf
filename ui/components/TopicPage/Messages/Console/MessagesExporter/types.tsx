@@ -27,40 +27,28 @@ export type MessageFieldsConfig = {
 }
 
 export type Format = {
-  type: 'json',
+  type: 'json-message-per-entry',
 } | {
-  type: 'json-values-only',
+  type: 'json-value-per-entry',
 } | {
-  type: 'json-bytes-only',
+  type: 'json-raw-value-per-entry',
 } | {
-  type: 'csv',
+  type: 'csv-message-per-row',
 } | {
-  type: 'csv-values-only',
+  type: 'csv-value-per-row',
 } | {
-  type: 'csv-bytes-only',
+  type: 'csv-raw-value-per-row',
 } | {
-  type: 'values',
+  type: 'file-per-value',
 } | {
-  type: 'bytes',
+  type: 'file-per-raw-value',
 };
 
 export type ExportConfig = {
   format: Format,
-  data: Data[],
-  dateFormat: 'unix-epoch' | 'iso',
   csvConfig: CsvConfig,
   fields: MessageFieldsConfig
 }
-
-export type Data = {
-  type: 'whole-message',
-} | {
-  type: 'value-only'
-} | {
-  type: 'bytes-only'
-} | {
-  type: 'accum-only'
-};
 
 export type ExportResultEntry = {
   fileName: string,
@@ -69,4 +57,3 @@ export type ExportResultEntry = {
 export type ExportResult = {
   entries: ExportResultEntry[],
 };
-

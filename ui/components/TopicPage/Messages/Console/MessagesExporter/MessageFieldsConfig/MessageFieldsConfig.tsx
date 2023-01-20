@@ -69,7 +69,6 @@ const MessageFieldsConfig: React.FC<MessageFieldsConfigProps> = (props) => {
               name={item.name}
               isActive={item.isActive}
               onIsActiveChange={(v) => {
-                console.log('chaaange', v)
                 props.onChange({
                   fields: props.value.fields.map(f => {
                     if (f.id === item.id) {
