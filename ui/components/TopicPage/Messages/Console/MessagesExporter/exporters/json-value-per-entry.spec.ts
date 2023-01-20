@@ -2,7 +2,11 @@ import { genMessageDescriptor } from "../../../testing";
 import { MessageDescriptor } from "../../../types";
 import { genExportConfig, genMessageFieldsConfig } from "../testing";
 import { ExportConfig } from "../types";
-import { genJsonFile, genJsonFiles, GenJsonFileProps } from "./json-values";
+import {
+  genJsonFile,
+  genJsonFiles,
+  GenJsonFileProps,
+} from "./json-value-per-entry";
 
 describe("genJsonFile", () => {
   type TestDataEntry = {
@@ -16,7 +20,10 @@ describe("genJsonFile", () => {
       chunk: {
         messages: [
           genMessageDescriptor({ value: null, index: 10 }),
-          genMessageDescriptor({ value: JSON.stringify({ a: 2, b: { c: 4 } }), index: 11 }),
+          genMessageDescriptor({
+            value: JSON.stringify({ a: 2, b: { c: 4 } }),
+            index: 11,
+          }),
           genMessageDescriptor({ value: JSON.stringify(null), index: 15 }),
         ],
       },

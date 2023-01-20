@@ -15,8 +15,8 @@ import MessageFieldsConfig from './MessageFieldsConfig/MessageFieldsConfig';
 import Button from '../../../../ui/Button/Button';
 import exportIcon from './export.svg';
 import { defaultExportConfig } from './defaults';
-import * as jsonExporter from './exporters/json';
-import * as jsonValuesExporter from './exporters/json-values';
+import * as jsonExporter from './exporters/json-message-per-entry';
+import * as jsonValuesExporter from './exporters/json-value-per-entry';
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[],

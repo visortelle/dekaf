@@ -9,7 +9,7 @@ export function genMessageDescriptor(
   return {
     accum: faker.datatype.json(),
     brokerPublishTime: faker.date.past().getTime(),
-    bytes: textEncoder.encode(faker.datatype.json()),
+    rawValue: textEncoder.encode(faker.datatype.json()),
     debugStdout: faker.datatype.string(),
     eventTime: faker.date.past().getTime(),
     index: faker.datatype.number(),
@@ -36,7 +36,7 @@ export function genEmptyMessageDescriptor(
 ): MessageDescriptor {
   return {
     value: "",
-    bytes: Uint8Array.from([]),
+    rawValue: Uint8Array.from([]),
     accum: "",
     orderingKey: null,
     brokerPublishTime: 0,

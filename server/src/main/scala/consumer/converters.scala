@@ -88,7 +88,7 @@ def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consu
 
     val messagePb = consumerPb.Message(
       properties = properties,
-      bytes = Option(msg.getValue).map(ByteString.copyFrom),
+      rawValue = Option(msg.getValue).map(ByteString.copyFrom),
       value = jsonValue,
       eventTime = eventTime,
       publishTime = publishTime,

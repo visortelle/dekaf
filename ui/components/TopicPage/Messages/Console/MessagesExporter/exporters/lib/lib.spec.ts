@@ -42,10 +42,13 @@ describe("takeMessageFields", () => {
 
 describe("serializeBigArray", () => {
   it("serialize array of objects as minified JSON", () => {
-    const got = serializeBigArray([
-      { name: "John", age: 42 },
-      { name: "Jane", age: 42 },
-    ], JSON.stringify);
+    const got = serializeBigArray(
+      [
+        { name: "John", age: 42 },
+        { name: "Jane", age: 42 },
+      ],
+      JSON.stringify
+    );
 
     expect(new TextDecoder().decode(got)).toBe(
       '[{"name":"John","age":42},{"name":"Jane","age":42}]'
@@ -96,7 +99,7 @@ describe("splitMessagesToChunks", () => {
       messages: [
         genMessageDescriptor({
           value: oneMbString,
-          bytes: Uint8Array.from([]),
+          rawValue: Uint8Array.from([]),
           index: 1, // Message index starts from 1, as user sees it on UI.
         }),
       ],
@@ -104,7 +107,10 @@ describe("splitMessagesToChunks", () => {
       expectedChunksCount: 1,
     },
     {
-      messages: [genEmptyMessageDescriptor({ index: 1 }), genEmptyMessageDescriptor({ index: 2 })],
+      messages: [
+        genEmptyMessageDescriptor({ index: 1 }),
+        genEmptyMessageDescriptor({ index: 2 }),
+      ],
       maxBytesPerChunk: 1024,
       expectedChunksCount: 1,
     },
@@ -112,12 +118,12 @@ describe("splitMessagesToChunks", () => {
       messages: [
         genMessageDescriptor({
           value: oneMbString,
-          bytes: Uint8Array.from([]),
+          rawValue: Uint8Array.from([]),
           index: 1, // Message index starts from 1, as user sees it on UI.
         }),
         genMessageDescriptor({
           value: oneMbString,
-          bytes: Uint8Array.from([]),
+          rawValue: Uint8Array.from([]),
           index: 1, // Message index starts from 1, as user sees it on UI.
         }),
       ],
@@ -126,11 +132,20 @@ describe("splitMessagesToChunks", () => {
     },
 
     {
-      messages: [genMessageDescriptor(), genMessageDescriptor(), genMessageDescriptor()],
+      messages: [
+        genMessageDescriptor(),
+        genMessageDescriptor(),
+        genMessageDescriptor(),
+      ],
       maxBytesPerChunk: 1024,
     },
     {
-      messages: [genMessageDescriptor(), genMessageDescriptor(), genMessageDescriptor(), genMessageDescriptor()],
+      messages: [
+        genMessageDescriptor(),
+        genMessageDescriptor(),
+        genMessageDescriptor(),
+        genMessageDescriptor(),
+      ],
       maxBytesPerChunk: 1024,
     },
     {
@@ -138,7 +153,7 @@ describe("splitMessagesToChunks", () => {
       messages: Array.from({ length: 100 }).map((_, i) =>
         genMessageDescriptor({
           value: oneMbString,
-          bytes: Uint8Array.from([]),
+          rawValue: Uint8Array.from([]),
           index: i + 1, // Message index starts from 1, as user sees it on UI.
         })
       ),

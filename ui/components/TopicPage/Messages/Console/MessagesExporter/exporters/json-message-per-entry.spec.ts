@@ -2,7 +2,11 @@ import { genMessageDescriptor } from "../../../testing";
 import { MessageDescriptor } from "../../../types";
 import { genExportConfig, genMessageFieldsConfig } from "../testing";
 import { ExportConfig } from "../types";
-import { genJsonFile, genJsonFiles, GenJsonFileProps } from "./json";
+import {
+  genJsonFile,
+  genJsonFiles,
+  GenJsonFileProps,
+} from "./json-message-per-entry";
 
 describe("genJsonFile", () => {
   type TestDataEntry = {
@@ -19,7 +23,7 @@ describe("genJsonFile", () => {
             key: "key2",
             accum: JSON.stringify({ a: 1, b: { c: 3 } }),
             brokerPublishTime: 543,
-            bytes: null,
+            rawValue: null,
             debugStdout: "hello\nworld",
             eventTime: 123,
             index: 5,
@@ -41,7 +45,7 @@ describe("genJsonFile", () => {
             key: "key1",
             accum: JSON.stringify({ a: 1, b: { c: 3 } }),
             brokerPublishTime: 123,
-            bytes: Uint8Array.from([1, 2, 3]),
+            rawValue: Uint8Array.from([1, 2, 3]),
             debugStdout: "hello\nworld",
             eventTime: 123,
             index: 10,
@@ -72,7 +76,7 @@ describe("genJsonFile", () => {
         key: "key2",
         accum: JSON.stringify({ a: 1, b: { c: 3 } }),
         brokerPublishTime: 543,
-        bytes: null,
+        rawValue: null,
         debugStdout: "hello\nworld",
         eventTime: 123,
         index: 5,
@@ -94,7 +98,7 @@ describe("genJsonFile", () => {
         key: "key1",
         accum: JSON.stringify({ a: 1, b: { c: 3 } }),
         brokerPublishTime: 123,
-        bytes: [1, 2, 3],
+        rawValue: [1, 2, 3],
         debugStdout: "hello\nworld",
         eventTime: 123,
         index: 10,

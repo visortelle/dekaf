@@ -9,7 +9,7 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
   return {
     index: -1, // This value will be set in another place.
     messageId: message.getMessageId()?.getValue_asU8() ?? null,
-    bytes: message.getBytes()?.getValue_asU8() ?? null,
+    rawValue: message.getRawValue()?.getValue_asU8() ?? null,
     value: message.getValue()?.getValue() ?? null,
     brokerPublishTime: message.getBrokerPublishTime()?.getValue() ?? null,
     eventTime: message.getEventTime()?.getValue() ?? null,
@@ -42,13 +42,13 @@ export function partialMessageDescriptorToJson(
     messageId = Array.from(message.messageId);
   }
 
-  let bytes: undefined | null | number[];
-  if (message.bytes === undefined) {
-    bytes = undefined;
-  } else if (message.bytes === null) {
-    bytes = null;
+  let rawValue: undefined | null | number[];
+  if (message.rawValue === undefined) {
+    rawValue = undefined;
+  } else if (message.rawValue === null) {
+    rawValue = null;
   } else {
-    bytes = Array.from(message.bytes);
+    rawValue = Array.from(message.rawValue);
   }
 
   let orderingKey: undefined | null | number[];
@@ -63,7 +63,7 @@ export function partialMessageDescriptorToJson(
   return JSON.stringify({
     index: message.index,
     messageId,
-    bytes,
+    rawValue,
     value: message.value,
     brokerPublishTime: message.brokerPublishTime,
     debugStdout: message.debugStdout,

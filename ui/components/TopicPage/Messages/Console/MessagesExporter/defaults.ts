@@ -19,7 +19,7 @@ export const defaultFieldsConfig: MessageFieldsConfig = {
     { id: 'isReplicated', name: 'Is replicated', isActive: true },
     { id: 'replicatedFrom', name: 'Replicated from', isActive: true },
     { id: 'properties', name: 'Properties', isActive: true },
-    { id: 'bytes', name: 'Bytes', isActive: true },
+    { id: 'rawValue', name: 'Raw value', isActive: true },
     { id: 'accum', name: 'Accum', isActive: true },
   ]
 };
@@ -35,9 +35,7 @@ export const defaultCsvConfig: CsvConfig = {
 }
 
 export const defaultExportConfig: ExportConfig = {
-  format: { type: 'json' },
-  data: [{ type: 'whole-message' }],
-  dateFormat: 'iso',
+  format: { type: 'json-message-per-entry' },
   csvConfig: defaultCsvConfig,
   fields: defaultFieldsConfig,
 };

@@ -59,7 +59,7 @@ export type MessageDescriptor = {
   replicatedFrom: Nullable<string>;
   properties: Record<string, string>;
 
-  bytes: Nullable<Uint8Array>;
+  rawValue: Nullable<Uint8Array>;
   value: Nullable<string>; // JSON string
   accum: Nullable<string>; // JSON string
   index: number; // Not a part of Pulsar message.
