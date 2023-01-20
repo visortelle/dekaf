@@ -31,15 +31,11 @@ export type Format = {
 } | {
   type: 'json-value-per-entry',
 } | {
-  type: 'json-raw-value-per-entry',
+  type: 'json-file-per-value',
 } | {
   type: 'csv-message-per-row',
 } | {
   type: 'csv-value-per-row',
-} | {
-  type: 'csv-raw-value-per-row',
-} | {
-  type: 'file-per-value',
 } | {
   type: 'file-per-raw-value',
 };
