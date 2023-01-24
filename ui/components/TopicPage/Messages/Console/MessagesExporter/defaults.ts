@@ -1,4 +1,4 @@
-import { CsvConfig, ExportConfig, MessageFieldsConfig } from "./types";
+import { ExportConfig, MessageFieldsConfig } from "./types";
 
 export const defaultFieldsConfig: MessageFieldsConfig = {
   fields: [
@@ -24,19 +24,8 @@ export const defaultFieldsConfig: MessageFieldsConfig = {
   ],
 };
 
-export const defaultCsvConfig: CsvConfig = {
-  quotes: true,
-  quoteChar: '"',
-  escapeChar: '"',
-  delimiter: ",",
-  header: true,
-  newline: "\r\n",
-  escapeFormulae: { type: "true" },
-};
-
 export const defaultExportConfig: ExportConfig = {
   format: { type: "json-message-per-entry" },
-  csvConfig: defaultCsvConfig,
   fields: defaultFieldsConfig,
-  filePerRawValueConfig: { fileExtension: "bin" },
+  filePerRawValueConfig: { fileExtension: "" },
 };

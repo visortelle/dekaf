@@ -1,10 +1,10 @@
-import { partialMessageDescriptorToJson } from "./conversions";
+import { partialMessageDescriptorToSerializable } from "./conversions";
 import { PartialMessageDescriptor } from "./types";
 
 describe("partialMessageDescriptorToJson", () => {
   const testData: {
     message: PartialMessageDescriptor;
-    expectedDeserializedObj: any;
+    expectedObj: any;
   }[] = [
     {
       message: {
@@ -29,9 +29,8 @@ describe("partialMessageDescriptorToJson", () => {
         topic: null,
         value: null,
       },
-      expectedDeserializedObj: {
+      expectedObj: {
         key: null,
-        accum: null,
         debugStdout: null,
         brokerPublishTime: null,
         rawValue: null,
@@ -49,7 +48,6 @@ describe("partialMessageDescriptorToJson", () => {
         sequenceId: null,
         size: null,
         topic: null,
-        value: null,
       },
     },
     {
@@ -75,9 +73,9 @@ describe("partialMessageDescriptorToJson", () => {
         topic: "topic1",
         value: JSON.stringify({ a: 2, b: { c: 4 } }),
       },
-      expectedDeserializedObj: {
+      expectedObj: {
         key: "key1",
-        accum: JSON.stringify({ a: 1, b: { c: 3 } }),
+        accum: { a: 1, b: { c: 3 } },
         brokerPublishTime: 123,
         rawValue: [1, 2, 3],
         debugStdout: "hello\nworld",
@@ -95,24 +93,22 @@ describe("partialMessageDescriptorToJson", () => {
         sequenceId: 1,
         size: 100,
         topic: "topic1",
-        value: JSON.stringify({ a: 2, b: { c: 4 } }),
+        value: { a: 2, b: { c: 4 } },
       },
     },
     {
       message: {
         index: 1,
       },
-      expectedDeserializedObj: { index: 1 },
+      expectedObj: { index: 1 },
     },
   ];
 
   it.each(testData)(
     "encodes MessageDescriptor to JSON",
-    ({ message, expectedDeserializedObj }) => {
-      const gotJson = partialMessageDescriptorToJson(message);
-      const gotObj = JSON.parse(gotJson);
-
-      expect(gotObj).toEqual(expectedDeserializedObj);
+    ({ message, expectedObj }) => {
+      const gotObj = partialMessageDescriptorToSerializable(message);
+      expect(gotObj).toEqual(expectedObj);
     }
   );
 });

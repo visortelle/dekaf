@@ -1,25 +1,5 @@
 import { MessageDescriptor } from "../../types";
 
-export type CsvConfig = {
-  quotes: boolean;
-  quoteChar: string;
-  escapeChar: string;
-  delimiter: string;
-  header: boolean;
-  newline: string;
-  escapeFormulae:
-    | {
-        type: "true";
-      }
-    | {
-        type: "false";
-      }
-    | {
-        type: "regex";
-        regex: string;
-      };
-};
-
 export type MessageField = {
   id: keyof MessageDescriptor;
   name: string;
@@ -55,7 +35,6 @@ export type Format =
 
 export type ExportConfig = {
   format: Format;
-  csvConfig: CsvConfig;
   fields: MessageFieldsConfig;
   filePerRawValueConfig: FilePerRawValueConfig;
 };

@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 import Button from '../Button/Button';
 import { DefaultProvider } from '../../app/contexts/Modals/Modals';
@@ -53,7 +53,7 @@ const ConfirmationDialog = (props: Props) => {
         <div className={s.ActionButtons}>
           <Button
             type="regular"
-            text={`Cansel`}
+            text={`Cancel`}
             onClick={() => props.onCancel()}
           />
           <Button
@@ -67,7 +67,7 @@ const ConfirmationDialog = (props: Props) => {
             testId="confirmation-dialog-confirm-button"
           />
         </div>
-        
+
       </div>
     </DefaultProvider>
   )

@@ -70,7 +70,7 @@ describe("genFile", () => {
     expectedParsedJson: [
       {
         key: "key2",
-        accum: JSON.stringify({ a: 1, b: { c: 3 } }),
+        accum: { a: 1, b: { c: 3 } },
         brokerPublishTime: 543,
         rawValue: null,
         debugStdout: "hello\nworld",
@@ -88,11 +88,10 @@ describe("genFile", () => {
         sequenceId: 1,
         size: 100,
         topic: "topic1",
-        value: null,
       },
       {
         key: "key1",
-        accum: JSON.stringify({ a: 1, b: { c: 3 } }),
+        accum: { a: 1, b: { c: 3 } },
         brokerPublishTime: 123,
         rawValue: [1, 2, 3],
         debugStdout: "hello\nworld",
@@ -110,7 +109,7 @@ describe("genFile", () => {
         sequenceId: 1,
         size: 100,
         topic: "topic1",
-        value: JSON.stringify({ a: 2, b: { c: 4 } }),
+        value: { a: 2, b: { c: 4 } },
       },
     ],
   };
@@ -136,11 +135,11 @@ describe("genFile", () => {
     },
     expectedFileName: "chunk-1.json",
     expectedParsedJson: [
-      { messageId: [1, 2, 3], key: "key2", value: null },
+      { messageId: [1, 2, 3], key: "key2" },
       {
         messageId: [1, 2, 3],
         key: "key1",
-        value: JSON.stringify({ a: 2, b: { c: 4 } }),
+        value: { a: 2, b: { c: 4 } },
       },
     ],
   };

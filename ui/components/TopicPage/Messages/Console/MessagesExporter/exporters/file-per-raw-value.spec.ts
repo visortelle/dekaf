@@ -57,7 +57,7 @@ describe("genFiles", () => {
 
     const config2 = genExportConfig();
     const files2 = genFiles({ messages, config: config2 });
-    expect(files2.every((file, i) => file.name === `${i}.bin`)).toBe(true);
+    expect(files2.every((file, i) => file.name === `${i}`)).toBe(true);
 
     const config3 = genExportConfig({ filePerRawValueConfig: { fileExtension: "" } });
     const files3 = genFiles({ messages, config: config3 });

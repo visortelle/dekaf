@@ -3,7 +3,6 @@ import FormItem from "../../../../ui/ConfigurationTable/FormItem/FormItem";
 import FormLabel from "../../../../ui/ConfigurationTable/FormLabel/FormLabel";
 import Select from "../../../../ui/Select/Select";
 import { MessageDescriptor, SessionState } from "../../types";
-import CsvConfigInput from "./CsvConfigInput/CsvConfigInput";
 import s from "./MessagesExporter.module.css";
 import { ExportConfig, Format } from "./types";
 import useLocalStorage from "use-local-storage-state";
@@ -14,12 +13,14 @@ import { ErrorBoundary } from "react-error-boundary";
 import MessageFieldsConfig from "./MessageFieldsConfig/MessageFieldsConfig";
 import Button from "../../../../ui/Button/Button";
 import exportIcon from "./export.svg";
+import Input from "../../../../ui/Input/Input";
 import { defaultExportConfig } from "./defaults";
 import * as jsonMessagePerEntryExporter from "./exporters/json-message-per-entry";
 import * as jsonValuePerEntryExporter from "./exporters/json-value-per-entry";
 import * as jsonFilePerValueExporter from "./exporters/json-file-per-value";
 import * as filePerRawValueExporter from "./exporters/file-per-raw-value";
-import Input from "../../../../ui/Input/Input";
+import * as csvMessagePerRowExporter from "./exporters/csv-message-per-row";
+
 
 export type MessagesExporterProps = {
   messages: MessageDescriptor[];
@@ -85,19 +86,6 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
               value={props.config.format.type}
             />
           </FormItem>
-
-          {isCsvOutput(props.config) && (
-            <CsvConfigInput
-              value={props.config.csvConfig}
-              onChange={(v) => {
-                if (!isCsvOutput(props.config)) {
-                  return;
-                }
-
-                props.onConfigChange({ ...props.config, csvConfig: v });
-              }}
-            />
-          )}
 
           {props.config.format.type === "file-per-raw-value" && (
             <FormItem>
@@ -165,6 +153,14 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
                 });
                 break;
               }
+              case "csv-message-per-row": {
+                csvMessagePerRowExporter.exportMessages({
+                  messages: props.messages,
+                  config: props.config,
+                  exportName,
+                });
+                break;
+              }
               default:
                 console.log("Not implemented");
             }
@@ -204,9 +200,6 @@ const MessagesExporter = (props: MessagesExporterProps) => {
   );
 };
 
-function isCsvOutput(config: ExportConfig): boolean {
-  return config.format.type === "csv-message-per-row" || config.format.type === "csv-value-per-row";
-}
 function isMessageFieldsConfigurable(config: ExportConfig): boolean {
   return config.format.type === "json-message-per-entry" || config.format.type === "csv-message-per-row";
 }

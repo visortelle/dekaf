@@ -1,10 +1,6 @@
 import { MessageDescriptor } from "../../../types";
 import { ExportConfig } from "../types";
-import {
-  serializeBigArray,
-  splitMessagesToChunks,
-  MessagesChunk,
-} from "./lib/lib";
+import { encodeBigArrayAsJsonBytes, splitMessagesToChunks, MessagesChunk } from "./lib/lib";
 import { saveZipFile, File } from "./lib/files";
 
 export type GenFileProps = {
@@ -17,11 +13,9 @@ export type GenFileProps = {
 };
 
 export function genFile(props: GenFileProps): File {
-  const messages = props.chunk.messages.filter(
-    (msg) => msg.value !== null && msg.value !== undefined
-  );
+  const messages = props.chunk.messages.filter((msg) => msg.value !== null && msg.value !== undefined);
 
-  const content = new Blob([serializeBigArray(messages, (msg) => msg.value!)], {
+  const content = new Blob([encodeBigArrayAsJsonBytes(messages, (msg) => msg.value!)], {
     type: "application/json",
   });
 
@@ -30,21 +24,16 @@ export function genFile(props: GenFileProps): File {
     case 0:
       name = "-.json";
       break;
-    default:
-      {
-        const firstMessageIndex = props.chunk.messages[0].index;
-        const lastMessageIndex =
-          props.chunk.messages[props.chunk.messages.length - 1].index;
-        const isUseFileNameFallback =
-          firstMessageIndex === undefined || lastMessageIndex === undefined;
+    default: {
+      const firstMessageIndex = props.chunk.messages[0].index;
+      const lastMessageIndex = props.chunk.messages[props.chunk.messages.length - 1].index;
+      const isUseFileNameFallback = firstMessageIndex === undefined || lastMessageIndex === undefined;
 
-        name = isUseFileNameFallback
-          ? props.fileNameFallback
-          : `${props.chunk.messages[0].index}-${
-              props.chunk.messages[props.chunk.messages.length - 1].index
-            }.json`;
-      }
-      break;
+      name = isUseFileNameFallback
+        ? props.fileNameFallback
+        : `${props.chunk.messages[0].index}-${props.chunk.messages[props.chunk.messages.length - 1].index}.json`;
+    }
+    break;
   }
 
   return {
@@ -67,7 +56,7 @@ export function genFiles(props: GenFilesProps): File[] {
       chunk,
       config: props.config,
       fileNameFallback: `chunk-${i}.json`,
-    })
+    }),
   );
 }
 

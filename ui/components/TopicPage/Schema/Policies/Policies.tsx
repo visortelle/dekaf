@@ -95,7 +95,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
       </Link>
 
       <div className={s.Header}>
-        <H3>Related policies</H3>
+        <H3>Policies</H3>
       </div>
       <div className={s.FormControl}>
         <strong>Compatibility strategy:</strong> {strategy?.replace('SCHEMA_COMPATIBILITY_STRATEGY_', '')}

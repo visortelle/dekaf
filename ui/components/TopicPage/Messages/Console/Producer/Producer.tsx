@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import { isPlainObject } from 'lodash';
-import { Buffer } from 'buffer';
 import { nanoid } from 'nanoid';
 import * as Either from 'fp-ts/lib/Either';
 
@@ -18,13 +17,13 @@ import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
 import sendIcon from './icons/send.svg';
 
 import s from './Producer.module.css'
+import { ValueType } from './types';
+import { valueToBytes } from './lib/lib';
 
 export type ProducerPreset = {
   topic: string | undefined;
   key: string;
 }
-
-type ValueType = 'bytes-hex' | 'json';
 
 export type ProducerProps = {
   preset: ProducerPreset
@@ -231,30 +230,6 @@ const Producer: React.FC<ProducerProps> = (props) => {
       </div>
     </div>
   );
-}
-
-function valueToBytes(value: string, valueType: ValueType): Either.Either<Error, Uint8Array> {
-  switch (valueType) {
-    case 'json': {
-      let validationError: Error | undefined = undefined;
-      try {
-        JSON.parse(value);
-      } catch (err) {
-        validationError = err as Error;
-      }
-
-      if (validationError !== undefined) {
-        return Either.left(validationError);
-      }
-
-      const bytes = Uint8Array.from(Buffer.from(value))
-      return Either.right(bytes);
-    };
-    case 'bytes-hex': {
-      const bytes = Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'hex'))
-      return Either.right(bytes);
-    };
-  }
 }
 
 export default Producer;

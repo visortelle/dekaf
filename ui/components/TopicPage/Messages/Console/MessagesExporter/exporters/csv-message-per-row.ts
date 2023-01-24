@@ -1,8 +1,9 @@
 import { MessageDescriptor } from "../../../types";
 import { ExportConfig } from "../types";
-import { takeMessageFields, encodeBigArrayAsJsonBytes, splitMessagesToChunks, MessagesChunk } from "./lib/lib";
+import { takeMessageFields, splitMessagesToChunks, MessagesChunk } from "./lib/lib";
 import { saveZipFile, File } from "./lib/files";
 import { partialMessageDescriptorToSerializable } from "../../../conversions";
+import * as Csv from "csv-stringify/browser/esm/sync";
 
 export type GenFileProps = {
   chunk: MessagesChunk;
@@ -14,17 +15,19 @@ export type GenFileProps = {
 };
 
 export function genFile(props: GenFileProps): File {
-  const content = new Blob(
-    [encodeBigArrayAsJsonBytes(props.chunk.messages, (msg) => JSON.stringify(partialMessageDescriptorToSerializable(msg)))],
-    {
-      type: "application/json",
-    },
-  );
+  const dataToEncode = props.chunk.messages.map(partialMessageDescriptorToSerializable);
+  console.log('dti', dataToEncode)
+
+  const csv = Csv.stringify(dataToEncode, { quoted: true, header: true });
+
+  const content = new Blob([csv], {
+    type: "text/csv",
+  });
 
   let name = "";
   switch (props.chunk.messages.length) {
     case 0:
-      name = "-.json";
+      name = "-.csv";
       break;
     default: {
       const firstMessageIndex = props.chunk.messages[0].index;
@@ -33,7 +36,7 @@ export function genFile(props: GenFileProps): File {
 
       name = isUseFileNameFallback
         ? props.fileNameFallback
-        : `${props.chunk.messages[0].index}-${props.chunk.messages[props.chunk.messages.length - 1].index}.json`;
+        : `${props.chunk.messages[0].index}-${props.chunk.messages[props.chunk.messages.length - 1].index}.csv`;
     }
     break;
   }
