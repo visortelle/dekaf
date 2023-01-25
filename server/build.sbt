@@ -19,6 +19,8 @@ val javaOpts = Seq(
 fork := true
 javaOptions ++= javaOpts
 
+Global / resolvers += Resolver.mavenLocal
+
 lazy val root = project
     .enablePlugins(JavaAppPackaging)
     .enablePlugins(UniversalPlugin)

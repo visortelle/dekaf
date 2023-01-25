@@ -47,8 +47,8 @@ case class JsonMessage(
 )
 
 object converters:
-    def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, JsonValue) =
-        val jsonValue = messageValueToJson(schemas, msg)
+    def serializeMessage(msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, JsonValue) =
+        val jsonValue = messageValueToJson(msg)
         val properties = Option(msg.getProperties) match
             case Some(v) => v.asScala.toMap
             case _       => Map.empty
@@ -108,23 +108,13 @@ object converters:
         )
         (messagePb, jsonMessage, jsonValue)
 
-    private val partitionedTopicSuffixRegexp = "-partition-\\d+$".r
-
-    def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[String] =
+    def messageValueToJson(msg: Message[Array[Byte]]): Option[String] =
         val msgValue = msg.getData
+        val schema = Option(msg.getReaderSchema) match
+            case Some(v) => v.get
+            case None    => return Some(bytesToJsonString(msgValue))
 
-        val topicName = partitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
-        val schemaInfo = schemas.get(topicName) match
-            case Some(schemasByVersion) =>
-                val schemaVersion = Option(msg.getSchemaVersion) match
-                    case Some(v) => bytesToInt64(v)
-                    case None    => return Some(bytesToJsonString(msgValue))
-
-                schemasByVersion.get(schemaVersion) match
-                    case Some(si) => si
-                    case None     => return Some(bytesToJsonString(msgValue))
-
-            case None => return Some(bytesToJsonString(msgValue))
+        val schemaInfo = schema.getSchemaInfo
 
         val maybeJson: Option[String] = schemaInfo.getType match
             case SchemaType.AVRO            => avro.converters.toJson(schemaInfo.getSchema, msgValue).toOption.map(String(_, StandardCharsets.UTF_8))

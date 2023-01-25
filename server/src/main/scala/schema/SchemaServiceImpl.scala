@@ -7,7 +7,28 @@ import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptor
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetHumanReadableSchemaRequest, GetHumanReadableSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaInfoWithVersion, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import com.tools.teal.pulsar.ui.api.v1.schema.{
+    CompiledProtobufNativeFile,
+    CompileProtobufNativeRequest,
+    CompileProtobufNativeResponse,
+    CreateSchemaRequest,
+    CreateSchemaResponse,
+    DeleteSchemaRequest,
+    DeleteSchemaResponse,
+    GetHumanReadableSchemaRequest,
+    GetHumanReadableSchemaResponse,
+    GetLatestSchemaInfoRequest,
+    GetLatestSchemaInfoResponse,
+    ListSchemasRequest,
+    ListSchemasResponse,
+    ProtobufNativeSchema,
+    SchemaInfo as SchemaInfoPb,
+    SchemaInfoWithVersion,
+    SchemaServiceGrpc,
+    SchemaType as SchemaTypePb,
+    TestCompatibilityRequest,
+    TestCompatibilityResponse
+}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
 
@@ -134,7 +155,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
         logger.info(s"Compiling ${filesToCompile.size} protobuf native files.")
 
-        val files: Map[String, CompiledProtobufNativeFile] = protobufnative
+        val files: Map[String, CompiledProtobufNativeFile] = protobufnative.compiler
             .compileFiles(files = filesToCompile)
             .files
             .map(f =>
@@ -151,12 +172,10 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                                   )
                                   (messageName, schemaPb)
                               )
-                              .toMap
                         )
-                    case Left(err) => CompiledProtobufNativeFile(compilationError = Some(err))
+                    case Left(err) => CompiledProtobufNativeFile(compilationError = Some(err.getMessage))
                 (relativePath, compiledFilePb)
             )
-            .toMap
 
         logger.info(s"Compiled ${files.size} protobuf native files.")
         val status = Status(code = Code.OK.index)
@@ -172,7 +191,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val status = Status(code = Code.INVALID_ARGUMENT.index)
                 return Future.successful(TestCompatibilityResponse(status = Some(status)))
 
-        val compatibilityTestResult = protobufnative.testCompatibility(topic = request.topic, schemaInfo = schemaInfo)
+        val compatibilityTestResult = protobufnative.schemaCompatibility.test(topic = request.topic, schemaInfo = schemaInfo)
 
         logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
 

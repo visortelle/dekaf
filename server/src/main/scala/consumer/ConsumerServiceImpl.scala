@@ -38,7 +38,6 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
     var topics: Map[ConsumerName, Vector[String]] = Map.empty
     var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
-    var schemasByTopic: SchemasByTopic = Map.empty
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
         val consumerName: ConsumerName = request.consumerName
@@ -71,7 +70,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
                     processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-                    val (messagePb, jsonMessage, jsonValue) = converters.serializeMessage(schemasByTopic, msg)
+                    val (messagePb, jsonMessage, jsonValue) = converters.serializeMessage(msg)
 
                     val (filterResult, jsonAccumulator) =
                         getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
@@ -144,8 +143,6 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status =
                     Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
-
-        getSchemasByTopic(topicsToConsume).foreach((topicName, schemasByVersion) => schemasByTopic = schemasByTopic + (topicName -> schemasByVersion))
 
         topics = topics + (consumerName -> topicsToConsume)
 

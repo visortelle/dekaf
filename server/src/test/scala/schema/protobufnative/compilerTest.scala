@@ -7,7 +7,7 @@ import zio.test.TestAspect.*
 import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
 
-object ProtobufNativeTest extends ZIOSpecDefault:
+object compilerTest extends ZIOSpecDefault:
     def spec = suite(this.getClass.toString)(
         test("compiles protobuf files") {
             val fileEntryContent =
@@ -21,7 +21,7 @@ object ProtobufNativeTest extends ZIOSpecDefault:
 
             val relativePath = "a/b/c"
             val fileEntry = FileEntry(relativePath, fileEntryContent)
-            val compiledFiles = compileFiles(Seq(fileEntry))
+            val compiledFiles = compiler.compileFiles(Seq(fileEntry))
 
             val file = compiledFiles.files.getOrElse(relativePath, Left("No such file")) match
                 case Right(f) => f
