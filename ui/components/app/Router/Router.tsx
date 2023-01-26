@@ -19,6 +19,7 @@ import NamespacePage, { NamespacePageView } from '../../NamespacePage/NamespaceP
 import TopicPage, { TopicPageView } from '../../TopicPage/TopicPage';
 import { TreeNode } from '../../NavigationTree/TreeView';
 import InstancePage from '../../InstancePage/InstancePage';
+import IoPage, { IoPageView } from '../../IoPage/IoPage';
 
 type WithLayoutProps = { layout: Omit<LayoutProps, 'children'> };
 type WithLayout = (children: React.ReactElement, props: WithLayoutProps) => React.ReactElement;
@@ -69,6 +70,13 @@ const prepareRoutes = (): { paths: string[], getRoutes: (props: { withLayout: Wi
     { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RoutedTenantPage view={'configuration'} />, withLayoutProps) },
     { path: routes.tenants.tenant.createNamespace._.path, element: withLayout(<RoutedTenantPage view={'create-namespace'} />, withLayoutProps) },
     { path: routes.tenants.tenant.namespaces._.path, element: withLayout(<RoutedTenantPage view={'namespaces'} />, setScrollMode(withLayoutProps, 'page-own')) },
+
+    /* Io */
+    { path: routes.io.sinks._.path, element: withLayout(<RoutedIoPage view={'sinks'} />, withLayoutProps) },
+    { path: routes.io.sinks.create._.path, element: withLayout(<RoutedIoPage view={'sinks-create'} />, withLayoutProps) },
+    { path: routes.io.sources._.path, element: withLayout(<RoutedIoPage view={'sources'} />, withLayoutProps) },
+    { path: routes.io.sources.create._.path, element: withLayout(<RoutedIoPage view={'sources-create'} />, withLayoutProps) },
+
   ];
   const paths = getRoutes({ withLayout: () => <></>, withLayoutProps: defaultWithLayoutProps }).map(ro => ro.path).filter(p => p !== undefined) as string[];
 
@@ -98,6 +106,10 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   };
 
   return useRoutes(getRoutes({ withLayout, withLayoutProps }));
+}
+
+const RoutedIoPage = (props: { view: IoPageView }) => {
+  return <IoPage view={props.view} />
 }
 
 const RoutedTenantPage = (props: { view: TenantPageView }) => {

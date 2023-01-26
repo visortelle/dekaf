@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.io.v1;
+
+import "google/rpc/status.proto";
+
+// message ListClustersRequest {
+// }
+
+// message ListClustersResponse {
+//   google.rpc.Status status = 1;
+//   repeated string clusters = 2;
+// }
+
+// service ClusterService {
+//   rpc ListClusters(ListClustersRequest) returns (ListClustersResponse) {}
+// }

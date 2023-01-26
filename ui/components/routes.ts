@@ -158,4 +158,30 @@ export const routes = {
       },
     },
   },
+  io: {
+    sinks: {
+      _: {
+        path: "/io/sinks",
+        get: () => "/io/sinks",
+      },
+      create: {
+        _: {
+          path: "/io/sinks/create",
+          get: () => "/io/sinks/create",
+        }
+      }
+    },
+    sources: {
+      _: {
+        path: "/io/sources",
+        get: () => "/io/sources",
+      },
+      create: {
+        _: {
+          path: "/io/sources/create",
+          get: () => "/io/sources/create",
+        }
+      }
+    },
+  }
 } as const;

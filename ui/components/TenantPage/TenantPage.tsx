@@ -1,6 +1,6 @@
 import React from 'react';
-
 import { useNavigate } from 'react-router-dom';
+
 import * as Modals from '../app/contexts/Modals/Modals';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
@@ -22,8 +22,7 @@ export type TenantPageProps = {
 const TenantPage: React.FC<TenantPageProps> = (props) => {
 
   const modals = Modals.useContext();
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <div className={s.Page}>

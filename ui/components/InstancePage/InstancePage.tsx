@@ -63,6 +63,12 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               type: 'regular'
             },
             {
+              linkTo: routes.io.sinks._.get(),
+              text: 'Io',
+              onClick: () => { },
+              type: 'regular',
+            },
+            {
               linkTo: routes.instance.createTenant._.get(),
               text: 'Create tenant',
               onClick: () => { },
