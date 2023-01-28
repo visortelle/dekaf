@@ -4,27 +4,25 @@ import tech.allegro.schema.json2avro.converter.AvroConversionException
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 import org.apache.avro.generic.GenericData
 import org.apache.avro.Schema
+import _root_.schema.shared.{JsonSerDe, JsonAsBytes, AvroDatum}
 
-type JsonStringAsBytes = Array[Byte]
-type AvroDatum = Array[Byte]
-
-object converters:
-    def fromJson(schema: Array[Byte], json: JsonStringAsBytes): Either[Throwable, AvroDatum] =
+object converters extends JsonSerDe[AvroDatum]:
+    def fromJson(schema: Array[Byte], json: JsonAsBytes): Either[Throwable, AvroDatum] =
         try {
             val converter = new JsonAvroConverter()
             val avroSchema = Schema.Parser().parse(schema.map(_.toChar).mkString)
             val avro = converter.convertToAvro(json, avroSchema)
             Right(avro)
         } catch {
-            case err => Left(err)
+            case err: Throwable => Left(err)
         }
 
-    def toJson(schema: Array[Byte], avroDatum: AvroDatum): Either[Throwable, JsonStringAsBytes] =
+    def toJson(schema: Array[Byte], data: AvroDatum): Either[Throwable, JsonAsBytes] =
         try {
             val converter = new JsonAvroConverter()
             val avroSchema = Schema.Parser().parse(schema.map(_.toChar).mkString)
-            val json = converter.convertToJson(avroDatum, avroSchema)
+            val json = converter.convertToJson(data, avroSchema)
             Right(json)
         } catch {
-            case err => Left(err)
+            case err: Throwable => Left(err)
         }

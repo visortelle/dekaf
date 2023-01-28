@@ -7,31 +7,30 @@ import zio.test.TestAspect.*
 
 object convertersTest extends ZIOSpecDefault {
     def spec = suite(this.getClass.toString)(
-      test("converts AVRO data to JSON and vice-versa") {
-          val schema = """
-                 {
-                     "type": "record",
-                     "name": "User",
-                     "fields": [
-                         {"name": "name", "type": "string"},
-                         {"name": "age",  "type": "int"}
-                     ]
-                 }
-             """
+        test("converts AVRO data to JSON and vice-versa") {
+            val schema = """
+                |{
+                |    "type": "record",
+                |    "name": "User",
+                |    "fields": [
+                |        {"name": "name", "type": "string"},
+                |        {"name": "age",  "type": "int"},
+                |        {"name": "height",  "type": "long"}
+                |    ]
+                |}
+             """.stripMargin
 
-          val jsonInput = """{"name":"John","age":30}"""
+            val jsonInput = """{"name":"John","age":30,"height":180}"""
 
-          val avroResult = converters.fromJson(schema.getBytes, jsonInput.getBytes) match
-              case Left(err) =>
-                  println(err.getMessage)
-                  throw new Exception(err)
-              case Right(result) => result
+            val avroResult = converters.fromJson(schema.getBytes, jsonInput.getBytes) match
+                case Left(err) => throw new Exception(err)
+                case Right(result) => result
 
-          val reverseConversionResult = converters.toJson(schema.getBytes, avroResult) match
-              case Left(err)     => throw new Exception(err)
-              case Right(result) => result
+            val reverseConversionResult = converters.toJson(schema.getBytes, avroResult) match
+                case Left(err)     => throw new Exception(err)
+                case Right(result) => result
 
-          assertTrue(jsonInput == String(reverseConversionResult))
-      }
+            assertTrue(jsonInput == String(reverseConversionResult))
+        }
     )
 }
