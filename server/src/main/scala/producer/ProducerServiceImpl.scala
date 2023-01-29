@@ -21,6 +21,7 @@ import com.tools.teal.pulsar.ui.api.v1.producer.{
 import org.apache.pulsar.client.api.schema.SchemaInfoProvider
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import _root_.schema.avro
+import _root_.schema.protobufnative
 import com.google.protobuf
 import com.google.protobuf.ByteString
 
@@ -171,6 +172,10 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[Throwa
             avro.converters.fromJson(schemaInfo.getSchema, jsonAsBytes) match
                 case Right(v)  => Right(v)
                 case Left(err) => Left(err)
+        case SchemaType.PROTOBUF_NATIVE =>
+            protobufnative.converters.fromJson(schemaInfo.getSchema, jsonAsBytes) match
+                case Right(v) => Right(v)
+                case Left(err) => Left(err)
         case SchemaType.JSON => Right(jsonAsBytes)
         case SchemaType.STRING =>
             parseJson(String(jsonAsBytes, "UTF-8")) match
@@ -179,7 +184,6 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[Throwa
                     val str = json.asString.getOrElse("")
                     Right(str.getBytes)
                 case _ => Left(new Exception("Message should be formatted as JSON string."))
-
         case SchemaType.NONE => Right(jsonAsBytes)
         case SchemaType.BOOLEAN =>
             val jsonString = String(jsonAsBytes, "UTF-8")
@@ -248,5 +252,7 @@ def jsonToValue(schemaInfo: SchemaInfo, jsonAsBytes: Array[Byte]): Either[Throwa
             if n > MaxValue || n < MinValue then return Left(new Exception(s"DOUBLE value should be in range from $MinValue to $MaxValue. Given: $n"))
 
             Right(ByteBuffer.allocate(8).putDouble(n).array)
+
+        case _ => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
 
     result

@@ -26,6 +26,7 @@ object convertersTest extends ZIOSpecDefault {
                 |
                 |  // https://github.com/protocolbuffers/protobuf/issues/5015
                 |  int64 height = 3;
+                |
                 |  Occupation person_occupation = 4;
                 |}
              """.stripMargin
@@ -43,7 +44,18 @@ object convertersTest extends ZIOSpecDefault {
                 case None         => throw new Exception("No such schema")
 
             val jsonInput =
-                """{"name":"John","age":30,"height":"180","person_occupation":{"person_company":"Google","person_position":"Software Engineer","person_salary":100}}"""
+                """
+                  |{
+                  |  "name": "John",
+                  |  "age": 30,
+                  |  "height": "180",
+                  |  "person_occupation": {
+                  |    "person_company": "Teal Tools",
+                  |    "person_position": "Software Engineer",
+                  |    "person_salary": 100
+                  |  }
+                  |}
+                  |""".stripMargin
 
             val protoResult = converters.fromJson(rawSchema, jsonInput.getBytes) match
                 case Left(err)     => throw new Exception(err)

@@ -4,6 +4,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
 import _root_.client.adminClient
 import _root_.schema.avro
+import _root_.schema.protobufnative
 import _root_.conversions.{
     bytesToBoolean,
     bytesToFloat32,
@@ -47,8 +48,8 @@ case class JsonMessage(
 )
 
 object converters:
-    def serializeMessage(msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, JsonValue) =
-        val jsonValue = messageValueToJson(msg)
+    def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, JsonValue) =
+        val jsonValue = messageValueToJson(schemas, msg)
         val properties = Option(msg.getProperties) match
             case Some(v) => v.asScala.toMap
             case _       => Map.empty
@@ -90,7 +91,7 @@ object converters:
         val messagePb = consumerPb.Message(
           properties = properties,
           rawValue = Option(msg.getValue).map(ByteString.copyFrom),
-          value = jsonValue,
+          value = jsonValue.toOption,
           eventTime = eventTime,
           publishTime = publishTime,
           brokerPublishTime = brokerPublishTime,
@@ -106,29 +107,38 @@ object converters:
           replicatedFrom = replicatedFrom,
           size = size
         )
-        (messagePb, jsonMessage, jsonValue)
+        (messagePb, jsonMessage, jsonValue.toOption)
 
-    def messageValueToJson(msg: Message[Array[Byte]]): Option[String] =
+    private val partitionedTopicSuffixRegexp = "-partition-\\d+$".r
+
+    def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Either[Throwable, String] =
         val msgValue = msg.getData
-        val schema = Option(msg.getReaderSchema) match
-            case Some(v) => v.get
-            case None    => return Some(bytesToJsonString(msgValue))
+        val topicName = partitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
+        val schemaInfo = schemas.get(topicName) match
+            case Some(schemasByVersion) =>
+                val schemaVersion = Option(msg.getSchemaVersion) match
+                    case Some(v) => bytesToInt64(v)
+                    case None => return Right(bytesToJsonString(msgValue))
 
-        val schemaInfo = schema.getSchemaInfo
+                schemasByVersion.get(schemaVersion) match
+                    case Some(si) => si
+                    case None => return Right(bytesToJsonString(msgValue))
 
-        val maybeJson: Option[String] = schemaInfo.getType match
-            case SchemaType.AVRO            => avro.converters.toJson(schemaInfo.getSchema, msgValue).toOption.map(String(_, StandardCharsets.UTF_8))
-            case SchemaType.JSON            => Some(bytesToString(msgValue))
+            case None => return Right(bytesToJsonString(msgValue))
+
+        println(s"----------------------- schemaInfo: $schemaInfo")
+        schemaInfo.getType match
+            case SchemaType.AVRO            => avro.converters.toJson(schemaInfo.getSchema, msgValue).map(String(_, StandardCharsets.UTF_8))
+            case SchemaType.JSON            => Right(bytesToString(msgValue))
             case SchemaType.PROTOBUF        => ???
-            case SchemaType.PROTOBUF_NATIVE => ???
-            case SchemaType.BOOLEAN         => Some(if bytesToBoolean(msgValue) then "true" else "false")
-            case SchemaType.INT8            => Some(bytesToInt8(msgValue).toString)
-            case SchemaType.INT16           => Some(bytesToInt16(msgValue).toShort.toString)
-            case SchemaType.INT32           => Some(bytesToInt32(msgValue).toString)
-            case SchemaType.INT64           => Some(bytesToInt64(msgValue).toString)
-            case SchemaType.FLOAT           => Some(bytesToFloat32(msgValue).toString)
-            case SchemaType.DOUBLE          => Some(bytesToFloat64(msgValue).toString)
-            case SchemaType.STRING          => Some(bytesToJsonString(msgValue))
-            case SchemaType.BYTES           => None
-            case _                          => None
-        maybeJson
+            case SchemaType.PROTOBUF_NATIVE => protobufnative.converters.toJson(schemaInfo.getSchema, msgValue).map(String(_, StandardCharsets.UTF_8))
+            case SchemaType.BOOLEAN         => Right(if bytesToBoolean(msgValue) then "true" else "false")
+            case SchemaType.INT8            => Right(bytesToInt8(msgValue).toString)
+            case SchemaType.INT16           => Right(bytesToInt16(msgValue).toShort.toString)
+            case SchemaType.INT32           => Right(bytesToInt32(msgValue).toString)
+            case SchemaType.INT64           => Right(bytesToInt64(msgValue).toString)
+            case SchemaType.FLOAT           => Right(bytesToFloat32(msgValue).toString)
+            case SchemaType.DOUBLE          => Right(bytesToFloat64(msgValue).toString)
+            case SchemaType.STRING          => Right(bytesToJsonString(msgValue))
+            case SchemaType.BYTES           => Left(new Exception("Can't convert bytes to json"))
+            case _                          => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))

@@ -3,7 +3,26 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{
+    ConsumerServiceGrpc,
+    CreateConsumerRequest,
+    CreateConsumerResponse,
+    DeleteConsumerRequest,
+    DeleteConsumerResponse,
+    MessageFilter as MessageFilterPb,
+    MessageFilterChain,
+    PauseRequest,
+    PauseResponse,
+    ResumeRequest,
+    ResumeResponse,
+    RunCodeRequest,
+    RunCodeResponse,
+    SeekRequest,
+    SeekResponse,
+    SkipMessagesRequest,
+    SkipMessagesResponse,
+    TopicsSelector
+}
 import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
@@ -38,6 +57,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
     var topics: Map[ConsumerName, Vector[String]] = Map.empty
     var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
+    var schemasByTopic: SchemasByTopic = Map.empty
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
         val consumerName: ConsumerName = request.consumerName
@@ -58,8 +78,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case Some(f) => f
             case _ =>
                 val status: Status = Status(
-                  code = Code.FAILED_PRECONDITION.index,
-                  message = s"Message filter context isn't found for consumer: $consumerName"
+                    code = Code.FAILED_PRECONDITION.index,
+                    message = s"Message filter context isn't found for consumer: $consumerName"
                 )
                 return Future.successful(PauseResponse(status = Some(status)))
 
@@ -70,7 +90,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
                     processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-                    val (messagePb, jsonMessage, jsonValue) = converters.serializeMessage(msg)
+                    val (messagePb, jsonMessage, jsonValue) = converters.serializeMessage(schemasByTopic, msg)
 
                     val (filterResult, jsonAccumulator) =
                         getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
@@ -89,9 +109,9 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                                 case Right(_)  => Status(code = Code.OK.index)
                                 case Left(err) => Status(code = Code.INVALID_ARGUMENT.index, message = err)
                             val resumeResponse = ResumeResponse(
-                              status = Some(status),
-                              messages = messages,
-                              processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long)
+                                status = Some(status),
+                                messages = messages,
+                                processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long)
                             )
                             responseObserver.onNext(resumeResponse)
                         case _ => ()
@@ -132,7 +152,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
 
         messageFilters = messageFilters + (consumerName -> MessageFilter(
-          MessageFilterConfig(stdout = new ByteArrayOutputStream())
+            MessageFilterConfig(stdout = new ByteArrayOutputStream())
         ))
 
         val topicsToConsume = request.topicsSelector match
@@ -143,6 +163,9 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status =
                     Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
+
+        getSchemasByTopic(topicsToConsume)
+            .foreach((topicName, schemasByVersion) => schemasByTopic = schemasByTopic + (topicName -> schemasByVersion))
 
         topics = topics + (consumerName -> topicsToConsume)
 
@@ -237,5 +260,3 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))
         Future.successful(response)
-
-

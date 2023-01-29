@@ -4,6 +4,7 @@ import zio.*
 import zio.test.*
 import zio.test.Assertion.*
 import zio.test.TestAspect.*
+import io.circe.parser.parse as parseJson
 
 object convertersTest extends ZIOSpecDefault {
     def spec = suite(this.getClass.toString)(
@@ -28,9 +29,9 @@ object convertersTest extends ZIOSpecDefault {
 
             val reverseConversionResult = converters.toJson(schema.getBytes, avroResult) match
                 case Left(err)     => throw new Exception(err)
-                case Right(result) => result
+                case Right(result) => String(result)
 
-            assertTrue(jsonInput == String(reverseConversionResult))
+            assertTrue(parseJson(jsonInput) == parseJson(reverseConversionResult))
         }
     )
 }
