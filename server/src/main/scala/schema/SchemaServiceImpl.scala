@@ -191,9 +191,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val status = Status(code = Code.INVALID_ARGUMENT.index)
                 return Future.successful(TestCompatibilityResponse(status = Some(status)))
 
-        println(s"compatible---------------------")
         val compatibilityTestResult = protobufnative.schemaCompatibility.test(topic = request.topic, schemaInfo = schemaInfo)
-        println(s"compatible ${compatibilityTestResult}}")
 
         logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
 

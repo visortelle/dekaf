@@ -4,7 +4,6 @@ import useSWR, { mutate } from "swr";
 import * as Modals from "../../app/contexts/Modals/Modals";
 import * as PulsarGrpcClient from "../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
 import * as Notifications from "../../app/contexts/Notifications";
-import { usePrevious } from "../../app/hooks/use-previous";
 import {
   GetLatestSchemaInfoRequest,
   ListSchemasRequest,
@@ -22,6 +21,7 @@ import { routes } from "../../routes";
 import Link from "../../ui/Link/Link";
 
 import s from "./Schema.module.css";
+import { useNavigate } from "react-router";
 
 export type SchemaProps = {
   tenant: string;
@@ -40,6 +40,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const modals = Modals.useContext();
+  const navigate = useNavigate();
 
   const topic = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
@@ -57,8 +58,6 @@ const Schema: React.FC<SchemaProps> = (props) => {
     }
   });
 
-  const prevLatestSchemaInfo = usePrevious(latestSchemaInfo);
-
   if (latestSchemaInfoError !== undefined) {
     notifyError(`Unable to get latest schema info. ${latestSchemaInfoError}`);
   }
@@ -72,14 +71,11 @@ const Schema: React.FC<SchemaProps> = (props) => {
       return;
     }
 
-    if (
-      latestSchemaInfo !== undefined &&
-      latestSchemaInfo.getStatus()?.getCode() === Code.OK &&
-      (props.view.type === "create-schema" || prevLatestSchemaInfo === undefined)
-    ) {
+    const schemaInfo = latestSchemaInfo?.getSchemaInfo();
+
+    if (latestSchemaInfo !== undefined && latestSchemaInfo.getStatus()?.getCode() === Code.OK) {
       const schemaInfo = latestSchemaInfo.getSchemaInfo();
       if (schemaInfo !== undefined) {
-        // setCurrentView({ type: "view-schema", topic: topic, schemaVersion: latestSchemaInfo.getSchemaVersion(), schemaInfo });
         const schemaType = (Object.entries(SchemaType).find(([, i]) => i === schemaInfo.getType()) || [])[0] as SchemaTypeT;
         if (schemaType !== undefined) {
           setDefaultNewSchemaType(schemaType);
@@ -93,7 +89,39 @@ const Schema: React.FC<SchemaProps> = (props) => {
         }
       }
     }
-  }, [latestSchemaInfo]);
+
+    // Redirect to the "Create schema" page if there is no schema.
+    if (props.view.type === "initial-screen" && schemaInfo === undefined) {
+      navigate(
+        routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema.create._.get({
+          tenant: props.tenant,
+          namespace: props.namespace,
+          topic: props.topic,
+          topicType: props.topicType,
+        }),
+      );
+      return;
+    }
+
+    // Redirect to the "View schema" page if there is a schema.
+    if (props.view.type === "initial-screen" && schemaInfo !== undefined) {
+      const schemaVersion = latestSchemaInfo?.getSchemaVersion();
+      if (schemaVersion === undefined) {
+        return;
+      }
+
+      navigate(
+        routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema.view._.get({
+          tenant: props.tenant,
+          namespace: props.namespace,
+          topic: props.topic,
+          topicType: props.topicType,
+          schemaVersion,
+        }),
+      );
+      return;
+    }
+  }, [latestSchemaInfo, props.view]);
 
   const { data: schemas, error: schemasError } = useSWR(swrKeys.pulsar.schemas.listSchemas._(topic), async () => {
     const req = new ListSchemasRequest();
@@ -115,7 +143,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
   };
 
   return (
-    <div className={s.Schema}>
+    <div className={s.Schema} key={`${defaultNewSchemaType}-${defaultSchemaDefinition}`}>
       <div className={s.Schemas}>
         <div
           style={{
