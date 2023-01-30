@@ -19,6 +19,7 @@ object schemaCompatibility:
     def test(topic: String, schemaInfo: SchemaInfo): CompatibilityTestResult =
         try {
             val testResult = adminClient.schemas.testCompatibility(topic, schemaInfo)
+            println(s"The schema is compatible-------------------: ${testResult}")
 
             CompatibilityTestResult(
               isCompatible = testResult.isCompatibility,
