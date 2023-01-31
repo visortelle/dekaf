@@ -138,8 +138,8 @@ const Schema: React.FC<SchemaProps> = (props) => {
   }
 
   const refetchData = async () => {
-    await mutate(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topic));
-    await mutate(swrKeys.pulsar.schemas.listSchemas._(topic));
+    await mutate(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topic), undefined, { revalidate: true });
+    await mutate(swrKeys.pulsar.schemas.listSchemas._(topic), undefined, { revalidate: true });
   };
 
   return (
@@ -241,6 +241,14 @@ const Schema: React.FC<SchemaProps> = (props) => {
               defaultSchemaDefinition={defaultSchemaDefinition}
               onCreateSuccess={async () => {
                 await refetchData();
+                navigate(
+                  routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({
+                    topicType: props.topicType,
+                    tenant: props.tenant,
+                    namespace: props.namespace,
+                    topic: props.topic,
+                  }),
+                );
               }}
             />
           )}

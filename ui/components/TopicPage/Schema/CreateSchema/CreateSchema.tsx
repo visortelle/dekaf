@@ -18,7 +18,6 @@ import { H1 } from "../../../ui/H/H";
 import Policies from "../Policies/Policies";
 import Pre from "../../../ui/Pre/Pre";
 import { useNavigate } from "react-router";
-import { routes } from "../../../routes";
 
 export type CreateSchemaProps = {
   topicType: "persistent" | "non-persistent";
@@ -234,14 +233,6 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
                 props.onCreateSuccess();
                 checkSchemaCompatibility();
                 notifySuccess(`Schema successfully created.`);
-                navigate(
-                  routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({
-                    topicType: props.topicType,
-                    tenant: props.tenant,
-                    namespace: props.namespace,
-                    topic: props.topic,
-                  }),
-                );
               } else {
                 notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);
               }
