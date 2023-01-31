@@ -42,15 +42,15 @@ const Schema: React.FC<SchemaProps> = (props) => {
   const modals = Modals.useContext();
   const navigate = useNavigate();
 
-  const topic = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const {
     data: latestSchemaInfo,
     error: latestSchemaInfoError,
     isLoading: isLatestSchemaInfoLoading,
-  } = useSWR(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topic), async () => {
+  } = useSWR(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topicFqn), async () => {
     const req = new GetLatestSchemaInfoRequest();
-    req.setTopic(topic);
+    req.setTopic(topicFqn);
 
     const res = await schemaServiceClient.getLatestSchemaInfo(req, {});
     if (res.getStatus()?.getCode() === Code.OK) {
@@ -123,9 +123,9 @@ const Schema: React.FC<SchemaProps> = (props) => {
     }
   }, [latestSchemaInfo, props.view]);
 
-  const { data: schemas, error: schemasError } = useSWR(swrKeys.pulsar.schemas.listSchemas._(topic), async () => {
+  const { data: schemas, error: schemasError } = useSWR(swrKeys.pulsar.schemas.listSchemas._(topicFqn), async () => {
     const req = new ListSchemasRequest();
-    req.setTopic(topic);
+    req.setTopic(topicFqn);
     return await schemaServiceClient.listSchemas(req, {});
   });
 
@@ -138,8 +138,8 @@ const Schema: React.FC<SchemaProps> = (props) => {
   }
 
   const refetchData = async () => {
-    await mutate(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topic), undefined, { revalidate: true });
-    await mutate(swrKeys.pulsar.schemas.listSchemas._(topic), undefined, { revalidate: true });
+    await mutate(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topicFqn), undefined, { revalidate: true });
+    await mutate(swrKeys.pulsar.schemas.listSchemas._(topicFqn), undefined, { revalidate: true });
   };
 
   return (
@@ -269,8 +269,8 @@ const Schema: React.FC<SchemaProps> = (props) => {
 
               return (
                 <SchemaEntry
-                  key={`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}/${props.view.schemaVersion}`}
-                  topic={`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`}
+                  key={`${topicFqn}/schemas/${props.view.schemaVersion}`}
+                  topic={topicFqn}
                   schemaVersion={props.view.schemaVersion}
                   schemaInfo={schemaInfo}
                 />

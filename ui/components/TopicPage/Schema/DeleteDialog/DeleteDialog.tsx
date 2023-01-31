@@ -6,6 +6,7 @@ import { DeleteSchemaRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/a
 import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialog";
 import { routes } from "../../../routes";
 import { useNavigate } from "react-router";
+import { useState } from "react";
 
 export type Props = {
   tenant: string;
@@ -19,11 +20,15 @@ const DeleteDialog = (props: Props) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
+  const [forceDelete, setForceDelete] = useState(false);
   const navigate = useNavigate();
+
+  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const deleteSchema = async () => {
     const req = new DeleteSchemaRequest();
-    req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+    req.setTopic(topicFqn);
+    req.setForce(forceDelete);
     const res = await schemaServiceClient.deleteSchema(req, {}).catch((err) => notifyError(err));
 
     if (res === undefined) {
@@ -48,6 +53,10 @@ const DeleteDialog = (props: Props) => {
     modals.pop();
   };
 
+  const switchForceDelete = () => {
+    setForceDelete(!forceDelete);
+  }
+
   return (
     <ConfirmationDialog
       description={
@@ -61,6 +70,10 @@ const DeleteDialog = (props: Props) => {
       }
       onConfirm={deleteSchema}
       onCancel={modals.pop}
+      forceDelete={forceDelete}
+      switchForceDelete={switchForceDelete}
+      forceDeleteInfo="Delete all resources (including metastore and ledger), otherwise only do a mark deletion and not remove any resources indeed"
+      guard={topicFqn}
     />
   );
 };

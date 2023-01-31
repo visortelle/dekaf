@@ -26,10 +26,12 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
   const { topicServiceClient } = PulsarGrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
+  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+
   const deleteTopic = async () => {
     try {
       const req = new DeleteTopicRequest();
-      req.setTopicName(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopicName(topicFqn);
       req.setForce(forceDelete);
 
       const res = await topicServiceClient.deleteTopic(req, {});
@@ -38,7 +40,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
         return;
       }
 
-      notifySuccess(`${props.topicType === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${props.tenant}/${props.namespace}/${props.topic} has been successfully deleted.`);
+      notifySuccess(`${props.topicType === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${topicFqn} has been successfully deleted.`);
 
       await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
       await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
@@ -47,7 +49,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
       props.navigate(routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }));
       modals.pop();
     } catch (err) {
-      notifyError(`Unable to delete topic: ${props.topicType === 'persistent' ? 'persistent' : 'non-persistent'}://${props.tenant}/${props.namespace}/${props.topic}. ${err}`)
+      notifyError(`Unable to delete topic: ${topicFqn}. ${err}`)
     }
   };
 
@@ -68,7 +70,8 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
       switchForceDelete={switchForceDelete}
       onConfirm={deleteTopic}
       onCancel={modals.pop}
-      guard={props.topic}
+      forceDeleteInfo="Close all producer/consumer/replicator and delete topic forcefully."
+      guard={topicFqn}
     />
   );
 }

@@ -83,7 +83,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
         logger.info(s"Deleting latest schema for topic ${request.topic}.")
 
         try {
-            adminClient.schemas.deleteSchema(request.topic)
+            adminClient.schemas.deleteSchema(request.topic, request.force)
 
             logger.info(s"Successfully deleted latest schema for topic ${request.topic}.")
             val status = Status(code = Code.OK.index)

@@ -17,7 +17,6 @@ import SchemaTypeInput from "../SchemaTypeInput/SchemaTypeInput";
 import { H1 } from "../../../ui/H/H";
 import Policies from "../Policies/Policies";
 import Pre from "../../../ui/Pre/Pre";
-import { useNavigate } from "react-router";
 
 export type CreateSchemaProps = {
   topicType: "persistent" | "non-persistent";
@@ -46,7 +45,6 @@ type Schema = {
 const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const { schemaServiceClient } = PulsarGrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
-  const navigate = useNavigate();
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const [schema, setSchema] = useState<Schema>({

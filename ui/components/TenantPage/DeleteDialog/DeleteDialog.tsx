@@ -63,6 +63,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
       }
       forceDelete={forceDelete}
       switchForceDelete={switchForceDelete}
+      forceDeleteInfo="Delete a tenant forcefully by deleting all namespaces under it."
       onConfirm={deleteTenant}
       onCancel={modals.pop}
       guard={props.tenant}
