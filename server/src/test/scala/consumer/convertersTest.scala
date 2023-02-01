@@ -10,7 +10,15 @@ import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import org.apache.pulsar.client.api.{Message, Schema}
 import org.apache.pulsar.client.api.schema.SchemaDefinition
 import org.apache.pulsar.client.impl.{MessageImpl, TypedMessageBuilderImpl}
-import org.apache.pulsar.client.impl.schema.{AvroSchema, JSONSchema, ProtobufNativeSchema, ProtobufNativeSchemaUtils, ProtobufSchema, SchemaDefinitionImpl, SchemaUtils}
+import org.apache.pulsar.client.impl.schema.{
+    AvroSchema,
+    JSONSchema,
+    ProtobufNativeSchema,
+    ProtobufNativeSchemaUtils,
+    ProtobufSchema,
+    SchemaDefinitionImpl,
+    SchemaUtils
+}
 import _root_.schema.avro
 import _root_.schema.protobufnative
 import com.google.protobuf.Descriptors
@@ -65,15 +73,20 @@ object convertersTest extends ZIOSpecDefault:
 
             val avroSchema = AvroSchema.of(schemaDefinition)
 
-            val messageMetadata = new MessageMetadata()
+            val topicName = "topic-a"
+            val schemaVersion = 1L;
+            val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
             val message = MessageImpl.create[Array[Byte]](
                 messageMetadata,
                 java.nio.ByteBuffer.wrap(avroPayload),
                 avroSchema,
-                "topic1"
+                topicName
             )
 
-            val decodedJson = converters.messageValueToJson(message) match
+            val schemasByVersion: SchemasByVersion = Map(1L -> schemaInfo)
+            val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+            val decodedJson = converters.messageValueToJson(schemasByTopic, message) match
                 case Right(value) => value
                 case Left(err)    => throw err
 
@@ -114,15 +127,20 @@ object convertersTest extends ZIOSpecDefault:
 
             val jsonSchema = JSONSchema.of(schemaDefinition)
 
-            val messageMetadata = new MessageMetadata()
+            val topicName = "topic-a"
+            val schemaVersion = 1L;
+            val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
             val message = MessageImpl.create[Array[Byte]](
                 messageMetadata,
                 java.nio.ByteBuffer.wrap(jsonPayload),
                 jsonSchema,
-                "topic1"
+                topicName
             )
 
-            val decodedJson = converters.messageValueToJson(message) match
+            val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+            val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+            val decodedJson = converters.messageValueToJson(schemasByTopic, message) match
                 case Right(value) => value
                 case Left(err)    => throw err
 
@@ -155,34 +173,30 @@ object convertersTest extends ZIOSpecDefault:
                 .schema(protoSchemaDefinition)
                 .build
 
+            val protoSchema = Schema.getSchema(schemaInfo).asInstanceOf[Schema[Array[Byte]]]
+
             val jsonToEncode = """{"name":"Alyssa","favorite_number":256}"""
-            val protoPayload = jsonToEncode.getBytes
+            val protoPayload = protobufnative.converters.fromJson(protoSchemaDefinition, jsonToEncode.getBytes) match
+                case Right(value) => value
+                case Left(error)  => throw error
 
-            val protoSchema: Schema[Array[Byte]] =
-                try
-//                    val schemaDefinition: SchemaDefinition[Array[Byte]] =
-//                        SchemaDefinition.builder.withJsonDef(protoSchemaDefinition.mkString).build
-//                    Schema.PROTOBUF_NATIVE[Array[Byte]](schemaDefinition)
-                      Schema.getSchema(schemaInfo).asInstanceOf[Schema[Array[Byte]]]
-//                    GenericProtobufNativeSchema.of(schemaInfo)
-                catch {
-                    case err: Throwable =>
-                        throw new Exception(s"Failed to create PROTOBUF_NATIVE schema. $err")
-                }
-
-            val messageMetadata = new MessageMetadata()
+            val topicName = "topic-a"
+            val schemaVersion = 1L;
+            val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
             val message = MessageImpl.create[Array[Byte]](
                 messageMetadata,
                 java.nio.ByteBuffer.wrap(protoPayload),
                 protoSchema,
-                "topic1"
+                topicName
             )
 
-            val decodedJson = converters.messageValueToJson(message) match
+            val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+            val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+            val decodedJson = converters.messageValueToJson(schemasByTopic, message) match
                 case Right(value) => value
                 case Left(err)    => throw err
 
-//            assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode))
-            assertTrue(true)
+            assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode))
         }
     )

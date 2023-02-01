@@ -10,7 +10,6 @@ import scala.jdk.CollectionConverters.*
 
 object converters extends JsonSerDe[Proto3Datum]:
     def fromJson(schema: Array[Byte], json: JsonAsBytes): Either[Throwable, Proto3Datum] =
-        println("--------------------           Converting from JSON")
         try {
             val descriptor = ProtobufNativeSchemaUtils.deserialize(schema)
             val typeRegistry = JsonFormat.TypeRegistry.newBuilder().add(descriptor).build
@@ -28,7 +27,6 @@ object converters extends JsonSerDe[Proto3Datum]:
         }
 
     def toJson(schema: Array[Byte], data: Proto3Datum): Either[Throwable, JsonAsBytes] =
-        println("--------------------           Converting to JSON")
         try {
             val descriptor = ProtobufNativeSchemaUtils.deserialize(schema)
             val message = Struct.parseFrom(data)
