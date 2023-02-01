@@ -1,0 +1,19 @@
+.CreateSinks {
+  display: flex;
+  justify-content: space-around;
+}
+
+.CreateSinksField {
+  width: 100%;
+  display: flex;
+  margin: 20rem;
+}
+.CreateSinksField > h3 {
+  width: 30%;
+}
+.CreateSinksHelp {
+  width: 30%;
+}
+.CreateSinkInput {
+  width: calc(40% - 40rem);
+}

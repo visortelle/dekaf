@@ -2,10 +2,12 @@ import React from 'react';
 
 import Toolbar from '../ui/Toolbar/Toolbar';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
-import { routes } from '../routes';
-import s from './IoPage.module.css'
 import Sinks from './Sinks/Sinks';
 import Sources from './Sources/Sources';
+import CreateSinks from './Sinks/CreateSinks/CreateSinks';
+import { routes } from '../routes';
+
+import s from './IoPage.module.css'
 
 export type IoPageView = 'sinks' | 'sinks-create' | 'sources' | 'sources-create';
 export type IoPageProps = {
@@ -45,6 +47,7 @@ const IoPage: React.FC<IoPageProps> = (props) => {
       </div>
       
       {props.view === 'sinks' && <Sinks />}
+      {props.view === 'sinks-create' && <CreateSinks />}
       {props.view === 'sources' && <Sources />}
     </div>
   );

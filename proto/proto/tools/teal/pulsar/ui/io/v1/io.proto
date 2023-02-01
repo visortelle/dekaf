@@ -4,14 +4,96 @@ package tools.teal.pulsar.ui.io.v1;
 
 import "google/rpc/status.proto";
 
-// message ListClustersRequest {
-// }
+message Resources {
+  double cpu = 1;
+  int64 ram = 2;
+  int64 disk = 3;
+}
 
-// message ListClustersResponse {
-//   google.rpc.Status status = 1;
-//   repeated string clusters = 2;
-// }
+enum SubscriptionInitialPosition {
+  SUBSCRIPTION_INITIAL_POSITION_UNSPECIFIED = 0;
+  SUBSCRIPTION_INITIAL_POSITION_LATEST = 1;
+  SUBSCRIPTION_INITIAL_POSITION_EARLIEST = 2;
+}
 
-// service ClusterService {
-//   rpc ListClusters(ListClustersRequest) returns (ListClustersResponse) {}
-// }
+enum ProducerCryptoFailureAction {
+  PRODUCER_CRYPTO_FAILURE_ACTION_UNSPECIFIED = 0;
+  PRODUCER_CRYPTO_FAILURE_ACTION_FAIL = 1;
+  PRODUCER_CRYPTO_FAILURE_ACTION_SEND = 2;
+}
+enum ConsumerCryptoFailureAction {
+  CONSUMER_CRYPTO_FAILURE_ACTION_UNSPECIFIED = 0;
+  CONSUMER_CRYPTO_FAILURE_ACTION_FAIL = 1;
+  CONSUMER_CRYPTO_FAILURE_ACTION_DISCARD = 2;
+  CONSUMER_CRYPTO_FAILURE_ACTION_CONSUME = 3;
+}
+
+message CryptoConfig {
+  string crypto_key_reader_class_name = 1;
+  string crypto_key_reader_config = 2; // map<String, Json(Object)>
+  repeated string encryption_keys = 3;
+  ProducerCryptoFailureAction producer_crypto_failure_action = 4;
+  ConsumerCryptoFailureAction consumer_crypto_failure_action = 5;
+}
+
+message ConsumerConfig {
+  string schema_type = 1;
+  string serde_class_name = 2;
+  bool is_regex_pattern = 3;
+  map<string, string> schema_properties = 4;
+  map<string, string> consumer_properties = 5;
+  int32 receiver_queue_size = 6;
+  CryptoConfig crypto_config = 7;
+  bool pool_messages = 8;
+}
+
+enum ProcessingGuarantees {
+  PROCESSING_GUARANTEES_UNSPECIFIED = 0;
+  PROCESSING_GUARANTEES_ATLEAST_ONCE = 1;
+  PROCESSING_GUARANTEES_ATMOST_ONCE = 2;
+  PROCESSING_GUARANTEES_EFFECTIVELY_ONCE = 3;
+}
+
+message SinkConfig {
+  string tenant = 1;
+  string namespace = 2;
+  string name = 3;
+  string class_name = 4;
+  string source_subscription_name = 5;
+  SubscriptionInitialPosition source_subscription_position = 6;
+  repeated string inputs = 7;
+  map<string, string> topic_to_serde_class_name = 8;
+  string topics_pattern = 9;
+  map<string, string> topic_to_schema_type = 10;
+  map<string, string> topic_to_schema_properties = 11;
+  map<string, ConsumerConfig> input_specs = 12;
+  int32 max_message_retries = 13;
+  string dead_letter_topic = 14;
+  string configs = 15; // map<String, Json(Object)>
+  string secrets = 16; // map<String, Json(Object)>
+  int32 parallelism = 17;
+  ProcessingGuarantees processing_guarantees = 18;
+  bool retain_ordering = 19;
+  bool retain_key_ordering = 20;
+  Resources resources = 21;
+  bool auto_ack = 22;
+  int64 timeout_ms = 23;
+  int64 negative_ack_redelivery_delay_ms = 24;
+  string archive = 25;
+  bool cleanup_subscription = 26;
+  string runtime_flags = 27;
+  string custom_runtime_options = 28;
+}
+
+message CreateSinkRequest {
+  google.rpc.Status status = 1;
+  SinkConfig sink_config = 2;
+  string file_name = 3;
+}
+message CreateSinkResponse {
+  google.rpc.Status status = 1;
+}
+
+service IoService {
+  rpc CreateSink(CreateSinkRequest) returns (CreateSinkResponse);
+}

@@ -17,10 +17,12 @@ import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
 import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
 import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats.BrokerStatsServiceGrpc
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.TopicpoliciesServiceGrpc
+import com.tools.teal.pulsar.ui.io.v1.io.IoServiceGrpc
 
 import _root_.config.readConfig
 import _root_.consumer.ConsumerServiceImpl
 import _root_.topic.TopicServiceImpl
+import _root_.io.IoServiceImpl
 import _root_.producer.ProducerServiceImpl
 import _root_.schema.SchemaServiceImpl
 import _root_.tenant.TenantServiceImpl
@@ -38,6 +40,7 @@ object GrpcServer extends ZIOAppDefault:
         .addService(ConsumerServiceGrpc.bindService(ConsumerServiceImpl(), ExecutionContext.global))
         .addService(TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
         .addService(TopicpoliciesServiceGrpc.bindService(TopicpoliciesServiceImpl(), ExecutionContext.global))
+        .addService(IoServiceGrpc.bindService(IoServiceImpl(), ExecutionContext.global))
         .addService(SchemaServiceGrpc.bindService(SchemaServiceImpl(), ExecutionContext.global))
         .addService(TenantServiceGrpc.bindService(TenantServiceImpl(), ExecutionContext.global))
         .addService(NamespaceServiceGrpc.bindService(NamespaceServiceImpl(), ExecutionContext.global))

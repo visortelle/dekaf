@@ -12,7 +12,6 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.tenant.v1.tenant.{CreateTenantResponse, DeleteTenantResponse}
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import org.apache.pulsar.common.naming.TopicDomain
 
