@@ -38,7 +38,9 @@ def buildConsumer(
     consumer = request.subscriptionMode match
         case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_DURABLE)     => consumer.subscriptionMode(SubscriptionMode.Durable)
         case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE) => consumer.subscriptionMode(SubscriptionMode.NonDurable)
-        case _                                                               => consumer
+        
+        // Our application shouldn't make affect on messages retention, so we use NonDurable mode by default.
+        case _                                                               => consumer.subscriptionMode(SubscriptionMode.NonDurable)
 
     consumer = request.subscriptionType match
         case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED)     => consumer.subscriptionType(SubscriptionType.Shared)
