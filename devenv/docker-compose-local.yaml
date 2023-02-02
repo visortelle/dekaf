@@ -2,7 +2,7 @@ version: '2.4'
 
 services:
   pulsar:
-    image: apachepulsar/pulsar:2.11.0
+    image: apachepulsar/pulsar-all:2.11.0
     command: /entrypoint.sh topic-level-policies-enabled
     restart: always
     ports:

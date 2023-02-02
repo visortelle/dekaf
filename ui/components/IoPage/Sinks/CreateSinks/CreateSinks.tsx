@@ -192,12 +192,14 @@ const CreateSinks = () => {
     sinkConfig.setCustomRuntimeOptions(configurations.customRuntimeOptions);
 
     req.setSinkConfig(sinkConfig);
-    req.setFileName("sink.json")
+    req.setFileName("sinks.json")
 
     const res = await ioServiceClient.createSink(req, {});
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to create sink. ${res.getStatus()?.getMessage()}`);
       return;
+    } else {
+      console.log("created")
     }
   }
 
