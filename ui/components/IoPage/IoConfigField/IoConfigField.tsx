@@ -8,7 +8,7 @@ import DurationInput from '../../ui/ConfigurationTable/DurationInput/DurationInp
 import MemorySizeInput from '../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import Input from '../../ui/Input/Input';
 import Select from '../../ui/Select/Select';
-import { Configurations, StringMap, StringMapItem } from '../Sinks/configurationsFields';
+import { Configurations, ConfigurationValue, StringMap } from '../Sinks/configurationsFields';
 
 export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments';
 
@@ -24,9 +24,9 @@ export type IoConfigField = {
 }
 
 export type IoConfigFieldProps = IoConfigField & {
-  value: keyof Configurations | StringMap,
+  value: ConfigurationValue | StringMap,
   onChange: (value: string[] | string | StringMap | number | boolean) => void,
-  configurations: Configurations,
+  configurations: Configurations
 }
 
 const IoConfigField = (props: IoConfigFieldProps) => {
@@ -67,6 +67,15 @@ const IoConfigField = (props: IoConfigFieldProps) => {
     const newMap = _.cloneDeep(props.configurations[props.name] as StringMap);
     newMap[key][property] = eMap;
     props.onChange(newMap);
+  }
+
+
+
+  function type(value: any) {
+    var regex = /^\[object (\S+?)\]$/;
+    var matches = Object.prototype.toString.call(value).match(regex) || [];
+
+    return (matches[1] || 'undefined').toLowerCase();
   }
 
   return (
@@ -149,20 +158,32 @@ const IoConfigField = (props: IoConfigFieldProps) => {
           <div onClick={() => expandMap()}>
             +map
           </div>
-          {Object.keys(props.value).map((key) => (
-            <div key={key}>
-              <Input
-                value={props.value[key as keyof StringMap].name}
-                onChange={(v) => changeMap(v, 'name', key)}
-                type='text'
-              />
-              <Input
-                value={props.value[key].value}
-                onChange={(v) => changeMap(v, 'value', key)}
-                type='text'
-              />
-            </div>
-          ))}
+          {Object.keys(props.value).map((key) => {
+            if (
+              typeof(props.value) === 'object' &&
+              !Array.isArray(props.value) &&
+              typeof(props.value[key]) !== 'number'
+            ) {
+              const keyReference = props.value[key]
+
+              if (typeof(keyReference) !== 'number' && typeof(keyReference.value) === 'string'){
+                return (
+                  <div key={key}>
+                    <Input
+                      value={keyReference.name}
+                      onChange={(v) => changeMap(v, 'name', key)}
+                      type='text'
+                    />
+                    <Input
+                      value={keyReference.value}
+                      onChange={(v) => changeMap(v, 'value', key)}
+                      type='text'
+                    />
+                  </div>
+                )
+              }
+            }
+          })}
         </div>
       }
 

@@ -9,11 +9,9 @@
   margin: 20rem;
 }
 .CreateSinksField > h3 {
-  width: 30%;
+  width: 40%;
 }
-.CreateSinksHelp {
-  width: 30%;
-}
+
 .CreateSinkInput {
-  width: calc(40% - 40rem);
+  width: calc(60% - 40rem);
 }

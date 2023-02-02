@@ -63,6 +63,8 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
 
     override def createSink(request: pb.CreateSinkRequest): Future[pb.CreateSinkResponse] =
         try {
+            println("I'm a live")
+
             val sinkConfig = request.sinkConfig match
                 case Some(v) =>
                     def subscriptionInitialPositionFromPb(processing: pb.SubscriptionInitialPosition): SubscriptionInitialPosition = processing match
@@ -94,7 +96,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                             FunctionConfig.ProcessingGuarantees.EFFECTIVELY_ONCE
 
 
-                    def cryptoConfig(cryptoConfig: Option[pb.CryptoConfig]): CryptoConfig = cryptoConfig match
+                    def cryptoConfigConverter(cryptoConfig: Option[pb.CryptoConfig]): CryptoConfig = cryptoConfig match
                         case Some(v) =>
                             CryptoConfig (
                                 cryptoKeyReaderClassName = v.cryptoKeyReaderClassName,
@@ -103,6 +105,10 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                                 producerCryptoFailureAction = producerCryptoFailureActionFromPb(v.producerCryptoFailureAction),
                                 consumerCryptoFailureAction = consumerCryptoFailureActionFromPb(v.consumerCryptoFailureAction),
                             )
+
+//                    java.lang.IllegalArgumentException: File is not a normal file
+//                        /Users/nikitakubrakov/Desktop/dev/pulsar-ui/server
+
 
                     var inputSpecs = Map[String, ConsumerConfig]()
                     v.inputSpecs.foreach((specs, configs) =>
@@ -113,16 +119,18 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                             schemaProperties = configs.schemaProperties.asJava,
                             consumerProperties = configs.consumerProperties.asJava,
                             receiverQueueSize = configs.receiverQueueSize,
-                            cryptoConfig = cryptoConfig(configs.cryptoConfig),
+                            cryptoConfig = cryptoConfigConverter(configs.cryptoConfig),
                             poolMessages = configs.poolMessages,
                         )))
 
-                    val resources = v.resources match
+                    val convertedResources = v.resources match
                         case Some(v) => Resources(
                             cpu = v.cpu,
                             ram = v.ram,
                             disk = v.disk,
                         )
+
+                    println("Time to make sink config")
 
                     SinkConfig(
                         tenant = v.tenant,
@@ -145,7 +153,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         processingGuarantees = processingGuaranteesFromPb(v.processingGuarantees),
                         retainOrdering = v.retainOrdering,
                         retainKeyOrdering = v.retainKeyOrdering,
-                        resources = resources,
+                        resources = convertedResources,
                         autoAck = v.autoAck,
                         timeoutMs = v.timeoutMs,
                         negativeAckRedeliveryDelayMs = v.negativeAckRedeliveryDelayMs,
@@ -154,9 +162,10 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         runtimeFlags = v.runtimeFlags,
                         customRuntimeOptions = v.customRuntimeOptions,
                     )
+            println("unsaved")
+            adminClient.sinks.createSink(sinkConfig, request.fileName) // ERROR MAKER
 
-            adminClient.sinks.createSink(sinkConfig, request.fileName)
-
+            println("saved")
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.CreateSinkResponse(status = Some(status)))
         } catch {

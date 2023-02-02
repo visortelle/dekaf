@@ -304,6 +304,7 @@ export type StringMap = {
 }
 
 type CryptoConfig = {
+  [key: string]: string | string[],
   cryptoKeyReaderClassName: string,
   cryptoKeyReaderConfig: string, // Serialized JSON in a form of Map<String, JsonValue>
   encryptionKeys: string[],
@@ -312,8 +313,8 @@ type CryptoConfig = {
 }
 
 type ConsumerConfig = {
+  [key: string]: string | number | boolean | StringMap | CryptoConfig,
   name: string,
-
   schemaType: string,
   serdeClassName: string,
   isRegexPattern: boolean,
@@ -384,7 +385,6 @@ export const configurations: Configurations = {
   inputsSpecs: {
     'firstInput': {
       name: 'New',
-
       schemaType: '',
       serdeClassName: '',
       schemaProperties: {},
@@ -401,7 +401,6 @@ export const configurations: Configurations = {
       },
     },
   },
-
   maxMessageRetries: 0,
   deadLetterTopic: '',
   configs: '',

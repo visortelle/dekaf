@@ -7,7 +7,7 @@ import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/Pulsar
 import { H3 } from '../../../ui/H/H';
 import Button from '../../../ui/Button/Button';
 import IoConfigField from '../../IoConfigField/IoConfigField';
-import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees } from '../configurationsFields';
+import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, StringMapItem } from '../configurationsFields';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
@@ -76,16 +76,42 @@ const CreateSinks = () => {
       setConfigurations(newMap);
     }
   }
-
-  const changeMap = (configurationName: keyof Configurations, configurationKey: string, keyName: keyof typeof IoConfigField, value: string, attachmentName?: string) => {
+  
+  const changeMap = (configurationName: string, configurationKey: string, keyName: string, value: string | number | boolean | string[] | StringMap, attachmentName?: string) => {
     const newMap = _.cloneDeep(configurations);
-    if (attachmentName) {
-      newMap[configurationName][configurationKey][keyName][attachmentName] = value;
-    } else {
-      newMap[configurationName][configurationKey][keyName] = value;
-    }
 
+    if (configurationName === 'inputsSpecs') {
+      if (attachmentName) {
+        const X = newMap[configurationName][configurationKey][keyName];
+        if (
+          typeof(X) === 'object' &&
+          typeof(value) !== 'number' &&
+          typeof(value) !== 'boolean' && 
+          (
+            (typeof(value) === 'object' && Array.isArray(value)) ||
+            typeof(value) === 'string' ||
+            Array.isArray(value)
+          )
+        ) {
+          X[attachmentName] = value;
+        }
+      } else {
+        if (!Array.isArray(value)) {
+          newMap[configurationName][configurationKey][keyName] = value;
+        }
+      }
+    }
     setConfigurations(newMap);
+  }
+
+  const changeAttachment = (configurationName: string, attachmentName: string, value: string | number | boolean | string[] | StringMap) => {
+    const newAttachment = _.cloneDeep(configurations);
+
+    if (configurationName === 'resources' && typeof(value) === 'number') {
+      newAttachment[configurationName][attachmentName] = value;
+    }
+    
+    onChange(newAttachment);
   }
 
   const createSink = async () => {
@@ -115,7 +141,7 @@ const CreateSinks = () => {
     });
 
     Object.entries(configurations.inputsSpecs).map(([_, value]) => {
-      const consumerConfig = new pb.ConsumerConfig();
+      const inputsSpecs = new pb.InputsSpecs();
       const cryptoConfig = new pb.CryptoConfig();
       cryptoConfig.setConsumerCryptoFailureAction(consumerCryptoFailureActionToPb(value.cryptoConfig.consumerCryptoFailureAction));
       cryptoConfig.setCryptoKeyReaderClassName(value.cryptoConfig.cryptoKeyReaderClassName);
@@ -123,22 +149,22 @@ const CreateSinks = () => {
       cryptoConfig.setEncryptionKeysList(value.cryptoConfig.encryptionKeys);
       cryptoConfig.setProducerCryptoFailureAction(producerCryptoFailureActionToPb(value.cryptoConfig.producerCryptoFailureAction));
 
-      consumerConfig.setCryptoConfig(cryptoConfig);
-      consumerConfig.setIsRegexPattern(value.isRegexPattern);
-      consumerConfig.setPoolMessages(value.poolMessages);
-      consumerConfig.setReceiverQueueSize(value.receiverQueueSize);
-      consumerConfig.setSchemaType(value.schemaType);
-      consumerConfig.setSerdeClassName(value.serdeClassName);
+      inputsSpecs.setCryptoConfig(cryptoConfig);
+      inputsSpecs.setIsRegexPattern(value.isRegexPattern);
+      inputsSpecs.setPoolMessages(value.poolMessages);
+      inputsSpecs.setReceiverQueueSize(value.receiverQueueSize);
+      inputsSpecs.setSchemaType(value.schemaType);
+      inputsSpecs.setSerdeClassName(value.serdeClassName);
 
       Object.entries(value.schemaProperties).map(([_, value]) => {
-        consumerConfig.getSchemaPropertiesMap().set(value.name, value.value)
+        inputsSpecs.getSchemaPropertiesMap().set(value.name, value.value)
       })
 
       Object.entries(value.consumerProperties).map(([_, value]) => {
-        consumerConfig.getConsumerPropertiesMap().set(value.name, value.value)
+        inputsSpecs.getConsumerPropertiesMap().set(value.name, value.value)
       })
 
-      sinkConfig.getInputSpecsMap().set(value.name, consumerConfig)
+      sinkConfig.getInputSpecsMap().set(value.name, inputsSpecs)
     })
     
     sinkConfig.setMaxMessageRetries(configurations.maxMessageRetries);
@@ -165,11 +191,12 @@ const CreateSinks = () => {
     sinkConfig.setRuntimeFlags(configurations.runtimeFlags);
     sinkConfig.setCustomRuntimeOptions(configurations.customRuntimeOptions);
 
-    req.setSinkConfig(sinkConfig)
+    req.setSinkConfig(sinkConfig);
+    req.setFileName("sink.json")
 
     const res = await ioServiceClient.createSink(req, {});
     if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to set anti-affinity group. ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to create sink. ${res.getStatus()?.getMessage()}`);
       return;
     }
   }
@@ -182,33 +209,25 @@ const CreateSinks = () => {
             {configuration.name}
           </H3>
 
-          <span className={`${s.CreateSinksHelp}`}>
-            {configuration.help}
-          </span>
-
           {configuration.attachments &&
             <div>
-              {configuration.attachments.map(attachment => (
-                <div key={attachment.name} className={s.CreateSinkInput}>
-                  <IoConfigField
-                    name={attachment.name}
-                    isRequired={attachment.isRequired}
-                    type={attachment.type}
-                    help={attachment.help}
-                    value={configurations[configuration.name][attachment.name as keyof ConfigurationValue]}
-                    onChange={(v) => onChange({
-                      ...configurations,
-                      [configuration.name]: {
-                        ...configurations[configuration.name],
-                        [attachment.name]: v
-                      }
-                    })}
-                    configurations={configurations}
-                    enum={attachment.enum}
-                    mapType={attachment.mapType}
-                  />
-                </div>
-              ))}
+              {configuration.attachments.map(attachment => {
+                return (
+                  <div key={attachment.name} className={s.CreateSinkInput}>
+                    <IoConfigField
+                      name={attachment.name}
+                      isRequired={attachment.isRequired}
+                      type={attachment.type}
+                      help={attachment.help}
+                      value={configurations[configuration.name][attachment.name as keyof ConfigurationValue]}
+                      onChange={(v) => changeAttachment(configuration.name, attachment.name, v)}
+                      configurations={configurations}
+                      enum={attachment.enum}
+                      mapType={attachment.mapType}
+                    />
+                  </div>
+                )
+              })}
             </div>
           }
 

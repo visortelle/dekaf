@@ -36,7 +36,7 @@ message CryptoConfig {
   ConsumerCryptoFailureAction consumer_crypto_failure_action = 5;
 }
 
-message ConsumerConfig {
+message InputsSpecs {
   string schema_type = 1;
   string serde_class_name = 2;
   bool is_regex_pattern = 3;
@@ -66,7 +66,7 @@ message SinkConfig {
   string topics_pattern = 9;
   map<string, string> topic_to_schema_type = 10;
   map<string, string> topic_to_schema_properties = 11;
-  map<string, ConsumerConfig> input_specs = 12;
+  map<string, InputsSpecs> input_specs = 12;
   int32 max_message_retries = 13;
   string dead_letter_topic = 14;
   string configs = 15; // map<String, Json(Object)>
