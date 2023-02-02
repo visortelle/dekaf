@@ -126,7 +126,6 @@ object converters:
 
             case None => return Right(bytesToJsonString(msgValue))
 
-        println(s"----------------------- schemaInfo: $schemaInfo")
         schemaInfo.getType match
             case SchemaType.AVRO            => avro.converters.toJson(schemaInfo.getSchema, msgValue).map(String(_, StandardCharsets.UTF_8))
             case SchemaType.JSON            => Right(bytesToString(msgValue))

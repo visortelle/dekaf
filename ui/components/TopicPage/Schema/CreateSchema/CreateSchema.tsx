@@ -17,6 +17,7 @@ import SchemaTypeInput from "../SchemaTypeInput/SchemaTypeInput";
 import { H1 } from "../../../ui/H/H";
 import Policies from "../Policies/Policies";
 import Pre from "../../../ui/Pre/Pre";
+import HelpIcon from "../../../ui/ConfigurationTable/HelpIcon/HelpIcon";
 
 export type CreateSchemaProps = {
   topicType: "persistent" | "non-persistent";
@@ -105,6 +106,30 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
       <div className={s.CreateSchema}>
         <div className={s.Header}>
           <H1>Create schema</H1>
+
+          {schema.type === "SCHEMA_TYPE_PROTOBUF" && (
+            <div style={{ maxWidth: "480rem", color: "var(--accent-color-blue)" }}>
+              <span>
+                Consider using <code>PROTOBUF_NATIVE</code> schema type instead of <code>PROTOBUF</code> schema type.&nbsp;
+                <HelpIcon
+                  help={
+                    <ul>
+                      <li>
+                        <code>PROTOBUF</code> schema type uses Avro schema definition format and Protobuf 3 serialization format.
+                        <br />
+                        <code>PROTOBUF_NATIVE</code> schema type uses Protobuf 3 for both - schema definition and serialization.
+                      </li>
+                      <li>
+                        We don't support producing and consuming messages to the topics with PROTOBUF schema because topics with the
+                        <code>PROTOBUF</code> schema don't support <code>AUTO_CONSUME</code> and <code>AUTO_PRODUCE</code> features.
+                      </li>
+                      <br />
+                    </ul>
+                  }
+                />
+              </span>
+            </div>
+          )}
         </div>
 
         <div className={s.FormControl}>

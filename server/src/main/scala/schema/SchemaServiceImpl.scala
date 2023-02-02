@@ -104,11 +104,11 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
             logger.info(s"Successfully got latest schema info for topic ${request.topic}.")
             Future.successful(
-              GetLatestSchemaInfoResponse(
-                status = Some(status),
-                schemaInfo = Some(schemaInfoToPb(schemaInfoWithVersion.getSchemaInfo)),
-                schemaVersion = Option(schemaInfoWithVersion.getVersion)
-              )
+                GetLatestSchemaInfoResponse(
+                    status = Some(status),
+                    schemaInfo = Some(schemaInfoToPb(schemaInfoWithVersion.getSchemaInfo)),
+                    schemaVersion = Option(schemaInfoWithVersion.getVersion)
+                )
             )
         } catch {
             case (_: PulsarAdminException.NotFoundException) =>
@@ -163,15 +163,15 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val compiledFilePb = compiledFile match
                     case Right(f) =>
                         CompiledProtobufNativeFile(
-                          schemas = f.schemas
-                              .map(s =>
-                                  val (messageName, schema) = s
-                                  val schemaPb: ProtobufNativeSchema = ProtobufNativeSchema(
-                                    rawSchema = ByteString.copyFrom(schema.rawSchema),
-                                    humanReadableSchema = schema.humanReadableSchema
-                                  )
-                                  (messageName, schemaPb)
-                              )
+                            schemas = f.schemas
+                                .map(s =>
+                                    val (messageName, schema) = s
+                                    val schemaPb: ProtobufNativeSchema = ProtobufNativeSchema(
+                                        rawSchema = ByteString.copyFrom(schema.rawSchema),
+                                        humanReadableSchema = schema.humanReadableSchema
+                                    )
+                                    (messageName, schemaPb)
+                                )
                         )
                     case Left(err) => CompiledProtobufNativeFile(compilationError = Some(err.getMessage))
                 (relativePath, compiledFilePb)
@@ -197,13 +197,13 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
         val status = Status(code = Code.OK.index)
         Future.successful(
-          TestCompatibilityResponse(
-            status = Some(status),
-            isCompatible = compatibilityTestResult.isCompatible,
-            strategy = compatibilityTestResult.strategy,
-            incompatibleReason = compatibilityTestResult.incompatibleReason,
-            incompatibleFullReason = compatibilityTestResult.incompatibleFullReason
-          )
+            TestCompatibilityResponse(
+                status = Some(status),
+                isCompatible = compatibilityTestResult.isCompatible,
+                strategy = compatibilityTestResult.strategy,
+                incompatibleReason = compatibilityTestResult.incompatibleReason,
+                incompatibleFullReason = compatibilityTestResult.incompatibleFullReason
+            )
         )
 
     override def getHumanReadableSchema(request: GetHumanReadableSchemaRequest): Future[GetHumanReadableSchemaResponse] =
@@ -212,16 +212,16 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val descriptor = ProtobufNativeSchemaUtils.deserialize(request.rawSchema.toByteArray)
                 val status = Status(code = Code.OK.index)
                 Future.successful(
-                  GetHumanReadableSchemaResponse(
-                    status = Some(status),
-                    humanReadableSchema = Some(descriptor.toProto.toString)
-                  )
+                    GetHumanReadableSchemaResponse(
+                        status = Some(status),
+                        humanReadableSchema = Some(descriptor.toProto.toString)
+                    )
                 )
             case _ =>
                 val status = Status(code = Code.OK.index)
                 Future.successful(
-                  GetHumanReadableSchemaResponse(
-                    status = Some(status),
-                    humanReadableSchema = Some(request.rawSchema.toStringUtf8)
-                  )
+                    GetHumanReadableSchemaResponse(
+                        status = Some(status),
+                        humanReadableSchema = Some(request.rawSchema.toStringUtf8)
+                    )
                 )

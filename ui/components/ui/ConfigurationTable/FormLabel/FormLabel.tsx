@@ -1,9 +1,6 @@
-import React from 'react';
-import SvgIcon from '../../SvgIcon/SvgIcon';
-import helpIcon from './help.svg';
-import s from './FormLabel.module.css'
-import { TooltipWrapper } from 'react-tooltip';
-import { renderToStaticMarkup} from 'react-dom/server';
+import React from "react";
+import s from "./FormLabel.module.css";
+import HelpIcon from "../HelpIcon/HelpIcon";
 
 export type FormLabelProps = {
   content: React.ReactNode;
@@ -13,21 +10,16 @@ export type FormLabelProps = {
 
 const FormLabel: React.FC<FormLabelProps> = (props) => {
   return (
-    <TooltipWrapper html={(typeof props.help === undefined) || (typeof props.help === 'string') ?
-      renderToStaticMarkup(<>{props.help}</>) :
-      renderToStaticMarkup(props.help || <></>)
-    }>
-      <div className={`${s.FormLabel} ${props.help ? s.FormLabelWithHelp : ''}`}>
-        {props.content}
-        {props.isRequired && <span className={s.Required}>*</span>}
-        {props.help && (
-          <div className={s.HelpIcon}>
-            <SvgIcon svg={helpIcon} />
-          </div>
-        )}
-      </div>
-    </TooltipWrapper>
+    <div className={s.FormLabel}>
+      {props.content}
+      {props.isRequired && <span className={s.Required}>*</span>}
+      {props.help && (
+        <div className={s.HelpIcon}>
+          <HelpIcon help={props.help} />
+        </div>
+      )}
+    </div>
   );
-}
+};
 
 export default FormLabel;
