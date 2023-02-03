@@ -5,7 +5,7 @@ import org.apache.pulsar.client.api.Message
 import _root_.client.adminClient
 import _root_.schema.avro
 import _root_.schema.protobufnative
-import _root_.conversions.{
+import _root_.conversions.primitiveConv.{
     bytesToBoolean,
     bytesToFloat32,
     bytesToFloat64,
@@ -66,78 +66,81 @@ object converters:
         val orderingKey = Option(msg.getOrderingKey)
         val topic = Option(msg.getTopicName)
         val redeliveryCount = Option(msg.getRedeliveryCount)
-        val schemaVersion = Option(msg.getSchemaVersion).map(bytesToInt64)
+        val schemaVersion = Option(msg.getSchemaVersion).map(bytesToInt64).get.toOption
         val isReplicated = Option(msg.isReplicated)
         val replicatedFrom = Option(msg.getReplicatedFrom)
 
         val jsonMessage = JsonMessage(
-          properties = properties,
-          eventTime = eventTime,
-          publishTime = publishTime,
-          brokerPublishTime = brokerPublishTime,
-          messageId = messageId,
-          sequenceId = sequenceId,
-          producerName = producerName,
-          key = key,
-          size = size,
-          orderingKey = orderingKey,
-          topic = topic,
-          redeliveryCount = redeliveryCount,
-          schemaVersion = schemaVersion,
-          isReplicated = isReplicated,
-          replicatedFrom = Option(msg.getReplicatedFrom)
+            properties = properties,
+            eventTime = eventTime,
+            publishTime = publishTime,
+            brokerPublishTime = brokerPublishTime,
+            messageId = messageId,
+            sequenceId = sequenceId,
+            producerName = producerName,
+            key = key,
+            size = size,
+            orderingKey = orderingKey,
+            topic = topic,
+            redeliveryCount = redeliveryCount,
+            schemaVersion = schemaVersion,
+            isReplicated = isReplicated,
+            replicatedFrom = Option(msg.getReplicatedFrom)
         )
 
         val messagePb = consumerPb.Message(
-          properties = properties,
-          rawValue = Option(msg.getValue).map(ByteString.copyFrom),
-          value = jsonValue.toOption,
-          eventTime = eventTime,
-          publishTime = publishTime,
-          brokerPublishTime = brokerPublishTime,
-          messageId = messageId.map(ByteString.copyFrom),
-          sequenceId = sequenceId,
-          producerName = producerName,
-          key = key,
-          orderingKey = orderingKey.map(ByteString.copyFrom),
-          topic = topic,
-          redeliveryCount = redeliveryCount,
-          schemaVersion = schemaVersion,
-          isReplicated = isReplicated,
-          replicatedFrom = replicatedFrom,
-          size = size
+            properties = properties,
+            rawValue = Option(msg.getValue).map(ByteString.copyFrom),
+            value = jsonValue.toOption,
+            eventTime = eventTime,
+            publishTime = publishTime,
+            brokerPublishTime = brokerPublishTime,
+            messageId = messageId.map(ByteString.copyFrom),
+            sequenceId = sequenceId,
+            producerName = producerName,
+            key = key,
+            orderingKey = orderingKey.map(ByteString.copyFrom),
+            topic = topic,
+            redeliveryCount = redeliveryCount,
+            schemaVersion = schemaVersion,
+            isReplicated = isReplicated,
+            replicatedFrom = replicatedFrom,
+            size = size
         )
         (messagePb, jsonMessage, jsonValue.toOption)
 
     private val partitionedTopicSuffixRegexp = "-partition-\\d+$".r
 
     def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Either[Throwable, String] =
-        val msgValue = msg.getData
+        val msgData = msg.getData
         val topicName = partitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
         val schemaInfo = schemas.get(topicName) match
             case Some(schemasByVersion) =>
                 val schemaVersion = Option(msg.getSchemaVersion) match
-                    case Some(v) => bytesToInt64(v)
-                    case None => return Right(bytesToJsonString(msgValue))
+                    case Some(v) => bytesToInt64(v).toOption match
+                        case Some(v2) => v2
+                        case _ => return Left(new Exception(s"Invalid schema version ${bytesToInt64(v)}}"))
+                    case None    => return Right(bytesToJsonString(msgData))
 
                 schemasByVersion.get(schemaVersion) match
                     case Some(si) => si
-                    case None => return Right(bytesToJsonString(msgValue))
+                    case None     => return Right(bytesToJsonString(msgData))
 
-            case None => return Right(bytesToJsonString(msgValue))
+            case None => return Right(bytesToJsonString(msgData))
 
         schemaInfo.getType match
-            case SchemaType.AVRO            => avro.converters.toJson(schemaInfo.getSchema, msgValue).map(String(_, StandardCharsets.UTF_8))
-            case SchemaType.JSON            => Right(bytesToString(msgValue))
-            case SchemaType.PROTOBUF        => ???
-            case SchemaType.PROTOBUF_NATIVE => protobufnative.converters.toJson(schemaInfo.getSchema, msgValue).map(String(_, StandardCharsets.UTF_8))
-            case SchemaType.BOOLEAN         => Right(if bytesToBoolean(msgValue) then "true" else "false")
-            case SchemaType.INT8            => Right(bytesToInt8(msgValue).toString)
-            case SchemaType.INT16           => Right(bytesToInt16(msgValue).toShort.toString)
-            case SchemaType.INT32           => Right(bytesToInt32(msgValue).toString)
-            case SchemaType.INT64           => Right(bytesToInt64(msgValue).toString)
-            case SchemaType.FLOAT           => Right(bytesToFloat32(msgValue).toString)
-            case SchemaType.DOUBLE          => Right(bytesToFloat64(msgValue).toString)
-            case SchemaType.STRING          => Right(bytesToJsonString(msgValue))
+            case SchemaType.AVRO            => avro.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
+            case SchemaType.JSON            => Right(bytesToString(msgData))
+            case SchemaType.PROTOBUF        => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
+            case SchemaType.PROTOBUF_NATIVE => protobufnative.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
+            case SchemaType.KEY_VALUE       => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
+            case SchemaType.BOOLEAN         => Right(if bytesToBoolean(msgData) then "true" else "false")
+            case SchemaType.INT8            => bytesToInt8(msgData).map(_.toString)
+            case SchemaType.INT16           => bytesToInt16(msgData).map(_.toString)
+            case SchemaType.INT32           => bytesToInt32(msgData).map(_.toString)
+            case SchemaType.INT64           => ??? // bytesToInt64(msgData).map(_.toString)
+            case SchemaType.FLOAT           => ??? // bytesToFloat32(msgData).map(_.toString)
+            case SchemaType.DOUBLE          => ??? // bytesToFloat64(msgData).map(_.toString)
+            case SchemaType.STRING          => Right(bytesToJsonString(msgData))
             case SchemaType.BYTES           => Left(new Exception("Can't convert bytes to json"))
             case _                          => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))

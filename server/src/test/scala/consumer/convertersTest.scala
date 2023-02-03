@@ -12,12 +12,27 @@ import org.apache.pulsar.client.api.schema.SchemaDefinition
 import org.apache.pulsar.client.impl.{MessageImpl, TypedMessageBuilderImpl}
 import org.apache.pulsar.client.impl.schema.{
     AvroSchema,
+    BooleanSchema,
+    ByteSchema,
+    BytesSchema,
+    DateSchema,
+    DoubleSchema,
+    FloatSchema,
+    InstantSchema,
+    IntSchema,
     JSONSchema,
+    LocalDateTimeSchema,
+    LocalTimeSchema,
+    LongSchema,
     ProtobufNativeSchema,
     ProtobufNativeSchemaUtils,
     ProtobufSchema,
     SchemaDefinitionImpl,
-    SchemaUtils
+    SchemaUtils,
+    ShortSchema,
+    StringSchema,
+    TimeSchema,
+    TimestampSchema
 }
 import _root_.schema.avro
 import _root_.schema.protobufnative
@@ -30,6 +45,7 @@ import org.apache.pulsar.common.api.proto.MessageMetadata
 import schema.protobufnative.FileEntry
 import io.circe.parser.parse as parseJson
 
+import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 object convertersTest extends ZIOSpecDefault:
@@ -198,5 +214,118 @@ object convertersTest extends ZIOSpecDefault:
                 case Left(err)    => throw err
 
             assertTrue(parseJson(decodedJson) == parseJson(jsonToEncode))
+        },
+        test("BOOLEAN to json") {
+            case class TestCase(messagePayload: Array[Byte], expectedJson: String)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val schemaInfo = SchemaInfo.builder
+                    .`type`(SchemaType.BOOLEAN)
+                    .build
+
+                val topicName = "topic-a"
+                val schemaVersion = 1L;
+                val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
+                val message = MessageImpl.create[Array[Byte]](
+                    messageMetadata,
+                    ByteBuffer.wrap(testCase.messagePayload),
+                    BooleanSchema.of.asInstanceOf[Schema[Array[Byte]]],
+                    topicName
+                )
+
+                val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+                val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+                val json = converters.messageValueToJson(schemasByTopic, message) match
+                    case Right(value) => value
+                    case Left(err)    => throw err
+
+                parseJson(json) == parseJson(testCase.expectedJson)
+
+            val testCases = List[TestCase](
+                TestCase(Array(0), "false"),
+                TestCase(Array(1), "true")
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
+        test("INT8 to json") {
+            case class TestCase(messagePayload: Array[Byte], expected: String)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val schemaInfo = SchemaInfo.builder
+                    .`type`(SchemaType.INT8)
+                    .build
+
+                val topicName = "topic-a"
+                val schemaVersion = 1L;
+                val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
+                val message = MessageImpl.create[Array[Byte]](
+                    messageMetadata,
+                    ByteBuffer.wrap(testCase.messagePayload),
+                    ByteSchema.of.asInstanceOf[Schema[Array[Byte]]],
+                    topicName
+                )
+
+                val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+                val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+                val json = converters.messageValueToJson(schemasByTopic, message) match
+                    case Right(value) => value
+                    case Left(err)    => throw err
+
+                parseJson(json) == parseJson(testCase.expected)
+
+            val testCases = List[TestCase](
+                TestCase(Array(0), "0"),
+                TestCase(Array(0, 0), "0"),
+                TestCase(Array(1), "1"),
+                TestCase(Array(15), "15"),
+                TestCase(Array(127), "127"),
+                TestCase(Array(-18), "-18")
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
+        test("INT16 to json") {
+            case class TestCase(messagePayload: Array[Byte], expectedJson: String)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val schemaInfo = SchemaInfo.builder
+                    .`type`(SchemaType.INT8)
+                    .build
+
+                val topicName = "topic-a"
+                val schemaVersion = 1L;
+                val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
+                val message = MessageImpl.create[Array[Byte]](
+                    messageMetadata,
+                    ByteBuffer.wrap(testCase.messagePayload),
+                    ShortSchema.of.asInstanceOf[Schema[Array[Byte]]],
+                    topicName
+                )
+
+                val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+                val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+                val json = converters.messageValueToJson(schemasByTopic, message) match
+                    case Right(value) => value
+                    case Left(err) => throw err
+                    
+                println("json: " + json)
+
+                parseJson(json) == parseJson(testCase.expectedJson)
+
+            val testCases = List[TestCase](
+                TestCase(Array(0), "0"),
+                TestCase(Array(0, 0), "0"),
+                TestCase(Array(1), "1"),
+                TestCase(Array(15), "15"),
+                TestCase(Array(127), "127"),
+                TestCase(Array(-18), "-18"),
+                TestCase(Array(127, 127), "32767"),
+            )
+
+            assertTrue(testCases.forall(runTestCase))
         }
     )

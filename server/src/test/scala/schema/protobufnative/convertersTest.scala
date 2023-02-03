@@ -1,10 +1,10 @@
 package schema.protobufnative
 
-import com.google.protobuf.DynamicMessage
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
 import zio.test.TestAspect.*
+import com.google.protobuf.DynamicMessage
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
 import io.circe.parser.parse as parseJson
 
