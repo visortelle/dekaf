@@ -7,7 +7,28 @@ import zio.test.TestAspect.*
 import com.google.common.primitives.{Bytes, Doubles, Ints, Shorts}
 
 object primitiveConvTest extends ZIOSpecDefault {
+    private val floatPrecision = 0.000_000_1
     def spec = suite(this.getClass.toString)(
+        test("eqFloat") {
+            case class TestCase(a: Double, b: Double, precision: Double, expected: Boolean)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val actual = primitiveConv.eqFloat(testCase.a, testCase.b, testCase.precision)
+                actual == testCase.expected
+
+            val testCases = List(
+                TestCase(0.0f, 0.0f, floatPrecision, true),
+                TestCase(0.0f, 1.0f, floatPrecision, false),
+                TestCase(1.0f, 0.0f, floatPrecision, false),
+                TestCase(1.0f, 1.0f, floatPrecision, true),
+                TestCase(0.0f, -0.0f, floatPrecision, true),
+                TestCase(0.0f, Float.NaN, floatPrecision, false),
+                TestCase(Float.NaN, 0.0f, floatPrecision, false),
+                TestCase(Float.NaN, Float.NaN, floatPrecision, false)
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
         test("bytesToInt8") {
             case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, Byte]) => Boolean)
 
@@ -141,7 +162,6 @@ object primitiveConvTest extends ZIOSpecDefault {
 
             def runTestCase(testCase: TestCase): Boolean =
                 val actual = primitiveConv.bytesToFloat64(testCase.bytes)
-                println(s"actual: $actual")
                 testCase.check(actual)
 
             val testCases = List(
@@ -150,13 +170,12 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0xbf, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _ == Right(-1)),
                 TestCase(
                     Array(0x40, 0x45, 0x00, 0x00, 0xc0, 0x00, 0x00, 0x00).map(_.toByte),
-                    v => eqFloat(v.toOption.get, 42, 10)
+                    v => primitiveConv.eqFloat(v.toOption.get, 42, floatPrecision)
                 ),
                 TestCase(
                     Array(0xc0, 0x45, 0x00, 0x00, 0xc0, 0x00, 0x00, 0x00).map(_.toByte),
-                    v => eqFloat(v.toOption.get, -42, 10)
+                    v => primitiveConv.eqFloat(v.toOption.get, -42, floatPrecision)
                 ),
-
                 TestCase(Array(0x7f, 0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff).map(_.toByte), _ == Right(Double.MaxValue)),
                 TestCase(Array(0x7f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _ == Right(Double.PositiveInfinity)),
                 TestCase(Array(0xff, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _ == Right(Double.NegativeInfinity)),
@@ -176,5 +195,3 @@ object primitiveConvTest extends ZIOSpecDefault {
         }
     )
 }
-
-private def eqFloat(x: Double, y: Double, precision: Double): Boolean = (x - y).abs < precision

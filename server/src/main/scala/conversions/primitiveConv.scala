@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 
 object primitiveConv:
+    def eqFloat(x: Double, y: Double, precision: Double): Boolean = (x - y).abs < precision
+    
     def bytesToInt8(bytes: Array[Byte]): Either[Throwable, Byte] =
         if bytes.length == 1
         then Right(bytes.head)
