@@ -6,6 +6,11 @@ import zio.test.Assertion.*
 import zio.test.TestAspect.*
 import com.google.common.primitives.{Bytes, Doubles, Ints, Shorts}
 
+/* Useful tools:
+ - https://www.simonv.fr/TypesConvert/?integers
+ - https://onlineutf8tools.com
+ */
+
 object primitiveConvTest extends ZIOSpecDefault {
     private val floatPrecision = 0.000_000_1
     def spec = suite(this.getClass.toString)(
@@ -131,8 +136,6 @@ object primitiveConvTest extends ZIOSpecDefault {
 
             def runTestCase(testCase: TestCase): Boolean =
                 val actual = primitiveConv.bytesToFloat32(testCase.bytes)
-                println(s"actual: $actual")
-                println(s"expected: ${Float.MinValue}")
                 testCase.check(actual)
 
             val floatMinValueHex = 0x00800000
@@ -142,12 +145,10 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0xbf, 0x80, 0x00, 0x00).map(_.toByte), _ == Right(-1)),
                 TestCase(Array(0x42, 0x28, 0x00, 0x00).map(_.toByte), _ == Right(42)),
                 TestCase(Array(0xc2, 0x28, 0x00, 0x00).map(_.toByte), _ == Right(-42)),
-
                 TestCase(Array(0x7f, 0x7f, 0xff, 0xff).map(_.toByte), _ == Right(Float.MaxValue)),
                 TestCase(Array(0x7f, 0x80, 0x00, 0x00).map(_.toByte), _ == Right(Float.PositiveInfinity)),
                 TestCase(Array(0xff, 0x80, 0x00, 0x00).map(_.toByte), _ == Right(Float.NegativeInfinity)),
                 TestCase(Array(0x7f, 0xc0, 0x00, 0x00).map(_.toByte), _.toOption.get.isNaN),
-
                 TestCase(Array(), _.isLeft),
                 TestCase(Array(0x00.toByte), _.isLeft),
                 TestCase(Array(0x00, 0x00).map(_.toByte), _.isLeft),
@@ -169,18 +170,17 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _ == Right(1)),
                 TestCase(Array(0xbf, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _ == Right(-1)),
                 TestCase(
-                    Array(0x40, 0x45, 0x00, 0x00, 0xc0, 0x00, 0x00, 0x00).map(_.toByte),
+                    Array(0x40, 0x45, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte),
                     v => primitiveConv.eqFloat(v.toOption.get, 42, floatPrecision)
                 ),
                 TestCase(
-                    Array(0xc0, 0x45, 0x00, 0x00, 0xc0, 0x00, 0x00, 0x00).map(_.toByte),
+                    Array(0xc0, 0x45, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte),
                     v => primitiveConv.eqFloat(v.toOption.get, -42, floatPrecision)
                 ),
                 TestCase(Array(0x7f, 0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff).map(_.toByte), _ == Right(Double.MaxValue)),
                 TestCase(Array(0x7f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _ == Right(Double.PositiveInfinity)),
                 TestCase(Array(0xff, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _ == Right(Double.NegativeInfinity)),
                 TestCase(Array(0x7f, 0xf8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.toOption.get.isNaN),
-
                 TestCase(Array(), _.isLeft),
                 TestCase(Array(0x00.toByte), _.isLeft),
                 TestCase(Array(0x00, 0x00).map(_.toByte), _.isLeft),
@@ -188,10 +188,54 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft),
                 TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft),
                 TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft),
-                TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft),
+                TestCase(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), _.isLeft)
             )
 
             assertTrue(testCases.forall(runTestCase))
-        }
+        },
+        test("bytesToString") {
+            case class TestCase(bytes: Array[Byte], expected: String)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val actual = primitiveConv.bytesToString(testCase.bytes)
+                actual == testCase.expected
+
+            val testCases = List(
+                TestCase(Array(), ""),
+                TestCase(Array(0x68).map(_.toByte), "h"),
+                TestCase(
+                    Array(0x61, 0x0a, 0x62, 0x0a, 0x63).map(_.toByte),
+                    """a
+                      |b
+                      |c""".stripMargin
+                ),
+                TestCase(Array(0x47, 0x72, 0x75, 0xc3, 0x9f).map(_.toByte), "Gruß"),
+                TestCase(Array(0xe4, 0xb8, 0x96, 0xe7, 0x95, 0x8c).map(_.toByte), "世界"),
+                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """qu"ote"s"""),
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
+        test("bytesToJsonString") {
+            case class TestCase(bytes: Array[Byte], expected: String)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val actual = primitiveConv.bytesToJsonString(testCase.bytes)
+                actual == testCase.expected
+
+            val testCases = List(
+                TestCase(Array(), "\"\""),
+                TestCase(Array(0x68).map(_.toByte), "\"h\""),
+                TestCase(
+                    Array(0x61, 0x0a, 0x62, 0x0a, 0x63).map(_.toByte),
+                    """"a\nb\nc""""
+                ),
+                TestCase(Array(0x47, 0x72, 0x75, 0xc3, 0x9f).map(_.toByte), "\"Gruß\""),
+                TestCase(Array(0xe4, 0xb8, 0x96, 0xe7, 0x95, 0x8c).map(_.toByte), "\"世界\""),
+                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """"qu\"ote\"s""""),
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
     )
 }

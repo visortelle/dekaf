@@ -2,14 +2,15 @@ package conversions
 
 import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
+import io.circe.syntax._
 
 object primitiveConv:
     def eqFloat(x: Double, y: Double, precision: Double): Boolean = (x - y).abs < precision
-    
+
     def bytesToInt8(bytes: Array[Byte]): Either[Throwable, Byte] =
         if bytes.length == 1
         then Right(bytes.head)
-        else Left(new Exception(s"Invalid byte array length ${bytes.length}}"))
+        else Left(new Exception(s"Invalid byte array length ${bytes.length}"))
 
     def bytesToInt16(bytes: Array[Byte]): Either[Throwable, Short] =
         createByteBuf(bytes, 2).map(_.getShort)
@@ -29,9 +30,12 @@ object primitiveConv:
     def bytesToString(bytes: Array[Byte]): String = String(bytes, StandardCharsets.UTF_8)
 
     def bytesToJsonString(bytes: Array[Byte]): String =
-        "\"" + bytesToString(bytes).replace("\"", "\\\"") + "\""
+        bytesToString(bytes).asJson.toString
 
-    def bytesToBoolean(bytes: Array[Byte]): Boolean = bytes.head > 0
+    def bytesToBoolean(bytes: Array[Byte]): Either[Throwable, Boolean] =
+        if bytes.length == 1
+        then Right(bytes.head != 0)
+        else Left(new Exception(s"Invalid byte array length ${bytes.length}"))
 
     private def createByteBuf(bytes: Array[Byte], expectedSize: Byte): Either[Throwable, ByteBuffer] =
         if bytes.length == expectedSize
