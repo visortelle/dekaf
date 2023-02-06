@@ -70,7 +70,7 @@ class MessageFilter(config: MessageFilterConfig):
         config.stdout.reset()
         logs
 
-    def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
+    def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)
 
     def runCode(code: String): String =
@@ -80,7 +80,7 @@ class MessageFilter(config: MessageFilterConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage()}"
         }
 
-def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
+def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
     val evalCode =
         s"""
           | (() => {
@@ -105,14 +105,14 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
 
     (testResult, cumulativeJsonState)
 
-def getFilterTestResult(filter: pb.MessageFilter, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
+def getFilterTestResult(filter: pb.MessageFilter, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
     messageFilter.test(filter.value, jsonMessage, jsonValue)
 
 def getFilterChainTestResult(
     filterChain: Option[pb.MessageFilterChain],
     messageFilter: MessageFilter,
     jsonMessage: JsonMessage,
-    jsonValue: JsonValue
+    jsonValue: MessageValueToJsonResult
 ): FilterTestResult =
     var chain = filterChain.getOrElse(pb.MessageFilterChain(filters = Map.empty, mode = pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL))
 

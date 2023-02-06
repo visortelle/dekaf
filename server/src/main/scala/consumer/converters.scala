@@ -14,7 +14,8 @@ import _root_.conversions.primitiveConv.{
     bytesToInt64,
     bytesToInt8,
     bytesToJsonString,
-    bytesToString
+    bytesToString,
+    leftPad
 }
 
 import scala.jdk.CollectionConverters.*
@@ -27,7 +28,8 @@ import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 import java.time.Instant
 
-type JsonValue = Option[String]
+type JsonValue = String
+type MessageValueToJsonResult = Either[Throwable, JsonValue]
 
 case class JsonMessage(
     eventTime: Option[Long],
@@ -48,7 +50,7 @@ case class JsonMessage(
 )
 
 object converters:
-    def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, JsonValue) =
+    def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, MessageValueToJsonResult) =
         val jsonValue = messageValueToJson(schemas, msg)
         val properties = Option(msg.getProperties) match
             case Some(v) => v.asScala.toMap
@@ -107,11 +109,11 @@ object converters:
             replicatedFrom = replicatedFrom,
             size = size
         )
-        (messagePb, jsonMessage, jsonValue.toOption)
+        (messagePb, jsonMessage, jsonValue)
 
     private val partitionedTopicSuffixRegexp = "-partition-\\d+$".r
 
-    def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Either[Throwable, String] =
+    def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
         val msgData = msg.getData
         val topicName = partitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
         val schemaInfo = schemas.get(topicName) match
@@ -138,7 +140,7 @@ object converters:
             case SchemaType.INT8            => bytesToInt8(msgData).map(_.toString)
             case SchemaType.INT16           => bytesToInt16(msgData).map(_.toString)
             case SchemaType.INT32           => bytesToInt32(msgData).map(_.toString)
-            case SchemaType.INT64           => bytesToInt64(msgData).map(_.toString)
+            case SchemaType.INT64           => bytesToInt64(msgData).map("\"" + _.toString + "\"")
             case SchemaType.FLOAT           => bytesToFloat32(msgData).map(_.toString)
             case SchemaType.DOUBLE          => bytesToFloat64(msgData).map(_.toString)
             case SchemaType.STRING          => Right(bytesToJsonString(msgData))

@@ -51,13 +51,13 @@ class StreamDataHandler:
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     val logger: Logger = Logger(getClass.getName)
 
-    var messageFilters: Map[ConsumerName, MessageFilter] = Map.empty
-    var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
-    var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
-    var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
     var topics: Map[ConsumerName, Vector[String]] = Map.empty
-    var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
     var schemasByTopic: SchemasByTopic = Map.empty
+    private var messageFilters: Map[ConsumerName, MessageFilter] = Map.empty
+    private var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
+    private var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
+    private var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
+    private var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
         val consumerName: ConsumerName = request.consumerName
@@ -90,10 +90,10 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
                     processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
 
-                    val (messagePb, jsonMessage, jsonValue) = converters.serializeMessage(schemasByTopic, msg)
+                    val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(schemasByTopic, msg)
 
                     val (filterResult, jsonAccumulator) =
-                        getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, jsonValue)
+                        getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, messageValueToJsonResult)
 
                     val messageToSend = messagePb
                         .withAccumulator(jsonAccumulator)
@@ -192,7 +192,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     try
                         consumer.unsubscribe()
                     catch
-                        // Unsubscribe fails on partitioned topics in most cases. Anyway we can't handle it meaningfully.
+                        // Unsubscribe fails on partitioned topics in most cases.
+                        // Anyway we can't handle it meaningfully.
                         _ => ()
                     finally ()
                 case _ => ()
