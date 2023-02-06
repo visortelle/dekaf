@@ -15,8 +15,6 @@ services:
       - $PWD/entrypoint.sh:/entrypoint.sh
       - $PWD/pulsar/connectors/avro-schema.json:/pulsar/connectors/avro-schema.json
       - $PWD/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml:/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml
-    environment:
-      - JDK_JAVA_OPTIONS="--add-exports=java.base/sun.net=ALL-UNNAMED"
   postgresql:
     image: postgres
     container_name: local_pgdb

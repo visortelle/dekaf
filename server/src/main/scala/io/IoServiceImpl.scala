@@ -61,10 +61,9 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
 //        parse(json) match
 //            case Right(v) => v
 //            case Left(_) => null
-        val pappi = new JsonParser().parse(json).getAsJsonObject();
 
         val mapper = ObjectMapperFactory.getThreadLocal()
-        val typeRef = new TypeReference[mutable.HashMap[String, Object]]() {}
+        val typeRef = new TypeReference[mutable.HashMap[String, Any]]() {}
         mapper.readValue(json, typeRef)
 
 //    protected Map <String, Object> parseConfigs(String str) throws JsonProcessingException {
@@ -174,7 +173,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         customRuntimeOptions = null, // v.customRuntimeOptions, //special
                     )
 
-                    println(parseConfigs(v.configs))
+                    println(parseConfigs(v.configs).toMap.asJava)
 
                     v.pathToConnector match
                         case Some(v) =>

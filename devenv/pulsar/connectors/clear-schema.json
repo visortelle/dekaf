@@ -27,3 +27,66 @@
   "age": "25",
   "address": "ul. Pyshkina"
 }
+
+
+{
+  "userName": "postgres@sql.com",
+  "password": "postgres@sql.com",
+  "jdbcUrl": "jdbc:postgresql://localhost:5432/postgres",
+  "tableName": "users"
+}
+
+persistent://public/default/users
+
+
+
+
+
+SinkConfig (
+  tenant=public,
+  namespace=default, 
+  name=users, 
+  className=org.apache.pulsar.io.cassandra.CassandraStringSink, 
+  sourceSubscriptionName=null, 
+  sourceSubscriptionPosition=Latest, 
+  inputs=[
+    persistent://public/default/users //The input topic(s) of the sink.
+  ], 
+  topicToSerdeClassName=null,
+  topicsPattern=null, 
+  topicToSchemaType=null, 
+  topicToSchemaProperties=null, 
+  inputSpecs={
+    persistent://public/default/users=ConsumerConfig
+    (
+      schemaType=null,
+      serdeClassName=null, 
+      isRegexPattern=false, 
+      schemaProperties={}, 
+      consumerProperties={}, 
+      receiverQueueSize=null, 
+      cryptoConfig=null, 
+      poolMessages=false
+    )
+  }, 
+  maxMessageRetries=null, 
+  deadLetterTopic=null,
+  configs={}, //fail
+  secrets=null, 
+  parallelism=1, 
+  processingGuarantees=ATLEAST_ONCE, 
+  retainOrdering=false, 
+  retainKeyOrdering=false, 
+  resources=Resources(
+    cpu=1.0,
+    ram=1073741824,
+    disk=10737418240
+  ),
+  autoAck=false, 
+  timeoutMs=null, 
+  negativeAckRedeliveryDelayMs=null, 
+  archive=null, //The path to the archive file for the sink.
+  cleanupSubscription=false,
+  runtimeFlags=null,
+  customRuntimeOptions=null
+)
