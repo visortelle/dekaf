@@ -3,6 +3,7 @@ version: '2.4'
 services:
   pulsar:
     image: apachepulsar/pulsar-all:2.11.0
+    container_name: pulsar
     command: /entrypoint.sh topic-level-policies-enabled
     restart: always
     ports:
@@ -12,3 +13,21 @@ services:
     volumes:
       - $PWD/cases:/cases
       - $PWD/entrypoint.sh:/entrypoint.sh
+      - $PWD/pulsar/connectors/avro-schema.json:/pulsar/connectors/avro-schema.json
+      - $PWD/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml:/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml
+    environment:
+      - JDK_JAVA_OPTIONS="--add-exports=java.base/sun.net=ALL-UNNAMED"
+  postgresql:
+    image: postgres
+    container_name: local_pgdb
+    restart: always
+    ports:
+      - "5438:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+volumes:
+  local_pgdata:

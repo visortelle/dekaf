@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 
@@ -8,9 +8,9 @@ import DurationInput from '../../ui/ConfigurationTable/DurationInput/DurationInp
 import MemorySizeInput from '../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import Input from '../../ui/Input/Input';
 import Select from '../../ui/Select/Select';
-import { Configurations, ConfigurationValue, StringMap } from '../Sinks/configurationsFields';
+import { Configurations, ConfigurationValue, PathToConnector, StringMap } from '../Sinks/configurationsFields';
 
-export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments';
+export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector';
 
 export type IoConfigField = {
   name: string,
@@ -24,12 +24,18 @@ export type IoConfigField = {
 }
 
 export type IoConfigFieldProps = IoConfigField & {
-  value: ConfigurationValue | StringMap,
-  onChange: (value: string[] | string | StringMap | number | boolean) => void,
+  value: ConfigurationValue,
+  // value: any,
+  // onChange: (value: string[] | string | StringMap | number | boolean) => void,
+  onChange: (value: string[] | string | StringMap | PathToConnector | number | boolean) => void,
+  // onChange: (value: any) => void,
   configurations: Configurations
 }
 
 const IoConfigField = (props: IoConfigFieldProps) => {
+
+  const [pathToConnectorType, setPathToConnectorType] = useState('url');
+  const connectors = ['aerospike', 'batch-data-generator', 'canal', 'cassandra', 'data-generator', 'debezium-mongodb', 'debezium-mssql', 'debezium-mysql', 'debezium-oracle', 'debezium-postgres', 'dynamodb', 'elastic-search', 'file', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'kafka-connect-adaptor', 'kinesis', 'mongo', 'netty', 'nsq', 'rabbitmq', 'redis', 'solr', 'twitter'];
 
   const expandArray = () => {
     let expandedArray: string[] = [...props.configurations[props.name] as string[], ''];
@@ -69,15 +75,6 @@ const IoConfigField = (props: IoConfigFieldProps) => {
     props.onChange(newMap);
   }
 
-
-
-  function type(value: any) {
-    var regex = /^\[object (\S+?)\]$/;
-    var matches = Object.prototype.toString.call(value).match(regex) || [];
-
-    return (matches[1] || 'undefined').toLowerCase();
-  }
-
   return (
     <div>
       {props.type === 'enum' && props.enum && typeof(props.value) === 'string' && 
@@ -96,6 +93,48 @@ const IoConfigField = (props: IoConfigFieldProps) => {
           value={props.value}
           onChange={(v) => props.onChange(v)}
         />
+      }
+
+      {props.type === 'pathToConnector' && typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+        <div>
+          <Select
+            list={[
+              { type: 'item', value: 'url', title: 'url' },
+              { type: 'item', value: 'folder', title: 'folder' },
+            ]}
+            value={props.value.type}
+            onChange={(v) => {
+              setPathToConnectorType(v)
+              typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+                props.onChange({ path: props.value.path, type: v })
+            }}
+          />
+          {pathToConnectorType === 'url' &&
+            <Select
+              list={connectors.map(subject => {
+                return { type: 'item', value: subject, title: subject }
+              })}
+              value={props.value.path}
+              onChange={(v) => {
+                typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+                  props.onChange({
+                    type: props.value.type,
+                    path:`https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-${v}-2.11.0.nar`
+                  })
+              }}
+            />
+          }
+          {pathToConnectorType === 'folder' &&
+            <Input
+              type='text'
+              value={props.value.path}
+              onChange={(v) => {
+                typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+                  props.onChange({ type: props.value.type, path: v})
+              }}
+            />
+          }
+        </div>
       }
 
       {props.type === 'int' && typeof(props.value) === 'number' &&
@@ -166,7 +205,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
             ) {
               const keyReference = props.value[key]
 
-              if (typeof(keyReference) !== 'number' && typeof(keyReference.value) === 'string'){
+              if (typeof(keyReference) !== 'number' && typeof(keyReference) !== 'string' && typeof(keyReference.value) === 'string'){
                 return (
                   <div key={key}>
                     <Input

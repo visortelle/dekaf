@@ -1,0 +1,11 @@
+
+tenant: "public"
+namespace: "default"
+name: "users-postgres-sink"
+topicName: "persistent://public/default/users"
+sinkType: "jdbc-postgres"
+configs:
+  userName: "postgres@sql.com"
+  password: "postgres@sql.com"
+  jdbcUrl: "jdbc:postgresql://localhost:5432/postgres"
+  tableName: "users"

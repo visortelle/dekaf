@@ -7,13 +7,18 @@ import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/Pulsar
 import { H3 } from '../../../ui/H/H';
 import Button from '../../../ui/Button/Button';
 import IoConfigField from '../../IoConfigField/IoConfigField';
-import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, StringMapItem } from '../configurationsFields';
+import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, StringMapItem, PathToConnectorType, PathToConnector } from '../configurationsFields';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 import s from './CreateSinks.module.css';
 
 const CreateSinks = () => {
+
+  const { ioServiceClient } = PulsarGrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
+  const [configurations, setConfigurations] = useState(defaultConfigurations);
+  const [hideUnrequired, setHideUnrequired] = useState(true);
 
   const consumerCryptoFailureActionToPb = (value: ConsumerCryptoFailureAction): pb.ConsumerCryptoFailureAction => {
     switch (value) {
@@ -55,10 +60,14 @@ const CreateSinks = () => {
     }
   }
 
-  const { ioServiceClient } = PulsarGrpcClient.useContext();
-  const { notifyError } = Notifications.useContext();
-
-  const [configurations, setConfigurations] = useState(defaultConfigurations);
+  const pathToConnectorToPb = (value: PathToConnectorType): pb.PathType => {
+    switch (value) {
+      case 'folder':
+        return pb.PathType.PATH_TYPE_FOLDER;
+      case 'url':
+        return pb.PathType.PATH_TYPE_URL;
+    }
+  }
 
   const onChange = (configurations: Configurations) => {
     setConfigurations(configurations)
@@ -76,8 +85,17 @@ const CreateSinks = () => {
       setConfigurations(newMap);
     }
   }
+
+
+  const isPathToConnector = (configurationValue: ConfigurationValue): configurationValue is PathToConnector => {
+    if (typeof(configurationValue) === 'string' || typeof(configurationValue) === 'number' || typeof(configurationValue) === 'boolean' || Array.isArray(configurationValue) ){
+      return false
+    }
+
+    return configurationValue.path ? true : false;
+  }
   
-  const changeMap = (configurationName: string, configurationKey: string, keyName: string, value: string | number | boolean | string[] | StringMap, attachmentName?: string) => {
+  const changeMap = (configurationName: string, configurationKey: string, keyName: string, value: string | number | boolean | string[] | StringMap | PathToConnector, attachmentName?: string) => {
     const newMap = _.cloneDeep(configurations);
 
     if (configurationName === 'inputsSpecs') {
@@ -96,7 +114,9 @@ const CreateSinks = () => {
           X[attachmentName] = value;
         }
       } else {
-        if (!Array.isArray(value)) {
+        if (!Array.isArray(value) &&
+          !(isPathToConnector(value))
+        ) {
           newMap[configurationName][configurationKey][keyName] = value;
         }
       }
@@ -104,7 +124,7 @@ const CreateSinks = () => {
     setConfigurations(newMap);
   }
 
-  const changeAttachment = (configurationName: string, attachmentName: string, value: string | number | boolean | string[] | StringMap) => {
+  const changeAttachment = (configurationName: string, attachmentName: string, value: string | number | boolean | string[] | StringMap | PathToConnector) => {
     const newAttachment = _.cloneDeep(configurations);
 
     if (configurationName === 'resources' && typeof(value) === 'number') {
@@ -181,8 +201,8 @@ const CreateSinks = () => {
     resources.setCpu(configurations.resources.cpu);
     resources.setDisk(configurations.resources.disk);
     resources.setRam(configurations.resources.ram);
-
     sinkConfig.setResources(resources);
+
     sinkConfig.setAutoAck(configurations.autoAck);
     sinkConfig.setTimeoutMs(configurations.timeoutMs);
     sinkConfig.setNegativeAckRedeliveryDelayMs(configurations.negativeAckRedeliveryDelayMs);
@@ -191,8 +211,12 @@ const CreateSinks = () => {
     sinkConfig.setRuntimeFlags(configurations.runtimeFlags);
     sinkConfig.setCustomRuntimeOptions(configurations.customRuntimeOptions);
 
+    const pathToConnector = new pb.PathToConnector();
+    pathToConnector.setPath(configurations.pathToConnector.path);
+    pathToConnector.setType(pathToConnectorToPb(configurations.pathToConnector.type))
+    sinkConfig.setPathToConnector(pathToConnector);
+
     req.setSinkConfig(sinkConfig);
-    req.setFileName("sinks.json")
 
     const res = await ioServiceClient.createSink(req, {});
     if (res.getStatus()?.getCode() !== Code.OK) {
@@ -206,7 +230,7 @@ const CreateSinks = () => {
   return (
     <div>
       {configurationsFields.map(configuration => (
-        <div key={configuration.name} className={`${s.CreateSinksField }`}>
+        <div key={configuration.name} className={`${s.CreateSinksField} ${(hideUnrequired && !configuration.isRequired) && s.HideUnrequired}`}>
           <H3>
             {configuration.name}
           </H3>
@@ -315,6 +339,12 @@ const CreateSinks = () => {
         text='send'
         onClick={() => createSink()}
         type='primary'
+        disabled={!configurations.tenant || !configurations.namespace || !configurations.name || !configurations.inputs.length || !configurations.inputs[0].length || !configurations.pathToConnector.path}
+      />
+      <Button
+        text={`${hideUnrequired ? 'Show' : 'Hide'} unrequired`}
+        onClick={() => setHideUnrequired(!hideUnrequired)}
+        type='regular'
       />
     </div>
   )

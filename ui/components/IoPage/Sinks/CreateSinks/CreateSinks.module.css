@@ -15,3 +15,7 @@
 .CreateSinkInput {
   width: calc(60% - 40rem);
 }
+
+.HideUnrequired {
+  display: none;
+}

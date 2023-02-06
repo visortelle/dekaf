@@ -54,6 +54,17 @@ enum ProcessingGuarantees {
   PROCESSING_GUARANTEES_EFFECTIVELY_ONCE = 3;
 }
 
+enum PathType {
+  PATH_TYPE_UNSPECIFIED = 0;
+  PATH_TYPE_URL = 1;
+  PATH_TYPE_FOLDER = 2;
+}
+
+message PathToConnector {
+  PathType type = 1;
+  string path = 2;
+}
+
 message SinkConfig {
   string tenant = 1;
   string namespace = 2;
@@ -83,6 +94,7 @@ message SinkConfig {
   bool cleanup_subscription = 26;
   string runtime_flags = 27;
   string custom_runtime_options = 28;
+  PathToConnector path_to_connector = 29;
 }
 
 message CreateSinkRequest {

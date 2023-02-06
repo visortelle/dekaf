@@ -17,6 +17,7 @@ import org.apache.pulsar.common.io.SinkConfig
 import org.apache.pulsar.common.util.ObjectMapperFactory
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.`type`.TypeReference
+import com.google.gson.JsonParser
 
 import java.util.UUID
 import scala.collection.mutable
@@ -56,15 +57,27 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
         case _ => None
 
     def parseConfigs(json: String) = {
+
+//        parse(json) match
+//            case Right(v) => v
+//            case Left(_) => null
+        val pappi = new JsonParser().parse(json).getAsJsonObject();
+
         val mapper = ObjectMapperFactory.getThreadLocal()
-        val typeRef = new TypeReference[mutable.HashMap[String, Object]] {}
+        val typeRef = new TypeReference[mutable.HashMap[String, Object]]() {}
         mapper.readValue(json, typeRef)
+
+//    protected Map <String, Object> parseConfigs(String str) throws JsonProcessingException {
+//        ObjectMapper mapper = ObjectMapperFactory.getThreadLocal();
+//        TypeReference <HashMap<String, Object>> typeRef = new TypeReference <HashMap<String, Object>> () {};
+//        return mapper.readValue(str, typeRef);
     }
 
     override def createSink(request: pb.CreateSinkRequest): Future[pb.CreateSinkResponse] =
         try {
             val sinkConfig = request.sinkConfig match
                 case Some(v) =>
+
                     def subscriptionInitialPositionFromPb(processing: pb.SubscriptionInitialPosition): SubscriptionInitialPosition = processing match
                         case pb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST =>
                             SubscriptionInitialPosition.Earliest
@@ -97,15 +110,18 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         case Some(v) =>
                             CryptoConfig (
                                 cryptoKeyReaderClassName = v.cryptoKeyReaderClassName,
-                                cryptoKeyReaderConfig = parseConfigs(v.cryptoKeyReaderConfig).toMap.asJava,
+                                cryptoKeyReaderConfig = if v.cryptoKeyReaderConfig.length > 0 then parseConfigs(v.cryptoKeyReaderConfig).toMap.asJava else null,
                                 encryptionKeys = v.encryptionKeys.toArray,
                                 producerCryptoFailureAction = producerCryptoFailureActionFromPb(v.producerCryptoFailureAction),
                                 consumerCryptoFailureAction = consumerCryptoFailureActionFromPb(v.consumerCryptoFailureAction),
                             )
+                    def pathToConnectorFromPb(pathType: pb.PathType) = pathType match
+                        case pb.PathType.PATH_TYPE_URL => "url"
+                        case pb.PathType.PATH_TYPE_FOLDER => "folder"
 
-                    var inputSpecs = Map[String, ConsumerConfig]()
+                    val convertedInputSpecs = Map[String, ConsumerConfig]()
                     v.inputSpecs.foreach((specs, configs) =>
-                        inputSpecs + (specs -> ConsumerConfig(
+                        convertedInputSpecs + (specs -> ConsumerConfig(
                             schemaType = configs.schemaType,
                             serdeClassName = configs.serdeClassName,
                             isRegexPattern = configs.isRegexPattern,
@@ -123,74 +139,51 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                             disk = v.disk,
                         )
 
-                    SinkConfig(
-                        tenant = "public",  //it works              v.tenant, required
-                        namespace = "default", //it works           v.namespace, required
-                        name = v.name, //                                       required
-                        className = null, // if using archive "org.apache.pulsar.io.cassandra.CassandraStringSink", // v.className, required
-                        sourceSubscriptionName = null,  //v.sourceSubscriptionName, -- it works
+                    val sinkConfig = SinkConfig(
+                        tenant = "public",  //it works              v.tenant,
+                        namespace = "default", //it works           v.namespace,
+                        name = v.name,
+                        inputs = v.inputs.asJavaCollection, //List("persistent://public/default/X").asJava,
+//                        Must specify at least one topic of input via
+//                            topicToSerdeClassName, topicsPattern, topicToSchemaType or inputs
+
+                        sourceSubscriptionName = v.sourceSubscriptionName,
                         sourceSubscriptionPosition = subscriptionInitialPositionFromPb(v.sourceSubscriptionPosition),
-                        inputs = List("persistent://public/default/X").asJava, // required
-                        topicToSerdeClassName = null, // v.topicToSerdeClassName.asJava, // ("string" -> desiariliza class)
-                        topicsPattern = null, // v.topicsPattern, -- it works
-                        topicToSchemaType = null, // v.topicToSchemaType.asJava, (string -> special class)
-                        topicToSchemaProperties = null, ///  v.topicToSchemaProperties.asJava, -- it works
-                        inputSpecs = null, // inputSpecs.asJava, -- it works
-                        maxMessageRetries = v.maxMessageRetries,
-                        deadLetterTopic = null, // v.deadLetterTopic, -- it works
-                        configs = null, // parseConfigs(v.configs).toMap.asJava, //
-                        secrets = null, // parseConfigs(v.secrets).toMap.asJava, //
-                        parallelism = null, //v.parallelism,  -- it works
+                        topicsPattern = if v.topicsPattern.isEmpty then null else v.topicsPattern,
+                        topicToSchemaProperties = if v.topicToSchemaProperties.size > 0 then v.topicToSchemaProperties.asJava else null,
+                        inputSpecs = if v.inputs.size > 0 then convertedInputSpecs.asJava else null,
+                        maxMessageRetries = if v.maxMessageRetries > 0 then v.maxMessageRetries else null,
+                        deadLetterTopic = if v.deadLetterTopic.length > 0 then v.deadLetterTopic else null,
+                        parallelism = if v.parallelism > 0 then v.parallelism else null,
                         processingGuarantees = processingGuaranteesFromPb(v.processingGuarantees),
                         retainOrdering = v.retainOrdering,
                         retainKeyOrdering = v.retainKeyOrdering,
-                        resources = null, // convertedResources -- it works             ///only if docker
                         autoAck = v.autoAck,
-                        timeoutMs = null, // v.timeoutMs, -- it works
-                        negativeAckRedeliveryDelayMs = null, // v.negativeAckRedeliveryDelayMs, -- it works
-                        archive = null, //"file:///pulsar/connectors/pulsar-io-cassandra-2.11.0.nar", // connector // null,
-                        cleanupSubscription = null, // v.cleanupSubscription, -- it works
-                        runtimeFlags = null, // v.runtimeFlags,
-                        customRuntimeOptions = null, // v.customRuntimeOptions,
-                    )
-//            [ConnectorDefinition(
-//                name=aerospike,
-//                description=Aerospike database sink,
-//                sourceClass=null,
-//                sinkClass=org.apache.pulsar.io.aerospike.AerospikeStringSink,
-//                sourceConfigClass=null,
-//                sinkConfigClass=org.apache.pulsar.io.aerospike.AerospikeSinkConfig),
-//                ConnectorDefinition(name=batch-data-generator,
-//                description=Test batch data generator source,
-//                sourceClass=org.apache.pulsar.io.batchdatagenerator.BatchDataGeneratorSource,
-//                sinkClass=org.apache.pulsar.io.batchdatagenerator.BatchDataGeneratorPrintSink,
-//                sourceConfigClass=null, sinkConfigClass=null),
-//
-//                ConnectorDefinition(name=cassandra, description=Writes data into Cassandra, sourceClass=null, sinkClass=org.apache.pulsar.io.cassandra.CassandraStringSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.cassandra.CassandraSinkConfig),
-//                ConnectorDefinition(name=data-generator, description=Test data generator source, sourceClass=org.apache.pulsar.io.datagenerator.DataGeneratorSource, sinkClass=org.apache.pulsar.io.datagenerator.DataGeneratorPrintSink, sourceConfigClass=org.apache.pulsar.io.datagenerator.DataGeneratorSourceConfig, sinkConfigClass=null),
-//                ConnectorDefinition(name=elastic_search, description=Writes data into Elastic Search, sourceClass=null, sinkClass=org.apache.pulsar.io.elasticsearch.ElasticSearchSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.elasticsearch.ElasticSearchConfig),
-//                ConnectorDefinition(name=flume, description=flume source and sink connector, sourceClass=org.apache.pulsar.io.flume.source.StringSource, sinkClass=org.apache.pulsar.io.flume.sink.StringSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.flume.FlumeConfig),
-//                ConnectorDefinition(name=hbase, description=Writes data into hbase table, sourceClass=null, sinkClass=org.apache.pulsar.io.hbase.sink.HbaseGenericRecordSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.hbase.sink.HbaseSinkConfig),
-//                ConnectorDefinition(name=hdfs2, description=Writes data into HDFS 2.x, sourceClass=null, sinkClass=org.apache.pulsar.io.hdfs2.sink.text.HdfsStringSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.hdfs2.sink.HdfsSinkConfig),
-//                ConnectorDefinition(name=hdfs3, description=Writes data into HDFS 3.x, sourceClass=null, sinkClass=org.apache.pulsar.io.hdfs3.sink.text.HdfsStringSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.hdfs3.sink.HdfsSinkConfig),
-//                ConnectorDefinition(name=http, description=Writes data to an HTTP server (Webhook), sourceClass=null, sinkClass=org.apache.pulsar.io.http.HttpSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.http.HttpSinkConfig),
-//                ConnectorDefinition(name=influxdb, description=Writes data into InfluxDB database, sourceClass=null, sinkClass=org.apache.pulsar.io.influxdb.InfluxDBGenericRecordSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.influxdb.v2.InfluxDBSinkConfig),
-//                ConnectorDefinition(name=jdbc-clickhouse, description=JDBC sink for ClickHouse, sourceClass=null, sinkClass=org.apache.pulsar.io.jdbc.ClickHouseJdbcAutoSchemaSink, sourceConfigClass=null, sinkConfigClass=null),
-//                ConnectorDefinition(name=jdbc-mariadb, description=JDBC sink for MariaDB, sourceClass=null, sinkClass=org.apache.pulsar.io.jdbc.MariadbJdbcAutoSchemaSink, sourceConfigClass=null, sinkConfigClass=null),
-//                ConnectorDefinition(name=jdbc-openmldb, description=JDBC sink for OpenMLDB, sourceClass=null, sinkClass=org.apache.pulsar.io.jdbc.OpenMLDBJdbcAutoSchemaSink, sourceConfigClass=null, sinkConfigClass=null),
-//                ConnectorDefinition(name=jdbc-postgres, description=JDBC sink for PostgreSQL, sourceClass=null, sinkClass=org.apache.pulsar.io.jdbc.PostgresJdbcAutoSchemaSink, sourceConfigClass=null, sinkConfigClass=null),
-//                ConnectorDefinition(name=jdbc-sqlite, description=JDBC sink for SQLite, sourceClass=null, sinkClass=org.apache.pulsar.io.jdbc.SqliteJdbcAutoSchemaSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.jdbc.JdbcSinkConfig),
-//                ConnectorDefinition(name=kafka, description=Kafka source and sink connector, sourceClass=org.apache.pulsar.io.kafka.KafkaBytesSource, sinkClass=org.apache.pulsar.io.kafka.KafkaBytesSink, sourceConfigClass=org.apache.pulsar.io.kafka.KafkaSourceConfig, sinkConfigClass=org.apache.pulsar.io.kafka.KafkaSinkConfig),
-//                ConnectorDefinition(name=kafka-connect-adaptor, description=Kafka source connect adaptor, sourceClass=org.apache.pulsar.io.kafka.connect.KafkaConnectSource, sinkClass=org.apache.pulsar.io.kafka.connect.KafkaConnectSink, sourceConfigClass=null, sinkConfigClass=null),
-//                ConnectorDefinition(name=kinesis, description=Kinesis connectors, sourceClass=org.apache.pulsar.io.kinesis.KinesisSource, sinkClass=org.apache.pulsar.io.kinesis.KinesisSink, sourceConfigClass=org.apache.pulsar.io.kinesis.KinesisSourceConfig, sinkConfigClass=org.apache.pulsar.io.kinesis.KinesisSinkConfig),
-//                ConnectorDefinition(name=mongo, description=MongoDB source and sink connector, sourceClass=org.apache.pulsar.io.mongodb.MongoSource, sinkClass=org.apache.pulsar.io.mongodb.MongoSink, sourceConfigClass=org.apache.pulsar.io.mongodb.MongoConfig, sinkConfigClass=org.apache.pulsar.io.mongodb.MongoConfig),
-//                ConnectorDefinition(name=rabbitmq, description=RabbitMQ source and sink connector, sourceClass=org.apache.pulsar.io.rabbitmq.RabbitMQSource, sinkClass=org.apache.pulsar.io.rabbitmq.RabbitMQSink, sourceConfigClass=org.apache.pulsar.io.rabbitmq.RabbitMQSourceConfig, sinkConfigClass=org.apache.pulsar.io.rabbitmq.RabbitMQSinkConfig),
-//                ConnectorDefinition(name=redis, description=Writes data into Redis, sourceClass=null, sinkClass=org.apache.pulsar.io.redis.sink.RedisSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.redis.sink.RedisSinkConfig),
-//                ConnectorDefinition(name=solr, description=Writes data into solr collection, sourceClass=null, sinkClass=org.apache.pulsar.io.solr.SolrGenericRecordSink, sourceConfigClass=null, sinkConfigClass=org.apache.pulsar.io.solr.SolrSinkConfig)
-//            ]
+                        timeoutMs = if v.timeoutMs > 0 then v.timeoutMs else null,
+                        negativeAckRedeliveryDelayMs = if v.negativeAckRedeliveryDelayMs > 0 then v.negativeAckRedeliveryDelayMs else null,
+                        cleanupSubscription = v.cleanupSubscription,
 
-            adminClient.sinks.createSinkWithUrl(sinkConfig, "https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-cassandra-2.11.0.nar")
-//            adminClient.sinks.createSink(sinkConfig, null) // ERROR MAKER
+                        className = null, // if using archive "org.apache.pulsar.io.cassandra.CassandraStringSink", // v.className,
+                        topicToSerdeClassName = null, // v.topicToSerdeClassName.asJava, // ("string" -> desiariliza class)
+                        topicToSchemaType = null, // v.topicToSchemaType.asJava, (string -> special class)
+                        configs = if v.configs.isEmpty then null else parseConfigs(v.configs).toMap.asJava,
+                        secrets = if v.secrets.isEmpty then null else parseConfigs(v.secrets).toMap.asJava,
+                        resources = null, // convertedResources -- it works ///only if docker
+                        archive = null, //"file:///pulsar/connectors/pulsar-io-cassandra-2.11.0.nar", // connector // null,
+                        runtimeFlags = null, // v.runtimeFlags, //special
+                        customRuntimeOptions = null, // v.customRuntimeOptions, //special
+                    )
+
+                    println(parseConfigs(v.configs))
+
+                    v.pathToConnector match
+                        case Some(v) =>
+                            if (pathToConnectorFromPb(v.`type`) == "url") {
+                                adminClient.sinks.createSinkWithUrl(sinkConfig, v.path)
+                                println(adminClient.sinks.getSink("public", "default", "users"))
+                            } else {
+                                adminClient.sinks.createSink(sinkConfig, v.path)
+                            }
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.CreateSinkResponse(status = Some(status)))

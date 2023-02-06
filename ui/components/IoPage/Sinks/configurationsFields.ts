@@ -32,136 +32,122 @@ export const configurationsFields: IoConfigField[] = [
     help: 'help',
   },
   {
-    name: 'className',
-    type: 'string',
-    isRequired: true,
-    help: 'help',
-  },
-  {
-    name: 'sourceSubscriptionName',
-    type: 'string',
-    isRequired: true,
-    help: 'help',
-  },
-  {
-    name: 'sourceSubscriptionPosition',
-    type: 'enum',
-    isRequired: true,
-    help: 'help',
-    enum: SUBSCRIPTION_INITIAL_POSITION,
-  }, 
-  {
     name: 'inputs',
     type: 'array',
     isRequired: true,
     help: 'help',
   },
   {
-    name: 'topicToSerdeClassName',
-    type: 'map',
-    isRequired: true,
-    help: 'help',
-    mapType: 'string',
-  }, 
-  {
-    name: 'topicsPattern',
-    type: 'string',
+    name: 'pathToConnector',
+    type: 'pathToConnector',
     isRequired: true,
     help: 'help',
   },
   {
-    name: 'topicToSchemaType',
-    type: 'map',
-    isRequired: true,
+    name: 'sourceSubscriptionName',
+    type: 'string',
+    isRequired: false,
     help: 'help',
-    mapType: 'string',
+  },
+  {
+    name: 'sourceSubscriptionPosition',
+    type: 'enum',
+    isRequired: false,
+    help: 'help',
+    enum: SUBSCRIPTION_INITIAL_POSITION,
   }, 
+  {
+    name: 'topicsPattern',
+    type: 'string',
+    isRequired: false,
+    help: 'help',
+  },
   {
     name: 'topicToSchemaProperties',
     type: 'map',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
     mapType: 'string',
   }, 
   {
     name: 'inputsSpecs',
     type: 'map',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
     mapType: [
       {
         name: 'schemaType',
         type: 'string',
-        isRequired: true,
+        isRequired: false,
         help: 'help',
       },
       {
         name: 'serdeClassName',
         type: 'string',
-        isRequired: true,
+        isRequired: false,
         help: 'help',
       },
       {
         name: 'isRegexPattern',
         type: 'boolean',
-        isRequired: true,
+        isRequired: false,
         help: 'help',
       },
       {
         name: 'schemaProperties',
         type: 'map',
-        isRequired: true,
+        isRequired: false,
         help: 'help',
         mapType: 'string',
       },
       {
         name: 'consumerProperties',
         type: 'map',
-        isRequired: true,
+        isRequired: false,
         help: 'help',
         mapType: 'string',
       },
       {
         name: 'receiverQueueSize',
         type: 'int',
-        isRequired: true,
+        isRequired: false,
         help: 'help',
       },
       {
         name: 'cryptoConfig',
         type: 'attachments',
-        isRequired: true,
+        isRequired: false,
         help: 'help',
         attachments: [
           {
             name: 'cryptoKeyReaderClassName',
             type: 'string',
-            isRequired: true,
+            isRequired: false,
             help: 'help',
           },
           {
             name: 'cryptoKeyReaderConfig',
             type: 'json',
-            isRequired: true,
+            isRequired: false,
             help: 'help',
           },
           {
             name: 'encryptionKeys',
             type: 'array',
-            isRequired: true,
+            isRequired: false,
             help: 'help',
           },
           {
             name: 'producerCryptoFailureAction',
             type: 'enum',
-            isRequired: true,
+            isRequired: false,
             help: 'help',
             enum: PRODUCER_CRYPTO_FAILURE_ACTION,
           },
           {
             name: 'consumerCryptoFailureAction',
             type: 'enum',
-            isRequired: true,
+            isRequired: false,
             help: 'help',
             enum: CONSUMER_CRYPTO_FAILURE_ACTION,
           },
@@ -170,7 +156,7 @@ export const configurationsFields: IoConfigField[] = [
       {
         name: 'poolMessages',
         type: 'boolean',
-        isRequired: true,
+        isRequired: false,
         help: 'help',
       },
     ]
@@ -178,118 +164,138 @@ export const configurationsFields: IoConfigField[] = [
   {
     name: 'maxMessageRetries',
     type: 'int',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'deadLetterTopic',
     type: 'string',
-    isRequired: true,
-    help: 'help',
-  },
-  {
-    name: 'configs',
-    type: 'json',
-    isRequired: true,
-    help: 'help',
-  },
-  {
-    name: 'secrets',
-    type: 'json',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'parallelism',
     type: 'int',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'processingGuarantees',
     type: 'enum',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
     enum: PROCESSING_GUARANTEES,
   },
   {
     name: 'retainOrdering',
     type: 'boolean',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'retainKeyOrdering',
     type: 'boolean',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
-  },
-  {
-    name: 'resources',
-    type: 'attachments',
-    isRequired: true,
-    help: 'help',
-    attachments: [
-      {
-        name: 'cpu',
-        type: 'int',
-        isRequired: true,
-        help: 'help',
-      },
-      {
-        name: 'ram',
-        type: 'bytes',
-        isRequired: true,
-        help: 'help',
-      },
-      {
-        name: 'disk',
-        type: 'bytes',
-        isRequired: true,
-        help: 'help',
-      },
-    ]
   },
   {
     name: 'autoAck',
     type: 'boolean',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'timeoutMs',
     type: 'duration',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'negativeAckRedeliveryDelayMs',
     type: 'duration',
-    isRequired: true,
-    help: 'help',
-  },
-  {
-    name: 'archive',
-    type: 'string',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'cleanupSubscription',
     type: 'boolean',
-    isRequired: true,
+    isRequired: false,
+    help: 'help',
+  },
+  {
+    name: 'className',
+    type: 'string',
+    isRequired: false,
+    help: 'help',
+  },
+  {
+    name: 'topicToSerdeClassName',
+    type: 'map',
+    isRequired: false,
+    help: 'help',
+    mapType: 'string',
+  }, 
+  {
+    name: 'topicToSchemaType',
+    type: 'map',
+    isRequired: false,
+    help: 'help',
+    mapType: 'string',
+  }, 
+  {
+    name: 'configs',
+    type: 'json',
+    isRequired: false,
+    help: 'help',
+  },
+  {
+    name: 'secrets',
+    type: 'json',
+    isRequired: false,
+    help: 'help',
+  },
+  {
+    name: 'resources',
+    type: 'attachments',
+    isRequired: false,
+    help: 'help',
+    attachments: [
+      {
+        name: 'cpu',
+        type: 'int',
+        isRequired: false,
+        help: 'help',
+      },
+      {
+        name: 'ram',
+        type: 'bytes',
+        isRequired: false,
+        help: 'help',
+      },
+      {
+        name: 'disk',
+        type: 'bytes',
+        isRequired: false,
+        help: 'help',
+      },
+    ]
+  },
+  {
+    name: 'archive',
+    type: 'string',
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'runtimeFlags',
     type: 'string',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
   {
     name: 'customRuntimeOptions',
     type: 'string',
-    isRequired: true,
+    isRequired: false,
     help: 'help',
   },
 ]
@@ -336,36 +342,51 @@ export type Resources = {
   disk: number,
 }
 
-export type ConfigurationValue = string | string[] | number | StringMap | ConsumerConfigMap | boolean | Resources
+export type ConfigurationValue = string | string[] | number | StringMap | ConsumerConfigMap | boolean | Resources | PathToConnector
+
+export type PathToConnectorType = 'url' | 'folder';
+
+export type PathToConnector = {
+  [key: string]: string,
+  type: PathToConnectorType,
+  path: string,
+}
 
 export type Configurations = {
   [key: string]: ConfigurationValue,
   tenant: string,
   namespace: string,
   name: string,
-  className: string,
+  pathToConnector: PathToConnector,
+  inputs: string[],
+
+  //unrequired
+
   sourceSubscriptionName: string,
   sourceSubscriptionPosition: 'latest' | 'earliest',
-  inputs: string[],
-  topicToSerdeClassName: StringMap,
   topicsPattern: string,
-  topicToSchemaType: StringMap,
   topicToSchemaProperties: StringMap,
   inputsSpecs: ConsumerConfigMap,
   maxMessageRetries: number,
   deadLetterTopic: string,
-  configs: string,  // Serialized JSON in a form of Map<String, JsonValue>
-  secrets: string,  // Serialized JSON in a form of Map<String, JsonValue>
   parallelism: number,
   processingGuarantees: 'atleast_once' | 'atmost_once' | 'effectively_once'
   retainOrdering: boolean,
   retainKeyOrdering: boolean,
-  resources: Resources,
   autoAck: boolean,
   timeoutMs: number,
   negativeAckRedeliveryDelayMs: number,
-  archive: string,
   cleanupSubscription: boolean,
+  
+  //advanced
+
+  className: string,
+  topicToSerdeClassName: StringMap,
+  topicToSchemaType: StringMap,
+  configs: string,  // Serialized JSON in a form of Map<String, JsonValue>
+  secrets: string,  // Serialized JSON in a form of Map<String, JsonValue>
+  resources: Resources,
+  archive: string,
   runtimeFlags: string,
   customRuntimeOptions: string,
 }
@@ -374,13 +395,14 @@ export const configurations: Configurations = {
   tenant: '',
   namespace: '',
   name: '',
-  className: '',
+  pathToConnector: { type: 'url', path: 'aerospike'},
+  inputs: [],
+
+  //unrequired
+
   sourceSubscriptionName: '',
   sourceSubscriptionPosition: 'latest',
-  inputs: [],
-  topicToSerdeClassName: {},
   topicsPattern: '',
-  topicToSchemaType: {},
   topicToSchemaProperties: {},
   inputsSpecs: {
     'firstInput': {
@@ -403,18 +425,24 @@ export const configurations: Configurations = {
   },
   maxMessageRetries: 0,
   deadLetterTopic: '',
-  configs: '',
-  secrets: '',
   parallelism: 0,
   processingGuarantees: 'atleast_once',
   retainOrdering: false,
   retainKeyOrdering: false,
-  resources: { cpu: 0, ram: 0, disk: 0 },
   autoAck: false,
   timeoutMs: 0,
   negativeAckRedeliveryDelayMs: 0,
-  archive: '',
   cleanupSubscription: false,
+
+  //advanced
+
+  className: '',
+  topicToSerdeClassName: {},
+  topicToSchemaType: {},
+  configs: '',
+  secrets: '',
+  resources: { cpu: 0, ram: 0, disk: 0 },
+  archive: '',
   runtimeFlags: '',
   customRuntimeOptions: '',
 }

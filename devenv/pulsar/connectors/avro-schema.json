@@ -1,0 +1,5 @@
+{
+  "type": "AVRO",
+  "schema": "{\"type\":\"record\",\"name\":\"Test\",\"fields\":[{\"name\":\"id\",\"type\":[\"null\",\"int\"]},{\"name\":\"name\",\"type\":[\"null\",\"string\"]},{\"name\":\"age\",\"type\":[\"null\",\"int\"]},{\"name\":\"address\",\"type\":[\"null\",\"string\"]}]}",
+  "properties": {}
+}

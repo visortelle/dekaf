@@ -1,0 +1,29 @@
+{
+  "type": "record",
+  "name": "Test",
+  "fields": [
+    {
+      "name": "id",
+      "type": ["null","int"]
+    },
+    {
+      "name": "name",
+      "type": ["null","string"]
+    },
+    {
+      "name": "age",
+      "type": [ "null","int"]
+    },
+    {
+      "name": "address",
+      "type": ["null","string"]
+    }
+  ]
+}
+
+{
+  "id": "25",
+  "name": "bestName",
+  "age": "25",
+  "address": "ul. Pyshkina"
+}
