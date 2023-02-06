@@ -27,7 +27,7 @@ import org.apache.pulsar.client.impl.schema.{
     SchemaDefinitionImpl,
     SchemaUtils,
     ShortSchema,
-    StringSchema
+    StringSchema,
 }
 import _root_.schema.avro
 import _root_.schema.protobufnative
@@ -472,6 +472,137 @@ object convertersTest extends ZIOSpecDefault:
                 TestCase(Array(0x40, 0x5f, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), "127.0"),
                 TestCase(Array(0xc0, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte), "-18.0"),
                 TestCase(Array(0xc0, 0xdd, 0x4c, 0x01, 0xeb, 0x85, 0x1e, 0xb8).map(_.toByte), "-30000.03"),
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
+        test("STRING to json") {
+            case class TestCase(messagePayload: Array[Byte], expectedJson: String)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val schemaInfo = SchemaInfo.builder
+                    .`type`(SchemaType.STRING)
+                    .build
+
+                val topicName = "topic-a"
+                val schemaVersion = 1L;
+                val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
+                val message = MessageImpl.create[Array[Byte]](
+                    messageMetadata,
+                    ByteBuffer.wrap(testCase.messagePayload),
+                    StringSchema.utf8.asInstanceOf[Schema[Array[Byte]]],
+                    topicName
+                )
+
+                val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+                val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+                val json = converters.messageValueToJson(schemasByTopic, message) match
+                    case Right(value) => value
+                    case Left(err)    => throw err
+
+                parseJson(json) == parseJson(testCase.expectedJson)
+
+            val testCases = List[TestCase](
+                TestCase(Array(), "\"\""),
+                TestCase(Array(0x68).map(_.toByte), "\"h\""),
+                TestCase(
+                    Array(0x61, 0x0a, 0x62, 0x0a, 0x63).map(_.toByte),
+                    """"a\nb\nc""""
+                ),
+                TestCase(Array(0x47, 0x72, 0x75, 0xc3, 0x9f).map(_.toByte), "\"Gruß\""),
+                TestCase(Array(0xe4, 0xb8, 0x96, 0xe7, 0x95, 0x8c).map(_.toByte), "\"世界\""),
+                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """"qu\"ote\"s""""),
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
+        test("BYTES to json") {
+            case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, String]) => Boolean)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val schemaInfo = SchemaInfo.builder
+                    .`type`(SchemaType.BYTES)
+                    .build
+
+                val topicName = "topic-a"
+                val schemaVersion = 1L;
+                val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
+                val message = MessageImpl.create[Array[Byte]](
+                    messageMetadata,
+                    ByteBuffer.wrap(testCase.bytes),
+                    BytesSchema.of(),
+                    topicName
+                )
+
+                val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+                val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+                val json = converters.messageValueToJson(schemasByTopic, message)
+                testCase.check(json)
+
+            val testCases = List(
+                TestCase("null".getBytes("UTF-8"), _ == Right("null")),
+                TestCase("true".getBytes("UTF-8"), _ == Right("true")),
+                TestCase("false".getBytes("UTF-8"), _ == Right("false")),
+                TestCase("3".getBytes("UTF-8"), _ == Right("3")),
+                TestCase("3.0".getBytes("UTF-8"), _ == Right("3.0")),
+                TestCase("-3.0".getBytes("UTF-8"), _ == Right("-3.0")),
+                TestCase("\"abc\"".getBytes("UTF-8"), _ == Right("\"abc\"")),
+                TestCase("[]".getBytes("UTF-8"), _ == Right("[]")),
+                TestCase("""[1,2,"a"]""".getBytes("UTF-8"), _ == Right("""[1,2,"a"]""")),
+                TestCase("{}".getBytes("UTF-8"), _ == Right("{}")),
+                TestCase("""{"a":2,"b":{"c":3}}""".getBytes("UTF-8"), _ == Right("""{"a":2,"b":{"c":3}}""")),
+
+                TestCase("".getBytes("UTF-8"), _.isLeft),
+                TestCase("""2z""".getBytes("UTF-8"), _.isLeft),
+                TestCase("""undefined""".getBytes("UTF-8"), _.isLeft),
+                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft),
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
+        test("NONE to json") {
+            case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, String]) => Boolean)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val schemaInfo = SchemaInfo.builder
+                    .`type`(SchemaType.NONE)
+                    .build
+
+                val topicName = "topic-a"
+                val schemaVersion = 1L;
+                val messageMetadata = new MessageMetadata().setSchemaVersion(scala.math.BigInt(schemaVersion).toByteArray)
+                val message = MessageImpl.create[Array[Byte]](
+                    messageMetadata,
+                    ByteBuffer.wrap(testCase.bytes),
+                    null,
+                    topicName
+                )
+
+                val schemasByVersion: SchemasByVersion = Map(schemaVersion -> schemaInfo)
+                val schemasByTopic: SchemasByTopic = Map(topicName -> schemasByVersion)
+
+                val json = converters.messageValueToJson(schemasByTopic, message)
+                testCase.check(json)
+
+            val testCases = List(
+                TestCase("null".getBytes("UTF-8"), _ == Right("null")),
+                TestCase("true".getBytes("UTF-8"), _ == Right("true")),
+                TestCase("false".getBytes("UTF-8"), _ == Right("false")),
+                TestCase("3".getBytes("UTF-8"), _ == Right("3")),
+                TestCase("3.0".getBytes("UTF-8"), _ == Right("3.0")),
+                TestCase("-3.0".getBytes("UTF-8"), _ == Right("-3.0")),
+                TestCase("\"abc\"".getBytes("UTF-8"), _ == Right("\"abc\"")),
+                TestCase("[]".getBytes("UTF-8"), _ == Right("[]")),
+                TestCase("""[1,2,"a"]""".getBytes("UTF-8"), _ == Right("""[1,2,"a"]""")),
+                TestCase("{}".getBytes("UTF-8"), _ == Right("{}")),
+                TestCase("""{"a":2,"b":{"c":3}}""".getBytes("UTF-8"), _ == Right("""{"a":2,"b":{"c":3}}""")),
+
+                TestCase("".getBytes("UTF-8"), _.isLeft),
+                TestCase("""2z""".getBytes("UTF-8"), _.isLeft),
+                TestCase("""undefined""".getBytes("UTF-8"), _.isLeft),
+                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft),
             )
 
             assertTrue(testCases.forall(runTestCase))

@@ -2,7 +2,9 @@ package conversions
 
 import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
-import io.circe.syntax._
+import io.circe.*
+import io.circe.syntax.*
+import io.circe.parser.parse as parseJson
 
 object primitiveConv:
     /*
@@ -47,6 +49,12 @@ object primitiveConv:
         if bytes.length == 1
         then Right(bytes.head != 0)
         else Left(new Exception(s"Invalid byte array length ${bytes.length}"))
+
+    def bytesToJson(bytes: Array[Byte]): Either[Throwable, String] =
+        val json = bytesToString(bytes)
+        parseJson(json) match
+            case Left(err) => Left(err)
+            case Right(_) => Right(json)
 
     /* Creates a ByteBuffer from a byte array.
      * The byte array must be of length size.

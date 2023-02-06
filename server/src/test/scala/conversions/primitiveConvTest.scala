@@ -220,7 +220,7 @@ object primitiveConvTest extends ZIOSpecDefault {
                 ),
                 TestCase(Array(0x47, 0x72, 0x75, 0xc3, 0x9f).map(_.toByte), "Gruß"),
                 TestCase(Array(0xe4, 0xb8, 0x96, 0xe7, 0x95, 0x8c).map(_.toByte), "世界"),
-                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """qu"ote"s"""),
+                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """qu"ote"s""")
             )
 
             assertTrue(testCases.forall(runTestCase))
@@ -241,7 +241,7 @@ object primitiveConvTest extends ZIOSpecDefault {
                 ),
                 TestCase(Array(0x47, 0x72, 0x75, 0xc3, 0x9f).map(_.toByte), "\"Gruß\""),
                 TestCase(Array(0xe4, 0xb8, 0x96, 0xe7, 0x95, 0x8c).map(_.toByte), "\"世界\""),
-                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """"qu\"ote\"s""""),
+                TestCase(Array(0x71, 0x75, 0x22, 0x6f, 0x74, 0x65, 0x22, 0x73).map(_.toByte), """"qu\"ote\"s"""")
             )
 
             assertTrue(testCases.forall(runTestCase))
@@ -258,7 +258,35 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(0x00).map(_.toByte), _ == Right(false)),
                 TestCase(Array(0x01).map(_.toByte), _ == Right(true)),
                 TestCase(Array(0x00, 0x00).map(_.toByte), _.isLeft),
-                TestCase(Array(0x00, 0x01).map(_.toByte), _.isLeft),
+                TestCase(Array(0x00, 0x01).map(_.toByte), _.isLeft)
+            )
+
+            assertTrue(testCases.forall(runTestCase))
+        },
+        test("bytesToJson") {
+            case class TestCase(bytes: Array[Byte], check: (result: Either[Throwable, String]) => Boolean)
+
+            def runTestCase(testCase: TestCase): Boolean =
+                val actual = primitiveConv.bytesToJson(testCase.bytes)
+                testCase.check(actual)
+
+            val testCases = List(
+                TestCase("null".getBytes("UTF-8"), _ == Right("null")),
+                TestCase("true".getBytes("UTF-8"), _ == Right("true")),
+                TestCase("false".getBytes("UTF-8"), _ == Right("false")),
+                TestCase("3".getBytes("UTF-8"), _ == Right("3")),
+                TestCase("3.0".getBytes("UTF-8"), _ == Right("3.0")),
+                TestCase("-3.0".getBytes("UTF-8"), _ == Right("-3.0")),
+                TestCase("\"abc\"".getBytes("UTF-8"), _ == Right("\"abc\"")),
+                TestCase("[]".getBytes("UTF-8"), _ == Right("[]")),
+                TestCase("""[1,2,"a"]""".getBytes("UTF-8"), _ == Right("""[1,2,"a"]""")),
+                TestCase("{}".getBytes("UTF-8"), _ == Right("{}")),
+                TestCase("""{"a":2,"b":{"c":3}}""".getBytes("UTF-8"), _ == Right("""{"a":2,"b":{"c":3}}""")),
+
+                TestCase("".getBytes("UTF-8"), _.isLeft),
+                TestCase("""2z""".getBytes("UTF-8"), _.isLeft),
+                TestCase("""undefined""".getBytes("UTF-8"), _.isLeft),
+                TestCase("""{a:2,"b":{"c":3}}""".getBytes("UTF-8"), _.isLeft),
             )
 
             assertTrue(testCases.forall(runTestCase))
@@ -276,9 +304,8 @@ object primitiveConvTest extends ZIOSpecDefault {
                 TestCase(Array(), 2, 0, Array(0x00, 0x00).map(_.toByte)),
                 TestCase(Array(0x01), 2, 0x02.toByte, Array(0x02, 0x01)),
                 TestCase(Array(0x01), 3, 0x02.toByte, Array(0x02, 0x02, 0x01).map(_.toByte)),
-
                 TestCase(Array(0x01).map(_.toByte), 0, 0, Array(0x01).map(_.toByte)),
-                TestCase(Array(0x01).map(_.toByte), 1, 0, Array(0x01).map(_.toByte)),
+                TestCase(Array(0x01).map(_.toByte), 1, 0, Array(0x01).map(_.toByte))
             )
 
             assertTrue(testCases.forall(runTestCase))

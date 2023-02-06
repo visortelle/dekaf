@@ -13,6 +13,7 @@ import _root_.conversions.primitiveConv.{
     bytesToInt32,
     bytesToInt64,
     bytesToInt8,
+    bytesToJson,
     bytesToJsonString,
     bytesToString,
     leftPad
@@ -119,10 +120,11 @@ object converters:
         val schemaInfo = schemas.get(topicName) match
             case Some(schemasByVersion) =>
                 val schemaVersion = Option(msg.getSchemaVersion) match
-                    case Some(v) => bytesToInt64(v).toOption match
-                        case Some(v2) => v2
-                        case _ => return Left(new Exception(s"Invalid schema version ${bytesToInt64(v)}}"))
-                    case None    => return Right(bytesToJsonString(msgData))
+                    case Some(v) =>
+                        bytesToInt64(v).toOption match
+                            case Some(v2) => v2
+                            case _        => return Left(new Exception(s"Invalid schema version ${bytesToInt64(v)}}"))
+                    case None => return Right(bytesToJsonString(msgData))
 
                 schemasByVersion.get(schemaVersion) match
                     case Some(si) => si
@@ -144,5 +146,6 @@ object converters:
             case SchemaType.FLOAT           => bytesToFloat32(msgData).map(_.toString)
             case SchemaType.DOUBLE          => bytesToFloat64(msgData).map(_.toString)
             case SchemaType.STRING          => Right(bytesToJsonString(msgData))
-            case SchemaType.BYTES           => Left(new Exception("Can't convert bytes to json"))
-            case _                          => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
+            case SchemaType.BYTES           => bytesToJson(msgData)
+            case SchemaType.NONE            => bytesToJson(msgData)
+            case _                          => Left(new Exception("Can't convert bytes to json"))
