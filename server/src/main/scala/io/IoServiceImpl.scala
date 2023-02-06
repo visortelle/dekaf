@@ -22,6 +22,17 @@ import com.google.gson.JsonParser
 import java.util.UUID
 import scala.collection.mutable
 
+
+import io.circe.{Decoder, Encoder, Json}
+import io.circe.parser.*
+import io.circe.syntax.*
+import io.circe.parser.*
+import io.circe.generic.semiauto.*
+import io.circe._
+import io.circe.generic.semiauto._
+import io.circe.syntax._
+
+
 class IoServiceImpl extends pb.IoServiceGrpc.IoService:
     val logger: Logger = Logger(getClass.getName)
 
@@ -65,6 +76,8 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
         val mapper = ObjectMapperFactory.getThreadLocal()
         val typeRef = new TypeReference[mutable.HashMap[String, Any]]() {}
         mapper.readValue(json, typeRef)
+//        decode[mutable.HashMap[String, Object]](json)
+
 
 //    protected Map <String, Object> parseConfigs(String str) throws JsonProcessingException {
 //        ObjectMapper mapper = ObjectMapperFactory.getThreadLocal();
