@@ -4,7 +4,6 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../../ui/ConfigurationTable/ConfigurationTable";
 import DurationInput from '../../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import Select from '../../../../ui/Select/Select';
-import sf from '../../../../ui/ConfigurationTable/form.module.css';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../../swrKeys';
 import WithUpdateConfirmation from '../../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';

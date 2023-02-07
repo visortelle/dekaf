@@ -6,7 +6,16 @@
 .ActionCheckbox {
   margin: 12rem 0rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12rem;
+}
+
+.ForceDeleteCheckbox {
+
+}
+
+.ForceDeleteInfo {
+  flex: 1;
 }
 
 .Guard {

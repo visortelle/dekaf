@@ -55,7 +55,7 @@
             shellHook = ''
               export JAVA_HOME=$(echo "$(which java)" | sed 's/\/bin\/java//g' )
               export GRAAL_HOME=$JAVA_HOME
-
+              export NODE_OPTIONS=--max-old-space-size=4096
 
               export LD_LIBRARY_PATH="${runtimeLibraryPath}"
             '';

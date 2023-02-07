@@ -77,17 +77,17 @@ const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
   return (
     <div className={s.SubscriptionCursor}>
       <div className={s.Bar}>
-        {/* <div className={s.ReadPosition} style={{ left: `${readPositionPercent}%` }} data-tip="Read position">
+        {/* <div className={s.ReadPosition} style={{ left: `${readPositionPercent}%` }} data-tooltip-html="Read position">
           <div className={s.ReadPositionValue} style={{ left: readPositionPercent < 50 ? 0 : 'unset' }}>{readPosition}</div>
         </div>
-        <div className={s.MarkDeletePosition} style={{ left: `${markDeletePositionPercent}%` }} data-tip="Mark-delete position">
+        <div className={s.MarkDeletePosition} style={{ left: `${markDeletePositionPercent}%` }} data-tooltip-html="Mark-delete position">
           <div className={s.MarkDeletePositionValue} style={{ left: markDeletePositionPercent < 50 ? 0 : 'unset' }}>{markDeletePosition}</div>
         </div>
-        <div className={s.NumberOfEntries} data-tip="Number of entries">{numberOfEntries}</div>
+        <div className={s.NumberOfEntries} data-tooltip-html="Number of entries">{numberOfEntries}</div>
         <div
           className={s.CurrentSession}
           style={{ left: `${sessionStartPercentage}%`, width: `${sessionAtPercentage - sessionStartPercentage}%` }}
-          data-tip={`Current session. <br />Started at position: ${sessionStartReadPosition}${readPosition !== undefined ? `<br />Processed: ${readPosition - sessionStartReadPosition}` : ''}`}
+          data-tooltip-html={`Current session. <br />Started at position: ${sessionStartReadPosition}${readPosition !== undefined ? `<br />Processed: ${readPosition - sessionStartReadPosition}` : ''}`}
         ></div> */}
       </div>
     </div>

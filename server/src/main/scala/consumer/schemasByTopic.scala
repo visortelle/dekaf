@@ -28,4 +28,4 @@ def getSchemasByVersion(topic: TopicName): SchemasByVersion =
     versions.zip(schemas).toMap
 
 def getSchemasByTopic(topics: Seq[TopicName]): SchemasByTopic =
-   topics.map(topicName => (topicName, getSchemasByVersion(topicName))).toMap
+    topics.map(topicName => (topicName, getSchemasByVersion(topicName))).toMap

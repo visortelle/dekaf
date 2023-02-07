@@ -8,11 +8,13 @@ import java.io.File
 
 object Envoy extends ZIOAppDefault:
     def run: IO[Throwable, Unit] = for
-        envoyConfigParams <- readConfig.map(c => EnvoyConfigParams(
-            httpServerPort = c.internal.get.httpPort,
-            grpcServerPort = c.internal.get.grpcPort,
-            listenPort = c.port
-        ))
+        envoyConfigParams <- readConfig.map(c =>
+            EnvoyConfigParams(
+              httpServerPort = c.internal.get.httpPort,
+              grpcServerPort = c.internal.get.grpcPort,
+              listenPort = c.port
+            )
+        )
 
         envoyBinPath <- getEnvoyBinPath
         configPath <- getEnvoyConfigPath(envoyConfigParams).map(_.toString)
@@ -21,8 +23,6 @@ object Envoy extends ZIOAppDefault:
         _ <- ZIO.logInfo(s"Listening port: ${envoyConfigParams.listenPort}")
 
         _ <- Command(envoyBinPath.toString, "--config-path", configPath)
-            .redirectErrorStream(true)
-            .stderr(ProcessOutput.Inherit)
-            .stdout(ProcessOutput.Inherit)
+            // TODO - add option to log envoy output
             .successfulExitCode
     yield ()

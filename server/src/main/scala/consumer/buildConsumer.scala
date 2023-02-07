@@ -7,7 +7,7 @@ import _root_.client.client
 import com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector
 import com.typesafe.scalalogging.Logger
 
-import scala.concurrent.duration.MILLISECONDS
+import scala.concurrent.duration.{MILLISECONDS, SECONDS}
 import scala.jdk.CollectionConverters.*
 
 def buildConsumer(
@@ -25,6 +25,8 @@ def buildConsumer(
     var consumer = client.newConsumer
         .consumerName(consumerName)
         .receiverQueueSize(50) // Too big queue causes long time messages loading after consumer pause.
+        .batchReceivePolicy(BatchReceivePolicy.builder().maxNumMessages(1).timeout(10, SECONDS).build())
+        .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)
         .expireTimeOfIncompleteChunkedMessage(1, java.util.concurrent.TimeUnit.MINUTES)
@@ -36,7 +38,9 @@ def buildConsumer(
     consumer = request.subscriptionMode match
         case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_DURABLE)     => consumer.subscriptionMode(SubscriptionMode.Durable)
         case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE) => consumer.subscriptionMode(SubscriptionMode.NonDurable)
-        case _                                                               => consumer
+        
+        // Our application shouldn't make affect on messages retention, so we use NonDurable mode by default.
+        case _                                                               => consumer.subscriptionMode(SubscriptionMode.NonDurable)
 
     consumer = request.subscriptionType match
         case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED)     => consumer.subscriptionType(SubscriptionType.Shared)

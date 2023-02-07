@@ -5,6 +5,10 @@ clean-and-build: clean build
 clean:
 	rm -rf ./target
 
+.PHONY: test
+clean:
+	sbt test
+
 .PHONY: build
 build: # Build
 	cd ./library/js && npm install && npm run build
