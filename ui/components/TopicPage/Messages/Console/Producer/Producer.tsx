@@ -26,7 +26,7 @@ export type ProducerPreset = {
 }
 
 export type ProducerProps = {
-  preset: ProducerPreset
+  preset: ProducerPreset;
 };
 
 const Producer: React.FC<ProducerProps> = (props) => {

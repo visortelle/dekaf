@@ -66,6 +66,7 @@ const DeleteNamespace: React.FC<DeleteNamespaceProps> = (props) => {
       onConfirm={deleteNamespace}
       onCancel={modals.pop}
       guard={props.namespace}
+      type='danger'
     />
   );
 }

@@ -1,10 +1,11 @@
 import React from 'react';
-import s from './SessionConfiguration.module.css'
+
 import StartFromInput from './StartFromInput/StartFromInput';
+import FilterChain from './MessageFilterInput/FilterChain';
 import { SessionConfig } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
-import FilterChain from './MessageFilterInput/FilterChain';
-import { H1 } from '../../../ui/H/H';
+
+import s from './SessionConfiguration.module.css'
 
 export type SessionConfigurationProps = {
   config: SessionConfig;
@@ -30,7 +31,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           <div className={s.ControlLabel}>Filters</div>
           <FilterChain
             value={props.config.messageFilter}
-            onChange={(v) => props.onConfigChange({ ...props.config, messageFilter: v })}
+            onChange={(v) => (props.onConfigChange({ ...props.config, messageFilter: v }))}
           />
         </div>
       </div>

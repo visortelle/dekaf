@@ -72,6 +72,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
       onCancel={modals.pop}
       forceDeleteInfo="Close all producer/consumer/replicator and delete topic forcefully."
       guard={topicFqn}
+      type='danger'
     />
   );
 }
