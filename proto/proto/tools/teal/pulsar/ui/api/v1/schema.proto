@@ -78,6 +78,7 @@ message GetLatestSchemaInfoResponse {
 
 message DeleteSchemaRequest {
   string topic = 1;
+  bool force = 2;
 }
 
 message DeleteSchemaResponse {

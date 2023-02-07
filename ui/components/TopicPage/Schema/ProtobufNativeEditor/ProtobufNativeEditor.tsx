@@ -28,7 +28,7 @@ message ExampleSchema {
 `
 
 const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
-  const { notifyError, notifySuccess } = Notifications.useContext();
+  const { notifyError } = Notifications.useContext();
   const [source, setSource] = React.useState<Source>('code-editor');
   const [files, setFiles] = React.useState<ReturnType<CompileProtobufNativeResponse['getFilesMap']> | undefined>(undefined);
   const [codeEditorValue, setCodeEditorValue] = React.useState<string>(defaultCodeEditorValue);

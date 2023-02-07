@@ -1,8 +1,6 @@
-import ReactDOMServer from 'react-dom/server';
 import { MessageDescriptor } from '../types';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import Field from './Field/Field';
-import s from './Message.module.css'
 import { routes } from '../../../routes';
 import { parseTopic } from '../../../pulsar/parse-topic';
 
@@ -26,7 +24,7 @@ export type FieldName =
   'accumulator' |
   'topic';
 
-const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
+export const help = {
   key: <span>Messages are optionally tagged with keys, which is useful for things like topic compaction.</span>,
   propertiesMap: <span>An optional key/value map of user-defined properties.</span>,
   producerName: <span>The name of the producer who produces the message. If you do not specify a producer name, the default name is used.</span>,
@@ -63,11 +61,7 @@ const helpJsx: Record<FieldName, React.ReactElement | undefined> = {
   ),
   replicatedFrom: <span>Name of cluster, from which the message is replicated.</span>, // TODO - geo replication
   accumulator: <span>Cumulative state to produce user-defined calculations, preserved between messages.</span>
-}
-export const help = Object.keys(helpJsx).reduce<Record<string, string | undefined>>((acc, curr) => {
-  const tt = helpJsx[curr as FieldName];
-  return tt === undefined ? acc : { ...acc, [curr]: ReactDOMServer.renderToStaticMarkup(<div className={s.Tooltip}>{tt}</div>) };
-}, {});
+} as const;
 
 type FieldProps = {
   isShowTooltips: boolean;
@@ -86,8 +80,8 @@ export const KeyField: React.FC<FieldProps> = (props) => {
 }
 
 export const ValueField: React.FC<FieldProps> = (props) => {
-  const jsonValue = props.message.value === null ? undefined : props.message.value;
-  return <Field isShowTooltips={props.isShowTooltips} title="Value as JSON" value={jsonValue} rawValue={jsonValue} tooltip={help.jsonValue} />
+  const value = props.message.value === null ? undefined : limitString(props.message.value, 100);
+  return <Field isShowTooltips={props.isShowTooltips} title="Value" value={value} rawValue={value} tooltip={help.value} />
 }
 
 export const TopicField: React.FC<FieldProps> = (props) => {
@@ -153,4 +147,11 @@ export const RedeliveryCountField: React.FC<FieldProps> = (props) => {
 
 export const AccumulatorField: React.FC<FieldProps> = (props) => {
   return <Field isShowTooltips={props.isShowTooltips} title="Accumulator" value={props.message.accum === null ? undefined : props.message.accum} rawValue={props.message.accum === null ? undefined : props.message.accum} tooltip={help.accumulator} />
+}
+
+function limitString(str: string, limit: number): string {
+  if (str.length > limit) {
+    return str.slice(0, limit) + '...';
+  }
+  return str;
 }

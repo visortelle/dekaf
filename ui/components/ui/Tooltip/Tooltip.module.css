@@ -1,0 +1,17 @@
+.Tooltip {
+  max-width: 480rem;
+  font-size: 14rem;
+}
+
+.Tooltip a {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.Tooltip a svg {
+  fill: #ffffff;
+}
+
+.Tooltip code {
+  color: var(--text-color);
+}

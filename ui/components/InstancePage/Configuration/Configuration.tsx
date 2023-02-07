@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import Highlighter from "react-highlight-words";
-import ReactDOMServer from 'react-dom/server';
 import useSWR, { mutate } from 'swr';
 import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
 
@@ -18,9 +17,11 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Input from '../../ui/Input/Input';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Button from '../../ui/Button/Button';
-import ActionButton from '../../ui/ActionButton/ActionButton';
 
 import s from './Configuration.module.css';
+import ActionButton from '../../ui/ActionButton/ActionButton';
+import { TooltipWrapper } from 'react-tooltip';
+import ReactDOMServer from 'react-dom/server';
 
 const Configuration = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
@@ -85,13 +86,18 @@ const Configuration = () => {
             {allKeys.map((key) => {
               return (
                 <tr key={key} className={s.Row}>
-                  <td className={`${s.Cell} ${s.ConfigParamKeyCell}`} data-tip={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}>
-                    <Highlighter
-                      highlightClassName="highlight-substring"
-                      searchWords={[paramFilter]}
-                      autoEscape={true}
-                      textToHighlight={key}
-                    />
+                  <td className={`${s.Cell} ${s.ConfigParamKeyCell}`}>
+                    <TooltipWrapper
+                      html={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}
+                      className={s.TooltipWrapper}
+                    >
+                      <Highlighter
+                        highlightClassName="highlight-substring"
+                        searchWords={[paramFilter]}
+                        autoEscape={true}
+                        textToHighlight={key}
+                      />
+                    </TooltipWrapper>
                   </td>
                   <td className={`${s.Cell} ${s.RuntimeConfigCell}`}>{runtimeConfig[key]}</td>
                   <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
