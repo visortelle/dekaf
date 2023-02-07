@@ -181,6 +181,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         negativeAckRedeliveryDelayMs = if v.negativeAckRedeliveryDelayMs > 0 then v.negativeAckRedeliveryDelayMs else null,
                         cleanupSubscription = v.cleanupSubscription,
 
+                        sinkType = null, //TODO add new field
                         className = null, // if using archive "org.apache.pulsar.io.cassandra.CassandraStringSink", // v.className,
                         topicToSerdeClassName = null, // v.topicToSerdeClassName.asJava, // ("string" -> desiariliza class)
                         topicToSchemaType = null, // v.topicToSchemaType.asJava, (string -> special class)

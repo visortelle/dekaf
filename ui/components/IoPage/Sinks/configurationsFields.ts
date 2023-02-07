@@ -395,7 +395,7 @@ export const configurations: Configurations = {
   tenant: 'public',
   namespace: 'default',
   name: 'users',
-  pathToConnector: { type: 'url', path: 'cassandra'},
+  pathToConnector: { type: 'url', path: 'https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-jdbc-postgres-2.11.0.nar'},
   inputs: [
     'persistent://public/default/users'
   ],
@@ -414,19 +414,19 @@ export const configurations: Configurations = {
       schemaProperties: {
         0: {
           name: "id",
-          value: "25"
+          value: "int"
         },
         1: {
           name: "name",
-          value: "bestName"
+          value: "string"
         },
         2: {
           name: "age",
-          value: "25"
+          value: "int"
         },
         3: {
           name: "address",
-          value: "ul X"
+          value: "string"
         }
       },
       consumerProperties: {},

@@ -17,7 +17,7 @@ services:
       - $PWD/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml:/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml
   postgresql:
     image: postgres
-    container_name: local_pgdb
+    container_name: postgresdb
     restart: always
     ports:
       - "5438:5432"

@@ -36,6 +36,25 @@
   "tableName": "users"
 }
 
+{
+  "config": {
+    "userName": "postgres@sql.com",
+    "password": "postgres@sql.com",
+    "jdbcUrl": "jdbc:postgresql://localhost:5432/postgres",
+    "tableName": "users"
+  }
+}
+
+// {
+//   \"config\": {
+//     \"userName\": \"postgres@sql.com\",
+//     \"password\": \"postgres@sql.com\",
+//     \"jdbcUrl\": \"jdbc:postgresql://localhost:5432/postgres\",
+//     \"tableName\": \"users\"
+//   }
+// }
+
+
 persistent://public/default/users
 
 

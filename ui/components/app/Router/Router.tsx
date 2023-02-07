@@ -37,14 +37,22 @@ const prepareRoutes = (): {
 } => {
   const getRoutes = ({ withLayout, withLayoutProps }: { withLayout: WithLayout; withLayoutProps: WithLayoutProps }) => [
     /* Instance */
-    { path: routes.instance.overview._.path, element: withLayout(<InstancePage view={{ type: "overview" }} />, withLayoutProps) },
-    { path: routes.instance.configuration._.path, element: withLayout(<InstancePage view={{ type: "configuration" }} />, withLayoutProps) },
-    { path: routes.instance.createTenant._.path, element: withLayout(<InstancePage view={{ type: "create-tenant" }} />, withLayoutProps) },
+    { 
+      path: routes.instance.overview._.path,
+      element: withLayout(<InstancePage view={{ type: "overview" }} />, withLayoutProps)
+    },
+    { 
+      path: routes.instance.configuration._.path,
+      element: withLayout(<InstancePage view={{ type: "configuration" }} />, withLayoutProps)
+    },
+    { 
+      path: routes.instance.createTenant._.path,
+      element: withLayout(<InstancePage view={{ type: "create-tenant" }} />, withLayoutProps)
+    },
     {
       path: routes.instance.tenants._.path,
       element: withLayout(<InstancePage view={{ type: "tenants" }} />, setScrollMode(withLayoutProps, "page-own")),
     },
-
     {
       path: routes.instance.resourceGroups._.path,
       element: withLayout(<InstancePage view={{ type: "resource-groups" }} />, withLayoutProps),
@@ -111,17 +119,10 @@ const prepareRoutes = (): {
     },
 
     /* Tenants */
-    { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RoutedTenantPage view={'configuration'} />, withLayoutProps) },
-    { path: routes.tenants.tenant.createNamespace._.path, element: withLayout(<RoutedTenantPage view={'create-namespace'} />, withLayoutProps) },
-    { path: routes.tenants.tenant.namespaces._.path, element: withLayout(<RoutedTenantPage view={'namespaces'} />, setScrollMode(withLayoutProps, 'page-own')) },
-
-    /* Io */
-    { path: routes.io.sinks._.path, element: withLayout(<RoutedIoPage view={'sinks'} />, withLayoutProps) },
-    { path: routes.io.sinks.create._.path, element: withLayout(<RoutedIoPage view={'sinks-create'} />, withLayoutProps) },
-    { path: routes.io.sources._.path, element: withLayout(<RoutedIoPage view={'sources'} />, withLayoutProps) },
-    { path: routes.io.sources.create._.path, element: withLayout(<RoutedIoPage view={'sources-create'} />, withLayoutProps) },
-
-    { path: routes.tenants.tenant.configuration._.path, element: withLayout(<RoutedTenantPage view={"configuration"} />, withLayoutProps) },
+    { 
+      path: routes.tenants.tenant.configuration._.path,
+      element: withLayout(<RoutedTenantPage view={"configuration"} />, withLayoutProps)
+    },
     {
       path: routes.tenants.tenant.createNamespace._.path,
       element: withLayout(<RoutedTenantPage view={"create-namespace"} />, withLayoutProps),
@@ -130,7 +131,25 @@ const prepareRoutes = (): {
       path: routes.tenants.tenant.namespaces._.path,
       element: withLayout(<RoutedTenantPage view={"namespaces"} />, setScrollMode(withLayoutProps, "page-own")),
     },
+    /* Io */
+    { 
+      path: routes.io.sinks._.path,
+      element: withLayout(<RoutedIoPage view={'sinks'} />, withLayoutProps)
+    },
+    { 
+      path: routes.io.sinks.create._.path,
+      element: withLayout(<RoutedIoPage view={'sinks-create'} />, withLayoutProps)
+    },
+    { 
+      path: routes.io.sources._.path,
+      element: withLayout(<RoutedIoPage view={'sources'} />, withLayoutProps) 
+    },
+    { 
+      path: routes.io.sources.create._.path,
+      element: withLayout(<RoutedIoPage view={'sources-create'} />, withLayoutProps)
+    },
   ];
+  
   const paths = getRoutes({ withLayout: () => <></>, withLayoutProps: defaultWithLayoutProps })
     .map((ro) => ro.path)
     .filter((p) => p !== undefined) as string[];
