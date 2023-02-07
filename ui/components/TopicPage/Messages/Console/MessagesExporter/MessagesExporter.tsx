@@ -141,8 +141,6 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
                 });
                 break;
               }
-              default:
-                console.log("Not implemented");
             }
           }}
         />

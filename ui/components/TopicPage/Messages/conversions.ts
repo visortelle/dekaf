@@ -40,7 +40,6 @@ export function partialMessageDescriptorToSerializable(message: PartialMessageDe
 
   let value: undefined | null | any;
   if (message.value !== undefined && message.value !== null) {
-    console.log("mb", message.value);
     value = JSON.parse(message.value);
   }
 
