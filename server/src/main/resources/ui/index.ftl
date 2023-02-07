@@ -10,11 +10,9 @@
   <link href="/ui/static/globals.css" rel="stylesheet"/>
   <link href="/ui/static/dist/entrypoint.css" rel="stylesheet"/>
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/ui/static/favicon/apple-touch-icon.png"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="/ui/static/favicon/favicon-32x32.png"/>
-  <link rel="icon" type="image/png" sizes="16x16" href="/ui/static/favicon/favicon-16x16.png"/>
+  <link data-rh="true" rel="icon" type="image/png" sizes="16x16" href="/ui/static/favicon/favicon-16x16.png"/>
 
-  <title>X-Ray</title>
+  <title data-rh="true">X-Ray</title>
 </head>
 
 <body>

@@ -23,6 +23,7 @@ require("esbuild")
     bundle: true,
     loader: {
       ".svg": "text",
+      ".png": "base64",
     },
     minify: !isDevelopment,
     globalName: "pulsarUiEntrypoint",
