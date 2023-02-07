@@ -392,11 +392,13 @@ export type Configurations = {
 }
 
 export const configurations: Configurations = {
-  tenant: '',
-  namespace: '',
-  name: '',
-  pathToConnector: { type: 'url', path: 'aerospike'},
-  inputs: [],
+  tenant: 'public',
+  namespace: 'default',
+  name: 'users',
+  pathToConnector: { type: 'url', path: 'cassandra'},
+  inputs: [
+    'persistent://public/default/users'
+  ],
 
   //unrequired
 
@@ -409,7 +411,24 @@ export const configurations: Configurations = {
       name: 'New',
       schemaType: '',
       serdeClassName: '',
-      schemaProperties: {},
+      schemaProperties: {
+        0: {
+          name: "id",
+          value: "25"
+        },
+        1: {
+          name: "name",
+          value: "bestName"
+        },
+        2: {
+          name: "age",
+          value: "25"
+        },
+        3: {
+          name: "address",
+          value: "ul X"
+        }
+      },
       consumerProperties: {},
       receiverQueueSize: 0,
       poolMessages: false,
@@ -439,7 +458,7 @@ export const configurations: Configurations = {
   className: '',
   topicToSerdeClassName: {},
   topicToSchemaType: {},
-  configs: '',
+  configs: '{ \"userName\": \"postgres@sql.com\", \"password\": \"postgres@sql.com\", \"jdbcUrl\": \"jdbc:postgresql://localhost:5432/postgres\", \"tableName\": \"users\"}',
   secrets: '',
   resources: { cpu: 0, ram: 0, disk: 0 },
   archive: '',

@@ -22,7 +22,7 @@ import com.google.gson.JsonParser
 import java.util.UUID
 import scala.collection.mutable
 
-
+import io.circe.parser._
 import io.circe.{Decoder, Encoder, Json}
 import io.circe.parser.*
 import io.circe.syntax.*
@@ -69,20 +69,26 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
 
     def parseConfigs(json: String) = {
 
-//        parse(json) match
-//            case Right(v) => v
-//            case Left(_) => null
+        def parser(json: String) = parse(json) match
+            case Left(err) => Left(err)
+            case Right(json) => json.asObject match
+                case Some(obj) =>
+                    Right(obj.toMap)
+                case None => Left(new Exception("ERROR"))
 
-        val mapper = ObjectMapperFactory.getThreadLocal()
-        val typeRef = new TypeReference[mutable.HashMap[String, Any]]() {}
-        mapper.readValue(json, typeRef)
-//        decode[mutable.HashMap[String, Object]](json)
+        val jsonMap = parser(json)
 
-
-//    protected Map <String, Object> parseConfigs(String str) throws JsonProcessingException {
-//        ObjectMapper mapper = ObjectMapperFactory.getThreadLocal();
-//        TypeReference <HashMap<String, Object>> typeRef = new TypeReference <HashMap<String, Object>> () {};
-//        return mapper.readValue(str, typeRef);
+        val objectMap = mutable.Map[String, Object]()
+        jsonMap match
+            case Left(err) => println(s"Error: ${err}")
+            case Right(map) =>
+                map.foreach((key, json) => json.asObject match
+                    case Some(obj) =>
+                        objectMap += (key -> SinkConfig.builder().configs(obj.toMap.asJava))
+                    case None => objectMap += (key -> json.toString)
+            )
+        println(objectMap.asJava)
+        objectMap.asJava
     }
 
     override def createSink(request: pb.CreateSinkRequest): Future[pb.CreateSinkResponse] =
@@ -122,7 +128,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         case Some(v) =>
                             CryptoConfig (
                                 cryptoKeyReaderClassName = v.cryptoKeyReaderClassName,
-                                cryptoKeyReaderConfig = if v.cryptoKeyReaderConfig.length > 0 then parseConfigs(v.cryptoKeyReaderConfig).toMap.asJava else null,
+                                cryptoKeyReaderConfig = if v.cryptoKeyReaderConfig.length > 0 then parseConfigs(v.cryptoKeyReaderConfig) else null,
                                 encryptionKeys = v.encryptionKeys.toArray,
                                 producerCryptoFailureAction = producerCryptoFailureActionFromPb(v.producerCryptoFailureAction),
                                 consumerCryptoFailureAction = consumerCryptoFailureActionFromPb(v.consumerCryptoFailureAction),
@@ -178,21 +184,19 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         className = null, // if using archive "org.apache.pulsar.io.cassandra.CassandraStringSink", // v.className,
                         topicToSerdeClassName = null, // v.topicToSerdeClassName.asJava, // ("string" -> desiariliza class)
                         topicToSchemaType = null, // v.topicToSchemaType.asJava, (string -> special class)
-                        configs = if v.configs.isEmpty then null else parseConfigs(v.configs).toMap.asJava,
-                        secrets = if v.secrets.isEmpty then null else parseConfigs(v.secrets).toMap.asJava,
+                        configs = if v.configs.isEmpty then null else parseConfigs(v.configs),
+                        secrets = if v.secrets.isEmpty then null else parseConfigs(v.secrets),
                         resources = null, // convertedResources -- it works ///only if docker
                         archive = null, //"file:///pulsar/connectors/pulsar-io-cassandra-2.11.0.nar", // connector // null,
                         runtimeFlags = null, // v.runtimeFlags, //special
                         customRuntimeOptions = null, // v.customRuntimeOptions, //special
                     )
 
-                    println(parseConfigs(v.configs).toMap.asJava)
-
                     v.pathToConnector match
                         case Some(v) =>
                             if (pathToConnectorFromPb(v.`type`) == "url") {
+                                println(v.path)
                                 adminClient.sinks.createSinkWithUrl(sinkConfig, v.path)
-                                println(adminClient.sinks.getSink("public", "default", "users"))
                             } else {
                                 adminClient.sinks.createSink(sinkConfig, v.path)
                             }
