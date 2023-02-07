@@ -19,8 +19,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { findIndex } from 'lodash';
-import SvgIcon from '../../../../../ui/SvgIcon/SvgIcon';
-import dragIcon from './drag.svg';
+// import SvgIcon from '../../../../../ui/SvgIcon/SvgIcon';
+// import dragIcon from './drag.svg';
 import Checkbox from '../../../../../ui/Checkbox/Checkbox';
 
 export type MessageFieldsConfigProps = {
@@ -120,9 +120,12 @@ const SortableMessageField: React.FC<SortableMessageFieldProps> = (props) => {
         {props.name}
       </div>
 
+      {/*
+      // Uncomment to add drag icon.
+      // It should be useful when we'll add CSV export to change columns order.
       <div className={s.DragIcon} {...attributes} {...listeners}>
         <SvgIcon svg={dragIcon} />
-      </div>
+      </div> */}
     </div>
   );
 }

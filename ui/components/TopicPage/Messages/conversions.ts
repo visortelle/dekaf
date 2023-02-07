@@ -3,7 +3,6 @@ import { MessageDescriptor, PartialMessageDescriptor } from "./types";
 
 export function messageDescriptorFromPb(message: Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
-  window.messagePb = message;
 
   return {
     index: -1, // This value will be set in another place.
@@ -40,15 +39,11 @@ export function partialMessageDescriptorToSerializable(message: PartialMessageDe
   }
 
   let value: undefined | null | any;
-  console.log("ma", message.value);
-  window.message = message
   if (message.value !== undefined && message.value !== null) {
     console.log("mb", message.value);
     value = JSON.parse(message.value);
   }
 
-  window.v = value
-  console.log("c", value);
   let accum: undefined | null | any;
   if (message.accum !== undefined && message.accum !== null) {
     accum = JSON.parse(message.accum);

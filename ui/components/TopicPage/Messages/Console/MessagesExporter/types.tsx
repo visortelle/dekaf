@@ -24,12 +24,6 @@ export type Format =
       type: "json-file-per-value";
     }
   | {
-      type: "csv-message-per-row";
-    }
-  | {
-      type: "csv-value-per-row";
-    }
-  | {
       type: "file-per-raw-value";
     };
 

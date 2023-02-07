@@ -1,6 +1,5 @@
-import { MessageFieldsConfig, ExportConfig, CsvConfig } from "./types";
+import { MessageFieldsConfig, ExportConfig } from "./types";
 import {
-  defaultCsvConfig,
   defaultExportConfig,
   defaultFieldsConfig,
 } from "./defaults";
@@ -15,13 +14,6 @@ export function genMessageFieldsConfig(
       [...defaultFieldsConfig.fields, ...(fieldsOverride || [])],
       (a, b) => a.id === b.id
     ),
-    ...override,
-  };
-}
-
-export function genCsvConfig(override?: Partial<CsvConfig>): CsvConfig {
-  return {
-    ...defaultCsvConfig,
     ...override,
   };
 }
