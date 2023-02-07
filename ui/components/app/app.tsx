@@ -9,6 +9,7 @@ import { SWRConfig } from "swr";
 import Router from "./Router/Router";
 import { TooltipProvider } from "react-tooltip";
 import Tooltip from "../ui/Tooltip/Tooltip";
+import { HelmetProvider } from "react-helmet-async";
 
 type AppProps = {
   config: AppContext.Config;
@@ -43,10 +44,12 @@ const _App: React.FC<AppProps> = (props) => {
       <PulsarGrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, "")}/api`}>
         <Notifications.DefaultProvider>
           <BrokerConfig.DefaultProvider>
-            <TooltipProvider>
-              <Router />
-              <Tooltip />
-            </TooltipProvider>
+            <HelmetProvider>
+              <TooltipProvider>
+                <Router />
+                <Tooltip />
+              </TooltipProvider>
+            </HelmetProvider>
           </BrokerConfig.DefaultProvider>
         </Notifications.DefaultProvider>
       </PulsarGrpcClient.DefaultProvider>
