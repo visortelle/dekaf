@@ -70,7 +70,7 @@ class MessageFilter(config: MessageFilterConfig):
         config.stdout.reset()
         logs
 
-    def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
+    def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
         testUsingJs(context, filterCode, jsonMessage, jsonValue)
 
     def runCode(code: String): String =
@@ -80,7 +80,7 @@ class MessageFilter(config: MessageFilterConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage()}"
         }
 
-def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
+def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
     val evalCode =
         s"""
           | (() => {
@@ -105,21 +105,22 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
 
     (testResult, cumulativeJsonState)
 
-def getFilterTestResult(filter: pb.MessageFilter, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: JsonValue): FilterTestResult =
+def getFilterTestResult(filter: pb.MessageFilter, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
     messageFilter.test(filter.value, jsonMessage, jsonValue)
 
 def getFilterChainTestResult(
     filterChain: Option[pb.MessageFilterChain],
     messageFilter: MessageFilter,
     jsonMessage: JsonMessage,
-    jsonValue: JsonValue
+    jsonValue: MessageValueToJsonResult
 ): FilterTestResult =
     var chain = filterChain.getOrElse(pb.MessageFilterChain(filters = Map.empty, mode = pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL))
 
     // Each message filters mutate global state.
     // For example: it stores the last message in the global variable `lastMessage`.
     // To make it work properly, at least one filter should always present.
-    chain = chain.withFilters(chain.filters + ("dummy" -> pb.MessageFilter(value = "() => true")))
+    if (chain.filters.size == 0)
+        chain = chain.withFilters(chain.filters + ("dummy" -> pb.MessageFilter(value = "() => true")))
 
     val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilter, jsonMessage, jsonValue))
 

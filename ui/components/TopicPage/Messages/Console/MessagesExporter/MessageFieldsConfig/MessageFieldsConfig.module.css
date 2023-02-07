@@ -1,0 +1,49 @@
+.MessageFieldsConfig {
+  display: flex;
+  flex-direction: column;
+}
+
+.MessageField {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4rem;
+  padding: 8rem 48rem 8rem 42rem;
+  border: 1px solid #ddd;
+  border-radius: 4rem;
+  position: relative;
+  background-color: #fff;
+}
+
+.DraggingMessageField {
+  box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.27);
+}
+
+.DragIcon {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.DragIcon svg {
+  width: 24rem;
+  height: 24rem;
+  fill: #ddd;
+}
+
+.DragIcon:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.IsFieldActiveCheckbox {
+  position: absolute;
+  left: 8rem;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}

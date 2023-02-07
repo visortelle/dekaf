@@ -48,8 +48,10 @@ import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
-import ReactTooltip from 'react-tooltip';
 import { remToPx } from '../../ui/rem-to-px';
+import { help } from './Message/fields';
+import { TooltipWrapper } from 'react-tooltip';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const consoleCss = "color: #276ff4; font-weight: bold;";
 
@@ -65,7 +67,6 @@ export type SessionProps = {
 type View = 'messages' | 'configuration';
 type MessagesPerSecond = { prev: number, now: number };
 
-const displayMessagesLimit = 10000;
 const displayMessagesRealTimeLimit = 250; // too many items leads to table blinking.
 
 const Session: React.FC<SessionProps> = (props) => {
@@ -78,10 +79,11 @@ const Session: React.FC<SessionProps> = (props) => {
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);
-  const [consumerName, setConsumerName] = useState<string>('__xray_con_' + nanoid());
-  const [subscriptionName, setSubscriptionName] = useState<string>('__xray_sub_' + nanoid());
+  const consumerName = useRef<string>('__xray_con_' + nanoid());
+  const subscriptionName = useRef<string>('__xray_sub_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
+  const [displayMessagesLimit, setDisplayMessagesLimit] = useState<number>(10000);
   const [messagesLoaded, setMessagesLoaded] = useState<number>(0);
   const [messagesLoadedPerSecond, setMessagesLoadedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
   const [messagesProcessedPerSecond, setMessagesProcessedPerSecond] = useState<MessagesPerSecond>({ prev: 0, now: 0 });
@@ -143,10 +145,10 @@ const Session: React.FC<SessionProps> = (props) => {
   const applyConfig = async () => {
     if (startFrom.type === 'messageId') {
       const seekReq = new SeekRequest();
-      seekReq.setConsumerName(consumerName);
+      seekReq.setConsumerName(consumerName.current);
       seekReq.setMessageId(i18n.hexStringToBytes(startFrom.hexString));
       const res = await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by messageId. Consumer: ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to seek by messageId. Consumer: ${consumerName.current}. ${err}`));
 
       if (res !== undefined) {
         const status = res.getStatus();
@@ -154,7 +156,7 @@ const Session: React.FC<SessionProps> = (props) => {
         if (code === Code.INVALID_ARGUMENT) {
           notifyError(
             <div>
-              Unable to seek by messageId. Consumer: {consumerName}.<br /><br />
+              Unable to seek by messageId. Consumer: {consumerName.current}.<br /><br />
               Possible reasons:<br />
               - Message with such id doesn&apos;t exist specified.<br />
               - Some of the topics are partitioned.
@@ -180,10 +182,10 @@ const Session: React.FC<SessionProps> = (props) => {
 
       const seekReq = new SeekRequest();
       const timestamp = Timestamp.fromDate(fromDate);
-      seekReq.setConsumerName(consumerName);
+      seekReq.setConsumerName(consumerName.current);
       seekReq.setTimestamp(timestamp);
       await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
     }
   }
 
@@ -225,9 +227,9 @@ const Session: React.FC<SessionProps> = (props) => {
 
     async function deleteConsumer() {
       const deleteConsumerReq = new DeleteConsumerRequest();
-      deleteConsumerReq.setConsumerName(consumerName);
+      deleteConsumerReq.setConsumerName(consumerName.current);
       await consumerServiceClient.deleteConsumer(deleteConsumerReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to delete consumer ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to delete consumer ${consumerName.current}. ${err}`));
     }
 
     deleteConsumer(); // Don't await this
@@ -267,15 +269,15 @@ const Session: React.FC<SessionProps> = (props) => {
       }
 
       req.setTopicsSelector(topicSelector)
-      req.setConsumerName(consumerName);
+      req.setConsumerName(consumerName.current);
       req.setStartPaused(true);
-      req.setSubscriptionName(subscriptionName);
+      req.setSubscriptionName(subscriptionName.current);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
       req.setSubscriptionMode(SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE);
       req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
       req.setPriorityLevel(1000);
 
-      const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName}. ${err}`));
+      const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
       if (res === undefined) {
         return;
       }
@@ -300,7 +302,7 @@ const Session: React.FC<SessionProps> = (props) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
     };
-  }, [props.config, subscriptionName]);
+  }, [props.config, subscriptionName.current]);
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
@@ -336,9 +338,9 @@ const Session: React.FC<SessionProps> = (props) => {
       console.info(`%cPausing session: ${props.sessionKey}`, consoleCss);
 
       const pauseReq = new PauseRequest();
-      pauseReq.setConsumerName(consumerName);
+      pauseReq.setConsumerName(consumerName.current);
       consumerServiceClient.pause(pauseReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to pause consumer ${consumerName}. ${err}`));
+        .catch((err) => notifyError(`Unable to pause consumer ${consumerName.current}. ${err}`));
 
       return;
     }
@@ -367,7 +369,7 @@ const Session: React.FC<SessionProps> = (props) => {
         });
 
       const resumeReq = new ResumeRequest();
-      resumeReq.setConsumerName(consumerName);
+      resumeReq.setConsumerName(consumerName.current);
       resumeReq.setMessageFilterChain(messageFilterChain);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler);
@@ -380,15 +382,13 @@ const Session: React.FC<SessionProps> = (props) => {
       console.info(`%c--------------------`, consoleCss);
       console.info(`%cStarting new consumer session: ${props.sessionKey}`, consoleCss);
       console.info('%cSession config: %o', consoleCss, props.config);
-      console.info('%cConsumer name:', consoleCss, consumerName);
-      console.info('%cSubscription name:', consoleCss, subscriptionName);
+      console.info('%cConsumer name:', consoleCss, consumerName.current);
+      console.info('%cSubscription name:', consoleCss, subscriptionName.current);
     }
 
     if (sessionState === 'new' && prevSessionState !== undefined) {
       cleanup();
     }
-
-    ReactTooltip.rebuild();
   }, [sessionState]);
 
   useEffect(() => {
@@ -398,14 +398,15 @@ const Session: React.FC<SessionProps> = (props) => {
     }
   }, [sessionState, messagesLoadedPerSecond]);
 
-  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isSessionPaused={sessionState !== 'running'} />, [sessionState]);
+  const isShowTooltips = sessionState !== 'running' && sessionState !== 'pausing';
+  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={isShowTooltips} />, [sessionState]);
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
       setSessionState('pausing');
     }
   }, [sessionState]);
 
-  const Th = useCallback((props: { title: React.ReactNode, sortKey?: SortKey, style?: React.CSSProperties }) => {
+  const Th = useCallback((props: { title: React.ReactNode, help: React.ReactElement, sortKey?: SortKey, style?: React.CSSProperties }) => {
     const handleColumnHeaderClick = () => {
       if (props.sortKey === undefined) {
         return;
@@ -420,15 +421,17 @@ const Session: React.FC<SessionProps> = (props) => {
 
     return (
       <th className={cts.Th} style={props.style} onClick={handleColumnHeaderClick}>
-        <div className={props.sortKey === undefined ? '' : cts.SortableTh}>
-          {props.title}
+        <TooltipWrapper html={renderToStaticMarkup(props.help)}>
+          <div className={props.sortKey === undefined ? '' : cts.SortableTh}>
+            {props.title}
 
-          {sort.key === props.sortKey && (
-            <div className={cts.SortableThIcon}>
-              <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
-            </div>
-          )}
-        </div>
+            {sort.key === props.sortKey && (
+              <div className={cts.SortableThIcon}>
+                <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
+              </div>
+            )}
+          </div>
+        </TooltipWrapper>
       </th>
     );
   }, [sort]);
@@ -451,6 +454,8 @@ const Session: React.FC<SessionProps> = (props) => {
         messagesProcessed={messagesProcessed.current}
         onStopSession={props.onStopSession}
         onToggleConsoleClick={() => props.onSetIsShowConsole(!props.isShowConsole)}
+        displayMessagesLimit={displayMessagesLimit}
+        onDisplayMessagesLimitChange={setDisplayMessagesLimit}
       />
 
       {currentView === 'messages' && messages.length === 0 && (
@@ -482,23 +487,23 @@ const Session: React.FC<SessionProps> = (props) => {
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
-                <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} />
-                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} />
-                <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} />
-                <Th title="Key" sortKey="key" />
-                <Th title="Value" sortKey="value" />
-                <Th title="Topic" sortKey="topic" />
-                <Th title="Producer" sortKey="producerName" />
-                <Th title="Schema version" sortKey="schemaVersion" />
-                <Th title="Size" sortKey="size" />
-                <Th title="Properties" sortKey="properties" />
-                <Th title="Event time" sortKey="eventTime" />
-                <Th title="Broker pub. time" sortKey="brokerPublishTime" />
-                <Th title="Message Id" />
-                <Th title="Sequence Id" sortKey="sequenceId" />
-                <Th title="Ordering key" />
-                <Th title="Redelivery count" sortKey="redeliveryCount" />
-                <Th title="Accumulator" sortKey="accumulator" />
+                <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} help={<>Message index in this view.</>} />
+                <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} help={help.publishTime} />
+                <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} help={<></>} />
+                <Th title="Key" sortKey="key" help={help.key} />
+                <Th title="Value" sortKey="value" help={help.value} />
+                <Th title="Topic" sortKey="topic" help={help.topic} />
+                <Th title="Producer" sortKey="producerName" help={help.producerName} />
+                <Th title="Schema version" sortKey="schemaVersion" help={help.schemaVersion} />
+                <Th title="Size" sortKey="size" help={help.size} />
+                <Th title="Properties" sortKey="properties" help={help.propertiesMap} />
+                <Th title="Event time" sortKey="eventTime" help={help.eventTime} />
+                <Th title="Broker pub. time" sortKey="brokerPublishTime" help={help.brokerPublishTime} />
+                <Th title="Message Id" help={help.messageId} />
+                <Th title="Sequence Id" sortKey="sequenceId" help={help.sequenceId} />
+                <Th title="Ordering key" help={help.orderingKey} />
+                <Th title="Redelivery count" sortKey="redeliveryCount" help={help.redeliveryCount} />
+                <Th title="Accumulator" sortKey="accumulator" help={help.accumulator} />
               </tr>
             )}
           />
@@ -520,10 +525,10 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionState={sessionState}
         onSessionStateChange={setSessionState}
         sessionConfig={props.config}
-        sessionSubscriptionName={subscriptionName}
+        sessionSubscriptionName={subscriptionName.current}
         topicsInternalStats={topicsInternalStats}
         messages={messages}
-        consumerName={consumerName}
+        consumerName={consumerName.current}
       />
     </div>
   );

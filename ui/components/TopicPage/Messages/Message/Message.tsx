@@ -8,7 +8,7 @@ import SmallButton from '../../../ui/SmallButton/SmallButton';
 import MessageDetails from './MessageDetails/MessageDetails';
 
 export type MessageProps = {
-  isSessionPaused: boolean;
+  isShowTooltips: boolean;
   message: MessageDescriptor;
 };
 
@@ -23,7 +23,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td width="200rem" className={s.PublishTimeField}>
-        <PublishTimeField isShowTooltips={props.isSessionPaused} message={msg} />
+        <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />
       </Td>
 
       <Td width="48rem" className={s.ViewMessageDetailsField}>
@@ -40,59 +40,59 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       </Td>
 
       <Td width='20ch'>
-        <KeyField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='30ch'>
-        <ValueField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <ValueField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='60ch'>
-        <TopicField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <TopicField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='50ch'>
-        <ProducerNameField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <ProducerNameField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='8ch'>
-        <SchemaVersionField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <SchemaVersionField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='12ch'>
-        <SizeField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <SizeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='30ch'>
-        <PropertiesField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <PropertiesField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='30ch'>
-        <EventTimeField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <EventTimeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='30ch'>
-        <BrokerPublishTimeField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <BrokerPublishTimeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='40ch'>
-        <MessageIdField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <MessageIdField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='10ch'>
-        <SequenceIdField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <SequenceIdField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='10ch'>
-        <OrderingKeyField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <OrderingKeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='10ch'>
-        <RedeliveryCountField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <RedeliveryCountField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td width='50ch'>
-        <AccumulatorField isShowTooltips={props.isSessionPaused} message={props.message} />
+        <AccumulatorField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
     </>
   );

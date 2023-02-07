@@ -7,4 +7,5 @@
   overflow: hidden;
   border-radius: 8rem;
   border: 1px solid #ddd;
+  max-width: 480rem;
 }

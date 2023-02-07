@@ -138,6 +138,31 @@ export const routes = {
                     }) =>
                       `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/schema`,
                   },
+                  create: {
+                    _: {
+                      path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/schema/create",
+                      get: (props: {
+                        tenant: string;
+                        namespace: string;
+                        topicType: "persistent" | "non-persistent";
+                        topic: string;
+                      }) =>
+                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/schema/create`,
+                    },
+                  },
+                  view: {
+                    _: {
+                      path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/schema/view/:schemaVersion",
+                      get: (props: {
+                        tenant: string;
+                        namespace: string;
+                        topicType: "persistent" | "non-persistent";
+                        topic: string;
+                        schemaVersion: number;
+                      }) =>
+                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/schema/view/${props.schemaVersion}`,
+                    },
+                  },
                 },
                 policies: {
                   _: {

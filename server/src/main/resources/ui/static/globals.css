@@ -147,16 +147,3 @@ code {
   background-color: var(--accent-color-yellow);
   border-radius: 2rem;
 }
-
-.__react_component_tooltip {
-  max-width: 640rem !important;
-  z-index: 999 !important;
-  pointer-events: initial !important;
-  box-shadow: 8rem 8rem 36rem rgb(0 0 0 / 15%) !important;
-  opacity: 1 !important;
-}
-
-.__react_component_tooltip code {
-  background: #eee;
-  color: var(--text-color);
-}

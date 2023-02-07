@@ -15,7 +15,7 @@ message MessageId {
 
 message Message {
    // Message value as raw bytes.
-  google.protobuf.BytesValue bytes = 4;
+  google.protobuf.BytesValue raw_value = 4;
 
   // Message value serialized as JSON.
   google.protobuf.StringValue value = 5;

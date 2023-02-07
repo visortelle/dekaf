@@ -16,4 +16,5 @@ module.exports = {
   moduleNameMapper: hq.get("jest"),
   testPathIgnorePatterns: ["/node_modules/", "/dist/", "/types/"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+  testTimeout: 3 * 60 * 1000,
 };

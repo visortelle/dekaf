@@ -6,20 +6,9 @@
   display: flex;
 }
 
-.FormLabelWithHelp:hover {
-  cursor: pointer;
-  position: relative;
-}
-
 .HelpIcon {
   margin-left: 1ch;
   margin-top: 2rem;
-}
-
-.HelpIcon svg {
-  width: 16rem;
-  height: 16rem;
-  fill: var(--accent-color-blue);
 }
 
 .Required {

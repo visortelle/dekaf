@@ -7,7 +7,28 @@ import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptor
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetHumanReadableSchemaRequest, GetHumanReadableSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaInfoWithVersion, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import com.tools.teal.pulsar.ui.api.v1.schema.{
+    CompiledProtobufNativeFile,
+    CompileProtobufNativeRequest,
+    CompileProtobufNativeResponse,
+    CreateSchemaRequest,
+    CreateSchemaResponse,
+    DeleteSchemaRequest,
+    DeleteSchemaResponse,
+    GetHumanReadableSchemaRequest,
+    GetHumanReadableSchemaResponse,
+    GetLatestSchemaInfoRequest,
+    GetLatestSchemaInfoResponse,
+    ListSchemasRequest,
+    ListSchemasResponse,
+    ProtobufNativeSchema,
+    SchemaInfo as SchemaInfoPb,
+    SchemaInfoWithVersion,
+    SchemaServiceGrpc,
+    SchemaType as SchemaTypePb,
+    TestCompatibilityRequest,
+    TestCompatibilityResponse
+}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
 
@@ -62,7 +83,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
         logger.info(s"Deleting latest schema for topic ${request.topic}.")
 
         try {
-            adminClient.schemas.deleteSchema(request.topic)
+            adminClient.schemas.deleteSchema(request.topic, request.force)
 
             logger.info(s"Successfully deleted latest schema for topic ${request.topic}.")
             val status = Status(code = Code.OK.index)
@@ -83,11 +104,11 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
             logger.info(s"Successfully got latest schema info for topic ${request.topic}.")
             Future.successful(
-              GetLatestSchemaInfoResponse(
-                status = Some(status),
-                schemaInfo = Some(schemaInfoToPb(schemaInfoWithVersion.getSchemaInfo)),
-                schemaVersion = Option(schemaInfoWithVersion.getVersion)
-              )
+                GetLatestSchemaInfoResponse(
+                    status = Some(status),
+                    schemaInfo = Some(schemaInfoToPb(schemaInfoWithVersion.getSchemaInfo)),
+                    schemaVersion = Option(schemaInfoWithVersion.getVersion)
+                )
             )
         } catch {
             case (_: PulsarAdminException.NotFoundException) =>
@@ -134,7 +155,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
         logger.info(s"Compiling ${filesToCompile.size} protobuf native files.")
 
-        val files: Map[String, CompiledProtobufNativeFile] = protobufnative
+        val files: Map[String, CompiledProtobufNativeFile] = protobufnative.compiler
             .compileFiles(files = filesToCompile)
             .files
             .map(f =>
@@ -142,21 +163,19 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val compiledFilePb = compiledFile match
                     case Right(f) =>
                         CompiledProtobufNativeFile(
-                          schemas = f.schemas
-                              .map(s =>
-                                  val (messageName, schema) = s
-                                  val schemaPb: ProtobufNativeSchema = ProtobufNativeSchema(
-                                    rawSchema = ByteString.copyFrom(schema.rawSchema),
-                                    humanReadableSchema = schema.humanReadableSchema
-                                  )
-                                  (messageName, schemaPb)
-                              )
-                              .toMap
+                            schemas = f.schemas
+                                .map(s =>
+                                    val (messageName, schema) = s
+                                    val schemaPb: ProtobufNativeSchema = ProtobufNativeSchema(
+                                        rawSchema = ByteString.copyFrom(schema.rawSchema),
+                                        humanReadableSchema = schema.humanReadableSchema
+                                    )
+                                    (messageName, schemaPb)
+                                )
                         )
-                    case Left(err) => CompiledProtobufNativeFile(compilationError = Some(err))
+                    case Left(err) => CompiledProtobufNativeFile(compilationError = Some(err.getMessage))
                 (relativePath, compiledFilePb)
             )
-            .toMap
 
         logger.info(s"Compiled ${files.size} protobuf native files.")
         val status = Status(code = Code.OK.index)
@@ -172,19 +191,19 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val status = Status(code = Code.INVALID_ARGUMENT.index)
                 return Future.successful(TestCompatibilityResponse(status = Some(status)))
 
-        val compatibilityTestResult = protobufnative.testCompatibility(topic = request.topic, schemaInfo = schemaInfo)
+        val compatibilityTestResult = protobufnative.schemaCompatibility.test(topic = request.topic, schemaInfo = schemaInfo)
 
         logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
 
         val status = Status(code = Code.OK.index)
         Future.successful(
-          TestCompatibilityResponse(
-            status = Some(status),
-            isCompatible = compatibilityTestResult.isCompatible,
-            strategy = compatibilityTestResult.strategy,
-            incompatibleReason = compatibilityTestResult.incompatibleReason,
-            incompatibleFullReason = compatibilityTestResult.incompatibleFullReason
-          )
+            TestCompatibilityResponse(
+                status = Some(status),
+                isCompatible = compatibilityTestResult.isCompatible,
+                strategy = compatibilityTestResult.strategy,
+                incompatibleReason = compatibilityTestResult.incompatibleReason,
+                incompatibleFullReason = compatibilityTestResult.incompatibleFullReason
+            )
         )
 
     override def getHumanReadableSchema(request: GetHumanReadableSchemaRequest): Future[GetHumanReadableSchemaResponse] =
@@ -193,16 +212,16 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val descriptor = ProtobufNativeSchemaUtils.deserialize(request.rawSchema.toByteArray)
                 val status = Status(code = Code.OK.index)
                 Future.successful(
-                  GetHumanReadableSchemaResponse(
-                    status = Some(status),
-                    humanReadableSchema = Some(descriptor.toProto.toString)
-                  )
+                    GetHumanReadableSchemaResponse(
+                        status = Some(status),
+                        humanReadableSchema = Some(descriptor.toProto.toString)
+                    )
                 )
             case _ =>
                 val status = Status(code = Code.OK.index)
                 Future.successful(
-                  GetHumanReadableSchemaResponse(
-                    status = Some(status),
-                    humanReadableSchema = Some(request.rawSchema.toStringUtf8)
-                  )
+                    GetHumanReadableSchemaResponse(
+                        status = Some(status),
+                        humanReadableSchema = Some(request.rawSchema.toStringUtf8)
+                    )
                 )
