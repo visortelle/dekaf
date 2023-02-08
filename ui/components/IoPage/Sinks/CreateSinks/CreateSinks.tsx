@@ -7,7 +7,7 @@ import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/Pulsar
 import { H3 } from '../../../ui/H/H';
 import Button from '../../../ui/Button/Button';
 import IoConfigField from '../../IoConfigField/IoConfigField';
-import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, StringMapItem, PathToConnectorType, PathToConnector } from '../configurationsFields';
+import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, PathToConnectorType, PathToConnector } from '../configurationsFields';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 

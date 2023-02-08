@@ -13,8 +13,8 @@ services:
     volumes:
       - $PWD/cases:/cases
       - $PWD/entrypoint.sh:/entrypoint.sh
-      - $PWD/pulsar/connectors/avro-schema.json:/pulsar/connectors/avro-schema.json
-      - $PWD/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml:/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml
+      # - $PWD/pulsar/connectors/avro-schema.json:/pulsar/connectors/avro-schema.json
+      # - $PWD/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml:/pulsar/connectors/pulsar-postgres-jdbc-sink.yaml
   postgresql:
     image: postgres
     container_name: postgresdb

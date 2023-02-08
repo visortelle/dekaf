@@ -395,7 +395,10 @@ export const configurations: Configurations = {
   tenant: 'public',
   namespace: 'default',
   name: 'users',
-  pathToConnector: { type: 'url', path: 'https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-jdbc-postgres-2.11.0.nar'},
+  pathToConnector: {
+    type: 'url',
+    path: 'https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-jdbc-postgres-2.11.0.nar'
+  },
   inputs: [
     'persistent://public/default/users'
   ],
@@ -407,28 +410,11 @@ export const configurations: Configurations = {
   topicsPattern: '',
   topicToSchemaProperties: {},
   inputsSpecs: {
-    'firstInput': {
+    'ExampleSchema': {
       name: 'New',
-      schemaType: '',
+      schemaType: 'AVRO',
       serdeClassName: '',
-      schemaProperties: {
-        0: {
-          name: "id",
-          value: "int"
-        },
-        1: {
-          name: "name",
-          value: "string"
-        },
-        2: {
-          name: "age",
-          value: "int"
-        },
-        3: {
-          name: "address",
-          value: "string"
-        }
-      },
+      schemaProperties: {},
       consumerProperties: {},
       receiverQueueSize: 0,
       poolMessages: false,
@@ -458,7 +444,8 @@ export const configurations: Configurations = {
   className: '',
   topicToSerdeClassName: {},
   topicToSchemaType: {},
-  configs: '{ \"userName\": \"postgres@sql.com\", \"password\": \"postgres@sql.com\", \"jdbcUrl\": \"jdbc:postgresql://localhost:5432/postgres\", \"tableName\": \"users\"}',
+  // configs: '',
+  configs: '{ \"userName\": \"postgres\", \"password\": \"postgres\", \"jdbcUrl\": \"jdbc:postgresql://localhost:5432/postgres\", \"tableName\": \"users\"}',
   secrets: '',
   resources: { cpu: 0, ram: 0, disk: 0 },
   archive: '',

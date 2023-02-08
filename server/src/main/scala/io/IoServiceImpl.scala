@@ -21,17 +21,15 @@ import com.google.gson.JsonParser
 
 import java.util.UUID
 import scala.collection.mutable
-
-import io.circe.parser._
+import io.circe.parser.*
 import io.circe.{Decoder, Encoder, Json}
 import io.circe.parser.*
 import io.circe.syntax.*
 import io.circe.parser.*
 import io.circe.generic.semiauto.*
-import io.circe._
-import io.circe.generic.semiauto._
-import io.circe.syntax._
-
+import io.circe.*
+import io.circe.generic.semiauto.*
+import io.circe.syntax.*
 
 class IoServiceImpl extends pb.IoServiceGrpc.IoService:
     val logger: Logger = Logger(getClass.getName)
@@ -87,7 +85,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         objectMap += (key -> SinkConfig.builder().configs(obj.toMap.asJava))
                     case None => objectMap += (key -> json.toString)
             )
-        println(objectMap.asJava)
         objectMap.asJava
     }
 
@@ -140,7 +137,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                     val convertedInputSpecs = Map[String, ConsumerConfig]()
                     v.inputSpecs.foreach((specs, configs) =>
                         convertedInputSpecs + (specs -> ConsumerConfig(
-                            schemaType = configs.schemaType,
+                            schemaType = configs.schemaType, //TODO should be org.apache.pulsar.common.schema.SchemaType
                             serdeClassName = configs.serdeClassName,
                             isRegexPattern = configs.isRegexPattern,
                             schemaProperties = configs.schemaProperties.asJava,
@@ -196,11 +193,11 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                     v.pathToConnector match
                         case Some(v) =>
                             if (pathToConnectorFromPb(v.`type`) == "url") {
-                                println(v.path)
                                 adminClient.sinks.createSinkWithUrl(sinkConfig, v.path)
                             } else {
                                 adminClient.sinks.createSink(sinkConfig, v.path)
                             }
+
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.CreateSinkResponse(status = Some(status)))
