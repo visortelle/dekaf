@@ -7,9 +7,11 @@ import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/Pulsar
 import { H3 } from '../../../ui/H/H';
 import Button from '../../../ui/Button/Button';
 import IoConfigField from '../../IoConfigField/IoConfigField';
-import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, PathToConnectorType, PathToConnector } from '../configurationsFields';
+import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, PathToConnectorType, PathToConnector, StringMapItem } from '../configurationsFields';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+
+import createIcon from '../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/create.svg';
 
 import s from './CreateSinks.module.css';
 
@@ -70,14 +72,14 @@ const CreateSinks = () => {
   }
 
   const onChange = (configurations: Configurations) => {
-    setConfigurations(configurations)
+    setConfigurations(configurations);
   }
 
   const expandMap = (key: string) => {
 
     if (key === 'inputsSpecs') {
       const newMap =  _.cloneDeep(configurations);
-      const defaultdata = Object.keys(defaultConfigurations[key])[0]
+      const defaultdata = Object.keys(defaultConfigurations[key])[0];
       newMap[key] = {
         ...newMap[key],
         [uuid()]: defaultConfigurations[key][defaultdata]
@@ -86,10 +88,15 @@ const CreateSinks = () => {
     }
   }
 
+  const isComplexString = (configurationValue: ConfigurationValue | StringMapItem): configurationValue is string | string[] | StringMapItem => {
+    if (typeof(configurationValue) !== 'number' && typeof(configurationValue) !== 'boolean' && ((typeof(configurationValue) === 'object' && Array.isArray(configurationValue)) || typeof(configurationValue) === 'string' || Array.isArray(configurationValue))) {
+      return true;
+    } else return false;
+  }
 
   const isPathToConnector = (configurationValue: ConfigurationValue): configurationValue is PathToConnector => {
     if (typeof(configurationValue) === 'string' || typeof(configurationValue) === 'number' || typeof(configurationValue) === 'boolean' || Array.isArray(configurationValue) ){
-      return false
+      return false;
     }
 
     return configurationValue.path ? true : false;
@@ -101,22 +108,11 @@ const CreateSinks = () => {
     if (configurationName === 'inputsSpecs') {
       if (attachmentName) {
         const X = newMap[configurationName][configurationKey][keyName];
-        if (
-          typeof(X) === 'object' &&
-          typeof(value) !== 'number' &&
-          typeof(value) !== 'boolean' && 
-          (
-            (typeof(value) === 'object' && Array.isArray(value)) ||
-            typeof(value) === 'string' ||
-            Array.isArray(value)
-          )
-        ) {
+        if (typeof(X) === 'object' && isComplexString(value)) {
           X[attachmentName] = value;
         }
       } else {
-        if (!Array.isArray(value) &&
-          !(isPathToConnector(value))
-        ) {
+        if (!Array.isArray(value) && !isPathToConnector(value)) {
           newMap[configurationName][configurationKey][keyName] = value;
         }
       }
@@ -177,14 +173,14 @@ const CreateSinks = () => {
       inputsSpecs.setSerdeClassName(value.serdeClassName);
 
       Object.entries(value.schemaProperties).map(([_, value]) => {
-        inputsSpecs.getSchemaPropertiesMap().set(value.name, value.value)
+        inputsSpecs.getSchemaPropertiesMap().set(value.name, value.value);
       })
 
       Object.entries(value.consumerProperties).map(([_, value]) => {
-        inputsSpecs.getConsumerPropertiesMap().set(value.name, value.value)
+        inputsSpecs.getConsumerPropertiesMap().set(value.name, value.value);
       })
 
-      sinkConfig.getInputSpecsMap().set(value.name, inputsSpecs)
+      sinkConfig.getInputSpecsMap().set(value.name, inputsSpecs);
     })
     
     sinkConfig.setMaxMessageRetries(configurations.maxMessageRetries);
@@ -212,8 +208,12 @@ const CreateSinks = () => {
     sinkConfig.setCustomRuntimeOptions(configurations.customRuntimeOptions);
 
     const pathToConnector = new pb.PathToConnector();
-    pathToConnector.setPath(configurations.pathToConnector.path);
     pathToConnector.setType(pathToConnectorToPb(configurations.pathToConnector.type))
+    if (configurations.pathToConnector.type === 'url') {
+      pathToConnector.setPath(`https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-${configurations.pathToConnector.path}-2.11.0.nar`); 
+    } else {
+      pathToConnector.setPath(configurations.pathToConnector.path);
+    }
     sinkConfig.setPathToConnector(pathToConnector);
 
     req.setSinkConfig(sinkConfig);
@@ -222,8 +222,6 @@ const CreateSinks = () => {
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to create sink. ${res.getStatus()?.getMessage()}`);
       return;
-    } else {
-      console.log("created")
     }
   }
 
@@ -278,9 +276,12 @@ const CreateSinks = () => {
 
           {configuration.type === 'map' && typeof(configuration.mapType) === 'object' &&
             <div className={s.CreateSinkInput}>
-              <div onClick={() => expandMap(configuration.name)}>
-                +Object map
-              </div>
+              <Button
+                svgIcon={createIcon}
+                onClick={() => expandMap(configuration.name)}
+                type='primary'
+                title="Create object map"
+              />
               {Object.keys(configurations[configuration.name]).map(configurationKey => (
                 <div key={configurationKey}>
                   {configuration.mapType && configuration.mapType !== 'string' && configuration.mapType.map(key => (

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
+import * as Either from 'fp-ts/lib/Either';
 
 import Checkbox from '../../ui/Checkbox/Checkbox';
 import CodeEditor from '../../ui/CodeEditor/CodeEditor';
@@ -8,7 +9,13 @@ import DurationInput from '../../ui/ConfigurationTable/DurationInput/DurationInp
 import MemorySizeInput from '../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import Input from '../../ui/Input/Input';
 import Select from '../../ui/Select/Select';
-import { Configurations, ConfigurationValue, PathToConnector, StringMap } from '../Sinks/configurationsFields';
+import { Configurations, ConfigurationValue, ConsumerConfigMap, PathToConnector, Resources, StringMap } from '../Sinks/configurationsFields';
+import Button from '../../ui/Button/Button';
+
+
+import createIcon from '../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/create.svg';
+import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
+import KeyValueEditor, { KeyValues } from '../../ui/KeyValueEditor/KeyValueEditor';
 
 export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector';
 
@@ -25,10 +32,7 @@ export type IoConfigField = {
 
 export type IoConfigFieldProps = IoConfigField & {
   value: ConfigurationValue,
-  // value: any,
-  // onChange: (value: string[] | string | StringMap | number | boolean) => void,
   onChange: (value: string[] | string | StringMap | PathToConnector | number | boolean) => void,
-  // onChange: (value: any) => void,
   configurations: Configurations
 }
 
@@ -37,26 +41,31 @@ const IoConfigField = (props: IoConfigFieldProps) => {
   const [pathToConnectorType, setPathToConnectorType] = useState('url');
   const connectors = ['aerospike', 'batch-data-generator', 'canal', 'cassandra', 'data-generator', 'debezium-mongodb', 'debezium-mssql', 'debezium-mysql', 'debezium-oracle', 'debezium-postgres', 'dynamodb', 'elastic-search', 'file', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'kafka-connect-adaptor', 'kinesis', 'mongo', 'netty', 'nsq', 'rabbitmq', 'redis', 'solr', 'twitter'];
 
-  const expandArray = () => {
-    let expandedArray: string[] = [...props.configurations[props.name] as string[], ''];
-    props.onChange(expandedArray);
-  }
-
-  const changeArray = (eArray: string, index: number) => {
+  const addToArray = (eArray: string) => {
     const newArray = _.cloneDeep(props.configurations[props.name] as string[]);
-    newArray[index] = eArray;
+    newArray.push(eArray);
     props.onChange(newArray);
   }
 
-  const expandMap = () => {
-    if (
-        props.name === 'topicToSerdeClassName' ||
-        props.name === 'topicToSchemaType' ||
-        props.name === 'topicToSchemaProperties' ||
-        props.name === 'schemaProperties' ||
-        props.name === 'consumerProperties'
-    ) {
+  const removeFromArray = (eArray: string) => {
+    const newArray = _.cloneDeep(props.configurations[props.name] as string[]);
+    newArray.splice(newArray.indexOf(eArray), 1);
+    props.onChange(newArray);
+  }
 
+  const validateArray = (v: string) => {
+    const newArray = _.cloneDeep(props.configurations[props.name] as string[]);
+    const index = newArray.indexOf(v);
+
+    if (index !== -1) {
+      return  Either.left(new Error('Elements must not be repeated'));
+    } else {
+      return Either.right(undefined);
+    }
+  }
+
+  const expandMap = () => {
+    if (props.name === 'topicToSerdeClassName' || props.name === 'topicToSchemaType' || props.name === 'topicToSchemaProperties' || props.name === 'schemaProperties' || props.name === 'consumerProperties' ) {
       let expandedMap = {
         ...props.configurations[props.name] as StringMap,
         [uuid()]: {
@@ -73,6 +82,13 @@ const IoConfigField = (props: IoConfigFieldProps) => {
     const newMap = _.cloneDeep(props.configurations[props.name] as StringMap);
     newMap[key][property] = eMap;
     props.onChange(newMap);
+  }
+
+  const isKeyValue = (data: StringMap | ConsumerConfigMap | Resources | PathToConnector): data is StringMap => {
+    if (data.type || data.path) {
+      return false;
+    }
+    return true;
   }
 
   return (
@@ -109,6 +125,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
                 props.onChange({ path: props.value.path, type: v })
             }}
           />
+
           {pathToConnectorType === 'url' &&
             <Select
               list={connectors.map(subject => {
@@ -119,11 +136,12 @@ const IoConfigField = (props: IoConfigFieldProps) => {
                 typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
                   props.onChange({
                     type: props.value.type,
-                    path:`https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-${v}-2.11.0.nar`
+                    path:v,
                   })
               }}
             />
           }
+          
           {pathToConnectorType === 'folder' &&
             <Input
               type='text'
@@ -177,32 +195,33 @@ const IoConfigField = (props: IoConfigFieldProps) => {
 
       {props.type === 'array' && Array.isArray(props.value) &&
         <div>
-          <div onClick={() => expandArray()}>
-            +array
-          </div>
+          <ListInput<string>
+            value={props.value}
+            getId={(v) => v}
+            renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
+            editor={{
+              render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="Enter new role" />,
+              initialValue: '',
+            }}
+            onRemove={(v) => removeFromArray(v)}
+            onAdd={(v) => addToArray(v)}
+            validate={(v) => validateArray(v)}
+          />
 
-          {props.value.map((value, index) => (
-            <Input
-              key={index}
-              type='text'
-              value={value}
-              onChange={(v) => changeArray(v, index)}
-            />
-          ))}
         </div>
       }
 
-      {props.type === 'map' &&
+      {props.type === 'map' && typeof(props.value) === 'object' && !Array.isArray(props.value) && isKeyValue(props.value) &&
         <div>
-          <div onClick={() => expandMap()}>
-            +map
-          </div>
+          {/* <Button
+            svgIcon={createIcon}
+            onClick={() => expandMap()}
+            type='primary'
+            title="Create object map"
+          />
+
           {Object.keys(props.value).map((key) => {
-            if (
-              typeof(props.value) === 'object' &&
-              !Array.isArray(props.value) &&
-              typeof(props.value[key]) !== 'number'
-            ) {
+            if (typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value[key]) !== 'number') {
               const keyReference = props.value[key]
 
               if (typeof(keyReference) !== 'number' && typeof(keyReference) !== 'string' && typeof(keyReference.value) === 'string'){
@@ -222,7 +241,11 @@ const IoConfigField = (props: IoConfigFieldProps) => {
                 )
               }
             }
-          })}
+          })} */}
+
+          <KeyValueEditor
+            value={props.value}
+          />
         </div>
       }
 

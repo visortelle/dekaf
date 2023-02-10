@@ -35,7 +35,7 @@ export const configurationsFields: IoConfigField[] = [
     name: 'inputs',
     type: 'array',
     isRequired: true,
-    help: 'help',
+    help: 'list topics',
   },
   {
     name: 'pathToConnector',
@@ -160,6 +160,12 @@ export const configurationsFields: IoConfigField[] = [
         help: 'help',
       },
     ]
+  },
+  {
+    name: 'sinkType',
+    type: 'string',
+    isRequired: false,
+    help: 'help',
   },
   {
     name: 'maxMessageRetries',
@@ -318,7 +324,7 @@ type CryptoConfig = {
   consumerCryptoFailureAction: 'fail' | 'discard' | 'consume',
 }
 
-type ConsumerConfig = {
+export type ConsumerConfig = {
   [key: string]: string | number | boolean | StringMap | CryptoConfig,
   name: string,
   schemaType: string,
@@ -331,7 +337,7 @@ type ConsumerConfig = {
   cryptoConfig: CryptoConfig,
 }
 
-type ConsumerConfigMap = {
+export type ConsumerConfigMap = {
   [key: string]: ConsumerConfig
 }
 
@@ -359,9 +365,6 @@ export type Configurations = {
   name: string,
   pathToConnector: PathToConnector,
   inputs: string[],
-
-  //unrequired
-
   sourceSubscriptionName: string,
   sourceSubscriptionPosition: 'latest' | 'earliest',
   topicsPattern: string,
@@ -377,9 +380,7 @@ export type Configurations = {
   timeoutMs: number,
   negativeAckRedeliveryDelayMs: number,
   cleanupSubscription: boolean,
-  
-  //advanced
-
+  sinkType: string,
   className: string,
   topicToSerdeClassName: StringMap,
   topicToSchemaType: StringMap,
@@ -397,14 +398,11 @@ export const configurations: Configurations = {
   name: 'users',
   pathToConnector: {
     type: 'url',
-    path: 'https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-jdbc-postgres-2.11.0.nar'
+    path: 'jdbc-postgres'
   },
   inputs: [
-    'persistent://public/default/users'
+    'users-topic'
   ],
-
-  //unrequired
-
   sourceSubscriptionName: '',
   sourceSubscriptionPosition: 'latest',
   topicsPattern: '',
@@ -419,7 +417,7 @@ export const configurations: Configurations = {
       receiverQueueSize: 0,
       poolMessages: false,
       isRegexPattern: false,
-      cryptoConfig: {  // make me
+      cryptoConfig: {
         cryptoKeyReaderClassName: '',
         cryptoKeyReaderConfig: '',
         encryptionKeys: [],
@@ -428,24 +426,21 @@ export const configurations: Configurations = {
       },
     },
   },
+  sinkType: '',
   maxMessageRetries: 0,
   deadLetterTopic: '',
   parallelism: 0,
-  processingGuarantees: 'atleast_once',
+  processingGuarantees: 'atmost_once',
   retainOrdering: false,
   retainKeyOrdering: false,
-  autoAck: false,
+  autoAck: true,
   timeoutMs: 0,
   negativeAckRedeliveryDelayMs: 0,
-  cleanupSubscription: false,
-
-  //advanced
-
+  cleanupSubscription: true,
   className: '',
   topicToSerdeClassName: {},
   topicToSchemaType: {},
-  // configs: '',
-  configs: '{ \"userName\": \"postgres\", \"password\": \"postgres\", \"jdbcUrl\": \"jdbc:postgresql://localhost:5432/postgres\", \"tableName\": \"users\"}',
+  configs: '{ \"userName\": \"postgres\", \"password\": \"postgres\", \"jdbcUrl\": \"jdbc:postgresql://postgresql:5432/postgres\", \"tableName\": \"users\"}',
   secrets: '',
   resources: { cpu: 0, ram: 0, disk: 0 },
   archive: '',

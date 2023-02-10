@@ -1,18 +1,20 @@
 import React from 'react';
-import s from './Configuration.module.css'
+import * as Either from 'fp-ts/lib/Either';
 import useSWR, { useSWRConfig } from 'swr';
-import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
+
 import * as Notifications from '../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as Either from 'fp-ts/lib/Either';
 import Input from '../../ui/ConfigurationTable/Input/Input';
 import SelectInput, { ListItem } from '../../ui/ConfigurationTable/SelectInput/SelectInput';
+import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
+import { H1 } from '../../ui/H/H';
 import { swrKeys } from '../../swrKeys';
 import { ListClustersRequest } from '../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/cluster_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { GetTenantRequest, TenantInfo, UpdateTenantRequest } from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
-import { H1 } from '../../ui/H/H';
+
+import s from './Configuration.module.css'
 
 export type ConfigurationProps = {
   tenant: string

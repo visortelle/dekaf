@@ -7,5 +7,5 @@ sinkType: "jdbc-postgres"
 configs:
   userName: "postgres"
   password: "postgres"
-  jdbcUrl: "jdbc:postgresql://localhost:5432/postgres"
+  jdbcUrl: "jdbc:postgresql://postgresql:5432/postgres"
   tableName: "users"
