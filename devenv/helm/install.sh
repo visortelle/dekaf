@@ -4,13 +4,26 @@ set -xeo pipefail
 
 this_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
+helm repo add apache https://pulsar.apache.org/charts
+
 ns="pulsar-devenv"
 helm_release="pulsar-devenv"
 
-rm -rf "${this_dir}/pulsar-helm-chart"
-git clone --depth 1 https://github.com/tealtools/pulsar-helm-chart -b tealtools-fixes --single-branch "${this_dir}/pulsar-helm-chart"
-"${this_dir}/pulsar-helm-chart/scripts/pulsar/prepare_helm_release.sh" -n "${ns}" -k "${helm_release}"
+set +e;
+kubectl get namespace "${ns}" &>/dev/null;
+exit_code=$?
+set -e;
+is_fresh_install=$(if [[ "$exit_code" -eq 0 ]]; then echo "false"; else echo "true"; fi)
+echo "Is fresh install? ${is_fresh_install}"
 
-helm upgrade "${helm_release}" "${this_dir}/pulsar-helm-chart/charts/pulsar" --install --force -n "${ns}" -f "${this_dir}/values.yaml"
+"${this_dir}/prepare_helm_release.sh" -n "${ns}" -c -k "${helm_release}" --pulsar-superusers 'admin-1,admin-2'
 
-rm -rf "${this_dir}/pulsar-helm-chart"
+helm \
+  upgrade "${helm_release}" apache/pulsar \
+  --install \
+  --force \
+  --set initialize="${is_fresh_install}" \
+  --set clusterName="${helm_release}" \
+  --version "3.0.0" \
+  -n "${ns}" \
+  -f "${this_dir}/values.yaml"
