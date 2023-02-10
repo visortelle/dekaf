@@ -1,20 +1,38 @@
 .CreateSinks {
-  
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20rem;
 }
 
 .CreateSinksField {
   width: 100%;
   display: flex;
-  margin: 20rem;
+  flex-wrap: wrap;
+  margin-bottom: 12rem;
 }
-.CreateSinksField > h3 {
-  width: 40%;
+.CreateSinksField:last-child {
+  margin-bottom: 0;
 }
 
 .CreateSinkInput {
-  width: calc(60% - 40rem);
+  width: 60%;
+}
+
+.CreateSinkMapObject {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12rem;
+}
+.CreateSinkAttachments {
+  width: 60%;
 }
 
 .HideUnrequired {
   display: none;
+}
+.Label {
+  font-size: 14rem;
+  font-weight: bold;
+  width: 40%;
 }

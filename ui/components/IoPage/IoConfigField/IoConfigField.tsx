@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
-import { v4 as uuid } from 'uuid';
 import * as Either from 'fp-ts/lib/Either';
 
 import Checkbox from '../../ui/Checkbox/Checkbox';
@@ -10,12 +9,12 @@ import MemorySizeInput from '../../ui/ConfigurationTable/MemorySizeInput/MemoryS
 import Input from '../../ui/Input/Input';
 import Select from '../../ui/Select/Select';
 import { Configurations, ConfigurationValue, ConsumerConfigMap, PathToConnector, Resources, StringMap } from '../Sinks/configurationsFields';
-import Button from '../../ui/Button/Button';
 
-
-import createIcon from '../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/create.svg';
 import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
-import KeyValueEditor, { KeyValues } from '../../ui/KeyValueEditor/KeyValueEditor';
+import KeyValueEditor from '../../ui/KeyValueEditor/KeyValueEditor';
+import FormItem from '../../ui/ConfigurationTable/FormItem/FormItem';
+
+import sf from '../../ui/ConfigurationTable/form.module.css';
 
 export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector';
 
@@ -23,6 +22,7 @@ export type IoConfigField = {
   name: string,
   isRequired: boolean,
   help: string | React.ReactNode,
+  label: string,
   type: IoConfigFieldType,
 
   enum?: string[],
@@ -64,26 +64,6 @@ const IoConfigField = (props: IoConfigFieldProps) => {
     }
   }
 
-  const expandMap = () => {
-    if (props.name === 'topicToSerdeClassName' || props.name === 'topicToSchemaType' || props.name === 'topicToSchemaProperties' || props.name === 'schemaProperties' || props.name === 'consumerProperties' ) {
-      let expandedMap = {
-        ...props.configurations[props.name] as StringMap,
-        [uuid()]: {
-          name: '',
-          value: ''
-        }
-      }
-
-      props.onChange(expandedMap);
-    }
-  }
-
-  const changeMap = (eMap: string, property: 'name' | 'value',  key: string) => {
-    const newMap = _.cloneDeep(props.configurations[props.name] as StringMap);
-    newMap[key][property] = eMap;
-    props.onChange(newMap);
-  }
-
   const isKeyValue = (data: StringMap | ConsumerConfigMap | Resources | PathToConnector): data is StringMap => {
     if (data.type || data.path) {
       return false;
@@ -92,7 +72,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
   }
 
   return (
-    <div>
+    <>
       {props.type === 'enum' && props.enum && typeof(props.value) === 'string' && 
         <Select
           list={props.enum.map(subject => {
@@ -113,18 +93,20 @@ const IoConfigField = (props: IoConfigFieldProps) => {
 
       {props.type === 'pathToConnector' && typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
         <div>
-          <Select
-            list={[
-              { type: 'item', value: 'url', title: 'url' },
-              { type: 'item', value: 'folder', title: 'folder' },
-            ]}
-            value={props.value.type}
-            onChange={(v) => {
-              setPathToConnectorType(v)
-              typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
-                props.onChange({ path: props.value.path, type: v })
-            }}
-          />
+          <div className={sf.FormItem}>
+            <Select
+              list={[
+                { type: 'item', value: 'url', title: 'url' },
+                { type: 'item', value: 'folder', title: 'folder' },
+              ]}
+              value={props.value.type}
+              onChange={(v) => {
+                setPathToConnectorType(v)
+                typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+                  props.onChange({ path: props.value.path, type: v })
+              }}
+            />
+          </div>
 
           {pathToConnectorType === 'url' &&
             <Select
@@ -194,62 +176,27 @@ const IoConfigField = (props: IoConfigFieldProps) => {
       }
 
       {props.type === 'array' && Array.isArray(props.value) &&
-        <div>
-          <ListInput<string>
-            value={props.value}
-            getId={(v) => v}
-            renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
-            editor={{
-              render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="Enter new role" />,
-              initialValue: '',
-            }}
-            onRemove={(v) => removeFromArray(v)}
-            onAdd={(v) => addToArray(v)}
-            validate={(v) => validateArray(v)}
-          />
-
-        </div>
+        <ListInput<string>
+          value={props.value}
+          getId={(v) => v}
+          renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
+          editor={{
+            render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="Enter new role" />,
+            initialValue: '',
+          }}
+          onRemove={(v) => removeFromArray(v)}
+          onAdd={(v) => addToArray(v)}
+          validate={(v) => validateArray(v)}
+        />
       }
 
       {props.type === 'map' && typeof(props.value) === 'object' && !Array.isArray(props.value) && isKeyValue(props.value) &&
-        <div>
-          {/* <Button
-            svgIcon={createIcon}
-            onClick={() => expandMap()}
-            type='primary'
-            title="Create object map"
-          />
-
-          {Object.keys(props.value).map((key) => {
-            if (typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value[key]) !== 'number') {
-              const keyReference = props.value[key]
-
-              if (typeof(keyReference) !== 'number' && typeof(keyReference) !== 'string' && typeof(keyReference.value) === 'string'){
-                return (
-                  <div key={key}>
-                    <Input
-                      value={keyReference.name}
-                      onChange={(v) => changeMap(v, 'name', key)}
-                      type='text'
-                    />
-                    <Input
-                      value={keyReference.value}
-                      onChange={(v) => changeMap(v, 'value', key)}
-                      type='text'
-                    />
-                  </div>
-                )
-              }
-            }
-          })} */}
-
-          <KeyValueEditor
-            value={props.value}
-          />
-        </div>
+        <KeyValueEditor
+          value={props.value}
+          onChange={(v) => props.onChange(v)}
+        />
       }
-
-    </div>
+    </>
   )
 }
 

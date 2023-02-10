@@ -107,7 +107,7 @@ const KeyValueView = (props: Props) => {
 
       <div className={s.Rows}>
         {convertedKeyValues.map((keyValue, index) => (
-          <div className={`${s.Row}`}>
+          <div key={index} className={`${s.Row}`}>
             <div className={`${s.Field}`}>
               <Input
                 isSmall

@@ -18,42 +18,49 @@ export const configurationsFields: IoConfigField[] = [
     type: 'string',
     isRequired: true,
     help: 'help',
+    label: 'Tenant',
   },
   {
     name: 'namespace',
     type: 'string',
     isRequired: true,
     help: 'help',
+    label: 'Namespace',
   },
   {
     name: 'name',
     type: 'string',
     isRequired: true,
     help: 'help',
+    label: 'Sink name',
   },
   {
     name: 'inputs',
     type: 'array',
     isRequired: true,
     help: 'list topics',
+    label: 'Topics',
   },
   {
     name: 'pathToConnector',
     type: 'pathToConnector',
     isRequired: true,
     help: 'help',
+    label: 'Path to connector',
   },
   {
     name: 'sourceSubscriptionName',
     type: 'string',
     isRequired: false,
     help: 'help',
+    label: 'Source subscription name',
   },
   {
     name: 'sourceSubscriptionPosition',
     type: 'enum',
     isRequired: false,
     help: 'help',
+    label: 'Source subscription position',
     enum: SUBSCRIPTION_INITIAL_POSITION,
   }, 
   {
@@ -61,12 +68,14 @@ export const configurationsFields: IoConfigField[] = [
     type: 'string',
     isRequired: false,
     help: 'help',
+    label: 'Topics pattern',
   },
   {
     name: 'topicToSchemaProperties',
     type: 'map',
     isRequired: false,
     help: 'help',
+    label: 'Topics to schema properties',
     mapType: 'string',
   }, 
   {
@@ -74,24 +83,28 @@ export const configurationsFields: IoConfigField[] = [
     type: 'map',
     isRequired: false,
     help: 'help',
+    label: 'Inputs specs',
     mapType: [
       {
         name: 'schemaType',
         type: 'string',
         isRequired: false,
         help: 'help',
+        label: 'Schema type',
       },
       {
         name: 'serdeClassName',
         type: 'string',
         isRequired: false,
         help: 'help',
+        label: 'Serde class name',
       },
       {
         name: 'isRegexPattern',
         type: 'boolean',
         isRequired: false,
         help: 'help',
+        label: 'Is regex pattern',
       },
       {
         name: 'schemaProperties',
@@ -99,6 +112,7 @@ export const configurationsFields: IoConfigField[] = [
         isRequired: false,
         help: 'help',
         mapType: 'string',
+        label: 'Schema properties',
       },
       {
         name: 'consumerProperties',
@@ -106,42 +120,49 @@ export const configurationsFields: IoConfigField[] = [
         isRequired: false,
         help: 'help',
         mapType: 'string',
+        label: 'Consumer properties',
       },
       {
         name: 'receiverQueueSize',
         type: 'int',
         isRequired: false,
         help: 'help',
+        label: 'Receiver queue size',
       },
       {
         name: 'cryptoConfig',
         type: 'attachments',
         isRequired: false,
         help: 'help',
+        label: 'Crypto config',
         attachments: [
           {
             name: 'cryptoKeyReaderClassName',
             type: 'string',
             isRequired: false,
             help: 'help',
+            label: 'Crypto key reader class name',
           },
           {
             name: 'cryptoKeyReaderConfig',
             type: 'json',
             isRequired: false,
             help: 'help',
+            label: 'Crypto key reader config',
           },
           {
             name: 'encryptionKeys',
             type: 'array',
             isRequired: false,
             help: 'help',
+            label: 'Encryption keys',
           },
           {
             name: 'producerCryptoFailureAction',
             type: 'enum',
             isRequired: false,
             help: 'help',
+            label: 'Producer crypto failure action',
             enum: PRODUCER_CRYPTO_FAILURE_ACTION,
           },
           {
@@ -149,6 +170,7 @@ export const configurationsFields: IoConfigField[] = [
             type: 'enum',
             isRequired: false,
             help: 'help',
+            label: 'Consumer crypto failure action',
             enum: CONSUMER_CRYPTO_FAILURE_ACTION,
           },
         ]
@@ -158,6 +180,7 @@ export const configurationsFields: IoConfigField[] = [
         type: 'boolean',
         isRequired: false,
         help: 'help',
+        label: 'Pool messages',
       },
     ]
   },
@@ -166,30 +189,35 @@ export const configurationsFields: IoConfigField[] = [
     type: 'string',
     isRequired: false,
     help: 'help',
+    label: 'Sink type',
   },
   {
     name: 'maxMessageRetries',
     type: 'int',
     isRequired: false,
     help: 'help',
+    label: 'Max message retries',
   },
   {
     name: 'deadLetterTopic',
     type: 'string',
     isRequired: false,
     help: 'help',
+    label: 'Dead letter topic',
   },
   {
     name: 'parallelism',
     type: 'int',
     isRequired: false,
     help: 'help',
+    label: 'Parallelism',
   },
   {
     name: 'processingGuarantees',
     type: 'enum',
     isRequired: false,
     help: 'help',
+    label: 'Processing guarantees',
     enum: PROCESSING_GUARANTEES,
   },
   {
@@ -197,42 +225,49 @@ export const configurationsFields: IoConfigField[] = [
     type: 'boolean',
     isRequired: false,
     help: 'help',
+    label: 'Retain ordering',
   },
   {
     name: 'retainKeyOrdering',
     type: 'boolean',
     isRequired: false,
     help: 'help',
+    label: 'Retain key ordering',
   },
   {
     name: 'autoAck',
     type: 'boolean',
     isRequired: false,
     help: 'help',
+    label: 'Auto ack',
   },
   {
     name: 'timeoutMs',
     type: 'duration',
     isRequired: false,
     help: 'help',
+    label: 'Timeout',
   },
   {
     name: 'negativeAckRedeliveryDelayMs',
     type: 'duration',
     isRequired: false,
     help: 'help',
+    label: 'Negative ack redelivery delay'
   },
   {
     name: 'cleanupSubscription',
     type: 'boolean',
     isRequired: false,
     help: 'help',
+    label: 'Cleanup subscription',
   },
   {
     name: 'className',
     type: 'string',
     isRequired: false,
     help: 'help',
+    label: 'Class name',
   },
   {
     name: 'topicToSerdeClassName',
@@ -240,6 +275,7 @@ export const configurationsFields: IoConfigField[] = [
     isRequired: false,
     help: 'help',
     mapType: 'string',
+    label: 'Topic to serde class name',
   }, 
   {
     name: 'topicToSchemaType',
@@ -247,42 +283,49 @@ export const configurationsFields: IoConfigField[] = [
     isRequired: false,
     help: 'help',
     mapType: 'string',
+    label: 'Topic to schema type',
   }, 
   {
     name: 'configs',
     type: 'json',
     isRequired: false,
     help: 'help',
+    label: 'Configs',
   },
   {
     name: 'secrets',
     type: 'json',
     isRequired: false,
     help: 'help',
+    label: 'Secrets',
   },
   {
     name: 'resources',
     type: 'attachments',
     isRequired: false,
     help: 'help',
+    label: 'Resources',
     attachments: [
       {
         name: 'cpu',
         type: 'int',
         isRequired: false,
         help: 'help',
+        label: 'CPU',
       },
       {
         name: 'ram',
         type: 'bytes',
         isRequired: false,
         help: 'help',
+        label: 'RAM',
       },
       {
         name: 'disk',
         type: 'bytes',
         isRequired: false,
         help: 'help',
+        label: 'Disk',
       },
     ]
   },
@@ -291,28 +334,26 @@ export const configurationsFields: IoConfigField[] = [
     type: 'string',
     isRequired: false,
     help: 'help',
+    label: 'Archive',
   },
   {
     name: 'runtimeFlags',
     type: 'string',
     isRequired: false,
     help: 'help',
+    label: 'Runtime flags',
   },
   {
     name: 'customRuntimeOptions',
     type: 'string',
     isRequired: false,
     help: 'help',
+    label: 'Custom runtime options',
   },
 ]
 
-export type StringMapItem = {
-  [key: string]: string,
-  name: string,
-  value: string,
-}
 export type StringMap = {
-  [key: string]: StringMapItem,
+  [key: string]: string,
 }
 
 type CryptoConfig = {

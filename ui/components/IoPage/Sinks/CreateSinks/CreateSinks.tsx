@@ -4,16 +4,18 @@ import _ from 'lodash';
 
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import { H3 } from '../../../ui/H/H';
 import Button from '../../../ui/Button/Button';
 import IoConfigField from '../../IoConfigField/IoConfigField';
-import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, PathToConnectorType, PathToConnector, StringMapItem } from '../configurationsFields';
+import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, PathToConnectorType, PathToConnector } from '../configurationsFields';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
-import createIcon from '../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/create.svg';
-
 import s from './CreateSinks.module.css';
+import sl from '../../../ui/ConfigurationTable/ListInput/ListInput.module.css';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
+
 
 const CreateSinks = () => {
 
@@ -88,7 +90,7 @@ const CreateSinks = () => {
     }
   }
 
-  const isComplexString = (configurationValue: ConfigurationValue | StringMapItem): configurationValue is string | string[] | StringMapItem => {
+  const isComplexString = (configurationValue: ConfigurationValue): configurationValue is string | string[] => {
     if (typeof(configurationValue) !== 'number' && typeof(configurationValue) !== 'boolean' && ((typeof(configurationValue) === 'object' && Array.isArray(configurationValue)) || typeof(configurationValue) === 'string' || Array.isArray(configurationValue))) {
       return true;
     } else return false;
@@ -142,19 +144,19 @@ const CreateSinks = () => {
     sinkConfig.setSourceSubscriptionPosition(sourceSubscriptionPositionToPb(configurations.sourceSubscriptionPosition));
     sinkConfig.setInputsList(configurations.inputs);
 
-    Object.entries(configurations.topicToSerdeClassName).map(([_, value]) => {
-      sinkConfig.getTopicToSerdeClassNameMap().set(value.name, value.value);
-    });
+    // Object.entries(configurations.topicToSerdeClassName).map(([_, value]) => {
+    //   sinkConfig.getTopicToSerdeClassNameMap().set(value.name, value.value);
+    // });
 
-    sinkConfig.setTopicsPattern(configurations.topicsPattern);
+    // sinkConfig.setTopicsPattern(configurations.topicsPattern);
 
-    Object.entries(configurations.topicToSchemaType).map(([_, value]) => {
-      sinkConfig.getTopicToSchemaTypeMap().set(value.name, value.value);
-    });
+    // Object.entries(configurations.topicToSchemaType).map(([_, value]) => {
+    //   sinkConfig.getTopicToSchemaTypeMap().set(value.name, value.value);
+    // });
 
-    Object.entries(configurations.topicToSchemaProperties).map(([_, value]) => {
-      sinkConfig.getTopicToSchemaPropertiesMap().set(value.name, value.value);
-    });
+    // Object.entries(configurations.topicToSchemaProperties).map(([_, value]) => {
+    //   sinkConfig.getTopicToSchemaPropertiesMap().set(value.name, value.value);
+    // });
 
     Object.entries(configurations.inputsSpecs).map(([_, value]) => {
       const inputsSpecs = new pb.InputsSpecs();
@@ -172,13 +174,13 @@ const CreateSinks = () => {
       inputsSpecs.setSchemaType(value.schemaType);
       inputsSpecs.setSerdeClassName(value.serdeClassName);
 
-      Object.entries(value.schemaProperties).map(([_, value]) => {
-        inputsSpecs.getSchemaPropertiesMap().set(value.name, value.value);
-      })
+      // Object.entries(value.schemaProperties).map(([_, value]) => {
+      //   inputsSpecs.getSchemaPropertiesMap().set(value.name, value.value);
+      // })
 
-      Object.entries(value.consumerProperties).map(([_, value]) => {
-        inputsSpecs.getConsumerPropertiesMap().set(value.name, value.value);
-      })
+      // Object.entries(value.consumerProperties).map(([_, value]) => {
+      //   inputsSpecs.getConsumerPropertiesMap().set(value.name, value.value);
+      // })
 
       sinkConfig.getInputSpecsMap().set(value.name, inputsSpecs);
     })
@@ -226,114 +228,136 @@ const CreateSinks = () => {
   }
 
   return (
-    <div>
+    <div className={`${s.CreateSinks}`}>
       {configurationsFields.map(configuration => (
-        <div key={configuration.name} className={`${s.CreateSinksField} ${(hideUnrequired && !configuration.isRequired) && s.HideUnrequired}`}>
-          <H3>
-            {configuration.name}
-          </H3>
-
-          {configuration.attachments &&
-            <div>
-              {configuration.attachments.map(attachment => {
-                return (
-                  <div key={attachment.name} className={s.CreateSinkInput}>
-                    <IoConfigField
-                      name={attachment.name}
-                      isRequired={attachment.isRequired}
-                      type={attachment.type}
-                      help={attachment.help}
-                      value={configurations[configuration.name][attachment.name as keyof ConfigurationValue]}
-                      onChange={(v) => changeAttachment(configuration.name, attachment.name, v)}
-                      configurations={configurations}
-                      enum={attachment.enum}
-                      mapType={attachment.mapType}
-                    />
-                  </div>
-                )
-              })}
-            </div>
-          }
-
-          {!configuration.attachments && (configuration.type !== 'map' || typeof(configuration.mapType) === 'string') &&
-            <div key={configuration.name} className={s.CreateSinkInput}>
-              <IoConfigField
-                name={configuration.name}
+        <FormItem>
+          <div key={configuration.name} className={`${s.CreateSinksField} ${(hideUnrequired && !configuration.isRequired) && s.HideUnrequired}`}>
+          
+            <div className={s.Label}>
+              <FormLabel
+                content={configuration.label}
                 isRequired={configuration.isRequired}
-                type={configuration.type}
-                help={configuration.help}
-                value={configurations[configuration.name]}
-                onChange={(v) => onChange({
-                  ...configurations,
-                  [configuration.name]: v
-                })}
-                configurations={configurations}
-                enum={configuration.enum}
-                mapType={configuration.mapType}
               />
             </div>
-          }
 
-          {configuration.type === 'map' && typeof(configuration.mapType) === 'object' &&
-            <div className={s.CreateSinkInput}>
-              <Button
-                svgIcon={createIcon}
-                onClick={() => expandMap(configuration.name)}
-                type='primary'
-                title="Create object map"
-              />
-              {Object.keys(configurations[configuration.name]).map(configurationKey => (
-                <div key={configurationKey}>
-                  {configuration.mapType && configuration.mapType !== 'string' && configuration.mapType.map(key => (
-                    <div key={key.name}>
-                      <H3>
-                        {key.name}
-                      </H3>
-                      {key.attachments &&
-                        <div>
-                          {key.attachments.map((attachment) => (
-                            <div key={attachment.name} className={s.CreateSinkInput}>
-                              <H3>
-                                {attachment.name}
-                              </H3>
-                              <IoConfigField
-                                name={attachment.name}
-                                isRequired={attachment.isRequired}
-                                type={attachment.type}
-                                help={attachment.help}
-                                value={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name][attachment.name]}
-                                onChange={(value) => changeMap(configuration.name, configurationKey, key.name, value, attachment.name)}
-                                configurations={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name]}
-                                enum={attachment.enum}
-                                mapType={attachment.mapType}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      }
+            {configuration.attachments &&
+              <div>
+                {configuration.attachments.map(attachment => {
+                  return (
+                    <FormItem key={attachment.name}>
+                      <div className={s.Label}>
+                        <FormLabel content={attachment.label} />
+                      </div>
+                      <IoConfigField
+                        name={attachment.name}
+                        isRequired={attachment.isRequired}
+                        type={attachment.type}
+                        help={attachment.help}
+                        label={attachment.label}
+                        value={configurations[configuration.name][attachment.name as keyof ConfigurationValue]}
+                        onChange={(v) => changeAttachment(configuration.name, attachment.name, v)}
+                        configurations={configurations}
+                        enum={attachment.enum}
+                        mapType={attachment.mapType}
+                      />
+                    </FormItem>
+                  )
+                })}
+              </div>
+            }
 
-                      {configuration.mapType && !key.attachments && (key.type !== 'map' || typeof(key.mapType) === 'string') &&
-                        <div key={key.name} className={s.CreateSinkInput}>
-                          <IoConfigField
-                            name={key.name}
-                            isRequired={key.isRequired}
-                            type={key.type}
-                            help={key.help}
-                            value={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name]}
-                            onChange={(value) => changeMap(configuration.name, configurationKey, key.name, value)}
-                            configurations={configurations[configuration.name][configurationKey as keyof ConfigurationValue]}
-                            enum={key.enum}
-                            mapType={key.mapType}
+            {!configuration.attachments && (configuration.type !== 'map' || typeof(configuration.mapType) === 'string') &&
+              <div key={configuration.name} className={s.CreateSinkInput}>
+                <IoConfigField
+                  name={configuration.name}
+                  isRequired={configuration.isRequired}
+                  type={configuration.type}
+                  help={configuration.help}
+                  label={configuration.label}
+                  value={configurations[configuration.name]}
+                  onChange={(v) => onChange({
+                    ...configurations,
+                    [configuration.name]: v
+                  })}
+                  configurations={configurations}
+                  enum={configuration.enum}
+                  mapType={configuration.mapType}
+                />
+              </div>
+            }
+
+            {configuration.type === 'map' && typeof(configuration.mapType) === 'object' &&
+              <div className={s.CreateSinkMapObject}>
+                {Object.keys(configurations[configuration.name]).map(configurationKey => (
+                  <div key={configurationKey} className={s.CreateSinkMapObject}>
+                    {configuration.mapType && configuration.mapType !== 'string' && configuration.mapType.map(key => (
+                      <div key={key.name} className={s.CreateSinkMapObject}>
+                        <div className={`${s.Label} ${sf.FormItem}`} >
+                          <FormLabel
+                            content={key.label}
+                            isRequired={configuration.isRequired}
                           />
                         </div>
-                      }
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          }
-        </div>
+                        {key.attachments &&
+                          <div className={s.CreateSinkMapObject}>
+                            {key.attachments.map((attachment) => (
+                              <div className={s.CreateSinksField}>
+                                <div className={s.Label}>
+                                  <FormLabel
+                                    content={attachment.label}
+                                    isRequired={configuration.isRequired}
+                                  />
+                                </div>
+                                <div className={s.CreateSinkInput}>
+                                  <IoConfigField
+                                    name={attachment.name}
+                                    isRequired={attachment.isRequired}
+                                    type={attachment.type}
+                                    help={attachment.help}
+                                    label={attachment.label}
+                                    value={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name][attachment.name]}
+                                    onChange={(value) => changeMap(configuration.name, configurationKey, key.name, value, attachment.name)}
+                                    configurations={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name]}
+                                    enum={attachment.enum}
+                                    mapType={attachment.mapType}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        }
+
+                        {configuration.mapType && !key.attachments && (key.type !== 'map' || typeof(key.mapType) === 'string') &&
+                          <div key={key.name} className={s.CreateSinkInput}>
+                            <IoConfigField
+                              name={key.name}
+                              isRequired={key.isRequired}
+                              type={key.type}
+                              help={key.help}
+                              label={key.label}
+                              value={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name]}
+                              onChange={(value) => changeMap(configuration.name, configurationKey, key.name, value)}
+                              configurations={configurations[configuration.name][configurationKey as keyof ConfigurationValue]}
+                              enum={key.enum}
+                              mapType={key.mapType}
+                            />
+                          </div>
+                        }
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                <button
+                  className={`${sl.AddButton} ${sl.AddButtonEnabled}`}
+                  type="button"
+                  onClick={() => expandMap(configuration.name)}
+                >
+                  Add
+                </button>
+              </div>
+            }
+          </div>
+        </FormItem>
       ))}
 
       <Button
