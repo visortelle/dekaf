@@ -4,11 +4,6 @@ import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.PulsarAdmin
 import _root_.schema.Config as SchemaConfig
 
-case class Config(
-    pulsarServiceUrl: String,
-    pulsarAdminUrl: String,
-    schema: SchemaConfig
-)
 val config = Config(
   pulsarServiceUrl = "pulsar://localhost:6650",
   pulsarAdminUrl = "http://localhost:8080",
@@ -16,5 +11,9 @@ val config = Config(
     protobufNativeDepsDir = "/Users/visortelle/vcs/api-common-protos" // TODO - include to the app dist
   )
 )
-val client = PulsarClient.builder().serviceUrl(config.pulsarServiceUrl).build()
+
+var clientBuilder = PulsarClient.builder().serviceUrl(config.pulsarServiceUrl)
+
+val client = clientBuilder.build()
+
 val adminClient = PulsarAdmin.builder().serviceHttpUrl(config.pulsarAdminUrl).build()
