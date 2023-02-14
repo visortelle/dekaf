@@ -18,7 +18,7 @@ type FilterTestResult = (Either[String, Boolean], JsonAccumulator)
 val JsonAccumulatorVarName = "accum"
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
-val jsLibsBundle = os.read(os.Path.expandUser(config.library, os.pwd) / "js" / "dist" / "libs.js")
+val jsLibsBundle = os.read(os.Path.expandUser(config.library.path, os.pwd) / "js" / "dist" / "libs.js")
 
 case class MessageFilterConfig(
     stdout: java.io.ByteArrayOutputStream

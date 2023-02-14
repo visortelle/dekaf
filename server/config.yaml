@@ -1,18 +1,14 @@
-# The port the server listens on
 port: 8090
-# When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.
 publicUrl: "http://localhost:8090"
 
-# Path to the library directory that contains user-defined objects like message filters, visualizations, etc.
-library: "./library"
+library: 
+  path: "./library"
 
-# The Pulsar instances configuration.
-pulsarInstances:
-  # Pulsar instance name.
-  - name: "local"
-    # Optional accent color to visually distinguish this instance.
-    color: "#ff0000"
-    # The URL where Pulsar broker (or proxy) serves protobuf requests. Example: "pulsar://localhost:6650".
-    brokerServiceUrl: "pulsar://localhost:6650"
-    # The URL where Pulsar broker (or proxy) serves http requests. Example: "http://localhost:8080".
-    webServiceUrl: "http://localhost:8080"
+pulsarInstance:
+  name: "local"
+  color: "#ff0000"
+  brokerServiceUrl: "pulsar+ssl://pulsar-devenv-proxy:6650"
+  webServiceUrl: "https://pulsar-devenv-proxy:8080"
+
+tls:
+  tlsTrustCertsFilePath: "../devenv/helm/runtime-data/pulsar-devenv-tls-proxy-ca.crt"
