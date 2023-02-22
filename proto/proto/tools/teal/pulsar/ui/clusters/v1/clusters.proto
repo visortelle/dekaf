@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tools.teal.pulsar.ui.cluster.v1;
+package tools.teal.pulsar.ui.clusters.v1;
 
 import "google/rpc/status.proto";
 
@@ -12,6 +12,6 @@ message ListClustersResponse {
   repeated string clusters = 2;
 }
 
-service ClusterService {
+service ClustersService {
   rpc ListClusters(ListClustersRequest) returns (ListClustersResponse) {}
 }

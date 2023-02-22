@@ -7,7 +7,7 @@ import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import * as cpb from '../../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/cluster_pb';
+import * as cpb from '../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { difference } from "lodash";
@@ -27,7 +27,7 @@ type PolicyValue = {
 };
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient, clusterServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient, clustersServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -48,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const replicationClusters = replicationClustersRes.getReplicationClustersList();
 
       const availableClustersReq = new cpb.ListClustersRequest();
-      const availableClustersRes = await clusterServiceClient.listClusters(availableClustersReq, {});
+      const availableClustersRes = await clustersServiceClient.listClusters(availableClustersReq, {});
       if (availableClustersRes.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get available clusters: ${availableClustersRes.getStatus()?.getMessage()}`);
       }

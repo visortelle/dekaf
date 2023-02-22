@@ -83,7 +83,7 @@ lazy val root = project
 
 // Protobuf stuff. See also /project/scalapb.sbt
 libraryDependencies ++= Seq(
-    "com.google.protobuf" % "protobuf-java" % "3.21.12",
+    "com.google.protobuf" % "protobuf-java" % "3.22.0",
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,

@@ -1,15 +1,15 @@
-package cluster
+package clusters
 
 import _root_.client.adminClient
-import com.tools.teal.pulsar.ui.cluster.v1.cluster as clusterPb
-import com.tools.teal.pulsar.ui.cluster.v1.cluster.{ClusterServiceGrpc, ListClustersRequest, ListClustersResponse}
+import com.tools.teal.pulsar.ui.clusters.v1.clusters as clusterPb
+import com.tools.teal.pulsar.ui.clusters.v1.clusters.{ClustersServiceGrpc, ListClustersRequest, ListClustersResponse}
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
 
-class ClusterServiceImpl extends  ClusterServiceGrpc.ClusterService {
+class ClustersServiceImpl extends  ClustersServiceGrpc.ClustersService {
     override def listClusters(request: ListClustersRequest): Future[ListClustersResponse] =
         try {
             val clusters = adminClient.clusters.getClusters

@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 import * as _producerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ProducerServiceClientPb';
 import * as _consumerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ConsumerServiceClientPb';
@@ -6,7 +6,7 @@ import * as _topicServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/
 import * as _schemaServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/SchemaServiceClientPb';
 import * as _namespaceServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/NamespaceServiceClientPb';
 import * as _tenantServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/TenantServiceClientPb';
-import * as _clusterServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/ClusterServiceClientPb';
+import * as _clustersServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/ClustersServiceClientPb';
 import * as _metricsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/MetricsServiceClientPb';
 import * as _brokersServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/BrokersServiceClientPb';
 import * as _brokerstatsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokerstats/v1/BrokerstatsServiceClientPb';
@@ -20,7 +20,7 @@ export type Value = {
   schemaServiceClient: _schemaServiceClient.SchemaServiceClient,
   namespaceServiceClient: _namespaceServiceClient.NamespaceServiceClient,
   tenantServiceClient: _tenantServiceClient.TenantServiceClient,
-  clusterServiceClient: _clusterServiceClient.ClusterServiceClient,
+  clustersServiceClient: _clustersServiceClient.ClustersServiceClient,
   metricsServiceClient: _metricsServiceClient.MetricsServiceClient,
   brokersServiceClient: _brokersServiceClient.BrokersServiceClient,
   brokerstatsServiceClient: _brokerstatsServiceClient.BrokerStatsServiceClient,
@@ -34,7 +34,7 @@ const defaultValue: Value = {
   schemaServiceClient: new _schemaServiceClient.SchemaServiceClient(''),
   namespaceServiceClient: new _namespaceServiceClient.NamespaceServiceClient(''),
   tenantServiceClient: new _tenantServiceClient.TenantServiceClient(''),
-  clusterServiceClient: new _clusterServiceClient.ClusterServiceClient(''),
+  clustersServiceClient: new _clustersServiceClient.ClustersServiceClient(''),
   metricsServiceClient: new _metricsServiceClient.MetricsServiceClient(''),
   brokersServiceClient: new _brokersServiceClient.BrokersServiceClient(''),
   brokerstatsServiceClient: new _brokerstatsServiceClient.BrokerStatsServiceClient(''),
@@ -54,7 +54,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient(props.grpcWebUrl));
   const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient(props.grpcWebUrl));
   const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient(props.grpcWebUrl));
-  const [clusterServiceClient] = useState(new _clusterServiceClient.ClusterServiceClient(props.grpcWebUrl));
+  const [clustersServiceClient] = useState(new _clustersServiceClient.ClustersServiceClient(props.grpcWebUrl));
   const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient(props.grpcWebUrl));
   const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient(props.grpcWebUrl));
   const [brokerstatsServiceClient] = useState(new _brokerstatsServiceClient.BrokerStatsServiceClient(props.grpcWebUrl));
@@ -70,7 +70,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
           schemaServiceClient,
           namespaceServiceClient,
           tenantServiceClient,
-          clusterServiceClient,
+          clustersServiceClient,
           metricsServiceClient,
           brokersServiceClient,
           brokerstatsServiceClient,

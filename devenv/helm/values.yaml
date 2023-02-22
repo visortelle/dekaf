@@ -13,3 +13,6 @@ certs:
   internal_issuer:
     enabled: true
     type: selfsigning
+
+kube-prometheus-stack:
+  enabled: false
