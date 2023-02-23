@@ -18,17 +18,7 @@ import org.apache.pulsar.common.util.ObjectMapperFactory
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.google.gson.JsonParser
-
 import scala.collection.mutable
-//import io.circe.parser.*
-//import io.circe.{Decoder, Encoder, Json}
-//import io.circe.parser.*
-//import io.circe.syntax.*
-//import io.circe.generic.semiauto.*
-//import io.circe.*
-//import io.circe.generic.semiauto.*
-//import io.circe.syntax.*
-//import java.util.UUID
 import io.circe.parser.*
 
 // Serde class name
@@ -94,7 +84,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
         case pb.ProcessingGuarantees.PROCESSING_GUARANTEES_EFFECTIVELY_ONCE =>
             FunctionConfig.ProcessingGuarantees.EFFECTIVELY_ONCE
 
-
     def pathToConnectorFromPb(pathType: pb.PathType) = pathType match
         case pb.PathType.PATH_TYPE_URL => "url"
         case pb.PathType.PATH_TYPE_FOLDER => "folder"
@@ -155,6 +144,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                 producerCryptoFailureAction = producerCryptoFailureActionFromPb(v.producerCryptoFailureAction),
                 consumerCryptoFailureAction = consumerCryptoFailureActionFromPb(v.consumerCryptoFailureAction),
             )
+
     def convertInputSpecs(inputSpecs: Map[String, pb.InputsSpecs]): java.util.Map[String, ConsumerConfig] =
 
         val convertedInputSpecs = Map[String, ConsumerConfig]()
@@ -171,25 +161,21 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
             )))
         convertedInputSpecs.asJava
 
-    def convertResource(resources: Option[pb.Resources]): Resources =
+    def convertResource(resources: Option[pb.Resources]): Resources = resources match
+        case Some(v) =>
+            if v.cpu > 0 && v.ram > 0 && v.disk > 0 then
+                Resources(
+                    cpu = v.cpu,
+                    ram = v.ram,
+                    disk = v.disk,
+                )
+            else null
+        case None => null
 
-        resources match
-            case Some(v) =>
-                if v.cpu > 0 && v.ram > 0 && v.disk > 0 then
-                    Resources(
-                        cpu = v.cpu,
-                        ram = v.ram,
-                        disk = v.disk,
-                    )
-                else null
-            case None => null
     override def createSink(request: pb.CreateSinkRequest): Future[pb.CreateSinkResponse] =
         try {
             request.sinkConfig match
                 case Some(v) =>
-                    println(v.sinkType)
-                    println(sinkTypeFromPb(v.sinkType))
-
                     val sinkConfig = SinkConfig(
                         tenant = v.tenant,
                         namespace = v.namespace,
@@ -230,7 +216,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                                 adminClient.sinks.createSink(sinkConfig, v.path)
                             }
 
-
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.CreateSinkResponse(status = Some(status)))
         } catch {
@@ -239,17 +224,13 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                 Future.successful(pb.CreateSinkResponse(status = Some(status)))
         }
 
-
     override def getSinks(request: pb.GetSinksRequest): Future[pb.GetSinksResponse] =
-
         try {
             var sinksSeq = Seq[pb.Sinks]()
-
             val sinks = adminClient.sinks.listSinks(request.tenant, request.namespace).asScala
 
             sinks.foreach(sink =>
                 val sinkStatus = adminClient.sinks.getSinkStatus(request.tenant, request.namespace, sink)
-
                 var running = 0
                 var numReads = 0
                 var numWrites = 0
@@ -309,7 +290,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                 pb.ProcessingGuarantees.PROCESSING_GUARANTEES_ATLEAST_ONCE
             case FunctionConfig.ProcessingGuarantees.EFFECTIVELY_ONCE =>
                 pb.ProcessingGuarantees.PROCESSING_GUARANTEES_EFFECTIVELY_ONCE
-
 
         def classNameToPb(className: String): pb.ClassName = className match
             case "org.apache.pulsar.io.aerospike.AerospikeStringSink" => pb.ClassName.CLASS_NAME_AEROSPIKE_STRING_SINK
@@ -391,9 +371,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
         try {
             val sink = adminClient.sinks.getSink(request.tenant, request.namespace, request.sink)
 
-            println(sink.getSinkType)
-            println(sinkTypeToPb(sink.getSinkType))
-
             val sinkConfig = Option(pb.SinkConfig (
                 tenant = sink.getTenant,
                 namespace = sink.getNamespace,
@@ -438,7 +415,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
         try {
             request.sinkConfig match
                 case Some(v) =>
-
                     val sinkConfig = SinkConfig(
                         tenant = v.tenant,
                         namespace = v.namespace,
@@ -459,7 +435,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         timeoutMs = if v.timeoutMs > 0 then v.timeoutMs else null,
                         negativeAckRedeliveryDelayMs = if v.negativeAckRedeliveryDelayMs > 0 then v.negativeAckRedeliveryDelayMs else null,
                         cleanupSubscription = v.cleanupSubscription,
-
                         sinkType = sinkTypeFromPb(v.sinkType),
                         className = classNameFromPb(v.className),
                         topicToSerdeClassName = if v.topicToSerdeClassName.isEmpty then null else v.topicToSerdeClassName.asJava,
@@ -480,7 +455,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                                 adminClient.sinks.updateSink(sinkConfig, v.path)
                             }
 
-
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.UpdateSinkResponse(status = Some(status)))
         } catch {
@@ -491,7 +465,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
 
     override def deleteSink(request: pb.DeleteSinkRequest): Future[pb.DeleteSinkResponse] =
         try {
-
             adminClient.sinks.deleteSink(request.tenant, request.namespace, request.sink)
 
             val status: Status = Status(code = Code.OK.index)
