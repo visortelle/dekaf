@@ -1,58 +1,78 @@
-import { IoConfigField } from "../IoConfigField/IoConfigField";
+import { IoConfigField } from "../../IoConfigField/IoConfigField";
+import configsAttachments, { ConnectorsConfigs, defaultConnectorsConfigs } from './connectrosConfigs/configs';
 
-const SUBSCRIPTION_INITIAL_POSITION = ['latest', 'earliest'];
+const SUBSCRIPTION_INITIAL_POSITION = [ { value: 'latest', label: 'Latest' }, { value: 'earliest', label: 'Earliest' } ];
 export type SubscriptionInitialPosition = 'latest' | 'earliest';
 
-const PRODUCER_CRYPTO_FAILURE_ACTION = ['fail', 'send'];
+const PRODUCER_CRYPTO_FAILURE_ACTION = [ { value: 'fail', label: 'Fail' }, { value: 'send', label: 'Send' } ];
 export type ProducerCryptoFailureAction = 'fail' | 'send';
 
-const CONSUMER_CRYPTO_FAILURE_ACTION = ['fail', 'discard', 'consume'];
+const CONSUMER_CRYPTO_FAILURE_ACTION = [ { value: 'fail', label: 'Fail' }, { value: 'discard', label: 'Discard' }, { value: 'consume', label: 'Consume' } ];
 export type ConsumerCryptoFailureAction = 'fail' | 'discard' | 'consume';
 
-const PROCESSING_GUARANTEES = ['atleast_once', 'atmost_once', 'effectively_once'];
+const PROCESSING_GUARANTEES = [ { value: 'atleast_once', label: 'Atleast once' }, { value: 'atmost_once', label: 'Atmost once' }, { value: 'effectively_once', label: 'Effectively once' } ];
 export type ProcessingGuarantees = 'atleast_once' | 'atmost_once' | 'effectively_once';
 
+export const SINK_TYPE = [ { value: 'aerospike', label: 'Aerospike' }, { value: 'alluxio', label: 'Alluxio' }, { value: 'cassandra', label: 'Cassandra' }, { value: 'elasticSearch', label: 'Elastic search' }, { value: 'flume', label: 'Flume' }, { value: 'hbase', label: 'Hbase' }, { value: 'hdfs2', label: 'HDFS2' }, { value: 'hdfs3', label: 'HDFS3' }, { value: 'http', label: 'HTTP' }, { value: 'influxdbv1', label: 'InfluxDB v1' }, { value: 'influxdbv2', label: 'InfluxDB v2' }, { value: 'jdbcClickHouse', label: 'JDBC Click house' }, { value: 'jdbcMariaDB', label: 'JDBC Maria DB' }, { value: 'jdbcOpenMLDB', label: 'JDBC Open MLDB' }, { value: 'jdbcPostgres', label: 'JDBC Postgres' }, { value: 'jdbcSQLite', label: 'JDBC SQLite' }, { value: 'kafka', label: 'Kafka' }, { value: 'kinesis', label: 'Kinesis' }, { value: 'mongodb', label: 'Mongo DB' }, { value: 'rabbitMQ', label: 'Rabbit MQ' }, { value: 'redis', label: 'Redis' }, { value: 'solr', label: 'Solr' } ];
+export type SinkType = 'aerospike' | 'alluxio' | 'cassandra' | 'elasticSearch' | 'flume' | 'hbase' | 'hdfs2' | 'hdfs3' | 'http' | 'influxdbv1' | 'influxdbv2' | 'jdbcClickHouse' | 'jdbcMariaDB' | 'jdbcOpenMLDB' | 'jdbcPostgres' | 'jdbcSQLite' | 'kafka' | 'kinesis' | 'mongodb' | 'rabbitMQ' | 'redis' | 'solr';
+
+const CLASS_NAME = [ { value: 'AerospikeStringSink', label: 'Aerospike' }, { value: 'AlluxioSink', label: 'Alluxio' }, { value: 'CassandraStringSink', label: 'Cassandra' }, { value: 'ElasticSearchSink', label: 'Elastic' }, { value: 'StringSink', label: 'flume' }, { value: 'HbaseAbstractConfig', label: 'HBase' }, { value: 'AbstractHdfs2Connector', label: 'HDFS2' }, { value: 'AbstractHdfs3Connector', label: 'HDFS3' }, { value: 'HttpSink', label: 'Http' }, { value: 'InfluxDBGenericRecordSink', label: 'InfluxDB' }, { value: 'ClickHouseJdbcAutoSchemaSink', label: 'JDBC click house' }, { value: 'MariadbJdbcAutoSchemaSink', label: 'Maria JDBC' }, { value: 'OpenMLDBJdbcAutoSchemaSink', label: 'OpenMLDB JDBC' }, { value: 'PostgresJdbcAutoSchemaSink', label: 'Postgres JDBC' }, { value: 'SqliteJdbcAutoSchemaSink', label: 'Sqlite JDBC' }, { value: 'KafkaAbstractSink', label: 'Kafka' }, { value: 'KinesisSink', label: 'Kinesis' }, { value: 'MongoSink', label: 'Mongo' }, { value: 'RabbitMQSink', label: 'Rabbit MQ' }, { value: 'RedisAbstractConfig', label: 'Redis' }, { value: 'SolrSinkConfig', label: 'Solr' }];
+
+export type ClassName = 'AerospikeStringSink' | 'AlluxioSink' | 'CassandraStringSink' | 'ElasticSearchSink' | 'StringSink' | 'HbaseAbstractConfig' | 'AbstractHdfs2Connector' | 'AbstractHdfs3Connector' | 'HttpSink' | 'ClickHouseJdbcAutoSchemaSink' | 'InfluxDBGenericRecordSink' | 'MariadbJdbcAutoSchemaSink' | 'OpenMLDBJdbcAutoSchemaSink' | 'PostgresJdbcAutoSchemaSink' | 'SqliteJdbcAutoSchemaSink' | 'KafkaAbstractSink' | 'KinesisSink' | 'MongoSink' | 'RabbitMQSink' | 'RedisAbstractConfig' | 'SolrSinkConfig'
+
+// https://github.com/apache/pulsar/blob/01e0068f0e01216b5b456ecbaf102cdc4dcef56a/pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/impl/SinksBase.java
+
 export const configurationsFields: IoConfigField[] = [
-  {
-    name: 'tenant',
-    type: 'string',
-    isRequired: true,
-    help: 'help',
-    label: 'Tenant',
-  },
-  {
-    name: 'namespace',
-    type: 'string',
-    isRequired: true,
-    help: 'help',
-    label: 'Namespace',
-  },
   {
     name: 'name',
     type: 'string',
     isRequired: true,
-    help: 'help',
+    help: 'Must be unique',
     label: 'Sink name',
   },
   {
     name: 'inputs',
     type: 'array',
     isRequired: true,
-    help: 'list topics',
+    help: 'List of consumed topics',
     label: 'Topics',
   },
   {
     name: 'pathToConnector',
     type: 'pathToConnector',
     isRequired: true,
-    help: 'help',
+    help: 'Connector file storage location',
     label: 'Path to connector',
+  },
+  {
+    name: 'className',
+    type: 'enum',
+    isRequired: true,
+    help: 'The class name of a Pulsar Sink if archive is file url path',
+    label: 'Class name',
+    enum: CLASS_NAME,
+  },
+  {
+    name: 'sinkType',
+    type: 'enum',
+    isRequired: true,
+    help: 'help', // TODO write description
+    label: 'Sink type',
+    enum: SINK_TYPE,
+  },
+  {
+    name: 'configs',
+    type: 'conditionalAttachments',
+    isRequired: true,
+    help: 'Data to connect to the database',
+    label: 'Configs',
+    conditionalAttachments: configsAttachments
   },
   {
     name: 'sourceSubscriptionName',
     type: 'string',
     isRequired: false,
-    help: 'help',
+    help: 'Pulsar source subscription name if user wants a specific subscription-name for input-topic consumer',
     label: 'Source subscription name',
   },
   {
@@ -67,7 +87,7 @@ export const configurationsFields: IoConfigField[] = [
     name: 'topicsPattern',
     type: 'string',
     isRequired: false,
-    help: 'help',
+    help: 'TopicsPattern to consume from list of topics under a namespace that  match the pattern. [input] and [topicsPattern] are mutually exclusive. Add SerDe class name for a pattern in customSerdeInputs (supported for java fun only)',
     label: 'Topics pattern',
   },
   {
@@ -82,12 +102,12 @@ export const configurationsFields: IoConfigField[] = [
     name: 'inputsSpecs',
     type: 'map',
     isRequired: false,
-    help: 'help',
+    help: 'The map of input topics to its consumer configuration',
     label: 'Inputs specs',
     mapType: [
       {
         name: 'schemaType',
-        type: 'string',
+        type: 'schemaType',
         isRequired: false,
         help: 'help',
         label: 'Schema type',
@@ -128,6 +148,13 @@ export const configurationsFields: IoConfigField[] = [
         isRequired: false,
         help: 'help',
         label: 'Receiver queue size',
+      },
+      {
+        name: 'poolMessages',
+        type: 'boolean',
+        isRequired: false,
+        help: 'help',
+        label: 'Pool messages',
       },
       {
         name: 'cryptoConfig',
@@ -175,21 +202,7 @@ export const configurationsFields: IoConfigField[] = [
           },
         ]
       },
-      {
-        name: 'poolMessages',
-        type: 'boolean',
-        isRequired: false,
-        help: 'help',
-        label: 'Pool messages',
-      },
     ]
-  },
-  {
-    name: 'sinkType',
-    type: 'string',
-    isRequired: false,
-    help: 'help',
-    label: 'Sink type',
   },
   {
     name: 'maxMessageRetries',
@@ -209,14 +222,14 @@ export const configurationsFields: IoConfigField[] = [
     name: 'parallelism',
     type: 'int',
     isRequired: false,
-    help: 'help',
+    help: 'The number of a Pulsar Sink instances to run',
     label: 'Parallelism',
   },
   {
     name: 'processingGuarantees',
     type: 'enum',
     isRequired: false,
-    help: 'help',
+    help: 'The processing guarantees (aka delivery semantics) applied to the Pulsar Sink',
     label: 'Processing guarantees',
     enum: PROCESSING_GUARANTEES,
   },
@@ -224,7 +237,7 @@ export const configurationsFields: IoConfigField[] = [
     name: 'retainOrdering',
     type: 'boolean',
     isRequired: false,
-    help: 'help',
+    help: 'Boolean denotes whether the Pulsar Sink consumes and processes messages in order',
     label: 'Retain ordering',
   },
   {
@@ -238,14 +251,14 @@ export const configurationsFields: IoConfigField[] = [
     name: 'autoAck',
     type: 'boolean',
     isRequired: false,
-    help: 'help',
+    help: 'Boolean denotes whether or not the framework will automatically acknowledge messages',
     label: 'Auto ack',
   },
   {
     name: 'timeoutMs',
     type: 'duration',
     isRequired: false,
-    help: 'help',
+    help: 'Long denotes the message timeout in milliseconds',
     label: 'Timeout',
   },
   {
@@ -259,21 +272,14 @@ export const configurationsFields: IoConfigField[] = [
     name: 'cleanupSubscription',
     type: 'boolean',
     isRequired: false,
-    help: 'help',
+    help: 'Boolean denotes whether the subscriptions the functions created/used should be deleted when the functions is deleted',
     label: 'Cleanup subscription',
-  },
-  {
-    name: 'className',
-    type: 'string',
-    isRequired: false,
-    help: 'help',
-    label: 'Class name',
   },
   {
     name: 'topicToSerdeClassName',
     type: 'map',
     isRequired: false,
-    help: 'help',
+    help: 'The map of input topics to SerDe class names',
     mapType: 'string',
     label: 'Topic to serde class name',
   }, 
@@ -281,29 +287,24 @@ export const configurationsFields: IoConfigField[] = [
     name: 'topicToSchemaType',
     type: 'map',
     isRequired: false,
-    help: 'help',
+    help: 'The map of input topics to Schema types or class names',
     mapType: 'string',
     label: 'Topic to schema type',
   }, 
   {
-    name: 'configs',
-    type: 'json',
-    isRequired: false,
-    help: 'help',
-    label: 'Configs',
-  },
-  {
     name: 'secrets',
     type: 'json',
     isRequired: false,
-    help: 'help',
+    help: 'A map of secretName(aka how the secret is going to be accessed in the function via context) to an object that encapsulates how the secret is fetched by the underlying secrets provider',
     label: 'Secrets',
   },
+  //  The type of an value here can be found by the SecretProviderConfigurator.getSecretObjectType() method
+
   {
     name: 'resources',
     type: 'attachments',
     isRequired: false,
-    help: 'help',
+    help: 'The CPU (in cores), RAM (in bytes) and disk (in bytes) that needs to be allocated per Pulsar Sink instance (applicable only to Docker runtime)',
     label: 'Resources',
     attachments: [
       {
@@ -340,7 +341,7 @@ export const configurationsFields: IoConfigField[] = [
     name: 'runtimeFlags',
     type: 'string',
     isRequired: false,
-    help: 'help',
+    help: 'Any flags that you want to pass to the runtime as a single string',
     label: 'Runtime flags',
   },
   {
@@ -356,16 +357,16 @@ export type StringMap = {
   [key: string]: string,
 }
 
-type CryptoConfig = {
+export type CryptoConfig = {
   [key: string]: string | string[],
   cryptoKeyReaderClassName: string,
   cryptoKeyReaderConfig: string, // Serialized JSON in a form of Map<String, JsonValue>
   encryptionKeys: string[],
-  producerCryptoFailureAction: 'fail' | 'send',
-  consumerCryptoFailureAction: 'fail' | 'discard' | 'consume',
+  producerCryptoFailureAction: ProducerCryptoFailureAction,
+  consumerCryptoFailureAction: ConsumerCryptoFailureAction,
 }
 
-export type ConsumerConfig = {
+export type InputSpecs = {
   [key: string]: string | number | boolean | StringMap | CryptoConfig,
   name: string,
   schemaType: string,
@@ -378,8 +379,8 @@ export type ConsumerConfig = {
   cryptoConfig: CryptoConfig,
 }
 
-export type ConsumerConfigMap = {
-  [key: string]: ConsumerConfig
+export type InputsSpecs = {
+  [key: string]: InputSpecs
 }
 
 export type Resources = {
@@ -389,7 +390,7 @@ export type Resources = {
   disk: number,
 }
 
-export type ConfigurationValue = string | string[] | number | StringMap | ConsumerConfigMap | boolean | Resources | PathToConnector
+export type ConfigurationValue = string | string[] | number | StringMap | InputsSpecs | boolean | Resources | PathToConnector | ConnectorsConfigs
 
 export type PathToConnectorType = 'url' | 'folder';
 
@@ -401,31 +402,29 @@ export type PathToConnector = {
 
 export type Configurations = {
   [key: string]: ConfigurationValue,
-  tenant: string,
-  namespace: string,
   name: string,
   pathToConnector: PathToConnector,
   inputs: string[],
   sourceSubscriptionName: string,
-  sourceSubscriptionPosition: 'latest' | 'earliest',
+  sourceSubscriptionPosition: SubscriptionInitialPosition,
   topicsPattern: string,
   topicToSchemaProperties: StringMap,
-  inputsSpecs: ConsumerConfigMap,
+  inputsSpecs: InputsSpecs,
   maxMessageRetries: number,
   deadLetterTopic: string,
   parallelism: number,
-  processingGuarantees: 'atleast_once' | 'atmost_once' | 'effectively_once'
+  processingGuarantees: ProcessingGuarantees
   retainOrdering: boolean,
   retainKeyOrdering: boolean,
   autoAck: boolean,
   timeoutMs: number,
   negativeAckRedeliveryDelayMs: number,
   cleanupSubscription: boolean,
-  sinkType: string,
-  className: string,
+  sinkType: SinkType,
+  className: ClassName,
   topicToSerdeClassName: StringMap,
   topicToSchemaType: StringMap,
-  configs: string,  // Serialized JSON in a form of Map<String, JsonValue>
+  configs: ConnectorsConfigs,  // Serialized JSON in a form of Map<String, JsonValue>
   secrets: string,  // Serialized JSON in a form of Map<String, JsonValue>
   resources: Resources,
   archive: string,
@@ -434,8 +433,6 @@ export type Configurations = {
 }
 
 export const configurations: Configurations = {
-  tenant: 'public',
-  namespace: 'default',
   name: 'users',
   pathToConnector: {
     type: 'url',
@@ -448,26 +445,8 @@ export const configurations: Configurations = {
   sourceSubscriptionPosition: 'latest',
   topicsPattern: '',
   topicToSchemaProperties: {},
-  inputsSpecs: {
-    'ExampleSchema': {
-      name: 'New',
-      schemaType: 'AVRO',
-      serdeClassName: '',
-      schemaProperties: {},
-      consumerProperties: {},
-      receiverQueueSize: 0,
-      poolMessages: false,
-      isRegexPattern: false,
-      cryptoConfig: {
-        cryptoKeyReaderClassName: '',
-        cryptoKeyReaderConfig: '',
-        encryptionKeys: [],
-        producerCryptoFailureAction: 'fail',
-        consumerCryptoFailureAction: 'fail'
-      },
-    },
-  },
-  sinkType: '',
+  inputsSpecs: {},
+  sinkType: 'jdbcPostgres',
   maxMessageRetries: 0,
   deadLetterTopic: '',
   parallelism: 0,
@@ -478,10 +457,10 @@ export const configurations: Configurations = {
   timeoutMs: 0,
   negativeAckRedeliveryDelayMs: 0,
   cleanupSubscription: true,
-  className: '',
+  className: 'ClickHouseJdbcAutoSchemaSink',
   topicToSerdeClassName: {},
   topicToSchemaType: {},
-  configs: '{ \"userName\": \"postgres\", \"password\": \"postgres\", \"jdbcUrl\": \"jdbc:postgresql://postgresql:5432/postgres\", \"tableName\": \"users\"}',
+  configs: defaultConnectorsConfigs,
   secrets: '',
   resources: { cpu: 0, ram: 0, disk: 0 },
   archive: '',

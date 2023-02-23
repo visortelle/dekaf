@@ -2,21 +2,33 @@ import React, { useState } from 'react';
 import _ from 'lodash';
 import * as Either from 'fp-ts/lib/Either';
 
-import Checkbox from '../../ui/Checkbox/Checkbox';
-import CodeEditor from '../../ui/CodeEditor/CodeEditor';
-import DurationInput from '../../ui/ConfigurationTable/DurationInput/DurationInput';
-import MemorySizeInput from '../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
-import Input from '../../ui/Input/Input';
-import Select from '../../ui/Select/Select';
-import { Configurations, ConfigurationValue, ConsumerConfigMap, PathToConnector, Resources, StringMap } from '../Sinks/configurationsFields';
+import Checkbox from '../../../ui/Checkbox/Checkbox';
+import CodeEditor from '../../../ui/CodeEditor/CodeEditor';
+import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
+import Input from '../../../ui/Input/Input';
+import Select from '../../../ui/Select/Select';
+import ListInput from '../../../ui/ConfigurationTable/ListInput/ListInput';
+import KeyValueEditor from '../../../ui/KeyValueEditor/KeyValueEditor';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
+import ShortDurationInput from '../../../ui/ConfigurationTable/ShortDurationInput/ShortDurationInput';
+import SchemaTypeInput from '../../../TopicPage/Schema/SchemaTypeInput/SchemaTypeInput';
+import { SchemaTypeT } from '../../../TopicPage/Schema/types';
+import { ConnectorsConfigs } from '../Sinks/configurationsFields/connectrosConfigs/configs';
+import { Configurations, ConfigurationValue, InputsSpecs, PathToConnector, Resources, StringMap } from '../Sinks/configurationsFields/configurationsFields';
 
-import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
-import KeyValueEditor from '../../ui/KeyValueEditor/KeyValueEditor';
-import FormItem from '../../ui/ConfigurationTable/FormItem/FormItem';
+export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector' | 'schemaType' | 'conditionalAttachments';
 
-import sf from '../../ui/ConfigurationTable/form.module.css';
+export type ConditionalAttachments = {
+  limitation: 'sinkType',
+  fields: {
+    [key: string]: IoConfigField[],
+  }
+}
 
-export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector';
+type Enum = {
+  value: string,
+  label: string,
+}
 
 export type IoConfigField = {
   name: string,
@@ -25,9 +37,10 @@ export type IoConfigField = {
   label: string,
   type: IoConfigFieldType,
 
-  enum?: string[],
+  enum?: Enum[],
   mapType?: 'string' | IoConfigField[],
   attachments?: IoConfigField[],
+  conditionalAttachments?: ConditionalAttachments,
 }
 
 export type IoConfigFieldProps = IoConfigField & {
@@ -64,11 +77,20 @@ const IoConfigField = (props: IoConfigFieldProps) => {
     }
   }
 
-  const isKeyValue = (data: StringMap | ConsumerConfigMap | Resources | PathToConnector): data is StringMap => {
+  const isKeyValue = (data: StringMap | InputsSpecs | Resources | PathToConnector | ConnectorsConfigs): data is StringMap => {
     if (data.type || data.path) {
       return false;
     }
     return true;
+  }
+
+  const isSchemaType = (data: ConfigurationValue): data is SchemaTypeT => {
+
+    if (props.type === 'schemaType') {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   return (
@@ -76,7 +98,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
       {props.type === 'enum' && props.enum && typeof(props.value) === 'string' && 
         <Select
           list={props.enum.map(subject => {
-            return { type: 'item', value: subject, title: subject }
+            return { type: 'item', value: subject.value, title: subject.label }
           })}
           value={props.value}
           onChange={(v) => props.onChange(v)}
@@ -153,8 +175,8 @@ const IoConfigField = (props: IoConfigFieldProps) => {
       }
 
       {props.type === 'duration' && typeof(props.value) === 'number' &&
-        <DurationInput
-          initialValue={props.value}
+        <ShortDurationInput
+          initialValue={props.value / 1000}
           onChange={(v) => props.onChange(v)}
         />
       }
@@ -194,6 +216,13 @@ const IoConfigField = (props: IoConfigFieldProps) => {
         <KeyValueEditor
           value={props.value}
           onChange={(v) => props.onChange(v)}
+        />
+      }
+
+      {props.type === 'schemaType' && isSchemaType(props.value) &&
+        <SchemaTypeInput
+          onChange={(v) => props.onChange(v)}
+          value={props.value}
         />
       }
     </>

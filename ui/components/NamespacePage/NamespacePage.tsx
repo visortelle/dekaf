@@ -13,8 +13,9 @@ import * as Modals from '../app/contexts/Modals/Modals';
 import { routes } from '../routes';
 
 import s from './NamespacePage.module.css'
+import IoPage from './IoPage/IoPage';
 
-export type NamespacePageView = 'topics' | 'policies' | 'permissions' | 'subscription-permissions' | 'create-topic';
+export type NamespacePageView = 'topics' | 'policies' | 'permissions' | 'subscription-permissions' | 'create-topic' | 'io';
 export type NamespacePageProps = {
   view: NamespacePageView;
   tenant: string;
@@ -75,6 +76,12 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             type: 'regular'
           },
           {
+            linkTo: routes.tenants.tenant.namespaces.namespace.io.sinks._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Io',
+            onClick: () => { },
+            type: 'regular',
+          },
+          {
             text: 'Delete',
             type: 'danger',
             onClick: () => modals.push({
@@ -100,6 +107,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} /> }
       {props.view === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} /> }
       {props.view === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'io' && <IoPage tenant={props.tenant} namespace={props.namespace} view='sinks' />}
     </div>
   );
 }

@@ -65,11 +65,62 @@ message PathToConnector {
   string path = 2;
 }
 
+enum SinkType {
+  SINK_TYPE_UNSPECIFIED = 0;
+  SINK_TYPE_AEROSPIKE = 1;
+  SINK_TYPE_ALLUXIO = 2;
+  SINK_TYPE_CASSANDRA = 3;
+  SINK_TYPE_ELASTIC_SEARCH = 4;
+  SINK_TYPE_FLUME = 5;
+  SINK_TYPE_HBASE = 6;
+  SINK_TYPE_HDFS2 = 7;
+  SINK_TYPE_HDFS3 = 8;
+  SINK_TYPE_HTTP = 9;
+  SINK_TYPE_INFLUXDB_V1 = 10;
+  SINK_TYPE_INFLUXDB_V2 = 11;
+  SINK_TYPE_JDBC_CLICK_HOUSE = 12;
+  SINK_TYPE_JDBC_MARIA_DB = 13;
+  SINK_TYPE_JDBC_OPEN_MLDB = 14;
+  SINK_TYPE_JDBC_POSTRGRES = 15;
+  SINK_TYPE_JDBC_SQLITE = 16;
+  SINK_TYPE_KAFKA = 17;
+  SINK_TYPE_KINESIS = 18;
+  SINK_TYPE_MONGODB = 19;
+  SINK_TYPE_RABBITMQ = 20;
+  SINK_TYPE_REDIS = 21;
+  SINK_TYPE_SOLR = 22;
+}
+
+enum ClassName {
+  CLASS_NAME_UNSPECIFIED = 0;
+  CLASS_NAME_AEROSPIKE_STRING_SINK = 1;
+  CLASS_NAME_ALLUXIO_SINK = 2;
+  CLASS_NAME_CASSANDRA_STRING_SINK = 3;
+  CLASS_NAME_ELASTIC_SEARCH_SINK = 4;
+  CLASS_NAME_STRING_SINK = 5;
+  CLASS_NAME_HBASE_ABSTRACT_CONFIG = 6;
+  CLASS_NAME_ABSTRACT_HDFS2_CONNECTOR = 7;
+  CLASS_NAME_ABSTRACT_HDFS3_CONNECTOR = 8;
+  CLASS_NAME_HTTP_SINK = 9;
+  CLASS_NAME_CLICK_HOUSE_JDBC_AUTO_SCHEMA_SINK = 10;
+  CLASS_NAME_INFLUXDB_GENERIC_RECORD_SINK = 11;
+  CLASS_NAME_MARIADB_JDBC_AUTO_SCHEMA_SINK = 12;
+  CLASS_NAME_OPEN_MLDB_JDBC_AUTO_SCHEMA_SINK = 13;
+  CLASS_NAME_POSTGRES_JDBC_AUTO_SCHEMA_SINK = 14;
+  CLASS_NAME_SQLITE_JDBC_AUTO_SCHEMA_SINK = 15;
+  CLASS_NAME_KAFKA_ABSTRACT_SINK = 16;
+  CLASS_NAME_KINESIS_SINK = 17;
+  CLASS_NAME_MONGO_SINK = 18;
+  CLASS_NAME_RABBIT_MQ_SINK = 19;
+  CLASS_NAME_REDIS_ABSTRACT_CONFIG = 20;
+  CLASS_NAME_SOLR_SINK_CONFIG = 21;
+}
+
 message SinkConfig {
   string tenant = 1;
   string namespace = 2;
   string name = 3;
-  string class_name = 4;
+  ClassName class_name = 4;
   string source_subscription_name = 5;
   SubscriptionInitialPosition source_subscription_position = 6;
   repeated string inputs = 7;
@@ -95,18 +146,69 @@ message SinkConfig {
   string runtime_flags = 27;
   string custom_runtime_options = 28;
   PathToConnector path_to_connector = 29;
-  string sink_type = 30;
+  SinkType sink_type = 30;
+}
+
+message Sinks {
+  string name = 1;
+  int32 running = 5;
+  int32 num_instances = 6;
+  int32 num_running = 7;
+  int32 reads = 8;
+  int32 writes = 9;
 }
 
 message CreateSinkRequest {
   google.rpc.Status status = 1;
   SinkConfig sink_config = 2;
-  string file_name = 3;
 }
 message CreateSinkResponse {
   google.rpc.Status status = 1;
 }
 
+message GetSinksRequest {
+  google.rpc.Status status = 1;
+  string tenant = 2;
+  string namespace = 3;
+}
+message GetSinksResponse {
+  google.rpc.Status status = 1;
+  repeated Sinks sinks = 2;
+}
+
+message GetSinkRequest {
+  google.rpc.Status status = 1;
+  string tenant = 2;
+  string namespace = 3;
+  string sink = 4;
+}
+message GetSinkResponse {
+  google.rpc.Status status = 1;
+  SinkConfig sink_config = 2;
+}
+
+message UpdateSinkRequest {
+  google.rpc.Status status = 1;
+  SinkConfig sink_config = 2;
+}
+message UpdateSinkResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteSinkRequest {
+  google.rpc.Status status = 1;
+  string tenant = 2;
+  string namespace = 3;
+  string sink = 4;
+}
+message DeleteSinkResponse {
+  google.rpc.Status status = 1;
+}
+
 service IoService {
   rpc CreateSink(CreateSinkRequest) returns (CreateSinkResponse);
+  rpc GetSinks(GetSinksRequest) returns (GetSinksResponse);
+  rpc GetSink(GetSinkRequest) returns (GetSinkResponse);
+  rpc UpdateSink(UpdateSinkRequest) returns (UpdateSinkResponse);
+  rpc DeleteSink(DeleteSinkRequest) returns (DeleteSinkResponse);
 }

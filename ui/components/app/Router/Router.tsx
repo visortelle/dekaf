@@ -11,7 +11,7 @@ import NamespacePage, { NamespacePageView } from '../../NamespacePage/NamespaceP
 import TopicPage, { TopicPageView } from '../../TopicPage/TopicPage';
 import { TreeNode } from '../../NavigationTree/TreeView';
 import InstancePage from '../../InstancePage/InstancePage';
-import IoPage, { IoPageView } from '../../IoPage/IoPage';
+import IoPage, { IoPageView } from '../../NamespacePage/IoPage/IoPage';
 
 type WithLayoutProps = { layout: Omit<LayoutProps, "children"> };
 type WithLayout = (children: React.ReactElement, props: WithLayoutProps) => React.ReactElement;
@@ -118,6 +118,28 @@ const prepareRoutes = (): {
       element: withLayout(<RoutedNamespacePage view='subscription-permissions' />, withLayoutProps),
     },
 
+    /* Io */
+    { 
+      path: routes.tenants.tenant.namespaces.namespace.io.sinks._.path,
+      element: withLayout(<RoutedIoPage view={'sinks'} />, withLayoutProps)
+    },
+    { 
+      path: routes.tenants.tenant.namespaces.namespace.io.sinks.create._.path,
+      element: withLayout(<RoutedIoPage view={'sinks-create'} />, withLayoutProps)
+    },
+    { 
+      path: routes.tenants.tenant.namespaces.namespace.io.sinks.edit._.path,
+      element: withLayout(
+        <WithParams>
+          {(params) => <RoutedIoPage  view={'sinks-edit'} sink={params.sink} />}
+        </WithParams>, withLayoutProps
+      )
+    },
+    { 
+      path: routes.tenants.tenant.namespaces.namespace.io.sources._.path,
+      element: withLayout(<RoutedIoPage view={'sources'} />, withLayoutProps) 
+    },
+
     /* Tenants */
     { 
       path: routes.tenants.tenant.configuration._.path,
@@ -130,23 +152,6 @@ const prepareRoutes = (): {
     {
       path: routes.tenants.tenant.namespaces._.path,
       element: withLayout(<RoutedTenantPage view={"namespaces"} />, setScrollMode(withLayoutProps, "page-own")),
-    },
-    /* Io */
-    { 
-      path: routes.io.sinks._.path,
-      element: withLayout(<RoutedIoPage view={'sinks'} />, withLayoutProps)
-    },
-    { 
-      path: routes.io.sinks.create._.path,
-      element: withLayout(<RoutedIoPage view={'sinks-create'} />, withLayoutProps)
-    },
-    { 
-      path: routes.io.sources._.path,
-      element: withLayout(<RoutedIoPage view={'sources'} />, withLayoutProps) 
-    },
-    { 
-      path: routes.io.sources.create._.path,
-      element: withLayout(<RoutedIoPage view={'sources-create'} />, withLayoutProps)
     },
   ];
   
@@ -187,8 +192,9 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   return useRoutes(getRoutes({ withLayout, withLayoutProps }));
 };
 
-const RoutedIoPage = (props: { view: IoPageView }) => {
-  return <IoPage view={props.view} />
+const RoutedIoPage = (props: { view: IoPageView, sink?: string }) => {
+  const { tenant, namespace } = useParams();
+  return <IoPage tenant={tenant!} namespace={namespace!} view={props.view} sink={props.sink} />
 }
 
 const RoutedTenantPage = (props: { view: TenantPageView }) => {

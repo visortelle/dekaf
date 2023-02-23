@@ -1,0 +1,63 @@
+.CreateSink {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20rem;
+}
+
+.Field {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 12rem;
+}
+.Field:last-child {
+  margin-bottom: 0;
+}
+
+.Input {
+  width: 60%;
+}
+
+.MapObjects {
+  width: 100%;
+  padding: 12rem;
+}
+
+.MapObject {
+  width: 100%;
+  padding: 12rem;
+  margin-top: 12rem;
+  border: 1px solid #ddd;
+}
+
+.MapObjectBlock {
+  display: flex;
+  width: 100%;
+  padding: 12rem;
+}
+
+.MapObjectAttachmentBlock {
+  width: 100%;
+  padding: 12rem;
+}
+
+.Attachments {
+  width: 60%;
+}
+
+.HideUnrequired {
+  display: none;
+}
+
+.Label {
+  font-size: 14rem;
+  font-weight: bold;
+  width: 40%;
+}
+
+.Buttons {
+  display: flex;
+}
+.Buttons > button {
+  margin-right: 12rem;
+}

@@ -8,7 +8,6 @@ import Tenants from './Tenants/Tenants';
 import CreateTenantPage from './CreateTenantPage/CreateTenantPage';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import ResourceGroups from './ResourceGroups/ResourceGroups';
-import KeyValueEditor from '../ui/KeyValueEditor/KeyValueEditor';
 
 export type InstancePageView =
   { type: 'overview' } |
@@ -17,7 +16,7 @@ export type InstancePageView =
   { type: 'create-tenant' } |
   { type: 'resource-groups' } |
   { type: 'create-resource-group' } |
-  { type: 'edit-resource-group', groupName: string };
+  { type: 'edit-resource-group', groupName: string }
 
 export type InstancePageProps = {
   view: InstancePageView;
@@ -61,12 +60,6 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               text: 'Resource groups',
               onClick: () => { },
               type: 'regular'
-            },
-            {
-              linkTo: routes.io.sinks._.get(),
-              text: 'Io',
-              onClick: () => { },
-              type: 'regular',
             },
             {
               linkTo: routes.instance.createTenant._.get(),

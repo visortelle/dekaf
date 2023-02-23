@@ -74,6 +74,43 @@ export const routes = {
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/policies`,
             },
           },
+          io: {
+            sinks: {
+              _: {
+                path: "/tenants/:tenant/namespaces/:namespace/io/sinks",
+                get: (props: { tenant: string; namespace: string }) =>
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/io/sinks`,
+              },
+              create: {
+                _: {
+                  path: "/tenants/:tenant/namespaces/:namespace/io/sinks/create",
+                  get: (props: { tenant: string; namespace: string }) =>
+                  `/tenants/${props.tenant}/namespaces/${props.namespace}/io/sinks/create`,
+                }
+              },
+              edit: {
+                _: {
+                  path: "/tenants/:tenant/namespaces/:namespace/io/sinks/edit/:sink",
+                  get: (props: { tenant: string, namespace: string, sink: string }) =>
+                  `/tenants/${props.tenant}/namespaces/${props.namespace}/io/sinks/edit/${props.sink}`,
+                }
+              }
+            },
+            sources: {
+              _: {
+                path: "/tenants/:tenant/namespaces/:namespace/io/sources",
+                get: (props: { tenant: string; namespace: string }) =>
+                `/tenants/${props.tenant}/namespaces/${props.namespace}/io/sources`,
+              },
+              create: {
+                _: {
+                  path: "/tenants/:tenant/namespaces/:namespace/io/sources/create",
+                  get: (props: { tenant: string; namespace: string }) =>
+                  `/tenants/${props.tenant}/namespaces/${props.namespace}/io/sources/create`,
+                }
+              }
+            },
+          },
           createTopic: {
             _: {
               path: "/tenants/:tenant/namespaces/:namespace/create-topic",
@@ -183,30 +220,4 @@ export const routes = {
       },
     },
   },
-  io: {
-    sinks: {
-      _: {
-        path: "/io/sinks",
-        get: () => "/io/sinks",
-      },
-      create: {
-        _: {
-          path: "/io/sinks/create",
-          get: () => "/io/sinks/create",
-        }
-      }
-    },
-    sources: {
-      _: {
-        path: "/io/sources",
-        get: () => "/io/sources",
-      },
-      create: {
-        _: {
-          path: "/io/sources/create",
-          get: () => "/io/sources/create",
-        }
-      }
-    },
-  }
 } as const;

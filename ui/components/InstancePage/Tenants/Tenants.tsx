@@ -1,26 +1,26 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import s from './Tenants.module.css'
-import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { ListItem, TableVirtuoso } from 'react-virtuoso';
+import Highlighter from "react-highlight-words";
+import { useDebounce } from 'use-debounce';
+import _, { isEqual, partition } from 'lodash';
+import useSWR from 'swr';
+
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient'
-import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb'
-import * as Notifications from '../../app/contexts/Notifications';
-import * as I18n from '../../app/contexts/I18n/I18n';
-import useSWR from 'swr';
-import { swrKeys } from '../../swrKeys';
-import { ListItem, TableVirtuoso } from 'react-virtuoso';
-import { isEqual, partition } from 'lodash';
-import Highlighter from "react-highlight-words";
 import Link from '../../ui/Link/Link';
-import { routes } from '../../routes';
 import { NamespaceIcon } from '../../ui/Icons/Icons';
 import Input from '../../ui/Input/Input';
-import { useDebounce } from 'use-debounce';
-import { useRef } from 'react';
-import _ from 'lodash';
+import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as Notifications from '../../app/contexts/Notifications';
+import * as I18n from '../../app/contexts/I18n/I18n';
+import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import { routes } from '../../routes';
+import { swrKeys } from '../../swrKeys';
+
+import s from './Tenants.module.css'
+import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 
 export type TenantInfo = {
   allowedClusters: string[];

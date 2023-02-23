@@ -12,7 +12,7 @@ import { swrKeys } from "../../swrKeys";
 import Button from "../Button/Button";
 import Favicons from "./favicons/Favicons";
 
-export type CrumbType = "instance" | "tenant" | "namespace" | "persistent-topic" | "non-persistent-topic" | "link";
+export type CrumbType = "instance" | "tenant" | "namespace" | "io" | "persistent-topic" | "non-persistent-topic" | "link";
 
 export type Crumb = {
   id: string;
@@ -42,6 +42,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       case "namespace":
         icon = <NamespaceIcon />;
         break;
+      case "io":
+        break;
       case "persistent-topic":
         icon = <TopicIcon topicType='persistent' />;
         break;
@@ -62,6 +64,9 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         break;
       case "namespace":
         href = routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant, namespace });
+        break;
+      case "io":
+        href = routes.tenants.tenant.namespaces.namespace.io.sinks._.get({ tenant, namespace });
         break;
       case "persistent-topic":
         href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({

@@ -9,6 +9,8 @@ export type DurationInputProps = {
   // Seconds
   initialValue: number;
   onChange: (seconds: number) => void;
+
+  short?: boolean;
 };
 
 const DurationInput: React.FC<DurationInputProps> = (props) => {
