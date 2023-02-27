@@ -52,6 +52,7 @@ enum ProcessingGuarantees {
   PROCESSING_GUARANTEES_ATLEAST_ONCE = 1;
   PROCESSING_GUARANTEES_ATMOST_ONCE = 2;
   PROCESSING_GUARANTEES_EFFECTIVELY_ONCE = 3;
+  PROCESSING_GUARANTEES_MANUAL = 4;
 }
 
 enum PathType {
@@ -158,6 +159,42 @@ message Sinks {
   int32 writes = 9;
 }
 
+message ProducerConfig {
+  int32 max_pending_messages = 1;
+  int32 max_pending_messages_across_partitions = 2;
+  bool use_thread_local_producers = 3;
+  CryptoConfig crypto_config = 4;
+  string batch_builder = 5;
+}
+
+message BatchSourceConfig {
+  string batchsource_config_key = 1;
+  string batchsource_classname_key = 2;
+  string discovery_triggerer_class_name = 3;
+  string discovery_triggerer_config = 4; // map<String, Json(Object)>
+}
+
+message Source {
+  string tenant = 1;
+  string namespace = 2;
+  string name = 3;
+  string class_name = 4;
+  string topic_name = 5;
+  ProducerConfig producer_config = 6;
+  string serde_class_name = 7;
+  string schema_type = 8;
+  string configs = 9; // map<String, Json(Object)>
+  string secrets = 10; // map<String, Json(Object)>
+  int32 parallelism = 11;
+  ProcessingGuarantees processing_guarantees = 12;
+  Resources resources = 13;
+  string archive = 14;
+  string runtime_flags = 15;
+  string custom_runtime_options = 16;
+  BatchSourceConfig batch_source_config = 17;
+  string batch_builder = 18;
+}
+
 message CreateSinkRequest {
   google.rpc.Status status = 1;
   SinkConfig sink_config = 2;
@@ -205,10 +242,64 @@ message DeleteSinkResponse {
   google.rpc.Status status = 1;
 }
 
+message CreateSourceRequest {
+  google.rpc.Status status = 1;
+  Source source = 2;
+}
+message CreateSourceResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetListSourcesRequest {
+  google.rpc.Status status = 1;
+  string tenant = 2;
+  string namespace = 3;
+}
+message GetListSourcesResponse {
+  google.rpc.Status status = 1;
+  repeated string sources = 2;
+}
+
+message GetSourceRequest {
+  google.rpc.Status status = 1;
+  string tenant = 2;
+  string namespace = 3;
+  string source = 4;
+}
+message GetSourceResponse {
+  google.rpc.Status status = 1;
+  Source source = 2;
+}
+
+message UpdateSourceRequest {
+  google.rpc.Status status = 1;
+  Source source = 2;
+}
+message UpdateSourceResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteSourceRequest {
+  google.rpc.Status status = 1;
+  string tenant = 2;
+  string namespace = 3;
+  string source = 4;
+}
+
+message DeleteSourceResponse {
+  google.rpc.Status status = 1;
+}
+
 service IoService {
   rpc CreateSink(CreateSinkRequest) returns (CreateSinkResponse);
   rpc GetSinks(GetSinksRequest) returns (GetSinksResponse);
   rpc GetSink(GetSinkRequest) returns (GetSinkResponse);
   rpc UpdateSink(UpdateSinkRequest) returns (UpdateSinkResponse);
   rpc DeleteSink(DeleteSinkRequest) returns (DeleteSinkResponse);
+
+  rpc CreateSource(CreateSourceRequest) returns (CreateSourceResponse);
+  rpc GetListSources(GetListSourcesRequest) returns (GetListSourcesResponse);
+  rpc GetSource(GetSourceRequest) returns (GetSourceResponse);
+  rpc UpdateSource(UpdateSourceRequest) returns (UpdateSourceResponse);
+  rpc DeleteSource(DeleteSourceRequest) returns (DeleteSourceResponse);
 }

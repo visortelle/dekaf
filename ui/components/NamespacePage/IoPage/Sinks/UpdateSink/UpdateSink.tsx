@@ -215,11 +215,13 @@ const UpdateSink = (props: CreateSinkProps) => {
   const isComplexString = (configurationValue: ConfigurationValue): configurationValue is string | string[] => {
     if (typeof(configurationValue) !== 'number' && typeof(configurationValue) !== 'boolean' && ((typeof(configurationValue) === 'object' && Array.isArray(configurationValue)) || typeof(configurationValue) === 'string' || Array.isArray(configurationValue))) {
       return true;
-    } else return false;
+    }
+    
+    return false;
   }
 
   const isPathToConnector = (configurationValue: ConfigurationValue): configurationValue is PathToConnector => {
-    if (typeof(configurationValue) === 'string' || typeof(configurationValue) === 'number' || typeof(configurationValue) === 'boolean' || Array.isArray(configurationValue) ){
+    if (typeof(configurationValue) === 'string' || typeof(configurationValue) === 'number' || typeof(configurationValue) === 'boolean' || Array.isArray(configurationValue)) {
       return false;
     }
 
@@ -412,257 +414,260 @@ const UpdateSink = (props: CreateSinkProps) => {
       {configurationsFields.map(configuration => (
         <FormItem key={configuration.name}>
           <div key={configuration.name} className={`${s.Field} ${(hideUnrequired && !configuration.isRequired) && s.HideUnrequired}`}>
-          
-            <div className={s.Label}>
-              <FormLabel
-                content={configuration.label}
-                isRequired={configuration.isRequired}
-              />
-              <div className={s.EntryButton}>
-                <Button
-                  svgIcon={enableIcon}
-                  onClick={() => {}}
-                  title='help information'
-                  type='primary'
-                />
-                <span className={`${s.HelpInformation}`}>
-                  {configuration.help}
-                </span>
-              </div>
-            </div>
-
-            {configuration.attachments &&
-              <div className={s.MapObject}>
-                {configuration.attachments.map(attachment => (
-                  <FormItem key={attachment.name}>
-                    <div className={s.MapObjectBlock}>
-                      <div className={s.Label}>
-                        <FormLabel content={attachment.label} />
-                        <div className={s.EntryButton}>
-                          <Button
-                            svgIcon={enableIcon}
-                            onClick={() => {}}
-                            title='help information'
-                            type='primary'
-                          />
-                        </div>
-                      </div>
-                      <div className={s.Input}>
-                        <IoConfigField
-                          name={attachment.name}
-                          isRequired={attachment.isRequired}
-                          type={attachment.type}
-                          help={attachment.help}
-                          label={attachment.label}
-                          value={configurations[configuration.name][attachment.name as keyof ConfigurationValue]}
-                          onChange={(v) => changeAttachment(configuration.name, attachment.name, v)}
-                          configurations={configurations}
-                          enum={attachment.enum}
-                          mapType={attachment.mapType}
-                        />
-                      </div>
-                    </div>
-                  </FormItem>
-                ))}
-              </div>
-            }
-            
-            {!configuration.attachments && (configuration.type !== 'map' || typeof(configuration.mapType) === 'string') &&
-              <div key={configuration.name} className={s.Input}>
-                <IoConfigField
-                  name={configuration.name}
-                  isRequired={configuration.isRequired}
-                  type={configuration.type}
-                  help={configuration.help}
-                  label={configuration.label}
-                  value={configurations[configuration.name]}
-                  onChange={(v) => onChange({
-                    ...configurations,
-                    [configuration.name]: v
-                  })}
-                  configurations={configurations}
-                  enum={configuration.enum}
-                  mapType={configuration.mapType}
-                />
-              </div>
-            }
-
-            {configuration.type === 'map' && typeof(configuration.mapType) === 'object' &&
-              <div className={s.MapObjects}>
-                {Object.keys(configurations[configuration.name]).map(configurationKey => (
-                  <div key={configurationKey} className={s.MapObject}>
-                    <div className={s.MapObjectDelete}>
-                      <Button
-                        svgIcon={deleteIcon}
-                        onClick={() => reduceMap(configuration.name, configurationKey)}
-                        type="danger"
-                        title={`Delete ${configuration.label.toLowerCase().slice(0, -1)}`}
-                      />
-                    </div>
-                    {configuration.mapType && configuration.mapType !== 'string' && configuration.mapType.map(key => (
-                      <div key={key.name} className={`${key.attachments ? s.MapObjectAttachmentBlock : s.MapObjectBlock}`}>
-                        <div className={`${s.Label} ${sf.FormItem}`} >
-                          <FormLabel
-                            content={key.label}
-                            isRequired={configuration.isRequired}
-                          />
-                          <div className={s.EntryButton}>
-                            <Button
-                              svgIcon={enableIcon}
-                              onClick={() => {}}
-                              title='help information'
-                              type='primary'
-                            />
-                          </div>
-                        </div>
-                        {key.attachments &&
-                          <div className={s.MapObject}>
-                            {key.attachments.map((attachment) => (
-                              <div className={s.Field} key={attachment.name}>
-                                <div className={s.Label}>
-                                  <FormLabel
-                                    content={attachment.label}
-                                    isRequired={configuration.isRequired}
-                                  />
-                                  <div className={s.EntryButton}>
-                                    <Button
-                                      svgIcon={enableIcon}
-                                      onClick={() => {}}
-                                      title='help information'
-                                      type='primary'
-                                    />
-                                  </div>
-                                </div>
-                                <div className={s.Input}>
-                                  <IoConfigField
-                                    name={attachment.name}
-                                    isRequired={attachment.isRequired}
-                                    type={attachment.type}
-                                    help={attachment.help}
-                                    label={attachment.label}
-                                    value={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name][attachment.name]}
-                                    onChange={(value) => changeMap(configuration.name, configurationKey, key.name, value, attachment.name)}
-                                    configurations={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name]}
-                                    enum={attachment.enum}
-                                    mapType={attachment.mapType}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        }
-
-                        {configuration.mapType && !key.attachments && (key.type !== 'map' || typeof(key.mapType) === 'string') &&
-                          <div key={key.name} className={s.Input}>
-                            <IoConfigField
-                              name={key.name}
-                              isRequired={key.isRequired}
-                              type={key.type}
-                              help={key.help}
-                              label={key.label}
-                              value={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name]}
-                              onChange={(value) => changeMap(configuration.name, configurationKey, key.name, value)}
-                              configurations={configurations[configuration.name][configurationKey as keyof ConfigurationValue]}
-                              enum={key.enum}
-                              mapType={key.mapType}
-                            />
-                          </div>
-                        }
-                      </div>
-                    ))}
-
+            {props.action === 'edit' && configuration.name !== 'pathToConnector' &&
+              <>
+                <div className={s.Label}>
+                  <FormLabel
+                    content={configuration.label}
+                    isRequired={configuration.isRequired}
+                  />
+                  <div className={s.EntryButton}>
+                    <Button
+                      svgIcon={enableIcon}
+                      onClick={() => {}}
+                      title='help information'
+                      type='primary'
+                    />
+                    <span className={`${s.HelpInformation}`}>
+                      {configuration.help}
+                    </span>
                   </div>
-                ))}
-                <button
-                  className={`${sl.AddButton} ${sl.AddButtonEnabled}`}
-                  type="button"
-                  onClick={() => expandMap(configuration.name)}
-                >
-                  {`Add ${configuration.label.toLowerCase().slice(0, -1)}`}
-                </button>
-              </div>
-            }
+                </div>
 
-            {configuration.type === 'conditionalAttachments' && configuration.conditionalAttachments && 
-              <div className={s.MapObject}>
-                {configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation]].map(attachment => {
-                  const connectorsConfigs = configurations[configuration.name];
-                  const nesteds = isConnectorsConfigs(connectorsConfigs) && configuration.conditionalAttachments && connectorsConfigs[configurations[configuration.conditionalAttachments.limitation]][attachment.name];
-                  
-                  return (
-                    <div className={`${s.MapObjectBlock} ${s.Field}`} key={attachment.name}>
-                      <div className={s.Label}>
-                        <FormLabel content={attachment.label} />
-                        <div className={s.EntryButton}>
-                          <Button
-                            svgIcon={enableIcon}
-                            onClick={() => {}}
-                            title='help information'
-                            type='primary'
-                          />
-                        </div>
-                      </div>
-
-                      {attachment.attachments && 
-                        <div key={attachment.name} className={s.MapObject}>
-                          {attachment.attachments.map(nested => {
-                            return (
-                              <div key={nested.name} className={`${s.MapObjectBlock}`}>
-                                <div className={s.Label}>
-                                  <FormLabel content={nested.label} />
-                                  <div className={s.EntryButton}>
-                                    <Button
-                                      svgIcon={enableIcon}
-                                      onClick={() => {}}
-                                      title='help information'
-                                      type='primary'
-                                    />
-                                  </div>
-                                </div>
-                                <div className={s.Input}>
-                                  {typeof nesteds !== 'undefined' &&
-                                    <IoConfigField
-                                      name={nested.name}
-                                      isRequired={nested.isRequired}
-                                      type={nested.type}
-                                      help={nested.help}
-                                      label={nested.label}
-                                      value={isElasticSearchSslConfigs(nesteds) && nesteds[nested.name]}
-                                      onChange={(v) => configuration.conditionalAttachments && changeConditionalAttachments(configuration.name, attachment.name, configurations[configuration.conditionalAttachments.limitation], v, nested.name)}
-                                      configurations={configurations}
-                                      enum={nested.enum}
-                                      mapType={nested.mapType}
-                                    />
-                                  }
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      }
-                      
-                      {!attachment.attachments && (attachment.type !== 'map' || typeof(attachment.mapType) === 'string') &&
-                        <div key={attachment.name} className={s.Input}>
-                          {typeof nesteds !== 'undefined' &&
+                {configuration.attachments &&
+                  <div className={s.MapObject}>
+                    {configuration.attachments.map(attachment => (
+                      <FormItem key={attachment.name}>
+                        <div className={s.MapObjectBlock}>
+                          <div className={s.Label}>
+                            <FormLabel content={attachment.label} />
+                            <div className={s.EntryButton}>
+                              <Button
+                                svgIcon={enableIcon}
+                                onClick={() => {}}
+                                title='help information'
+                                type='primary'
+                              />
+                            </div>
+                          </div>
+                          <div className={s.Input}>
                             <IoConfigField
                               name={attachment.name}
                               isRequired={attachment.isRequired}
                               type={attachment.type}
                               help={attachment.help}
                               label={attachment.label}
-                              value={!isElasticSearchSslConfigs(nesteds) && nesteds} 
-                              onChange={(v) => configuration.conditionalAttachments && changeConditionalAttachments(configuration.name, attachment.name, configurations[configuration.conditionalAttachments.limitation], v)}
+                              value={configurations[configuration.name][attachment.name as keyof ConfigurationValue]}
+                              onChange={(v) => changeAttachment(configuration.name, attachment.name, v)}
                               configurations={configurations}
                               enum={attachment.enum}
                               mapType={attachment.mapType}
                             />
+                          </div>
+                        </div>
+                      </FormItem>
+                    ))}
+                  </div>
+                }
+                
+                {!configuration.attachments && (configuration.type !== 'map' || typeof(configuration.mapType) === 'string') &&
+                  <div key={configuration.name} className={s.Input}>
+                    <IoConfigField
+                      name={configuration.name}
+                      isRequired={configuration.isRequired}
+                      type={configuration.type}
+                      help={configuration.help}
+                      label={configuration.label}
+                      value={configurations[configuration.name]}
+                      onChange={(v) => onChange({
+                        ...configurations,
+                        [configuration.name]: v
+                      })}
+                      configurations={configurations}
+                      enum={configuration.enum}
+                      mapType={configuration.mapType}
+                    />
+                  </div>
+                }
+
+                {configuration.type === 'map' && typeof(configuration.mapType) === 'object' &&
+                  <div className={s.MapObjects}>
+                    {Object.keys(configurations[configuration.name]).map(configurationKey => (
+                      <div key={configurationKey} className={s.MapObject}>
+                        <div className={s.MapObjectDelete}>
+                          <Button
+                            svgIcon={deleteIcon}
+                            onClick={() => reduceMap(configuration.name, configurationKey)}
+                            type="danger"
+                            title={`Delete ${configuration.label.toLowerCase().slice(0, -1)}`}
+                          />
+                        </div>
+                        {configuration.mapType && configuration.mapType !== 'string' && configuration.mapType.map(key => (
+                          <div key={key.name} className={`${key.attachments ? s.MapObjectAttachmentBlock : s.MapObjectBlock}`}>
+                            <div className={`${s.Label} ${sf.FormItem}`} >
+                              <FormLabel
+                                content={key.label}
+                                isRequired={configuration.isRequired}
+                              />
+                              <div className={s.EntryButton}>
+                                <Button
+                                  svgIcon={enableIcon}
+                                  onClick={() => {}}
+                                  title='help information'
+                                  type='primary'
+                                />
+                              </div>
+                            </div>
+                            {key.attachments &&
+                              <div className={s.MapObject}>
+                                {key.attachments.map((attachment) => (
+                                  <div className={s.Field} key={attachment.name}>
+                                    <div className={s.Label}>
+                                      <FormLabel
+                                        content={attachment.label}
+                                        isRequired={configuration.isRequired}
+                                      />
+                                      <div className={s.EntryButton}>
+                                        <Button
+                                          svgIcon={enableIcon}
+                                          onClick={() => {}}
+                                          title='help information'
+                                          type='primary'
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className={s.Input}>
+                                      <IoConfigField
+                                        name={attachment.name}
+                                        isRequired={attachment.isRequired}
+                                        type={attachment.type}
+                                        help={attachment.help}
+                                        label={attachment.label}
+                                        value={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name][attachment.name]}
+                                        onChange={(value) => changeMap(configuration.name, configurationKey, key.name, value, attachment.name)}
+                                        configurations={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name]}
+                                        enum={attachment.enum}
+                                        mapType={attachment.mapType}
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            }
+
+                            {configuration.mapType && !key.attachments && (key.type !== 'map' || typeof(key.mapType) === 'string') &&
+                              <div key={key.name} className={s.Input}>
+                                <IoConfigField
+                                  name={key.name}
+                                  isRequired={key.isRequired}
+                                  type={key.type}
+                                  help={key.help}
+                                  label={key.label}
+                                  value={configurations[configuration.name][configurationKey as keyof ConfigurationValue][key.name]}
+                                  onChange={(value) => changeMap(configuration.name, configurationKey, key.name, value)}
+                                  configurations={configurations[configuration.name][configurationKey as keyof ConfigurationValue]}
+                                  enum={key.enum}
+                                  mapType={key.mapType}
+                                />
+                              </div>
+                            }
+                          </div>
+                        ))}
+
+                      </div>
+                    ))}
+                    <button
+                      className={`${sl.AddButton} ${sl.AddButtonEnabled}`}
+                      type="button"
+                      onClick={() => expandMap(configuration.name)}
+                    >
+                      {`Add ${configuration.label.toLowerCase().slice(0, -1)}`}
+                    </button>
+                  </div>
+                }
+
+                {configuration.type === 'conditionalAttachments' && configuration.conditionalAttachments && 
+                  <div className={s.MapObject}>
+                    {configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation]].map(attachment => {
+                      const connectorsConfigs = configurations[configuration.name];
+                      const nesteds = isConnectorsConfigs(connectorsConfigs) && configuration.conditionalAttachments && connectorsConfigs[configurations[configuration.conditionalAttachments.limitation]][attachment.name];
+                      
+                      return (
+                        <div className={`${s.MapObjectBlock} ${s.Field}`} key={attachment.name}>
+                          <div className={s.Label}>
+                            <FormLabel content={attachment.label} />
+                            <div className={s.EntryButton}>
+                              <Button
+                                svgIcon={enableIcon}
+                                onClick={() => {}}
+                                title='help information'
+                                type='primary'
+                              />
+                            </div>
+                          </div>
+
+                          {attachment.attachments && 
+                            <div key={attachment.name} className={s.MapObject}>
+                              {attachment.attachments.map(nested => {
+                                return (
+                                  <div key={nested.name} className={`${s.MapObjectBlock}`}>
+                                    <div className={s.Label}>
+                                      <FormLabel content={nested.label} />
+                                      <div className={s.EntryButton}>
+                                        <Button
+                                          svgIcon={enableIcon}
+                                          onClick={() => {}}
+                                          title='help information'
+                                          type='primary'
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className={s.Input}>
+                                      {typeof nesteds !== 'undefined' &&
+                                        <IoConfigField
+                                          name={nested.name}
+                                          isRequired={nested.isRequired}
+                                          type={nested.type}
+                                          help={nested.help}
+                                          label={nested.label}
+                                          value={isElasticSearchSslConfigs(nesteds) && nesteds[nested.name]}
+                                          onChange={(v) => configuration.conditionalAttachments && changeConditionalAttachments(configuration.name, attachment.name, configurations[configuration.conditionalAttachments.limitation], v, nested.name)}
+                                          configurations={configurations}
+                                          enum={nested.enum}
+                                          mapType={nested.mapType}
+                                        />
+                                      }
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          }
+                          
+                          {!attachment.attachments && (attachment.type !== 'map' || typeof(attachment.mapType) === 'string') &&
+                            <div key={attachment.name} className={s.Input}>
+                              {typeof nesteds !== 'undefined' &&
+                                <IoConfigField
+                                  name={attachment.name}
+                                  isRequired={attachment.isRequired}
+                                  type={attachment.type}
+                                  help={attachment.help}
+                                  label={attachment.label}
+                                  value={!isElasticSearchSslConfigs(nesteds) && nesteds} 
+                                  onChange={(v) => configuration.conditionalAttachments && changeConditionalAttachments(configuration.name, attachment.name, configurations[configuration.conditionalAttachments.limitation], v)}
+                                  configurations={configurations}
+                                  enum={attachment.enum}
+                                  mapType={attachment.mapType}
+                                />
+                              }
+                            </div>
                           }
                         </div>
-                      }
-                    </div>
-                  )
-                })}
-              </div>
+                      )
+                    })}
+                  </div>
+                }
+              </> 
             }
           </div>
         </FormItem>

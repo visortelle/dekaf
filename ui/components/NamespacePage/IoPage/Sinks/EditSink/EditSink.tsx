@@ -327,7 +327,8 @@ const EditSink = (props: EditSinkProps) => {
       {configurations ? 
         <UpdateSink
           configurations={configurations}
-          action='edit' tenant={props.tenant}
+          action='edit'
+          tenant={props.tenant}
           namespace={props.namespace}
           key={stringify(configurations)}
         /> :

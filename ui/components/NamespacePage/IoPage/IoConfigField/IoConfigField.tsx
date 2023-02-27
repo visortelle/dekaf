@@ -52,7 +52,8 @@ export type IoConfigFieldProps = IoConfigField & {
 const IoConfigField = (props: IoConfigFieldProps) => {
 
   const [pathToConnectorType, setPathToConnectorType] = useState('url');
-  const connectors = ['aerospike', 'batch-data-generator', 'canal', 'cassandra', 'data-generator', 'debezium-mongodb', 'debezium-mssql', 'debezium-mysql', 'debezium-oracle', 'debezium-postgres', 'dynamodb', 'elastic-search', 'file', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'kafka-connect-adaptor', 'kinesis', 'mongo', 'netty', 'nsq', 'rabbitmq', 'redis', 'solr', 'twitter'];
+  // const connectors = ['aerospike', 'batch-data-generator', 'canal', 'cassandra', 'data-generator', 'debezium-mongodb', 'debezium-mssql', 'debezium-mysql', 'debezium-oracle', 'debezium-postgres', 'dynamodb', 'elastic-search', 'file', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'kafka-connect-adaptor', 'kinesis', 'mongo', 'netty', 'nsq', 'rabbitmq', 'redis', 'solr', 'twitter'];
+  const connectors = ['aerospike', 'cassandra', 'elastic-search', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'mongo', 'rabbitmq', 'redis', 'solr'];
 
   const addToArray = (eArray: string) => {
     const newArray = _.cloneDeep(props.configurations[props.name] as string[]);
@@ -203,7 +204,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
           getId={(v) => v}
           renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
           editor={{
-            render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="Enter new role" />,
+            render: (v, onChange) => <Input value={v} onChange={onChange} placeholder={`Enter new ${props.label.toLowerCase()}`} />,
             initialValue: '',
           }}
           onRemove={(v) => removeFromArray(v)}

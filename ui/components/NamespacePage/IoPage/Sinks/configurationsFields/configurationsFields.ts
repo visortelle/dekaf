@@ -18,7 +18,56 @@ export type SinkType = 'aerospike' | 'alluxio' | 'cassandra' | 'elasticSearch' |
 
 const CLASS_NAME = [ { value: 'AerospikeStringSink', label: 'Aerospike' }, { value: 'AlluxioSink', label: 'Alluxio' }, { value: 'CassandraStringSink', label: 'Cassandra' }, { value: 'ElasticSearchSink', label: 'Elastic' }, { value: 'StringSink', label: 'flume' }, { value: 'HbaseAbstractConfig', label: 'HBase' }, { value: 'AbstractHdfs2Connector', label: 'HDFS2' }, { value: 'AbstractHdfs3Connector', label: 'HDFS3' }, { value: 'HttpSink', label: 'Http' }, { value: 'InfluxDBGenericRecordSink', label: 'InfluxDB' }, { value: 'ClickHouseJdbcAutoSchemaSink', label: 'JDBC click house' }, { value: 'MariadbJdbcAutoSchemaSink', label: 'Maria JDBC' }, { value: 'OpenMLDBJdbcAutoSchemaSink', label: 'OpenMLDB JDBC' }, { value: 'PostgresJdbcAutoSchemaSink', label: 'Postgres JDBC' }, { value: 'SqliteJdbcAutoSchemaSink', label: 'Sqlite JDBC' }, { value: 'KafkaAbstractSink', label: 'Kafka' }, { value: 'KinesisSink', label: 'Kinesis' }, { value: 'MongoSink', label: 'Mongo' }, { value: 'RabbitMQSink', label: 'Rabbit MQ' }, { value: 'RedisAbstractConfig', label: 'Redis' }, { value: 'SolrSinkConfig', label: 'Solr' }];
 
-export type ClassName = 'AerospikeStringSink' | 'AlluxioSink' | 'CassandraStringSink' | 'ElasticSearchSink' | 'StringSink' | 'HbaseAbstractConfig' | 'AbstractHdfs2Connector' | 'AbstractHdfs3Connector' | 'HttpSink' | 'ClickHouseJdbcAutoSchemaSink' | 'InfluxDBGenericRecordSink' | 'MariadbJdbcAutoSchemaSink' | 'OpenMLDBJdbcAutoSchemaSink' | 'PostgresJdbcAutoSchemaSink' | 'SqliteJdbcAutoSchemaSink' | 'KafkaAbstractSink' | 'KinesisSink' | 'MongoSink' | 'RabbitMQSink' | 'RedisAbstractConfig' | 'SolrSinkConfig'
+export type ClassName = 'AerospikeStringSink' | 'AlluxioSink' | 'CassandraStringSink' | 'ElasticSearchSink' | 'StringSink' | 'HbaseAbstractConfig' | 'AbstractHdfs2Connector' | 'AbstractHdfs3Connector' | 'HttpSink' | 'ClickHouseJdbcAutoSchemaSink' | 'InfluxDBGenericRecordSink' | 'MariadbJdbcAutoSchemaSink' | 'OpenMLDBJdbcAutoSchemaSink' | 'PostgresJdbcAutoSchemaSink' | 'SqliteJdbcAutoSchemaSink' | 'KafkaAbstractSink' | 'KinesisSink' | 'MongoSink' | 'RabbitMQSink' | 'RedisAbstractConfig' | 'SolrSinkConfig';
+
+// type ConfigsTypes = 'aerospike' | 'alluxio' | 'cassandra' | 'elasticSearch' | 'flume' | 'hbase' | 'hdfs2' | 'hdfs3' | 'http' | 'influxdbv1' | 'influxdbv2' | 'jdbcClickHouse' | 'jdbcMariaDB' | 'jdbcOpenMLDB' | 'jdbcPostgres' | 'jdbcSQLite' | 'kafka' | 'kinesis' | 'mongodb' | 'rabbitMQ' | 'redis' | 'solr';
+
+// const classNameToConfig = (className: ClassName): ConfigsTypes => {
+//   switch (className) {
+//     case 'AerospikeStringSink':
+//       return 'aerospike';
+//     case 'AlluxioSink':
+//       return 'alluxio';
+//     case 'CassandraStringSink':
+//       return 'cassandra';
+//     case 'ElasticSearchSink':
+//       return 'elasticSearch';
+//     case 'StringSink':
+//       return 'flume';
+//     case 'HbaseAbstractConfig':
+//       return 'hbase';
+//     case 'AbstractHdfs2Connector':
+//       return 'hdfs2';
+//     case 'AbstractHdfs3Connector':
+//       return 'hdfs3';
+//     case 'HttpSink':
+//       return 'http';
+//     case 'InfluxDBGenericRecordSink':
+//       return 'influxdbv1';
+//     case 'ClickHouseJdbcAutoSchemaSink':
+//       return 'jdbcClickHouse';
+//     case 'MariadbJdbcAutoSchemaSink':
+//       return 'jdbcMariaDB';
+//     case 'OpenMLDBJdbcAutoSchemaSink':
+//       return 'jdbcOpenMLDB';
+//     case 'PostgresJdbcAutoSchemaSink':
+//       return 'jdbcPostgres';
+//     case 'SqliteJdbcAutoSchemaSink':
+//       return 'jdbcSQLite';
+//     case 'KafkaAbstractSink':
+//       return 'kafka';
+//     case 'KinesisSink':
+//       return 'kinesis';
+//     case 'MongoSink':
+//       return 'mongodb';
+//     case 'RabbitMQSink':
+//       return 'rabbitMQ';
+//     case 'RedisAbstractConfig':
+//       return 'redis';
+//     case 'SolrSinkConfig':
+//       return 'solr';
+//   }
+// }
 
 // https://github.com/apache/pulsar/blob/01e0068f0e01216b5b456ecbaf102cdc4dcef56a/pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/impl/SinksBase.java
 
@@ -298,8 +347,6 @@ export const configurationsFields: IoConfigField[] = [
     help: 'A map of secretName(aka how the secret is going to be accessed in the function via context) to an object that encapsulates how the secret is fetched by the underlying secrets provider',
     label: 'Secrets',
   },
-  //  The type of an value here can be found by the SecretProviderConfigurator.getSecretObjectType() method
-
   {
     name: 'resources',
     type: 'attachments',
@@ -457,7 +504,7 @@ export const configurations: Configurations = {
   timeoutMs: 0,
   negativeAckRedeliveryDelayMs: 0,
   cleanupSubscription: true,
-  className: 'ClickHouseJdbcAutoSchemaSink',
+  className: 'PostgresJdbcAutoSchemaSink',
   topicToSerdeClassName: {},
   topicToSchemaType: {},
   configs: defaultConnectorsConfigs,

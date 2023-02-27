@@ -12,12 +12,13 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import org.apache.pulsar.common.functions.{ConsumerConfig, CryptoConfig, FunctionConfig, Resources}
-import org.apache.pulsar.common.io.SinkConfig
+import org.apache.pulsar.common.functions.{ConsumerConfig, CryptoConfig, FunctionConfig, ProducerConfig, Resources}
+import org.apache.pulsar.common.io.{BatchSourceConfig, SinkConfig, SourceConfig}
 import org.apache.pulsar.common.util.ObjectMapperFactory
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.google.gson.JsonParser
+
 import scala.collection.mutable
 import io.circe.parser.*
 
@@ -83,6 +84,8 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
             FunctionConfig.ProcessingGuarantees.ATLEAST_ONCE
         case pb.ProcessingGuarantees.PROCESSING_GUARANTEES_EFFECTIVELY_ONCE =>
             FunctionConfig.ProcessingGuarantees.EFFECTIVELY_ONCE
+        case pb.ProcessingGuarantees.PROCESSING_GUARANTEES_MANUAL =>
+            FunctionConfig.ProcessingGuarantees.MANUAL
 
     def pathToConnectorFromPb(pathType: pb.PathType) = pathType match
         case pb.PathType.PATH_TYPE_URL => "url"
@@ -135,7 +138,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
         case pb.SinkType.SINK_TYPE_REDIS => "redis"
         case pb.SinkType.SINK_TYPE_SOLR => "solr"
 
-    def cryptoConfigConverter(cryptoConfig: Option[pb.CryptoConfig]): CryptoConfig = cryptoConfig match
+    def cryptoConfigConverterFromPb(cryptoConfig: Option[pb.CryptoConfig]): CryptoConfig = cryptoConfig match
         case Some(v) =>
             CryptoConfig(
                 cryptoKeyReaderClassName = v.cryptoKeyReaderClassName,
@@ -156,12 +159,12 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                 schemaProperties = configs.schemaProperties.asJava,
                 consumerProperties = configs.consumerProperties.asJava,
                 receiverQueueSize = configs.receiverQueueSize,
-                cryptoConfig = cryptoConfigConverter(configs.cryptoConfig),
+                cryptoConfig = cryptoConfigConverterFromPb(configs.cryptoConfig),
                 poolMessages = configs.poolMessages,
             )))
         convertedInputSpecs.asJava
 
-    def convertResource(resources: Option[pb.Resources]): Resources = resources match
+    def convertResourcesFromPb(resources: Option[pb.Resources]): Resources = resources match
         case Some(v) =>
             if v.cpu > 0 && v.ram > 0 && v.disk > 0 then
                 Resources(
@@ -202,7 +205,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         topicToSchemaType = if v.topicToSchemaType.isEmpty then null else v.topicToSchemaType.asJava,
                         configs = if v.configs.isEmpty then null else parseConfigs(v.configs),
                         secrets = if v.secrets.isEmpty then null else parseConfigs(v.secrets),
-                        resources = convertResource(v.resources),
+                        resources = convertResourcesFromPb(v.resources),
                         archive = if v.archive.isEmpty then null else v.archive,
                         runtimeFlags = if v.runtimeFlags.isEmpty then null else v.runtimeFlags,
                         customRuntimeOptions = if v.customRuntimeOptions.isEmpty then null else v.customRuntimeOptions,
@@ -227,7 +230,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
     override def getSinks(request: pb.GetSinksRequest): Future[pb.GetSinksResponse] =
         try {
             var sinksSeq = Seq[pb.Sinks]()
-            val sinks = adminClient.sinks.listSinks(request.tenant, request.namespace).asScala
+                val sinks = adminClient.sinks.listSinks(request.tenant, request.namespace).asScala
 
             sinks.foreach(sink =>
                 val sinkStatus = adminClient.sinks.getSinkStatus(request.tenant, request.namespace, sink)
@@ -261,113 +264,112 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
             Future.successful(pb.GetSinksResponse(status = Some(status)))
     }
 
+    def subscriptionInitialPositionToPb(processing: SubscriptionInitialPosition): pb.SubscriptionInitialPosition = processing match
+        case SubscriptionInitialPosition.Earliest =>
+            pb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST
+        case SubscriptionInitialPosition.Latest =>
+            pb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST
+
+    def producerCryptoFailureActionToPb(producer: ProducerCryptoFailureAction): pb.ProducerCryptoFailureAction = producer match
+        case ProducerCryptoFailureAction.FAIL =>
+            pb.ProducerCryptoFailureAction.PRODUCER_CRYPTO_FAILURE_ACTION_FAIL
+        case ProducerCryptoFailureAction.SEND =>
+            pb.ProducerCryptoFailureAction.PRODUCER_CRYPTO_FAILURE_ACTION_SEND
+
+    def consumerCryptoFailureActionToPb(consumer: ConsumerCryptoFailureAction): pb.ConsumerCryptoFailureAction = consumer match
+        case ConsumerCryptoFailureAction.FAIL =>
+            pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_FAIL
+        case ConsumerCryptoFailureAction.CONSUME =>
+            pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_CONSUME
+        case ConsumerCryptoFailureAction.DISCARD =>
+            pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_DISCARD
+
+    def processingGuaranteesToPb(processing: FunctionConfig.ProcessingGuarantees): pb.ProcessingGuarantees = processing match
+        case FunctionConfig.ProcessingGuarantees.ATMOST_ONCE =>
+            pb.ProcessingGuarantees.PROCESSING_GUARANTEES_ATMOST_ONCE
+        case FunctionConfig.ProcessingGuarantees.ATLEAST_ONCE =>
+            pb.ProcessingGuarantees.PROCESSING_GUARANTEES_ATLEAST_ONCE
+        case FunctionConfig.ProcessingGuarantees.EFFECTIVELY_ONCE =>
+            pb.ProcessingGuarantees.PROCESSING_GUARANTEES_EFFECTIVELY_ONCE
+
+    def classNameToPb(className: String): pb.ClassName = className match
+        case "org.apache.pulsar.io.aerospike.AerospikeStringSink" => pb.ClassName.CLASS_NAME_AEROSPIKE_STRING_SINK
+        case "org.apache.pulsar.io.alluxio.sink.AlluxioSink" => pb.ClassName.CLASS_NAME_ALLUXIO_SINK
+        case "org.apache.pulsar.io.cassandra.CassandraStringSink" => pb.ClassName.CLASS_NAME_CASSANDRA_STRING_SINK
+        case "org.apache.pulsar.io.elasticsearch.ElasticSearchSink" => pb.ClassName.CLASS_NAME_ELASTIC_SEARCH_SINK
+        case "org.apache.pulsar.io.flume.sink.StringSink" => pb.ClassName.CLASS_NAME_STRING_SINK
+        case "org.apache.pulsar.io.hbase.HbaseAbstractConfig" => pb.ClassName.CLASS_NAME_HBASE_ABSTRACT_CONFIG
+        case "org.apache.pulsar.io.hdfs2.AbstractHdfsConnector" => pb.ClassName.CLASS_NAME_ABSTRACT_HDFS2_CONNECTOR
+        case "org.apache.pulsar.io.hdfs3.AbstractHdfsConnector" => pb.ClassName.CLASS_NAME_ABSTRACT_HDFS3_CONNECTOR
+        case "org.apache.pulsar.io.http.HttpSink" => pb.ClassName.CLASS_NAME_HTTP_SINK
+        case "org.apache.pulsar.io.influxdb.InfluxDBGenericRecordSink" => pb.ClassName.CLASS_NAME_INFLUXDB_GENERIC_RECORD_SINK
+        case "org.apache.pulsar.io.jdbc.ClickHouseJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_CLICK_HOUSE_JDBC_AUTO_SCHEMA_SINK
+        case "org.apache.pulsar.io.jdbc.MariadbJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_MARIADB_JDBC_AUTO_SCHEMA_SINK
+        case "org.apache.pulsar.io.jdbc.OpenMLDBJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_OPEN_MLDB_JDBC_AUTO_SCHEMA_SINK
+        case "org.apache.pulsar.io.jdbc.PostgresJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_POSTGRES_JDBC_AUTO_SCHEMA_SINK
+        case "org.apache.pulsar.io.jdbc.SqliteJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_SQLITE_JDBC_AUTO_SCHEMA_SINK
+        case "org.apache.pulsar.io.kafka.KafkaAbstractSink" => pb.ClassName.CLASS_NAME_KAFKA_ABSTRACT_SINK
+        case "org.apache.pulsar.io.kinesis.KinesisSink" => pb.ClassName.CLASS_NAME_KINESIS_SINK
+        case "org.apache.pulsar.io.mongodb.MongoSink" => pb.ClassName.CLASS_NAME_MONGO_SINK
+        case "org.apache.pulsar.io.rabbitmq.RabbitMQSink" => pb.ClassName.CLASS_NAME_RABBIT_MQ_SINK
+        case "org.apache.pulsar.io.redis.RedisAbstractConfig" => pb.ClassName.CLASS_NAME_REDIS_ABSTRACT_CONFIG
+        case "org.apache.pulsar.io.solr.SolrSinkConfig" => pb.ClassName.CLASS_NAME_SOLR_SINK_CONFIG
+
+    def sinkTypeToPb(sinkType: String): pb.SinkType = sinkType match
+        case "aerospike" => pb.SinkType.SINK_TYPE_AEROSPIKE
+        case "alluxio" => pb.SinkType.SINK_TYPE_ALLUXIO
+        case "cassandra" => pb.SinkType.SINK_TYPE_CASSANDRA
+        case "elastic_search" => pb.SinkType.SINK_TYPE_ELASTIC_SEARCH
+        case "flume" => pb.SinkType.SINK_TYPE_FLUME
+        case "hbase" => pb.SinkType.SINK_TYPE_HBASE
+        case "hdfs2" => pb.SinkType.SINK_TYPE_HDFS2
+        case "hdfs3" => pb.SinkType.SINK_TYPE_HDFS3
+        case "http" => pb.SinkType.SINK_TYPE_HTTP
+        case "influxdb" => pb.SinkType.SINK_TYPE_INFLUXDB_V1
+        case "jdbc-clickhouse" => pb.SinkType.SINK_TYPE_JDBC_CLICK_HOUSE
+        case "jdbc-sqlite" => pb.SinkType.SINK_TYPE_JDBC_SQLITE
+        case "jdbc-mariadb" => pb.SinkType.SINK_TYPE_JDBC_MARIA_DB
+        case "jdbc-open-mldb" => pb.SinkType.SINK_TYPE_JDBC_OPEN_MLDB
+        case "jdbc-postgres" => pb.SinkType.SINK_TYPE_JDBC_POSTRGRES
+        case "kafka" => pb.SinkType.SINK_TYPE_KAFKA
+        case "kinesis" => pb.SinkType.SINK_TYPE_KINESIS
+        case "mongodb" => pb.SinkType.SINK_TYPE_MONGODB
+        case "rabbitmq" => pb.SinkType.SINK_TYPE_RABBITMQ
+        case "redis" => pb.SinkType.SINK_TYPE_REDIS
+        case "solr" => pb.SinkType.SINK_TYPE_SOLR
+        case _ => pb.SinkType.SINK_TYPE_UNSPECIFIED
+
+    def convertResourcesToPb(resources: Resources): Option[pb.Resources] =
+        Option(pb.Resources(
+            cpu = resources.getCpu,
+            ram = resources.getRam,
+            disk = resources.getDisk,
+        ))
+
+    def cryptoConfigConverterToPb(cryptoConfig: CryptoConfig): Option[pb.CryptoConfig] =
+        Option(pb.CryptoConfig(
+            cryptoKeyReaderClassName = cryptoConfig.getCryptoKeyReaderClassName,
+            cryptoKeyReaderConfig = cryptoConfig.getCryptoKeyReaderConfig.toString,
+            encryptionKeys = cryptoConfig.getEncryptionKeys,
+            producerCryptoFailureAction = producerCryptoFailureActionToPb(cryptoConfig.getProducerCryptoFailureAction),
+            consumerCryptoFailureAction = consumerCryptoFailureActionToPb(cryptoConfig.getConsumerCryptoFailureAction),
+        ))
+    def convertInputSpecs(inputsSpecs: Map[String, ConsumerConfig]): Map[String, pb.InputsSpecs] =
+        var inputSpecs = Map[String, pb.InputsSpecs]()
+        inputsSpecs.foreach((specs, configs) =>
+            inputSpecs = inputSpecs + (specs -> pb.InputsSpecs(
+                schemaType = if configs.getSchemaType == null then "" else configs.getSchemaType,
+                serdeClassName = if configs.getSerdeClassName == null then "" else configs.getSerdeClassName,
+                isRegexPattern = configs.isRegexPattern,
+                schemaProperties = if configs.getSchemaProperties == null then Map() else configs.getSchemaProperties.asScala.toMap,
+                consumerProperties = if configs.getConsumerProperties == null then Map() else configs.getConsumerProperties.asScala.toMap,
+                receiverQueueSize = if configs.getReceiverQueueSize == null then 0 else configs.getReceiverQueueSize,
+                cryptoConfig = if configs.getCryptoConfig == null then Option(pb.CryptoConfig()) else cryptoConfigConverterToPb(configs.getCryptoConfig),
+                poolMessages = configs.isPoolMessages,
+            )))
+        inputSpecs
+
     override def getSink(request: pb.GetSinkRequest): Future[pb.GetSinkResponse] =
-
-        def subscriptionInitialPositionToPb(processing: SubscriptionInitialPosition): pb.SubscriptionInitialPosition = processing match
-            case SubscriptionInitialPosition.Earliest =>
-                pb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST
-            case SubscriptionInitialPosition.Latest =>
-                pb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST
-
-        def producerCryptoFailureActionToPb(producer: ProducerCryptoFailureAction): pb.ProducerCryptoFailureAction = producer match
-            case ProducerCryptoFailureAction.FAIL =>
-                pb.ProducerCryptoFailureAction.PRODUCER_CRYPTO_FAILURE_ACTION_FAIL
-            case ProducerCryptoFailureAction.SEND =>
-                pb.ProducerCryptoFailureAction.PRODUCER_CRYPTO_FAILURE_ACTION_SEND
-
-        def consumerCryptoFailureActionToPb(consumer: ConsumerCryptoFailureAction): pb.ConsumerCryptoFailureAction = consumer match
-            case ConsumerCryptoFailureAction.FAIL =>
-                pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_FAIL
-            case ConsumerCryptoFailureAction.CONSUME =>
-                pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_CONSUME
-            case ConsumerCryptoFailureAction.DISCARD =>
-                pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_DISCARD
-
-        def processingGuaranteesToPb(processing: FunctionConfig.ProcessingGuarantees): pb.ProcessingGuarantees = processing match
-            case FunctionConfig.ProcessingGuarantees.ATMOST_ONCE =>
-                pb.ProcessingGuarantees.PROCESSING_GUARANTEES_ATMOST_ONCE
-            case FunctionConfig.ProcessingGuarantees.ATLEAST_ONCE =>
-                pb.ProcessingGuarantees.PROCESSING_GUARANTEES_ATLEAST_ONCE
-            case FunctionConfig.ProcessingGuarantees.EFFECTIVELY_ONCE =>
-                pb.ProcessingGuarantees.PROCESSING_GUARANTEES_EFFECTIVELY_ONCE
-
-        def classNameToPb(className: String): pb.ClassName = className match
-            case "org.apache.pulsar.io.aerospike.AerospikeStringSink" => pb.ClassName.CLASS_NAME_AEROSPIKE_STRING_SINK
-            case "org.apache.pulsar.io.alluxio.sink.AlluxioSink" => pb.ClassName.CLASS_NAME_ALLUXIO_SINK
-            case "org.apache.pulsar.io.cassandra.CassandraStringSink" => pb.ClassName.CLASS_NAME_CASSANDRA_STRING_SINK
-            case "org.apache.pulsar.io.elasticsearch.ElasticSearchSink" => pb.ClassName.CLASS_NAME_ELASTIC_SEARCH_SINK
-            case "org.apache.pulsar.io.flume.sink.StringSink" => pb.ClassName.CLASS_NAME_STRING_SINK
-            case "org.apache.pulsar.io.hbase.HbaseAbstractConfig" => pb.ClassName.CLASS_NAME_HBASE_ABSTRACT_CONFIG
-            case "org.apache.pulsar.io.hdfs2.AbstractHdfsConnector" => pb.ClassName.CLASS_NAME_ABSTRACT_HDFS2_CONNECTOR
-            case "org.apache.pulsar.io.hdfs3.AbstractHdfsConnector" => pb.ClassName.CLASS_NAME_ABSTRACT_HDFS3_CONNECTOR
-            case "org.apache.pulsar.io.http.HttpSink" => pb.ClassName.CLASS_NAME_HTTP_SINK
-            case "org.apache.pulsar.io.influxdb.InfluxDBGenericRecordSink" => pb.ClassName.CLASS_NAME_INFLUXDB_GENERIC_RECORD_SINK
-            case "org.apache.pulsar.io.jdbc.ClickHouseJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_CLICK_HOUSE_JDBC_AUTO_SCHEMA_SINK
-            case "org.apache.pulsar.io.jdbc.MariadbJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_MARIADB_JDBC_AUTO_SCHEMA_SINK
-            case "org.apache.pulsar.io.jdbc.OpenMLDBJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_OPEN_MLDB_JDBC_AUTO_SCHEMA_SINK
-            case "org.apache.pulsar.io.jdbc.PostgresJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_POSTGRES_JDBC_AUTO_SCHEMA_SINK
-            case "org.apache.pulsar.io.jdbc.SqliteJdbcAutoSchemaSink" => pb.ClassName.CLASS_NAME_SQLITE_JDBC_AUTO_SCHEMA_SINK
-            case "org.apache.pulsar.io.kafka.KafkaAbstractSink" => pb.ClassName.CLASS_NAME_KAFKA_ABSTRACT_SINK
-            case "org.apache.pulsar.io.kinesis.KinesisSink" => pb.ClassName.CLASS_NAME_KINESIS_SINK
-            case "org.apache.pulsar.io.mongodb.MongoSink" => pb.ClassName.CLASS_NAME_MONGO_SINK
-            case "org.apache.pulsar.io.rabbitmq.RabbitMQSink" => pb.ClassName.CLASS_NAME_RABBIT_MQ_SINK
-            case "org.apache.pulsar.io.redis.RedisAbstractConfig" => pb.ClassName.CLASS_NAME_REDIS_ABSTRACT_CONFIG
-            case "org.apache.pulsar.io.solr.SolrSinkConfig" => pb.ClassName.CLASS_NAME_SOLR_SINK_CONFIG
-
-        def sinkTypeToPb(sinkType: String): pb.SinkType = sinkType match
-            case "aerospike" => pb.SinkType.SINK_TYPE_AEROSPIKE
-            case "alluxio" => pb.SinkType.SINK_TYPE_ALLUXIO
-            case "cassandra" => pb.SinkType.SINK_TYPE_CASSANDRA
-            case "elastic_search" => pb.SinkType.SINK_TYPE_ELASTIC_SEARCH
-            case "flume" => pb.SinkType.SINK_TYPE_FLUME
-            case "hbase" => pb.SinkType.SINK_TYPE_HBASE
-            case "hdfs2" => pb.SinkType.SINK_TYPE_HDFS2
-            case "hdfs3" => pb.SinkType.SINK_TYPE_HDFS3
-            case "http" => pb.SinkType.SINK_TYPE_HTTP
-            case "influxdb" => pb.SinkType.SINK_TYPE_INFLUXDB_V1
-            case "jdbc-clickhouse" => pb.SinkType.SINK_TYPE_JDBC_CLICK_HOUSE
-            case "jdbc-sqlite" => pb.SinkType.SINK_TYPE_JDBC_SQLITE
-            case "jdbc-mariadb" => pb.SinkType.SINK_TYPE_JDBC_MARIA_DB
-            case "jdbc-open-mldb" => pb.SinkType.SINK_TYPE_JDBC_OPEN_MLDB
-            case "jdbc-postgres" => pb.SinkType.SINK_TYPE_JDBC_POSTRGRES
-            case "kafka" => pb.SinkType.SINK_TYPE_KAFKA
-            case "kinesis" => pb.SinkType.SINK_TYPE_KINESIS
-            case "mongodb" => pb.SinkType.SINK_TYPE_MONGODB
-            case "rabbitmq" => pb.SinkType.SINK_TYPE_RABBITMQ
-            case "redis" => pb.SinkType.SINK_TYPE_REDIS
-            case "solr" => pb.SinkType.SINK_TYPE_SOLR
-            case _ => pb.SinkType.SINK_TYPE_UNSPECIFIED
-
-        def cryptoConfigConverter(cryptoConfig: CryptoConfig): pb.CryptoConfig =
-            pb.CryptoConfig(
-                cryptoKeyReaderClassName = cryptoConfig.getCryptoKeyReaderClassName,
-                cryptoKeyReaderConfig = cryptoConfig.getCryptoKeyReaderConfig.toString,
-                encryptionKeys = cryptoConfig.getEncryptionKeys,
-                producerCryptoFailureAction = producerCryptoFailureActionToPb(cryptoConfig.getProducerCryptoFailureAction),
-                consumerCryptoFailureAction = consumerCryptoFailureActionToPb(cryptoConfig.getConsumerCryptoFailureAction),
-            )
-
-        def convertedResources(resources: Resources): Option[pb.Resources] =
-            Option(pb.Resources(
-                cpu = resources.getCpu,
-                ram = resources.getRam,
-                disk = resources.getDisk,
-            ))
-
-        def convertInputSpecs(inputsSpecs: Map[String, ConsumerConfig]): Map[String, pb.InputsSpecs] =
-            var inputSpecs = Map[String, pb.InputsSpecs]()
-            inputsSpecs.foreach((specs, configs) =>
-                inputSpecs = inputSpecs + (specs -> pb.InputsSpecs(
-                    schemaType = if configs.getSchemaType == null then "" else configs.getSchemaType,
-                    serdeClassName = if configs.getSerdeClassName == null then "" else configs.getSerdeClassName,
-                    isRegexPattern = configs.isRegexPattern,
-                    schemaProperties = if configs.getSchemaProperties == null then Map() else configs.getSchemaProperties.asScala.toMap,
-                    consumerProperties = if configs.getConsumerProperties == null then Map() else configs.getConsumerProperties.asScala.toMap,
-                    receiverQueueSize = if configs.getReceiverQueueSize == null then 0 else configs.getReceiverQueueSize,
-                    cryptoConfig = if configs.getCryptoConfig == null then Option(pb.CryptoConfig()) else Option(cryptoConfigConverter(configs.getCryptoConfig)),
-                    poolMessages = configs.isPoolMessages,
-                )))
-            inputSpecs
         try {
             val sink = adminClient.sinks.getSink(request.tenant, request.namespace, request.sink)
 
@@ -397,7 +399,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                 topicToSchemaType = if sink.getTopicToSchemaType == null then Map() else sink.getTopicToSchemaType.asScala.toMap,
 //                configs = if sink.getConfigs == null then "" else sink.getConfigs.toString,
                 secrets = if sink.getSecrets == null then "" else sink.getSecrets.toString,
-                resources = convertedResources(sink.getResources),
+                resources = convertResourcesToPb(sink.getResources),
                 archive = if sink.getArchive == null then "" else sink.getArchive,
                 runtimeFlags = if sink.getRuntimeFlags == null then "" else sink.getRuntimeFlags,
                 customRuntimeOptions = if sink.getCustomRuntimeOptions == null then "" else sink.getCustomRuntimeOptions,
@@ -441,7 +443,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         topicToSchemaType = if v.topicToSchemaType.isEmpty then null else v.topicToSchemaType.asJava,
                         configs = if v.configs.isEmpty then null else parseConfigs(v.configs),
                         secrets = if v.secrets.isEmpty then null else parseConfigs(v.secrets),
-                        resources = convertResource(v.resources),
+                        resources = convertResourcesFromPb(v.resources),
                         archive = if v.archive.isEmpty then null else v.archive,
                         runtimeFlags = if v.runtimeFlags.isEmpty then null else v.runtimeFlags,
                         customRuntimeOptions = if v.customRuntimeOptions.isEmpty then null else v.customRuntimeOptions,
@@ -473,4 +475,169 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(pb.DeleteSinkResponse(status = Some(status)))
+        }
+
+    def convertProducerConfigFromPb(producerConfig: Option[pb.ProducerConfig]): ProducerConfig =
+        producerConfig match
+            case Some(v) =>
+                ProducerConfig (
+                    maxPendingMessages = v.maxPendingMessages,
+                    maxPendingMessagesAcrossPartitions = v.maxPendingMessagesAcrossPartitions,
+                    useThreadLocalProducers = v.useThreadLocalProducers,
+                    cryptoConfig = cryptoConfigConverterFromPb(v.cryptoConfig),
+                    batchBuilder = v.batchBuilder,
+
+                )
+
+    def convertBatchSourceConfigFromPb(batchSourceConfig: Option[pb.BatchSourceConfig]): BatchSourceConfig =
+        batchSourceConfig match
+            case Some(v) =>
+                BatchSourceConfig (
+                    discoveryTriggererClassName = v.discoveryTriggererClassName,
+                    discoveryTriggererConfig = parseConfigs(v.discoveryTriggererConfig)
+                )
+
+    def convertBatchSourceConfigToPb(batchSourceConfig: BatchSourceConfig): Option[pb.BatchSourceConfig] =
+        Option(pb.BatchSourceConfig(
+            discoveryTriggererClassName = batchSourceConfig.getDiscoveryTriggererClassName,
+            discoveryTriggererConfig = batchSourceConfig.getDiscoveryTriggererConfig.toString,
+        ))
+    override def createSource(request: pb.CreateSourceRequest): Future[pb.CreateSourceResponse] =
+        try {
+            request.source match
+                case Some(v) =>
+                    val source = SourceConfig(
+                        tenant = v.tenant,
+                        namespace = v.namespace,
+                        name = v.name,
+                        className = v.className,
+                        topicName = v.topicName,
+                        producerConfig = convertProducerConfigFromPb(v.producerConfig),
+                        serdeClassName = v.serdeClassName,
+                        schemaType = v.schemaType,
+                        configs = parseConfigs(v.configs),
+                        secrets = parseConfigs(v.secrets),
+                        parallelism = v.parallelism,
+                        processingGuarantees = processingGuaranteesFromPb(v.processingGuarantees),
+                        resources = convertResourcesFromPb(v.resources),
+                        archive = v.archive,
+                        runtimeFlags = v.runtimeFlags,
+                        customRuntimeOptions = v.customRuntimeOptions,
+                        batchSourceConfig = convertBatchSourceConfigFromPb(v.batchSourceConfig),
+                        batchBuilder = v.batchBuilder,
+                    )
+
+                    if v.archive matches "https*" then
+                        adminClient.sources.createSourceWithUrl(source, v.archive)
+                    else
+                        adminClient.sources.createSource(source, v.archive)
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.CreateSourceResponse(status = Some(status)))
+        } catch {
+            case err =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.CreateSourceResponse(status = Some(status)))
+        }
+
+    override def getListSources(request: pb.GetListSourcesRequest): Future[pb.GetListSourcesResponse] =
+        try {
+            val sources = adminClient.sources.listSources(request.tenant, request.namespace).asScala.toSeq
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.GetListSourcesResponse(status = Some(status), sources = sources))
+        } catch {
+            case err =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.GetListSourcesResponse(status = Some(status)))
+        }
+
+    def convertProducerConfigToPb(producerConfig: ProducerConfig): Option[pb.ProducerConfig] =
+        Option(pb.ProducerConfig(
+            maxPendingMessages = producerConfig.getMaxPendingMessages,
+            maxPendingMessagesAcrossPartitions = producerConfig.getMaxPendingMessagesAcrossPartitions,
+            useThreadLocalProducers = producerConfig.getUseThreadLocalProducers,
+            cryptoConfig = cryptoConfigConverterToPb(producerConfig.getCryptoConfig),
+            batchBuilder = producerConfig.getBatchBuilder,
+        ))
+    override def getSource(request: pb.GetSourceRequest): Future[pb.GetSourceResponse] =
+        try {
+            val source = adminClient.sources.getSource(request.tenant, request.namespace, request.source)
+
+            val pbSource = Option(pb.Source(
+                tenant = source.getTenant,
+                namespace = source.getNamespace,
+                name = source.getName,
+                className = source.getClassName,
+                topicName = source.getTopicName,
+                producerConfig = convertProducerConfigToPb(source.getProducerConfig),
+                serdeClassName = source.getSerdeClassName,
+                schemaType = source.getSchemaType,
+                configs = source.getConfigs.toString,
+                secrets = source.getSecrets.toString,
+                parallelism = source.getParallelism,
+                processingGuarantees = processingGuaranteesToPb(source.getProcessingGuarantees),
+                resources = convertResourcesToPb(source.getResources),
+                archive = source.getArchive,
+                runtimeFlags = source.getRuntimeFlags,
+                customRuntimeOptions = source.getCustomRuntimeOptions,
+                batchSourceConfig = convertBatchSourceConfigToPb(source.getBatchSourceConfig),
+                batchBuilder = source.getBatchBuilder,
+            ))
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.GetSourceResponse(status = Some(status), source = pbSource))
+        } catch {
+            case err =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.GetSourceResponse(status = Some(status)))
+        }
+
+    override def updateSource(request: pb.UpdateSourceRequest): Future[pb.UpdateSourceResponse] =
+        try {
+            request.source match
+                case Some(v) =>
+                    val source = SourceConfig(
+                        tenant = v.tenant,
+                        namespace = v.namespace,
+                        name = v.name,
+                        className = v.className,
+                        topicName = v.topicName,
+                        producerConfig = convertProducerConfigFromPb(v.producerConfig),
+                        serdeClassName = v.serdeClassName,
+                        schemaType = v.schemaType,
+                        configs = parseConfigs(v.configs),
+                        secrets = parseConfigs(v.secrets),
+                        parallelism = v.parallelism,
+                        processingGuarantees = processingGuaranteesFromPb(v.processingGuarantees),
+                        resources = convertResourcesFromPb(v.resources),
+                        archive = v.archive,
+                        runtimeFlags = v.runtimeFlags,
+                        customRuntimeOptions = v.customRuntimeOptions,
+                        batchSourceConfig = convertBatchSourceConfigFromPb(v.batchSourceConfig),
+                        batchBuilder = v.batchBuilder,
+                    )
+
+                    if v.archive matches "https*" then
+                        adminClient.sources.createSourceWithUrl(source, v.archive)
+                    else
+                        adminClient.sources.createSource(source, v.archive)
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.UpdateSourceResponse(status = Some(status)))
+        } catch {
+            case err =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.UpdateSourceResponse(status = Some(status)))
+        }
+    override def deleteSource(request: pb.DeleteSourceRequest): Future[pb.DeleteSourceResponse] =
+        try {
+            adminClient.sources.deleteSource(request.tenant, request.namespace, request.source)
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.DeleteSourceResponse(status = Some(status)))
+        } catch {
+            case err =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.DeleteSourceResponse(status = Some(status)))
         }
