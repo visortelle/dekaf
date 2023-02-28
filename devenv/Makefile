@@ -12,10 +12,10 @@ clean: ## Uninstall Helm release and delete namesapace.
 install: ## Install Pulsar using Kubernetes Helm.
 	./helm/install.sh
 
-.PHONY: port-forward
-port-forward: ## Forward ports to localhost.
-	# kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 8080:80&
-	# kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 6650:6650&
+.PHONY: dev
+dev: ## Start development against remote cluster
+	pkill kubectl
+	kubectl get secret -n pulsar-devenv -o json pulsar-devenv-tls-proxy | jq -r '.data."ca.crt"' | base64 -d > ./helm/tmp/pulsar-proxy-ca.crt
 
 	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 8080:443&
 	kubectl port-forward -n pulsar-devenv service/pulsar-devenv-proxy 6650:6651&

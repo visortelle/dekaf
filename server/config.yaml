@@ -1,7 +1,7 @@
 port: 8090
 publicUrl: "http://localhost:8090"
 
-library: 
+library:
   path: "./library"
 
 pulsarInstance:
@@ -11,4 +11,4 @@ pulsarInstance:
   webServiceUrl: "https://pulsar-devenv-proxy:8080"
 
 tls:
-  tlsTrustCertsFilePath: "../devenv/helm/runtime-data/pulsar-devenv-tls-proxy-ca.crt"
+  tlsTrustCertsFilePath: "../devenv/helm/tmp/pulsar-proxy-ca.crt"
