@@ -1,12 +1,12 @@
-import React from 'react';
-import s from './HealthCheck.module.css'
-import sts from '../../../ui/SimpleTable/SimpleTable.module.css';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as Notifications from '../../../app/contexts/Notifications';
-import useSWR from 'swr';
-import { swrKeys } from '../../../swrKeys';
-import { HealthCheckRequest } from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
-import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import React from "react";
+import s from "./HealthCheck.module.css";
+import sts from "../../../ui/SimpleTable/SimpleTable.module.css";
+import * as PulsarGrpcClient from "../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as Notifications from "../../../app/contexts/Notifications";
+import useSWR from "swr";
+import { swrKeys } from "../../../swrKeys";
+import { HealthCheckRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 const HealthCheck: React.FC = () => {
   const { notifyError } = Notifications.useContext();
@@ -35,7 +35,9 @@ const HealthCheck: React.FC = () => {
       const req = new HealthCheckRequest();
       const res = await brokersServiceClient.backlogQuotaCheck(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to backlog quota check: ${res.getStatus()?.getMessage()}`);
+        notifyError(
+          `Unable to backlog quota check: ${res.getStatus()?.getMessage()}`
+        );
         return false;
       }
       return res.getIsOk();
@@ -52,26 +54,36 @@ const HealthCheck: React.FC = () => {
         <tbody>
           <tr className={sts.Row}>
             <td className={sts.Cell}>Connection</td>
-            <td className={sts.Cell}>{
-              healthCheck ?
-                <strong style={{ color: 'var(--accent-color-green)' }}>OK</strong> :
-                <strong style={{ color: 'var(--accent-color-red)' }}>Fail</strong>
-            }
+            <td className={sts.Cell}>
+              {healthCheck ? (
+                <strong style={{ color: "var(--accent-color-green)" }}>
+                  OK
+                </strong>
+              ) : (
+                <strong style={{ color: "var(--accent-color-red)" }}>
+                  Fail
+                </strong>
+              )}
             </td>
           </tr>
           <tr className={sts.Row}>
             <td className={sts.Cell}>Backlog quota</td>
-            <td className={sts.Cell}>{
-              backlogQuotaCheck ?
-                <strong style={{ color: 'var(--accent-color-green)' }}>OK</strong> :
-                <strong style={{ color: 'var(--accent-color-red)' }}>Fail</strong>
-            }
+            <td className={sts.Cell}>
+              {backlogQuotaCheck ? (
+                <strong style={{ color: "var(--accent-color-green)" }}>
+                  OK
+                </strong>
+              ) : (
+                <strong style={{ color: "var(--accent-color-red)" }}>
+                  Fail
+                </strong>
+              )}
             </td>
           </tr>
         </tbody>
       </table>
     </div>
   );
-}
+};
 
 export default HealthCheck;

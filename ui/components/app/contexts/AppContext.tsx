@@ -8,7 +8,13 @@ type BuildInfo = {
 }
 export type Config = {
   publicUrl: string,
-  buildInfo: BuildInfo
+  buildInfo: BuildInfo,
+  pulsarInstance: {
+    name: string,
+    color: string,
+    brokerServiceUrl: string,
+    webServiceUrl: string,
+  }
 }
 
 export type PerformanceOptimizations = {

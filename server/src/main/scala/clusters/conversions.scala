@@ -15,15 +15,14 @@ object conversions:
             brokerServiceUrlTls = Option(cd.getBrokerServiceUrlTls),
             proxyServiceUrl = Option(cd.getProxyServiceUrl),
             proxyProtocol = proxyProtocolToPb(cd.getProxyProtocol),
-            peerClusterNames = cd.getPeerClusterNames.asScala.toList,
+            peerClusterNames = Option(cd.getPeerClusterNames).map(_.asScala.toList).getOrElse(List.empty),
             authenticationPlugin = Option(cd.getAuthenticationPlugin),
             authenticationParameters = Option(cd.getAuthenticationParameters),
             isBrokerClientTlsEnabled = Option(cd.isBrokerClientTlsEnabled),
             isTlsAllowInsecureConnection = Option(cd.isTlsAllowInsecureConnection),
             isBrokerClientTlsEnabledWithKeyStore = Option(cd.isBrokerClientTlsEnabledWithKeyStore),
-            borkerClientTlsTrustStoreType = Option(cd.getBrokerClientTlsTrustStoreType),
+            brokerClientTlsTrustStoreType = Option(cd.getBrokerClientTlsTrustStoreType),
             brokerClientTlsTrustStore = Option(cd.getBrokerClientTlsTrustStore),
-            brokerClientTlsTrustStorePassword = Option(cd.getBrokerClientTlsTrustStorePassword),
             brokerClientTrustCertsFilePath = Option(cd.getBrokerClientTrustCertsFilePath),
             listenerName = Option(cd.getListenerName)
         )
@@ -43,7 +42,7 @@ object conversions:
         cd.isBrokerClientTlsEnabled.foreach(b.brokerClientTlsEnabled)
         cd.isTlsAllowInsecureConnection.foreach(b.tlsAllowInsecureConnection)
         cd.isBrokerClientTlsEnabledWithKeyStore.foreach(b.brokerClientTlsEnabledWithKeyStore)
-        cd.borkerClientTlsTrustStoreType.foreach(b.brokerClientTlsTrustStoreType)
+        cd.brokerClientTlsTrustStoreType.foreach(b.brokerClientTlsTrustStoreType)
         cd.brokerClientTlsTrustStore.foreach(b.brokerClientTlsTrustStore)
         cd.brokerClientTlsTrustStorePassword.foreach(b.brokerClientTlsTrustStorePassword)
         cd.brokerClientTrustCertsFilePath.foreach(b.brokerClientTrustCertsFilePath)

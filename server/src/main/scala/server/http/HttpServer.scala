@@ -20,14 +20,20 @@ object HttpServer extends ZIOAppDefault:
                 staticFiles.location = Location.CLASSPATH
             }
             config.spaRoot.addHandler(
-              "/",
-              ctx => {
-                  val model = Map(
-                    "publicUrl" -> appConfig.publicUrl,
-                    "buildInfo" -> buildinfo.BuildInfo.toMap.asJava
-                  ).asJava
-                  ctx.render("/ui/index.ftl", model)
-              }
+                "/",
+                ctx => {
+                    val model = Map(
+                        "publicUrl" -> appConfig.publicUrl,
+                        "buildInfo" -> buildinfo.BuildInfo.toMap.asJava,
+                        "pulsarInstance" -> Map[String, Any](
+                            "name" -> appConfig.pulsarInstance.name,
+                            "color" -> appConfig.pulsarInstance.color.getOrElse("transparent"),
+                            "brokerServiceUrl" -> appConfig.pulsarInstance.brokerServiceUrl,
+                            "webServiceUrl" -> appConfig.pulsarInstance.webServiceUrl,
+                        ).asJava,
+                    ).asJava
+                    ctx.render("/ui/index.ftl", model)
+                }
             )
         }
         .get("/health", ctx => ctx.result("OK"))

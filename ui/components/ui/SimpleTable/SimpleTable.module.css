@@ -12,12 +12,12 @@
   border-right: none;
 }
 
-.Row:first-child .Cell {
-  border-top: none;
+thead .Row:last-child .Cell {
+  border-bottom: 1px solid #ddd;
 }
 
-.Row:last-child .Cell {
-  border-bottom: none;
+.Row:first-child .Cell {
+  border-top: none;
 }
 
 .Row .Cell:first-child {
@@ -26,4 +26,8 @@
 
 .Row .Cell:last-child {
   border-right: none;
+}
+
+.NoData {
+  color: #aaa;
 }

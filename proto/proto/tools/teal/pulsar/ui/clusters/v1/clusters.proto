@@ -30,7 +30,7 @@ message ClusterData {
   google.protobuf.BoolValue is_broker_client_tls_enabled = 10;
   google.protobuf.BoolValue is_tls_allow_insecure_connection = 11;
   google.protobuf.BoolValue is_broker_client_tls_enabled_with_key_store = 12;
-  google.protobuf.StringValue borker_client_tls_trust_store_type = 13;
+  google.protobuf.StringValue broker_client_tls_trust_store_type = 13;
   google.protobuf.StringValue broker_client_tls_trust_store = 14;
   google.protobuf.StringValue broker_client_tls_trust_store_password = 15;
   google.protobuf.StringValue broker_client_trust_certs_file_path = 16;

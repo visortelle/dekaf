@@ -119,6 +119,9 @@ export const swrKeys = {
     },
     clusters: {
       _: () => ["pulsar", "clusters"],
+      cluster: {
+        _: (props: { cluster: string }) => ["pulsar", "cluster", props.cluster],
+      }
     },
     tenants: {
       _: () => ["pulsar", "tenants"],
