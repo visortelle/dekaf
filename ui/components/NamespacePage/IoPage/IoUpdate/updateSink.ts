@@ -160,10 +160,11 @@ const classNameToPb = (value: ClassName | undefined): pb.ClassName => {
   }
 }
 
-const { ioServiceClient } = PulsarGrpcClient.useContext();
-const { notifyError } = Notifications.useContext();
 
 const updateSink = async (props: UpdateSinkProps) => {
+  const { ioServiceClient } = PulsarGrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
+
   const req = props.action === 'create' ? new pb.CreateSinkRequest() : new pb.UpdateSinkRequest();
   const sinkConfig = new pb.SinkConfig();
   sinkConfig.setTenant(props.tenant);

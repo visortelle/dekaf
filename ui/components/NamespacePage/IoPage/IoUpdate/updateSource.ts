@@ -45,10 +45,11 @@ const processingGuaranteesToPb = (value: ProcessingGuarantees): pb.ProcessingGua
   }
 }
 
-const { ioServiceClient } = PulsarGrpcClient.useContext();
-const { notifyError } = Notifications.useContext();
 
 const updateSource = async (props: UpdateSourceProps) => {
+  const { ioServiceClient } = PulsarGrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
+  
   const req = props.action === 'create' ? new pb.CreateSourceRequest() : new pb.UpdateSourceRequest();
   const source = new pb.Source();
   source.setTenant(props.tenant);

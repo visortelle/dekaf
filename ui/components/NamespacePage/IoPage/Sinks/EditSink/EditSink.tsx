@@ -325,13 +325,15 @@ const EditSink = (props: EditSinkProps) => {
   return (
     <>
       {configurations ? 
-        <IoUpdate
-          configurations={configurations}
-          action='edit'
-          tenant={props.tenant}
-          namespace={props.namespace}
-          updateIo={updateSink}
-        /> :
+        // <IoUpdate
+        //   configurations={configurations}
+        //   action='edit'
+        //   tenant={props.tenant}
+        //   namespace={props.namespace}
+        //   updateIo={updateSink}
+        // />
+        <></>
+         :
         <div className={s.NoData}>No data to show.</div>
       }
     </>
