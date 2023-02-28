@@ -4,13 +4,13 @@ import configsAttachments, { ConnectorsConfigs, defaultConnectorsConfigs } from 
 const SUBSCRIPTION_INITIAL_POSITION = [ { value: 'latest', label: 'Latest' }, { value: 'earliest', label: 'Earliest' } ];
 export type SubscriptionInitialPosition = 'latest' | 'earliest';
 
-const PRODUCER_CRYPTO_FAILURE_ACTION = [ { value: 'fail', label: 'Fail' }, { value: 'send', label: 'Send' } ];
+export const PRODUCER_CRYPTO_FAILURE_ACTION = [ { value: 'fail', label: 'Fail' }, { value: 'send', label: 'Send' } ];
 export type ProducerCryptoFailureAction = 'fail' | 'send';
 
-const CONSUMER_CRYPTO_FAILURE_ACTION = [ { value: 'fail', label: 'Fail' }, { value: 'discard', label: 'Discard' }, { value: 'consume', label: 'Consume' } ];
+export const CONSUMER_CRYPTO_FAILURE_ACTION = [ { value: 'fail', label: 'Fail' }, { value: 'discard', label: 'Discard' }, { value: 'consume', label: 'Consume' } ];
 export type ConsumerCryptoFailureAction = 'fail' | 'discard' | 'consume';
 
-const PROCESSING_GUARANTEES = [ { value: 'atleast_once', label: 'Atleast once' }, { value: 'atmost_once', label: 'Atmost once' }, { value: 'effectively_once', label: 'Effectively once' } ];
+export const PROCESSING_GUARANTEES = [ { value: 'atleast_once', label: 'Atleast once' }, { value: 'atmost_once', label: 'Atmost once' }, { value: 'effectively_once', label: 'Effectively once' } ];
 export type ProcessingGuarantees = 'atleast_once' | 'atmost_once' | 'effectively_once';
 
 export const SINK_TYPE = [ { value: 'aerospike', label: 'Aerospike' }, { value: 'alluxio', label: 'Alluxio' }, { value: 'cassandra', label: 'Cassandra' }, { value: 'elasticSearch', label: 'Elastic search' }, { value: 'flume', label: 'Flume' }, { value: 'hbase', label: 'Hbase' }, { value: 'hdfs2', label: 'HDFS2' }, { value: 'hdfs3', label: 'HDFS3' }, { value: 'http', label: 'HTTP' }, { value: 'influxdbv1', label: 'InfluxDB v1' }, { value: 'influxdbv2', label: 'InfluxDB v2' }, { value: 'jdbcClickHouse', label: 'JDBC Click house' }, { value: 'jdbcMariaDB', label: 'JDBC Maria DB' }, { value: 'jdbcOpenMLDB', label: 'JDBC Open MLDB' }, { value: 'jdbcPostgres', label: 'JDBC Postgres' }, { value: 'jdbcSQLite', label: 'JDBC SQLite' }, { value: 'kafka', label: 'Kafka' }, { value: 'kinesis', label: 'Kinesis' }, { value: 'mongodb', label: 'Mongo DB' }, { value: 'rabbitMQ', label: 'Rabbit MQ' }, { value: 'redis', label: 'Redis' }, { value: 'solr', label: 'Solr' } ];

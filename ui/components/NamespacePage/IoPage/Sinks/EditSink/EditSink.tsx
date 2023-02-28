@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import stringify from 'safe-stable-stringify';
 
-import UpdateSink from '../UpdateSink/UpdateSink';
 import { swrKeys } from '../../../../swrKeys';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
@@ -15,6 +13,8 @@ import { InfluxDBv1Configs } from '../configurationsFields/connectrosConfigs/con
 import { InfluxDBv2Configs } from '../configurationsFields/connectrosConfigs/connectors/influxDBv2Configs';
 
 import s from './EditSink.module.css';
+import IoUpdate from '../../IoUpdate/IoUpdate';
+import updateSink from '../../IoUpdate/updateSink';
 
 type EditSinkProps = {
   tenant: string,
@@ -325,12 +325,12 @@ const EditSink = (props: EditSinkProps) => {
   return (
     <>
       {configurations ? 
-        <UpdateSink
+        <IoUpdate
           configurations={configurations}
           action='edit'
           tenant={props.tenant}
           namespace={props.namespace}
-          key={stringify(configurations)}
+          updateIo={updateSink}
         /> :
         <div className={s.NoData}>No data to show.</div>
       }

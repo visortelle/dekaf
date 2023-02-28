@@ -1,0 +1,14 @@
+.Sinks {
+  padding: 24rem 12rem;
+  padding-bottom: 48rem;
+}
+
+.NoData {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8rem;
+  background-color: #f5f5f5;
+  padding: 12rem;
+  width: 100%;
+}

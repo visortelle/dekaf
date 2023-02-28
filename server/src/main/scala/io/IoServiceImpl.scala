@@ -542,10 +542,37 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
 
     override def getListSources(request: pb.GetListSourcesRequest): Future[pb.GetListSourcesResponse] =
         try {
-            val sources = adminClient.sources.listSources(request.tenant, request.namespace).asScala.toSeq
+//            var sourcesSeq = Seq[pb.Source]()
+//            val sources = adminClient.sources.listSources(request.tenant, request.namespace).asScala.toSeq
+
+//            sources.foreach(source =>
+//                val sourceStatus = adminClient.sources.getSourceStatus(request.tenant, request.namespace, source)
+//                var running = 0
+//                var numReads = 0
+//                var numWrites = 0
+//
+//                sourceStatus.instances.asScala.foreach(instance =>
+//                    if (instance.status.running) {
+//                        running += 1
+//                    }
+//                    numReads = numReads + instance.status.numRestarts //numReadFromPulsar.toInt
+//                    numWrites = numWrites + instance.status.numWritten
+//                )
+//
+//                sourcesSeq = sourcesSeq :+ pb.Source(
+//                    name = source,
+//                    numInstances = sourceStatus.numInstances,
+//                    numRunning = sourceStatus.numRunning,
+//                    running = running,
+//                    reads = numReads,
+//                    writes = numWrites,
+//                )
+//            )
+
+
 
             val status: Status = Status(code = Code.OK.index)
-            Future.successful(pb.GetListSourcesResponse(status = Some(status), sources = sources))
+            Future.successful(pb.GetListSourcesResponse(status = Some(status) )) // , sources = sources
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)

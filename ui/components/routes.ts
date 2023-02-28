@@ -108,6 +108,13 @@ export const routes = {
                   get: (props: { tenant: string; namespace: string }) =>
                   `/tenants/${props.tenant}/namespaces/${props.namespace}/io/sources/create`,
                 }
+              },
+              edit: {
+                _: {
+                  path: "/tenants/:tenant/namespaces/:namespace/io/sources/edit/:source",
+                  get: (props: { tenant: string, namespace: string, source: string }) =>
+                  `/tenants/${props.tenant}/namespaces/${props.namespace}/io/sources/edit/${props.source}`,
+                }
               }
             },
           },

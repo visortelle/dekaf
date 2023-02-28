@@ -1,6 +1,60 @@
+import { IoConfigField } from "../../../../IoConfigField/IoConfigField";
 import { StringMap } from "../../../../Sinks/configurationsFields/configurationsFields";
+import { dbServerNameField, hostnameField, passwordField, portField, pulsarHistoryServiceUrlField, userField, whiteListField } from "./debeziumConfigs";
 
-type MySqlConfigs = { 
+export const debeziumMySqlFields: IoConfigField[] = [
+  hostnameField,
+  portField,
+  userField,
+  passwordField,
+  {
+    name: 'database.server.id',
+    type: 'int',
+    isRequired: true,
+    help: 'help',
+    label: 'Server id',
+  },
+  dbServerNameField,
+  whiteListField,
+  {
+    name: 'database.history',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'DB history',
+  },
+  {
+    name: 'database.history.pulsar.topic',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'pulsar history topic',
+  },
+  pulsarHistoryServiceUrlField,
+  {
+    name: 'key.converter',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Key converter',
+  },
+  {
+    name: 'value.converter',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Value converter',
+  },
+  {
+    name: 'offset.storage.reader.config',
+    type: 'json',
+    isRequired: true,
+    help: 'help',
+    label: 'Offset storage reader config',
+  },
+];
+
+export type MySqlConfigs = { 
   [key: string]: string | number | boolean | string[] | StringMap,
   "database.hostname": string,
   "database.port": number,

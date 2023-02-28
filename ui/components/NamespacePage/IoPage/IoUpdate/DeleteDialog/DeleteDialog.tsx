@@ -2,14 +2,14 @@ import React from 'react';
 import { NavigateFunction } from 'react-router';
 import { mutate } from 'swr';
 
-import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
-import * as Notifications from '../../../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as Modals from '../../../../../app/contexts/Modals/Modals';
-import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
-import { routes } from '../../../../../routes';
-import { swrKeys } from '../../../../../swrKeys';
-import ConfirmationDialog from '../../../../../ui/ConfirmationDialog/ConfirmationDialog';
+import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
+import * as Notifications from '../../../../app/contexts/Notifications';
+import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as Modals from '../../../../app/contexts/Modals/Modals';
+import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
+import { routes } from '../../../../routes';
+import { swrKeys } from '../../../../swrKeys';
+import ConfirmationDialog from '../../../../ui/ConfirmationDialog/ConfirmationDialog';
 
 type Props = {
   tenant: string,

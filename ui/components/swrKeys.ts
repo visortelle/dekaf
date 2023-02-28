@@ -191,6 +191,29 @@ export const swrKeys = {
                   ],
                 }
               },
+              sources: {
+                _: (props: { tenant: string; namespace: string }) => [
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "io",
+                  "sources"
+                ],
+                edit: {
+                  _: (props: { tenant: string; namespace: string, source: string }) => [
+                    "pulsar",
+                    "tenants",
+                    props.tenant,
+                    "namespaces",
+                    props.namespace,
+                    "io",
+                    "sources",
+                    props.source
+                  ],
+                }
+              },
             },
             nonPersistentTopics: {
               _: (props: { tenant: string; namespace: string }) => [

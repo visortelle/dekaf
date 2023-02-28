@@ -139,6 +139,18 @@ const prepareRoutes = (): {
       path: routes.tenants.tenant.namespaces.namespace.io.sources._.path,
       element: withLayout(<RoutedIoPage view={'sources'} />, withLayoutProps) 
     },
+    { 
+      path: routes.tenants.tenant.namespaces.namespace.io.sources.create._.path,
+      element: withLayout(<RoutedIoPage view={'sources-create'} />, withLayoutProps) 
+    },
+    { 
+      path: routes.tenants.tenant.namespaces.namespace.io.sources.edit._.path,
+      element: withLayout(
+        <WithParams>
+          {(params) => <RoutedIoPage view={'sources-edit'} source={params.source} />}
+        </WithParams>, withLayoutProps
+      )
+    },
 
     /* Tenants */
     { 
@@ -192,9 +204,9 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   return useRoutes(getRoutes({ withLayout, withLayoutProps }));
 };
 
-const RoutedIoPage = (props: { view: IoPageView, sink?: string }) => {
+const RoutedIoPage = (props: { view: IoPageView, sink?: string, source?: string }) => {
   const { tenant, namespace } = useParams();
-  return <IoPage tenant={tenant!} namespace={namespace!} view={props.view} sink={props.sink} />
+  return <IoPage tenant={tenant!} namespace={namespace!} view={props.view} sink={props.sink} source={props.source} />
 }
 
 const RoutedTenantPage = (props: { view: TenantPageView }) => {

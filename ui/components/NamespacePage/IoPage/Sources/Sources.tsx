@@ -12,7 +12,7 @@ import arrowDownIcon from '../../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '../../../ui/ChildrenTable/arrow-up.svg';
 import ActionButton from '../../../ui/ActionButton/ActionButton';
 
-import s from './Sinks.module.css';
+import s from './Sources.module.css';
 import sc from '../../../InstancePage/Configuration/Configuration.module.css';
 import cts from '../../../ui/ChildrenTable/ChildrenTable.module.css';
 
@@ -34,11 +34,11 @@ type Sort = { key: SortKey, direction: 'asc' | 'desc' };
 type ReceivedSinks = {
   [key: string]: string;
   name: string;
-  running: string;
-  numInstances: string;
-  numRunning: string;
-  reads: string;
-  writes: string;
+  // running: string;
+  // numInstances: string;
+  // numRunning: string;
+  // reads: string;
+  // writes: string;
 }
 
 const Sources = (props: SinksProps) => {
@@ -50,9 +50,9 @@ const Sources = (props: SinksProps) => {
   const [sinks, setSinks] = useState<ReceivedSinks[] | null>(null)
 
   const { data: receivedSinks, error: groupsError } = useSWR(
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.io.sinks._({ tenant: props.tenant, namespace: props.namespace }),
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.io.sources._({ tenant: props.tenant, namespace: props.namespace }),
     async () => {
-      const req = new pb.GetSinksRequest();
+      const req = new pb.GetSourceRequest();
       req.setTenant(props.tenant);
       req.setNamespace(props.namespace);
 
@@ -65,14 +65,14 @@ const Sources = (props: SinksProps) => {
         return [];
       }
 
-      const receivedSinks: ReceivedSinks[] = res.getSinksList().map((sink) => {
+      const receivedSinks: ReceivedSinks[] = res.getSinksList().map((source) => {
         return {
-          name: sink.getName(),
-          running: sink.getRunning().toString(),
-          numInstances: sink.getNumInstances().toString(),
-          numRunning: sink.getNumRunning().toString(),
-          reads: sink.getReads().toString(),
-          writes: sink.getWrites().toString(),
+          name: source.getName(),
+          // running: sink.getRunning().toString(),
+          // numInstances: sink.getNumInstances().toString(),
+          // numRunning: sink.getNumRunning().toString(),
+          // reads: sink.getReads().toString(),
+          // writes: sink.getWrites().toString(),
         }
       });
 
@@ -128,6 +128,7 @@ const Sources = (props: SinksProps) => {
 
   return (
     <div className={s.Sinks}>
+      X_X
       {/* {(!sinks || !sinks?.length) && 
         <div className={s.NoData}>
           No data to show.

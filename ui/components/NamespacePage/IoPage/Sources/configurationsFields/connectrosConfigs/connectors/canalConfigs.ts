@@ -1,6 +1,6 @@
 import { IoConfigField } from "../../../../IoConfigField/IoConfigField";
 
-export const aerospikeFields: IoConfigField[] = [
+export const canalFields: IoConfigField[] = [
   {
     name: 'username',
     type: 'string',
@@ -59,7 +59,7 @@ export const aerospikeFields: IoConfigField[] = [
   },
 ];
 
-export type AerospikeConfigs = {
+export type CanalConfigs = {
   [key: string]: string | number | boolean,
   username: string,
   password: string,
@@ -71,7 +71,7 @@ export type AerospikeConfigs = {
   singlePort: number,
 }
 
-export const aerospikeDefault: AerospikeConfigs = {
+export const canalDefault: CanalConfigs = {
   username: "",
   password: "",
   zkServers: "",

@@ -9,14 +9,18 @@ import EditSink from './Sinks/EditSink/EditSink';
 import { routes } from '../../routes';
 
 import s from './IoPage.module.css'
+import CreateSource from './Sources/CreateSource/CreateSource';
+import EditSource from './Sources/EditSource/EditSource';
 
-export type IoPageView = 'sinks' | 'sinks-create' | 'sinks-edit' | 'sources' | 'sources-create';
+export type IoPageView = 'sinks' | 'sinks-create' | 'sinks-edit' | 'sources' | 'sources-create' | 'sources-edit';
 
 export type IoPageProps = {
   tenant: string;
   namespace: string;
   view: IoPageView;
+
   sink?: string;
+  source?: string,
 };
 
 const IoPage: React.FC<IoPageProps> = (props) => {
@@ -82,7 +86,9 @@ const IoPage: React.FC<IoPageProps> = (props) => {
       {props.view === 'sinks' && <Sinks tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'sinks-create' && <CreateSink tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'sinks-edit' && props.sink && <EditSink tenant={props.tenant} namespace={props.namespace} sink={props.sink} />}
-      {props.view === 'sources' && <Sources />}
+      {props.view === 'sources' && <Sources tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'sources-create' && <CreateSource tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'sources-edit' && <EditSource tenant={props.tenant} namespace={props.namespace} />}
     </div>
   );
 }

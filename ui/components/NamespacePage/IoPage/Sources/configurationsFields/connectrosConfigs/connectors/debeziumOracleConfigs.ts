@@ -1,6 +1,34 @@
 import { IoConfigField } from "../../../../IoConfigField/IoConfigField"
+import { dbNameField, dbServerNameField, hostnameField, passwordField, portField, pulsarHistoryServiceUrlField, userField } from "./debeziumConfigs"
 
-export const debeziumFields: IoConfigField[] = [
+export const debeziumOracleFields: IoConfigField[] = [
+  hostnameField,
+  portField,
+  userField,
+  passwordField,
+  dbNameField,
+  dbServerNameField,
+  {
+    name: 'schema.exclude.list',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Schema exclude list',
+  },
+  {
+    name: 'snapshot.mode',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Snapshot mode',
+  },
+  {
+    name: 'topic.namespace',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Namespace/topic',
+  },
   {
     name: 'task.class',
     type: 'string',
@@ -8,9 +36,60 @@ export const debeziumFields: IoConfigField[] = [
     help: 'help',
     label: 'Task class',
   },
+  {
+    name: 'value.converter',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Value converter',
+  },
+  {
+    name: 'key.converter',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Key converter',
+  },
+  {
+    name: 'typeClassName',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Type class name',
+  },
+  {
+    name: 'database.history',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Database history',
+  },
+  {
+    name: 'database.tcpKeepAlive',
+    type: 'boolean',
+    isRequired: true,
+    help: 'help',
+    label: 'TCP keep alive',
+  },
+  {
+    name: 'decimal.handling.mode',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Decimal handling mode',
+  },
+  {
+    name: 'database.history.pulsar.topic',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Pulsar database history',
+  },
+  pulsarHistoryServiceUrlField,
 ]
 
-type OracleConfigs = {
+export type OracleConfigs = {
+  [key: string]: string | number | boolean,
   "database.hostname": string,
   "database.port": number,
   "database.user": string,
@@ -31,7 +110,7 @@ type OracleConfigs = {
   "database.history.pulsar.service.url": string,
 }
 
-export const OracleDefault = {
+export const oracleDefault: OracleConfigs = {
   "database.hostname": '',
   "database.port": 1111,
   "database.user": '',

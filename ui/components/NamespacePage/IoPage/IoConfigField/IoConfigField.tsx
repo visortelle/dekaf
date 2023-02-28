@@ -16,7 +16,7 @@ import { SchemaTypeT } from '../../../TopicPage/Schema/types';
 import { ConnectorsConfigs } from '../Sinks/configurationsFields/connectrosConfigs/configs';
 import { Configurations, ConfigurationValue, InputsSpecs, PathToConnector, Resources, StringMap } from '../Sinks/configurationsFields/configurationsFields';
 
-export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector' | 'schemaType' | 'conditionalAttachments';
+export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector' | 'schemaType' | 'conditionalAttachments' | 'date';
 
 export type ConditionalAttachments = {
   limitation: 'sinkType',

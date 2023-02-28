@@ -1,8 +1,9 @@
 import React from 'react';
 import _ from 'lodash';
-import { configurations } from '../configurationsFields/configurationsFields';
 
-import UpdateSink from '../UpdateSink/UpdateSink';
+import { configurations } from '../configurationsFields/configurationsFields';
+import IoUpdate from '../../IoUpdate/IoUpdate';
+import updateSink from '../../IoUpdate/updateSink';
 
 type CreateSinkProps = {
   tenant: string,
@@ -12,11 +13,12 @@ type CreateSinkProps = {
 const CreateSink = (props: CreateSinkProps) => {
 
   return (
-    <UpdateSink
+    <IoUpdate
       action='create'
       tenant={props.tenant}
       namespace={props.namespace}
       configurations={configurations}
+      updateIo={updateSink}
     />
   )
 }

@@ -3,189 +3,69 @@ import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
 import { useNavigate } from 'react-router-dom';
 
-import * as Notifications from '../../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as Modals from '../../../../app/contexts/Modals/Modals';
-import Button from '../../../../ui/Button/Button';
-import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
-import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
-import { H1 } from '../../../../ui/H/H';
-import IoConfigField from '../../IoConfigField/IoConfigField';
-import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, StringMap, PathToConnectorType, PathToConnector, SinkType, ClassName, SINK_TYPE } from '../configurationsFields/configurationsFields';
-import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
-import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
+import * as Modals from '../../../app/contexts/Modals/Modals';
+import Button from '../../../ui/Button/Button';
+import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
+import { H1 } from '../../../ui/H/H';
+import IoConfigField from '../IoConfigField/IoConfigField';
+import { configurationsFields, configurations as defaultConfigurations, Configurations, ConfigurationValue, StringMap, PathToConnector } from '../Sinks/configurationsFields/configurationsFields';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
-import { ElasticSearchSslConfigs } from '../configurationsFields/connectrosConfigs/connectors/elasticsearchConfigs';
-import { ConnectorsConfigs } from '../configurationsFields/connectrosConfigs/configs';
-import deleteIcon from '../../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/delete.svg';
-import enableIcon from '../../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/enable.svg';
+import { ElasticSearchSslConfigs } from '../Sinks/configurationsFields/connectrosConfigs/connectors/elasticsearchConfigs';
+import { ConnectorsConfigs } from '../Sinks/configurationsFields/connectrosConfigs/configs';
+import deleteIcon from '../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/delete.svg';
+import enableIcon from '../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/enable.svg';
 
-import s from './UpdateSink.module.css';
-import sl from '../../../../ui/ConfigurationTable/ListInput/ListInput.module.css';
-import sf from '../../../../ui/ConfigurationTable/form.module.css';
+import s from './IoUpdate.module.css';
+import sl from '../../../ui/ConfigurationTable/ListInput/ListInput.module.css';
+import sf from '../../../ui/ConfigurationTable/form.module.css';
 
-type CreateSinkProps = {
+type IoProps = {
   tenant: string,
   namespace: string,
   action: 'edit' | 'create',
   configurations: Configurations,
 }
 
-const UpdateSink = (props: CreateSinkProps) => {
+type IoUpdateProps = IoProps & {
+  updateIo: (props: IoProps) => Promise<void>,
+}
 
-  const { ioServiceClient } = PulsarGrpcClient.useContext();
-  const { notifyError } = Notifications.useContext();
+const IoUpdate = (props: IoUpdateProps) => {
   const modals = Modals.useContext();
   const navigate = useNavigate();
 
   const [configurations, setConfigurations] = useState(props.configurations);
   const [hideUnrequired, setHideUnrequired] = useState(true);
 
-  const consumerCryptoFailureActionToPb = (value: ConsumerCryptoFailureAction): pb.ConsumerCryptoFailureAction => {
-    switch (value) {
-      case 'fail':
-        return pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_FAIL;
-      case 'discard':
-        return pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_DISCARD;
-      case 'consume':
-        return pb.ConsumerCryptoFailureAction.CONSUMER_CRYPTO_FAILURE_ACTION_CONSUME;
+  const isConnectorsConfigs = (value: ConfigurationValue): value is ConnectorsConfigs => {
+    if (typeof(value) === 'object' && !Array.isArray(value) && value.hasOwnProperty('aerospike')) {
+      return true;
     }
+    return false;
   }
 
-  const sourceSubscriptionPositionToPb = (value: SubscriptionInitialPosition): pb.SubscriptionInitialPosition => {
-    switch (value) {
-      case 'earliest':
-        return pb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST;
-      case 'latest':
-        return pb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST;
+  const isElasticSearchSslConfigs = (value: string | number | boolean | StringMap | ElasticSearchSslConfigs): value is ElasticSearchSslConfigs => {
+    if (typeof(value) === 'object') {
+      return true;
     }
+    return false;
   }
 
-  const producerCryptoFailureActionToPb = (value: ProducerCryptoFailureAction): pb.ProducerCryptoFailureAction => {
-    switch (value) {
-      case 'fail':
-        return pb.ProducerCryptoFailureAction.PRODUCER_CRYPTO_FAILURE_ACTION_FAIL;
-      case 'send':
-        return pb.ProducerCryptoFailureAction.PRODUCER_CRYPTO_FAILURE_ACTION_SEND;
+  const isComplexString = (configurationValue: ConfigurationValue): configurationValue is string | string[] => {
+    if (typeof(configurationValue) !== 'number' && typeof(configurationValue) !== 'boolean' && ((typeof(configurationValue) === 'object' && Array.isArray(configurationValue)) || typeof(configurationValue) === 'string' || Array.isArray(configurationValue))) {
+      return true;
     }
+    
+    return false;
   }
 
-  const processingGuaranteesToPb = (value: ProcessingGuarantees): pb.ProcessingGuarantees => {
-    switch (value) {
-      case 'atleast_once':
-        return pb.ProcessingGuarantees.PROCESSING_GUARANTEES_ATLEAST_ONCE;
-      case 'atmost_once':
-        return pb.ProcessingGuarantees.PROCESSING_GUARANTEES_ATMOST_ONCE;
-      case 'effectively_once':
-        return pb.ProcessingGuarantees.PROCESSING_GUARANTEES_EFFECTIVELY_ONCE;
+  const isPathToConnector = (configurationValue: ConfigurationValue): configurationValue is PathToConnector => {
+    if (typeof(configurationValue) === 'string' || typeof(configurationValue) === 'number' || typeof(configurationValue) === 'boolean' || Array.isArray(configurationValue)) {
+      return false;
     }
-  }
 
-  const pathToConnectorToPb = (value: PathToConnectorType): pb.PathType => {
-    switch (value) {
-      case 'folder':
-        return pb.PathType.PATH_TYPE_FOLDER;
-      case 'url':
-        return pb.PathType.PATH_TYPE_URL;
-    }
-  }
-
-  const sinkTypeToPb = (value: SinkType): pb.SinkType => {
-    switch (value) {
-      case 'aerospike':
-        return pb.SinkType.SINK_TYPE_AEROSPIKE;
-      case 'alluxio':
-        return pb.SinkType.SINK_TYPE_ALLUXIO;
-      case 'cassandra':
-        return pb.SinkType.SINK_TYPE_CASSANDRA;
-      case 'elasticSearch':
-        return pb.SinkType.SINK_TYPE_ELASTIC_SEARCH;
-      case 'flume':
-        return pb.SinkType.SINK_TYPE_FLUME;
-      case 'hbase':
-        return pb.SinkType.SINK_TYPE_HBASE;
-      case 'hdfs2':
-        return pb.SinkType.SINK_TYPE_HDFS2;
-      case 'hdfs3':
-        return pb.SinkType.SINK_TYPE_HDFS3;
-      case 'http':
-        return pb.SinkType.SINK_TYPE_HTTP;
-      case 'influxdbv1':
-        return pb.SinkType.SINK_TYPE_INFLUXDB_V1;
-      case 'influxdbv2':
-        return pb.SinkType.SINK_TYPE_INFLUXDB_V2;
-      case 'jdbcClickHouse':
-        return pb.SinkType.SINK_TYPE_JDBC_CLICK_HOUSE;
-      case 'jdbcMariaDB':
-        return pb.SinkType.SINK_TYPE_JDBC_MARIA_DB;
-      case 'jdbcOpenMLDB':
-        return pb.SinkType.SINK_TYPE_JDBC_OPEN_MLDB;
-      case 'jdbcPostgres':
-        return pb.SinkType.SINK_TYPE_JDBC_POSTRGRES;
-      case 'jdbcSQLite':
-        return pb.SinkType.SINK_TYPE_JDBC_SQLITE;
-      case 'kafka':
-        return pb.SinkType.SINK_TYPE_KAFKA;
-      case 'kinesis':
-        return pb.SinkType.SINK_TYPE_KINESIS;
-      case 'mongodb':
-        return pb.SinkType.SINK_TYPE_MONGODB;
-      case 'rabbitMQ':
-        return pb.SinkType.SINK_TYPE_RABBITMQ;
-      case 'redis':
-        return pb.SinkType.SINK_TYPE_REDIS;
-      case 'solr':
-        return pb.SinkType.SINK_TYPE_SOLR;
-    }
-  }
-
-  const classNameToPb = (value: ClassName | undefined): pb.ClassName => {
-    switch (value) {
-      case 'AbstractHdfs2Connector':
-        return pb.ClassName.CLASS_NAME_ABSTRACT_HDFS2_CONNECTOR;
-      case 'AbstractHdfs3Connector':
-        return pb.ClassName.CLASS_NAME_ABSTRACT_HDFS3_CONNECTOR;
-      case 'AerospikeStringSink':
-        return pb.ClassName.CLASS_NAME_AEROSPIKE_STRING_SINK;
-      case 'AlluxioSink':
-        return pb.ClassName.CLASS_NAME_ALLUXIO_SINK;
-      case 'CassandraStringSink':
-        return pb.ClassName.CLASS_NAME_CASSANDRA_STRING_SINK;
-      case 'ClickHouseJdbcAutoSchemaSink':
-        return pb.ClassName.CLASS_NAME_CLICK_HOUSE_JDBC_AUTO_SCHEMA_SINK;
-      case 'ElasticSearchSink':
-        return pb.ClassName.CLASS_NAME_ELASTIC_SEARCH_SINK;
-      case 'HbaseAbstractConfig':
-        return pb.ClassName.CLASS_NAME_HBASE_ABSTRACT_CONFIG;
-      case 'HttpSink':
-        return pb.ClassName.CLASS_NAME_HTTP_SINK;
-      case 'InfluxDBGenericRecordSink':
-        return pb.ClassName.CLASS_NAME_INFLUXDB_GENERIC_RECORD_SINK;
-      case 'KafkaAbstractSink':
-        return pb.ClassName.CLASS_NAME_KAFKA_ABSTRACT_SINK;
-      case 'KinesisSink':
-        return pb.ClassName.CLASS_NAME_KINESIS_SINK;
-      case 'MariadbJdbcAutoSchemaSink':
-        return pb.ClassName.CLASS_NAME_MARIADB_JDBC_AUTO_SCHEMA_SINK;
-      case 'MongoSink':
-        return pb.ClassName.CLASS_NAME_MONGO_SINK;
-      case 'OpenMLDBJdbcAutoSchemaSink':
-        return pb.ClassName.CLASS_NAME_OPEN_MLDB_JDBC_AUTO_SCHEMA_SINK;
-      case 'PostgresJdbcAutoSchemaSink':
-        return pb.ClassName.CLASS_NAME_POSTGRES_JDBC_AUTO_SCHEMA_SINK;
-      case 'RabbitMQSink':
-        return pb.ClassName.CLASS_NAME_RABBIT_MQ_SINK;
-      case 'RedisAbstractConfig':
-        return pb.ClassName.CLASS_NAME_REDIS_ABSTRACT_CONFIG;
-      case 'SolrSinkConfig':
-        return pb.ClassName.CLASS_NAME_SOLR_SINK_CONFIG;
-      case 'SqliteJdbcAutoSchemaSink':
-        return pb.ClassName.CLASS_NAME_SQLITE_JDBC_AUTO_SCHEMA_SINK;
-      case 'StringSink':
-        return pb.ClassName.CLASS_NAME_STRING_SINK;
-      default:
-        return pb.ClassName.CLASS_NAME_ABSTRACT_HDFS2_CONNECTOR;
-    }
+    return configurationValue.path ? true : false;
   }
 
   const onChange = (configurations: Configurations) => {
@@ -212,22 +92,15 @@ const UpdateSink = (props: CreateSinkProps) => {
     }
   }
 
-  const isComplexString = (configurationValue: ConfigurationValue): configurationValue is string | string[] => {
-    if (typeof(configurationValue) !== 'number' && typeof(configurationValue) !== 'boolean' && ((typeof(configurationValue) === 'object' && Array.isArray(configurationValue)) || typeof(configurationValue) === 'string' || Array.isArray(configurationValue))) {
-      return true;
+  const changeAttachment = (configurationName: string, attachmentName: string, value: string | number | boolean | string[] | StringMap | PathToConnector) => {
+    const newAttachment = _.cloneDeep(configurations);
+
+    if (configurationName === 'resources' && typeof(value) === 'number') {
+      newAttachment[configurationName][attachmentName] = value;
     }
-    
-    return false;
+    onChange(newAttachment);
   }
 
-  const isPathToConnector = (configurationValue: ConfigurationValue): configurationValue is PathToConnector => {
-    if (typeof(configurationValue) === 'string' || typeof(configurationValue) === 'number' || typeof(configurationValue) === 'boolean' || Array.isArray(configurationValue)) {
-      return false;
-    }
-
-    return configurationValue.path ? true : false;
-  }
-  
   const changeMap = (configurationName: string, configurationKey: string, keyName: string, value: string | number | boolean | string[] | StringMap | PathToConnector, attachmentName?: string) => {
     const newMap = _.cloneDeep(configurations);
 
@@ -246,22 +119,6 @@ const UpdateSink = (props: CreateSinkProps) => {
     setConfigurations(newMap);
   }
 
-  const isElasticSearchSslConfigs = (value: string | number | boolean | StringMap | ElasticSearchSslConfigs): value is ElasticSearchSslConfigs => {
-    if (typeof(value) === 'object') {
-      return true;
-    }
-    return false;
-  }
-
-  const changeAttachment = (configurationName: string, attachmentName: string, value: string | number | boolean | string[] | StringMap | PathToConnector) => {
-    const newAttachment = _.cloneDeep(configurations);
-
-    if (configurationName === 'resources' && typeof(value) === 'number') {
-      newAttachment[configurationName][attachmentName] = value;
-    }
-    onChange(newAttachment);
-  }
-
   const changeConditionalAttachments = (configurationName: string, attachmentName: string, field: string, value: string | number | boolean | string[] | StringMap, nestedName?: string) => {
     const newAttachment = _.cloneDeep(configurations);
 
@@ -276,111 +133,7 @@ const UpdateSink = (props: CreateSinkProps) => {
       onChange(newAttachment);
     }
   }
-
-  const updateSink = async () => {
-    const req = props.action === 'create' ? new pb.CreateSinkRequest() : new pb.UpdateSinkRequest();
-    const sinkConfig = new pb.SinkConfig();
-    sinkConfig.setTenant(props.tenant);
-    sinkConfig.setNamespace(props.namespace);
-    sinkConfig.setName(configurations.name);
-    sinkConfig.setClassName(classNameToPb(configurations.className));
-    sinkConfig.setSourceSubscriptionName(configurations.sourceSubscriptionName);
-
-    sinkConfig.setSourceSubscriptionPosition(sourceSubscriptionPositionToPb(configurations.sourceSubscriptionPosition));
-    sinkConfig.setInputsList(configurations.inputs);
-
-    Object.entries(configurations.topicToSerdeClassName).map(([key, value]) => {
-      sinkConfig.getTopicToSerdeClassNameMap().set(key, value);
-    });
-
-    sinkConfig.setTopicsPattern(configurations.topicsPattern);
-
-    Object.entries(configurations.topicToSchemaType).map(([key, value]) => {
-      sinkConfig.getTopicToSchemaTypeMap().set(key, value);
-    });
-
-    Object.entries(configurations.topicToSchemaProperties).map(([key, value]) => {
-      sinkConfig.getTopicToSchemaPropertiesMap().set(key, value);
-    });
-
-    Object.entries(configurations.inputsSpecs).map(([_, value]) => {
-      const inputsSpecs = new pb.InputsSpecs();
-      const cryptoConfig = new pb.CryptoConfig();
-      cryptoConfig.setConsumerCryptoFailureAction(consumerCryptoFailureActionToPb(value.cryptoConfig.consumerCryptoFailureAction));
-      cryptoConfig.setCryptoKeyReaderClassName(value.cryptoConfig.cryptoKeyReaderClassName);
-      cryptoConfig.setCryptoKeyReaderConfig(value.cryptoConfig.cryptoKeyReaderConfig);
-      cryptoConfig.setEncryptionKeysList(value.cryptoConfig.encryptionKeys);
-      cryptoConfig.setProducerCryptoFailureAction(producerCryptoFailureActionToPb(value.cryptoConfig.producerCryptoFailureAction));
-
-      inputsSpecs.setCryptoConfig(cryptoConfig);
-      inputsSpecs.setIsRegexPattern(value.isRegexPattern);
-      inputsSpecs.setPoolMessages(value.poolMessages);
-      inputsSpecs.setReceiverQueueSize(value.receiverQueueSize);
-      inputsSpecs.setSchemaType(value.schemaType);
-      inputsSpecs.setSerdeClassName(value.serdeClassName);
-
-
-      Object.entries(value.schemaProperties).map(([key, value]) => {
-        inputsSpecs.getSchemaPropertiesMap().set(key, value);
-      })
-
-      Object.entries(value.consumerProperties).map(([key, value]) => {
-        inputsSpecs.getConsumerPropertiesMap().set(key, value);
-      })
-
-      sinkConfig.getInputSpecsMap().set(value.name, inputsSpecs);
-    })
-    
-    sinkConfig.setMaxMessageRetries(configurations.maxMessageRetries);
-    sinkConfig.setDeadLetterTopic(configurations.deadLetterTopic);
-    sinkConfig.setConfigs(JSON.stringify(configurations.configs[configurations.sinkType]));
-    sinkConfig.setSecrets(configurations.secrets);
-    sinkConfig.setParallelism(configurations.parallelism);
-    sinkConfig.setSinkType(sinkTypeToPb(configurations.sinkType));
-
-    sinkConfig.setProcessingGuarantees(processingGuaranteesToPb(configurations.processingGuarantees));
-    sinkConfig.setRetainOrdering(configurations.retainOrdering);
-    sinkConfig.setRetainKeyOrdering(configurations.retainKeyOrdering);
-
-    const resources = new pb.Resources();
-    resources.setCpu(configurations.resources.cpu);
-    resources.setDisk(configurations.resources.disk);
-    resources.setRam(configurations.resources.ram);
-    sinkConfig.setResources(resources);
-
-    sinkConfig.setAutoAck(configurations.autoAck);
-    sinkConfig.setTimeoutMs(configurations.timeoutMs);
-    sinkConfig.setNegativeAckRedeliveryDelayMs(configurations.negativeAckRedeliveryDelayMs);
-    sinkConfig.setArchive(configurations.archive);
-    sinkConfig.setCleanupSubscription(configurations.cleanupSubscription);
-    sinkConfig.setRuntimeFlags(configurations.runtimeFlags);
-    sinkConfig.setCustomRuntimeOptions(configurations.customRuntimeOptions);
-
-    const pathToConnector = new pb.PathToConnector();
-    pathToConnector.setType(pathToConnectorToPb(configurations.pathToConnector.type))
-    if (configurations.pathToConnector.type === 'url') {
-      pathToConnector.setPath(`https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-${configurations.pathToConnector.path}-2.11.0.nar`); 
-    } else {
-      pathToConnector.setPath(configurations.pathToConnector.path);
-    }
-    sinkConfig.setPathToConnector(pathToConnector);
-
-    req.setSinkConfig(sinkConfig);
-
-    const res = props.action === 'create' ? await ioServiceClient.createSink(req, {}) : await ioServiceClient.updateSink(req, {});
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to ${props.action} sink. ${res.getStatus()?.getMessage()}`);
-      return;
-    }
-  }
-
-  const isConnectorsConfigs = (value: ConfigurationValue): value is ConnectorsConfigs => {
-    if (typeof(value) === 'object' && !Array.isArray(value) && value.hasOwnProperty('aerospike')) {
-      return true;
-    }
-    return false;
-  }
-
+  
   return (
     <div className={`${s.UpdateSink}`}>
       <div className={s.Title}>
@@ -676,9 +429,19 @@ const UpdateSink = (props: CreateSinkProps) => {
       <div className={`${s.Buttons}`}>
         <Button
           text={props.action === 'create' ? 'Create' : 'Update'}
-          onClick={() => updateSink()}
+          onClick={() => props.updateIo({
+            tenant: props.tenant,
+            namespace: props.namespace,
+            action: props.action,
+            configurations
+          })}
           type='primary'
-          disabled={!configurations.name || !configurations.inputs.length || !configurations.inputs[0].length || !configurations.pathToConnector.path}
+          disabled={
+            !configurations.name ||
+            !configurations.inputs.length ||
+            !configurations.inputs[0].length ||
+            !configurations.pathToConnector.path
+          }
         />
         <Button
           text={`${hideUnrequired ? 'Show' : 'Hide'} unrequired`}
@@ -690,4 +453,4 @@ const UpdateSink = (props: CreateSinkProps) => {
   )
 }
 
-export default UpdateSink;
+export default IoUpdate;

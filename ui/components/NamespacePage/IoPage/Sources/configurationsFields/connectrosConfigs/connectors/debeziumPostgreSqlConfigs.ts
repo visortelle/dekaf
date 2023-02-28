@@ -1,4 +1,39 @@
-type PostgreSqlConfigs = {
+import { IoConfigField } from "../../../../IoConfigField/IoConfigField"
+import { dbNameField, dbServerNameField, hostnameField, passwordField, portField, pulsarHistoryServiceUrlField, userField } from "./debeziumConfigs";
+
+export const debeziumPostgreSqlFields: IoConfigField[] = [
+  hostnameField,
+  portField,
+  userField,
+  passwordField,
+  dbNameField,
+  dbServerNameField,
+  {
+    name: 'plugin.name',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Plugin name',
+  },
+  {
+    name: 'schema.whitelist',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Schema whitelist',
+  },
+  {
+    name: 'table.whitelist',
+    type: 'string',
+    isRequired: true,
+    help: 'help',
+    label: 'Table whitelist',
+  },
+  pulsarHistoryServiceUrlField,
+];
+
+export type PostgreSqlConfigs = {
+  [key: string]: string | number,
   "database.hostname": string,
   "database.port": number,
   "database.user": string ,
