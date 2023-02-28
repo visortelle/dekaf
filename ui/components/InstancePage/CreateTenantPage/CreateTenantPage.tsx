@@ -10,7 +10,7 @@ import { CreateTenantRequest, TenantInfo } from '../../../grpc-web/tools/teal/pu
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import useSWR, { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';
-import { ListClustersRequest } from '../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb';
+import { GetClustersRequest } from '../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb';
 import * as Either from 'fp-ts/Either';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../routes';
@@ -28,7 +28,7 @@ const CreateTenantPage: React.FC = () => {
   const { data: allClusters, error: allClustersError } = useSWR(
     swrKeys.pulsar.clusters._(),
     async () => {
-      const res = await clustersServiceClient.listClusters(new ListClustersRequest(), null);
+      const res = await clustersServiceClient.getClusters(new GetClustersRequest(), null);
 
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get clusters list. ${res.getStatus()?.getMessage()}`);

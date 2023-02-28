@@ -11,7 +11,7 @@ import Button from "../../ui/Button/Button";
 import { Code } from "../../../grpc-web/google/rpc/code_pb";
 import useSWR, { mutate } from "swr";
 import { swrKeys } from "../../swrKeys";
-import { ListClustersRequest } from "../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
+import { GetClustersRequest } from "../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
 import * as Either from "fp-ts/Either";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../routes";
@@ -35,8 +35,8 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
   const { data: allClusters, error: allClustersError } = useSWR(
     swrKeys.pulsar.clusters._(),
     async () => {
-      const res = await clustersServiceClient.listClusters(
-        new ListClustersRequest(),
+      const res = await clustersServiceClient.getClusters(
+        new GetClustersRequest(),
         null
       );
 

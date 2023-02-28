@@ -11,7 +11,7 @@ import SelectInput, {
 } from "../../ui/ConfigurationTable/SelectInput/SelectInput";
 import ListInput from "../../ui/ConfigurationTable/ListInput/ListInput";
 import { swrKeys } from "../../swrKeys";
-import { ListClustersRequest } from "../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
+import { GetClustersRequest } from "../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
 import { Code } from "../../../grpc-web/google/rpc/code_pb";
 import {
   GetTenantRequest,
@@ -39,8 +39,8 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   const { data: clusters, error: clustersError } = useSWR(
     swrKeys.pulsar.clusters._(),
     async () => {
-      const res = await clustersServiceClient.listClusters(
-        new ListClustersRequest(),
+      const res = await clustersServiceClient.getClusters(
+        new GetClustersRequest(),
         null
       );
 

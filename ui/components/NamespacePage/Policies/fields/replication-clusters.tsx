@@ -47,8 +47,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const replicationClusters = replicationClustersRes.getReplicationClustersList();
 
-      const availableClustersReq = new cpb.ListClustersRequest();
-      const availableClustersRes = await clustersServiceClient.listClusters(availableClustersReq, {});
+      const availableClustersReq = new cpb.GetClustersRequest();
+      const availableClustersRes = await clustersServiceClient.getClusters(availableClustersReq, {});
       if (availableClustersRes.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get available clusters: ${availableClustersRes.getStatus()?.getMessage()}`);
       }
