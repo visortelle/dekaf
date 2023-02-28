@@ -9,7 +9,7 @@ helm repo add apache https://pulsar.apache.org/charts
 ns="pulsar-devenv"
 helm_release="pulsar-devenv"
 
-"${this_dir}/prepare_helm_release.sh" -n "${ns}" -c -k "${helm_release}" --pulsar-superusers 'admin-1,admin-2'
+# "${this_dir}/prepare_helm_release.sh" -n "${ns}" -c -k "${helm_release}" --pulsar-superusers 'admin-1,admin-2'
 
 helm \
   upgrade "${helm_release}" apache/pulsar \

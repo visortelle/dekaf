@@ -16,3 +16,6 @@ certs:
 
 kube-prometheus-stack:
   enabled: false
+
+bookkeeper:
+  replicaCount: 3
