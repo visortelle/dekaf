@@ -36,8 +36,6 @@ const Favicons: React.FC<FaviconsProps> = (props) => {
       favicon = undefined;
   }
 
-  console.log(favicon)
-
   return (
     <Helmet>
       {crumb && <title>{crumb.value}</title>}

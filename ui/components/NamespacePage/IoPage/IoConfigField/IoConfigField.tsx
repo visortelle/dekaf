@@ -13,13 +13,17 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import ShortDurationInput from '../../../ui/ConfigurationTable/ShortDurationInput/ShortDurationInput';
 import SchemaTypeInput from '../../../TopicPage/Schema/SchemaTypeInput/SchemaTypeInput';
 import { SchemaTypeT } from '../../../TopicPage/Schema/types';
-import { ConnectorsConfigs } from '../Sinks/configurationsFields/connectrosConfigs/configs';
-import { Configurations, ConfigurationValue, InputsSpecs, PathToConnector, Resources, StringMap } from '../Sinks/configurationsFields/configurationsFields';
+import { SinkConnectorsConfigsTypes } from '../Sinks/configurationsFields/connectrosConfigs/configs';
+import { SinkConfigurations, SinkConfigurationValue, PathToConnector, StringMap, CryptoConfig, InputSpecs } from '../Sinks/configurationsFields/configurationsFields';
+import { SourceConfigurations, SourceConfigurationValue } from '../Sources/configurationsFields/configurationsFields';
+import DatetimePicker from '../../../ui/DatetimePicker/DatetimePicker';
+import { SourceConnectorsConfigsTypes } from '../Sources/configurationsFields/connectrosConfigs/configs';
+import { ElasticSearchSslConfigs } from '../Sinks/configurationsFields/connectrosConfigs/connectors/elasticsearchConfigs';
 
-export type IoConfigFieldType = 'string' | 'json' | 'int' | 'boolean' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector' | 'schemaType' | 'conditionalAttachments' | 'date';
+export type IoConfigFieldType = 'string' | 'int' | 'boolean' | 'json' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector' | 'schemaType' | 'conditionalAttachments' | 'date';
 
 export type ConditionalAttachments = {
-  limitation: 'sinkType',
+  limitation: 'sinkType' | 'className',
   fields: {
     [key: string]: IoConfigField[],
   }
@@ -44,9 +48,9 @@ export type IoConfigField = {
 }
 
 export type IoConfigFieldProps = IoConfigField & {
-  value: ConfigurationValue,
+  value: SinkConfigurationValue | SourceConfigurationValue | CryptoConfig | ElasticSearchSslConfigs | InputSpecs | SinkConnectorsConfigsTypes | SourceConnectorsConfigsTypes,
   onChange: (value: string[] | string | StringMap | PathToConnector | number | boolean) => void,
-  configurations: Configurations
+  configurations: SinkConfigurations | SinkConnectorsConfigsTypes | SourceConfigurations | SourceConnectorsConfigsTypes | InputSpecs | CryptoConfig | ElasticSearchSslConfigs | StringMap,
 }
 
 const IoConfigField = (props: IoConfigFieldProps) => {
@@ -78,14 +82,14 @@ const IoConfigField = (props: IoConfigFieldProps) => {
     }
   }
 
-  const isKeyValue = (data: StringMap | InputsSpecs | Resources | PathToConnector | ConnectorsConfigs): data is StringMap => {
-    if (data.type || data.path) {
+  const isKeyValue = (data: StringMap | SinkConfigurationValue | SourceConfigurationValue | CryptoConfig | SinkConnectorsConfigsTypes | SourceConnectorsConfigsTypes | ElasticSearchSslConfigs | InputSpecs): data is StringMap => {
+    if (data instanceof Date || typeof data !== 'object') {
       return false;
     }
     return true;
   }
 
-  const isSchemaType = (data: ConfigurationValue): data is SchemaTypeT => {
+  const isSchemaType = (data: SinkConfigurationValue | SourceConfigurationValue | CryptoConfig | SinkConnectorsConfigsTypes | SourceConnectorsConfigsTypes | ElasticSearchSslConfigs | InputSpecs): data is SchemaTypeT => {
 
     if (props.type === 'schemaType') {
       return true;
@@ -114,7 +118,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
         />
       }
 
-      {props.type === 'pathToConnector' && typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+      {props.type === 'pathToConnector' && typeof(props.value) === 'object' && !Array.isArray(props.value) && !(props.value instanceof Date) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
         <div>
           <div className={sf.FormItem}>
             <Select
@@ -125,7 +129,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
               value={props.value.type}
               onChange={(v) => {
                 setPathToConnectorType(v)
-                typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+                typeof(props.value) === 'object' && !Array.isArray(props.value) && !(props.value instanceof Date) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
                   props.onChange({ path: props.value.path, type: v })
               }}
             />
@@ -138,7 +142,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
               })}
               value={props.value.path}
               onChange={(v) => {
-                typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+                typeof(props.value) === 'object' && !Array.isArray(props.value) && !(props.value instanceof Date) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
                   props.onChange({
                     type: props.value.type,
                     path:v,
@@ -152,7 +156,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
               type='text'
               value={props.value.path}
               onChange={(v) => {
-                typeof(props.value) === 'object' && !Array.isArray(props.value) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+                typeof(props.value) === 'object' && !Array.isArray(props.value) && !(props.value instanceof Date) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
                   props.onChange({ type: props.value.type, path: v})
               }}
             />
@@ -224,6 +228,13 @@ const IoConfigField = (props: IoConfigFieldProps) => {
         <SchemaTypeInput
           onChange={(v) => props.onChange(v)}
           value={props.value}
+        />
+      }
+      
+      {props.type === 'date' && props.value instanceof Date &&
+        <DatetimePicker
+          value={props.value}
+          onChange={() => {}}
         />
       }
     </>

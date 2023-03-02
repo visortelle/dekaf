@@ -160,7 +160,6 @@ const classNameToPb = (value: ClassName | undefined): pb.ClassName => {
   }
 }
 
-
 const updateSink = async (props: UpdateSinkProps) => {
   const { ioServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();

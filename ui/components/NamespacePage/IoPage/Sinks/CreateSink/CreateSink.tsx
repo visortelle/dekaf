@@ -1,7 +1,6 @@
 import React from 'react';
-import _ from 'lodash';
 
-import { configurations } from '../configurationsFields/configurationsFields';
+import { sinkConfigurations } from '../configurationsFields/configurationsFields';
 import IoUpdate from '../../IoUpdate/IoUpdate';
 import updateSink from '../../IoUpdate/updateSink';
 
@@ -17,10 +16,10 @@ const CreateSink = (props: CreateSinkProps) => {
       action='create'
       tenant={props.tenant}
       namespace={props.namespace}
-      configurations={configurations}
+      configurations={sinkConfigurations}
       updateIo={updateSink}
+      ioType='sink'
     />
-    // <></>
   )
 }
 

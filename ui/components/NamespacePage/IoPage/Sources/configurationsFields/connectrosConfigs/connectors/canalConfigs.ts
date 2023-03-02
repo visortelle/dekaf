@@ -66,7 +66,7 @@ export type CanalConfigs = {
   zkServers: string,
   batchSize: number,
   destination: string,
-  cluster: boolean,
+  cluster: string,
   singleHostname: string,
   singlePort: number,
 }
@@ -77,7 +77,7 @@ export const canalDefault: CanalConfigs = {
   zkServers: "",
   batchSize: 5120,
   destination: "",
-  cluster: false,
+  cluster: "",
   singleHostname: "",
   singlePort: 11111,
 }

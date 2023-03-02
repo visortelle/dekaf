@@ -1,8 +1,8 @@
 import { IoConfigField } from "../../IoConfigField/IoConfigField";
 import { CONSUMER_CRYPTO_FAILURE_ACTION, PROCESSING_GUARANTEES, ProcessingGuarantees, PRODUCER_CRYPTO_FAILURE_ACTION, Resources, StringMap, ProducerCryptoFailureAction, ConsumerCryptoFailureAction } from "../../Sinks/configurationsFields/configurationsFields";
-import { ConnectorsConfigs, defaultConnectorsConfigs } from "./connectrosConfigs/configs";
+import { defaultConnectorsConfigs, sourceConfigs, SourceConnectorsConfigs } from "./connectrosConfigs/configs";
 
-export const configurationsFields: IoConfigField[] = [
+export const sourceConfigurationsFields: IoConfigField[] = [
   {
     name: 'name',
     type: 'string',
@@ -53,6 +53,13 @@ export const configurationsFields: IoConfigField[] = [
         label: 'Use thread local producers',
       },
       {
+        name: 'batchBuilder',
+        type: 'string',
+        isRequired: true,
+        help: 'help',
+        label: 'Batch builder',
+      },
+      {
         name: 'cryptoConfig',
         type: 'attachments',
         isRequired: true,
@@ -98,13 +105,6 @@ export const configurationsFields: IoConfigField[] = [
           },
         ]
       },
-      {
-        name: 'batchBuilder',
-        type: 'string',
-        isRequired: true,
-        help: 'help',
-        label: 'Batch builder',
-      },
     ]
   },
   {
@@ -127,6 +127,7 @@ export const configurationsFields: IoConfigField[] = [
     isRequired: true,
     help: 'help',
     label: 'Configs',
+    conditionalAttachments: sourceConfigs,
   },
   {
     name: 'secrets',
@@ -202,7 +203,7 @@ export const configurationsFields: IoConfigField[] = [
     label: 'Custom runtime options',
   },
   {
-    name: 'batchSourceConfig ',
+    name: 'batchSourceConfig',
     type: 'attachments',
     isRequired: true,
     help: 'help',
@@ -234,6 +235,7 @@ export const configurationsFields: IoConfigField[] = [
 ];
 
 export type CryptoConfig = {
+  [key: string]: string | string[],
   cryptoKeyReaderClassName: string,
   cryptoKeyReaderConfig: string
   encryptionKeys: string[];
@@ -242,31 +244,31 @@ export type CryptoConfig = {
 }
 
 export type ProducerConfig = {
+  [key: string]: string | number | boolean | CryptoConfig,
   maxPendingMessages: number,
   maxPendingMessagesAcrossPartitions: number,
   useThreadLocalProducers: boolean,
   cryptoConfig: CryptoConfig,
-  batchBuider: string,
+  batchBuilder: string,
 }
 
 export type BatchSourceConfig = {
-  batchsourceConfigKey: string,
-  batchsourceClassnameKey: string,
+  [key: string]: string,
   discoveryTriggererClassName: string,
   discoveryTriggererConfig: string,
 }
 
-export type ConfigurationValue = string | string[] | number | boolean | StringMap| Resources | BatchSourceConfig | ProducerConfig | ConnectorsConfigs;
+export type SourceConfigurationValue = string | string[] | number | boolean | StringMap| Resources | BatchSourceConfig | ProducerConfig | SourceConnectorsConfigs | Date;
 
-export type Configurations = {
-  [key: string]: ConfigurationValue,
+export type SourceConfigurations = {
+  [key: string]: SourceConfigurationValue,
   name: string,
   className: string,
   topicName: string,
   producerConfig: ProducerConfig,
   serdeClassName: string,
   schemaType: string,
-  configs: ConnectorsConfigs,
+  configs: SourceConnectorsConfigs,
   secrets: string, // map<String, Json(Object)>
   parallelism: number,
   processingGuarantees: ProcessingGuarantees,
@@ -278,9 +280,9 @@ export type Configurations = {
   batchBuilder: string,
 }
 
-export const configurations: Configurations = {
+export const sourceConfigurations: SourceConfigurations = {
   name: '',
-  className: '',
+  className: 'canal',
   topicName: '',
   producerConfig: {
     maxPendingMessages: 0,
@@ -293,7 +295,7 @@ export const configurations: Configurations = {
       producerCryptoFailureAction: 'fail',
       consumerCryptoFailureAction: 'fail',
     },
-    batchBuider: '',
+    batchBuilder: '',
   },
   serdeClassName: '',
   schemaType: '',
@@ -310,8 +312,6 @@ export const configurations: Configurations = {
   runtimeFlags: '',
   customRuntimeOptions: '',
   batchSourceConfig: {
-    batchsourceConfigKey: '',
-    batchsourceClassnameKey: '',
     discoveryTriggererClassName: '',
     discoveryTriggererConfig: '',
   },

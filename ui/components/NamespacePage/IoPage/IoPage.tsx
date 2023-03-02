@@ -88,7 +88,7 @@ const IoPage: React.FC<IoPageProps> = (props) => {
       {props.view === 'sinks-edit' && props.sink && <EditSink tenant={props.tenant} namespace={props.namespace} sink={props.sink} />}
       {props.view === 'sources' && <Sources tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'sources-create' && <CreateSource tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'sources-edit' && <EditSource tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'sources-edit' && props.source && <EditSource tenant={props.tenant} namespace={props.namespace} source={props.source} />}
     </div>
   );
 }

@@ -7,14 +7,14 @@ import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/Pul
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import { mapToObject } from '../../../../../pbUtils/pbUtils';
-import { Configurations, PathToConnectorType, SubscriptionInitialPosition, configurations as defaultConfigurations, InputsSpecs, InputSpecs, CryptoConfig, ConsumerCryptoFailureAction, ProducerCryptoFailureAction, ProcessingGuarantees, Resources, SinkType, ClassName } from '../configurationsFields/configurationsFields';
+import { SinkConfigurations, PathToConnectorType, SubscriptionInitialPosition, sinkConfigurations as defaultConfigurations, InputsSpecs, InputSpecs, CryptoConfig, ConsumerCryptoFailureAction, ProducerCryptoFailureAction, ProcessingGuarantees, Resources, SinkType, ClassName } from '../configurationsFields/configurationsFields';
 import { ConnectorsConfigsTypes, defaultConnectorsConfigs } from '../configurationsFields/connectrosConfigs/configs';
 import { InfluxDBv1Configs } from '../configurationsFields/connectrosConfigs/connectors/influxDBv1Configs';
 import { InfluxDBv2Configs } from '../configurationsFields/connectrosConfigs/connectors/influxDBv2Configs';
-
-import s from './EditSink.module.css';
 import IoUpdate from '../../IoUpdate/IoUpdate';
 import updateSink from '../../IoUpdate/updateSink';
+
+import s from './EditSink.module.css';
 
 type EditSinkProps = {
   tenant: string,
@@ -27,7 +27,7 @@ const EditSink = (props: EditSinkProps) => {
   const { ioServiceClient } = PulsarGrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
 
-  const [configurations, setConfigurations] = useState<Configurations>(defaultConfigurations);
+  const [configurations, setConfigurations] = useState<SinkConfigurations>(defaultConfigurations);
 
   const pathToConnectorUrlFromPb = (value: pb.PathType | undefined): PathToConnectorType => {
     switch (value) {
@@ -277,7 +277,7 @@ const EditSink = (props: EditSinkProps) => {
 
       configs[sinkType] = connectorsConfigs;
 
-      const sink: Configurations = {
+      const sink: SinkConfigurations = {
         tenant: sinkConfigs?.getTenant() || '',
         namespace: sinkConfigs?.getNamespace() || '',
         name: sinkConfigs?.getName() || '',
@@ -325,14 +325,14 @@ const EditSink = (props: EditSinkProps) => {
   return (
     <>
       {configurations ? 
-        // <IoUpdate
-        //   configurations={configurations}
-        //   action='edit'
-        //   tenant={props.tenant}
-        //   namespace={props.namespace}
-        //   updateIo={updateSink}
-        // />
-        <></>
+        <IoUpdate
+          configurations={configurations}
+          action='edit'
+          tenant={props.tenant}
+          namespace={props.namespace}
+          updateIo={updateSink}
+          ioType='sink'
+        />
          :
         <div className={s.NoData}>No data to show.</div>
       }

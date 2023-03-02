@@ -19,7 +19,7 @@ import { RabbitMQConfigs, rabbitMQDefault, rabbitMQFields } from "./connectors/r
 import { RedisConfigs, redisDefault, redisFields } from "./connectors/redisConfigs";
 import { SolrConfigs, solrDefault, solrFields } from "./connectors/solrConfigs";
 
-export const configs: ConditionalAttachments = {
+export const sinksConfigs: ConditionalAttachments = {
   limitation: 'sinkType',
   fields: {
     aerospike: aerospikeFields,
@@ -47,10 +47,10 @@ export const configs: ConditionalAttachments = {
   }
 }
 
-export type ConnectorsConfigsTypes = AerospikeConfigs | AlluxioConfigs | CassandraConfigs | ElasticSearchConfigs | FlumeConfigs | HBaseConfigs | HDFS2Configs | HDFS3Configs | HTTPConfigs | InfluxDBv1Configs | InfluxDBv2Configs | JDBCConfigs | KafkaConfigs | KinesisConfigs | MongoDBConfigs | RabbitMQConfigs | RedisConfigs | SolrConfigs;
+export type SinkConnectorsConfigsTypes = AerospikeConfigs | AlluxioConfigs | CassandraConfigs | ElasticSearchConfigs | FlumeConfigs | HBaseConfigs | HDFS2Configs | HDFS3Configs | HTTPConfigs | InfluxDBv1Configs | InfluxDBv2Configs | JDBCConfigs | KafkaConfigs | KinesisConfigs | MongoDBConfigs | RabbitMQConfigs | RedisConfigs | SolrConfigs;
 
-export type ConnectorsConfigs = {
-  [key: string]: ConnectorsConfigsTypes,
+export type SinkConnectorsConfigs = {
+  [key: string]: SinkConnectorsConfigsTypes,
   aerospike: AerospikeConfigs,
   alluxio: AlluxioConfigs,
   cassandra: CassandraConfigs,
@@ -75,7 +75,7 @@ export type ConnectorsConfigs = {
   solr: SolrConfigs,
 }
 
-export const defaultConnectorsConfigs: ConnectorsConfigs = {
+export const defaultConnectorsConfigs: SinkConnectorsConfigs = {
   aerospike: aerospikeDefault,
   alluxio: alluxioDefault,
   cassandra: cassandraDefault,
@@ -99,5 +99,3 @@ export const defaultConnectorsConfigs: ConnectorsConfigs = {
   redis: redisDefault,
   solr: solrDefault,
 }
-
-export default configs;

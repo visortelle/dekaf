@@ -17,8 +17,8 @@ import { NsqConfigs, nsqDefault, nsqFields } from "./connectors/nsqConfigs";
 import { RabbitMQConfigs, rabbitMQDefault, rabbitMQFields } from "./connectors/rabbitMQConfigs";
 import { TwitterFirehoseConfigs, twitterFirehoseDefault, twitterFirehoseFields } from "./connectors/twitterFirehoseConfigs";
 
-export const configs: ConditionalAttachments = {
-  limitation: 'sinkType',
+export const sourceConfigs: ConditionalAttachments = {
+  limitation: 'className',
   fields: {
     canal: canalFields,
     debeziumMicrosoftSql: debeziumMicrosoftSqlFields,
@@ -39,10 +39,10 @@ export const configs: ConditionalAttachments = {
   }
 }
 
-export type ConnectorsConfigsTypes = CanalConfigs | MicrosoftSqlConfigs | DebeziumMongoDbConfigs | MongoDBConfigs | MySqlConfigs | OracleConfigs | PostgreSqlConfigs | DynamoDbConfigs | FlumeConfigs | FileConfigs | KafkaConfigs | KinesisConfigs | NettyConfigs | NsqConfigs | RabbitMQConfigs | TwitterFirehoseConfigs;
+export type SourceConnectorsConfigsTypes = CanalConfigs | MicrosoftSqlConfigs | DebeziumMongoDbConfigs | MongoDBConfigs | MySqlConfigs | OracleConfigs | PostgreSqlConfigs | DynamoDbConfigs | FlumeConfigs | FileConfigs | KafkaConfigs | KinesisConfigs | NettyConfigs | NsqConfigs | RabbitMQConfigs | TwitterFirehoseConfigs;
 
-export type ConnectorsConfigs = {
-  [key: string]: ConnectorsConfigsTypes,
+export type SourceConnectorsConfigs = {
+  [key: string]: SourceConnectorsConfigsTypes,
   canal: CanalConfigs,
   debeziumMicrosoftSql: MicrosoftSqlConfigs,
   debeziumMongoDb: DebeziumMongoDbConfigs,
@@ -61,7 +61,7 @@ export type ConnectorsConfigs = {
   rappitMQ: RabbitMQConfigs,
 }
 
-export const defaultConnectorsConfigs: ConnectorsConfigs = {
+export const defaultConnectorsConfigs: SourceConnectorsConfigs = {
   canal: canalDefault,
   debeziumMicrosoftSql: microsoftSqlDefault,
   debeziumMongoDb: debeziumMongoDbDefault,

@@ -1,5 +1,5 @@
 import { IoConfigField } from "../../IoConfigField/IoConfigField";
-import configsAttachments, { ConnectorsConfigs, defaultConnectorsConfigs } from './connectrosConfigs/configs';
+import { defaultConnectorsConfigs, SinkConnectorsConfigs, sinksConfigs } from './connectrosConfigs/configs';
 
 const SUBSCRIPTION_INITIAL_POSITION = [ { value: 'latest', label: 'Latest' }, { value: 'earliest', label: 'Earliest' } ];
 export type SubscriptionInitialPosition = 'latest' | 'earliest';
@@ -20,58 +20,7 @@ const CLASS_NAME = [ { value: 'AerospikeStringSink', label: 'Aerospike' }, { val
 
 export type ClassName = 'AerospikeStringSink' | 'AlluxioSink' | 'CassandraStringSink' | 'ElasticSearchSink' | 'StringSink' | 'HbaseAbstractConfig' | 'AbstractHdfs2Connector' | 'AbstractHdfs3Connector' | 'HttpSink' | 'ClickHouseJdbcAutoSchemaSink' | 'InfluxDBGenericRecordSink' | 'MariadbJdbcAutoSchemaSink' | 'OpenMLDBJdbcAutoSchemaSink' | 'PostgresJdbcAutoSchemaSink' | 'SqliteJdbcAutoSchemaSink' | 'KafkaAbstractSink' | 'KinesisSink' | 'MongoSink' | 'RabbitMQSink' | 'RedisAbstractConfig' | 'SolrSinkConfig';
 
-// type ConfigsTypes = 'aerospike' | 'alluxio' | 'cassandra' | 'elasticSearch' | 'flume' | 'hbase' | 'hdfs2' | 'hdfs3' | 'http' | 'influxdbv1' | 'influxdbv2' | 'jdbcClickHouse' | 'jdbcMariaDB' | 'jdbcOpenMLDB' | 'jdbcPostgres' | 'jdbcSQLite' | 'kafka' | 'kinesis' | 'mongodb' | 'rabbitMQ' | 'redis' | 'solr';
-
-// const classNameToConfig = (className: ClassName): ConfigsTypes => {
-//   switch (className) {
-//     case 'AerospikeStringSink':
-//       return 'aerospike';
-//     case 'AlluxioSink':
-//       return 'alluxio';
-//     case 'CassandraStringSink':
-//       return 'cassandra';
-//     case 'ElasticSearchSink':
-//       return 'elasticSearch';
-//     case 'StringSink':
-//       return 'flume';
-//     case 'HbaseAbstractConfig':
-//       return 'hbase';
-//     case 'AbstractHdfs2Connector':
-//       return 'hdfs2';
-//     case 'AbstractHdfs3Connector':
-//       return 'hdfs3';
-//     case 'HttpSink':
-//       return 'http';
-//     case 'InfluxDBGenericRecordSink':
-//       return 'influxdbv1';
-//     case 'ClickHouseJdbcAutoSchemaSink':
-//       return 'jdbcClickHouse';
-//     case 'MariadbJdbcAutoSchemaSink':
-//       return 'jdbcMariaDB';
-//     case 'OpenMLDBJdbcAutoSchemaSink':
-//       return 'jdbcOpenMLDB';
-//     case 'PostgresJdbcAutoSchemaSink':
-//       return 'jdbcPostgres';
-//     case 'SqliteJdbcAutoSchemaSink':
-//       return 'jdbcSQLite';
-//     case 'KafkaAbstractSink':
-//       return 'kafka';
-//     case 'KinesisSink':
-//       return 'kinesis';
-//     case 'MongoSink':
-//       return 'mongodb';
-//     case 'RabbitMQSink':
-//       return 'rabbitMQ';
-//     case 'RedisAbstractConfig':
-//       return 'redis';
-//     case 'SolrSinkConfig':
-//       return 'solr';
-//   }
-// }
-
-// https://github.com/apache/pulsar/blob/01e0068f0e01216b5b456ecbaf102cdc4dcef56a/pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/impl/SinksBase.java
-
-export const configurationsFields: IoConfigField[] = [
+export const sinkConfigurationsFields: IoConfigField[] = [
   {
     name: 'name',
     type: 'string',
@@ -115,7 +64,7 @@ export const configurationsFields: IoConfigField[] = [
     isRequired: true,
     help: 'Data to connect to the database',
     label: 'Configs',
-    conditionalAttachments: configsAttachments
+    conditionalAttachments: sinksConfigs,
   },
   {
     name: 'sourceSubscriptionName',
@@ -437,8 +386,6 @@ export type Resources = {
   disk: number,
 }
 
-export type ConfigurationValue = string | string[] | number | StringMap | InputsSpecs | boolean | Resources | PathToConnector | ConnectorsConfigs
-
 export type PathToConnectorType = 'url' | 'folder';
 
 export type PathToConnector = {
@@ -447,8 +394,10 @@ export type PathToConnector = {
   path: string,
 }
 
-export type Configurations = {
-  [key: string]: ConfigurationValue,
+export type SinkConfigurationValue = string | string[] | number | StringMap | InputsSpecs | boolean | Resources | PathToConnector | SinkConnectorsConfigs
+
+export type SinkConfigurations = {
+  [key: string]: SinkConfigurationValue,
   name: string,
   pathToConnector: PathToConnector,
   inputs: string[],
@@ -471,7 +420,7 @@ export type Configurations = {
   className: ClassName,
   topicToSerdeClassName: StringMap,
   topicToSchemaType: StringMap,
-  configs: ConnectorsConfigs,  // Serialized JSON in a form of Map<String, JsonValue>
+  configs: SinkConnectorsConfigs,  // Serialized JSON in a form of Map<String, JsonValue>
   secrets: string,  // Serialized JSON in a form of Map<String, JsonValue>
   resources: Resources,
   archive: string,
@@ -479,7 +428,7 @@ export type Configurations = {
   customRuntimeOptions: string,
 }
 
-export const configurations: Configurations = {
+export const sinkConfigurations: SinkConfigurations = {
   name: 'users',
   pathToConnector: {
     type: 'url',
@@ -492,7 +441,25 @@ export const configurations: Configurations = {
   sourceSubscriptionPosition: 'latest',
   topicsPattern: '',
   topicToSchemaProperties: {},
-  inputsSpecs: {},
+  inputsSpecs: {
+    default: {
+      name: '',
+      schemaType: '',
+      serdeClassName: '',
+      isRegexPattern: false,
+      schemaProperties: {},
+      consumerProperties: {},
+      receiverQueueSize: 0,
+      poolMessages: false,
+      cryptoConfig: {
+        cryptoKeyReaderClassName: '',
+        cryptoKeyReaderConfig: '',
+        encryptionKeys: [],
+        producerCryptoFailureAction: 'fail',
+        consumerCryptoFailureAction: 'fail',
+      },
+    }
+  },
   sinkType: 'jdbcPostgres',
   maxMessageRetries: 0,
   deadLetterTopic: '',
