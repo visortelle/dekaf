@@ -13,25 +13,25 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import ShortDurationInput from '../../../ui/ConfigurationTable/ShortDurationInput/ShortDurationInput';
 import SchemaTypeInput from '../../../TopicPage/Schema/SchemaTypeInput/SchemaTypeInput';
 import { SchemaTypeT } from '../../../TopicPage/Schema/types';
-import { SinkConnectorsConfigsTypes } from '../Sinks/configurationsFields/connectrosConfigs/configs';
-import { SinkConfigurations, SinkConfigurationValue, PathToConnector, StringMap, CryptoConfig, InputSpecs } from '../Sinks/configurationsFields/configurationsFields';
-import { SourceConfigurations, SourceConfigurationValue } from '../Sources/configurationsFields/configurationsFields';
+import { SinkConnectorsConfigs, SinkConnectorsConfigsTypes } from '../Sinks/configurationsFields/connectrosConfigs/configs';
+import { SinkConfigurations, SinkConfigurationValue, PathToConnector, StringMap, CryptoConfig, InputSpecs, InputsSpecs, Resources } from '../Sinks/configurationsFields/configurationsFields';
+import { ProducerConfig, SourceConfigurations, SourceConfigurationValue } from '../Sources/configurationsFields/configurationsFields';
 import DatetimePicker from '../../../ui/DatetimePicker/DatetimePicker';
-import { SourceConnectorsConfigsTypes } from '../Sources/configurationsFields/connectrosConfigs/configs';
+import { SourceConnectorsConfigs, SourceConnectorsConfigsTypes } from '../Sources/configurationsFields/connectrosConfigs/configs';
 import { ElasticSearchSslConfigs } from '../Sinks/configurationsFields/connectrosConfigs/connectors/elasticsearchConfigs';
 
 export type IoConfigFieldType = 'string' | 'int' | 'boolean' | 'json' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector' | 'schemaType' | 'conditionalAttachments' | 'date';
+
+type Enum = {
+  value: string,
+  label: string,
+}
 
 export type ConditionalAttachments = {
   limitation: 'sinkType' | 'className',
   fields: {
     [key: string]: IoConfigField[],
   }
-}
-
-type Enum = {
-  value: string,
-  label: string,
 }
 
 export type IoConfigField = {
@@ -47,14 +47,17 @@ export type IoConfigField = {
   conditionalAttachments?: ConditionalAttachments,
 }
 
+export type Attachment = SinkConfigurations | SinkConnectorsConfigsTypes | SourceConfigurations | SourceConnectorsConfigsTypes | InputSpecs | InputsSpecs | CryptoConfig | ElasticSearchSslConfigs | StringMap | Resources | SinkConnectorsConfigs | ProducerConfig | SourceConnectorsConfigs;
+
+export type AttachmentValue = SinkConfigurationValue | SourceConfigurationValue | CryptoConfig | ElasticSearchSslConfigs | InputSpecs | SinkConnectorsConfigsTypes | SourceConnectorsConfigsTypes;
+
 export type IoConfigFieldProps = IoConfigField & {
-  value: SinkConfigurationValue | SourceConfigurationValue | CryptoConfig | ElasticSearchSslConfigs | InputSpecs | SinkConnectorsConfigsTypes | SourceConnectorsConfigsTypes,
+  value: AttachmentValue,
   onChange: (value: string[] | string | StringMap | PathToConnector | number | boolean) => void,
-  configurations: SinkConfigurations | SinkConnectorsConfigsTypes | SourceConfigurations | SourceConnectorsConfigsTypes | InputSpecs | CryptoConfig | ElasticSearchSslConfigs | StringMap,
+  configurations: Attachment,
 }
 
 const IoConfigField = (props: IoConfigFieldProps) => {
-
   const [pathToConnectorType, setPathToConnectorType] = useState('url');
   // const connectors = ['aerospike', 'batch-data-generator', 'canal', 'cassandra', 'data-generator', 'debezium-mongodb', 'debezium-mssql', 'debezium-mysql', 'debezium-oracle', 'debezium-postgres', 'dynamodb', 'elastic-search', 'file', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'kafka-connect-adaptor', 'kinesis', 'mongo', 'netty', 'nsq', 'rabbitmq', 'redis', 'solr', 'twitter'];
   const connectors = ['aerospike', 'cassandra', 'elastic-search', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'mongo', 'rabbitmq', 'redis', 'solr'];
@@ -90,7 +93,6 @@ const IoConfigField = (props: IoConfigFieldProps) => {
   }
 
   const isSchemaType = (data: SinkConfigurationValue | SourceConfigurationValue | CryptoConfig | SinkConnectorsConfigsTypes | SourceConnectorsConfigsTypes | ElasticSearchSslConfigs | InputSpecs): data is SchemaTypeT => {
-
     if (props.type === 'schemaType') {
       return true;
     } else {
