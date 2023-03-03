@@ -108,23 +108,25 @@ const IoUpdate = (props: IoUpdateProps) => {
     }
   }
 
-  const changeAttachment = (configurationName: string, attachmentName: string, value: string | number | boolean | string[] | StringMap | PathToConnector,  nestedName?: string) => {
+  const changeAttachment = (configurationName: string,  value: string | number | boolean | string[] | StringMap | PathToConnector | Attachment, condition?: string) => {
     const newAttachment = _.cloneDeep(configurations);
-    const x = newAttachment[configurationName]
+    
+    if (condition) {
+      const x = newAttachment[configurationName]
 
-    if (typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date)) {
-      const y = x[attachmentName];
-
-      if (typeof y === 'object' && !Array.isArray(y) && !(y instanceof Date) && nestedName) {
-        y[nestedName] = value;
-      } else if (typeof value !== 'object') {
-        x[attachmentName] = value; 
+      if (typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date)) {
+        x[condition] = value;
       }
+
+    } else {
+      newAttachment[configurationName] = value;
     }
+
     onChange(newAttachment);
   }
 
   const changeMap = (configurationName: string, configurationKey: string, value: Attachment) => {
+
     const newMap = _.cloneDeep(configurations);
     const x = newMap[configurationName];
 
@@ -135,20 +137,20 @@ const IoUpdate = (props: IoUpdateProps) => {
     }
   }
 
-  const changeConditionalAttachments = (configurationName: string, attachmentName: string, field: string, value: string | number | boolean | string[] | StringMap, nestedName?: string) => {
-    const newAttachment = _.cloneDeep(configurations);
+  // const changeConditionalAttachments = (configurationName: string, attachmentName: string, field: string, value: string | number | boolean | string[] | StringMap, nestedName?: string) => {
+  //   const newAttachment = _.cloneDeep(configurations);
 
-    if (configurationName === 'configs' && !Array.isArray(value)) {
-      let attachment = newAttachment[configurationName][field][attachmentName];
-      if (nestedName && isElasticSearchSslConfigs(attachment) && (typeof(value) === 'string' || typeof(value) === 'boolean')) {
-        attachment[nestedName] = value;
-      } else {
-        attachment = value;
-      }
-      newAttachment[configurationName][field][attachmentName] = attachment;
-      onChange(newAttachment);
-    }
-  }
+  //   if (configurationName === 'configs' && !Array.isArray(value)) {
+  //     let attachment = newAttachment[configurationName][field][attachmentName];
+  //     if (nestedName && isElasticSearchSslConfigs(attachment) && (typeof(value) === 'string' || typeof(value) === 'boolean')) {
+  //       attachment[nestedName] = value;
+  //     } else {
+  //       attachment = value;
+  //     }
+  //     newAttachment[configurationName][field][attachmentName] = attachment;
+  //     onChange(newAttachment);
+  //   }
+  // }
 
   return (
     <div className={`${s.UpdateSink}`}>
@@ -206,86 +208,14 @@ const IoUpdate = (props: IoUpdateProps) => {
 
                 {configuration.attachments &&
                   <div className={s.MapObject}>
-                    {configuration.attachments.map(attachment => {
-                      const x = configurations[configuration.name]
-                      const z = typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date) ? x : null;
-
-                      const y = z ? z[attachment.name] : null;
-                      const w = typeof y === 'object' && !Array.isArray(y) && !(y instanceof Date) ? y : null;
-
-                      return (
-                        <FormItem key={attachment.name}>
-                          <div className={s.MapObjectBlock}>
-                            <div className={s.Label}>
-                              <FormLabel content={attachment.label} />
-                              <div className={s.EntryButton}>
-                                <Button
-                                  svgIcon={enableIcon}
-                                  onClick={() => {}}
-                                  title='help information'
-                                  type='primary'
-                                />
-                              </div>
-                            </div>
-
-                            {!attachment.attachments && z &&
-                              <div className={s.Input}>
-                                <IoConfigField
-                                  name={attachment.name}
-                                  isRequired={attachment.isRequired}
-                                  type={attachment.type}
-                                  help={attachment.help}
-                                  label={attachment.label}
-                                  value={z[attachment.name]}
-                                  onChange={(v) => changeAttachment(configuration.name, attachment.name, v)}
-                                  configurations={configurations}
-                                  enum={attachment.enum}
-                                  mapType={attachment.mapType}
-                                />
-                              </div>
-                            }
-
-                            {attachment.attachments && attachment.attachments.map(nested => {
-                              return (
-                                <FormItem key={nested.name}>
-                                  <div className={s.MapObjectBlock}>
-                                    <div className={s.Label}>
-                                      <FormLabel content={nested.label} />
-                                      <div className={s.EntryButton}>
-                                        <Button
-                                          svgIcon={enableIcon}
-                                          onClick={() => {}}
-                                          title='help information'
-                                          type='primary'
-                                        />
-                                      </div>
-                                    </div>
-                                    
-                                    {z && w && <div className={s.Input}>
-                                      <IoConfigField
-                                        name={nested.name}
-                                        isRequired={nested.isRequired}
-                                        type={nested.type}
-                                        help={nested.help}
-                                        label={nested.label}
-                                        value={w[nested.name]}
-                                        onChange={(v) => changeAttachment(configuration.name, attachment.name, v, nested.name)}
-                                        configurations={w}
-                                        enum={nested.enum}
-                                        mapType={nested.mapType}
-                                      />
-                                    </div>}
-                                  </div>
-                                </FormItem>
-                              )
-                            })}
-
-                          </div>
-                        </FormItem>
-                      )
-                    })}
+                    <AttachmentsFields
+                      configurations={configurations[configuration.name]}
+                      attachment={configuration.attachments}
+                      attachmentName={configuration.name}
+                      onChange={(v) => changeAttachment(configuration.name, v)}
+                    />
                   </div>
-                }
+                }  {/* TODO fix border resources */}
                 
                 {!configuration.attachments && (configuration.type !== 'map' || typeof(configuration.mapType) === 'string') &&
                   <div key={configuration.name} className={s.Input}>
@@ -311,13 +241,11 @@ const IoUpdate = (props: IoUpdateProps) => {
                   <div className={s.MapObjects}>
 
                     {Object.keys(configurations[configuration.name]).map(configurationKey => {
-
                       const x = configurations[configuration.name]
                       const z = typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date) ? x : null;
 
                       const g = z ? z[configurationKey] : null;
                       const w = typeof g === 'object' && !Array.isArray(g) && !(g instanceof Date) ? g : null;
-
 
                       return (
                         <>
@@ -335,10 +263,7 @@ const IoUpdate = (props: IoUpdateProps) => {
                               configurations={w}
                               attachment={configuration.mapType}
                               attachmentName={configuration.name}
-                              onChange={(v) => {
-                                changeMap(configuration.name, configurationKey, v)
-                                // console.log({...configurations, v})
-                              }}
+                              onChange={(v) => changeMap(configuration.name, configurationKey, v)}
                             />
                           }
                         </>
@@ -357,102 +282,12 @@ const IoUpdate = (props: IoUpdateProps) => {
 
                 {configuration.type === 'conditionalAttachments' && configuration.conditionalAttachments && 
                   <div className={s.MapObject}>
-                    {configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation].toString()].map(attachment => {
-                      const connectorsConfigs = configurations[configuration.name];
-                      const nesteds = isConnectorsConfigs(connectorsConfigs) &&
-                        configuration.conditionalAttachments &&
-                        connectorsConfigs[configurations[configuration.conditionalAttachments.limitation].toString()][attachment.name];
-                      
-                      return (
-                        <div className={`${s.MapObjectBlock} ${s.Field}`} key={attachment.name}>
-                          <div className={s.Label}>
-                            <FormLabel content={attachment.label} />
-                            <div className={s.EntryButton}>
-                              <Button
-                                svgIcon={enableIcon}
-                                onClick={() => {}}
-                                title='help information'
-                                type='primary'
-                              />
-                            </div>
-                          </div>
-
-                          {attachment.attachments && 
-                            <div key={attachment.name} className={s.MapObject}>
-                              {attachment.attachments.map(nested => {
-                                return (
-                                  <div key={nested.name} className={`${s.MapObjectBlock}`}>
-                                    <div className={s.Label}>
-                                      <FormLabel content={nested.label} />
-                                      <div className={s.EntryButton}>
-                                        <Button
-                                          svgIcon={enableIcon}
-                                          onClick={() => {}}
-                                          title='help information'
-                                          type='primary'
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className={s.Input}>
-                                      {typeof nesteds !== 'undefined' &&
-                                        <IoConfigField
-                                          name={nested.name}
-                                          isRequired={nested.isRequired}
-                                          type={nested.type}
-                                          help={nested.help}
-                                          label={nested.label}
-                                          value={isElasticSearchSslConfigs(nesteds) && nesteds[nested.name]}
-                                          onChange={
-                                            (v) => configuration.conditionalAttachments &&
-                                            changeConditionalAttachments(
-                                              configuration.name,
-                                              attachment.name,
-                                              configurations[configuration.conditionalAttachments.limitation].toString(),
-                                              v,
-                                              nested.name,
-                                            )
-                                          }
-                                          configurations={configurations}
-                                          enum={nested.enum}
-                                          mapType={nested.mapType}
-                                        />
-                                      }
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          }
-                          
-                          {!attachment.attachments && (attachment.type !== 'map' || typeof(attachment.mapType) === 'string') &&
-                            <div key={attachment.name} className={s.Input}>
-                              {typeof nesteds !== 'undefined' &&
-                                <IoConfigField
-                                  name={attachment.name}
-                                  isRequired={attachment.isRequired}
-                                  type={attachment.type}
-                                  help={attachment.help}
-                                  label={attachment.label}
-                                  value={!isElasticSearchSslConfigs(nesteds) && nesteds} 
-                                  onChange={
-                                    (v) => configuration.conditionalAttachments && 
-                                    changeConditionalAttachments(
-                                      configuration.name, 
-                                      attachment.name,
-                                      configurations[configuration.conditionalAttachments.limitation].toString(),
-                                      v
-                                    )
-                                  }
-                                  configurations={configurations}
-                                  enum={attachment.enum}
-                                  mapType={attachment.mapType}
-                                />
-                              }
-                            </div>
-                          }
-                        </div>
-                      )
-                    })}
+                    <AttachmentsFields
+                      configurations={configurations[configuration.name][configurations[configuration.conditionalAttachments.limitation].toString()]} //configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation].toString()]
+                      attachment={configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation].toString()]} //configuration.mapType
+                      attachmentName={configurations[configuration.conditionalAttachments.limitation].toString()} //configuration.name
+                      onChange={(v) => changeAttachment(configuration.name, v, configurations[configuration.conditionalAttachments.limitation].toString())} //configuration.name, configurationKey, v
+                    />
                   </div>
                 }
               </> 
