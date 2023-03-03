@@ -55,7 +55,7 @@ const AttachmentsFields = (props: AttachmentsFieldsProps) => {
   return (
     <div className={s.MapObject}>
 
-      <div className={`${s.Label} ${sf.FormItem}`} >
+      {/* <div className={`${s.Label} ${sf.FormItem}`} >
         <FormLabel
           content={attachmentName}
           isRequired={true}
@@ -68,14 +68,11 @@ const AttachmentsFields = (props: AttachmentsFieldsProps) => {
             type='primary'
           />
         </div>
-      </div>
+      </div> */}
 
       {attachment.map(nested => {
         const x = configurations[nested.name]
         const z = typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date) ? x : null;
-
-        // const y = z ? z[nested.name] : null;
-        // const w = typeof y === 'object' && !Array.isArray(y) && !(y instanceof Date) ? y : null;
 
         return (
           <FormItem key={nested.name}>

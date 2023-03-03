@@ -47,7 +47,7 @@ const Sinks = (props: SinksProps) => {
   const { notifyError } = Notifications.useContext();
 
   const [sort, setSort] = useState<Sort>({ key: 'name', direction: 'asc' });
-  const [sinks, setSinks] = useState<ReceivedSinks[] | null>(null)
+  const [sinks, setSinks] = useState<ReceivedSinks[] | null>(null);
 
   const { data: receivedSinks, error: groupsError } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.io.sinks._({ tenant: props.tenant, namespace: props.namespace }),
