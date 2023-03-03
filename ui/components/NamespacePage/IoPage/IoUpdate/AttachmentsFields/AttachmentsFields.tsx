@@ -1,17 +1,15 @@
 import React from 'react';
+import _ from 'lodash';
+
 import Button from '../../../../ui/Button/Button';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
-
 import enableIcon from '../../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/enable.svg';
-
+import IoConfigField, { Attachment, IoConfigField as IoConfigFieldType } from '../../IoConfigField/IoConfigField';
+import { PathToConnector, SinkConfigurationValue, StringMap } from '../../Sinks/configurationsFields/configurationsFields';
+import { SourceConfigurationValue } from '../../Sources/configurationsFields/configurationsFields';
 
 import s from '../IoUpdate.module.css';
-import sf from '../../../../ui/ConfigurationTable/form.module.css';
-import IoConfigField, { Attachment, AttachmentValue, IoConfigField as IoConfigFieldType } from '../../IoConfigField/IoConfigField';
-import _ from 'lodash';
-import { PathToConnector, SinkConfigurations, SinkConfigurationValue, StringMap } from '../../Sinks/configurationsFields/configurationsFields';
-import { SourceConfigurations, SourceConfigurationValue } from '../../Sources/configurationsFields/configurationsFields';
 
 type AttachmentConfigurations = Attachment;
 
@@ -53,30 +51,14 @@ const AttachmentsFields = (props: AttachmentsFieldsProps) => {
   }
 
   return (
-    <div className={s.MapObject}>
-
-      {/* <div className={`${s.Label} ${sf.FormItem}`} >
-        <FormLabel
-          content={attachmentName}
-          isRequired={true}
-        />
-        <div className={s.EntryButton}>
-          <Button
-            svgIcon={enableIcon}
-            onClick={() => {}}
-            title='help information'
-            type='primary'
-          />
-        </div>
-      </div> */}
-
+    <>
       {attachment.map(nested => {
         const x = configurations[nested.name]
         const z = typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date) ? x : null;
 
         return (
           <FormItem key={nested.name}>
-            <div className={s.MapObjectBlock}>
+            <div className={`${s.Field}`}>
               <div className={s.Label}>
                 <FormLabel content={nested.label} />
                 <div className={s.EntryButton}>
@@ -107,19 +89,20 @@ const AttachmentsFields = (props: AttachmentsFieldsProps) => {
               }
 
               {nested.attachments && z &&
-                <AttachmentsFields
-                  attachment={nested.attachments}
-                  attachmentName={nested.name}
-                  configurations={z}
-                  onChange={(v) => {changeAttachment(nested.name, v)}}
-                />
+                <div className={`${s.MapObject}`}>
+                  <AttachmentsFields
+                    attachment={nested.attachments}
+                    attachmentName={nested.name}
+                    configurations={z}
+                    onChange={(v) => {changeAttachment(nested.name, v)}}
+                  />
+                </div> 
               }
-
             </div>
           </FormItem>
         )
       })}
-    </div>
+    </>
   )
 }
 

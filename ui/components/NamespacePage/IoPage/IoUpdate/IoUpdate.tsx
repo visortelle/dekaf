@@ -14,15 +14,14 @@ import DeleteDialog from './DeleteDialog/DeleteDialog';
 import { SourceConfigurations, SourceConfigurationValue, sourceConfigurationsFields, sourceConfigurations, BatchSourceConfig, ProducerConfig } from '../Sources/configurationsFields/configurationsFields';
 import { ElasticSearchSslConfigs } from '../Sinks/configurationsFields/connectrosConfigs/connectors/elasticsearchConfigs';
 import { SinkConnectorsConfigs } from '../Sinks/configurationsFields/connectrosConfigs/configs';
+import { SourceConnectorsConfigs } from '../Sources/configurationsFields/connectrosConfigs/configs';
+import AttachmentsFields from './AttachmentsFields/AttachmentsFields';
+
 import deleteIcon from '../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/delete.svg';
 import enableIcon from '../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/enable.svg';
 
 import s from './IoUpdate.module.css';
 import sl from '../../../ui/ConfigurationTable/ListInput/ListInput.module.css';
-import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { SourceConnectorsConfigs } from '../Sources/configurationsFields/connectrosConfigs/configs';
-import AttachmentsFields from './AttachmentsFields/AttachmentsFields';
-
 type IoProps = {
   tenant: string,
   namespace: string,
@@ -215,7 +214,7 @@ const IoUpdate = (props: IoUpdateProps) => {
                       onChange={(v) => changeAttachment(configuration.name, v)}
                     />
                   </div>
-                }  {/* TODO fix border resources */}
+                }
                 
                 {!configuration.attachments && (configuration.type !== 'map' || typeof(configuration.mapType) === 'string') &&
                   <div key={configuration.name} className={s.Input}>
@@ -248,7 +247,7 @@ const IoUpdate = (props: IoUpdateProps) => {
                       const w = typeof g === 'object' && !Array.isArray(g) && !(g instanceof Date) ? g : null;
 
                       return (
-                        <>
+                        <div className={s.MapObject} key={configurationKey}>
                           <div className={s.MapObjectDelete}>
                             <Button
                               svgIcon={deleteIcon}
@@ -266,7 +265,7 @@ const IoUpdate = (props: IoUpdateProps) => {
                               onChange={(v) => changeMap(configuration.name, configurationKey, v)}
                             />
                           }
-                        </>
+                         </div> 
                       )
                     })}
 
@@ -283,10 +282,10 @@ const IoUpdate = (props: IoUpdateProps) => {
                 {configuration.type === 'conditionalAttachments' && configuration.conditionalAttachments && 
                   <div className={s.MapObject}>
                     <AttachmentsFields
-                      configurations={configurations[configuration.name][configurations[configuration.conditionalAttachments.limitation].toString()]} //configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation].toString()]
-                      attachment={configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation].toString()]} //configuration.mapType
-                      attachmentName={configurations[configuration.conditionalAttachments.limitation].toString()} //configuration.name
-                      onChange={(v) => changeAttachment(configuration.name, v, configurations[configuration.conditionalAttachments.limitation].toString())} //configuration.name, configurationKey, v
+                      configurations={configurations[configuration.name][configurations[configuration.conditionalAttachments.limitation].toString()]}
+                      attachment={configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation].toString()]}
+                      attachmentName={configurations[configuration.conditionalAttachments.limitation].toString()}
+                      onChange={(v) => changeAttachment(configuration.name, v, configurations[configuration.conditionalAttachments.limitation].toString())}
                     />
                   </div>
                 }
