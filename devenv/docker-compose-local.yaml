@@ -13,6 +13,7 @@ services:
     volumes:
       - $PWD/cases:/cases
       - $PWD/entrypoint.sh:/entrypoint.sh
+      - $PWD/pulsar/connectors/debezium-postgres-source-config.yaml:/pulsar/connectors/debezium-postgres-source-config.yaml
   postgresql:
     image: postgres
     container_name: postgresdb

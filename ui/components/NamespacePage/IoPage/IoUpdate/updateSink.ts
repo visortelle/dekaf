@@ -2,15 +2,17 @@ import _ from 'lodash';
 
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import {  Configurations, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, PathToConnectorType, SinkType, ClassName } from '../Sinks/configurationsFields/configurationsFields';
-import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import { SinkConfigurations, ConsumerCryptoFailureAction, SubscriptionInitialPosition, ProducerCryptoFailureAction, ProcessingGuarantees, PathToConnectorType, SinkType, ClassName } from '../Sinks/configurationsFields/configurationsFields';
+import { IoServiceClient } from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/IoServiceClientPb';
+import { ReactNode } from 'react';
 
 export type UpdateSinkProps = {
   tenant: string,
   namespace: string,
   action: 'edit' | 'create',
-  configurations: Configurations
+  configurations: SinkConfigurations,
+  ioServiceClient: IoServiceClient,
+  notifyError: (content: ReactNode, notificationId?: string | undefined, isShort?: boolean | undefined) => void,
 }
 
 const consumerCryptoFailureActionToPb = (value: ConsumerCryptoFailureAction): pb.ConsumerCryptoFailureAction => {
@@ -161,9 +163,6 @@ const classNameToPb = (value: ClassName | undefined): pb.ClassName => {
 }
 
 const updateSink = async (props: UpdateSinkProps) => {
-  const { ioServiceClient } = PulsarGrpcClient.useContext();
-  const { notifyError } = Notifications.useContext();
-
   const req = props.action === 'create' ? new pb.CreateSinkRequest() : new pb.UpdateSinkRequest();
   const sinkConfig = new pb.SinkConfig();
   sinkConfig.setTenant(props.tenant);
@@ -253,9 +252,9 @@ const updateSink = async (props: UpdateSinkProps) => {
 
   req.setSinkConfig(sinkConfig);
 
-  const res = props.action === 'create' ? await ioServiceClient.createSink(req, {}) : await ioServiceClient.updateSink(req, {});
+  const res = props.action === 'create' ? await props.ioServiceClient.createSink(req, {}) : await props.ioServiceClient.updateSink(req, {});
   if (res.getStatus()?.getCode() !== Code.OK) {
-    notifyError(`Unable to ${props.action} sink. ${res.getStatus()?.getMessage()}`);
+    props.notifyError(`Unable to ${props.action} sink. ${res.getStatus()?.getMessage()}`);
     return;
   }
 }

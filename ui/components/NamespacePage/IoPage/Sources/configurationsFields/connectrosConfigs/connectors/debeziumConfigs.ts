@@ -25,11 +25,11 @@ export const userField: IoConfigField = {
 }
 
 export const passwordField: IoConfigField = {
-  name: 'database.user',
+  name: 'database.password',
   type: 'string',
   isRequired: true,
   help: 'help',
-  label: 'User name',
+  label: 'Password',
 }
 
 export const dbNameField: IoConfigField = {

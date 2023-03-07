@@ -6,44 +6,41 @@ import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import enableIcon from '../../../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/icons/enable.svg';
 import IoConfigField, { Attachment, IoConfigField as IoConfigFieldType } from '../../IoConfigField/IoConfigField';
-import { PathToConnector, SinkConfigurationValue, StringMap } from '../../Sinks/configurationsFields/configurationsFields';
-import { SourceConfigurationValue } from '../../Sources/configurationsFields/configurationsFields';
+import { CryptoConfig } from '../../Sources/configurationsFields/configurationsFields';
+import { ElasticSearchSslConfigs } from '../../Sinks/configurationsFields/connectrosConfigs/connectors/elasticsearchConfigs';
+import { AttachmentData, CommonData, isAttachment } from '../IoUpdate';
 
 import s from '../IoUpdate.module.css';
 
 type AttachmentConfigurations = Attachment;
 
 type AttachmentsFieldsProps = {
+  ioType: 'sink' | 'source',
   attachment: IoConfigFieldType[],
   attachmentName: string,
   configurations: AttachmentConfigurations,
   onChange: (attachment: Attachment) => void,
 }
 
+type Nested = CommonData | CryptoConfig | ElasticSearchSslConfigs;
+
 const AttachmentsFields = (props: AttachmentsFieldsProps) => {
   const { attachment, configurations, attachmentName, onChange } = props;
 
-  const isComplexString = (configurationValue: SinkConfigurationValue | SourceConfigurationValue): configurationValue is string | string[] => {
-    if (typeof(configurationValue) !== 'number' && typeof(configurationValue) !== 'boolean' && ((typeof(configurationValue) === 'object' && Array.isArray(configurationValue)) || typeof(configurationValue) === 'string' || Array.isArray(configurationValue))) {
-      return true;
-    }
-    
-    return false;
+  const isNested = (x: AttachmentData): x is Nested => {
+    return true;
   }
 
-  const changeAttachment = (configurationName: string, value: string | number | boolean | string[] | StringMap | PathToConnector | Attachment,  nestedName?: string) => {
+  const changeAttachment = (configurationName: string, value: AttachmentData,  nestedName?: string) => {
     const newAttachment = _.cloneDeep(configurations);
     const x = newAttachment[configurationName];
 
-    if (typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date) && nestedName) {
+    if (isAttachment(x) && nestedName) {
       const y = x[nestedName];
-
-      if (typeof y === 'object' && !Array.isArray(y) && !(y instanceof Date) && nestedName) {
+      if (isAttachment(y) && isNested(value)) {
         y[nestedName] = value;
-      } else if (typeof value !== 'object') {
-        x[attachmentName] = value; 
       }
-    } else {
+    } else if (isNested(value)) {
       newAttachment[configurationName] = value
     }
 
@@ -54,7 +51,7 @@ const AttachmentsFields = (props: AttachmentsFieldsProps) => {
     <>
       {attachment.map(nested => {
         const x = configurations[nested.name]
-        const z = typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date) ? x : null;
+        const z = isAttachment(x) ? x : null;
 
         return (
           <FormItem key={nested.name}>
@@ -84,6 +81,7 @@ const AttachmentsFields = (props: AttachmentsFieldsProps) => {
                     configurations={z || configurations}
                     enum={nested.enum}
                     mapType={nested.mapType}
+                    ioType={props.ioType}
                   />
                 </div>
               }
@@ -95,6 +93,7 @@ const AttachmentsFields = (props: AttachmentsFieldsProps) => {
                     attachmentName={nested.name}
                     configurations={z}
                     onChange={(v) => {changeAttachment(nested.name, v)}}
+                    ioType={props.ioType}
                   />
                 </div> 
               }

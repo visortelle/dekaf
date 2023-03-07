@@ -1,6 +1,27 @@
 import { IoConfigField } from "../../IoConfigField/IoConfigField";
-import { CONSUMER_CRYPTO_FAILURE_ACTION, PROCESSING_GUARANTEES, ProcessingGuarantees, PRODUCER_CRYPTO_FAILURE_ACTION, Resources, StringMap, ProducerCryptoFailureAction, ConsumerCryptoFailureAction } from "../../Sinks/configurationsFields/configurationsFields";
+import { CONSUMER_CRYPTO_FAILURE_ACTION, PROCESSING_GUARANTEES, ProcessingGuarantees, PRODUCER_CRYPTO_FAILURE_ACTION, Resources, StringMap, ProducerCryptoFailureAction, ConsumerCryptoFailureAction, Archive } from "../../Sinks/configurationsFields/configurationsFields";
 import { defaultConnectorsConfigs, sourceConfigs, SourceConnectorsConfigs } from "./connectrosConfigs/configs";
+
+export type SourceClassName = 'canal' | 'debeziumMySql' | 'debeziumPostgres' | 'debeziumMongoDb' | 'debeziumOracle' | 'debeziumMsSql' | 'dynamoDb' | 'file' | 'flume' | 'twitterFireHouse' | 'kafkaAbstract' | 'kinesis' | 'mongo' | 'netty' | 'nsq' | 'rabbitMq';
+
+const SOURCE_CLASS_NAME = [
+  { value: 'canal', label: 'Canal' },
+  { value: 'debeziumMySql', label: 'Debezium my sql' },
+  { value: 'debeziumPostgres', label: 'Debezium postgres' },
+  { value: 'debeziumMongoDb', label: 'Debezium mongo DB' },
+  { value: 'debeziumOracle', label: 'Debezium oracle' },
+  { value: 'debeziumMsSql', label: 'Debezium msq sql' },
+  { value: 'dynamoDb', label: 'Dynamo DB' },
+  { value: 'file', label: 'File' },
+  { value: 'flume', label: 'Flume' },
+  { value: 'twitterFireHouse', label: 'Twitter fire house' },
+  { value: 'kafkaAbstract', label: 'Kafka abstract' },
+  { value: 'kinesis', label: 'Kinesis' },
+  { value: 'mongo', label: 'Mongo' },
+  { value: 'netty', label: 'Netty' },
+  { value: 'nsq', label: 'NSQ' },
+  { value: 'rabbitMq', label: 'Rabbit MQ' },
+];
 
 export const sourceConfigurationsFields: IoConfigField[] = [
   {
@@ -12,10 +33,11 @@ export const sourceConfigurationsFields: IoConfigField[] = [
   },
   {
     name: 'className',
-    type: 'string',
+    type: 'enum',
     isRequired: true,
     help: 'The class name of a Pulsar Sink if archive is file url path',
     label: 'Class name',
+    enum: SOURCE_CLASS_NAME,
   },
   {
     name: 'topicName',
@@ -183,7 +205,7 @@ export const sourceConfigurationsFields: IoConfigField[] = [
   },
   {
     name: 'archive',
-    type: 'string',
+    type: 'archive',
     isRequired: true,
     help: 'help',
     label: 'Archive',
@@ -263,7 +285,7 @@ export type SourceConfigurationValue = string | string[] | number | boolean | St
 export type SourceConfigurations = {
   [key: string]: SourceConfigurationValue,
   name: string,
-  className: string,
+  className: SourceClassName,
   topicName: string,
   producerConfig: ProducerConfig,
   serdeClassName: string,
@@ -273,7 +295,7 @@ export type SourceConfigurations = {
   parallelism: number,
   processingGuarantees: ProcessingGuarantees,
   resources: Resources,
-  archive: string,
+  archive: Archive,
   runtimeFlags: string,
   customRuntimeOptions: string,
   batchSourceConfig: BatchSourceConfig,
@@ -282,7 +304,7 @@ export type SourceConfigurations = {
 
 export const sourceConfigurations: SourceConfigurations = {
   name: '',
-  className: 'canal',
+  className: 'debeziumPostgres',
   topicName: '',
   producerConfig: {
     maxPendingMessages: 0,
@@ -308,7 +330,10 @@ export const sourceConfigurations: SourceConfigurations = {
     ram: 0,
     disk: 0,
   },
-  archive: '',
+  archive: {
+    type: 'url',
+    path: '', // TODO change on postgres
+  },
   runtimeFlags: '',
   customRuntimeOptions: '',
   batchSourceConfig: {
@@ -317,3 +342,5 @@ export const sourceConfigurations: SourceConfigurations = {
   },
   batchBuilder: '',
 }
+
+export const sourceConnectors = ['canal', 'debezium-mongodb', 'debezium-mssql', 'debezium-mysql', 'debezium-oracle', 'debezium-postgres', 'dynamodb', 'file', 'flume', 'kafka', 'kinesis', 'mongo', 'netty', 'nsq', 'rabbitmq', 'twitter'];

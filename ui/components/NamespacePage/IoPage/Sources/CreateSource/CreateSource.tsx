@@ -2,7 +2,7 @@ import React from 'react';
 
 import { sourceConfigurations } from '../configurationsFields/configurationsFields';
 import IoUpdate from '../../IoUpdate/IoUpdate';
-import updateSink from '../../IoUpdate/updateSink';
+import updateSource from '../../IoUpdate/updateSource';
 
 type CreateSourceProps = {
   tenant: string,
@@ -17,7 +17,7 @@ const CreateSource = (props: CreateSourceProps) => {
       tenant={props.tenant}
       namespace={props.namespace}
       configurations={sourceConfigurations}
-      updateIo={updateSink}
+      updateIo={updateSource}
       ioType='source'
     />
   )

@@ -2,16 +2,55 @@ import _ from 'lodash';
 
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/io_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import { Configurations } from '../Sources/configurationsFields/configurationsFields';
-import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import { SourceClassName, SourceConfigurations } from '../Sources/configurationsFields/configurationsFields';
 import { ConsumerCryptoFailureAction, ProcessingGuarantees, ProducerCryptoFailureAction } from '../Sinks/configurationsFields/configurationsFields';
+import { IoServiceClient } from '../../../../grpc-web/tools/teal/pulsar/ui/io/v1/IoServiceClientPb';
+import { ReactNode } from 'react';
 
 export type UpdateSourceProps = {
   tenant: string,
   namespace: string,
   action: 'edit' | 'create',
-  configurations: Configurations
+  configurations: SourceConfigurations,
+  ioServiceClient: IoServiceClient,
+  notifyError: (content: ReactNode, notificationId?: string | undefined, isShort?: boolean | undefined) => void,
+}
+
+const classNameToPb = (value: SourceClassName): pb.SourceClassName => {
+  switch (value) {
+    case 'canal': 
+      return pb.SourceClassName.SOURCE_CLASS_NAME_CANAL;
+    case 'debeziumMongoDb':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MONGO_DB;
+    case 'debeziumMsSql':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MS_SQL;
+    case 'debeziumMySql':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MY_SQL;
+    case 'debeziumOracle':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_ORACLE;
+    case 'debeziumPostgres':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_POSTGRES;
+    case 'dynamoDb':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_DYNAMO_DB;
+    case 'file':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_FILE;
+    case 'flume':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_FLUME;
+    case 'kafkaAbstract':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_KAFKA_ABSTRACT;
+    case 'kinesis':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_KINESIS;
+    case 'mongo':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_MONGO;
+    case 'netty':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_NETTY;
+    case 'nsq':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_NSQ;
+    case 'rabbitMq':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_RABBIT_MQ;
+    case 'twitterFireHouse':
+      return pb.SourceClassName.SOURCE_CLASS_NAME_TWITTER_FIRE_HOUSE;
+  }
 }
 
 const consumerCryptoFailureActionToPb = (value: ConsumerCryptoFailureAction): pb.ConsumerCryptoFailureAction => {
@@ -46,15 +85,12 @@ const processingGuaranteesToPb = (value: ProcessingGuarantees): pb.ProcessingGua
 }
 
 const updateSource = async (props: UpdateSourceProps) => {
-  const { ioServiceClient } = PulsarGrpcClient.useContext();
-  const { notifyError } = Notifications.useContext();
-
   const req = props.action === 'create' ? new pb.CreateSourceRequest() : new pb.UpdateSourceRequest();
   const source = new pb.Source();
   source.setTenant(props.tenant);
   source.setNamespace(props.namespace);
   source.setName(props.configurations.name);
-  source.setClassName(props.configurations.className);
+  source.setClassName(classNameToPb(props.configurations.className));
   source.setTopicName(props.configurations.topicName);
 
   const producerConfig = new pb.ProducerConfig();
@@ -70,11 +106,11 @@ const updateSource = async (props: UpdateSourceProps) => {
   cryptoConfig.setConsumerCryptoFailureAction(consumerCryptoFailureActionToPb(props.configurations.producerConfig.cryptoConfig.consumerCryptoFailureAction));
   
   producerConfig.setCryptoConfig(cryptoConfig);
-  producerConfig.setBatchBuilder(props.configurations.producerConfig.batchBuider);
+  producerConfig.setBatchBuilder(props.configurations.producerConfig.batchBuilder);
   source.setProducerConfig(producerConfig);
   source.setSerdeClassName(props.configurations.serdeClassName);
   source.setSchemaType(props.configurations.schemaType);
-  source.setConfigs(JSON.stringify(props.configurations.configs));
+  source.setConfigs(JSON.stringify(props.configurations.configs[props.configurations.className]));
   source.setSecrets(JSON.stringify(props.configurations.secrets));
   source.setParallelism(props.configurations.parallelism);
   source.setProcessingGuarantees(processingGuaranteesToPb(props.configurations.processingGuarantees));
@@ -100,9 +136,11 @@ const updateSource = async (props: UpdateSourceProps) => {
 
   req.setSource(source);
 
-  const res = props.action === 'create' ? await ioServiceClient.createSource(req, {}) : await ioServiceClient.updateSource(req, {});
+  console.log("time create source")
+
+  const res = props.action === 'create' ? await props.ioServiceClient.createSource(req, {}) : await props.ioServiceClient.updateSource(req, {});
   if (res.getStatus()?.getCode() !== Code.OK) {
-    notifyError(`Unable to ${props.action} sink. ${res.getStatus()?.getMessage()}`);
+    props.notifyError(`Unable to ${props.action} source. ${res.getStatus()?.getMessage()}`);
     return;
   }
 }

@@ -502,35 +502,77 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
             discoveryTriggererClassName = batchSourceConfig.getDiscoveryTriggererClassName,
             discoveryTriggererConfig = batchSourceConfig.getDiscoveryTriggererConfig.toString,
         ))
+
+    def sourceClassNameFromPb(className: pb.SourceClassName): String = className match
+        case pb.SourceClassName.SOURCE_CLASS_NAME_CANAL => "org.apache.pulsar.io.canal.CanalStringSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MY_SQL => "org.apache.pulsar.io.debezium.mysql.DebeziumMysqlSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_POSTGRES => "org.apache.pulsar.io.debezium.postgres.DebeziumPostgresSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MONGO_DB => "org.apache.pulsar.io.debezium.mongodb.DebeziumMongoDbSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_ORACLE => "org.apache.pulsar.io.debezium.oracle.DebeziumOracleSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MS_SQL => "org.apache.pulsar.io.debezium.mssql.DebeziumMsSqlSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_DYNAMO_DB => "org.apache.pulsar.io.dynamodb.DynamoDBSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_FILE => "org.apache.pulsar.io.file.FileSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_FLUME => "org.apache.pulsar.io.flume.FlumeConnector"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_TWITTER_FIRE_HOUSE => "org.apache.pulsar.io.twitter.TwitterFireHose"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_KAFKA_ABSTRACT => "org.apache.pulsar.io.kafka.KafkaAbstractSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_KINESIS => "org.apache.pulsar.io.kinesis.KinesisSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_MONGO => "org.apache.pulsar.io.mongodb.MongoSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_NETTY => "org.apache.pulsar.io.netty.NettySource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_NSQ => "org.apache.pulsar.io.nsq.NSQSource"
+        case pb.SourceClassName.SOURCE_CLASS_NAME_RABBIT_MQ => "org.apache.pulsar.io.rabbitmq.RabbitMQSource"
+
+    def sourceClassNameToPb(className: String): pb.SourceClassName = className match
+        case "org.apache.pulsar.io.canal.CanalStringSource" => pb.SourceClassName.SOURCE_CLASS_NAME_CANAL
+        case "org.apache.pulsar.io.debezium.mysql.DebeziumMysqlSource" => pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MY_SQL
+        case "org.apache.pulsar.io.debezium.postgres.DebeziumPostgresSource" => pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_POSTGRES
+        case "org.apache.pulsar.io.debezium.mongodb.DebeziumMongoDbSource" => pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MONGO_DB
+        case "org.apache.pulsar.io.debezium.oracle.DebeziumOracleSource" => pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_ORACLE
+        case "org.apache.pulsar.io.debezium.mssql.DebeziumMsSqlSource" => pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_MS_SQL
+        case "org.apache.pulsar.io.dynamodb.DynamoDBSource" => pb.SourceClassName.SOURCE_CLASS_NAME_DYNAMO_DB
+        case "org.apache.pulsar.io.file.FileSource" => pb.SourceClassName.SOURCE_CLASS_NAME_FILE
+        case "org.apache.pulsar.io.flume.FlumeConnector" => pb.SourceClassName.SOURCE_CLASS_NAME_FLUME
+        case "org.apache.pulsar.io.twitter.TwitterFireHose" => pb.SourceClassName.SOURCE_CLASS_NAME_TWITTER_FIRE_HOUSE
+        case "org.apache.pulsar.io.kafka.KafkaAbstractSource" => pb.SourceClassName.SOURCE_CLASS_NAME_KAFKA_ABSTRACT
+        case "org.apache.pulsar.io.kinesis.KinesisSource" => pb.SourceClassName.SOURCE_CLASS_NAME_KINESIS
+        case "org.apache.pulsar.io.mongodb.MongoSource" => pb.SourceClassName.SOURCE_CLASS_NAME_MONGO
+        case "org.apache.pulsar.io.netty.NettySource" => pb.SourceClassName.SOURCE_CLASS_NAME_NETTY
+        case "org.apache.pulsar.io.nsq.NSQSource" => pb.SourceClassName.SOURCE_CLASS_NAME_NSQ
+        case "org.apache.pulsar.io.rabbitmq.RabbitMQSource" => pb.SourceClassName.SOURCE_CLASS_NAME_RABBIT_MQ
+
+
     override def createSource(request: pb.CreateSourceRequest): Future[pb.CreateSourceResponse] =
         try {
             request.source match
                 case Some(v) =>
                     val source = SourceConfig(
-                        tenant = v.tenant,
-                        namespace = v.namespace,
+                        tenant = "public", // v.tenant,
+                        namespace = "default", // v.namespace,
                         name = v.name,
-                        className = v.className,
-                        topicName = v.topicName,
+                        className = sourceClassNameFromPb(pb.SourceClassName.SOURCE_CLASS_NAME_DEBEZIUM_POSTGRES), // "org.apache.pulsar.io.debezium.DebeziumSource.DebeziumPostgresSource", //v.className,
+                        topicName = "myTopic", // v.topicName,
                         producerConfig = convertProducerConfigFromPb(v.producerConfig),
                         serdeClassName = v.serdeClassName,
-                        schemaType = v.schemaType,
+                        schemaType = "AVRO", // v.schemaType,
                         configs = parseConfigs(v.configs),
                         secrets = parseConfigs(v.secrets),
-                        parallelism = v.parallelism,
+                        parallelism = 1, // v.parallelism,
                         processingGuarantees = processingGuaranteesFromPb(v.processingGuarantees),
                         resources = convertResourcesFromPb(v.resources),
-                        archive = v.archive,
+                        archive = "connectors/pulsar-io-debezium-postgres-2.11.0.nar", // v.archive,
                         runtimeFlags = v.runtimeFlags,
                         customRuntimeOptions = v.customRuntimeOptions,
                         batchSourceConfig = convertBatchSourceConfigFromPb(v.batchSourceConfig),
                         batchBuilder = v.batchBuilder,
                     )
 
-                    if v.archive matches "https*" then
-                        adminClient.sources.createSourceWithUrl(source, v.archive)
-                    else
-                        adminClient.sources.createSource(source, v.archive)
+                    println(source)
+
+                    adminClient.sources.createSourceWithUrl(source, "https://archive.apache.org/dist/pulsar/pulsar-2.11.0/connectors/pulsar-io-debezium-postgres-2.11.0.nar")
+
+//                    if v.archive matches "https*" then
+//                        adminClient.sources.createSourceWithUrl(source, v.archive)
+//                    else
+//                        adminClient.sources.createSource(source, v.archive)
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.CreateSourceResponse(status = Some(status)))
@@ -544,12 +586,12 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
         try {
 //            var sourcesSeq = Seq[pb.Source]()
 //            val sources = adminClient.sources.listSources(request.tenant, request.namespace).asScala.toSeq
-
+//
 //            sources.foreach(source =>
 //                val sourceStatus = adminClient.sources.getSourceStatus(request.tenant, request.namespace, source)
 //                var running = 0
-//                var numReads = 0
-//                var numWrites = 0
+//                var numReads: Long = 0
+//                var numWrites: Long = 0
 //
 //                sourceStatus.instances.asScala.foreach(instance =>
 //                    if (instance.status.running) {
@@ -568,9 +610,6 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
 //                    writes = numWrites,
 //                )
 //            )
-
-
-
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.GetListSourcesResponse(status = Some(status) )) // , sources = sources
         } catch {
@@ -595,7 +634,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                 tenant = source.getTenant,
                 namespace = source.getNamespace,
                 name = source.getName,
-                className = source.getClassName,
+                className = sourceClassNameToPb(source.getClassName),
                 topicName = source.getTopicName,
                 producerConfig = convertProducerConfigToPb(source.getProducerConfig),
                 serdeClassName = source.getSerdeClassName,
@@ -628,7 +667,7 @@ class IoServiceImpl extends pb.IoServiceGrpc.IoService:
                         tenant = v.tenant,
                         namespace = v.namespace,
                         name = v.name,
-                        className = v.className,
+                        className = sourceClassNameFromPb(v.className),
                         topicName = v.topicName,
                         producerConfig = convertProducerConfigFromPb(v.producerConfig),
                         serdeClassName = v.serdeClassName,

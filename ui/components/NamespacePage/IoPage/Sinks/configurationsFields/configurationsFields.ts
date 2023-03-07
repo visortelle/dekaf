@@ -17,7 +17,6 @@ export const SINK_TYPE = [ { value: 'aerospike', label: 'Aerospike' }, { value: 
 export type SinkType = 'aerospike' | 'alluxio' | 'cassandra' | 'elasticSearch' | 'flume' | 'hbase' | 'hdfs2' | 'hdfs3' | 'http' | 'influxdbv1' | 'influxdbv2' | 'jdbcClickHouse' | 'jdbcMariaDB' | 'jdbcOpenMLDB' | 'jdbcPostgres' | 'jdbcSQLite' | 'kafka' | 'kinesis' | 'mongodb' | 'rabbitMQ' | 'redis' | 'solr';
 
 const CLASS_NAME = [ { value: 'AerospikeStringSink', label: 'Aerospike' }, { value: 'AlluxioSink', label: 'Alluxio' }, { value: 'CassandraStringSink', label: 'Cassandra' }, { value: 'ElasticSearchSink', label: 'Elastic' }, { value: 'StringSink', label: 'flume' }, { value: 'HbaseAbstractConfig', label: 'HBase' }, { value: 'AbstractHdfs2Connector', label: 'HDFS2' }, { value: 'AbstractHdfs3Connector', label: 'HDFS3' }, { value: 'HttpSink', label: 'Http' }, { value: 'InfluxDBGenericRecordSink', label: 'InfluxDB' }, { value: 'ClickHouseJdbcAutoSchemaSink', label: 'JDBC click house' }, { value: 'MariadbJdbcAutoSchemaSink', label: 'Maria JDBC' }, { value: 'OpenMLDBJdbcAutoSchemaSink', label: 'OpenMLDB JDBC' }, { value: 'PostgresJdbcAutoSchemaSink', label: 'Postgres JDBC' }, { value: 'SqliteJdbcAutoSchemaSink', label: 'Sqlite JDBC' }, { value: 'KafkaAbstractSink', label: 'Kafka' }, { value: 'KinesisSink', label: 'Kinesis' }, { value: 'MongoSink', label: 'Mongo' }, { value: 'RabbitMQSink', label: 'Rabbit MQ' }, { value: 'RedisAbstractConfig', label: 'Redis' }, { value: 'SolrSinkConfig', label: 'Solr' }];
-
 export type ClassName = 'AerospikeStringSink' | 'AlluxioSink' | 'CassandraStringSink' | 'ElasticSearchSink' | 'StringSink' | 'HbaseAbstractConfig' | 'AbstractHdfs2Connector' | 'AbstractHdfs3Connector' | 'HttpSink' | 'ClickHouseJdbcAutoSchemaSink' | 'InfluxDBGenericRecordSink' | 'MariadbJdbcAutoSchemaSink' | 'OpenMLDBJdbcAutoSchemaSink' | 'PostgresJdbcAutoSchemaSink' | 'SqliteJdbcAutoSchemaSink' | 'KafkaAbstractSink' | 'KinesisSink' | 'MongoSink' | 'RabbitMQSink' | 'RedisAbstractConfig' | 'SolrSinkConfig';
 
 export const sinkConfigurationsFields: IoConfigField[] = [
@@ -34,13 +33,6 @@ export const sinkConfigurationsFields: IoConfigField[] = [
     isRequired: true,
     help: 'List of consumed topics',
     label: 'Topics',
-  },
-  {
-    name: 'pathToConnector',
-    type: 'pathToConnector',
-    isRequired: true,
-    help: 'Connector file storage location',
-    label: 'Path to connector',
   },
   {
     name: 'className',
@@ -328,7 +320,7 @@ export const sinkConfigurationsFields: IoConfigField[] = [
   },
   {
     name: 'archive',
-    type: 'string',
+    type: 'archive',
     isRequired: false,
     help: 'help',
     label: 'Archive',
@@ -386,20 +378,19 @@ export type Resources = {
   disk: number,
 }
 
-export type PathToConnectorType = 'url' | 'folder';
+export type ArchiveType = 'url' | 'folder';
 
-export type PathToConnector = {
+export type Archive = {
   [key: string]: string,
-  type: PathToConnectorType,
+  type: ArchiveType,
   path: string,
 }
 
-export type SinkConfigurationValue = string | string[] | number | StringMap | InputsSpecs | boolean | Resources | PathToConnector | SinkConnectorsConfigs
+export type SinkConfigurationValue = string | string[] | number | StringMap | InputsSpecs | boolean | Resources | SinkConnectorsConfigs
 
 export type SinkConfigurations = {
   [key: string]: SinkConfigurationValue,
   name: string,
-  pathToConnector: PathToConnector,
   inputs: string[],
   sourceSubscriptionName: string,
   sourceSubscriptionPosition: SubscriptionInitialPosition,
@@ -423,20 +414,14 @@ export type SinkConfigurations = {
   configs: SinkConnectorsConfigs,  // Serialized JSON in a form of Map<String, JsonValue>
   secrets: string,  // Serialized JSON in a form of Map<String, JsonValue>
   resources: Resources,
-  archive: string,
+  archive: Archive,
   runtimeFlags: string,
   customRuntimeOptions: string,
 }
 
 export const sinkConfigurations: SinkConfigurations = {
   name: 'users',
-  pathToConnector: {
-    type: 'url',
-    path: 'jdbc-postgres'
-  },
-  inputs: [
-    'users-topic'
-  ],
+  inputs: ['users-topic'],
   sourceSubscriptionName: '',
   sourceSubscriptionPosition: 'latest',
   topicsPattern: '',
@@ -477,7 +462,12 @@ export const sinkConfigurations: SinkConfigurations = {
   configs: defaultConnectorsConfigs,
   secrets: '',
   resources: { cpu: 0, ram: 0, disk: 0 },
-  archive: '',
+  archive: {
+    type: 'url',
+    path: 'jdbc-postgres'
+  },
   runtimeFlags: '',
   customRuntimeOptions: '',
 }
+
+export const sinkConnectors = ['aerospike', 'cassandra', 'elastic-search', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'mongo', 'rabbitmq', 'redis', 'solr'];

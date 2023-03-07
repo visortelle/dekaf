@@ -159,6 +159,26 @@ message Sinks {
   int32 writes = 9;
 }
 
+enum SourceClassName {
+  SOURCE_CLASS_NAME_UNSPECIFIED = 0;
+  SOURCE_CLASS_NAME_CANAL = 1;
+  SOURCE_CLASS_NAME_DEBEZIUM_MY_SQL = 2; 
+  SOURCE_CLASS_NAME_DEBEZIUM_POSTGRES = 3;
+  SOURCE_CLASS_NAME_DEBEZIUM_MONGO_DB = 4;
+  SOURCE_CLASS_NAME_DEBEZIUM_ORACLE = 5;
+  SOURCE_CLASS_NAME_DEBEZIUM_MS_SQL = 6;
+  SOURCE_CLASS_NAME_DYNAMO_DB = 7;
+  SOURCE_CLASS_NAME_FILE = 8;
+  SOURCE_CLASS_NAME_FLUME = 9;
+  SOURCE_CLASS_NAME_TWITTER_FIRE_HOUSE = 10;
+  SOURCE_CLASS_NAME_KAFKA_ABSTRACT = 11;
+  SOURCE_CLASS_NAME_KINESIS = 12;
+  SOURCE_CLASS_NAME_MONGO = 13;
+  SOURCE_CLASS_NAME_NETTY = 14;
+  SOURCE_CLASS_NAME_NSQ = 15;
+  SOURCE_CLASS_NAME_RABBIT_MQ = 16;
+}
+
 message ProducerConfig {
   int32 max_pending_messages = 1;
   int32 max_pending_messages_across_partitions = 2;
@@ -178,7 +198,7 @@ message Source {
   string tenant = 1;
   string namespace = 2;
   string name = 3;
-  string class_name = 4;
+  SourceClassName class_name = 4;
   string topic_name = 5;
   ProducerConfig producer_config = 6;
   string serde_class_name = 7;

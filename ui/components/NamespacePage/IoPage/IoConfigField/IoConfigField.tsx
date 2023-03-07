@@ -14,13 +14,13 @@ import ShortDurationInput from '../../../ui/ConfigurationTable/ShortDurationInpu
 import SchemaTypeInput from '../../../TopicPage/Schema/SchemaTypeInput/SchemaTypeInput';
 import { SchemaTypeT } from '../../../TopicPage/Schema/types';
 import { SinkConnectorsConfigs, SinkConnectorsConfigsTypes } from '../Sinks/configurationsFields/connectrosConfigs/configs';
-import { SinkConfigurations, SinkConfigurationValue, PathToConnector, StringMap, CryptoConfig, InputSpecs, InputsSpecs, Resources } from '../Sinks/configurationsFields/configurationsFields';
-import { ProducerConfig, SourceConfigurations, SourceConfigurationValue } from '../Sources/configurationsFields/configurationsFields';
+import { SinkConfigurations, SinkConfigurationValue, StringMap, CryptoConfig, InputSpecs, InputsSpecs, Resources, sinkConnectors } from '../Sinks/configurationsFields/configurationsFields';
+import { ProducerConfig, SourceConfigurations, SourceConfigurationValue, sourceConnectors } from '../Sources/configurationsFields/configurationsFields';
 import DatetimePicker from '../../../ui/DatetimePicker/DatetimePicker';
 import { SourceConnectorsConfigs, SourceConnectorsConfigsTypes } from '../Sources/configurationsFields/connectrosConfigs/configs';
 import { ElasticSearchSslConfigs } from '../Sinks/configurationsFields/connectrosConfigs/connectors/elasticsearchConfigs';
 
-export type IoConfigFieldType = 'string' | 'int' | 'boolean' | 'json' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'pathToConnector' | 'schemaType' | 'conditionalAttachments' | 'date';
+export type IoConfigFieldType = 'string' | 'int' | 'boolean' | 'json' | 'enum' | 'array' | 'map' | 'bytes' | 'duration' | 'attachments' | 'archive' | 'schemaType' | 'conditionalAttachments' | 'date';
 
 type Enum = {
   value: string,
@@ -53,14 +53,15 @@ export type AttachmentValue = SinkConfigurationValue | SourceConfigurationValue 
 
 export type IoConfigFieldProps = IoConfigField & {
   value: AttachmentValue,
-  onChange: (value: string[] | string | StringMap | PathToConnector | number | boolean) => void,
+  onChange: (value: string[] | string | StringMap | number | boolean) => void,
   configurations: Attachment,
+  ioType: 'sink' | 'source',
 }
 
 const IoConfigField = (props: IoConfigFieldProps) => {
   const [pathToConnectorType, setPathToConnectorType] = useState('url');
-  // const connectors = ['aerospike', 'batch-data-generator', 'canal', 'cassandra', 'data-generator', 'debezium-mongodb', 'debezium-mssql', 'debezium-mysql', 'debezium-oracle', 'debezium-postgres', 'dynamodb', 'elastic-search', 'file', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'kafka-connect-adaptor', 'kinesis', 'mongo', 'netty', 'nsq', 'rabbitmq', 'redis', 'solr', 'twitter'];
-  const connectors = ['aerospike', 'cassandra', 'elastic-search', 'flume', 'hbase', 'hdfs2', 'hdfs3', 'http', 'influxdb', 'jdbc-clickhouse', 'jdbc-mariadb', 'jdbc-openmldb', 'jdbc-postgres', 'jdbc-sqlite', 'kafka', 'mongo', 'rabbitmq', 'redis', 'solr'];
+
+  const connectors = props.ioType === 'sink' ? sinkConnectors : sourceConnectors;
 
   const addToArray = (eArray: string) => {
     const newArray = _.cloneDeep(props.configurations[props.name] as string[]);
@@ -120,7 +121,7 @@ const IoConfigField = (props: IoConfigFieldProps) => {
         />
       }
 
-      {props.type === 'pathToConnector' && typeof(props.value) === 'object' && !Array.isArray(props.value) && !(props.value instanceof Date) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
+      {props.type === 'archive' && typeof(props.value) === 'object' && !Array.isArray(props.value) && !(props.value instanceof Date) && typeof(props.value.type) === 'string' && typeof(props.value.path) === 'string' &&
         <div>
           <div className={sf.FormItem}>
             <Select

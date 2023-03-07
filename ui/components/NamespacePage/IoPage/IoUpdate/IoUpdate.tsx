@@ -9,10 +9,9 @@ import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import { H1 } from '../../../ui/H/H';
 import IoConfigField, { Attachment } from '../IoConfigField/IoConfigField';
-import { sinkConfigurationsFields, StringMap, PathToConnector, SinkConfigurations, SinkConfigurationValue, sinkConfigurations, InputsSpecs, Resources } from '../Sinks/configurationsFields/configurationsFields';
+import { sinkConfigurationsFields, StringMap, PathToConnector, SinkConfigurations, sinkConfigurations, InputsSpecs, Resources, InputSpecs } from '../Sinks/configurationsFields/configurationsFields';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
-import { SourceConfigurations, SourceConfigurationValue, sourceConfigurationsFields, sourceConfigurations, BatchSourceConfig, ProducerConfig } from '../Sources/configurationsFields/configurationsFields';
-import { ElasticSearchSslConfigs } from '../Sinks/configurationsFields/connectrosConfigs/connectors/elasticsearchConfigs';
+import { SourceConfigurations, sourceConfigurationsFields, sourceConfigurations, BatchSourceConfig, ProducerConfig } from '../Sources/configurationsFields/configurationsFields';
 import { SinkConnectorsConfigs } from '../Sinks/configurationsFields/connectrosConfigs/configs';
 import { SourceConnectorsConfigs } from '../Sources/configurationsFields/connectrosConfigs/configs';
 import AttachmentsFields from './AttachmentsFields/AttachmentsFields';
@@ -22,6 +21,11 @@ import enableIcon from '../../../TopicPage/Messages/SessionConfiguration/Message
 
 import s from './IoUpdate.module.css';
 import sl from '../../../ui/ConfigurationTable/ListInput/ListInput.module.css';
+import { UpdateSourceProps } from './updateSource';
+import { UpdateSinkProps } from './updateSink';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+
 type IoProps = {
   tenant: string,
   namespace: string,
@@ -31,12 +35,25 @@ type IoProps = {
 
 type IoUpdateProps = IoProps & {
   ioType: 'sink' | 'source',
-  updateIo: (props: IoProps) => Promise<void>,
+  updateIo: (props: UpdateSourceProps | UpdateSinkProps) => Promise<void>,
+}
+
+export type CommonData = string | number | boolean | string[] | Date;
+export type AttachmentData = CommonData | Attachment;
+
+export const isAttachment = (configuration: AttachmentData | null): configuration is Attachment => {
+  if (typeof configuration === 'object' && !Array.isArray(configuration) && !(configuration instanceof Date)) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 const IoUpdate = (props: IoUpdateProps) => {
   const modals = Modals.useContext();
   const navigate = useNavigate();
+  const { ioServiceClient } = PulsarGrpcClient.useContext();
+  const { notifyError } = Notifications.useContext();
 
   const [configurations, setConfigurations] = useState(props.configurations);
   const [hideUnrequired, setHideUnrequired] = useState(true);
@@ -44,38 +61,11 @@ const IoUpdate = (props: IoUpdateProps) => {
   const configurationsFields = props.ioType === 'sink' ? sinkConfigurationsFields : sourceConfigurationsFields;
   const defaultConfigurations = props.ioType === 'sink' ? sinkConfigurations : sourceConfigurations;
 
-  const isConnectorsConfigs = (value: SinkConfigurationValue | SourceConfigurationValue): value is SinkConnectorsConfigs | SourceConnectorsConfigs => {
-    if (typeof(value) === 'object' && !Array.isArray(value) && value.hasOwnProperty('flume')) {
-      return true;
-    }
-    return false;
+  const isInputsSpecs = (_: string | number | boolean | string[] | StringMap | InputsSpecs | Resources | PathToConnector | SinkConnectorsConfigs | BatchSourceConfig | ProducerConfig | SourceConnectorsConfigs | Date): _ is InputsSpecs => {
+    return true;
   }
-
-  const isElasticSearchSslConfigs = (value: boolean | string[] | StringMap | Date | ElasticSearchSslConfigs | ((string | number) & (string | number | boolean | StringMap | Date))): value is ElasticSearchSslConfigs => {
-    if (typeof(value) === 'object') {
-      return true;
-    }
-    return false;
-  }
-
-  const isComplexString = (configurationValue: SinkConfigurationValue | SourceConfigurationValue): configurationValue is string | string[] => {
-    if (typeof(configurationValue) !== 'number' && typeof(configurationValue) !== 'boolean' && ((typeof(configurationValue) === 'object' && Array.isArray(configurationValue)) || typeof(configurationValue) === 'string' || Array.isArray(configurationValue))) {
-      return true;
-    }
-    
-    return false;
-  }
-
-  const isPathToConnector = (configurationValue: SinkConfigurationValue | SourceConfigurationValue): configurationValue is PathToConnector => {
-    if (typeof(configurationValue) !== 'object' || Array.isArray(configurationValue)) {
-      return false;
-    }
-
-    return configurationValue.hasOwnProperty('path') ? true : false;
-  }
-
-  const isInputSpecs = (configurationValue: string | number | boolean | string[] | StringMap | InputsSpecs | Resources | PathToConnector | SinkConnectorsConfigs | BatchSourceConfig | ProducerConfig | SourceConnectorsConfigs | Date): configurationValue is InputsSpecs => {
-    return true
+  const isInputSpecs = (_: Attachment): _ is InputSpecs => {
+    return true;
   }
 
   const onChange = (configurations: SinkConfigurations | SourceConfigurations) => {
@@ -85,8 +75,8 @@ const IoUpdate = (props: IoUpdateProps) => {
   const expandMap = (key: string) => {
     const newMap =  _.cloneDeep(configurations);
     const newMapKey = newMap[key];
-    const defaultData = defaultConfigurations[key]
-    if (defaultData && isInputSpecs(defaultData) && isInputSpecs(newMapKey)) {
+    const defaultData = defaultConfigurations[key];
+    if (defaultData && isInputsSpecs(defaultData) && isInputsSpecs(newMapKey)) {
       const defaultDataObject = defaultData;
       if (isInputSpecs(defaultDataObject) && typeof newMapKey === 'object' && !Array.isArray(newMapKey)) {
         newMap[key] = {
@@ -107,13 +97,13 @@ const IoUpdate = (props: IoUpdateProps) => {
     }
   }
 
-  const changeAttachment = (configurationName: string,  value: string | number | boolean | string[] | StringMap | PathToConnector | Attachment, condition?: string) => {
+  const changeAttachment = (configurationName: string,  value: Attachment, condition?: string) => { 
     const newAttachment = _.cloneDeep(configurations);
     
     if (condition) {
       const x = newAttachment[configurationName]
 
-      if (typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date)) {
+      if (isAttachment(x)) {
         x[condition] = value;
       }
 
@@ -125,31 +115,14 @@ const IoUpdate = (props: IoUpdateProps) => {
   }
 
   const changeMap = (configurationName: string, configurationKey: string, value: Attachment) => {
-
     const newMap = _.cloneDeep(configurations);
     const x = newMap[configurationName];
 
-    if (typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date)) {
+    if (isInputsSpecs(x) && isInputSpecs(value)) {
       x[configurationKey] = value;
-      
       setConfigurations(newMap);
     }
   }
-
-  // const changeConditionalAttachments = (configurationName: string, attachmentName: string, field: string, value: string | number | boolean | string[] | StringMap, nestedName?: string) => {
-  //   const newAttachment = _.cloneDeep(configurations);
-
-  //   if (configurationName === 'configs' && !Array.isArray(value)) {
-  //     let attachment = newAttachment[configurationName][field][attachmentName];
-  //     if (nestedName && isElasticSearchSslConfigs(attachment) && (typeof(value) === 'string' || typeof(value) === 'boolean')) {
-  //       attachment[nestedName] = value;
-  //     } else {
-  //       attachment = value;
-  //     }
-  //     newAttachment[configurationName][field][attachmentName] = attachment;
-  //     onChange(newAttachment);
-  //   }
-  // }
 
   return (
     <div className={`${s.UpdateSink}`}>
@@ -182,118 +155,129 @@ const IoUpdate = (props: IoUpdateProps) => {
         </H1>
       </div>
 
-      {configurationsFields.map(configuration => (
-        <FormItem key={configuration.name}>
-          <div key={configuration.name} className={`${s.Field} ${(hideUnrequired && !configuration.isRequired) && s.HideUnrequired}`}>
-            {(props.action === 'edit' && configuration.name !== 'pathToConnector' || props.action === 'create') &&
-              <>
-                <div className={s.Label}>
-                  <FormLabel
-                    content={configuration.label}
-                    isRequired={configuration.isRequired}
-                  />
-                  <div className={s.EntryButton}>
-                    <Button
-                      svgIcon={enableIcon}
-                      onClick={() => {}}
-                      title='help information'
-                      type='primary'
-                    />
-                    <span className={`${s.HelpInformation}`}>
-                      {configuration.help}
-                    </span>
-                  </div>
-                </div>
+      {configurationsFields.map(configuration => {
+        const r = configurations[configuration.name];
+        const n = isAttachment(r) ? r : null;
 
-                {configuration.attachments &&
-                  <div className={s.MapObject}>
-                    <AttachmentsFields
-                      configurations={configurations[configuration.name]}
-                      attachment={configuration.attachments}
-                      attachmentName={configuration.name}
-                      onChange={(v) => changeAttachment(configuration.name, v)}
-                    />
-                  </div>
-                }
-                
-                {!configuration.attachments && (configuration.type !== 'map' || typeof(configuration.mapType) === 'string') &&
-                  <div key={configuration.name} className={s.Input}>
-                    <IoConfigField
-                      name={configuration.name}
+        const conditionalAttachmentLimitation = configuration.conditionalAttachments ? configurations[configuration.conditionalAttachments.limitation].toString() : '';
+        const conditionalAttachmentConfigurations = n ? n[conditionalAttachmentLimitation] : null;
+        const G = isAttachment(conditionalAttachmentConfigurations) ? conditionalAttachmentConfigurations : null;
+
+        return (
+          <FormItem key={configuration.name}>
+            <div key={configuration.name} className={`${s.Field} ${(hideUnrequired && !configuration.isRequired) && s.HideUnrequired}`}>
+              {(props.action === 'edit' && configuration.name !== 'pathToConnector' || props.action === 'create') &&
+                <>
+                  <div className={s.Label}>
+                    <FormLabel
+                      content={configuration.label}
                       isRequired={configuration.isRequired}
-                      type={configuration.type}
-                      help={configuration.help}
-                      label={configuration.label}
-                      value={configurations[configuration.name]}
-                      onChange={(v) => onChange({
-                        ...configurations,
-                        [configuration.name]: v
+                    />
+                    <div className={s.EntryButton}>
+                      <Button
+                        svgIcon={enableIcon}
+                        onClick={() => {}}
+                        title='help information'
+                        type='primary'
+                      />
+                      <span className={`${s.HelpInformation}`}>
+                        {configuration.help}
+                      </span>
+                    </div>
+                  </div>
+
+                  {configuration.attachments && n &&
+                    <div className={s.MapObject}>
+                      <AttachmentsFields
+                        configurations={n}
+                        attachment={configuration.attachments}
+                        attachmentName={configuration.name}
+                        onChange={(v) => changeAttachment(configuration.name, v)}
+                        ioType={props.ioType}
+                      />
+                    </div>
+                  }
+                  
+                  {!configuration.attachments && (configuration.type !== 'map' || typeof(configuration.mapType) === 'string') &&
+                    <div key={configuration.name} className={s.Input}>
+                      <IoConfigField
+                        name={configuration.name}
+                        isRequired={configuration.isRequired}
+                        type={configuration.type}
+                        help={configuration.help}
+                        label={configuration.label}
+                        value={configurations[configuration.name]}
+                        onChange={(v) => onChange({
+                          ...configurations,
+                          [configuration.name]: v
+                        })}
+                        ioType={props.ioType}
+                        configurations={configurations}
+                        enum={configuration.enum}
+                        mapType={configuration.mapType}
+                      />
+                    </div>
+                  }
+
+                  {configuration.type === 'map' && typeof(configuration.mapType) === 'object' &&
+                    <div className={s.MapObjects}>
+
+                      {Object.keys(configurations[configuration.name]).map(configurationKey => {
+                        const x = configurations[configuration.name];
+                        const z = isAttachment(x) ? x[configurationKey] : null;
+                        const w = isAttachment(z) ? z : null;
+
+                        return (
+                          <div className={s.MapObject} key={configurationKey}>
+                            <div className={s.MapObjectDelete}>
+                              <Button
+                                svgIcon={deleteIcon}
+                                onClick={() => reduceMap(configuration.name, configurationKey)}
+                                type="danger"
+                                title={`Delete ${configuration.label.toLowerCase().slice(0, -1)}`}
+                              />
+                            </div>
+
+                            {typeof configuration.mapType === 'object' && w &&
+                              <AttachmentsFields
+                                configurations={w}
+                                attachment={configuration.mapType}
+                                attachmentName={configuration.name}
+                                onChange={(v) => changeMap(configuration.name, configurationKey, v)}
+                                ioType={props.ioType}
+                              />
+                            }
+                          </div> 
+                        )
                       })}
-                      configurations={configurations}
-                      enum={configuration.enum}
-                      mapType={configuration.mapType}
-                    />
-                  </div>
-                }
 
-                {configuration.type === 'map' && typeof(configuration.mapType) === 'object' &&
-                  <div className={s.MapObjects}>
+                      <button
+                        className={`${sl.AddButton} ${sl.AddButtonEnabled}`}
+                        type="button"
+                        onClick={() => expandMap(configuration.name)}
+                      >
+                        {`Add ${configuration.label.toLowerCase().slice(0, -1)}`}
+                      </button>
+                    </div>
+                  }
 
-                    {Object.keys(configurations[configuration.name]).map(configurationKey => {
-                      const x = configurations[configuration.name]
-                      const z = typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date) ? x : null;
-
-                      const g = z ? z[configurationKey] : null;
-                      const w = typeof g === 'object' && !Array.isArray(g) && !(g instanceof Date) ? g : null;
-
-                      return (
-                        <div className={s.MapObject} key={configurationKey}>
-                          <div className={s.MapObjectDelete}>
-                            <Button
-                              svgIcon={deleteIcon}
-                              onClick={() => reduceMap(configuration.name, configurationKey)}
-                              type="danger"
-                              title={`Delete ${configuration.label.toLowerCase().slice(0, -1)}`}
-                            />
-                          </div>
-
-                          {typeof configuration.mapType === 'object' && w &&
-                            <AttachmentsFields
-                              configurations={w}
-                              attachment={configuration.mapType}
-                              attachmentName={configuration.name}
-                              onChange={(v) => changeMap(configuration.name, configurationKey, v)}
-                            />
-                          }
-                         </div> 
-                      )
-                    })}
-
-                    <button
-                      className={`${sl.AddButton} ${sl.AddButtonEnabled}`}
-                      type="button"
-                      onClick={() => expandMap(configuration.name)}
-                    >
-                      {`Add ${configuration.label.toLowerCase().slice(0, -1)}`}
-                    </button>
-                  </div>
-                }
-
-                {configuration.type === 'conditionalAttachments' && configuration.conditionalAttachments && 
-                  <div className={s.MapObject}>
-                    <AttachmentsFields
-                      configurations={configurations[configuration.name][configurations[configuration.conditionalAttachments.limitation].toString()]}
-                      attachment={configuration.conditionalAttachments.fields[configurations[configuration.conditionalAttachments.limitation].toString()]}
-                      attachmentName={configurations[configuration.conditionalAttachments.limitation].toString()}
-                      onChange={(v) => changeAttachment(configuration.name, v, configurations[configuration.conditionalAttachments.limitation].toString())}
-                    />
-                  </div>
-                }
-              </> 
-            }
-          </div>
-        </FormItem>
-      ))}
+                  {configuration.type === 'conditionalAttachments' && configuration.conditionalAttachments && n && G &&
+                    <div className={s.MapObject}>
+                      <AttachmentsFields
+                        configurations={G}
+                        attachment={configuration.conditionalAttachments.fields[conditionalAttachmentLimitation]}
+                        attachmentName={conditionalAttachmentLimitation}
+                        onChange={(v) => changeAttachment(configuration.name, v, conditionalAttachmentLimitation)}
+                        ioType={props.ioType}
+                      />
+                    </div>
+                  }
+                </> 
+              }
+            </div>
+          </FormItem>
+        )
+      })}
 
       <div className={`${s.Buttons}`}>
         <Button
@@ -302,7 +286,9 @@ const IoUpdate = (props: IoUpdateProps) => {
             tenant: props.tenant,
             namespace: props.namespace,
             action: props.action,
-            configurations
+            configurations: configurations,
+            ioServiceClient: ioServiceClient,
+            notifyError: notifyError,
           })}
           type='primary'
         />
