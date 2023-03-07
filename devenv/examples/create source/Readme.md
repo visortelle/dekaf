@@ -35,16 +35,12 @@ bin/pulsar-admin source localrun \
     --namespace default \
     --source-config '{"database.hostname": "postgresql","database.port": "5432","database.user": "postgres","database.password": "postgres","database.dbname": "users","database.server.name": "postgresdb","schema.whitelist": "public","table.whitelist": "public.users","pulsar.service.url": "pulsar://127.0.0.1:6650"}'
 
-
-
-
  --name mysql
  -p 3306:3306 
  -e MYSQL_ROOT_PASSWORD=debezium 
  -e MYSQL_USER=mysqluser 
  -e MYSQL_PASSWORD=mysqlpw
  debezium/example-mysql:0.9
-
 
 tenant: "test"
 namespace: "test-namespace"
@@ -69,8 +65,6 @@ configs:
   value.converter: "org.apache.kafka.connect.json.JsonConverter"
   pulsar.service.url: "pulsar://127.0.0.1:6650"
   offset.storage.topic: "offset-topic"
-
-
 
 ## jdbcUrl: "jdbc:postgresql://postgresql:5432/postgres"
 
