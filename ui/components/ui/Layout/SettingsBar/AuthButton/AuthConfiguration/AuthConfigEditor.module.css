@@ -2,3 +2,9 @@
   padding-top: 24rem;
   padding-bottom: 12rem;
 }
+
+.Footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rem;
+}

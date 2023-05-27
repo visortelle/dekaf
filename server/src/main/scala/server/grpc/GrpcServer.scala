@@ -32,8 +32,11 @@ import _root_.brokerstats.BrokerStatsServiceImpl
 import _root_.topicpolicies.TopicpoliciesServiceImpl
 
 object GrpcServer extends ZIOAppDefault:
+    private val pulsarAuthInterceptor = new PulsarAuthInterceptor()
+
     private def createGrpcServer(port: Int) = ServerBuilder
         .forPort(port)
+
         .addService(ProducerServiceGrpc.bindService(ProducerServiceImpl(), ExecutionContext.global))
         .addService(ConsumerServiceGrpc.bindService(ConsumerServiceImpl(), ExecutionContext.global))
         .addService(TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
@@ -45,7 +48,10 @@ object GrpcServer extends ZIOAppDefault:
         .addService(MetricsServiceGrpc.bindService(MetricsServiceImpl(), ExecutionContext.global))
         .addService(BrokersServiceGrpc.bindService(BrokersServiceImpl(), ExecutionContext.global))
         .addService(BrokerStatsServiceGrpc.bindService(BrokerStatsServiceImpl(), ExecutionContext.global))
+
         .addService(ProtoReflectionService.newInstance)
+
+        .intercept(pulsarAuthInterceptor)
         .build
 
     val run: ZIO[Any, Throwable, Unit] = for

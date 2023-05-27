@@ -38,6 +38,22 @@ object HttpServer extends ZIOAppDefault:
         }
         .get("/health", ctx => ctx.result("OK"))
 
+        .post("/set-pulsar-auth", ctx =>
+            val pulsarAuth = Option(ctx.body)
+
+            pulsarAuth match
+                case Some(v) =>
+                    ctx.header(
+                        "Set-Cookie",
+                        s"pulsar_auth=${v}; HttpOnly; SameSite=Strict;"
+                    )
+                    ctx.status(200)
+                    ctx.result("OK")
+                case None =>
+                    ctx.status(400)
+                    ctx.result("Bad request")
+        )
+
     val run: IO[Throwable, Unit] = for
         config <- readConfig
         port <- ZIO.attempt(config.internal.get.httpPort)
