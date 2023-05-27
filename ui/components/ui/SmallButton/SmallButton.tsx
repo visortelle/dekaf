@@ -17,8 +17,9 @@ export type SmallButtonProps = {
 }
 
 const SmallButton = (props: SmallButtonProps) => {
-  let backgroundColor = '#fff';
+  let backgroundColor = '#f5f5f5';
   let textColor = 'var(--text-color)';
+
   switch (props.type) {
     case 'primary': backgroundColor = 'var(--accent-color-blue)'; textColor = '#fff'; break;
     case 'danger': backgroundColor = 'var(--accent-color-red)'; textColor = '#fff'; break;

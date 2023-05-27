@@ -2,7 +2,6 @@
   background-color: #fff;
   height: 100%;
   font-size: 14rem;
-  border-right: 1px solid #ddd;
   display: flex;
   flex-direction: column;
 }
@@ -79,7 +78,7 @@
 }
 
 .FilterQueryInput {
-  padding: 18rem 12rem 8rem 12rem;
+  padding: 18rem 12rem 0 12rem;
 }
 
 .TreeControlButtons {

@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import useSWR, { SWRConfiguration } from 'swr';
 import s from './NavigationTree.module.css'
-import * as Notifications from '../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as namespacePb from '../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import * as topicsPb from '../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
-import Link from '../ui/Link/Link';
-import { swrKeys } from '../swrKeys';
-import { routes } from '../routes';
-import { Code } from '../../grpc-web/google/rpc/code_pb';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as namespacePb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as topicsPb from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
+import Link from '../../Link/Link';
+import { swrKeys } from '../../../swrKeys';
+import { routes } from '../../../routes';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 const swrConfiguration: SWRConfiguration = { dedupingInterval: 10000 };
 

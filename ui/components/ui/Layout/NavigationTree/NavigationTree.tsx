@@ -2,15 +2,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
-import * as Notifications from '../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
-import * as tenantPb from '../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
+import * as Notifications from '../../../app/contexts/Notifications';
+import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as tenantPb from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
-import Input from '../ui/Input/Input';
-import SmallButton from '../ui/SmallButton/SmallButton';
-import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../ui/Icons/Icons';
+import Input from '../../Input/Input';
+import SmallButton from '../../SmallButton/SmallButton';
+import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../../Icons/Icons';
 import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
-import { swrKeys } from '../swrKeys';
+import { swrKeys } from '../../../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
@@ -18,8 +18,8 @@ import { isEqual } from 'lodash';
 import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { useNavigate } from 'react-router';
 import { useTimeout } from '@react-hook/timeout';
-import { remToPx } from '../ui/rem-to-px';
-import { Code } from '../../grpc-web/google/rpc/code_pb';
+import { remToPx } from '../../rem-to-px';
+import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -353,7 +353,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       </div>
       <div className={s.TreeControlButtons}>
         <div>
-          <SmallButton text='Collapse all' onClick={() => setExpandedPaths([])} type='primary' />
+          <SmallButton text='▲' onClick={() => setExpandedPaths([])} type='regular' />
         </div>
       </div>
 

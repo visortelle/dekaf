@@ -20,7 +20,7 @@ import NamespacePage, {
   NamespacePageView,
 } from "../../NamespacePage/NamespacePage";
 import TopicPage, { TopicPageView } from "../../TopicPage/TopicPage";
-import { TreeNode } from "../../NavigationTree/TreeView";
+import { TreeNode } from "../../ui/Layout/NavigationTree/TreeView";
 import InstancePage from "../../InstancePage/InstancePage";
 import ClusterPage, {
   ClusterPageView,
@@ -65,182 +65,182 @@ const prepareRoutes = (): {
     withLayout: WithLayout;
     withLayoutProps: WithLayoutProps;
   }) => [
-    /* Instance */
-    {
-      path: routes.instance.overview._.path,
-      element: withLayout(
-        <InstancePage view={{ type: "overview" }} />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.instance.configuration._.path,
-      element: withLayout(
-        <InstancePage view={{ type: "configuration" }} />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.instance.createTenant._.path,
-      element: withLayout(
-        <InstancePage view={{ type: "create-tenant" }} />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.instance.tenants._.path,
-      element: withLayout(
-        <InstancePage view={{ type: "tenants" }} />,
-        setScrollMode(withLayoutProps, "page-own")
-      ),
-    },
+      /* Instance */
+      {
+        path: routes.instance.overview._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "overview" }} />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.instance.configuration._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "configuration" }} />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.instance.createTenant._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "create-tenant" }} />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.instance.tenants._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "tenants" }} />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
-    {
-      path: routes.instance.resourceGroups._.path,
-      element: withLayout(
-        <InstancePage view={{ type: "resource-groups" }} />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.instance.resourceGroups.create._.path,
-      element: withLayout(
-        <InstancePage view={{ type: "create-resource-group" }} />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.instance.resourceGroups.edit._.path,
-      element: withLayout(
-        <WithParams>
-          {(params) => (
-            <InstancePage
-              view={{
-                type: "edit-resource-group",
-                groupName: params.groupName!,
-              }}
-            />
-          )}
-        </WithParams>,
-        withLayoutProps
-      ),
-    },
+      {
+        path: routes.instance.resourceGroups._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "resource-groups" }} />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.instance.resourceGroups.create._.path,
+        element: withLayout(
+          <InstancePage view={{ type: "create-resource-group" }} />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.instance.resourceGroups.edit._.path,
+        element: withLayout(
+          <WithParams>
+            {(params) => (
+              <InstancePage
+                view={{
+                  type: "edit-resource-group",
+                  groupName: params.groupName!,
+                }}
+              />
+            )}
+          </WithParams>,
+          withLayoutProps
+        ),
+      },
 
-    /* Cluster */
-    {
-      path: routes.instance.clusters.cluster._.path,
-      element: withLayout(
-        <RoutedClusterPage view="overview" />,
-        setScrollMode(withLayoutProps, "page-own")
-      ),
-    },
+      /* Cluster */
+      {
+        path: routes.instance.clusters.cluster._.path,
+        element: withLayout(
+          <RoutedClusterPage view="overview" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
-    /* Topics */
-    {
-      path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
-        .messages._.path,
-      element: withLayout(
-        <RoutedTopicPage view="messages" />,
-        setScrollMode(withLayoutProps, "page-own")
-      ),
-    },
-    {
-      path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
-        .overview._.path,
-      element: withLayout(<RoutedTopicPage view="overview" />, withLayoutProps),
-    },
-    {
-      path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
-        .policies._.path,
-      element: withLayout(<RoutedTopicPage view="policies" />, withLayoutProps),
-    },
+      /* Topics */
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+          .messages._.path,
+        element: withLayout(
+          <RoutedTopicPage view="messages" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+          .overview._.path,
+        element: withLayout(<RoutedTopicPage view="overview" />, withLayoutProps),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+          .policies._.path,
+        element: withLayout(<RoutedTopicPage view="policies" />, withLayoutProps),
+      },
 
-    {
-      path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
-        .schema._.path,
-      element: withLayout(
-        <RoutedTopicPage view="schema-initial-screen" />,
-        setScrollMode(withLayoutProps, "page-own")
-      ),
-    },
-    {
-      path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
-        .schema.create._.path,
-      element: withLayout(
-        <RoutedTopicPage view="schema-create" />,
-        setScrollMode(withLayoutProps, "page-own")
-      ),
-    },
-    {
-      path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
-        .schema.view._.path,
-      element: withLayout(
-        <RoutedTopicPage view="schema-view" />,
-        setScrollMode(withLayoutProps, "page-own")
-      ),
-    },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+          .schema._.path,
+        element: withLayout(
+          <RoutedTopicPage view="schema-initial-screen" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+          .schema.create._.path,
+        element: withLayout(
+          <RoutedTopicPage view="schema-create" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+          .schema.view._.path,
+        element: withLayout(
+          <RoutedTopicPage view="schema-view" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
-    /* Namespaces */
-    {
-      path: routes.tenants.tenant.namespaces.namespace.topics._.path,
-      element: withLayout(
-        <RoutedNamespacePage view="topics" />,
-        setScrollMode(withLayoutProps, "page-own")
-      ),
-    },
-    {
-      path: routes.tenants.tenant.namespaces.namespace.policies._.path,
-      element: withLayout(
-        <RoutedNamespacePage view="policies" />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.tenants.tenant.namespaces.namespace.createTopic._.path,
-      element: withLayout(
-        <RoutedNamespacePage view="create-topic" />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.tenants.tenant.namespaces.namespace.permissions._.path,
-      element: withLayout(
-        <RoutedNamespacePage view="permissions" />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._
-        .path,
-      element: withLayout(
-        <RoutedNamespacePage view="subscription-permissions" />,
-        withLayoutProps
-      ),
-    },
+      /* Namespaces */
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics._.path,
+        element: withLayout(
+          <RoutedNamespacePage view="topics" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.policies._.path,
+        element: withLayout(
+          <RoutedNamespacePage view="policies" />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.createTopic._.path,
+        element: withLayout(
+          <RoutedNamespacePage view="create-topic" />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.permissions._.path,
+        element: withLayout(
+          <RoutedNamespacePage view="permissions" />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._
+          .path,
+        element: withLayout(
+          <RoutedNamespacePage view="subscription-permissions" />,
+          withLayoutProps
+        ),
+      },
 
-    /* Tenants */
-    {
-      path: routes.tenants.tenant.configuration._.path,
-      element: withLayout(
-        <RoutedTenantPage view={"configuration"} />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.tenants.tenant.createNamespace._.path,
-      element: withLayout(
-        <RoutedTenantPage view={"create-namespace"} />,
-        withLayoutProps
-      ),
-    },
-    {
-      path: routes.tenants.tenant.namespaces._.path,
-      element: withLayout(
-        <RoutedTenantPage view={"namespaces"} />,
-        setScrollMode(withLayoutProps, "page-own")
-      ),
-    },
-  ];
+      /* Tenants */
+      {
+        path: routes.tenants.tenant.configuration._.path,
+        element: withLayout(
+          <RoutedTenantPage view={"configuration"} />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.tenants.tenant.createNamespace._.path,
+        element: withLayout(
+          <RoutedTenantPage view={"create-namespace"} />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces._.path,
+        element: withLayout(
+          <RoutedTenantPage view={"namespaces"} />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+    ];
   const paths = getRoutes({
     withLayout: () => <></>,
     withLayoutProps: defaultWithLayoutProps,
@@ -270,21 +270,21 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
     currentRoute?.params?.namespace === undefined
       ? undefined
       : {
-          type: "namespace",
-          name: currentRoute?.params?.namespace || "unknown",
-        };
+        type: "namespace",
+        name: currentRoute?.params?.namespace || "unknown",
+      };
   const topicType: "persistent" | "non-persistent" = currentRoute?.params
     ?.topicType as "persistent" | "non-persistent";
   const topic: TreeNode | undefined =
     topicType === undefined || currentRoute?.params?.topic === undefined
       ? undefined
       : {
-          type:
-            topicType === "persistent"
-              ? "persistent-topic"
-              : "non-persistent-topic",
-          name: currentRoute?.params?.topic || "unknown",
-        };
+        type:
+          topicType === "persistent"
+            ? "persistent-topic"
+            : "non-persistent-topic",
+        name: currentRoute?.params?.topic || "unknown",
+      };
 
   const withLayoutProps: WithLayoutProps = {
     layout: {
