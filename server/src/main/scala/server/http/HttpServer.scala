@@ -16,8 +16,8 @@ object HttpServer extends ZIOAppDefault:
             config.showJavalinBanner = false
             config.staticFiles.add { (staticFiles: StaticFileConfig) =>
                 staticFiles.hostedPath = "/ui/static"
-                staticFiles.directory = "/ui/static"
-                staticFiles.location = Location.CLASSPATH
+                staticFiles.directory = "src/main/resources/ui/static"
+                staticFiles.location = Location.EXTERNAL
             }
             config.spaRoot.addHandler(
                 "/",
