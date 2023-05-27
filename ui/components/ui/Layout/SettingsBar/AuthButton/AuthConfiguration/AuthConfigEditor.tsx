@@ -65,7 +65,7 @@ const AuthConfigEditor: React.FC<AuthConfigEditorProps> = (props) => {
               return;
             }
 
-            window.location.reload();
+            window.location.href = config.publicUrl;
           }}
         />
       </div>

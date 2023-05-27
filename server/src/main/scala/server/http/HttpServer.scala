@@ -39,17 +39,17 @@ object HttpServer extends ZIOAppDefault:
         .get("/health", ctx => ctx.result("OK"))
 
         .post("/set-pulsar-auth", ctx =>
-            val pulsarAuth = Option(ctx.body)
+            val pulsarAuth = ctx.body
 
-            pulsarAuth match
-                case Some(v) =>
+            pulsarAuth.isBlank match
+                case false =>
                     ctx.header(
                         "Set-Cookie",
-                        s"pulsar_auth=${v}; HttpOnly; SameSite=Strict;"
+                        s"pulsar_auth=${pulsarAuth}; HttpOnly; SameSite=Strict;"
                     )
                     ctx.status(200)
                     ctx.result("OK")
-                case None =>
+                case true =>
                     ctx.status(400)
                     ctx.result("Bad request")
         )
