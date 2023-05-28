@@ -1,13 +1,13 @@
 import React from 'react';
 import s from './OAuth2.module.css'
-import { OAuth2Config } from '../../types';
-import Input from '../../../../../Input/Input';
-import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
+import { OAuth2Credentials } from '../../../domain';
+import Input from '../../../../../ui/Input/Input';
+import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 export type OAuth2Props = {
-  value: OAuth2Config
-  onChange: (config: OAuth2Config) => void,
+  value: OAuth2Credentials
+  onChange: (config: OAuth2Credentials) => void,
 };
 
 const OAuth2: React.FC<OAuth2Props> = (props) => {

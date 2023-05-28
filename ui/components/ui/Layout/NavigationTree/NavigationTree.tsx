@@ -3,7 +3,7 @@ import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as tenantPb from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
 import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
 import Input from '../../Input/Input';
@@ -43,7 +43,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [childrenCountCache, setChildrenCountCache] = useState<{ [key: string]: number }>({});
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
-  const { tenantServiceClient } = PulsarGrpcClient.useContext();
+  const { tenantServiceClient } = GrpcClient.useContext();
   const navigate = useNavigate();
 
   const { data: tenants, error: tenantsError } = useSWR(

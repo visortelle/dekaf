@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './Messages.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import {
   Message,
   CreateConsumerRequest,
@@ -75,7 +75,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const i18n = I18n.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const tableRef = useRef<HTMLDivElement>(null);
-  const { consumerServiceClient, topicServiceClient } = PulsarGrpcClient.useContext();
+  const { consumerServiceClient, topicServiceClient } = GrpcClient.useContext();
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);

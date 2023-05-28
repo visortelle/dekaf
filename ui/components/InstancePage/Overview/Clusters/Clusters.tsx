@@ -1,7 +1,7 @@
 import React from "react";
 import s from "./Clusters.module.css";
 import * as Notifications from "../../../app/contexts/Notifications";
-import * as PulsarGrpcClient from "../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
 import { swrKeys } from "../../../swrKeys";
 import useSWR from "swr";
@@ -12,7 +12,7 @@ import sts from "../../../ui/SimpleTable/SimpleTable.module.css";
 
 const Clusters: React.FC = () => {
   const { notifyError } = Notifications.useContext();
-  const { clustersServiceClient } = PulsarGrpcClient.useContext();
+  const { clustersServiceClient } = GrpcClient.useContext();
 
   const { data: clusters, error: clustersError } = useSWR(
     swrKeys.pulsar.clusters._(),

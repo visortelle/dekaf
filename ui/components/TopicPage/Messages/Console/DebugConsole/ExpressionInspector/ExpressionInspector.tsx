@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import Toolbar from '../Toolbar/Toolbar';
 import { DebugConsoleView } from '../types';
 import s from './ExpressionInspector.module.css'
-import * as PulsarGrpcClient from '../../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../../../app/contexts/Notifications';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
@@ -23,7 +23,7 @@ export type ExpressionInspectorProps = {
 
 const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
   const [code, setCode] = React.useState<string>('');
-  const { consumerServiceClient } = PulsarGrpcClient.useContext();
+  const { consumerServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [logs, setLogs] = React.useState<string[]>([]);
   const logEntriesRef = React.useRef<HTMLDivElement>(null);

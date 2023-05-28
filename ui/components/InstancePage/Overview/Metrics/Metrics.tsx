@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import s from './Metrics.module.css'
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
@@ -25,7 +25,7 @@ type Metric = {
 }
 
 const InternalConfig: React.FC = () => {
-  const { brokerstatsServiceClient } = PulsarGrpcClient.useContext();
+  const { brokerstatsServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [dimensionsFilter, setDimensionsFilter] = useQueryParam('dimensionsFilter', withDefault(StringParam, ''));
   const [dimensionsFilterDebounced] = useDebounce(dimensionsFilter, 400)

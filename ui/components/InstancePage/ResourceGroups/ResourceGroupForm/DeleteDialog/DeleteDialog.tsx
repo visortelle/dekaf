@@ -4,7 +4,7 @@ import { mutate } from 'swr';
 
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import * as Notifications from '../../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
 import * as Modals from '../../../../app/contexts/Modals/Modals';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { routes } from '../../../../routes';
@@ -20,7 +20,7 @@ const DeleteDialog = (props: Props) => {
 
   const modals = Modals.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
-  const { brokersServiceClient } = PulsarGrpcClient.useContext();
+  const { brokersServiceClient } = GrpcClient.useContext();
 
   const deleteResourceGroup = async () => {
     const req = new pb.DeleteResourceGroupRequest();
@@ -36,7 +36,7 @@ const DeleteDialog = (props: Props) => {
     await setTimeout(() => {
       mutate(swrKeys.pulsar.brokers.resourceGroups._());
     }, 300)
-    
+
     props.navigate(routes.instance.resourceGroups._.get());
     modals.pop();
   }

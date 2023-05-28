@@ -1,7 +1,7 @@
 import React from "react";
 import s from "./HealthCheck.module.css";
 import sts from "../../../ui/SimpleTable/SimpleTable.module.css";
-import * as PulsarGrpcClient from "../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as Notifications from "../../../app/contexts/Notifications";
 import useSWR from "swr";
 import { swrKeys } from "../../../swrKeys";
@@ -10,7 +10,7 @@ import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 const HealthCheck: React.FC = () => {
   const { notifyError } = Notifications.useContext();
-  const { brokersServiceClient } = PulsarGrpcClient.useContext();
+  const { brokersServiceClient } = GrpcClient.useContext();
 
   const { data: healthCheck, error: healthCheckError } = useSWR(
     swrKeys.pulsar.brokers.healthCheck._(),

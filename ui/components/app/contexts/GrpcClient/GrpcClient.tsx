@@ -1,5 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 
+import * as _pulsarAuthServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/Pulsar_authServiceClientPb';
 import * as _producerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ProducerServiceClientPb';
 import * as _consumerServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/ConsumerServiceClientPb';
 import * as _topicServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/TopicServiceClientPb';
@@ -13,6 +14,7 @@ import * as _brokerstatsServiceClient from '../../../../grpc-web/tools/teal/puls
 import * as _topicpoliciesServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/TopicpoliciesServiceClientPb';
 
 export type Value = {
+  pulsarAuthServiceClient: _pulsarAuthServiceClient.PulsarAuthServiceClient,
   producerServiceClient: _producerServiceClient.ProducerServiceClient,
   consumerServiceClient: _consumerServiceClient.ConsumerServiceClient,
   topicServiceClient: _topicServiceClient.TopicServiceClient,
@@ -27,6 +29,7 @@ export type Value = {
 }
 
 const defaultValue: Value = {
+  pulsarAuthServiceClient: new _pulsarAuthServiceClient.PulsarAuthServiceClient(''),
   producerServiceClient: new _producerServiceClient.ProducerServiceClient(''),
   consumerServiceClient: new _consumerServiceClient.ConsumerServiceClient(''),
   topicServiceClient: new _topicServiceClient.TopicServiceClient(''),
@@ -47,6 +50,7 @@ type DefaultProviderProps = {
   grpcWebUrl: string
 };
 export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
+  const [pulsarAuthServiceClient] = useState(new _pulsarAuthServiceClient.PulsarAuthServiceClient(props.grpcWebUrl));
   const [producerServiceClient] = useState(new _producerServiceClient.ProducerServiceClient(props.grpcWebUrl));
   const [consumerServiceClient] = useState(new _consumerServiceClient.ConsumerServiceClient(props.grpcWebUrl));
   const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient(props.grpcWebUrl));
@@ -63,6 +67,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
     <>
       <Context.Provider
         value={{
+          pulsarAuthServiceClient,
           producerServiceClient,
           consumerServiceClient,
           topicServiceClient,

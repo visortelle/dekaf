@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import s from "./CreateNamespace.module.css";
-import * as PulsarGrpcClient from "../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../app/contexts/GrpcClient/GrpcClient";
 import * as Notifications from "../../app/contexts/Notifications";
 import ListInput from "../../ui/ConfigurationTable/ListInput/ListInput";
 import SelectInput, {
@@ -26,7 +26,7 @@ export type CreateNamespaceProps = {
 const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { namespaceServiceClient, clustersServiceClient } =
-    PulsarGrpcClient.useContext();
+    GrpcClient.useContext();
   const [namespaceName, setNamespaceName] = useState("");
   const [replicationClusters, setReplicationClusters] = useState<string[]>([]);
   const [numBundles, setNumBundles] = useState<number>(4);
@@ -113,27 +113,27 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
         allClusters?.every((ac) => replicationClusters.includes(ac))
           ? undefined
           : {
-              render: (v, onChange) => (
-                <SelectInput<string>
-                  list={[
-                    { type: "empty", title: "" },
-                    ...(
-                      allClusters?.filter(
-                        (c) => !replicationClusters.includes(c)
-                      ) || []
-                    ).map<ListItem<string>>((c) => ({
-                      type: "item",
-                      value: c,
-                      title: c,
-                    })),
-                  ]}
-                  value={v}
-                  onChange={onChange}
-                  placeholder="Select cluster"
-                />
-              ),
-              initialValue: "",
-            }
+            render: (v, onChange) => (
+              <SelectInput<string>
+                list={[
+                  { type: "empty", title: "" },
+                  ...(
+                    allClusters?.filter(
+                      (c) => !replicationClusters.includes(c)
+                    ) || []
+                  ).map<ListItem<string>>((c) => ({
+                    type: "item",
+                    value: c,
+                    title: c,
+                  })),
+                ]}
+                value={v}
+                onChange={onChange}
+                placeholder="Select cluster"
+              />
+            ),
+            initialValue: "",
+          }
       }
       onRemove={(v) =>
         setReplicationClusters(replicationClusters.filter((c) => c !== v))

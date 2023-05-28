@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import * as Notifications from './Notifications';
-import * as PulsarGrpcClient from './PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from './GrpcClient/GrpcClient';
 import useSWR from "swr";
 import { swrKeys } from '../../swrKeys';
 import { GetAllDynamicConfigurationsRequest, GetInternalConfigurationDataRequest, GetRuntimeConfigurationsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
@@ -32,7 +32,7 @@ const defaultValue: Value = {
 const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactNode }) => {
-  const { brokersServiceClient } = PulsarGrpcClient.useContext();
+  const { brokersServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
 
   const { data: runtimeConfig, error: runtimeConfigError } = useSWR(

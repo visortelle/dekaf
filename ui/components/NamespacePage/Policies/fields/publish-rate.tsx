@@ -3,7 +3,7 @@ import useSWR, { useSWRConfig } from "swr";
 import stringify from 'safe-stable-stringify';
 
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import Select from "../../../ui/Select/Select";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
@@ -29,7 +29,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -50,7 +50,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       let initialValue: PolicyValue = { type: 'inherited-from-broker-config' };
       switch (res.getPublishRateCase()) {
         case pb.GetPublishRateResponse.PublishRateCase.UNSPECIFIED: {
-          initialValue = { type: 'inherited-from-broker-config'};
+          initialValue = { type: 'inherited-from-broker-config' };
           break;
         }
         case pb.GetPublishRateResponse.PublishRateCase.SPECIFIED: {
@@ -100,13 +100,13 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
     }
 
-      await mutate(swrKey);
-      await setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
+    await mutate(swrKey);
+    await setKey(key + 1); // Force rerender if fractional duration (1.2, 5.3, etc.) is set.
   }
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      key={stringify({key, initialValue})}
+      key={stringify({ key, initialValue })}
       initialValue={initialValue}
       onConfirm={updatePolicy}
     >

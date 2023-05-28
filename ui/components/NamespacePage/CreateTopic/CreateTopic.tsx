@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import { CreateNonPartitionedTopicRequest, CreatePartitionedTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
@@ -26,7 +26,7 @@ type TopicPartitioning = 'partitioned' | 'non-partitioned';
 
 const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   const { notifyError } = Notifications.useContext();
-  const { topicServiceClient } = PulsarGrpcClient.useContext();
+  const { topicServiceClient } = GrpcClient.useContext();
   const navigate = useNavigate();
 
   const [topicName, setTopicName] = React.useState('');

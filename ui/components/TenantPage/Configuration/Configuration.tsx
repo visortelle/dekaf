@@ -3,7 +3,7 @@ import s from "./Configuration.module.css";
 import useSWR, { useSWRConfig } from "swr";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
 import * as Notifications from "../../app/contexts/Notifications";
-import * as PulsarGrpcClient from "../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../app/contexts/GrpcClient/GrpcClient";
 import * as Either from "fp-ts/lib/Either";
 import Input from "../../ui/ConfigurationTable/Input/Input";
 import SelectInput, {
@@ -26,7 +26,7 @@ export type ConfigurationProps = {
 
 const Configuration: React.FC<ConfigurationProps> = (props) => {
   const { clustersServiceClient, tenantServiceClient } =
-    PulsarGrpcClient.useContext();
+    GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -169,81 +169,81 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
         hideAddButton
           ? undefined
           : {
-              render: (v, onChange) => (
-                <SelectInput<string>
-                  list={[{ type: "empty", title: "" }, ...clustersList]}
-                  value={v}
-                  onChange={(v) => onChange(v as string)}
-                  placeholder="Select cluster"
-                />
-              ),
-              initialValue: "",
-            }
+            render: (v, onChange) => (
+              <SelectInput<string>
+                list={[{ type: "empty", title: "" }, ...clustersList]}
+                value={v}
+                onChange={(v) => onChange(v as string)}
+                placeholder="Select cluster"
+              />
+            ),
+            initialValue: "",
+          }
       }
       onRemove={
         clustersList.length <= 1
           ? undefined
           : async (id) => {
-              if (!tenantInfo) {
-                return;
-              }
-
-              const req = new UpdateTenantRequest();
-              req.setTenantName(props.tenant);
-              const tenantInfoPb = new TenantInfo();
-              tenantInfoPb.setAdminRolesList(tenantInfo.adminRoles);
-              tenantInfoPb.setAllowedClustersList(
-                tenantInfo.allowedClusters.filter((r) => r !== id)
-              );
-              req.setTenantInfo(tenantInfoPb);
-
-              const res = await tenantServiceClient
-                .updateTenant(req, null)
-                .catch(onUpdateError);
-              if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
-                notifyError(
-                  `Unable to set allowed cluster. ${res
-                    ?.getStatus()
-                    ?.getMessage()}`
-                );
-                return;
-              }
-
-              await mutate(swrKey);
+            if (!tenantInfo) {
+              return;
             }
+
+            const req = new UpdateTenantRequest();
+            req.setTenantName(props.tenant);
+            const tenantInfoPb = new TenantInfo();
+            tenantInfoPb.setAdminRolesList(tenantInfo.adminRoles);
+            tenantInfoPb.setAllowedClustersList(
+              tenantInfo.allowedClusters.filter((r) => r !== id)
+            );
+            req.setTenantInfo(tenantInfoPb);
+
+            const res = await tenantServiceClient
+              .updateTenant(req, null)
+              .catch(onUpdateError);
+            if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
+              notifyError(
+                `Unable to set allowed cluster. ${res
+                  ?.getStatus()
+                  ?.getMessage()}`
+              );
+              return;
+            }
+
+            await mutate(swrKey);
+          }
       }
       onAdd={
         hideAddButton
           ? undefined
           : async (v) => {
-              if (!tenantInfo) {
-                return;
-              }
-
-              const req = new UpdateTenantRequest();
-              req.setTenantName(props.tenant);
-              const tenantInfoPb = new TenantInfo();
-              tenantInfoPb.setAdminRolesList(tenantInfo.adminRoles);
-              tenantInfoPb.setAllowedClustersList([
-                ...tenantInfo.allowedClusters,
-                v,
-              ]);
-              req.setTenantInfo(tenantInfoPb);
-
-              const res = await tenantServiceClient
-                .updateTenant(req, null)
-                .catch(onUpdateError);
-              if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
-                notifyError(
-                  `Unable to add allowed cluster. ${res
-                    ?.getStatus()
-                    ?.getMessage()}`
-                );
-                return;
-              }
-
-              await mutate(swrKey);
+            if (!tenantInfo) {
+              return;
             }
+
+            const req = new UpdateTenantRequest();
+            req.setTenantName(props.tenant);
+            const tenantInfoPb = new TenantInfo();
+            tenantInfoPb.setAdminRolesList(tenantInfo.adminRoles);
+            tenantInfoPb.setAllowedClustersList([
+              ...tenantInfo.allowedClusters,
+              v,
+            ]);
+            req.setTenantInfo(tenantInfoPb);
+
+            const res = await tenantServiceClient
+              .updateTenant(req, null)
+              .catch(onUpdateError);
+            if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
+              notifyError(
+                `Unable to add allowed cluster. ${res
+                  ?.getStatus()
+                  ?.getMessage()}`
+              );
+              return;
+            }
+
+            await mutate(swrKey);
+          }
       }
       validate={(v) =>
         v.length > 0

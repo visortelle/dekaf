@@ -2,7 +2,7 @@ import React from "react";
 import s from "./Cluster.module.css";
 import sts from "../../../ui/SimpleTable/SimpleTable.module.css";
 import * as Notifications from "../../../app/contexts/Notifications";
-import * as PulsarGrpcClient from "../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { swrKeys } from "../../../swrKeys";
@@ -14,7 +14,7 @@ export type ClusterProps = {
 
 const Cluster: React.FC<ClusterProps> = (props) => {
   const { notifyError } = Notifications.useContext();
-  const { clustersServiceClient } = PulsarGrpcClient.useContext();
+  const { clustersServiceClient } = GrpcClient.useContext();
 
   const { data: cluster, error: clusterError } = useSWR(
     swrKeys.pulsar.clusters.cluster._({ cluster: props.cluster }),
@@ -114,7 +114,7 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             <td className={sts.Cell}>Is broker client TLS enabled</td>
             <td className={sts.Cell}>
               {cluster.getIsBrokerClientTlsEnabled()?.getValue() ===
-              undefined ? (
+                undefined ? (
                 <NoData />
               ) : cluster.getIsBrokerClientTlsEnabled()?.getValue() === true ? (
                 "true"
@@ -127,7 +127,7 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             <td className={sts.Cell}>Is TLS allow insecure connection</td>
             <td className={sts.Cell}>
               {cluster.getIsTlsAllowInsecureConnection()?.getValue() ===
-              undefined ? (
+                undefined ? (
                 <NoData />
               ) : cluster.getIsTlsAllowInsecureConnection()?.getValue() ===
                 true ? (
@@ -143,11 +143,11 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             </td>
             <td className={sts.Cell}>
               {cluster.getIsBrokerClientTlsEnabledWithKeyStore()?.getValue() ===
-              undefined ? (
+                undefined ? (
                 <NoData />
               ) : cluster
-                  .getIsBrokerClientTlsEnabledWithKeyStore()
-                  ?.getValue() === true ? (
+                .getIsBrokerClientTlsEnabledWithKeyStore()
+                ?.getValue() === true ? (
                 "true"
               ) : (
                 "false"

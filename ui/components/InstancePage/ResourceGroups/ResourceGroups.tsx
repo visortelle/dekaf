@@ -5,7 +5,7 @@ import ResourceGroupForm, { View as FormView } from './ResourceGroupForm/Resourc
 import { routes } from '../../routes';
 import { swrKeys } from '../../swrKeys';
 import * as Notifications from '../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { GetResourceGroupsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
@@ -23,7 +23,7 @@ type Props = {
 }
 
 const ResourceGroups: React.FC<Props> = (props) => {
-  const { brokersServiceClient } = PulsarGrpcClient.useContext();
+  const { brokersServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const i18n = I18n.useContext();
 
@@ -88,32 +88,33 @@ const ResourceGroups: React.FC<Props> = (props) => {
                   const publishRateInMsgs = rg.getPublishRateInMsgs()?.getValue();
 
                   return (
-                  <tr key={rg.getName()} className={sc.Row}>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-name-${rg.getName()}`}>
-                      {rg.getName()}
-                    </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-b-${rg.getName()}`}>
-                      {dispatchRateInBytes === undefined ? '-' : i18n.formatLongNumber(dispatchRateInBytes)}
-                    </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-m-${rg.getName()}`}>
-                      {dispatchRateInMsgs === undefined ? '-' : i18n.formatLongNumber(dispatchRateInMsgs)}
-                    </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-b-${rg.getName()}`}>
-                      {publishRateInBytes === undefined ? '-' : i18n.formatLongNumber(publishRateInBytes)}
-                    </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-m-${rg.getName()}`}>
-                      {publishRateInMsgs === undefined ? '-' : i18n.formatLongNumber(publishRateInMsgs)}
-                    </td>
-                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
-                      <ActionButton
-                        action={{ type: 'predefined', action: 'edit' }}
-                        linkTo={routes.instance.resourceGroups.edit._.get({ groupName: rg.getName() })}
-                        onClick={() => undefined}
-                        testId={`resource-group-edit-button-${rg.getName()}`}
-                      />
-                    </td>
-                  </tr>
-                )})}
+                    <tr key={rg.getName()} className={sc.Row}>
+                      <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-name-${rg.getName()}`}>
+                        {rg.getName()}
+                      </td>
+                      <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-b-${rg.getName()}`}>
+                        {dispatchRateInBytes === undefined ? '-' : i18n.formatLongNumber(dispatchRateInBytes)}
+                      </td>
+                      <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-m-${rg.getName()}`}>
+                        {dispatchRateInMsgs === undefined ? '-' : i18n.formatLongNumber(dispatchRateInMsgs)}
+                      </td>
+                      <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-b-${rg.getName()}`}>
+                        {publishRateInBytes === undefined ? '-' : i18n.formatLongNumber(publishRateInBytes)}
+                      </td>
+                      <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-m-${rg.getName()}`}>
+                        {publishRateInMsgs === undefined ? '-' : i18n.formatLongNumber(publishRateInMsgs)}
+                      </td>
+                      <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
+                        <ActionButton
+                          action={{ type: 'predefined', action: 'edit' }}
+                          linkTo={routes.instance.resourceGroups.edit._.get({ groupName: rg.getName() })}
+                          onClick={() => undefined}
+                          testId={`resource-group-edit-button-${rg.getName()}`}
+                        />
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

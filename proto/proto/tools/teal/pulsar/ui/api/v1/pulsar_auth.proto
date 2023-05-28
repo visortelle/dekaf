@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.api.v1;
+
+import "google/rpc/status.proto";
+
+enum CredentialsType {
+  CREDENTIALS_TYPE_UNSPECIFIED = 0;
+  CREDENTIALS_TYPE_OAUTH2 = 2;
+  CREDENTIALS_TYPE_JWT = 3;
+}
+
+message MaskedCredentials {
+  string name = 1;
+  CredentialsType type = 2;
+}
+
+message GetMaskedCredentialsRequest {};
+
+message GetMaskedCredentialsResponse {
+  google.rpc.Status status = 1;
+  repeated MaskedCredentials credentials = 2;
+}
+
+service PulsarAuthService {
+  rpc GetMaskedCredentials(GetMaskedCredentialsRequest) returns (GetMaskedCredentialsResponse);
+}

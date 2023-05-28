@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import s from './CreateTenantPage.module.css'
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
 import SelectInput, { ListItem } from '../../ui/ConfigurationTable/SelectInput/SelectInput';
@@ -19,7 +19,7 @@ import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 
 const CreateTenantPage: React.FC = () => {
   const { notifyError } = Notifications.useContext();
-  const { tenantServiceClient, clustersServiceClient } = PulsarGrpcClient.useContext();
+  const { tenantServiceClient, clustersServiceClient } = GrpcClient.useContext();
   const [tenantName, setTenantName] = useState('');
   const [allowedClusters, setAllowedClusters] = useState<string[]>([]);
   const [adminRoles, setAdminRoles] = useState<string[]>([]);

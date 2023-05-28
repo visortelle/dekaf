@@ -1,7 +1,7 @@
 import useSWR, { useSWRConfig } from "swr";
 
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import FormItem from "../../../ui/ConfigurationTable/FormItem/FormItem";
 import FormLabel from "../../../ui/ConfigurationTable/FormLabel/FormLabel";
@@ -30,7 +30,7 @@ export type FieldInputProps = {
 };
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 

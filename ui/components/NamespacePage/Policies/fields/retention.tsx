@@ -1,6 +1,6 @@
 import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
@@ -55,7 +55,7 @@ export type FieldInputProps = {
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
   const [validationError, setValidationError] = useState<ValidationError>(undefined);

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import useSWR, { SWRConfiguration } from 'swr';
 import s from './NavigationTree.module.css'
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as namespacePb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import * as topicsPb from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Link from '../../Link/Link';
@@ -42,7 +42,7 @@ export type PulsarTenantProps = {
 }
 export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { notifyError } = Notifications.useContext();
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
 
   const { data: namespaces, error: namespacesError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }) : null,
@@ -103,7 +103,7 @@ function squashPartitionedTopics(topics: string[]): string[] {
 }
 export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
-  const { topicServiceClient } = PulsarGrpcClient.useContext();
+  const { topicServiceClient } = GrpcClient.useContext();
 
   const { data: persistentTopics, error: persistentTopicsError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,

@@ -1,6 +1,6 @@
 import Select, { ListItem } from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as Either from 'fp-ts/lib/Either';
 import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
@@ -27,7 +27,7 @@ type PolicyValue = {
 };
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient, clustersServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient, clustersServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);

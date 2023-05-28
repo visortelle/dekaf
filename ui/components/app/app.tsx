@@ -1,7 +1,7 @@
 import * as AppContext from "./contexts/AppContext";
 import * as AsyncTasks from "./contexts/AsyncTasks";
 import * as Notifications from "./contexts/Notifications";
-import * as PulsarGrpcClient from "./contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "./contexts/GrpcClient/GrpcClient";
 import * as BrokerConfig from "./contexts/BrokersConfig";
 import * as I18n from "./contexts/I18n/I18n";
 import "react-toastify/dist/ReactToastify.css";
@@ -41,7 +41,7 @@ const _App: React.FC<AppProps> = (props) => {
         revalidateIfStale: true,
       }}
     >
-      <PulsarGrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, "")}/api`}>
+      <GrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, "")}/api`}>
         <Notifications.DefaultProvider>
           <BrokerConfig.DefaultProvider>
             <HelmetProvider>
@@ -52,7 +52,7 @@ const _App: React.FC<AppProps> = (props) => {
             </HelmetProvider>
           </BrokerConfig.DefaultProvider>
         </Notifications.DefaultProvider>
-      </PulsarGrpcClient.DefaultProvider>
+      </GrpcClient.DefaultProvider>
     </SWRConfig>
   );
 };

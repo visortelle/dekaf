@@ -1,17 +1,18 @@
 import React from 'react';
 import s from './Jwt.module.css'
-import Input from '../../../../../../Input/Input';
-import { JwtConfig } from '../../../types';
-import FormItem from '../../../../../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../../../ConfigurationTable/FormLabel/FormLabel';
+import Input from '../../../../../ui/Input/Input';
+import { JwtCredentials } from '../../../domain';
+import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 export type JwtProps = {
-  value: JwtConfig;
-  onChange: (config: JwtConfig) => void;
+  value: JwtCredentials;
+  onChange: (config: JwtCredentials) => void;
 };
 
 const Jwt: React.FC<JwtProps> = (props) => {
   console.log('jwt')
+
   return (
     <div className={s.Jwt}>
       <FormItem>
@@ -26,4 +27,3 @@ const Jwt: React.FC<JwtProps> = (props) => {
 }
 
 export default Jwt;
-

@@ -3,7 +3,7 @@ import useSWR, { useSWRConfig } from "swr";
 import stringify from "safe-stable-stringify";
 
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Input from "../../../ui/ConfigurationTable/Input/Input";
@@ -24,16 +24,16 @@ export type PolicyValue =
     managedLedgerMarkDeleteMaxRate: number;
   }
 
-  export type FieldInputProps = {
-    topicType: 'persistent' | 'non-persistent';
-    tenant: string;
-    namespace: string;
-    topic: string;
-    isGlobal: boolean;
-  }
+export type FieldInputProps = {
+  topicType: 'persistent' | 'non-persistent';
+  tenant: string;
+  namespace: string;
+  topic: string;
+  isGlobal: boolean;
+}
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
+  const { topicpoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [validationError, setValidationError] = useState<ValidationError>(undefined);

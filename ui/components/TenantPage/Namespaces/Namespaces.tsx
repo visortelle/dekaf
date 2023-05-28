@@ -4,7 +4,7 @@ import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
@@ -49,7 +49,7 @@ type NamespacesProps = {
 
 const Namespaces: React.FC<NamespacesProps> = (props) => {
   const tableRef = useRef<HTMLDivElement>(null);
-  const { namespaceServiceClient, metricsServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient, metricsServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
