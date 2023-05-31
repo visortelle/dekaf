@@ -1,3 +1,7 @@
+export type EmptyCredentials = {
+  type: 'empty'
+}
+
 export type OAuth2Credentials = {
   type: 'oauth2',
   issuerUrl: string,
@@ -12,9 +16,7 @@ export type JwtCredentials = {
 }
 
 // Ref: https://pulsar.apache.org/docs/3.0.x/security-oauth2/
-export type Credentials = {
-  type: 'none'
-} | OAuth2Credentials | JwtCredentials;
+export type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials;
 
 export type CredentialsType = Credentials['type'];
 

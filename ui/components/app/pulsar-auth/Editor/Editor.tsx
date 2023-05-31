@@ -8,6 +8,9 @@ import ListInput from '../../../ui/ConfigurationTable/ListInput/ListInput';
 import * as Either from 'fp-ts/Either';
 import CredentialsEditor from './CredentialsEditor/CredentialsEditor';
 import Button from '../../../ui/Button/Button';
+import useSWR, { mutate } from "swr";
+import { swrKeys } from '../../../swrKeys';
+import { maskedCredentialsFromPb } from '../conversions';
 
 export type EditorProps = {
   onDone: () => void;
@@ -18,30 +21,35 @@ type EditorView = 'list' | 'new';
 const Editor: React.FC<EditorProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { pulsarAuthServiceClient } = GrpcClient.useContext();
-  const [maskedCredentialsList, setMaskedCredentialsList] = useState<MaskedCredentials[]>([]);
   const [view, setView] = useState<EditorView>('list');
 
-  useEffect(() => {
-    async function getCredentialsList() {
+  const { data: maskedCredentials, error: maskedCredentialsError } = useSWR(
+    swrKeys.pulsar.auth.credentials._(),
+    async () => {
       const req = new GetMaskedCredentialsRequest();
       const res = await pulsarAuthServiceClient.getMaskedCredentials(req, {})
         .catch((err) => notifyError(`Unable to get the credentials list. ${err.message}`));
 
       if (res === undefined) {
-        return;
+        return [];
       }
-      console.log('res', res)
-    }
 
-    getCredentialsList();
-  }, []);
+      return res.getCredentialsList().map(maskedCredentialsFromPb);
+    }
+  );
+
+  if (maskedCredentialsError) {
+    notifyError(`Unable to get the credentials list. ${maskedCredentialsError}`);
+  }
+
+  console.log('maskedCredentials', maskedCredentials)
 
   return (
     <div className={s.Editor}>
       {view === 'list' && (
         <div>
           <ListInput<MaskedCredentials>
-            value={maskedCredentialsList}
+            value={maskedCredentials || []}
             renderItem={(item) => (
               <div>{item.name}: {item.type}</div>
             )}
@@ -49,7 +57,7 @@ const Editor: React.FC<EditorProps> = (props) => {
             getId={(item) => item.name}
           />
 
-          {maskedCredentialsList.length === 0 && (
+          {(maskedCredentials || []).length === 0 && (
             <div className={s.NoData}>No credentials found.</div>
           )}
 
@@ -61,7 +69,10 @@ const Editor: React.FC<EditorProps> = (props) => {
 
       {view === 'new' && (
         <CredentialsEditor
-          onDone={() => setView('list')}
+          onDone={() => {
+            setView('list');
+            mutate(swrKeys.pulsar.auth.credentials._());
+          }}
         />
       )}
     </div>

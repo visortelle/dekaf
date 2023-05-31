@@ -2,6 +2,9 @@ import stringify from "safe-stable-stringify";
 
 export const swrKeys = {
   pulsar: {
+    auth: {
+      credentials: { _: () => ["pulsar", "auth", "credentials"] },
+    },
     schemas: {
       getLatestSchemaInfo: {
         _: (topic: string) => [
@@ -178,16 +181,16 @@ export const swrKeys = {
                   policy: string;
                   isGlobal: boolean;
                 }) => [
-                  "pulsar",
-                  "tenants",
-                  props.tenant,
-                  "namespaces",
-                  props.namespace,
-                  "nonPersistentTopics",
-                  "policies",
-                  props.policy,
-                  props.isGlobal,
-                ],
+                    "pulsar",
+                    "tenants",
+                    props.tenant,
+                    "namespaces",
+                    props.namespace,
+                    "nonPersistentTopics",
+                    "policies",
+                    props.policy,
+                    props.isGlobal,
+                  ],
               },
             },
             persistentTopics: {
@@ -206,16 +209,16 @@ export const swrKeys = {
                   policy: string;
                   isGlobal: boolean;
                 }) => [
-                  "pulsar",
-                  "tenants",
-                  props.tenant,
-                  "namespaces",
-                  props.namespace,
-                  "persistentTopics",
-                  "policies",
-                  props.policy,
-                  props.isGlobal,
-                ],
+                    "pulsar",
+                    "tenants",
+                    props.tenant,
+                    "namespaces",
+                    props.namespace,
+                    "persistentTopics",
+                    "policies",
+                    props.policy,
+                    props.isGlobal,
+                  ],
               },
             },
             policies: {
@@ -224,14 +227,14 @@ export const swrKeys = {
                 namespace: string;
                 policy: string;
               }) => [
-                "pulsar",
-                "tenants",
-                props.tenant,
-                "namespaces",
-                props.namespace,
-                "policies",
-                props.policy,
-              ],
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "policies",
+                  props.policy,
+                ],
             },
           },
         },
