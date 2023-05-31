@@ -20,6 +20,7 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
   const [credentials, setCredentials] = React.useState<Credentials>({ type: 'none' });
   const { config } = AppContext.useContext();
   const { notifyInfo } = Notifications.useContext();
+  const [errors, setErrors] = React.useState<string[]>([]);
 
   return (
     <div className={s.CredentialsEditor}>
@@ -54,9 +55,27 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
       </FormItem>
 
       <div>
-        {credentials.type === 'oauth2' && <OAuth2 value={credentials} onChange={setCredentials} />}
-        {credentials.type === 'jwt' && <Jwt value={credentials} onChange={setCredentials} />}
+        {credentials.type === 'oauth2' && (
+          <OAuth2
+            value={credentials}
+            onChange={setCredentials}
+          />
+        )}
+        {credentials.type === 'jwt' && (
+          <Jwt
+            value={credentials}
+            onChange={setCredentials}
+          />
+        )}
       </div>
+
+      {errors.length > 0 && (
+        <div className={s.Errors}>
+          {errors.map((error, i) => (
+            <div key={i}>{error}</div>
+          ))}
+        </div>
+      )}
 
       <div className={s.Footer}>
         <Button type='regular' text='Cancel' onClick={props.onDone} />
@@ -64,20 +83,18 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
           type='primary'
           text='Save'
           onClick={async () => {
-            const res = await fetch(`${config.publicUrl}/set-pulsar-auth`, {
+            const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${credentialsName}`, {
               method: 'POST',
               body: JSON.stringify(credentials),
             });
 
             if (res.status === 400) {
-              notifyInfo('Invalid auth info provided.');
+              notifyInfo('Invalid pulsar auth info provided.');
               return;
             } else if (res.status !== 200) {
-              notifyInfo('Server error happened. Check network connection or contact your administrator.');
+              notifyInfo('Server error happened.');
               return;
             }
-
-            window.location.href = config.publicUrl;
           }}
         />
       </div>

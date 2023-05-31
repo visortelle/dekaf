@@ -54,7 +54,7 @@ const Editor: React.FC<EditorProps> = (props) => {
           )}
 
           <div className={s.ListFooter}>
-            <Button type='primary' onClick={() => setView('new')} text='Add new' />
+            <Button type='primary' onClick={() => setView('new')} text='Add' />
           </div>
         </div>
       )}

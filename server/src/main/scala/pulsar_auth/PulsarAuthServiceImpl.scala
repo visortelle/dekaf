@@ -20,9 +20,7 @@ class PulsarAuthServiceImpl extends pb.PulsarAuthServiceGrpc.PulsarAuthService:
     val logger: Logger = Logger(getClass.getName)
 
     override def getMaskedCredentials(request: GetMaskedCredentialsRequest): Future[GetMaskedCredentialsResponse] =
-        val cookie = Option(RequestContext.pulsarAuth.get())
-
-        println(s"Cookie! ${cookie}")
+//        val cookie = Option(RequestContext.pulsarAuth.get())
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(GetMaskedCredentialsResponse(status = Some(status)))

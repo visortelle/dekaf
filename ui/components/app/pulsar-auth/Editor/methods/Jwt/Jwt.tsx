@@ -11,8 +11,6 @@ export type JwtProps = {
 };
 
 const Jwt: React.FC<JwtProps> = (props) => {
-  console.log('jwt')
-
   return (
     <div className={s.Jwt}>
       <FormItem>
