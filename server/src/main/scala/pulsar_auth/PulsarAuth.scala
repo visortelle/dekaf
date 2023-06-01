@@ -57,10 +57,11 @@ given credentialsDecoder: Decoder[Credentials] = List[Decoder[Credentials]](
 
 type CredentialsName = String
 case class PulsarAuth(
+    use: Option[String],
     credentials: Map[CredentialsName, Credentials]
 )
 
-val defaultPulsarAuth = PulsarAuth(credentials = Map.empty)
+val defaultPulsarAuth = PulsarAuth(credentials = Map.empty, use = None)
 
 given pulsarAuthEncoder: Encoder[PulsarAuth] = deriveEncoder[PulsarAuth]
 given pulsarAuthDecoder: Decoder[PulsarAuth] = deriveDecoder[PulsarAuth]
