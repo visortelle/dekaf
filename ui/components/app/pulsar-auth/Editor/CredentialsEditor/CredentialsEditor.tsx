@@ -17,9 +17,9 @@ export type CredentialsEditorProps = {
 
 const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
   const [credentialsName, setCredentialsName] = React.useState<string>('');
-  const [credentials, setCredentials] = React.useState<Credentials>({ type: 'none' });
+  const [credentials, setCredentials] = React.useState<Credentials>({ type: 'empty' });
   const { config } = AppContext.useContext();
-  const { notifyInfo } = Notifications.useContext();
+  const { notifyInfo, notifyError } = Notifications.useContext();
   const [errors, setErrors] = React.useState<string[]>([]);
 
   return (
@@ -33,15 +33,15 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
         <FormLabel content='Type' isRequired />
         <Select<CredentialsType>
           list={[
-            { type: 'item', title: 'None', value: 'none' },
+            { type: 'item', title: 'Empty', value: 'empty' },
             { type: 'item', title: 'OAuth2', value: 'oauth2' },
             { type: 'item', title: 'JWT', value: 'jwt' }
           ]}
           value={credentials.type}
           onChange={(type) => {
             switch (type) {
-              case 'none':
-                setCredentials({ type: 'none' });
+              case 'empty':
+                setCredentials({ type: 'empty' });
                 break;
               case 'oauth2':
                 setCredentials({ type: 'oauth2', issuerUrl: '', privateKey: '', audience: '', scope: '' });
@@ -83,13 +83,17 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
           type='primary'
           text='Save'
           onClick={async () => {
-            const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${credentialsName}`, {
+            const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
               method: 'POST',
               body: JSON.stringify(credentials),
-            });
+            }).catch(err => notifyError(`Unable to save credentials: ${err}`));
+
+            if (res === undefined) {
+              return;
+            }
 
             if (res.status === 400) {
-              notifyInfo('Invalid pulsar auth info provided.');
+              notifyInfo('Invalid credentials provided.');
               return;
             } else if (res.status !== 200) {
               notifyInfo('Server error happened.');

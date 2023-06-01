@@ -9,7 +9,7 @@ import io.javalin.http.staticfiles.{Location, StaticFileConfig}
 
 import scala.jdk.CollectionConverters.*
 import _root_.pulsar_auth
-import _root_.pulsar_auth.{jwtCredentialsDecoder, credentialsDecoder, PulsarAuth}
+import _root_.pulsar_auth.{jwtCredentialsDecoder, credentialsDecoder, PulsarAuth, defaultPulsarAuth}
 import io.circe.parser.decode as decodeJson
 
 object HttpServer extends ZIOAppDefault:
@@ -44,7 +44,7 @@ object HttpServer extends ZIOAppDefault:
         .post(
             "/pulsar-auth/delete-all",
             ctx =>
-                val newCookieHeader = pulsar_auth.pulsarAuthToCookie(PulsarAuth(credentials = Map.empty))
+                val newCookieHeader = pulsar_auth.pulsarAuthToCookie(defaultPulsarAuth)
                 ctx.header(
                     "Set-Cookie",
                     newCookieHeader
@@ -55,13 +55,13 @@ object HttpServer extends ZIOAppDefault:
         .post(
             "/pulsar-auth/delete/{credentialsName}",
             ctx =>
-                val cookieHeader = Option(ctx.header("Cookie"))
-                val pulsarAuth = pulsar_auth.pulsarAuthFromCookie(cookieHeader)
+                val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
+                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
 
                 pulsarAuth match
                     case Left(_) =>
                         ctx.status(400)
-                        ctx.result("Unable to parse pulsar_auth cookie")
+                        ctx.result(s"Unable to parse pulsar_auth cookie")
                     case Right(pulsarAuth) =>
                         val credentialsName = ctx.pathParam("credentialsName")
                         if credentialsName.isBlank then
@@ -80,8 +80,8 @@ object HttpServer extends ZIOAppDefault:
         .post(
             s"/pulsar-auth/add/{credentialsName}",
             ctx =>
-                val cookieHeader = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.pulsarAuthFromCookie(cookieHeader)
+                val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
+                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
 
                 pulsarAuth match
                     case Left(_) =>

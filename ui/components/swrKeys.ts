@@ -3,7 +3,12 @@ import stringify from "safe-stable-stringify";
 export const swrKeys = {
   pulsar: {
     auth: {
-      credentials: { _: () => ["pulsar", "auth", "credentials"] },
+      credentials: {
+        _: () => ["pulsar", "auth", "credentials"],
+        current: {
+          _: () => ["pulsar", "auth", "credentials", "current"],
+        }
+      },
     },
     schemas: {
       getLatestSchemaInfo: {

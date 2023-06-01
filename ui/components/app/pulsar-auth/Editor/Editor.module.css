@@ -8,9 +8,23 @@
   margin: 24rem 0;
 }
 
+.Table {
+  margin-top: 12rem;
+  display: flex;
+  flex-direction: column;
+}
+
 .ListFooter {
   display: flex;
   justify-content: flex-end;
   gap: 12rem;
   margin-bottom: 12rem;
+  margin-top: 12rem;
+}
+
+.CredentialsActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12rem;
 }

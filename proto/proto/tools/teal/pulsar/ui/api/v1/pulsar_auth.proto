@@ -6,6 +6,7 @@ import "google/rpc/status.proto";
 
 enum CredentialsType {
   CREDENTIALS_TYPE_UNSPECIFIED = 0;
+  CREDENTIALS_TYPE_EMPTY = 1;
   CREDENTIALS_TYPE_OAUTH2 = 2;
   CREDENTIALS_TYPE_JWT = 3;
 }

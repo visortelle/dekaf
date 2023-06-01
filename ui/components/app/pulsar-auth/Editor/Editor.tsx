@@ -11,6 +11,10 @@ import Button from '../../../ui/Button/Button';
 import useSWR, { mutate } from "swr";
 import { swrKeys } from '../../../swrKeys';
 import { maskedCredentialsFromPb } from '../conversions';
+import * as st from '../../../ui/SimpleTable/SimpleTable.module.css';
+import SmallButton from '../../../ui/SmallButton/SmallButton';
+import deleteIcon from './delete.svg';
+import * as AppContext from '../../../app/contexts/AppContext';
 
 export type EditorProps = {
   onDone: () => void;
@@ -19,6 +23,7 @@ export type EditorProps = {
 type EditorView = 'list' | 'new';
 
 const Editor: React.FC<EditorProps> = (props) => {
+  const { config } = AppContext.useContext();
   const { notifyError } = Notifications.useContext();
   const { pulsarAuthServiceClient } = GrpcClient.useContext();
   const [view, setView] = useState<EditorView>('list');
@@ -42,20 +47,52 @@ const Editor: React.FC<EditorProps> = (props) => {
     notifyError(`Unable to get the credentials list. ${maskedCredentialsError}`);
   }
 
-  console.log('maskedCredentials', maskedCredentials)
-
   return (
     <div className={s.Editor}>
       {view === 'list' && (
-        <div>
-          <ListInput<MaskedCredentials>
-            value={maskedCredentials || []}
-            renderItem={(item) => (
-              <div>{item.name}: {item.type}</div>
-            )}
-            validate={() => Either.right(undefined)}
-            getId={(item) => item.name}
-          />
+        <div className={s.Table}>
+          <table className={st.Table}>
+            <thead>
+              <tr className={st.Row}>
+                <th className={st.Cell}>Name</th>
+                <th className={st.Cell}>Type</th>
+                <th className={st.Cell}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {(maskedCredentials || []).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true })).map((item) => (
+                <tr key={item.name} className={st.Row}>
+                  <td className={st.Cell}>{item.name}</td>
+                  <td className={st.Cell}>{credentialsTypeToLabel(item.type)}</td>
+                  <td className={st.Cell}>
+                    <div className={s.CredentialsActions}>
+                      <SmallButton
+                        type='regular'
+                        onClick={async () => {
+                          await fetch(`${config.publicUrl}/pulsar-auth/use/${encodeURIComponent(item.name)}`, { method: 'POST' })
+                            .catch((err) => notifyError(`Unable to set current credentials: ${err}`));
+                          await mutate (swrKeys.pulsar.auth.credentials._());
+                          await mutate (swrKeys.pulsar.auth.credentials.current._());
+                        }}
+                        text='Use'
+                      />
+                      <SmallButton
+                        type='danger'
+                        onClick={async () => {
+                          await fetch(`${config.publicUrl}/pulsar-auth/delete/${encodeURIComponent(item.name)}`, { method: 'POST' })
+                            .catch((err) => notifyError(`Unable to delete credentials: ${err}`));
+                          await mutate (swrKeys.pulsar.auth.credentials._());
+                          await mutate (swrKeys.pulsar.auth.credentials.current._());
+                        }}
+                        title='Delete'
+                        svgIcon={deleteIcon}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           {(maskedCredentials || []).length === 0 && (
             <div className={s.NoData}>No credentials found.</div>
@@ -77,6 +114,19 @@ const Editor: React.FC<EditorProps> = (props) => {
       )}
     </div>
   );
+}
+
+function credentialsTypeToLabel(type: MaskedCredentials['type']): string {
+  switch (type) {
+    case 'empty':
+      return 'Empty';
+    case 'oauth2':
+      return 'OAuth2';
+    case 'jwt':
+      return 'JWT';
+    default:
+      return 'Unknown';
+  }
 }
 
 export default Editor;
