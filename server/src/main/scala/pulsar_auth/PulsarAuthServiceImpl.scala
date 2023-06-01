@@ -5,7 +5,7 @@ import com.google.protobuf.ByteString
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.pulsar_auth as pb
-import com.tools.teal.pulsar.ui.api.v1.pulsar_auth.{GetMaskedCredentialsRequest, GetMaskedCredentialsResponse}
+import com.tools.teal.pulsar.ui.api.v1.pulsar_auth.{GetCurrentCredentialsRequest, GetCurrentCredentialsResponse, GetMaskedCredentialsRequest, GetMaskedCredentialsResponse}
 import com.typesafe.scalalogging.Logger
 import io.circe
 import io.circe.parser.decode as decodeJson
@@ -34,5 +34,15 @@ class PulsarAuthServiceImpl extends pb.PulsarAuthServiceGrpc.PulsarAuthService:
                         )
                     )
                     .toSeq
+            )
+        )
+
+    override def getCurrentCredentials(request: GetCurrentCredentialsRequest): Future[GetCurrentCredentialsResponse] =
+        val pulsarAuth = RequestContext.pulsarAuth.get()
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(
+            GetCurrentCredentialsResponse(
+                status = Some(status),
+                name = pulsarAuth.current
             )
         )

@@ -16,7 +16,7 @@ type JwtCredentialsType = "jwt"
 type CredentialsType = EmptyCredentialsType | OAuth2CredentialsType | JwtCredentialsType
 
 case class EmptyCredentials(
-     `type`: EmptyCredentialsType,
+    `type`: EmptyCredentialsType
 )
 
 given emptyCredentialsEncoder: Encoder[EmptyCredentials] = deriveEncoder[EmptyCredentials]
@@ -44,24 +44,24 @@ given jwtCredentialsDecoder: Decoder[JwtCredentials] = deriveDecoder[JwtCredenti
 type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials
 
 given credentialsEncoder: Encoder[Credentials] = Encoder.instance {
-    case empty@EmptyCredentials(_) => empty.asJson
-    case oauth2@OAuth2Credentials(_, _, _, _, _) => oauth2.asJson
-    case jwt@JwtCredentials(_, _) => jwt.asJson
+    case empty @ EmptyCredentials(_)               => empty.asJson
+    case oauth2 @ OAuth2Credentials(_, _, _, _, _) => oauth2.asJson
+    case jwt @ JwtCredentials(_, _)                => jwt.asJson
 }
 
 given credentialsDecoder: Decoder[Credentials] = List[Decoder[Credentials]](
     Decoder[EmptyCredentials].widen,
     Decoder[OAuth2Credentials].widen,
-    Decoder[JwtCredentials].widen,
+    Decoder[JwtCredentials].widen
 ).reduceLeft(_ or _)
 
 type CredentialsName = String
 case class PulsarAuth(
-    use: Option[String],
+    current: Option[String],
     credentials: Map[CredentialsName, Credentials]
 )
 
-val defaultPulsarAuth = PulsarAuth(credentials = Map.empty, use = None)
+val defaultPulsarAuth = PulsarAuth(credentials = Map.empty, current = None)
 
 given pulsarAuthEncoder: Encoder[PulsarAuth] = deriveEncoder[PulsarAuth]
 given pulsarAuthDecoder: Decoder[PulsarAuth] = deriveDecoder[PulsarAuth]
@@ -71,7 +71,7 @@ def parsePulsarAuthJson(json: Option[String]): Either[Throwable, PulsarAuth] =
         case None => Right(defaultPulsarAuth)
         case Some(v) =>
             decode[PulsarAuth](v) match
-                case Left(err)       =>
+                case Left(err) =>
                     println(s"Unable to parse cookie: ${err.getMessage}")
                     Left(new Exception(s"Unable to parse pulsar_auth cookie."))
                 case Right(pulsarAuth) => Right(pulsarAuth)
@@ -79,4 +79,4 @@ def parsePulsarAuthJson(json: Option[String]): Either[Throwable, PulsarAuth] =
 def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
     val cookieName = "pulsar_auth"
     val cookieValue = pulsarAuth.asJson.noSpaces
-    s"${cookieName}=${cookieValue}; Path=/; HttpOnly; Secure"
+    s"$cookieName=$cookieValue; Path=/; HttpOnly; Secure"

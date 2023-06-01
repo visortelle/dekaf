@@ -3,6 +3,7 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.api.v1;
 
 import "google/rpc/status.proto";
+import "google/protobuf/wrappers.proto";
 
 enum CredentialsType {
   CREDENTIALS_TYPE_UNSPECIFIED = 0;
@@ -23,6 +24,15 @@ message GetMaskedCredentialsResponse {
   repeated MaskedCredentials credentials = 2;
 }
 
+message GetCurrentCredentialsRequest {
+}
+message GetCurrentCredentialsResponse {
+  google.rpc.Status status = 1;
+  google.protobuf.StringValue name = 2;
+}
+
+
 service PulsarAuthService {
   rpc GetMaskedCredentials(GetMaskedCredentialsRequest) returns (GetMaskedCredentialsResponse);
+  rpc GetCurrentCredentials(GetCurrentCredentialsRequest) returns (GetCurrentCredentialsResponse);
 }

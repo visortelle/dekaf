@@ -112,7 +112,7 @@ object HttpServer extends ZIOAppDefault:
                             ctx.status(400)
                             ctx.result("Credentials name shouldn't be blank")
                         else
-                            val newPulsarAuth = pulsarAuth.copy(use = Some(credentialsName))
+                            val newPulsarAuth = pulsarAuth.copy(current = Some(credentialsName))
                             val newCookieHeader = pulsar_auth.pulsarAuthToCookie(newPulsarAuth)
                             ctx.header(
                                 "Set-Cookie",

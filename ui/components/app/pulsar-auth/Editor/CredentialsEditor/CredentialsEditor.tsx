@@ -81,6 +81,7 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
         <Button type='regular' text='Cancel' onClick={props.onDone} />
         <Button
           type='primary'
+          disabled={credentialsName.length === 0 || errors.length > 0}
           text='Save'
           onClick={async () => {
             const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
@@ -99,6 +100,8 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
               notifyInfo('Server error happened.');
               return;
             }
+
+            props.onDone();
           }}
         />
       </div>
