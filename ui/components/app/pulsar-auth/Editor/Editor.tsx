@@ -50,7 +50,7 @@ const Editor: React.FC<EditorProps> = (props) => {
     async () => {
       const req = new GetCurrentCredentialsRequest();
       const res = await pulsarAuthServiceClient.getCurrentCredentials(req, {})
-        .catch((err) => notifyError(`Unable to get the currernt credentials. ${err.message}`));
+        .catch((err) => notifyError(`Unable to get the current credentials name. ${err.message}`));
 
       if (res === undefined) {
         return undefined;
@@ -59,6 +59,10 @@ const Editor: React.FC<EditorProps> = (props) => {
       return res.getName()?.getValue();
     }
   );
+
+  if (currentCredentialsError) {
+    notifyError(`Unable to get the current credentials name. ${currentCredentialsError}`);
+  }
 
   return (
     <div className={s.Editor}>
@@ -94,7 +98,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                             await mutate(swrKeys.pulsar.auth.credentials._());
                             await mutate(swrKeys.pulsar.auth.credentials.current._());
                           }}
-                          text='Use'
+                          text='Set current'
                         />
                         <SmallButton
                           type='danger'
@@ -120,6 +124,7 @@ const Editor: React.FC<EditorProps> = (props) => {
           )}
 
           <div className={s.ListFooter}>
+            <Button type='regular' onClick={props.onDone} text='Cancel' />
             <Button type='primary' onClick={() => setView('new')} text='Add' />
           </div>
         </div>
