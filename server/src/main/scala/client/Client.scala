@@ -17,14 +17,3 @@ def createClientBuilder(config: Config): ClientBuilder =
 val client =
     val config = Await.result(readConfigAsync, Duration(10, SECONDS))
     createClientBuilder(config).build
-
-def createAdminClientBuilder(config: Config): PulsarAdminBuilder =
-    var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarInstance.webServiceUrl)
-    builder = config.tls match
-        case Some(tlsConfig) => tls.configureAdminClient(builder, tlsConfig)
-        case None            => builder
-    builder
-
-val adminClient =
-    val config = Await.result(readConfigAsync, Duration(10, SECONDS))
-    createAdminClientBuilder(config).build

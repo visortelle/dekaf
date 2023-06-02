@@ -1,7 +1,6 @@
 package brokerstats
 
 import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats as pb
-import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -10,11 +9,14 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
+import pulsar_auth.RequestContext
 
 class BrokerStatsServiceImpl extends pb.BrokerStatsServiceGrpc.BrokerStatsService:
     val logger: Logger = Logger(getClass.getName)
 
     override def getBrokerStatsJson(request: pb.GetBrokerStatsJsonRequest): Future[pb.GetBrokerStatsJsonResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+        
         try {
             val statsJson = adminClient.brokerStats.getMetrics
             Future.successful(

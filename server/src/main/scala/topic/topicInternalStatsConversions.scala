@@ -1,6 +1,5 @@
 package topic
 
-import _root_.client.{adminClient, client}
 import org.apache.pulsar.common.policies.data.ManagedLedgerInternalStats.{CursorStats, LedgerInfo}
 import org.apache.pulsar.common.policies.data.{ManagedLedgerInternalStats, PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import com.tools.teal.pulsar.ui.topic.v1.topic as topicPb

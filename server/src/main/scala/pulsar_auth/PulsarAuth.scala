@@ -44,9 +44,9 @@ given jwtCredentialsDecoder: Decoder[JwtCredentials] = deriveDecoder[JwtCredenti
 type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials
 
 given credentialsEncoder: Encoder[Credentials] = Encoder.instance {
-    case empty @ EmptyCredentials(_)               => empty.asJson
-    case oauth2 @ OAuth2Credentials(_, _, _, _, _) => oauth2.asJson
-    case jwt @ JwtCredentials(_, _)                => jwt.asJson
+    case c: EmptyCredentials  => c.asJson
+    case c: OAuth2Credentials => c.asJson
+    case c: JwtCredentials    => c.asJson
 }
 
 given credentialsDecoder: Decoder[Credentials] = List[Decoder[Credentials]](

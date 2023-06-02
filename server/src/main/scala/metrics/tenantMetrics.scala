@@ -1,6 +1,5 @@
 package metrics
 
-import _root_.client.{adminClient, client}
 import com.tools.teal.pulsar.ui.metrics.v1.metrics as pb
 import com.typesafe.scalalogging.Logger
 

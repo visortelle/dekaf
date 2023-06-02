@@ -1,6 +1,5 @@
 package pulsar_auth
 
-import _root_.client.{adminClient, client}
 import com.google.protobuf.ByteString
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status

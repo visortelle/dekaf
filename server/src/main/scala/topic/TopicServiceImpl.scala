@@ -3,7 +3,7 @@ package topic
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.topic.v1.topic as pb
-import _root_.client.{adminClient, client}
+import _root_.client.{client}
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,12 +15,14 @@ import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.tenant.v1.tenant.{CreateTenantResponse, DeleteTenantResponse}
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import org.apache.pulsar.common.naming.TopicDomain
+import pulsar_auth.RequestContext
 
 class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
     val logger: Logger = Logger(getClass.getName)
 
     override def createPartitionedTopic(request: pb.CreatePartitionedTopicRequest): Future[pb.CreatePartitionedTopicResponse] =
         logger.info(s"Creating partitioned topic ${request.topic}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.topics.createPartitionedTopic(request.topic, request.numPartitions, request.properties.asJava)
@@ -34,6 +36,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
     override def createNonPartitionedTopic(request: pb.CreateNonPartitionedTopicRequest): Future[pb.CreateNonPartitionedTopicResponse] =
         logger.info(s"Creating non-partitioned topic ${request.topic}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.topics.createNonPartitionedTopic(request.topic, request.properties.asJava)
@@ -47,6 +50,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
     override def getTopics(request: pb.GetTopicsRequest): Future[pb.GetTopicsResponse] =
         logger.debug(s"Getting topics for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val topics = try {
             request.topicDomain match
@@ -66,8 +70,10 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         Future.successful(pb.GetTopicsResponse(status = Some(status), topics = topics.asScala.toSeq))
 
     override def getTopicsInternalStats(request: pb.GetTopicsInternalStatsRequest): Future[pb.GetTopicsInternalStatsResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+        
         val stats: Map[String, pb.TopicInternalStats] = request.topics.flatMap { topic =>
-            getTopicInternalStatsPb(topic) match
+            getTopicInternalStatsPb(adminClient, topic) match
                 case Right(ss: pb.PersistentTopicInternalStats) =>
                     val topicInternalStatsPb = pb.TopicInternalStats(stats = pb.TopicInternalStats.Stats.TopicStats(ss))
                     Some(topic, topicInternalStatsPb)
@@ -83,6 +89,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
     override def deleteTopic(request: pb.DeleteTopicRequest): Future[pb.DeleteTopicResponse] =
         logger.info(s"Deleting topic: ${request.topicName}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.topics.delete(request.topicName, request.force)

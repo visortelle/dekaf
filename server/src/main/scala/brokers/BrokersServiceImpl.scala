@@ -1,6 +1,5 @@
 package brokers
 
-import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.brokers.v1.brokers as pb
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
@@ -8,6 +7,7 @@ import com.typesafe.scalalogging.Logger
 import com.tools.teal.pulsar.ui.brokers.v1.brokers.{BacklogQuotaCheckRequest, BacklogQuotaCheckResponse, CreateResourceGroupRequest, CreateResourceGroupResponse, DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, DeleteResourceGroupRequest, DeleteResourceGroupResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetResourceGroupRequest, GetResourceGroupResponse, GetResourceGroupsListRequest, GetResourceGroupsListResponse, GetResourceGroupsRequest, GetResourceGroupsResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, HealthCheckRequest, HealthCheckResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse, UpdateResourceGroupRequest, UpdateResourceGroupResponse}
 import org.apache.pulsar.common.naming.TopicVersion
 import org.apache.pulsar.common.policies.data.ResourceGroup
+import _root_.pulsar_auth.RequestContext
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -16,6 +16,8 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
     val logger: Logger = Logger(getClass.getName)
 
     override def getAllDynamicConfigurations(request: GetAllDynamicConfigurationsRequest): Future[GetAllDynamicConfigurationsResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val config = adminClient.brokers.getAllDynamicConfigurations.asScala.toMap
             Future.successful(
@@ -31,6 +33,8 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         }
 
     override def getDynamicConfigurationNames(request: GetDynamicConfigurationNamesRequest): Future[GetDynamicConfigurationNamesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val names = adminClient.brokers.getDynamicConfigurationNames.asScala.toList
             Future.successful(
@@ -46,6 +50,8 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         }
 
     override def getInternalConfigurationData(request: GetInternalConfigurationDataRequest): Future[GetInternalConfigurationDataResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val internalConfigurationData = adminClient.brokers.getInternalConfigurationData
             val config = pb.InternalConfigurationData(
@@ -68,6 +74,8 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         }
 
     override def getRuntimeConfigurations(request: GetRuntimeConfigurationsRequest): Future[GetRuntimeConfigurationsResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val config = adminClient.brokers.getRuntimeConfigurations.asScala.toMap
             Future.successful(
@@ -84,6 +92,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def updateDynamicConfiguration(request: UpdateDynamicConfigurationRequest): Future[UpdateDynamicConfigurationResponse] =
         logger.info(s"Updating dynamic configuration: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.brokers.updateDynamicConfiguration(request.name, request.value)
@@ -98,6 +107,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def deleteDynamicConfiguration(request: DeleteDynamicConfigurationRequest): Future[DeleteDynamicConfigurationResponse] =
         logger.info(s"Deleting dynamic configuration: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.brokers.deleteDynamicConfiguration(request.name)
@@ -112,6 +122,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def healthCheck(request: HealthCheckRequest): Future[HealthCheckResponse] =
         logger.debug(s"Health check: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.brokers.healthcheck(TopicVersion.V2)
@@ -126,6 +137,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def backlogQuotaCheck(request: BacklogQuotaCheckRequest): Future[BacklogQuotaCheckResponse] =
         logger.debug(s"Backlog quota check: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.brokers.backlogQuotaCheck
@@ -138,6 +150,8 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 Future.successful(BacklogQuotaCheckResponse(status = Some(status), isOk = false))
         }
     override def getResourceGroupsList(request: GetResourceGroupsListRequest): Future[GetResourceGroupsListResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val resourceGroups = Option(adminClient.resourcegroups.getResourceGroups).map(_.asScala.toSeq).getOrElse(Seq.empty[String])
 
@@ -153,6 +167,8 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 Future.successful(GetResourceGroupsListResponse(status = Some(status)))
         }
     override def getResourceGroups(request: GetResourceGroupsRequest): Future[GetResourceGroupsResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val resourceGroupsNames = Option(adminClient.resourcegroups.getResourceGroups).map(_.asScala.toSeq).getOrElse(Seq.empty[String])
 
@@ -182,6 +198,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def getResourceGroup(request: pb.GetResourceGroupRequest): Future[pb.GetResourceGroupResponse] =
         logger.debug(s"Get resource group: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             val rg = adminClient.resourcegroups.getResourceGroup(request.name)
@@ -207,6 +224,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def createResourceGroup(request: CreateResourceGroupRequest): Future[CreateResourceGroupResponse] =
         logger.info(s"Create resource group: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             request.resourceGroup match
@@ -231,6 +249,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def deleteResourceGroup(request: DeleteResourceGroupRequest): Future[DeleteResourceGroupResponse] =
         logger.info(s"Delete resource group: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.resourcegroups.deleteResourceGroup(request.name)
@@ -245,6 +264,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
 
     override def updateResourceGroup(request: pb.UpdateResourceGroupRequest): Future[pb.UpdateResourceGroupResponse] =
         logger.info(s"Update resource group: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             request.resourceGroup match
@@ -267,4 +287,3 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 Future.successful(pb.UpdateResourceGroupResponse(status = Some(status)))
         }
 }
-
