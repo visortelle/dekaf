@@ -72,7 +72,6 @@ const DeleteDialog = (props: Props) => {
       onCancel={modals.pop}
       forceDelete={forceDelete}
       switchForceDelete={switchForceDelete}
-      forceDeleteInfo="Delete all resources (including metastore and ledger), otherwise only do a mark deletion and not remove any resources indeed."
       guard={topicFqn}
       type='danger'
     />

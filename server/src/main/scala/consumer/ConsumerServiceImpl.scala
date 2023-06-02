@@ -4,7 +4,6 @@ import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
-import _root_.client.client
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -19,7 +18,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import org.apache.pulsar.client.api.{Message, MessageId}
 import consumer.MessageFilter
-import pulsar_auth.RequestContext
+import _root_.pulsar_auth.RequestContext
 
 import java.io.ByteArrayOutputStream
 import java.util.UUID
@@ -128,6 +127,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumerName: ConsumerName = request.consumerName.getOrElse("__xray" + UUID.randomUUID().toString)
         logger.info(s"Creating consumer. Consumer: $consumerName")
         val adminClient = RequestContext.pulsarAdmin.get()
+        val pulsarClient = RequestContext.pulsarClient.get()
 
         val streamDataHandler = StreamDataHandler()
         streamDataHandler.onNext = _ => ()
@@ -152,7 +152,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
         topics = topics + (consumerName -> topicsToConsume)
 
-        val consumerBuilder = buildConsumer(consumerName, request, logger, streamDataHandler) match
+        val consumerBuilder = buildConsumer(pulsarClient, consumerName, request, logger, streamDataHandler) match
             case Right(consumer) => consumer
             case Left(error) =>
                 logger.warn(error)

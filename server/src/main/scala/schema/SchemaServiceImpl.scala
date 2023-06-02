@@ -1,6 +1,5 @@
 package schema
 
-import _root_.client.{client}
 import com.google.protobuf.Descriptors
 import com.google.protobuf.ByteString
 import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptorSet}

@@ -2,7 +2,6 @@ package metrics
 
 import com.tools.teal.pulsar.ui.metrics.v1.metrics as metricsPb
 import com.tools.teal.pulsar.ui.metrics.v1.metrics.{GetNamespacesMetricsRequest, GetNamespacesMetricsResponse, GetNamespacesPersistentMetricsRequest, GetNamespacesPersistentMetricsResponse, GetTenantsMetricsRequest, GetTenantsMetricsResponse, GetTenantsPersistentMetricsRequest, GetTenantsPersistentMetricsResponse, MetricsServiceGrpc, NamespaceMetrics, TenantMetrics}
-import _root_.client.client
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}

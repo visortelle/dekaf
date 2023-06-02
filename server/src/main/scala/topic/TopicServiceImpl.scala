@@ -3,7 +3,6 @@ package topic
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.topic.v1.topic as pb
-import _root_.client.{client}
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -71,7 +70,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
     override def getTopicsInternalStats(request: pb.GetTopicsInternalStatsRequest): Future[pb.GetTopicsInternalStatsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         val stats: Map[String, pb.TopicInternalStats] = request.topics.flatMap { topic =>
             getTopicInternalStatsPb(adminClient, topic) match
                 case Right(ss: pb.PersistentTopicInternalStats) =>

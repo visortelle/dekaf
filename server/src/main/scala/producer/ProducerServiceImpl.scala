@@ -1,6 +1,5 @@
 package producer
 
-import _root_.client.{client}
 import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, Schema}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
@@ -34,11 +33,12 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
     override def createProducer(request: CreateProducerRequest): Future[CreateProducerResponse] =
         val producerName: ProducerName = request.producerName
         logger.info(s"Creating producer: $producerName")
+        val pulsarClient = RequestContext.pulsarClient.get()
 
         try {
             val schema = new AutoProduceBytesSchema[Array[Byte]]
 
-            val producer: Producer[Array[Byte]] = client
+            val producer: Producer[Array[Byte]] = pulsarClient
                 .newProducer(schema)
                 .accessMode(ProducerAccessMode.Shared)
                 .producerName(producerName)

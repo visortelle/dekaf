@@ -1,10 +1,11 @@
-package client
+package pulsar_auth
 
-import org.apache.pulsar.client.api.ClientBuilder
-import org.apache.pulsar.client.admin.PulsarAdminBuilder
-import zio.config.magnolia.{describe, descriptor}
-import scala.jdk.CollectionConverters.*
 import _root_.config.TlsConfig
+import org.apache.pulsar.client.admin.PulsarAdminBuilder
+import org.apache.pulsar.client.api.ClientBuilder
+import zio.config.magnolia.{describe, descriptor}
+
+import scala.jdk.CollectionConverters.*
 
 object tls:
     def configureClient(builder: ClientBuilder, config: TlsConfig): ClientBuilder =
