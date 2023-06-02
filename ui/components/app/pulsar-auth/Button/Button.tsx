@@ -8,6 +8,7 @@ import { GetCurrentCredentialsRequest } from '../../../../grpc-web/tools/teal/pu
 import * as GrpcClient from '../../contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
 import useSWR from "swr";
+import icon from './icon.svg';
 
 export type ButtonProps = {};
 
@@ -35,15 +36,16 @@ const Button: React.FC<ButtonProps> = (props) => {
     notifyError(`Unable to get the current credentials name. ${currentCredentialsError}`);
   }
   return (
-    <div className={s.AuthButton}>
+    <div className={s.Button}>
       <SmallButton
         type='regular'
+        svgIcon={icon}
         onClick={() => modals.push({
           id: 'auth-modal',
           title: `Pulsar credentials`,
           content: <Editor onDone={modals.pop} />,
         })}
-        text={`Pulsar credentials ${currentCredentials}`}
+        text={`Auth: ${currentCredentials}`}
       />
     </div>
   );

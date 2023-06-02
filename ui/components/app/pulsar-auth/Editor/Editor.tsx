@@ -98,7 +98,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                             await mutate(swrKeys.pulsar.auth.credentials._());
                             await mutate(swrKeys.pulsar.auth.credentials.current._());
                           }}
-                          text='Set current'
+                          text='Set as current'
                         />
                         <SmallButton
                           type='danger'
@@ -124,7 +124,7 @@ const Editor: React.FC<EditorProps> = (props) => {
           )}
 
           <div className={s.ListFooter}>
-            <Button type='regular' onClick={props.onDone} text='Cancel' />
+            <Button type='regular' onClick={props.onDone} text='Done' />
             <Button type='primary' onClick={() => setView('new')} text='Add' />
           </div>
         </div>

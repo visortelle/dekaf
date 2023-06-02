@@ -61,7 +61,10 @@ case class PulsarAuth(
     credentials: Map[CredentialsName, Credentials]
 )
 
-val defaultPulsarAuth = PulsarAuth(credentials = Map.empty, current = None)
+val defaultPulsarAuth = PulsarAuth(
+    credentials = Map("Default" -> EmptyCredentials(`type` = "empty")),
+    current = Some("Default")
+)
 
 given pulsarAuthEncoder: Encoder[PulsarAuth] = deriveEncoder[PulsarAuth]
 given pulsarAuthDecoder: Decoder[PulsarAuth] = deriveDecoder[PulsarAuth]
