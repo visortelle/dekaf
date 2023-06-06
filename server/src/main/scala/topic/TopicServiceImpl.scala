@@ -5,13 +5,23 @@ import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.topic.v1.topic as pb
 import com.typesafe.scalalogging.Logger
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.jdk.CollectionConverters.*
+import scala.jdk.FutureConverters.*
 import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.tenant.v1.tenant.{CreateTenantResponse, DeleteTenantResponse}
+import java.util.concurrent.{CompletableFuture, TimeUnit}
+import scala.concurrent.duration.Duration
+import com.tools.teal.pulsar.ui.topic.v1.topic.{
+    GetPartitionedTopicStatsRequest,
+    GetPartitionedTopicStatsResponse,
+    GetTopicsStatsRequest,
+    GetTopicsStatsResponse,
+    GetTopicStatsRequest,
+    GetTopicStatsResponse
+}
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import org.apache.pulsar.common.naming.TopicDomain
 import pulsar_auth.RequestContext
@@ -51,19 +61,20 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         logger.debug(s"Getting topics for namespace: ${request.namespace}")
         val adminClient = RequestContext.pulsarAdmin.get()
 
-        val topics = try {
-            request.topicDomain match
-                case pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT =>
-                    adminClient.topics.getList(request.namespace, TopicDomain.persistent)
-                case pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT =>
-                    adminClient.topics.getList(request.namespace, TopicDomain.non_persistent)
-                case _ =>
-                    adminClient.topics.getList(request.namespace)
-         } catch {
-            case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                return Future.successful(pb.GetTopicsResponse(status = Some(status)))
-        }
+        val topics =
+            try
+                request.topicDomain match
+                    case pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT =>
+                        adminClient.topics.getList(request.namespace, TopicDomain.persistent)
+                    case pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT =>
+                        adminClient.topics.getList(request.namespace, TopicDomain.non_persistent)
+                    case _ =>
+                        adminClient.topics.getList(request.namespace)
+            catch {
+                case err =>
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    return Future.successful(pb.GetTopicsResponse(status = Some(status)))
+            }
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(pb.GetTopicsResponse(status = Some(status), topics = topics.asScala.toSeq))
@@ -89,7 +100,6 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
     override def deleteTopic(request: pb.DeleteTopicRequest): Future[pb.DeleteTopicResponse] =
         logger.info(s"Deleting topic: ${request.topicName}")
         val adminClient = RequestContext.pulsarAdmin.get()
-        adminClient.topics.getStats()
 
         try {
             adminClient.topics.delete(request.topicName, request.force)
@@ -100,4 +110,28 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(pb.DeleteTopicResponse(status = Some(status)))
+        }
+
+    override def getTopicsStats(request: GetTopicsStatsRequest): Future[GetTopicsStatsResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        try {
+            given ExecutionContext = ExecutionContext.global
+
+            val getTopicsStatsFutures = request.topics.map(t => adminClient.topics.getStatsAsync(t, true, true, true).asScala)
+            val topicsStats = Await.result(Future.sequence(getTopicsStatsFutures), Duration(1, TimeUnit.MINUTES))
+            val topicsStatsMap: Map[String, org.apache.pulsar.common.policies.data.TopicStats] = request.topics.zip(topicsStats).toMap
+
+            val getPartitionedTopicsStatsFutures =
+                request.partitionedTopics.map(t => adminClient.topics.getPartitionedStatsAsync(t, true, true, true, true).asScala)
+            val partitionedTopicsStats = Await.result(Future.sequence(getPartitionedTopicsStatsFutures), Duration(1, TimeUnit.MINUTES))
+            val partitionedTopicsStatsMap: Map[String, org.apache.pulsar.common.policies.data.PartitionedTopicStats] =
+                request.partitionedTopics.zip(partitionedTopicsStats).toMap
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.GetTopicsStatsResponse(status = Some(status)))
+        } catch {
+            case err =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.GetTopicsStatsResponse(status = Some(status)))
         }
