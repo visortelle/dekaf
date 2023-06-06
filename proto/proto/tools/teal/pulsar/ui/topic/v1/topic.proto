@@ -122,6 +122,149 @@ message DeleteTopicResponse {
   google.rpc.Status status = 1;
 }
 
+// Stats
+
+enum ProducerAccessMode {
+  PRODUCER_ACCESS_MODE_UNSPECIFIED = 0;
+  PRODUCER_ACCESS_MODE_SHARED = 1;
+  PRODUCER_ACCESS_MODE_EXCLUSIVE = 2;
+  PRODUCER_ACCESS_MODE_EXCLUSIVE_WITH_FENCING = 3;
+  PRODUCER_ACCESS_MODE_WAIT_FOR_EXCLUSIVE = 4;
+}
+
+message PublisherStats {
+  ProducerAccessMode access_mode = 1;
+  double msg_rate_in = 2;
+  double msg_throughput_in = 3;
+  double average_msg_size = 4;
+  double chunked_message_rate = 5;
+  int64 producer_id = 6;
+  bool is_supports_partial_producer = 7;
+  string producer_name = 8;
+  string address = 9;
+  string connected_since = 10;
+  string client_version = 11;
+  map<string, string> metadata = 12;
+}
+
+message ConsumerStats {
+  double msg_rate_out = 1;
+  double msg_throughput_out = 2;
+  int64 bytes_out_counter = 3;
+  int64 msg_out_counter = 4;
+  double msg_rate_redeliver = 5;
+  double message_ack_rate = 6;
+  double chunked_message_rate = 7;
+  string consumer_name = 8;
+  int32 available_permits = 9;
+  int32 unacked_messages = 10;
+  int32 avg_messages_per_entry = 11;
+  bool is_blocked_consumer_on_unacked_msgs = 12;
+  string read_position_when_joining = 13;
+  string address = 14;
+  string connected_since = 15;
+  string client_version = 16;
+  int64 last_acked_timestamp = 17;
+  int64 last_consumed_timestamp = 18;
+  int64 last_consumed_flow_timestamp = 19;
+  repeated string key_hash_ranges = 20;
+  map<string, string> metadata = 21;
+}
+
+message SubscriptionStats {
+  double msg_rate_out = 1;
+  double msg_throughput_out = 2;
+  int64 bytes_out_counter = 3;
+  int64 msg_out_counter = 4;
+  double msg_rate_redeliver = 5;
+  double message_ack_rate = 6;
+  int32 chunked_message_rate = 7;
+  int64 msg_backlog = 8;
+  int64 backlog_size = 9;
+  int64 earliest_msg_publish_time_in_backlog = 10;
+  int64 msg_backlog_no_delayed = 11;
+  bool is_blocked_subscription_on_unacked_msgs = 12;
+  int64 msg_delayed = 13;
+  int64 unacked_messages = 14;
+  string type = 15;
+  string active_consumer_name = 16;
+  double msg_rate_expired = 17;
+  int64 total_msg_expired = 18;
+  int64 last_expire_timestamp = 19;
+  int64 last_consumed_flow_timestamp = 20;
+  int64 last_consumed_timestamp = 21;
+  int64 last_acked_timestamp = 22;
+  int64 last_mark_delete_advanced_timestamp = 23;
+  repeated ConsumerStats consumers = 24;
+  bool is_durable = 25;
+  bool is_replicated = 26;
+  bool is_allow_out_of_order_delivery = 27;
+  string key_shared_mode = 28;
+  map<string, string> consumers_after_mark_delete_position = 29;
+  map<string, string> subscription_properties = 30;
+  int32 non_contiguous_deleted_messages_ranges = 31;
+  int32 non_contiguous_deleted_messages_ranges_serialize_size = 32;
+  int64 filter_processed_msg_count = 33;
+  int64 filter_accepted_msg_count = 34;
+  int64 filter_rejected_msg_count = 35;
+  int64 filter_rescheduled_msg_count = 36;
+  int64 delayed_message_index_size_in_bytes = 37;
+}
+
+message ReplicatorStats {
+  double msg_rate_in = 1;
+  double msg_throughput_in = 2;
+  double msg_rate_out = 3;
+  double msg_throughput_out = 4;
+  double msg_rate_expired = 5;
+  int64 replication_backlog = 6;
+  bool is_connected = 7;
+  int64 replication_deley_in_seconds = 8;
+  string inbound_connection = 9;
+  string inbound_connection_since = 10;
+  string outbound_connection = 11;
+  string outbound_connedtion_since = 12;
+}
+
+message CompactionStats {
+  int64 last_compaction_removed_event_count = 1;
+  int64 last_compaction_succeed_timestamp = 2;
+  int64 last_compaction_failed_timestamp = 3;
+  int64 last_compaction_duration_time_in_mills = 4;
+}
+
+message Stats {
+  double msg_rate_in = 1;
+  double msg_throughput_in = 2;
+  double msg_rate_out = 3;
+  double msg_throughput_out = 4;
+  int64 bytes_in_counter = 5;
+  int64 msg_in_counter = 6;
+  int64 bytes_out_counter = 7;
+  int64 msg_out_counter = 8;
+  double average_msg_size = 9;
+  bool is_msg_chunk_published = 10;
+  int64 storage_size = 11;
+  int64 backlog_size = 12;
+  int64 earliest_msg_publish_time_in_backlogs = 13;
+  int64 offloaded_storage_size = 14;
+  repeated PublisherStats publishers = 15;
+  int32 waiting_publishers = 16;
+  map<string, SubscriptionStats> subscriptions = 17;
+  map<string, ReplicatorStats> replication = 18;
+  string deduplication_status = 19;
+  int64 topic_epoch = 20;
+  int32 non_contiguous_deleted_messages_ranges = 21;
+  int32 non_contiguous_deleted_messages_ranges_serialized_size = 22;
+  CompactionStats compaction = 23;
+  string owner_broker = 24;
+  int64 delayed_message_index_size_in_bytes = 25;
+}
+
+message GetTopicStatsRequest {
+  string topic_name = 1;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);

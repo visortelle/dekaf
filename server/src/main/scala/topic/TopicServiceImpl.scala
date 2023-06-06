@@ -89,6 +89,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
     override def deleteTopic(request: pb.DeleteTopicRequest): Future[pb.DeleteTopicResponse] =
         logger.info(s"Deleting topic: ${request.topicName}")
         val adminClient = RequestContext.pulsarAdmin.get()
+        adminClient.topics.getStats()
 
         try {
             adminClient.topics.delete(request.topicName, request.force)
