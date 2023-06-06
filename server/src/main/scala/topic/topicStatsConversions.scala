@@ -7,7 +7,7 @@ import org.apache.pulsar.common.policies.data.{
     PublisherStats,
     ReplicatorStats,
     SubscriptionStats,
-    TopicStats
+    TopicStats,
 }
 import org.apache.pulsar.client.api.ProducerAccessMode
 import com.tools.teal.pulsar.ui.topic.v1.topic as pb
@@ -48,6 +48,15 @@ def topicStatsToPb(stats: TopicStats): pb.TopicStats =
         compaction = Option(stats.getCompaction).map(compactionStatsToPb),
         ownerBroker = Option(stats.getOwnerBroker),
         delayedMessageIndexSizeInBytes = Option(stats.getDelayedMessageIndexSizeInBytes)
+    )
+
+def partitionedTopicStatsToPb(stats: PartitionedTopicStats): pb.PartitionedTopicStats =
+    pb.PartitionedTopicStats(
+        metadata = Option(stats.getMetadata).map(partitionedTopicMetadataToPb),
+        partitions = Option(stats.getPartitions)
+            .map(_.asScala.toMap)
+            .map(_.view.mapValues(topicStatsToPb).toMap)
+            .getOrElse(Map.empty)
     )
 
 def compactionStatsToPb(stats: CompactionStats): pb.CompactionStats =
