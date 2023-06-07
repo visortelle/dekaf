@@ -127,6 +127,18 @@ export const routes = {
                       `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/messages`,
                   },
                 },
+                subscriptions: {
+                  _: {
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/subscriptions",
+                    get: (props: {
+                      tenant: string;
+                      namespace: string;
+                      topicType: "persistent" | "non-persistent";
+                      topic: string;
+                    }) =>
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/subscriptions`,
+                  },
+                },
                 overview: {
                   _: {
                     path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/overview",

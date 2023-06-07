@@ -179,6 +179,14 @@ const prepareRoutes = (): {
           setScrollMode(withLayoutProps, "page-own")
         ),
       },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+          .subscriptions._.path,
+        element: withLayout(
+          <RoutedTopicPage view="subscriptions" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
 
       /* Namespaces */
       {
@@ -345,6 +353,10 @@ const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
         return <></>;
       }
       view = { type: "schema-view", schemaVersion: _schemaVersion };
+      break;
+    }
+    case "subscriptions": {
+      view = { type: "subscriptions" };
       break;
     }
 

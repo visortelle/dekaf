@@ -17,7 +17,7 @@ message GetTopicsRequest {
 }
 message GetTopicsResponse {
   google.rpc.Status status = 1;
-  repeated google.protobuf.StringValue topics = 2;
+  repeated string topics = 2;
 }
 
 message PartitionedTopicMetadata {
