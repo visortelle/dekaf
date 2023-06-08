@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useState, ReactElement } from 'react';
 import s from './Table.module.css'
 import { isEqual } from 'lodash';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
@@ -12,12 +12,13 @@ import useSWR from 'swr';
 export type ColumnKey = string;
 export type DataEntryKey = string;
 
-export type ColumnConfig = {
+export type ColumnConfig<CK> = {
+  key: CK,
   visibility: 'visible' | 'hidden',
   stickyTo: 'none' | 'left'
   width: number,
 };
-export type ColumnsConfig<CK extends ColumnKey> = Record<CK, ColumnConfig>;
+export type ColumnsConfig<CK extends ColumnKey> = ColumnConfig<CK>[];
 
 export type Columns<CK extends ColumnKey, DE, LD> = {
   columns: Record<CK, Column<DE, LD>>,
@@ -26,17 +27,17 @@ export type Columns<CK extends ColumnKey, DE, LD> = {
 
 export type Column<DE, LD> = {
   title: ReactNode,
-  defaultWidth?: number,
-  minWidth: number,
-  maxWidth: number,
-  renderCell?: (data: DE, lazyData: LD) => ReactNode,
+  render?: (data: DE, lazyData: LD) => ReactNode,
   help?: ReactNode,
-  sort?: (a: { data: DE, lazyData: LD }, b: { data: DE, lazyData: LD }) => number,
+  sortFn?: (a: { data: DE, lazyData: LD }, b: { data: DE, lazyData: LD }) => number,
+  defaultWidth?: number,
+  minWidth?: number,
+  maxWidth?: number,
 };
 
 export type Sort<CK extends ColumnKey> = {
   type: 'by-single-column',
-  column: CK | undefined,
+  column: CK,
   direction: 'asc' | 'desc',
 } | {
   type: 'none'
@@ -54,14 +55,14 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
   defaultSort?: Sort<CK>
 };
 
-function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactNode {
+function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {
   const tableRef = React.useRef<HTMLDivElement>(null);
   const [lazyData, setLazyData] = useState<Record<DataEntryKey, LD>>({});
   const [itemsRendered, setItemsRendered] = useState<ListItem<DE>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
   const [sort, setSort] = useState<Sort<CK>>(props.defaultSort ?? { type: 'none' });
   const { notifyError } = Notifications.useContext();
-  const columnsConfig = props.columns.defaultConfig;
+  const columnsConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
 
   const { data: lazyDataChunk, error: lazyDataChunkError } = useSWR(
     itemsRenderedDebounced.length === 0 ? null : (props.lazyData?.getKey(itemsRenderedDebounced.map(item => item.data!)) || null),
@@ -73,7 +74,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   }
 
   useEffect(() => {
-    // Avoid visual blinking after each tenants info update request.
+    // Avoid visual blinking after each lazy data update.
     setLazyData(lazyData => ({ ...lazyData, ...lazyDataChunk }));
   }, [lazyDataChunk]);
 
@@ -115,38 +116,53 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     );
   }, [sort]);
 
+  const sortedData = React.useMemo(() => {
+    if (sort.type === 'none') {
+      return props.data;
+    }
+    if (sort.type === 'by-single-column') {
+      const sortFn = props.columns.columns[sort.column].sortFn;
+      const sorted = sortFn ?
+        props.data.sort((a, b) => sortFn(
+          { data: a, lazyData: lazyData[props.getId(a)] },
+          { data: b, lazyData: lazyData[props.getId(b)] })
+        ) :
+        props.data;
+
+      return sort.direction === 'asc' ? sorted : sorted.reverse();
+    }
+  }, [props.data, sort, lazyData]);
+
   return (
     <div className={s.Table} ref={tableRef}>
       <TableVirtuoso
-        data={props.data}
+        data={sortedData}
         overscan={{
           main: (tableRef?.current?.clientHeight || 0),
           reverse: (tableRef?.current?.clientHeight || 0)
         }}
         fixedHeaderContent={() => (
           <tr>
-            {Object.entries<ColumnConfig>(columnsConfig)
-              .filter(([_, columnConfig]) => columnConfig.visibility === 'visible')
-              .map(([columnKey, columnConfig]) => {
-                return (
-                  <Th
-                    key={columnKey}
-                    title={props.columns.columns[columnKey as CK].title}
-                    sortKey={props.columns.columns[columnKey as CK].sort ? columnKey as CK : undefined}
-                    style={{ width: columnConfig.width }}
-                  />
-                );
-              })}
+            {columnsConfig.map((columnConfig) => {
+              return (
+                <Th
+                  key={columnConfig.key}
+                  title={props.columns.columns[columnConfig.key].title}
+                  sortKey={props.columns.columns[columnConfig.key].sortFn ? columnConfig.key : undefined}
+                  style={{ width: columnConfig.width }}
+                />
+              );
+            })}
           </tr>
         )}
         itemContent={(_, entry) => {
           return (
             <>
-              {Object.entries<ColumnConfig>(columnsConfig).map(([columnKey, columnConfig]) => {
+              {columnsConfig.map((columnConfig) => {
                 return (
-                  <td key={columnKey} className={s.Td}>
+                  <td key={columnConfig.key} className={s.Td}>
                     <div style={{ width: columnConfig.width }}>
-                      {props.columns.columns[columnKey as CK].renderCell?.(entry, lazyData[props.getId(entry)])}
+                      {props.columns.columns[columnConfig.key].render?.(entry, lazyData[props.getId(entry)])}
                     </div>
                   </td>
                 );
