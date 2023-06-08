@@ -1,9 +1,9 @@
 val scala3Version = "3.2.2"
 val graalvmVersion = "22.3.1"
-val pulsarVersion = "2.11.0"
-val circeVersion = "0.14.3"
-val zioVersion = "2.0.6"
-val zioConfigVersion = "3.0.2"
+val pulsarVersion = "3.0.0"
+val circeVersion = "0.14.5"
+val zioVersion = "2.0.8"
+val zioConfigVersion = "3.0.7"
 
 maintainer := "kiryl_valkovich@teal.tools"
 
@@ -15,6 +15,8 @@ val javaOpts = Seq(
     "--add-opens=java.management/sun.management=ALL-UNNAMED",
     "--add-opens=java.base/sun.net=ALL-UNNAMED"
 )
+
+scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
 
 fork := true
 javaOptions ++= javaOpts
@@ -73,13 +75,15 @@ lazy val root = project
             "org.apache.commons" % "commons-lang3" % "3.12.0",
             "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
             "com.google.guava" % "guava" % "31.1-jre",
-            "com.lihaoyi" %% "os-lib" % "0.9.0"
+            "com.lihaoyi" %% "os-lib" % "0.9.0",
+
+            "io.netty" % "netty-all" % "4.1.87.Final",
         )
     )
 
 // Protobuf stuff. See also /project/scalapb.sbt
 libraryDependencies ++= Seq(
-    "com.google.protobuf" % "protobuf-java" % "3.21.12",
+    "com.google.protobuf" % "protobuf-java" % "3.22.0",
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,

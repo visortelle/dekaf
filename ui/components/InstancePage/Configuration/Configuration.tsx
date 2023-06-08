@@ -4,7 +4,7 @@ import useSWR, { mutate } from 'swr';
 import { useQueryParam, withDefault, StringParam, BooleanParam } from 'use-query-params';
 
 import * as BrokerConfig from '../../app/contexts/BrokersConfig';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import { swrKeys } from '../../swrKeys';
 import { help } from './help';
@@ -25,7 +25,7 @@ import ReactDOMServer from 'react-dom/server';
 
 const Configuration = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
-  const { brokersServiceClient } = PulsarGrpcClient.useContext();
+  const { brokersServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [isShowDynamicOnly, setIsShowDynamicOnly] = useQueryParam('showDynamicOnly', withDefault(BooleanParam, false));
   const [paramFilter, setParamFilter] = useQueryParam('paramFilter', withDefault(StringParam, ''));
@@ -124,7 +124,7 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
   const [isShowEditor, setIsShowEditor] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(props.configValue || '');
   const ref = useRef<HTMLDivElement>(null);
-  const { brokersServiceClient } = PulsarGrpcClient.useContext();
+  const { brokersServiceClient } = GrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
 
   const handleClickOutside = (event: MouseEvent) => {

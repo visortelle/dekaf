@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
 
 import * as Modals from "../../app/contexts/Modals/Modals";
-import * as PulsarGrpcClient from "../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../app/contexts/GrpcClient/GrpcClient";
 import * as Notifications from "../../app/contexts/Notifications";
 import {
   GetLatestSchemaInfoRequest,
@@ -37,7 +37,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
   const [defaultNewSchemaType, setDefaultNewSchemaType] = useState<SchemaTypeT>("SCHEMA_TYPE_NONE");
   const [defaultSchemaDefinition, setDefaultSchemaDefinition] = useState<string | undefined>(undefined);
 
-  const { schemaServiceClient } = PulsarGrpcClient.useContext();
+  const { schemaServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const modals = Modals.useContext();
   const navigate = useNavigate();
@@ -164,7 +164,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 topicType: props.topicType,
               })}
             >
-              <SmallButton text='Create' type='primary' onClick={() => {}} />
+              <SmallButton text='Create' type='primary' onClick={() => { }} />
             </Link>
           </div>
           <div>

@@ -7,7 +7,7 @@ import DurationInput from "../../../ui/ConfigurationTable/DurationInput/Duration
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
@@ -32,7 +32,7 @@ type PolicyValue = {
 };
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
+  const { topicpoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 

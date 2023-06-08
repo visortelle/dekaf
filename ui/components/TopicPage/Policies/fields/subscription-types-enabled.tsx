@@ -5,7 +5,7 @@ import * as Either from 'fp-ts/lib/Either';
 
 import Select, { ListItem } from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
@@ -53,17 +53,17 @@ type PolicyValue =
   { type: 'inherited-from-namespace-config' } |
   { type: 'specified-for-this-topic', subscriptionTypes: SubscriptionType[] };
 
-  export type FieldInputProps = {
-    topicType: 'persistent' | 'non-persistent';
-    tenant: string;
-    namespace: string;
-    topic: string;
-    isGlobal: boolean;
-  }
+export type FieldInputProps = {
+  topicType: 'persistent' | 'non-persistent';
+  tenant: string;
+  namespace: string;
+  topic: string;
+  isGlobal: boolean;
+}
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
-  const { topicpoliciesServiceClient  } = PulsarGrpcClient.useContext();
+  const { topicpoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -113,7 +113,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      key={stringify({key, initialValue})}
+      key={stringify({ key, initialValue })}
       initialValue={initialValue}
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-namespace-config') {

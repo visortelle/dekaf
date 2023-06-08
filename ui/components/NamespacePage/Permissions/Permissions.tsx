@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as Modals from '../../app/contexts/Modals/Modals';
 import Checkbox from '../../ui/Checkbox/Checkbox';
@@ -77,10 +77,10 @@ type Permission = {
 
 const Permissions: React.FC<PermissionsProps> = (props) => {
   const { notifySuccess, notifyError } = Notifications.useContext();
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const { mutate } = useSWRConfig();
   const modals = Modals.useContext();
-  
+
   const [formValue, setFormValue] = useState<Permission | undefined>(undefined);
   const [permissionsList, setPermissionsList] = useState<Permission[]>()
 

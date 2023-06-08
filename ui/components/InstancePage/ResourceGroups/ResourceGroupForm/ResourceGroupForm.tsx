@@ -15,7 +15,7 @@ import Button from '../../../ui/Button/Button';
 import Input from '../../../ui/Input/Input';
 import * as Modals from '../../../app/contexts/Modals/Modals';
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import { routes } from '../../../routes';
 import { swrKeys } from '../../../swrKeys';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
@@ -64,7 +64,7 @@ const ResourceGroupForm = (props: Props) => {
   const modals = Modals.useContext();
 
   const { notifyError } = Notifications.useContext();
-  const { brokersServiceClient } = PulsarGrpcClient.useContext();
+  const { brokersServiceClient } = GrpcClient.useContext();
 
   const [formValue, setFormValue] = useState<Value | undefined>(undefined);
   const [initialFormValue, setInitialFormValue] = useState<Value | undefined>(undefined);

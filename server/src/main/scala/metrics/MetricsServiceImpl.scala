@@ -2,7 +2,6 @@ package metrics
 
 import com.tools.teal.pulsar.ui.metrics.v1.metrics as metricsPb
 import com.tools.teal.pulsar.ui.metrics.v1.metrics.{GetNamespacesMetricsRequest, GetNamespacesMetricsResponse, GetNamespacesPersistentMetricsRequest, GetNamespacesPersistentMetricsResponse, GetTenantsMetricsRequest, GetTenantsMetricsResponse, GetTenantsPersistentMetricsRequest, GetTenantsPersistentMetricsResponse, MetricsServiceGrpc, NamespaceMetrics, TenantMetrics}
-import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -13,6 +12,7 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import io.circe
 import io.circe.parser.decode as decodeJson
+import pulsar_auth.RequestContext
 
 import java.util.TimerTask
 import java.util.concurrent.*
@@ -26,7 +26,8 @@ class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
     val updateMetricsTimer = new java.util.Timer()
     val updateMetricsTimerTask: TimerTask = new TimerTask:
         override def run(): Unit =
-            metricsJson = adminClient.brokerStats().getMetrics
+//            metricsJson = adminClient.brokerStats().getMetrics
+            metricsJson = "[]"
                 .replaceAll("\"NaN\"", "0") // It's a dirty hack. TODO - Write a proper decoder.
 //            println(s"METRICS JSON DEBUG ${metricsJson}")
             decodeJson[MetricsEntries](metricsJson) match

@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./Policies.module.css";
-import * as PulsarGrpcClient from "../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as Notifications from "../../../app/contexts/Notifications";
 import { swrKeys } from "../../../swrKeys";
 import {
@@ -20,7 +20,7 @@ export type PoliciesProps = {
 type Strategy = keyof typeof SchemaCompatibilityStrategy;
 
 const Policies: React.FC<PoliciesProps> = (props) => {
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
 
   const tenant = `${props.topic.split("://")[1].split("/")[0]}`;

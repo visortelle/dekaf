@@ -5,7 +5,7 @@ import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirm
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { swrKeys } from "../../../swrKeys";
@@ -23,7 +23,7 @@ export type FieldInputProps = {
 type PolicyValue = 'inherited-from-namespace-config' | 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const adminClient = PulsarGrpcClient.useContext();
+  const adminClient = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 

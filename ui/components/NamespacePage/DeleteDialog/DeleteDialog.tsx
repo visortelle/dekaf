@@ -3,7 +3,7 @@ import { NavigateFunction } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
 import * as Notifications from '../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Modals from '../../app/contexts/Modals/Modals';
 import { DeleteNamespaceRequest } from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
@@ -21,7 +21,7 @@ const DeleteNamespace: React.FC<DeleteNamespaceProps> = (props) => {
   const modals = Modals.useContext();
   const { mutate } = useSWRConfig()
   const { notifyError, notifySuccess } = Notifications.useContext();
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
   const switchForceDelete = () => {

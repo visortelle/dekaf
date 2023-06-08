@@ -1,5 +1,5 @@
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import Input from '../../../ui/ConfigurationTable/Input/Input';
@@ -19,7 +19,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -92,7 +92,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               onChange={(v) => onChange(v === 'specified' ? { type: v, group: '' } : { type: v })}
             />
             {value.type === 'specified' && (
-              <div style={{ marginTop: '12rem'}}>
+              <div style={{ marginTop: '12rem' }}>
                 <Input
                   value={value.group}
                   onChange={(v) => onChange({ ...value, group: v })}

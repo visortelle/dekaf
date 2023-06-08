@@ -1,9 +1,10 @@
 import React from 'react';
 import s from './Layout.module.css'
-import NavigationTree from '../../NavigationTree/NavigationTree';
-import { TreePath } from '../../NavigationTree/TreeView';
+import NavigationTree from './NavigationTree/NavigationTree';
+import { TreePath } from './NavigationTree/TreeView';
 import GlobalProgressIndicator from '../GlobalProgressIndicator/GlobalProgressIndicator';
 import Footer from './Footer';
+import SettingsBar from './SettingsBar/SettingsBar';
 
 export type LayoutProps = {
   children: React.ReactNode;
@@ -19,8 +20,14 @@ const Layout: React.FC<LayoutProps> = (props) => {
   return (
     <div className={s.Layout} {...restProps}>
       <GlobalProgressIndicator />
-      <div className={s.NavigationTree}>
-        <NavigationTree selectedNodePath={navigationTree.selectedNodePath} />
+      <div className={s.LeftSidebar}>
+        <div className={s.SettingsBar}>
+          <SettingsBar />
+        </div>
+
+        <div className={s.NavigationTree}>
+          <NavigationTree selectedNodePath={navigationTree.selectedNodePath} />
+        </div>
       </div>
       <div className={s.Content}>
         <div className={s.Children} style={{ overflow: props?.scrollMode === 'page-own' ? "hidden" : 'initial' }}>

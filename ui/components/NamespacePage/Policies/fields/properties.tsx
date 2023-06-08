@@ -2,7 +2,7 @@ import useSWR, { useSWRConfig } from "swr";
 import stringify from 'safe-stable-stringify';
 
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
@@ -23,7 +23,7 @@ type Properties = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 

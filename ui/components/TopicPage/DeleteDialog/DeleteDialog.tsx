@@ -3,7 +3,7 @@ import { NavigateFunction } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
 import * as Notifications from '../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Modals from '../../app/contexts/Modals/Modals';
 import { DeleteTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
@@ -23,7 +23,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
   const modals = Modals.useContext();
   const { mutate } = useSWRConfig()
   const { notifyError, notifySuccess } = Notifications.useContext();
-  const { topicServiceClient } = PulsarGrpcClient.useContext();
+  const { topicServiceClient } = GrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;

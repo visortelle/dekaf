@@ -25,6 +25,12 @@
   document.addEventListener('DOMContentLoaded', function () {
     const config = {
       publicUrl: '${publicUrl}',
+      pulsarInstance: {
+        name: '${pulsarInstance.name}',
+        color: '${pulsarInstance.color}',
+        brokerServiceUrl: '${pulsarInstance.brokerServiceUrl}',
+        webServiceUrl: '${pulsarInstance.webServiceUrl}'
+      },
       buildInfo: {
         name: '${buildInfo.name}',
         version: '${buildInfo.version}',

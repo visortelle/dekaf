@@ -1,6 +1,5 @@
 package childrencount
 
-import _root_.client.adminClient
 import ch.qos.logback.classic.AsyncAppender
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -13,7 +12,8 @@ import com.tools.teal.pulsar.ui.childrencount.v1.childrencount as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import org.apache.pulsar.common.naming.{TopicDomain}
+import org.apache.pulsar.common.naming.TopicDomain
+import pulsar_auth.RequestContext
 
 import scala.concurrent.Future
 
@@ -22,6 +22,7 @@ class TenantServiceImpl extends pb.ChildrenCountServiceGrpc.ChildrenCountService
 
     override def getChildrenCount(request: pb.GetChildrenCountRequest): Future[pb.GetChildrenCountResponse] =
         logger.debug(s"getChildrenCount: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             val instanceTenantsCount = request.isIncludeInstanceTenantsCount match

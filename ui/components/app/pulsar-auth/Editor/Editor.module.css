@@ -1,0 +1,30 @@
+.NoData {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24rem;
+  background-color: #f5f5f5;
+  border-radius: 12rem;
+  margin: 24rem 0;
+}
+
+.List {
+  margin-top: 12rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.ListFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rem;
+  margin-bottom: 12rem;
+  margin-top: 24rem;
+}
+
+.CredentialsActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12rem;
+}

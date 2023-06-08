@@ -1,34 +1,12 @@
 package schema
 
-import _root_.client.{adminClient, client}
 import com.google.protobuf.Descriptors
 import com.google.protobuf.ByteString
 import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptorSet}
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
-import com.tools.teal.pulsar.ui.api.v1.schema.{
-    CompiledProtobufNativeFile,
-    CompileProtobufNativeRequest,
-    CompileProtobufNativeResponse,
-    CreateSchemaRequest,
-    CreateSchemaResponse,
-    DeleteSchemaRequest,
-    DeleteSchemaResponse,
-    GetHumanReadableSchemaRequest,
-    GetHumanReadableSchemaResponse,
-    GetLatestSchemaInfoRequest,
-    GetLatestSchemaInfoResponse,
-    ListSchemasRequest,
-    ListSchemasResponse,
-    ProtobufNativeSchema,
-    SchemaInfo as SchemaInfoPb,
-    SchemaInfoWithVersion,
-    SchemaServiceGrpc,
-    SchemaType as SchemaTypePb,
-    TestCompatibilityRequest,
-    TestCompatibilityResponse
-}
+import com.tools.teal.pulsar.ui.api.v1.schema.{CompileProtobufNativeRequest, CompileProtobufNativeResponse, CompiledProtobufNativeFile, CreateSchemaRequest, CreateSchemaResponse, DeleteSchemaRequest, DeleteSchemaResponse, GetHumanReadableSchemaRequest, GetHumanReadableSchemaResponse, GetLatestSchemaInfoRequest, GetLatestSchemaInfoResponse, ListSchemasRequest, ListSchemasResponse, ProtobufNativeSchema, SchemaInfoWithVersion, SchemaServiceGrpc, TestCompatibilityRequest, TestCompatibilityResponse, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.admin.PulsarAdminException
 
@@ -40,6 +18,7 @@ import scala.jdk.FutureConverters.*
 import org.apache.pulsar.client.api.{Producer, ProducerAccessMode}
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import _root_.schema.protobufnative
+import pulsar_auth.RequestContext
 
 import scala.concurrent.{Await, Future}
 import java.util
@@ -51,6 +30,8 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
     val logger: Logger = Logger(getClass.getName)
 
     override def createSchema(request: CreateSchemaRequest): Future[CreateSchemaResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         request.schemaInfo match
             case Some(s) =>
                 logger.info(s"Creating schema with name ${s.name} for topic ${request.topic}.")
@@ -81,6 +62,8 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
     override def deleteSchema(request: DeleteSchemaRequest): Future[DeleteSchemaResponse] =
         logger.info(s"Deleting latest schema for topic ${request.topic}.")
+        val adminClient = RequestContext.pulsarAdmin.get()
+
 
         try {
             adminClient.schemas.deleteSchema(request.topic, request.force)
@@ -97,6 +80,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
     override def getLatestSchemaInfo(request: GetLatestSchemaInfoRequest): Future[GetLatestSchemaInfoResponse] =
         logger.info(s"Getting latest schema info for topic ${request.topic}.")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             val schemaInfoWithVersion = adminClient.schemas.getSchemaInfoWithVersion(request.topic)
@@ -123,6 +107,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
     override def listSchemas(request: ListSchemasRequest): Future[ListSchemasResponse] =
         logger.info(s"Listing schemas for topic ${request.topic}.")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             val schemaInfos = adminClient.schemas.getAllSchemas(request.topic).asScala.toList
@@ -183,6 +168,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
 
     override def testCompatibility(request: TestCompatibilityRequest): Future[TestCompatibilityResponse] =
         logger.info(s"Testing schema compatibility for topic ${request.topic}.")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val schemaInfo = request.schemaInfo match
             case Some(spb) => schemaInfoFromPb(spb)
@@ -191,7 +177,7 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                 val status = Status(code = Code.INVALID_ARGUMENT.index)
                 return Future.successful(TestCompatibilityResponse(status = Some(status)))
 
-        val compatibilityTestResult = protobufnative.schemaCompatibility.test(topic = request.topic, schemaInfo = schemaInfo)
+        val compatibilityTestResult = protobufnative.schemaCompatibility.test(pulsarAdmin = adminClient, topic = request.topic, schemaInfo = schemaInfo)
 
         logger.info(s"Successfully tested schema compatibility for topic ${request.topic}.")
 

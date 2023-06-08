@@ -1,6 +1,5 @@
 package topicpolicies
 
-import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{CompactionThresholdEnabled, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DispatchRateSpecified, DispatchRateUnspecified, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersRequest, GetMaxConsumersResponse, GetMaxMessageSizeRequest, GetMaxMessageSizeResponse, GetMaxProducersRequest, GetMaxProducersResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetMaxUnackedMessagesOnConsumerRequest, GetMaxUnackedMessagesOnConsumerResponse, GetMaxUnackedMessagesOnSubscriptionRequest, GetMaxUnackedMessagesOnSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetPersistenceRequest, GetPersistenceResponse, GetPublishRateRequest, GetPublishRateResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetRetentionRequest, GetRetentionResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSubscribeRateRequest, GetSubscribeRateResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, GetSubscriptionTypesEnabledRequest, GetSubscriptionTypesEnabledResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersSpecified, MaxConsumersUnspecified, MaxMessageSizeDisabled, MaxMessageSizeEnabled, MaxProducersSpecified, MaxProducersUnspecified, MaxSubscriptionsPerTopicSpecified, MaxSubscriptionsPerTopicUnspecified, MaxUnackedMessagesOnConsumerSpecified, MaxUnackedMessagesOnConsumerUnspecified, MaxUnackedMessagesOnSubscriptionSpecified, MaxUnackedMessagesOnSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, PersistenceSpecified, PersistenceUnspecified, PublishRateSpecified, PublishRateUnspecified, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersRequest, RemoveMaxConsumersResponse, RemoveMaxMessageSizeRequest, RemoveMaxMessageSizeResponse, RemoveMaxProducersRequest, RemoveMaxProducersResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveMaxUnackedMessagesOnConsumerRequest, RemoveMaxUnackedMessagesOnConsumerResponse, RemoveMaxUnackedMessagesOnSubscriptionRequest, RemoveMaxUnackedMessagesOnSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemovePublishRateRequest, RemovePublishRateResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSchemaCompatibilityStrategyRequest, RemoveSchemaCompatibilityStrategyResponse, RemoveSubscribeRateRequest, RemoveSubscribeRateResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, RemoveSubscriptionTypesEnabledRequest, RemoveSubscriptionTypesEnabledResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, RetentionSpecified, RetentionUnspecified, SchemaCompatibilityStrategyInherited, SchemaCompatibilityStrategySpecified, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersRequest, SetMaxConsumersResponse, SetMaxMessageSizeRequest, SetMaxMessageSizeResponse, SetMaxProducersRequest, SetMaxProducersResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetMaxUnackedMessagesOnConsumerRequest, SetMaxUnackedMessagesOnConsumerResponse, SetMaxUnackedMessagesOnSubscriptionRequest, SetMaxUnackedMessagesOnSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetPersistenceRequest, SetPersistenceResponse, SetPublishRateRequest, SetPublishRateResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetRetentionRequest, SetRetentionResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSubscribeRateRequest, SetSubscribeRateResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SetSubscriptionTypesEnabledRequest, SetSubscriptionTypesEnabledResponse, SubscribeRateSpecified, SubscribeRateUnspecified, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, SubscriptionTypesEnabledInherited, SubscriptionTypesEnabledSpecified, TopicpoliciesServiceGrpc}
 import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies as pb
 import com.typesafe.scalalogging.Logger
@@ -9,6 +8,7 @@ import com.google.rpc.status.Status
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
 import org.apache.pulsar.common.policies.data.{AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, PersistencePolicies, Policies, PublishRate, RetentionPolicies, SubscribeRate}
+import pulsar_auth.RequestContext
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
@@ -18,6 +18,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
     val logger: Logger = Logger(getClass.getName)
 
     override def getBacklogQuotas(request: GetBacklogQuotasRequest): Future[GetBacklogQuotasResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def retentionPolicyToPb(policy: Option[RetentionPolicy]): Option[pb.BacklogQuotaRetentionPolicy] = policy match
             case Some(RetentionPolicy.consumer_backlog_eviction) =>
                 Some(pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION)
@@ -62,6 +64,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetBacklogQuotasResponse(status = Some(status)))
         }
     override def setBacklogQuotas(request: SetBacklogQuotasRequest): Future[SetBacklogQuotasResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def retentionPolicyFromPb(policyPb: pb.BacklogQuotaRetentionPolicy): RetentionPolicy = policyPb match
             case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION =>
                 RetentionPolicy.consumer_backlog_eviction
@@ -109,6 +113,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetBacklogQuotasResponse(status = Some(status)))
         }
     override def removeBacklogQuota(request: RemoveBacklogQuotaRequest): Future[RemoveBacklogQuotaResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             request.backlogQuotaType match
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE =>
@@ -128,6 +134,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveBacklogQuotaResponse(status = Some(status)))
         }
     override def getDelayedDelivery(request: GetDelayedDeliveryRequest): Future[GetDelayedDeliveryResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val delayedDeliveryPb = Option(adminClient.topicPolicies(request.isGlobal).getDelayedDeliveryPolicy(request.topic, false)) match
                 case None =>
@@ -148,6 +156,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetDelayedDeliveryResponse(status = Some(status)))
         }
     override def setDelayedDelivery(request: SetDelayedDeliveryRequest): Future[SetDelayedDeliveryResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting delayed delivery policy for topic ${request.topic}")
             val delayedDeliveryPolicies = DelayedDeliveryPolicies.builder
@@ -163,6 +173,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetDelayedDeliveryResponse(status = Some(status)))
         }
     override def removeDelayedDelivery(request: RemoveDelayedDeliveryRequest): Future[RemoveDelayedDeliveryResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing delayed delivery policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDelayedDeliveryPolicy(request.topic)
@@ -173,6 +185,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveDelayedDeliveryResponse(status = Some(status)))
         }
     override def getMessageTtl(request: GetMessageTtlRequest): Future[GetMessageTtlResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val messageTtlPb = Option(adminClient.topicPolicies(request.isGlobal).getMessageTTL(request.topic, false)) match
                 case None =>
@@ -192,6 +206,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetMessageTtlResponse(status = Some(status)))
         }
     override def setMessageTtl(request: SetMessageTtlRequest): Future[SetMessageTtlResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting message TTL policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMessageTTL(request.topic, request.messageTtlSeconds)
@@ -202,6 +218,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetMessageTtlResponse(status = Some(status)))
         }
     override def removeMessageTtl(request: RemoveMessageTtlRequest): Future[RemoveMessageTtlResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing message TTL policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMessageTTL(request.topic)
@@ -212,6 +230,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveMessageTtlResponse(status = Some(status)))
         }
     override def getRetention(request: GetRetentionRequest): Future[GetRetentionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val retentionPb = Option(adminClient.topicPolicies(request.isGlobal).getRetention(request.topic, false)) match
                 case None =>
@@ -232,6 +252,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetRetentionResponse(status = Some(status)))
         }
     override def setRetention(request: SetRetentionRequest): Future[SetRetentionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting retention for topic ${request.topic}")
             val retention = new RetentionPolicies(request.retentionTimeInMinutes, request.retentionSizeInMb)
@@ -244,6 +266,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetRetentionResponse(status = Some(status)))
         }
     override def removeRetention(request: RemoveRetentionRequest): Future[RemoveRetentionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing retention for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeRetention(request.topic)
@@ -254,6 +278,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveRetentionResponse(status = Some(status)))
         }
     override def getMaxUnackedMessagesOnConsumer(request: GetMaxUnackedMessagesOnConsumerRequest): Future[GetMaxUnackedMessagesOnConsumerResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxUnackedMessagesOnConsumerPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxUnackedMessagesOnConsumer(request.topic, false)) match
                 case None =>
@@ -273,6 +299,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
     override def setMaxUnackedMessagesOnConsumer(request: SetMaxUnackedMessagesOnConsumerRequest): Future[SetMaxUnackedMessagesOnConsumerResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max unacked messages on consumer policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnConsumer(request.topic, request.maxUnackedMessagesOnConsumer)
@@ -284,6 +312,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
         }
 
     override def removeMaxUnackedMessagesOnConsumer(request: RemoveMaxUnackedMessagesOnConsumerRequest): Future[RemoveMaxUnackedMessagesOnConsumerResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max unacked messages on consumer policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnConsumer(request.topic)
@@ -294,6 +324,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveMaxUnackedMessagesOnConsumerResponse(status = Some(status)))
         }
     override def getMaxUnackedMessagesOnSubscription(request: GetMaxUnackedMessagesOnSubscriptionRequest): Future[GetMaxUnackedMessagesOnSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxUnackedMessagesOnSubscriptionPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxUnackedMessagesOnSubscription(request.topic, false)) match
                 case None =>
@@ -313,6 +345,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
     override def setMaxUnackedMessagesOnSubscription(request: SetMaxUnackedMessagesOnSubscriptionRequest): Future[SetMaxUnackedMessagesOnSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max unacked messages on subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxUnackedMessagesOnSubscription(request.topic, request.maxUnackedMessagesOnSubscription)
@@ -323,6 +357,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
     override def removeMaxUnackedMessagesOnSubscription(request: RemoveMaxUnackedMessagesOnSubscriptionRequest): Future[RemoveMaxUnackedMessagesOnSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max unacked messages on subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxUnackedMessagesOnSubscription(request.topic)
@@ -333,6 +369,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveMaxUnackedMessagesOnSubscriptionResponse(status = Some(status)))
         }
     override def getInactiveTopicPolicies(request: GetInactiveTopicPoliciesRequest): Future[GetInactiveTopicPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val inactiveTopicPoliciesPb = Option(adminClient.topicPolicies(request.isGlobal).getInactiveTopicPolicies(request.topic, false)) match
                 case None =>
@@ -358,6 +396,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetInactiveTopicPoliciesResponse(status = Some(status)))
         }
     override def setInactiveTopicPolicies(request: SetInactiveTopicPoliciesRequest): Future[SetInactiveTopicPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting inactive topic policies for topic ${request.topic}")
 
@@ -379,6 +419,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetInactiveTopicPoliciesResponse(status = Some(status)))
         }
     override def removeInactiveTopicPolicies(request: RemoveInactiveTopicPoliciesRequest): Future[RemoveInactiveTopicPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing inactive topic policies for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeInactiveTopicPolicies(request.topic)
@@ -389,6 +431,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveInactiveTopicPoliciesResponse(status = Some(status)))
         }
     override def getPersistence(request: GetPersistenceRequest): Future[GetPersistenceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val persistencePb = Option(adminClient.topicPolicies(request.isGlobal).getPersistence(request.topic, false)) match
                 case None =>
@@ -411,6 +455,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetPersistenceResponse(status = Some(status)))
         }
     override def setPersistence(request: SetPersistenceRequest): Future[SetPersistenceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting persistence policy for topic ${request.topic}")
             val persistencePolicies = PersistencePolicies(request.bookkeeperEnsemble, request.bookkeeperWriteQuorum, request.bookkeeperAckQuorum, request.managedLedgerMaxMarkDeleteRate)
@@ -422,6 +468,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetPersistenceResponse(status = Some(status)))
         }
     override def removePersistence(request: RemovePersistenceRequest): Future[RemovePersistenceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing persistence policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removePersistence(request.topic)
@@ -432,6 +480,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemovePersistenceResponse(status = Some(status)))
         }
     override def getDeduplication(request: GetDeduplicationRequest): Future[GetDeduplicationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val deduplication = Option(adminClient.topicPolicies(request.isGlobal).getDeduplicationStatus(request.topic, false)) match
                 case None =>
@@ -449,6 +499,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetDeduplicationResponse(status = Some(status)))
         }
     override def setDeduplication(request: SetDeduplicationRequest): Future[SetDeduplicationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting deduplication policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setDeduplicationStatus(request.topic, request.enabled)
@@ -459,6 +511,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetDeduplicationResponse(status = Some(status)))
         }
     override def removeDeduplication(request: RemoveDeduplicationRequest): Future[RemoveDeduplicationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing deduplication policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDeduplicationStatus(request.topic)
@@ -469,6 +523,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveDeduplicationResponse(status = Some(status)))
         }
     override def getDeduplicationSnapshotInterval(request: GetDeduplicationSnapshotIntervalRequest): Future[GetDeduplicationSnapshotIntervalResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val interval = Option(adminClient.topicPolicies(request.isGlobal).getDeduplicationSnapshotInterval(request.topic)) match
                 case None =>
@@ -486,6 +542,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
     override def setDeduplicationSnapshotInterval(request: SetDeduplicationSnapshotIntervalRequest): Future[SetDeduplicationSnapshotIntervalResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting deduplication snapshot interval policy for topic ${request.topic}. ${request.interval}")
             adminClient.topicPolicies(request.isGlobal).setDeduplicationSnapshotInterval(request.topic, request.interval)
@@ -496,6 +554,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
     override def removeDeduplicationSnapshotInterval(request: RemoveDeduplicationSnapshotIntervalRequest): Future[RemoveDeduplicationSnapshotIntervalResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing deduplication snapshot interval policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDeduplicationSnapshotInterval(request.topic)
@@ -506,6 +566,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveDeduplicationSnapshotIntervalResponse(status = Some(status)))
         }
     override def getDispatchRate(request: GetDispatchRateRequest): Future[GetDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val dispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getDispatchRate(request.topic, false)) match
                 case None =>
@@ -528,6 +590,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetDispatchRateResponse(status = Some(status)))
         }
     override def setDispatchRate(request: SetDispatchRateRequest): Future[SetDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting dispatch rate policy for topic ${request.topic}")
             val dispatchRate = DispatchRate.builder
@@ -545,6 +609,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetDispatchRateResponse(status = Some(status)))
         }
     override def removeDispatchRate(request: RemoveDispatchRateRequest): Future[RemoveDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing dispatch rate policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeDispatchRate(request.topic)
@@ -555,6 +621,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveDispatchRateResponse(status = Some(status)))
         }
     override def getReplicatorDispatchRate(request: GetReplicatorDispatchRateRequest): Future[GetReplicatorDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val replicatorDispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getReplicatorDispatchRate(request.topic, false)) match
                 case None =>
@@ -577,6 +645,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetReplicatorDispatchRateResponse(status = Some(status)))
         }
     override def setReplicatorDispatchRate(request: SetReplicatorDispatchRateRequest): Future[SetReplicatorDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting replicator dispatch rate for topic ${request.topic}")
             val dispatchRate = DispatchRate.builder
@@ -594,6 +664,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetReplicatorDispatchRateResponse(status = Some(status)))
         }
     override def removeReplicatorDispatchRate(request: RemoveReplicatorDispatchRateRequest): Future[RemoveReplicatorDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing replicator dispatch rate for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeReplicatorDispatchRate(request.topic)
@@ -604,6 +676,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveReplicatorDispatchRateResponse(status = Some(status)))
         }
     override def getSubscriptionDispatchRate(request: GetSubscriptionDispatchRateRequest): Future[GetSubscriptionDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val subscriptionDispatchRatePb = Option(adminClient.topicPolicies(request.isGlobal).getSubscriptionDispatchRate(request.topic, false)) match
                 case None =>
@@ -626,6 +700,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetSubscriptionDispatchRateResponse(status = Some(status)))
         }
     override def setSubscriptionDispatchRate(request: SetSubscriptionDispatchRateRequest): Future[SetSubscriptionDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting subscription dispatch rate for topic ${request.topic}")
             val dispatchRate = DispatchRate.builder
@@ -643,6 +719,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetSubscriptionDispatchRateResponse(status = Some(status)))
         }
     override def removeSubscriptionDispatchRate(request: RemoveSubscriptionDispatchRateRequest): Future[RemoveSubscriptionDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing subscription dispatch rate for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSubscriptionDispatchRate(request.topic)
@@ -653,6 +731,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveSubscriptionDispatchRateResponse(status = Some(status)))
         }
     override def getCompactionThreshold(request: GetCompactionThresholdRequest): Future[GetCompactionThresholdResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val threshold = Option(adminClient.topicPolicies(request.isGlobal).getCompactionThreshold(request.topic, false)).map(_.toLong) match
                 case None => pb.GetCompactionThresholdResponse.Threshold.Disabled(new pb.CompactionThresholdDisabled())
@@ -667,6 +747,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetCompactionThresholdResponse(status = Some(status)))
         }
     override def setCompactionThreshold(request: SetCompactionThresholdRequest): Future[SetCompactionThresholdResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting compaction threshold policy for topic ${request.topic}. ${request.threshold}")
             adminClient.topicPolicies(request.isGlobal).setCompactionThreshold(request.topic, request.threshold)
@@ -677,6 +759,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetCompactionThresholdResponse(status = Some(status)))
         }
     override def removeCompactionThreshold(request: RemoveCompactionThresholdRequest): Future[RemoveCompactionThresholdResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing compaction threshold policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeCompactionThreshold(request.topic)
@@ -687,6 +771,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveCompactionThresholdResponse(status = Some(status)))
         }
     override def getPublishRate(request: GetPublishRateRequest): Future[GetPublishRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val publishRatePb = Option(adminClient.topicPolicies(request.isGlobal).getPublishRate(request.topic)) match
                 case None =>
@@ -707,6 +793,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetPublishRateResponse(status = Some(status)))
         }
     override def setPublishRate(request: SetPublishRateRequest): Future[SetPublishRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting publish rate policy for topic ${request.topic}. ${request.rateInMsg}, ${request.rateInByte}")
             val publishRate = PublishRate( request.rateInMsg, request.rateInByte )
@@ -718,6 +806,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetPublishRateResponse(status = Some(status)))
         }
     override def removePublishRate(request: RemovePublishRateRequest): Future[RemovePublishRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing publish rate policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removePublishRate(request.topic)
@@ -728,6 +818,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemovePublishRateResponse(status = Some(status)))
         }
     override def getMaxConsumersPerSubscription(request: GetMaxConsumersPerSubscriptionRequest): Future[GetMaxConsumersPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxConsumersPerSubscriptionPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxConsumersPerSubscription(request.topic)) match
                 case None =>
@@ -747,6 +839,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
     override def setMaxConsumersPerSubscription(request: SetMaxConsumersPerSubscriptionRequest): Future[SetMaxConsumersPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max consumers per subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxConsumersPerSubscription(request.topic, request.maxConsumersPerSubscription)
@@ -757,6 +851,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
     override def removeMaxConsumersPerSubscription(request: RemoveMaxConsumersPerSubscriptionRequest): Future[RemoveMaxConsumersPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max consumers per subscription policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxConsumersPerSubscription(request.topic)
@@ -767,6 +863,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveMaxConsumersPerSubscriptionResponse(status = Some(status)))
         }
     override def getMaxProducers(request: GetMaxProducersRequest): Future[GetMaxProducersResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxProducersPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxProducers(request.topic, false)) match
                 case None =>
@@ -786,6 +884,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetMaxProducersResponse(status = Some(status)))
         }
     override def setMaxProducers(request: SetMaxProducersRequest): Future[SetMaxProducersResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max producers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxProducers(request.topic, request.maxProducers)
@@ -796,6 +896,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetMaxProducersResponse(status = Some(status)))
         }
     override def removeMaxProducers(request: RemoveMaxProducersRequest): Future[RemoveMaxProducersResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max producers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxProducers(request.topic)
@@ -806,6 +908,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveMaxProducersResponse(status = Some(status)))
         }
     override def getMaxSubscriptionsPerTopic(request: GetMaxSubscriptionsPerTopicRequest): Future[GetMaxSubscriptionsPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxSubscriptionsPerTopicPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxSubscriptionsPerTopic(request.topic)) match
                 case None =>
@@ -825,6 +929,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
     override def setMaxSubscriptionsPerTopic(request: SetMaxSubscriptionsPerTopicRequest): Future[SetMaxSubscriptionsPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max subscriptions per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxSubscriptionsPerTopic(request.topic, request.maxSubscriptionsPerTopic)
@@ -835,6 +941,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
     override def removeMaxSubscriptionsPerTopic(request: RemoveMaxSubscriptionsPerTopicRequest): Future[RemoveMaxSubscriptionsPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max subscriptions per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxSubscriptionsPerTopic(request.topic)
@@ -845,6 +953,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveMaxSubscriptionsPerTopicResponse(status = Some(status)))
         }
     override def getMaxConsumers(request: GetMaxConsumersRequest): Future[GetMaxConsumersResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxConsumersPb = Option(adminClient.topicPolicies(request.isGlobal).getMaxConsumers(request.topic, false)) match
                 case None =>
@@ -864,6 +974,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetMaxConsumersResponse(status = Some(status)))
         }
     override def setMaxConsumers(request: SetMaxConsumersRequest): Future[SetMaxConsumersResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max consumers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).setMaxConsumers(request.topic, request.maxConsumers)
@@ -874,6 +986,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetMaxConsumersResponse(status = Some(status)))
         }
     override def removeMaxConsumers(request: RemoveMaxConsumersRequest): Future[RemoveMaxConsumersResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max consumers per topic policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxConsumers(request.topic)
@@ -884,6 +998,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveMaxConsumersResponse(status = Some(status)))
         }
     override def getSubscriptionTypesEnabled(request: GetSubscriptionTypesEnabledRequest): Future[GetSubscriptionTypesEnabledResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def subscriptionTypeToPb(subscriptionType: SubscriptionType): pb.SubscriptionType =
             subscriptionType match
                 case SubscriptionType.Exclusive => pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE
@@ -910,6 +1026,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetSubscriptionTypesEnabledResponse(status = Some(status)))
         }
     override def setSubscriptionTypesEnabled(request: SetSubscriptionTypesEnabledRequest): Future[SetSubscriptionTypesEnabledResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def pbToSubscriptionType(subscriptionTypePb: pb.SubscriptionType): SubscriptionType =
             subscriptionTypePb match
                 case pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE => SubscriptionType.Exclusive
@@ -929,6 +1047,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetSubscriptionTypesEnabledResponse(status = Some(status)))
         }
     override def removeSubscriptionTypesEnabled(request: RemoveSubscriptionTypesEnabledRequest): Future[RemoveSubscriptionTypesEnabledResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing subscription types enabled policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSubscriptionTypesEnabled(request.topic)
@@ -939,6 +1059,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveSubscriptionTypesEnabledResponse(status = Some(status)))
         }
     override def getSubscribeRate(request: GetSubscribeRateRequest): Future[GetSubscribeRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val subscribeRatePb = Option(adminClient.topicPolicies(request.isGlobal).getSubscribeRate(request.topic, false)) match
                 case None =>
@@ -959,6 +1081,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetSubscribeRateResponse(status = Some(status)))
         }
     override def setSubscribeRate(request: SetSubscribeRateRequest): Future[SetSubscribeRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting subscribe rate policy for topic ${request.topic}")
             val subscribeRate = new SubscribeRate(request.subscribeThrottlingRatePerConsumer, request.ratePeriodInSeconds)
@@ -971,6 +1095,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetSubscribeRateResponse(status = Some(status)))
         }
     override def removeSubscribeRate(request: RemoveSubscribeRateRequest): Future[RemoveSubscribeRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing subscribe rate policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSubscribeRate(request.topic)
@@ -981,6 +1107,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveSubscribeRateResponse(status = Some(status)))
         }
     override def getSchemaCompatibilityStrategy(request: GetSchemaCompatibilityStrategyRequest): Future[GetSchemaCompatibilityStrategyResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val strategy = Option(adminClient.topicPolicies(request.isGlobal).getSchemaCompatibilityStrategy(request.topic, false)) match
                 case None =>
@@ -1003,6 +1131,7 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
         }
     override def setSchemaCompatibilityStrategy(request: SetSchemaCompatibilityStrategyRequest): Future[SetSchemaCompatibilityStrategyResponse] =
         logger.info(s"Setting schema compatibility strategy policy for topic ${request.topic}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.topicPolicies(request.isGlobal).setSchemaCompatibilityStrategy(request.topic, schemaCompatibilityStrategyFromPb(request.strategy))
@@ -1014,6 +1143,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetSchemaCompatibilityStrategyResponse(status = Some(status)))
         }
     override def removeSchemaCompatibilityStrategy(request: RemoveSchemaCompatibilityStrategyRequest): Future[RemoveSchemaCompatibilityStrategyResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing schema compatibility strategy policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeSchemaCompatibilityStrategy(request.topic)
@@ -1024,6 +1155,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(RemoveSchemaCompatibilityStrategyResponse(status = Some(status)))
         }
     override def getMaxMessageSize(request: GetMaxMessageSizeRequest): Future[GetMaxMessageSizeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxMessageSize = Option(adminClient.topicPolicies(request.isGlobal).getMaxMessageSize(request.topic)).map(_.toInt) match
                 case None => pb.GetMaxMessageSizeResponse.MaxMessageSize.Disabled(new MaxMessageSizeDisabled())
@@ -1038,6 +1171,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(GetMaxMessageSizeResponse(status = Some(status)))
         }
     override def setMaxMessageSize(request: SetMaxMessageSizeRequest): Future[SetMaxMessageSizeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max message size policy for topic ${request.topic}. ${request.maxMessageSize}")
             adminClient.topicPolicies(request.isGlobal).setMaxMessageSize(request.topic, request.maxMessageSize)
@@ -1048,6 +1183,8 @@ class TopicpoliciesServiceImpl extends TopicpoliciesServiceGrpc.TopicpoliciesSer
                 Future.successful(SetMaxMessageSizeResponse(status = Some(status)))
         }
     override def removeMaxMessageSize(request: RemoveMaxMessageSizeRequest): Future[RemoveMaxMessageSizeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max message size policy for topic ${request.topic}")
             adminClient.topicPolicies(request.isGlobal).removeMaxMessageSize(request.topic)
