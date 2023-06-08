@@ -4,7 +4,7 @@ import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient'
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient'
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb'
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
@@ -48,7 +48,7 @@ const firstColumnWidth = '15ch';
 
 const Tenants: React.FC = () => {
   const tableRef = useRef<HTMLDivElement>(null);
-  const { tenantServiceClient } = PulsarGrpcClient.useContext();
+  const { tenantServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [filterQuery, setFilterQuery] = useState('');
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);

@@ -1,9 +1,9 @@
 package schema.protobufnative
 
-import _root_.client.{adminClient, client}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.PulsarClientException.IncompatibleSchemaException
 import org.apache.pulsar.common.schema.SchemaInfo
+import org.apache.pulsar.client.admin.{PulsarAdmin}
 import scala.jdk.CollectionConverters.*
 
 import scala.util.matching.Regex
@@ -16,9 +16,9 @@ case class CompatibilityTestResult(
 )
 
 object schemaCompatibility:
-    def test(topic: String, schemaInfo: SchemaInfo): CompatibilityTestResult =
+    def test(pulsarAdmin: PulsarAdmin, topic: String, schemaInfo: SchemaInfo): CompatibilityTestResult =
         try {
-            val testResult = adminClient.schemas.testCompatibility(topic, schemaInfo)
+            val testResult = pulsarAdmin.schemas.testCompatibility(topic, schemaInfo)
 
             CompatibilityTestResult(
               isCompatible = testResult.isCompatibility,

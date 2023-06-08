@@ -1,13 +1,13 @@
 package tenant
 
-import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.tenant.v1.tenant as pb
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import org.apache.pulsar.common.policies.data.TenantInfo
-import scala.jdk.CollectionConverters.*
+import pulsar_auth.RequestContext
 
+import scala.jdk.CollectionConverters.*
 import scala.concurrent.Future
 
 class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
@@ -15,6 +15,7 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
     override def createTenant(request: pb.CreateTenantRequest): Future[pb.CreateTenantResponse] =
         logger.info(s"Creating tenant: ${request.tenantName}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val config = TenantInfo.builder
 
@@ -36,6 +37,7 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
     override def updateTenant(request: pb.UpdateTenantRequest): Future[pb.UpdateTenantResponse] =
         logger.info(s"Updating tenant: ${request.tenantName}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val config = TenantInfo.builder
 
@@ -57,6 +59,8 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
     override def deleteTenant(request: pb.DeleteTenantRequest): Future[pb.DeleteTenantResponse] =
         logger.info(s"Deleting tenant: ${request.tenantName}")
+        val adminClient = RequestContext.pulsarAdmin.get()
+        
         try {
             adminClient.tenants.deleteTenant(request.tenantName, request.force)
             val status: Status = Status(code = Code.OK.index)
@@ -69,6 +73,7 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
     override def getTenant(request: pb.GetTenantRequest): Future[pb.GetTenantResponse] =
         logger.debug(s"Getting tenant: ${request.tenantName}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val tenant = try {
             adminClient.tenants.getTenantInfo(request.tenantName)
@@ -92,6 +97,7 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
     override def getTenants(request: pb.GetTenantsRequest): Future[pb.GetTenantsResponse] =
         logger.debug(s"Getting tenants")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val tenants = try {
             adminClient.tenants.getTenants.asScala

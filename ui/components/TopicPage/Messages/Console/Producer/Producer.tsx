@@ -6,7 +6,7 @@ import * as Either from 'fp-ts/lib/Either';
 import Button from '../../../../ui/Button/Button';
 import Input from '../../../../ui/Input/Input';
 import Select from '../../../../ui/Select/Select';
-import * as PulsarGrpcClient from '../../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../../app/contexts/Notifications';
 import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, ProducerMessage, SendRequest } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/producer_pb';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
@@ -37,7 +37,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
   const [eventTime, setEventTime] = React.useState<Date | undefined>(undefined);
   const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>("{}");
   const { notifyError, notifySuccess } = Notifications.useContext();
-  const { producerServiceClient } = PulsarGrpcClient.useContext();
+  const { producerServiceClient } = GrpcClient.useContext();
 
   const sendMessage = async () => {
     const sendReq: SendRequest = new SendRequest();

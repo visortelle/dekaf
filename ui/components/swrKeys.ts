@@ -2,6 +2,14 @@ import stringify from "safe-stable-stringify";
 
 export const swrKeys = {
   pulsar: {
+    auth: {
+      credentials: {
+        _: () => ["pulsar", "auth", "credentials"],
+        current: {
+          _: () => ["pulsar", "auth", "credentials", "current"],
+        }
+      },
+    },
     schemas: {
       getLatestSchemaInfo: {
         _: (topic: string) => [
@@ -47,6 +55,14 @@ export const swrKeys = {
             "namespaces",
             tenant,
             namespace,
+          ],
+        },
+        topicsStats: {
+          _: (topics: string[]) => [
+            "customApi",
+            "metrics",
+            "topicsStats",
+            stringify(topics),
           ],
         },
         topicsInternalStats: {
@@ -119,6 +135,9 @@ export const swrKeys = {
     },
     clusters: {
       _: () => ["pulsar", "clusters"],
+      cluster: {
+        _: (props: { cluster: string }) => ["pulsar", "cluster", props.cluster],
+      }
     },
     tenants: {
       _: () => ["pulsar", "tenants"],
@@ -175,16 +194,16 @@ export const swrKeys = {
                   policy: string;
                   isGlobal: boolean;
                 }) => [
-                  "pulsar",
-                  "tenants",
-                  props.tenant,
-                  "namespaces",
-                  props.namespace,
-                  "nonPersistentTopics",
-                  "policies",
-                  props.policy,
-                  props.isGlobal,
-                ],
+                    "pulsar",
+                    "tenants",
+                    props.tenant,
+                    "namespaces",
+                    props.namespace,
+                    "nonPersistentTopics",
+                    "policies",
+                    props.policy,
+                    props.isGlobal,
+                  ],
               },
             },
             persistentTopics: {
@@ -203,16 +222,16 @@ export const swrKeys = {
                   policy: string;
                   isGlobal: boolean;
                 }) => [
-                  "pulsar",
-                  "tenants",
-                  props.tenant,
-                  "namespaces",
-                  props.namespace,
-                  "persistentTopics",
-                  "policies",
-                  props.policy,
-                  props.isGlobal,
-                ],
+                    "pulsar",
+                    "tenants",
+                    props.tenant,
+                    "namespaces",
+                    props.namespace,
+                    "persistentTopics",
+                    "policies",
+                    props.policy,
+                    props.isGlobal,
+                  ],
               },
             },
             policies: {
@@ -221,14 +240,14 @@ export const swrKeys = {
                 namespace: string;
                 policy: string;
               }) => [
-                "pulsar",
-                "tenants",
-                props.tenant,
-                "namespaces",
-                props.namespace,
-                "policies",
-                props.policy,
-              ],
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "policies",
+                  props.policy,
+                ],
             },
           },
         },

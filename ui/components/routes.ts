@@ -6,6 +6,18 @@ export const routes = {
         get: () => `/`,
       },
     },
+    clusters: {
+      _: {
+        path: "/clusters",
+        get: () => `/clusters`,
+      },
+      cluster: {
+        _: {
+          path: "/clusters/cluster/:cluster",
+          get: (props: { cluster: string }) => `/clusters/cluster/${props.cluster}`,
+        }
+      }
+    },
     overview: {
       _: {
         path: "/instance/overview",
@@ -113,6 +125,18 @@ export const routes = {
                       topic: string;
                     }) =>
                       `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/messages`,
+                  },
+                },
+                subscriptions: {
+                  _: {
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/subscriptions",
+                    get: (props: {
+                      tenant: string;
+                      namespace: string;
+                      topicType: "persistent" | "non-persistent";
+                      topic: string;
+                    }) =>
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/subscriptions`,
                   },
                 },
                 overview: {

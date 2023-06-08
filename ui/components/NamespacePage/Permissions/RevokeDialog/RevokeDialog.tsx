@@ -3,7 +3,7 @@ import { mutate } from 'swr';
 
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as Modals from '../../../app/contexts/Modals/Modals';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import ConfirmationDialog from '../../../ui/ConfirmationDialog/ConfirmationDialog';
@@ -19,7 +19,7 @@ const RevokeDialog = (props: Props) => {
 
   const modals = Modals.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
 
   const revoke = async () => {
     const req = new pb.RevokePermissionsRequest();

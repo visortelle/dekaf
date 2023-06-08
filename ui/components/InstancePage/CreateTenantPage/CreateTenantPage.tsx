@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import s from './CreateTenantPage.module.css'
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import ListInput from '../../ui/ConfigurationTable/ListInput/ListInput';
 import SelectInput, { ListItem } from '../../ui/ConfigurationTable/SelectInput/SelectInput';
@@ -10,7 +10,7 @@ import { CreateTenantRequest, TenantInfo } from '../../../grpc-web/tools/teal/pu
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import useSWR, { mutate } from 'swr';
 import { swrKeys } from '../../swrKeys';
-import { ListClustersRequest } from '../../../grpc-web/tools/teal/pulsar/ui/cluster/v1/cluster_pb';
+import { GetClustersRequest } from '../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb';
 import * as Either from 'fp-ts/Either';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../routes';
@@ -19,7 +19,7 @@ import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 
 const CreateTenantPage: React.FC = () => {
   const { notifyError } = Notifications.useContext();
-  const { tenantServiceClient, clusterServiceClient } = PulsarGrpcClient.useContext();
+  const { tenantServiceClient, clustersServiceClient } = GrpcClient.useContext();
   const [tenantName, setTenantName] = useState('');
   const [allowedClusters, setAllowedClusters] = useState<string[]>([]);
   const [adminRoles, setAdminRoles] = useState<string[]>([]);
@@ -28,7 +28,7 @@ const CreateTenantPage: React.FC = () => {
   const { data: allClusters, error: allClustersError } = useSWR(
     swrKeys.pulsar.clusters._(),
     async () => {
-      const res = await clusterServiceClient.listClusters(new ListClustersRequest(), null);
+      const res = await clustersServiceClient.getClusters(new GetClustersRequest(), null);
 
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get clusters list. ${res.getStatus()?.getMessage()}`);

@@ -2,7 +2,6 @@ package consumer
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
-import _root_.client.adminClient
 import _root_.schema.avro
 import _root_.schema.protobufnative
 import _root_.conversions.primitiveConv.{

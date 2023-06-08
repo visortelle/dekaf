@@ -9,7 +9,7 @@ import Button from "../../../ui/Button/Button";
 import ProtobufNativeEditor from "../ProtobufNativeEditor/ProtobufNativeEditor";
 import AvroEditor from "../AvroEditor/AvroEditor";
 import { SchemaTypeT } from "../types";
-import * as PulsarGrpcClient from "../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as Notifications from "../../../app/contexts/Notifications";
 import s from "./CreateSchema.module.css";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
@@ -44,7 +44,7 @@ type Schema = {
 };
 
 const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
-  const { schemaServiceClient } = PulsarGrpcClient.useContext();
+  const { schemaServiceClient } = GrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 

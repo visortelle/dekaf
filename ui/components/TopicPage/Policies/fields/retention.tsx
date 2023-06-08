@@ -9,7 +9,7 @@ import MemorySizeInput from "../../../ui/ConfigurationTable/MemorySizeInput/Memo
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
 import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { swrKeys } from "../../../swrKeys";
@@ -50,17 +50,17 @@ type PolicyValue =
     { type: 'limit', value: number },
   }
 
-  export type FieldInputProps = {
-    topicType: 'persistent' | 'non-persistent';
-    tenant: string;
-    namespace: string;
-    topic: string;
-    isGlobal: boolean;
-  }
+export type FieldInputProps = {
+  topicType: 'persistent' | 'non-persistent';
+  tenant: string;
+  namespace: string;
+  topic: string;
+  isGlobal: boolean;
+}
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
-  const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
+  const { topicpoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
   const [validationError, setValidationError] = useState<ValidationError>(undefined);
@@ -198,7 +198,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   return (
     <WithUpdateConfirmation<PolicyValue>
-      key={stringify({initialValue, key})}
+      key={stringify({ initialValue, key })}
       initialValue={initialValue}
       validationError={validationError}
       onConfirm={updatePolicy}

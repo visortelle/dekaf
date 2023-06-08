@@ -1,5 +1,5 @@
 import * as Notifications from "../../../app/contexts/Notifications";
-import * as PulsarGrpcClient from "../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient";
+import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as Modals from "../../../app/contexts/Modals/Modals";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { DeleteSchemaRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb";
@@ -19,7 +19,7 @@ export type Props = {
 const DeleteDialog = (props: Props) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
-  const { schemaServiceClient } = PulsarGrpcClient.useContext();
+  const { schemaServiceClient } = GrpcClient.useContext();
   const [forceDelete, setForceDelete] = useState(false);
   const navigate = useNavigate();
 
@@ -72,7 +72,6 @@ const DeleteDialog = (props: Props) => {
       onCancel={modals.pop}
       forceDelete={forceDelete}
       switchForceDelete={switchForceDelete}
-      forceDeleteInfo="Delete all resources (including metastore and ledger), otherwise only do a mark deletion and not remove any resources indeed."
       guard={topicFqn}
       type='danger'
     />

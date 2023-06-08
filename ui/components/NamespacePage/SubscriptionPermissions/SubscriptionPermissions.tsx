@@ -5,7 +5,7 @@ import CreatableSelect from 'react-select/creatable';
 
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import Input from '../../ui/Input/Input';
 import { H1, H3 } from '../../ui/H/H';
@@ -36,9 +36,9 @@ type Option = {
 
 const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
   const { notifySuccess, notifyError } = Notifications.useContext();
-  const { namespaceServiceClient } = PulsarGrpcClient.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const { mutate } = useSWRConfig();
-  
+
   const [permissionsList, setPermissionsList] = useState<Permission[]>();
   const [option, setOption] = useState<readonly Option[]>([])
   const [inputsValue, setInputsValue] = useState<string[]>(['']);
@@ -50,7 +50,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
   }
 
   const [newPermission, setNewPermission] = useState<NewPermission>(defaultPermission)
-  
+
   const createOption = (label: string) => ({
     label,
     value: label,
@@ -73,7 +73,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
         notifyError(res.getStatus()?.getMessage());
         return;
       }
-      
+
       const permissionsObject = mapToObject(res.getPermissionsMap())
       const permissions = Object.keys(permissionsObject).map((subscription) => {
 
@@ -90,7 +90,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
       const roles = permissions.map(permission => {
         return permission.roles
       })
-      const options = new Set([ ...res.getRolesList(), ...[].concat(...roles) ])
+      const options = new Set([...res.getRolesList(), ...[].concat(...roles)])
 
       setOption(Array.from(options).map(createOption))
       setPermissionsList(permissions?.sort((a, b) => a.subscription.localeCompare(b.subscription, 'en', { numeric: true })))
@@ -103,7 +103,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
   );
 
   const reset = (index: number) => {
-    if (permissionsList && permissions){
+    if (permissionsList && permissions) {
       setPermissionsList(
         Object.assign(
           [...permissionsList],
@@ -173,10 +173,12 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
 
         setPermissionsList(Object.assign(
           [...permissionsList],
-          {[index]: {
-            subscription: permissionsList[index].subscription,
-            roles: [...permissionsList[index].roles, inputsValue[index]]
-          }}
+          {
+            [index]: {
+              subscription: permissionsList[index].subscription,
+              roles: [...permissionsList[index].roles, inputsValue[index]]
+            }
+          }
         ))
 
         setInputsValue(Object.assign(
@@ -217,7 +219,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
           <H3>Roles</H3>
         </div>
       </div>
-      
+
       {permissionsList && permissions && permissionsList.map((permission, index) => (
         <div className={`${s.Line}`}>
           <div className={`${s.LeftSide} ${s.SubscriptionName}`}>
@@ -232,10 +234,12 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
               onChange={(options) => {
                 setPermissionsList(Object.assign(
                   [...permissionsList],
-                  {[index]: {
-                    subscription: permissionsList[index].subscription,
-                    roles: options.map(option => option.value),
-                  }}
+                  {
+                    [index]: {
+                      subscription: permissionsList[index].subscription,
+                      roles: options.map(option => option.value),
+                    }
+                  }
                 ))
               }}
               inputValue={inputsValue[index]}
@@ -277,7 +281,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
           <Input
             type='text'
             value={newPermission?.subscription || ''}
-            onChange={(v) => setNewPermission({ ...newPermission, subscription: v})}
+            onChange={(v) => setNewPermission({ ...newPermission, subscription: v })}
             placeholder='subscription-on-produce'
             inputProps={{
               onKeyDown: (e) => {
@@ -287,13 +291,13 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
                   newPermission.roles.length !== 0
                 ) {
                   grant(newPermission),
-                  setNewPermission(defaultPermission)
+                    setNewPermission(defaultPermission)
                 }
               }
             }}
           />
         </div>
-        
+
         <div className={`${s.RightSide}`}>
           <CreatableSelect
             isMulti
@@ -319,7 +323,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
               type='primary'
               onClick={() => {
                 grant(newPermission, true),
-                setNewPermission(defaultPermission)
+                  setNewPermission(defaultPermission)
               }}
               text='Grant'
               disabled={

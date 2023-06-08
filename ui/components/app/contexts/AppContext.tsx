@@ -8,7 +8,13 @@ type BuildInfo = {
 }
 export type Config = {
   publicUrl: string,
-  buildInfo: BuildInfo
+  buildInfo: BuildInfo,
+  pulsarInstance: {
+    name: string,
+    color: string,
+    brokerServiceUrl: string,
+    webServiceUrl: string,
+  }
 }
 
 export type PerformanceOptimizations = {
@@ -29,6 +35,12 @@ const defaultValue: Value = {
       version: '',
       builtAtString: '',
       builtAtMillis: 0
+    },
+    pulsarInstance: {
+      name: '',
+      color: '',
+      brokerServiceUrl: '',
+      webServiceUrl: '',
     }
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },
@@ -38,26 +50,24 @@ const defaultValue: Value = {
 const Context = React.createContext<Value>(defaultValue);
 
 type DefaultProviderProps = {
- children: ReactNode,
- config: Config
+  children: ReactNode,
+  config: Config
 };
 
 export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const [performanceOptimizations, setPerformanceOptimizations] = useState<PerformanceOptimizations>(defaultValue.performanceOptimizations);
 
   return (
-    <>
-      <Context.Provider
-        value={{
-          ...defaultValue,
-          config: props.config,
-          performanceOptimizations,
-          setPerformanceOptimizations: (performanceOptimizations: PerformanceOptimizations) => setPerformanceOptimizations(performanceOptimizations),
-        }}
-      >
-        {props.children}
-      </Context.Provider>
-    </>
+    <Context.Provider
+      value={{
+        ...defaultValue,
+        config: props.config,
+        performanceOptimizations,
+        setPerformanceOptimizations: (performanceOptimizations: PerformanceOptimizations) => setPerformanceOptimizations(performanceOptimizations),
+      }}
+    >
+      {props.children}
+    </Context.Provider>
   )
 };
 

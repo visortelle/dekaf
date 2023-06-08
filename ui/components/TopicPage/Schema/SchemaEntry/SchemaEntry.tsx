@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { GetHumanReadableSchemaRequest, SchemaInfo, SchemaType } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
 import s from './SchemaEntry.module.css'
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
@@ -16,7 +16,7 @@ export type SchemaEntryProps = {
 
 const SchemaEntry: React.FC<SchemaEntryProps> = (props) => {
   const { notifyError } = Notifications.useContext();
-  const { schemaServiceClient } = PulsarGrpcClient.useContext();
+  const { schemaServiceClient } = GrpcClient.useContext();
   const [humanReadableSchema, setHumanReadableSchema] = React.useState<string | undefined>('');
 
   useEffect(() => {

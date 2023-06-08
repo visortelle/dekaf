@@ -1,0 +1,177 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.clusters.v1;
+
+import "google/protobuf/wrappers.proto";
+import "google/rpc/status.proto";
+
+message GetClustersRequest {}
+
+message GetClustersResponse {
+  google.rpc.Status status = 1;
+  repeated string clusters = 2;
+}
+
+enum ProxyProtocol {
+  PROXY_PROTOCOL_UNSPECIFIED = 0;
+  PROXY_PROTOCOL_SNI = 1;
+}
+
+message ClusterData {
+  google.protobuf.StringValue service_url = 1;
+  google.protobuf.StringValue service_url_tls = 2;
+  google.protobuf.StringValue broker_service_url = 3;
+  google.protobuf.StringValue broker_service_url_tls = 4;
+  google.protobuf.StringValue proxy_service_url = 5;
+  ProxyProtocol proxy_protocol = 6;
+  repeated string peer_cluster_names = 7;
+  google.protobuf.StringValue authentication_plugin = 8;
+  google.protobuf.StringValue authentication_parameters = 9;
+  google.protobuf.BoolValue is_broker_client_tls_enabled = 10;
+  google.protobuf.BoolValue is_tls_allow_insecure_connection = 11;
+  google.protobuf.BoolValue is_broker_client_tls_enabled_with_key_store = 12;
+  google.protobuf.StringValue broker_client_tls_trust_store_type = 13;
+  google.protobuf.StringValue broker_client_tls_trust_store = 14;
+  google.protobuf.StringValue broker_client_tls_trust_store_password = 15;
+  google.protobuf.StringValue broker_client_trust_certs_file_path = 16;
+  google.protobuf.StringValue listener_name = 17;
+}
+
+message CreateClusterRequest {
+  string cluster = 1;
+  ClusterData cluster_data = 2;
+}
+message CreateClusterResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetClusterRequest {
+  string cluster = 1;
+}
+message GetClusterResponse {
+  google.rpc.Status status = 1;
+  ClusterData cluster_data = 2;
+}
+
+message DeleteClusterRequest {
+  string cluster = 1;
+}
+message DeleteClusterResponse {
+  google.rpc.Status status = 1;
+}
+
+message FailureDomain {
+  repeated string brokers = 1;
+}
+
+message CreateFailureDomainRequest {
+  string cluster = 1;
+  string domain_name = 2;
+  FailureDomain domain = 3;
+}
+message CreateFailureDomainResponse {
+  google.rpc.Status status = 1;
+}
+message GetFailureDomainsRequest {
+  string cluster = 1;
+}
+message GetFailureDomainsResponse {
+  google.rpc.Status status = 1;
+  map<string, FailureDomain> domains = 2;
+}
+message UpdateFailureDomainRequest {
+  string cluster = 1;
+  string domain_name = 2;
+  FailureDomain domain = 3;
+}
+message UpdateFailureDomainResponse {
+  google.rpc.Status status = 1;
+}
+message DeleteFailureDomainRequest {
+  string cluster = 1;
+  string domain_name = 2;
+}
+message DeleteFailureDomainResponse {
+  google.rpc.Status status = 1;
+}
+
+enum AutoFailoverPolicyType {
+  AUTO_FAILOVER_POLICY_TYPE_UNSPECIFIED = 0;
+  AUTO_FAILOVER_POLICY_TYPE_MIN_AVAILABLE = 1;
+}
+message AutoFailoverPolicyData {
+  AutoFailoverPolicyType policy_type = 1;
+  map<string, string> parameters = 2;
+}
+message NamespaceIsolationData {
+  repeated string namespaces = 1;
+  repeated string primary = 2;
+  repeated string secondary = 3;
+  AutoFailoverPolicyData auto_failover_policy = 4;
+}
+message CreateNamespaceIsolationPolicyRequest {
+  string cluster = 1;
+  string policy_name = 2;
+  NamespaceIsolationData namespace_isolation_data = 3;
+}
+message CreateNamespaceIsolationPolicyResponse {
+  google.rpc.Status status = 1;
+}
+
+message BrokerNamespaceIsolationData {
+  string broker_name = 1;
+  string policy_name = 2;
+  bool is_primary = 3;
+  repeated string namespace_regex = 4;
+}
+message GetBrokersWithNamespaceIsolationPolicyRequest {
+  string cluster = 1;
+}
+message GetBrokersWithNamespaceIsolationPolicyResponse {
+  google.rpc.Status status = 1;
+  repeated BrokerNamespaceIsolationData brokers = 2;
+}
+
+message UpdateNamespaceIsolationPolicyRequest {
+  string cluster = 1;
+  string policy_name = 2;
+  NamespaceIsolationData namespace_isolation_data = 3;
+}
+message UpdateNamespaceIsolationPolicyResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteNamespaceIsolationPolicyRequest {
+  string cluster = 1;
+  string policy_name = 2;
+}
+message DeleteNamespaceIsolationPolicyResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetNamespaceIsolationPolicyRequest {
+  string cluster = 1;
+  string policy_name = 2;
+}
+message GetNamespaceIsolationPolicyResponse {
+  google.rpc.Status status = 1;
+  NamespaceIsolationData namespace_isolation_data = 2;
+}
+
+service ClustersService {
+  rpc GetClusters(GetClustersRequest) returns (GetClustersResponse);
+  rpc CreateCluster(CreateClusterRequest) returns (CreateClusterResponse);
+  rpc GetCluster(GetClusterRequest) returns (GetClusterResponse);
+  rpc DeleteCluster(DeleteClusterRequest) returns (DeleteClusterResponse);
+
+  rpc GetFailureDomains(GetFailureDomainsRequest) returns (GetFailureDomainsResponse);
+  rpc CreateFailureDomain(CreateFailureDomainRequest) returns (CreateFailureDomainResponse);
+  rpc UpdateFailureDomain(UpdateFailureDomainRequest) returns (UpdateFailureDomainResponse);
+  rpc DeleteFailureDomain(DeleteFailureDomainRequest) returns (DeleteFailureDomainResponse);
+
+  rpc CreateNamespaceIsolationPolicy(CreateNamespaceIsolationPolicyRequest) returns (CreateNamespaceIsolationPolicyResponse);
+  rpc GetNamespaceIsolationPolicy(GetNamespaceIsolationPolicyRequest) returns (GetNamespaceIsolationPolicyResponse);
+  rpc GetBrokersWithNamespaceIsolationPolicy(GetBrokersWithNamespaceIsolationPolicyRequest) returns (GetBrokersWithNamespaceIsolationPolicyResponse);
+  rpc UpdateNamespaceIsolationPolicy(UpdateNamespaceIsolationPolicyRequest) returns (UpdateNamespaceIsolationPolicyResponse);
+  rpc DeleteNamespaceIsolationPolicy(DeleteNamespaceIsolationPolicyRequest) returns (DeleteNamespaceIsolationPolicyResponse);
+}

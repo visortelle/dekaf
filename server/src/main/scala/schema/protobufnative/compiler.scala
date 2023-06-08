@@ -14,11 +14,14 @@ import com.google.protobuf.DescriptorProtos.FileDescriptorSet
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.impl
 import org.apache.pulsar.common.protocol.schema.ProtobufNativeSchemaData
-import _root_.client.config
 
 import scala.reflect.ClassTag
 import java.io.OutputStream
 import java.io.PrintStream
+
+import _root_.config.readConfigAsync
+import scala.concurrent.Await
+import scala.concurrent.duration.{Duration, SECONDS}
 
 type RelativePath = String
 case class FileEntry(relativePath: RelativePath, content: String)
@@ -31,6 +34,7 @@ case class CompiledFile(schemas: Map[MessageName, Schema])
 case class CompiledFiles(files: Map[RelativePath, Either[Throwable, CompiledFile]])
 
 object compiler:
+    val config = Await.result(readConfigAsync, Duration(10, SECONDS))
     val logger: Logger = Logger(this.getClass.toString)
 
     def compileFiles(files: Seq[FileEntry]): CompiledFiles =
@@ -41,7 +45,7 @@ object compiler:
         val srcDir = tempDir / "src"
         os.makeDir(srcDir)
 
-        val depsDir: os.Path = os.Path(config.schema.protobufNativeDepsDir, os.root)
+        val depsDir: os.Path = os.Path(config.library.path + "/proto", os.root)
 
         files.foreach(f =>
             val path = srcDir / os.PathChunk.SeqPathChunk(f.relativePath.split("/"))

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package tools.teal.pulsar.ui.topic.v1;
 
+import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
 
 enum TopicDomain {
@@ -20,61 +21,62 @@ message GetTopicsResponse {
 }
 
 message PartitionedTopicMetadata {
-  optional int32 partitions = 1;
+  google.protobuf.Int32Value partitions = 1;
   map<string, string> properties = 2;
+  google.protobuf.BoolValue deleted = 3;
 }
 
 message PartitionedTopicInternalStats {
-  optional PartitionedTopicMetadata metadata = 1;
+  PartitionedTopicMetadata metadata = 1;
   map<string, PersistentTopicInternalStats> partitions = 2;
 }
 
 message PersistentTopicInternalStats {
   ManagedLedgerInternalStats managed_ledger_internal_stats = 1;
   repeated LedgerInfo schema_ledgers = 2;
-  optional LedgerInfo compacted_ledger = 3;
+  LedgerInfo compacted_ledger = 3;
 }
 
 message ManagedLedgerInternalStats {
-  optional int64 entries_added_counter = 1;
-  optional int64 number_of_entries = 2;
-  optional int64 total_size = 3;
-  optional int64 current_ledger_entries = 4;
-  optional int64 current_ledger_size = 5;
-  optional string last_ledger_created_timestamp = 6;
-  optional string last_ledger_creation_failure_timestamp = 7;
-  optional int32 waiting_cursors_count = 8;
-  optional int32 pending_entries_count = 9;
-  optional string last_confirmed_entry = 10;
-  optional string state = 11;
+  optional google.protobuf.Int64Value entries_added_counter = 1;
+  optional google.protobuf.Int64Value number_of_entries = 2;
+  optional google.protobuf.Int64Value total_size = 3;
+  optional google.protobuf.Int64Value current_ledger_entries = 4;
+  optional google.protobuf.Int64Value current_ledger_size = 5;
+  optional google.protobuf.StringValue last_ledger_created_timestamp = 6;
+  optional google.protobuf.StringValue last_ledger_creation_failure_timestamp = 7;
+  optional google.protobuf.Int32Value waiting_cursors_count = 8;
+  optional google.protobuf.Int32Value pending_entries_count = 9;
+  optional google.protobuf.StringValue last_confirmed_entry = 10;
+  optional google.protobuf.StringValue state = 11;
   repeated LedgerInfo ledgers = 12;
   map<string, CursorStats> cursors = 13;
 }
 
 message LedgerInfo {
-  optional int64 ledger_id = 1;
-  optional int64 entries = 2;
-  optional int64 size = 3;
-  optional bool offloaded = 4;
-  optional string metadata = 5;
-  optional bool under_replicated = 6;
+  optional google.protobuf.Int64Value ledger_id = 1;
+  optional google.protobuf.Int64Value entries = 2;
+  optional google.protobuf.Int64Value size = 3;
+  optional google.protobuf.BoolValue offloaded = 4;
+  optional google.protobuf.StringValue metadata = 5;
+  optional google.protobuf.BoolValue under_replicated = 6;
 }
 
 message CursorStats {
-  optional string mark_delete_position = 1;
-  optional string read_position = 2;
-  optional bool waiting_read_op = 3;
-  optional int32 pending_read_ops = 4;
-  optional int64 messages_consumed_counter = 5;
-  optional int64 cursor_ledger = 6;
-  optional int64 cursor_ledger_last_entry = 7;
-  optional string individually_deleted_messages = 8;
-  optional string last_ledger_switch_timestamp = 9;
-  optional string state = 10;
-  optional int64 number_of_entries_since_first_not_acked_message = 11;
-  optional int32 total_non_contiguous_deleted_messages_range = 12;
-  optional bool subscription_have_pending_read = 13;
-  optional bool subscription_have_pending_replay_read = 14;
+  optional google.protobuf.StringValue mark_delete_position = 1;
+  optional google.protobuf.StringValue read_position = 2;
+  optional google.protobuf.BoolValue waiting_read_op = 3;
+  optional google.protobuf.Int32Value pending_read_ops = 4;
+  optional google.protobuf.Int64Value messages_consumed_counter = 5;
+  optional google.protobuf.Int64Value cursor_ledger = 6;
+  optional google.protobuf.Int64Value cursor_ledger_last_entry = 7;
+  optional google.protobuf.StringValue individually_deleted_messages = 8;
+  optional google.protobuf.StringValue last_ledger_switch_timestamp = 9;
+  optional google.protobuf.StringValue state = 10;
+  optional google.protobuf.Int64Value number_of_entries_since_first_not_acked_message = 11;
+  optional google.protobuf.Int32Value total_non_contiguous_deleted_messages_range = 12;
+  optional google.protobuf.BoolValue subscription_have_pending_read = 13;
+  optional google.protobuf.BoolValue subscription_have_pending_replay_read = 14;
   map<string, int64> properties = 15;
 }
 
@@ -122,10 +124,166 @@ message DeleteTopicResponse {
   google.rpc.Status status = 1;
 }
 
+// Stats
+
+enum ProducerAccessMode {
+  PRODUCER_ACCESS_MODE_UNSPECIFIED = 0;
+  PRODUCER_ACCESS_MODE_SHARED = 1;
+  PRODUCER_ACCESS_MODE_EXCLUSIVE = 2;
+  PRODUCER_ACCESS_MODE_EXCLUSIVE_WITH_FENCING = 3;
+  PRODUCER_ACCESS_MODE_WAIT_FOR_EXCLUSIVE = 4;
+}
+
+message PublisherStats {
+  ProducerAccessMode access_mode = 1;
+  google.protobuf.DoubleValue msg_rate_in = 2;
+  google.protobuf.DoubleValue msg_throughput_in = 3;
+  google.protobuf.DoubleValue average_msg_size = 4;
+  google.protobuf.DoubleValue chunked_message_rate = 5;
+  google.protobuf.Int64Value producer_id = 6;
+  google.protobuf.BoolValue is_supports_partial_producer = 7;
+  google.protobuf.StringValue producer_name = 8;
+  google.protobuf.StringValue address = 9;
+  google.protobuf.StringValue connected_since = 10;
+  google.protobuf.StringValue client_version = 11;
+  map<string, string> metadata = 12;
+}
+
+message ConsumerStats {
+  google.protobuf.DoubleValue msg_rate_out = 1;
+  google.protobuf.DoubleValue msg_throughput_out = 2;
+  google.protobuf.Int64Value bytes_out_counter = 3;
+  google.protobuf.Int64Value msg_out_counter = 4;
+  google.protobuf.DoubleValue msg_rate_redeliver = 5;
+  google.protobuf.DoubleValue message_ack_rate = 6;
+  google.protobuf.DoubleValue chunked_message_rate = 7;
+  google.protobuf.StringValue consumer_name = 8;
+  google.protobuf.Int32Value available_permits = 9;
+  google.protobuf.Int32Value unacked_messages = 10;
+  google.protobuf.Int32Value avg_messages_per_entry = 11;
+  google.protobuf.BoolValue is_blocked_consumer_on_unacked_msgs = 12;
+  google.protobuf.StringValue read_position_when_joining = 13;
+  google.protobuf.StringValue address = 14;
+  google.protobuf.StringValue connected_since = 15;
+  google.protobuf.StringValue client_version = 16;
+  google.protobuf.Int64Value last_acked_timestamp = 17;
+  google.protobuf.Int64Value last_consumed_timestamp = 18;
+  google.protobuf.Int64Value last_consumed_flow_timestamp = 19;
+  repeated google.protobuf.StringValue key_hash_ranges = 20;
+  map<string, string> metadata = 21;
+}
+
+message SubscriptionStats {
+  google.protobuf.DoubleValue msg_rate_out = 1;
+  google.protobuf.DoubleValue msg_throughput_out = 2;
+  google.protobuf.Int64Value bytes_out_counter = 3;
+  google.protobuf.Int64Value msg_out_counter = 4;
+  google.protobuf.DoubleValue msg_rate_redeliver = 5;
+  google.protobuf.DoubleValue message_ack_rate = 6;
+  google.protobuf.Int32Value chunked_message_rate = 7;
+  google.protobuf.Int64Value msg_backlog = 8;
+  google.protobuf.Int64Value backlog_size = 9;
+  google.protobuf.Int64Value earliest_msg_publish_time_in_backlog = 10;
+  google.protobuf.Int64Value msg_backlog_no_delayed = 11;
+  google.protobuf.BoolValue is_blocked_subscription_on_unacked_msgs = 12;
+  google.protobuf.Int64Value msg_delayed = 13;
+  google.protobuf.Int64Value unacked_messages = 14;
+  google.protobuf.StringValue type = 15;
+  google.protobuf.StringValue active_consumer_name = 16;
+  google.protobuf.DoubleValue msg_rate_expired = 17;
+  google.protobuf.Int64Value total_msg_expired = 18;
+  google.protobuf.Int64Value last_expire_timestamp = 19;
+  google.protobuf.Int64Value last_consumed_flow_timestamp = 20;
+  google.protobuf.Int64Value last_consumed_timestamp = 21;
+  google.protobuf.Int64Value last_acked_timestamp = 22;
+  google.protobuf.Int64Value last_mark_delete_advanced_timestamp = 23;
+  repeated ConsumerStats consumers = 24;
+  google.protobuf.BoolValue is_durable = 25;
+  google.protobuf.BoolValue is_replicated = 26;
+  google.protobuf.BoolValue is_allow_out_of_order_delivery = 27;
+  google.protobuf.StringValue key_shared_mode = 28;
+  map<string, string> consumers_after_mark_delete_position = 29;
+  map<string, string> subscription_properties = 30;
+  google.protobuf.Int32Value non_contiguous_deleted_messages_ranges = 31;
+  google.protobuf.Int32Value non_contiguous_deleted_messages_ranges_serialized_size = 32;
+  google.protobuf.Int64Value filter_processed_msg_count = 33;
+  google.protobuf.Int64Value filter_accepted_msg_count = 34;
+  google.protobuf.Int64Value filter_rejected_msg_count = 35;
+  google.protobuf.Int64Value filter_rescheduled_msg_count = 36;
+  google.protobuf.Int64Value delayed_message_index_size_in_bytes = 37;
+}
+
+message ReplicatorStats {
+  google.protobuf.DoubleValue msg_rate_in = 1;
+  google.protobuf.DoubleValue msg_throughput_in = 2;
+  google.protobuf.DoubleValue msg_rate_out = 3;
+  google.protobuf.DoubleValue msg_throughput_out = 4;
+  google.protobuf.DoubleValue msg_rate_expired = 5;
+  google.protobuf.Int64Value replication_backlog = 6;
+  google.protobuf.BoolValue is_connected = 7;
+  google.protobuf.Int64Value replication_deley_in_seconds = 8;
+  google.protobuf.StringValue inbound_connection = 9;
+  google.protobuf.StringValue inbound_connected_since = 10;
+  google.protobuf.StringValue outbound_connection = 11;
+  google.protobuf.StringValue outbound_connected_since = 12;
+}
+
+message CompactionStats {
+  google.protobuf.Int64Value last_compaction_removed_event_count = 1;
+  google.protobuf.Int64Value last_compaction_succeed_timestamp = 2;
+  google.protobuf.Int64Value last_compaction_failed_timestamp = 3;
+  google.protobuf.Int64Value last_compaction_duration_time_in_mills = 4;
+}
+
+message TopicStats {
+  google.protobuf.DoubleValue msg_rate_in = 1;
+  google.protobuf.DoubleValue msg_throughput_in = 2;
+  google.protobuf.DoubleValue msg_rate_out = 3;
+  google.protobuf.DoubleValue msg_throughput_out = 4;
+  google.protobuf.Int64Value bytes_in_counter = 5;
+  google.protobuf.Int64Value msg_in_counter = 6;
+  google.protobuf.Int64Value bytes_out_counter = 7;
+  google.protobuf.Int64Value msg_out_counter = 8;
+  google.protobuf.DoubleValue average_msg_size = 9;
+  google.protobuf.BoolValue is_msg_chunk_published = 10;
+  google.protobuf.Int64Value storage_size = 11;
+  google.protobuf.Int64Value backlog_size = 12;
+  google.protobuf.Int64Value earliest_msg_publish_time_in_backlogs = 13;
+  google.protobuf.Int64Value offloaded_storage_size = 14;
+  repeated PublisherStats publishers = 15;
+  google.protobuf.Int32Value waiting_publishers = 16;
+  map<string, SubscriptionStats> subscriptions = 17;
+  map<string, ReplicatorStats> replication = 18;
+  google.protobuf.StringValue deduplication_status = 19;
+  google.protobuf.Int64Value topic_epoch = 20;
+  google.protobuf.Int32Value non_contiguous_deleted_messages_ranges = 21;
+  google.protobuf.Int32Value non_contiguous_deleted_messages_ranges_serialized_size = 22;
+  CompactionStats compaction = 23;
+  google.protobuf.StringValue owner_broker = 24;
+  google.protobuf.Int64Value delayed_message_index_size_in_bytes = 25;
+}
+
+message PartitionedTopicStats {
+  PartitionedTopicMetadata metadata = 1;
+  map<string, TopicStats> partitions = 2;
+}
+
+message GetTopicsStatsRequest {
+  repeated string topics = 1;
+  repeated string partitioned_topics = 2;
+}
+message GetTopicsStatsResponse {
+  google.rpc.Status status = 1;
+  map<string, TopicStats> topic_stats = 2;
+  map<string, PartitionedTopicStats> partitioned_topic_stats = 3;
+}
+
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
   rpc GetTopicsInternalStats(GetTopicsInternalStatsRequest) returns (GetTopicsInternalStatsResponse);
   rpc GetTopics(GetTopicsRequest) returns (GetTopicsResponse);
-  rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {};
+  rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {}
+  rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
 }

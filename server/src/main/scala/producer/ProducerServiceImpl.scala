@@ -1,23 +1,10 @@
 package producer
 
-import _root_.client.{adminClient, client}
 import org.apache.pulsar.client.api.{Producer, ProducerAccessMode, Schema}
 import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.api.v1.producer.{
-    CreateProducerRequest,
-    CreateProducerResponse,
-    DeleteProducerRequest,
-    DeleteProducerResponse,
-    GetStatsRequest,
-    GetStatsResponse,
-    MessageFormat,
-    ProducerServiceGrpc,
-    SendRequest,
-    SendResponse,
-    Stats
-}
+import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, MessageFormat, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
 import org.apache.pulsar.client.api.schema.SchemaInfoProvider
 import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import _root_.schema.avro
@@ -31,6 +18,7 @@ import com.google.common.primitives
 import org.apache.pulsar.client.admin.PulsarAdminException
 import io.circe.*
 import io.circe.parser.parse as parseJson
+import pulsar_auth.RequestContext
 
 import java.nio.charset.Charset
 import java.nio.{ByteBuffer, ByteOrder}
@@ -45,11 +33,12 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
     override def createProducer(request: CreateProducerRequest): Future[CreateProducerResponse] =
         val producerName: ProducerName = request.producerName
         logger.info(s"Creating producer: $producerName")
+        val pulsarClient = RequestContext.pulsarClient.get()
 
         try {
             val schema = new AutoProduceBytesSchema[Array[Byte]]
 
-            val producer: Producer[Array[Byte]] = client
+            val producer: Producer[Array[Byte]] = pulsarClient
                 .newProducer(schema)
                 .accessMode(ProducerAccessMode.Shared)
                 .producerName(producerName)
@@ -90,6 +79,7 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
     override def send(request: SendRequest): Future[SendResponse] =
         val producerName: ProducerName = request.producerName
         logger.info(s"Sending message. Producer: $producerName")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val producer = producers.get(producerName) match
             case Some(p) => p

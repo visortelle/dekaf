@@ -4,7 +4,7 @@ import { useSWRConfig } from 'swr';
 
 import * as Modals from '../../app/contexts/Modals/Modals';
 import * as Notifications from '../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import { DeleteTenantRequest } from '../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../swrKeys';
@@ -19,7 +19,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
   const modals = Modals.useContext();
   const { mutate } = useSWRConfig();
   const { notifyError, notifySuccess } = Notifications.useContext();
-  const { tenantServiceClient } = PulsarGrpcClient.useContext();
+  const { tenantServiceClient } = GrpcClient.useContext();
 
   const [forceDelete, setForceDelete] = React.useState(false);
 

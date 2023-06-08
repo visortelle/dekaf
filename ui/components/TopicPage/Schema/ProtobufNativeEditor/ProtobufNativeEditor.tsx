@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import s from './ProtobufNativeEditor.module.css'
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import uploadIcon from './upload.svg';
 import Select from '../../../ui/Select/Select';
 import { CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry as FileEntryPb } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
@@ -35,7 +35,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
   const [selectedFile, setSelectedFile] = React.useState<string | undefined>(undefined);
   const [selectedMessage, setSelectedMessage] = React.useState<string | undefined>(undefined);
   const [compilationError, setCompilationError] = React.useState<string | undefined>(undefined);
-  const { schemaServiceClient } = PulsarGrpcClient.useContext();
+  const { schemaServiceClient } = GrpcClient.useContext();
 
   const submitFiles = async (files: FileEntry[]) => {
     setFiles(() => undefined);

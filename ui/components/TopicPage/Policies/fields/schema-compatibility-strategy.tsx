@@ -6,7 +6,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import Select from "../../../ui/Select/Select";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import * as Notifications from '../../../app/contexts/Notifications';
-import * as PulsarGrpcClient from '../../../app/contexts/PulsarGrpcClient/PulsarGrpcClient';
+import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { swrKeys } from "../../../swrKeys";
@@ -34,7 +34,7 @@ const strategies = (Object.keys(pb.SchemaCompatibilityStrategy) as Strategies[])
   .sort((a, b) => a.localeCompare(b));
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = PulsarGrpcClient.useContext();
+  const { topicpoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -102,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setIsGlobal(props.isGlobal);
           req.setStrategy(pb.SchemaCompatibilityStrategy[value.schemaCompatibilityStrategy]);
 
-          const res = await topicpoliciesServiceClient.setSchemaCompatibilityStrategy (req, {});
+          const res = await topicpoliciesServiceClient.setSchemaCompatibilityStrategy(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
             return;

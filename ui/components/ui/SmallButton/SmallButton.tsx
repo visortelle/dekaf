@@ -17,11 +17,11 @@ export type SmallButtonProps = {
 }
 
 const SmallButton = (props: SmallButtonProps) => {
-  let backgroundColor = '#fff';
-  let textColor = 'var(--text-color)';
+  let typeClassName = '';
   switch (props.type) {
-    case 'primary': backgroundColor = 'var(--accent-color-blue)'; textColor = '#fff'; break;
-    case 'danger': backgroundColor = 'var(--accent-color-red)'; textColor = '#fff'; break;
+    case 'regular': typeClassName = s.Regular; break;
+    case 'primary': typeClassName = s.Primary; break;
+    case 'danger': typeClassName = s.Danger; break;
   }
 
   return (
@@ -32,15 +32,16 @@ const SmallButton = (props: SmallButtonProps) => {
         ${props.disabled ? s.DisabledButton : ''}
         ${props.text ? '' : s.ButtonWithoutText}
         ${props.className || ''}
+        ${typeClassName}
         `}
       onClick={props.onClick}
-      style={{ backgroundColor, color: textColor, ...props.style }}
+      style={{ ...props.style }}
       disabled={props.disabled}
       title={props.title}
       data-testid={props.testId}
     >
       {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
-      {props.text && <div>{props.text}</div>}
+      {props.text && <span className={s.Text}>{props.text}</span>}
     </button>
   );
 }

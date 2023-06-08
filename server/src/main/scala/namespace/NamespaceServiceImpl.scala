@@ -1,6 +1,5 @@
 package namespace
 
-import _root_.client.adminClient
 import com.tools.teal.pulsar.ui.namespace.v1.namespace.{CompactionThresholdEnabled, CreateNamespaceRequest, CreateNamespaceResponse, DeduplicationSnapshotIntervalDisabled, DeduplicationSnapshotIntervalEnabled, DeduplicationSpecified, DeduplicationUnspecified, DelayedDeliverySpecified, DelayedDeliveryUnspecified, DeleteNamespaceRequest, DeleteNamespaceResponse, DispatchRateSpecified, DispatchRateUnspecified, GetAntiAffinityNamespacesRequest, GetAntiAffinityNamespacesResponse, GetAutoSubscriptionCreationRequest, GetAutoSubscriptionCreationResponse, GetAutoTopicCreationRequest, GetAutoTopicCreationResponse, GetBacklogQuotasRequest, GetBacklogQuotasResponse, GetBookieAffinityGroupRequest, GetBookieAffinityGroupResponse, GetCompactionThresholdRequest, GetCompactionThresholdResponse, GetDeduplicationRequest, GetDeduplicationResponse, GetDeduplicationSnapshotIntervalRequest, GetDeduplicationSnapshotIntervalResponse, GetDelayedDeliveryRequest, GetDelayedDeliveryResponse, GetDispatchRateRequest, GetDispatchRateResponse, GetEncryptionRequiredRequest, GetEncryptionRequiredResponse, GetInactiveTopicPoliciesRequest, GetInactiveTopicPoliciesResponse, GetIsAllowAutoUpdateSchemaRequest, GetIsAllowAutoUpdateSchemaResponse, GetMaxConsumersPerSubscriptionRequest, GetMaxConsumersPerSubscriptionResponse, GetMaxConsumersPerTopicRequest, GetMaxConsumersPerTopicResponse, GetMaxProducersPerTopicRequest, GetMaxProducersPerTopicResponse, GetMaxSubscriptionsPerTopicRequest, GetMaxSubscriptionsPerTopicResponse, GetMaxTopicsPerNamespaceRequest, GetMaxTopicsPerNamespaceResponse, GetMaxUnackedMessagesPerConsumerRequest, GetMaxUnackedMessagesPerConsumerResponse, GetMaxUnackedMessagesPerSubscriptionRequest, GetMaxUnackedMessagesPerSubscriptionResponse, GetMessageTtlRequest, GetMessageTtlResponse, GetNamespaceAntiAffinityGroupRequest, GetNamespaceAntiAffinityGroupResponse, GetNamespacesRequest, GetNamespacesResponse, GetOffloadDeletionLagRequest, GetOffloadDeletionLagResponse, GetOffloadPoliciesRequest, GetOffloadPoliciesResponse, GetOffloadThresholdRequest, GetOffloadThresholdResponse, GetPermissionOnSubscriptionRequest, GetPermissionOnSubscriptionResponse, GetPermissionsRequest, GetPermissionsResponse, GetPersistenceRequest, GetPersistenceResponse, GetPropertiesRequest, GetPropertiesResponse, GetPublishRateRequest, GetPublishRateResponse, GetReplicationClustersRequest, GetReplicationClustersResponse, GetReplicatorDispatchRateRequest, GetReplicatorDispatchRateResponse, GetResourceGroupRequest, GetResourceGroupResponse, GetRetentionRequest, GetRetentionResponse, GetSchemaCompatibilityStrategyRequest, GetSchemaCompatibilityStrategyResponse, GetSchemaValidationEnforceRequest, GetSchemaValidationEnforceResponse, GetSubscribeRateRequest, GetSubscribeRateResponse, GetSubscriptionAuthModeRequest, GetSubscriptionAuthModeResponse, GetSubscriptionDispatchRateRequest, GetSubscriptionDispatchRateResponse, GetSubscriptionExpirationTimeRequest, GetSubscriptionExpirationTimeResponse, GetSubscriptionTypesEnabledRequest, GetSubscriptionTypesEnabledResponse, GrantPermissionOnSubscriptionRequest, GrantPermissionOnSubscriptionResponse, GrantPermissionsRequest, GrantPermissionsResponse, InactiveTopicPoliciesDeleteMode, InactiveTopicPoliciesSpecified, InactiveTopicPoliciesUnspecified, MaxConsumersPerSubscriptionSpecified, MaxConsumersPerSubscriptionUnspecified, MaxConsumersPerTopicSpecified, MaxConsumersPerTopicUnspecified, MaxProducersPerTopicSpecified, MaxProducersPerTopicUnspecified, MaxSubscriptionsPerTopicSpecified, MaxSubscriptionsPerTopicUnspecified, MaxTopicsPerNamespaceSpecified, MaxTopicsPerNamespaceUnspecified, MaxUnackedMessagesPerConsumerSpecified, MaxUnackedMessagesPerConsumerUnspecified, MaxUnackedMessagesPerSubscriptionSpecified, MaxUnackedMessagesPerSubscriptionUnspecified, MessageTtlSpecified, MessageTtlUnspecified, NamespaceServiceGrpc, OffloadDeletionLagSpecified, OffloadDeletionLagUnspecified, OffloadThresholdSpecified, PersistenceSpecified, PersistenceUnspecified, PublishRateSpecified, PublishRateUnspecified, RemoveAutoSubscriptionCreationRequest, RemoveAutoSubscriptionCreationResponse, RemoveAutoTopicCreationRequest, RemoveAutoTopicCreationResponse, RemoveBacklogQuotaRequest, RemoveBacklogQuotaResponse, RemoveBookieAffinityGroupRequest, RemoveBookieAffinityGroupResponse, RemoveCompactionThresholdRequest, RemoveCompactionThresholdResponse, RemoveDeduplicationRequest, RemoveDeduplicationResponse, RemoveDeduplicationSnapshotIntervalRequest, RemoveDeduplicationSnapshotIntervalResponse, RemoveDelayedDeliveryRequest, RemoveDelayedDeliveryResponse, RemoveDispatchRateRequest, RemoveDispatchRateResponse, RemoveInactiveTopicPoliciesRequest, RemoveInactiveTopicPoliciesResponse, RemoveMaxConsumersPerSubscriptionRequest, RemoveMaxConsumersPerSubscriptionResponse, RemoveMaxConsumersPerTopicRequest, RemoveMaxConsumersPerTopicResponse, RemoveMaxProducersPerTopicRequest, RemoveMaxProducersPerTopicResponse, RemoveMaxSubscriptionsPerTopicRequest, RemoveMaxSubscriptionsPerTopicResponse, RemoveMaxTopicsPerNamespaceRequest, RemoveMaxTopicsPerNamespaceResponse, RemoveMaxUnackedMessagesPerConsumerRequest, RemoveMaxUnackedMessagesPerConsumerResponse, RemoveMaxUnackedMessagesPerSubscriptionRequest, RemoveMaxUnackedMessagesPerSubscriptionResponse, RemoveMessageTtlRequest, RemoveMessageTtlResponse, RemoveNamespaceAntiAffinityGroupRequest, RemoveNamespaceAntiAffinityGroupResponse, RemoveOffloadDeletionLagRequest, RemoveOffloadDeletionLagResponse, RemoveOffloadPoliciesRequest, RemoveOffloadPoliciesResponse, RemovePersistenceRequest, RemovePersistenceResponse, RemovePublishRateRequest, RemovePublishRateResponse, RemoveReplicatorDispatchRateRequest, RemoveReplicatorDispatchRateResponse, RemoveResourceGroupRequest, RemoveResourceGroupResponse, RemoveRetentionRequest, RemoveRetentionResponse, RemoveSubscribeRateRequest, RemoveSubscribeRateResponse, RemoveSubscriptionDispatchRateRequest, RemoveSubscriptionDispatchRateResponse, RemoveSubscriptionExpirationTimeRequest, RemoveSubscriptionExpirationTimeResponse, RemoveSubscriptionTypesEnabledRequest, RemoveSubscriptionTypesEnabledResponse, ReplicatorDispatchRateSpecified, ReplicatorDispatchRateUnspecified, ResourceGroupSpecified, ResourceGroupUnspecified, RetentionSpecified, RetentionUnspecified, RevokePermissionOnSubscriptionRequest, RevokePermissionOnSubscriptionResponse, RevokePermissionsRequest, RevokePermissionsResponse, SetAutoSubscriptionCreationRequest, SetAutoSubscriptionCreationResponse, SetAutoTopicCreationRequest, SetAutoTopicCreationResponse, SetBacklogQuotasRequest, SetBacklogQuotasResponse, SetBookieAffinityGroupRequest, SetBookieAffinityGroupResponse, SetCompactionThresholdRequest, SetCompactionThresholdResponse, SetDeduplicationRequest, SetDeduplicationResponse, SetDeduplicationSnapshotIntervalRequest, SetDeduplicationSnapshotIntervalResponse, SetDelayedDeliveryRequest, SetDelayedDeliveryResponse, SetDispatchRateRequest, SetDispatchRateResponse, SetEncryptionRequiredRequest, SetEncryptionRequiredResponse, SetInactiveTopicPoliciesRequest, SetInactiveTopicPoliciesResponse, SetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaResponse, SetMaxConsumersPerSubscriptionRequest, SetMaxConsumersPerSubscriptionResponse, SetMaxConsumersPerTopicRequest, SetMaxConsumersPerTopicResponse, SetMaxProducersPerTopicRequest, SetMaxProducersPerTopicResponse, SetMaxSubscriptionsPerTopicRequest, SetMaxSubscriptionsPerTopicResponse, SetMaxTopicsPerNamespaceRequest, SetMaxTopicsPerNamespaceResponse, SetMaxUnackedMessagesPerConsumerRequest, SetMaxUnackedMessagesPerConsumerResponse, SetMaxUnackedMessagesPerSubscriptionRequest, SetMaxUnackedMessagesPerSubscriptionResponse, SetMessageTtlRequest, SetMessageTtlResponse, SetNamespaceAntiAffinityGroupRequest, SetNamespaceAntiAffinityGroupResponse, SetOffloadDeletionLagRequest, SetOffloadDeletionLagResponse, SetOffloadPoliciesRequest, SetOffloadPoliciesResponse, SetOffloadThresholdRequest, SetOffloadThresholdResponse, SetPersistenceRequest, SetPersistenceResponse, SetPropertiesRequest, SetPropertiesResponse, SetPublishRateRequest, SetPublishRateResponse, SetReplicationClustersRequest, SetReplicationClustersResponse, SetReplicatorDispatchRateRequest, SetReplicatorDispatchRateResponse, SetResourceGroupRequest, SetResourceGroupResponse, SetRetentionRequest, SetRetentionResponse, SetSchemaCompatibilityStrategyRequest, SetSchemaCompatibilityStrategyResponse, SetSchemaValidationEnforceRequest, SetSchemaValidationEnforceResponse, SetSubscribeRateRequest, SetSubscribeRateResponse, SetSubscriptionAuthModeRequest, SetSubscriptionAuthModeResponse, SetSubscriptionDispatchRateRequest, SetSubscriptionDispatchRateResponse, SetSubscriptionExpirationTimeRequest, SetSubscriptionExpirationTimeResponse, SetSubscriptionTypesEnabledRequest, SetSubscriptionTypesEnabledResponse, SubscribeRateSpecified, SubscribeRateUnspecified, SubscriptionDispatchRateSpecified, SubscriptionDispatchRateUnspecified, SubscriptionExpirationTimeSpecified, SubscriptionExpirationTimeUnspecified, SubscriptionTypesEnabledInherited, SubscriptionTypesEnabledSpecified}
 import com.tools.teal.pulsar.ui.namespace.v1.namespace as pb
 import com.typesafe.scalalogging.Logger
@@ -9,6 +8,7 @@ import com.google.rpc.status.Status
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
 import org.apache.pulsar.common.policies.data.{AuthAction, AutoSubscriptionCreationOverride, AutoTopicCreationOverride, BookieAffinityGroupData, BundlesData, DelayedDeliveryPolicies, DispatchRate, InactiveTopicDeleteMode, InactiveTopicPolicies, OffloadPolicies, OffloadedReadPriority, PersistencePolicies, Policies, PublishRate, RetentionPolicies, SubscribeRate, SubscriptionAuthMode}
+import pulsar_auth.RequestContext
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
@@ -19,6 +19,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def createNamespace(request: CreateNamespaceRequest): Future[CreateNamespaceResponse] =
         logger.info(s"Creating namespace ${request.namespaceName}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val bundlesData = BundlesData.builder.numBundles(request.numBundles).build
         val policies = new Policies
@@ -38,6 +39,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def deleteNamespace(request: DeleteNamespaceRequest): Future[DeleteNamespaceResponse] =
         logger.info(s"Deleting namespace ${request.namespaceName}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.namespaces.deleteNamespace(request.namespaceName, request.force)
@@ -52,6 +54,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def getNamespaces(request: GetNamespacesRequest): Future[GetNamespacesResponse] =
         logger.debug(s"Getting namespaces for tenant: ${request.tenant}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         val namespaces = try {
             adminClient.namespaces.getNamespaces(request.tenant).asScala
@@ -64,6 +67,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         val status: Status = Status(code = Code.OK.index)
         Future.successful(pb.GetNamespacesResponse(status = Some(status), namespaces = namespaces.toSeq))
     override def getIsAllowAutoUpdateSchema(request: GetIsAllowAutoUpdateSchemaRequest): Future[GetIsAllowAutoUpdateSchemaResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val isAllowAutoUpdateSchema = adminClient.namespaces.getIsAllowAutoUpdateSchema(request.namespace)
             val status = Status(code = Code.OK.index)
@@ -81,6 +86,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def setIsAllowAutoUpdateSchema(request: SetIsAllowAutoUpdateSchemaRequest): Future[SetIsAllowAutoUpdateSchemaResponse] =
         logger.info(s"Setting is allow auto update schema policy for namespace ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.namespaces.setIsAllowAutoUpdateSchema(request.namespace, request.isAllowAutoUpdateSchema)
@@ -93,6 +99,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getSchemaCompatibilityStrategy(request: GetSchemaCompatibilityStrategyRequest): Future[GetSchemaCompatibilityStrategyResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val strategy = adminClient.namespaces.getSchemaCompatibilityStrategy(request.namespace)
             val status = Status(code = Code.OK.index)
@@ -110,6 +118,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setSchemaCompatibilityStrategy(request: SetSchemaCompatibilityStrategyRequest): Future[SetSchemaCompatibilityStrategyResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         logger.info(s"Setting schema compatibility strategy policy for namespace ${request.namespace}")
 
         try {
@@ -127,6 +137,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getSchemaValidationEnforce(request: GetSchemaValidationEnforceRequest): Future[GetSchemaValidationEnforceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val schemaValidationEnforced = adminClient.namespaces.getSchemaValidationEnforced(request.namespace)
             val status = Status(code = Code.OK.index)
@@ -143,6 +155,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setSchemaValidationEnforce(request: SetSchemaValidationEnforceRequest): Future[SetSchemaValidationEnforceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting schema validation enforce policy for namespace ${request.namespace}")
             adminClient.namespaces.setSchemaValidationEnforced(request.namespace, request.schemaValidationEnforced)
@@ -156,6 +170,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getAutoSubscriptionCreation(request: GetAutoSubscriptionCreationRequest): Future[GetAutoSubscriptionCreationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val autoSubscriptionCreationPb = Option(adminClient.namespaces.getAutoSubscriptionCreation(request.namespace)) match
                 case Some(v) if v.isAllowAutoSubscriptionCreation  => pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED
@@ -176,6 +192,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setAutoSubscriptionCreation(request: SetAutoSubscriptionCreationRequest): Future[SetAutoSubscriptionCreationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting auto subscription creation policy for namespace ${request.namespace}")
             val autoSubscriptionCreationOverride = request.autoSubscriptionCreation match
@@ -197,6 +215,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeAutoSubscriptionCreation(request: RemoveAutoSubscriptionCreationRequest): Future[RemoveAutoSubscriptionCreationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing auto subscription creation policy for namespace ${request.namespace}")
             adminClient.namespaces.removeAutoSubscriptionCreation(request.namespace)
@@ -208,6 +228,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getAutoTopicCreation(request: GetAutoTopicCreationRequest): Future[GetAutoTopicCreationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val autoTopicCreationOverride = Option(adminClient.namespaces.getAutoTopicCreation(request.namespace))
             val autoTopicCreationOverridePb = autoTopicCreationOverride match
@@ -243,6 +265,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def setAutoTopicCreation(request: SetAutoTopicCreationRequest): Future[SetAutoTopicCreationResponse] =
         logger.info(s"Setting auto topic creation policy for namespace ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         if !request.autoTopicCreation.isAutoTopicCreationSpecified then
             val status = Status(code = Code.FAILED_PRECONDITION.index)
@@ -283,6 +306,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def removeAutoTopicCreation(request: RemoveAutoTopicCreationRequest): Future[RemoveAutoTopicCreationResponse] =
         logger.info(s"Removing auto topic creation policy for namespace ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.namespaces.removeAutoTopicCreation(request.namespace)
@@ -294,6 +318,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getBacklogQuotas(request: GetBacklogQuotasRequest): Future[GetBacklogQuotasResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def retentionPolicyToPb(policy: Option[RetentionPolicy]): Option[pb.BacklogQuotaRetentionPolicy] = policy match
             case Some(RetentionPolicy.consumer_backlog_eviction) =>
                 Some(pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION)
@@ -340,6 +366,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setBacklogQuotas(request: SetBacklogQuotasRequest): Future[SetBacklogQuotasResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def retentionPolicyFromPb(policyPb: pb.BacklogQuotaRetentionPolicy): RetentionPolicy = policyPb match
             case pb.BacklogQuotaRetentionPolicy.BACKLOG_QUOTA_RETENTION_POLICY_CONSUMER_BACKLOG_EVICTION =>
                 RetentionPolicy.consumer_backlog_eviction
@@ -388,6 +416,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeBacklogQuota(request: RemoveBacklogQuotaRequest): Future[RemoveBacklogQuotaResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try
             request.backlogQuotaType match
                 case pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE =>
@@ -408,6 +438,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getNamespaceAntiAffinityGroup(request: GetNamespaceAntiAffinityGroupRequest): Future[GetNamespaceAntiAffinityGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val namespaceAntiAffinityGroup = adminClient.namespaces.getNamespaceAntiAffinityGroup(request.namespace)
 
@@ -424,6 +456,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setNamespaceAntiAffinityGroup(request: SetNamespaceAntiAffinityGroupRequest): Future[SetNamespaceAntiAffinityGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try
             adminClient.namespaces.setNamespaceAntiAffinityGroup(request.namespace, request.namespaceAntiAffinityGroup)
             Future.successful(SetNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
@@ -434,6 +468,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeNamespaceAntiAffinityGroup(request: RemoveNamespaceAntiAffinityGroupRequest): Future[RemoveNamespaceAntiAffinityGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try
             adminClient.namespaces.deleteNamespaceAntiAffinityGroup(request.namespace)
             Future.successful(RemoveNamespaceAntiAffinityGroupResponse(status = Some(Status(code = Code.OK.index))))
@@ -444,6 +480,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getAntiAffinityNamespaces(request: GetAntiAffinityNamespacesRequest): Future[GetAntiAffinityNamespacesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try
             val namespaces = adminClient.namespaces
                 .getAntiAffinityNamespaces(
@@ -466,6 +504,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getBookieAffinityGroup(request: GetBookieAffinityGroupRequest): Future[GetBookieAffinityGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val groupData = Option(adminClient.namespaces.getBookieAffinityGroup(request.namespace)) match
                 case Some(gd) => Some(pb.BookieAffinityGroupData(
@@ -486,6 +526,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setBookieAffinityGroup(request: SetBookieAffinityGroupRequest): Future[SetBookieAffinityGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val groupData: BookieAffinityGroupData = request.groupData match
                 case Some(gd) => BookieAffinityGroupData.builder
@@ -504,6 +546,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeBookieAffinityGroup(request: RemoveBookieAffinityGroupRequest): Future[RemoveBookieAffinityGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing bookie affinity group policy for namespace ${request.namespace}")
             adminClient.namespaces.deleteBookieAffinityGroup(request.namespace)
@@ -515,6 +559,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getCompactionThreshold(request: GetCompactionThresholdRequest): Future[GetCompactionThresholdResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val threshold = Option(adminClient.namespaces.getCompactionThreshold(request.namespace)).map(_.toLong) match
                 case None => pb.GetCompactionThresholdResponse.Threshold.Disabled(new pb.CompactionThresholdDisabled())
@@ -530,6 +576,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setCompactionThreshold(request: SetCompactionThresholdRequest): Future[SetCompactionThresholdResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting compaction threshold policy for namespace ${request.namespace}. ${request.threshold}")
             adminClient.namespaces.setCompactionThreshold(request.namespace, request.threshold)
@@ -541,6 +589,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeCompactionThreshold(request: RemoveCompactionThresholdRequest): Future[RemoveCompactionThresholdResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing compaction threshold policy for namespace ${request.namespace}")
             adminClient.namespaces.removeCompactionThreshold(request.namespace)
@@ -552,6 +602,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getDeduplicationSnapshotInterval(request: GetDeduplicationSnapshotIntervalRequest): Future[GetDeduplicationSnapshotIntervalResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val interval = Option(adminClient.namespaces.getDeduplicationSnapshotInterval(request.namespace)) match
                 case None =>
@@ -570,6 +622,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setDeduplicationSnapshotInterval(request: SetDeduplicationSnapshotIntervalRequest): Future[SetDeduplicationSnapshotIntervalResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting deduplication snapshot interval policy for namespace ${request.namespace}. ${request.interval}")
             adminClient.namespaces.setDeduplicationSnapshotInterval(request.namespace, request.interval)
@@ -581,6 +635,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeDeduplicationSnapshotInterval(request: RemoveDeduplicationSnapshotIntervalRequest): Future[RemoveDeduplicationSnapshotIntervalResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing deduplication snapshot interval policy for namespace ${request.namespace}")
             adminClient.namespaces.removeDeduplicationSnapshotInterval(request.namespace)
@@ -592,6 +648,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getDeduplication(request: GetDeduplicationRequest): Future[GetDeduplicationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val deduplication = Option(adminClient.namespaces.getDeduplicationStatus(request.namespace)) match
                 case None =>
@@ -610,6 +668,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setDeduplication(request: SetDeduplicationRequest): Future[SetDeduplicationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting deduplication policy for namespace ${request.namespace}")
             adminClient.namespaces.setDeduplicationStatus(request.namespace, request.enabled)
@@ -621,6 +681,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeDeduplication(request: RemoveDeduplicationRequest): Future[RemoveDeduplicationResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing deduplication policy for namespace ${request.namespace}")
             adminClient.namespaces.removeDeduplicationStatus(request.namespace)
@@ -632,6 +694,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getDelayedDelivery(request: GetDelayedDeliveryRequest): Future[GetDelayedDeliveryResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val delayedDeliveryPb = Option(adminClient.namespaces.getDelayedDelivery(request.namespace)) match
                 case None =>
@@ -653,6 +717,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setDelayedDelivery(request: SetDelayedDeliveryRequest): Future[SetDelayedDeliveryResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting delayed delivery policy for namespace ${request.namespace}")
             val delayedDeliveryPolicies = DelayedDeliveryPolicies.builder
@@ -669,6 +735,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeDelayedDelivery(request: RemoveDelayedDeliveryRequest): Future[RemoveDelayedDeliveryResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing delayed delivery policy for namespace ${request.namespace}")
             adminClient.namespaces.removeDelayedDeliveryMessages(request.namespace)
@@ -680,6 +748,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getDispatchRate(request: GetDispatchRateRequest): Future[GetDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val dispatchRatePb = Option(adminClient.namespaces.getDispatchRate(request.namespace)) match
                 case None =>
@@ -703,6 +773,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setDispatchRate(request: SetDispatchRateRequest): Future[SetDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting dispatch rate policy for namespace ${request.namespace}")
             val dispatchRate = DispatchRate.builder
@@ -721,6 +793,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeDispatchRate(request: RemoveDispatchRateRequest): Future[RemoveDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing dispatch rate policy for namespace ${request.namespace}")
             adminClient.namespaces.removeDispatchRate(request.namespace)
@@ -732,6 +806,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getEncryptionRequired(request: GetEncryptionRequiredRequest): Future[GetEncryptionRequiredResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val encryptionRequired = Option(adminClient.namespaces.getEncryptionRequiredStatus(request.namespace)) match
                 case None =>
@@ -750,6 +826,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setEncryptionRequired(request: SetEncryptionRequiredRequest): Future[SetEncryptionRequiredResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting encryption required policy for namespace ${request.namespace}")
             adminClient.namespaces.setEncryptionRequiredStatus(request.namespace, request.encryptionRequired)
@@ -762,6 +840,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
 
     override def getInactiveTopicPolicies(request: GetInactiveTopicPoliciesRequest): Future[GetInactiveTopicPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val inactiveTopicPoliciesPb = Option(adminClient.namespaces.getInactiveTopicPolicies(request.namespace)) match
                 case None =>
@@ -788,6 +868,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setInactiveTopicPolicies(request: SetInactiveTopicPoliciesRequest): Future[SetInactiveTopicPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting inactive topic policies policy for namespace ${request.namespace}")
 
@@ -810,6 +892,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeInactiveTopicPolicies(request: RemoveInactiveTopicPoliciesRequest): Future[RemoveInactiveTopicPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing inactive topic policies policy for namespace ${request.namespace}")
             adminClient.namespaces.removeInactiveTopicPolicies(request.namespace)
@@ -821,6 +905,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getMaxConsumersPerSubscription(request: GetMaxConsumersPerSubscriptionRequest): Future[GetMaxConsumersPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxConsumersPerSubscriptionPb = Option(adminClient.namespaces.getMaxConsumersPerSubscription(request.namespace)) match
                 case None =>
@@ -841,6 +927,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setMaxConsumersPerSubscription(request: SetMaxConsumersPerSubscriptionRequest): Future[SetMaxConsumersPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max consumers per subscription policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxConsumersPerSubscription(request.namespace, request.maxConsumersPerSubscription)
@@ -852,6 +940,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeMaxConsumersPerSubscription(request: RemoveMaxConsumersPerSubscriptionRequest): Future[RemoveMaxConsumersPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max consumers per subscription policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxConsumersPerSubscription(request.namespace)
@@ -863,6 +953,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getMaxConsumersPerTopic(request: GetMaxConsumersPerTopicRequest): Future[GetMaxConsumersPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxConsumersPerTopicPb = Option(adminClient.namespaces.getMaxConsumersPerTopic(request.namespace)) match
                 case None =>
@@ -883,6 +975,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setMaxConsumersPerTopic(request: SetMaxConsumersPerTopicRequest): Future[SetMaxConsumersPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max consumers per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxConsumersPerTopic(request.namespace, request.maxConsumersPerTopic)
@@ -894,6 +988,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeMaxConsumersPerTopic(request: RemoveMaxConsumersPerTopicRequest): Future[RemoveMaxConsumersPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max consumers per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxConsumersPerTopic(request.namespace)
@@ -905,6 +1001,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getMaxProducersPerTopic(request: GetMaxProducersPerTopicRequest): Future[GetMaxProducersPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxProducersPerTopicPb = Option(adminClient.namespaces.getMaxProducersPerTopic(request.namespace)) match
                 case None =>
@@ -925,6 +1023,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setMaxProducersPerTopic(request: SetMaxProducersPerTopicRequest): Future[SetMaxProducersPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max producers per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxProducersPerTopic(request.namespace, request.maxProducersPerTopic)
@@ -936,6 +1036,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeMaxProducersPerTopic(request: RemoveMaxProducersPerTopicRequest): Future[RemoveMaxProducersPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max producers per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxProducersPerTopic(request.namespace)
@@ -947,6 +1049,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getMaxSubscriptionsPerTopic(request: GetMaxSubscriptionsPerTopicRequest): Future[GetMaxSubscriptionsPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxSubscriptionsPerTopicPb = Option(adminClient.namespaces.getMaxSubscriptionsPerTopic(request.namespace)) match
                 case None =>
@@ -967,6 +1071,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setMaxSubscriptionsPerTopic(request: SetMaxSubscriptionsPerTopicRequest): Future[SetMaxSubscriptionsPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max subscriptions per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxSubscriptionsPerTopic(request.namespace, request.maxSubscriptionsPerTopic)
@@ -978,6 +1084,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeMaxSubscriptionsPerTopic(request: RemoveMaxSubscriptionsPerTopicRequest): Future[RemoveMaxSubscriptionsPerTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max subscriptions per topic policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxSubscriptionsPerTopic(request.namespace)
@@ -989,6 +1097,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getMaxTopicsPerNamespace(request: GetMaxTopicsPerNamespaceRequest): Future[GetMaxTopicsPerNamespaceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxTopicsPerNamespacePb = Option(adminClient.namespaces.getMaxTopicsPerNamespace(request.namespace)) match
                 case None =>
@@ -1009,6 +1119,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setMaxTopicsPerNamespace(request: SetMaxTopicsPerNamespaceRequest): Future[SetMaxTopicsPerNamespaceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max topics per namespace policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxTopicsPerNamespace(request.namespace, request.maxTopicsPerNamespace)
@@ -1020,6 +1132,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeMaxTopicsPerNamespace(request: RemoveMaxTopicsPerNamespaceRequest): Future[RemoveMaxTopicsPerNamespaceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max topics per namespace policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxTopicsPerNamespace(request.namespace)
@@ -1031,6 +1145,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getMaxUnackedMessagesPerConsumer(request: GetMaxUnackedMessagesPerConsumerRequest): Future[GetMaxUnackedMessagesPerConsumerResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxUnackedMessagesPerConsumerPb = Option(adminClient.namespaces.getMaxUnackedMessagesPerConsumer(request.namespace)) match
                 case None =>
@@ -1051,6 +1167,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setMaxUnackedMessagesPerConsumer(request: SetMaxUnackedMessagesPerConsumerRequest): Future[SetMaxUnackedMessagesPerConsumerResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max unacked messages per consumer policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxUnackedMessagesPerConsumer(request.namespace, request.maxUnackedMessagesPerConsumer)
@@ -1062,6 +1180,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeMaxUnackedMessagesPerConsumer(request: RemoveMaxUnackedMessagesPerConsumerRequest): Future[RemoveMaxUnackedMessagesPerConsumerResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max unacked messages per consumer policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxUnackedMessagesPerConsumer(request.namespace)
@@ -1073,6 +1193,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getMaxUnackedMessagesPerSubscription(request: GetMaxUnackedMessagesPerSubscriptionRequest): Future[GetMaxUnackedMessagesPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val maxUnackedMessagesPerSubscriptionPb = Option(adminClient.namespaces.getMaxUnackedMessagesPerSubscription(request.namespace)) match
                 case None =>
@@ -1093,6 +1215,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setMaxUnackedMessagesPerSubscription(request: SetMaxUnackedMessagesPerSubscriptionRequest): Future[SetMaxUnackedMessagesPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting max unacked messages per subscription policy for namespace ${request.namespace}")
             adminClient.namespaces.setMaxUnackedMessagesPerSubscription(request.namespace, request.maxUnackedMessagesPerSubscription)
@@ -1104,6 +1228,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeMaxUnackedMessagesPerSubscription(request: RemoveMaxUnackedMessagesPerSubscriptionRequest): Future[RemoveMaxUnackedMessagesPerSubscriptionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing max unacked messages per subscription policy for namespace ${request.namespace}")
             adminClient.namespaces.removeMaxUnackedMessagesPerSubscription(request.namespace)
@@ -1115,6 +1241,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getMessageTtl(request: GetMessageTtlRequest): Future[GetMessageTtlResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val messageTtlPb = Option(adminClient.namespaces.getNamespaceMessageTTL(request.namespace)) match
                 case None =>
@@ -1135,6 +1263,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setMessageTtl(request: SetMessageTtlRequest): Future[SetMessageTtlResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting message TTL policy for namespace ${request.namespace}")
             adminClient.namespaces.setNamespaceMessageTTL(request.namespace, request.messageTtlSeconds)
@@ -1146,6 +1276,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeMessageTtl(request: RemoveMessageTtlRequest): Future[RemoveMessageTtlResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing message TTL policy for namespace ${request.namespace}")
             adminClient.namespaces.removeNamespaceMessageTTL(request.namespace)
@@ -1157,6 +1289,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getOffloadDeletionLag(request: GetOffloadDeletionLagRequest): Future[GetOffloadDeletionLagResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val offloadDeletionLagPb = Option(adminClient.namespaces.getOffloadDeleteLagMs(request.namespace)) match
                 case None =>
@@ -1177,6 +1311,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setOffloadDeletionLag(request: SetOffloadDeletionLagRequest): Future[SetOffloadDeletionLagResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting offload deletion lag policy for namespace ${request.namespace}")
             adminClient.namespaces.setOffloadDeleteLag(request.namespace, request.offloadDeletionLagMs, TimeUnit.MILLISECONDS)
@@ -1188,6 +1324,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeOffloadDeletionLag(request: RemoveOffloadDeletionLagRequest): Future[RemoveOffloadDeletionLagResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing offload deletion lag policy for namespace ${request.namespace}")
             adminClient.namespaces.clearOffloadDeleteLag(request.namespace)
@@ -1199,6 +1337,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getOffloadThreshold(request: GetOffloadThresholdRequest): Future[GetOffloadThresholdResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val offloadThresholdPb = Option(adminClient.namespaces.getOffloadThreshold(request.namespace)) match
                 case None =>
@@ -1220,6 +1360,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setOffloadThreshold(request: SetOffloadThresholdRequest): Future[SetOffloadThresholdResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting offload threshold policy for namespace ${request.namespace}")
             adminClient.namespaces.setOffloadThreshold(request.namespace, request.offloadThresholdBytes)
@@ -1231,6 +1373,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getPersistence(request: GetPersistenceRequest): Future[GetPersistenceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val persistencePb = Option(adminClient.namespaces.getPersistence(request.namespace)) match
                 case None =>
@@ -1254,6 +1398,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setPersistence(request: SetPersistenceRequest): Future[SetPersistenceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting persistence policy for namespace ${request.namespace}")
             val persistencePolicies = PersistencePolicies(request.bookkeeperEnsemble, request.bookkeeperWriteQuorum, request.bookkeeperAckQuorum, request.managedLedgerMaxMarkDeleteRate)
@@ -1266,6 +1412,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removePersistence(request: RemovePersistenceRequest): Future[RemovePersistenceResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing persistence policy for namespace ${request.namespace}")
             adminClient.namespaces.removePersistence(request.namespace)
@@ -1277,6 +1425,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getReplicationClusters(request: GetReplicationClustersRequest): Future[GetReplicationClustersResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val replicationClusters = Option(adminClient.namespaces.getNamespaceReplicationClusters(request.namespace))
                 .map(_.asScala.toSeq)
@@ -1293,6 +1443,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setReplicationClusters(request: SetReplicationClustersRequest): Future[SetReplicationClustersResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting replication clusters for namespace ${request.namespace}")
             adminClient.namespaces.setNamespaceReplicationClusters(request.namespace, request.replicationClusters.toSet.asJava)
@@ -1304,6 +1456,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getReplicatorDispatchRate(request: GetReplicatorDispatchRateRequest): Future[GetReplicatorDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val replicatorDispatchRatePb = Option(adminClient.namespaces.getReplicatorDispatchRate(request.namespace)) match
                 case None =>
@@ -1327,6 +1481,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setReplicatorDispatchRate(request: SetReplicatorDispatchRateRequest): Future[SetReplicatorDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting replicator dispatch rate for namespace ${request.namespace}")
             val dispatchRate = DispatchRate.builder
@@ -1345,6 +1501,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeReplicatorDispatchRate(request: RemoveReplicatorDispatchRateRequest): Future[RemoveReplicatorDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing replicator dispatch rate for namespace ${request.namespace}")
             adminClient.namespaces.removeReplicatorDispatchRate(request.namespace)
@@ -1356,6 +1514,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getSubscriptionDispatchRate(request: GetSubscriptionDispatchRateRequest): Future[GetSubscriptionDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val subscriptionDispatchRatePb = Option(adminClient.namespaces.getSubscriptionDispatchRate(request.namespace)) match
                 case None =>
@@ -1379,6 +1539,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setSubscriptionDispatchRate(request: SetSubscriptionDispatchRateRequest): Future[SetSubscriptionDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting subscription dispatch rate for namespace ${request.namespace}")
             val dispatchRate = DispatchRate.builder
@@ -1397,6 +1559,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeSubscriptionDispatchRate(request: RemoveSubscriptionDispatchRateRequest): Future[RemoveSubscriptionDispatchRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing subscription dispatch rate for namespace ${request.namespace}")
             adminClient.namespaces.removeSubscriptionDispatchRate(request.namespace)
@@ -1408,6 +1572,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getRetention(request: GetRetentionRequest): Future[GetRetentionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val retentionPb = Option(adminClient.namespaces.getRetention(request.namespace)) match
                 case None =>
@@ -1429,6 +1595,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setRetention(request: SetRetentionRequest): Future[SetRetentionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting retention for namespace ${request.namespace}")
             val retention = new RetentionPolicies(request.retentionTimeInMinutes, request.retentionSizeInMb)
@@ -1442,6 +1610,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeRetention(request: RemoveRetentionRequest): Future[RemoveRetentionResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing retention for namespace ${request.namespace}")
             adminClient.namespaces.removeRetention(request.namespace)
@@ -1453,6 +1623,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getSubscribeRate(request: GetSubscribeRateRequest): Future[GetSubscribeRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val subscribeRatePb = Option(adminClient.namespaces.getSubscribeRate(request.namespace)) match
                 case None =>
@@ -1474,6 +1646,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setSubscribeRate(request: SetSubscribeRateRequest): Future[SetSubscribeRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting subscribe rate policy for namespace ${request.namespace}")
             val subscribeRate = new SubscribeRate(request.subscribeThrottlingRatePerConsumer, request.ratePeriodInSeconds)
@@ -1487,6 +1661,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeSubscribeRate(request: RemoveSubscribeRateRequest): Future[RemoveSubscribeRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing subscribe rate policy for namespace ${request.namespace}")
             adminClient.namespaces.removeSubscribeRate(request.namespace)
@@ -1498,6 +1674,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getSubscriptionAuthMode(request: GetSubscriptionAuthModeRequest): Future[GetSubscriptionAuthModeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val subscriptionAuthModePb = adminClient.namespaces.getSubscriptionAuthMode(request.namespace) match
                 case SubscriptionAuthMode.None => pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_NONE
@@ -1514,6 +1692,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setSubscriptionAuthMode(request: SetSubscriptionAuthModeRequest): Future[SetSubscriptionAuthModeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting subscription auth mode policy for namespace ${request.namespace}")
             val subscriptionAuthMode = request.subscriptionAuthMode match
@@ -1531,6 +1711,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getSubscriptionExpirationTime(request: GetSubscriptionExpirationTimeRequest): Future[GetSubscriptionExpirationTimeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val subscriptionExpirationTimePb = Option(adminClient.namespaces.getSubscriptionExpirationTime(request.namespace)) match
                 case None =>
@@ -1551,6 +1733,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setSubscriptionExpirationTime(request: SetSubscriptionExpirationTimeRequest): Future[SetSubscriptionExpirationTimeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting subscription expiration time policy for namespace ${request.namespace}")
             adminClient.namespaces.setSubscriptionExpirationTime(request.namespace, request.subscriptionExpirationTimeInMinutes)
@@ -1562,6 +1746,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeSubscriptionExpirationTime(request: RemoveSubscriptionExpirationTimeRequest): Future[RemoveSubscriptionExpirationTimeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing subscription expiration time policy for namespace ${request.namespace}")
             adminClient.namespaces.removeSubscriptionExpirationTime(request.namespace)
@@ -1573,6 +1759,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getSubscriptionTypesEnabled(request: GetSubscriptionTypesEnabledRequest): Future[GetSubscriptionTypesEnabledResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def subscriptionTypeToPb(subscriptionType: SubscriptionType): pb.SubscriptionType =
             subscriptionType match
                 case SubscriptionType.Exclusive => pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE
@@ -1603,6 +1791,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setSubscriptionTypesEnabled(request: SetSubscriptionTypesEnabledRequest): Future[SetSubscriptionTypesEnabledResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def pbToSubscriptionType(subscriptionTypePb: pb.SubscriptionType): SubscriptionType =
             subscriptionTypePb match
                 case pb.SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE => SubscriptionType.Exclusive
@@ -1623,6 +1813,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeSubscriptionTypesEnabled(request: RemoveSubscriptionTypesEnabledRequest): Future[RemoveSubscriptionTypesEnabledResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing subscription types enabled policy for namespace ${request.namespace}")
             adminClient.namespaces.removeSubscriptionTypesEnabled(request.namespace)
@@ -1634,6 +1826,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getOffloadPolicies(request: GetOffloadPoliciesRequest): Future[GetOffloadPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def offloadedReadPriorityToPb(offloadedReadPriority: OffloadedReadPriority): pb.OffloadedReadPriority =
             offloadedReadPriority match
                 case OffloadedReadPriority.BOOKKEEPER_FIRST => pb.OffloadedReadPriority.OFFLOADED_READ_PRIORITY_BOOKKEEPER_FIRST
@@ -1689,6 +1883,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def setOffloadPolicies(request: SetOffloadPoliciesRequest): Future[SetOffloadPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         def offloadedReadPriorityFromPb(offloadedReadPriority: pb.OffloadedReadPriority): OffloadedReadPriority =
             offloadedReadPriority match
                 case pb.OffloadedReadPriority.OFFLOADED_READ_PRIORITY_BOOKKEEPER_FIRST => OffloadedReadPriority.BOOKKEEPER_FIRST
@@ -1747,6 +1943,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def removeOffloadPolicies(request: RemoveOffloadPoliciesRequest): Future[RemoveOffloadPoliciesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing offload policies policy for namespace ${request.namespace}")
             adminClient.namespaces.removeOffloadPolicies(request.namespace)
@@ -1757,6 +1955,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(RemoveOffloadPoliciesResponse(status = Some(status)))
         }
     override def getPublishRate(request: GetPublishRateRequest): Future[GetPublishRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val publishRatePb = Option(adminClient.namespaces.getPublishRate(request.namespace)) match
                 case None =>
@@ -1777,6 +1977,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(GetPublishRateResponse(status = Some(status)))
         }
     override def setPublishRate(request: SetPublishRateRequest): Future[SetPublishRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting publish rate policy for namespace ${request.namespace}. ${request.rateInMsg}, ${request.rateInByte}")
             val publishRate = PublishRate(request.rateInMsg, request.rateInByte)
@@ -1788,6 +1990,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(SetPublishRateResponse(status = Some(status)))
         }
     override def removePublishRate(request: RemovePublishRateRequest): Future[RemovePublishRateResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing publish rate policy for namespace ${request.namespace}")
             adminClient.namespaces.removePublishRate(request.namespace)
@@ -1798,6 +2002,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(RemovePublishRateResponse(status = Some(status)))
         }
     override def getResourceGroup(request: GetResourceGroupRequest): Future[GetResourceGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val resourceGroup = Option(adminClient.namespaces.getNamespaceResourceGroup(request.namespace)) match
                 case Some(v) if v.length() == 0 =>
@@ -1818,6 +2024,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(GetResourceGroupResponse(status = Some(status)))
         }
     override def setResourceGroup(request: SetResourceGroupRequest): Future[SetResourceGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Setting resource group policy for namespace ${request.namespace}")
             adminClient.namespaces.setNamespaceResourceGroup(request.namespace, request.resourceGroup)
@@ -1828,6 +2036,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(SetResourceGroupResponse(status = Some(status)))
         }
     override def removeResourceGroup(request: RemoveResourceGroupRequest): Future[RemoveResourceGroupResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             logger.info(s"Removing resource group policy for namespace ${request.namespace}")
             adminClient.namespaces.removeNamespaceResourceGroup(request.namespace)
@@ -1838,38 +2048,38 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(RemoveResourceGroupResponse(status = Some(status)))
         }
     override def getPermissions(request: GetPermissionsRequest): Future[GetPermissionsResponse] =
-         logger.debug(s"Getting permissions for namespace: ${request.namespace}")
+        logger.debug(s"Getting permissions for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
-         def authActionToPb(authAction: AuthAction): pb.AuthAction =
-             authAction match
-                 case AuthAction.produce => pb.AuthAction.AUTH_ACTION_PRODUCE
-                 case AuthAction.consume => pb.AuthAction.AUTH_ACTION_CONSUME
-                 case AuthAction.functions => pb.AuthAction.AUTH_ACTION_FUNCTIONS
-                 case AuthAction.sources => pb.AuthAction.AUTH_ACTION_SOURCES
-                 case AuthAction.sinks => pb.AuthAction.AUTH_ACTION_SINKS
-                 case AuthAction.packages => pb.AuthAction.AUTH_ACTION_PACKAGES
-
-         try {
-             val permissions = Option(adminClient.namespaces.getPermissions(request.namespace).asScala.toMap) match
-                 case None =>
-                    val status = Status(code = Code.INTERNAL.index)
-                    return Future.successful(GetPermissionsResponse(status = Some(status)))
-                 case Some(v) =>
-                     v.map(x =>
-                         x._1 -> new pb.AuthActions(authActions = x._2.asScala.toList.map(authActionToPb))
-                     )
-
-             Future.successful(GetPermissionsResponse(
-                 status = Some(Status(code = Code.OK.index)),
-                 permissions,
-             ))
-         } catch {
-             err =>
-                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                 Future.successful(GetPermissionsResponse(status = Some(status)))
-         }
+        def authActionToPb(authAction: AuthAction): pb.AuthAction =
+            authAction match
+                case AuthAction.produce => pb.AuthAction.AUTH_ACTION_PRODUCE
+                case AuthAction.consume => pb.AuthAction.AUTH_ACTION_CONSUME
+                case AuthAction.functions => pb.AuthAction.AUTH_ACTION_FUNCTIONS
+                case AuthAction.sources => pb.AuthAction.AUTH_ACTION_SOURCES
+                case AuthAction.sinks => pb.AuthAction.AUTH_ACTION_SINKS
+                case AuthAction.packages => pb.AuthAction.AUTH_ACTION_PACKAGES
+        try {
+            val permissions = Option(adminClient.namespaces.getPermissions(request.namespace).asScala.toMap) match
+                case None =>
+                   val status = Status(code = Code.INTERNAL.index)
+                   return Future.successful(GetPermissionsResponse(status = Some(status)))
+                case Some(v) =>
+                    v.map(x =>
+                        x._1 -> new pb.AuthActions(authActions = x._2.asScala.toList.map(authActionToPb))
+                    )
+            Future.successful(GetPermissionsResponse(
+                status = Some(Status(code = Code.OK.index)),
+                permissions,
+            ))
+        } catch {
+            err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetPermissionsResponse(status = Some(status)))
+        }
     override def grantPermissions(request: GrantPermissionsRequest): Future[GrantPermissionsResponse] =
         logger.debug(s"Granting permissions for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         def authActionFromPb(authAction: pb.AuthAction): AuthAction =
             authAction match
@@ -1899,6 +2109,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def revokePermissions (request: RevokePermissionsRequest): Future[RevokePermissionsResponse] =
         logger.debug(s"Revoke permissions for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.namespaces.revokePermissionsOnNamespace(request.namespace, request.role)
@@ -1914,6 +2125,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def getPermissionOnSubscription(request: GetPermissionOnSubscriptionRequest): Future[GetPermissionOnSubscriptionResponse] =
         logger.debug(s"Getting subscription permissions for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             val permissions = Option(adminClient.namespaces.getPermissionOnSubscription(request.namespace).asScala.toMap) match
@@ -1939,6 +2151,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def grantPermissionOnSubscription(request: GrantPermissionOnSubscriptionRequest): Future[GrantPermissionOnSubscriptionResponse] =
         logger.debug(s"Granting subscription permissions for subscription ${request.subscription} for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             val permissions = adminClient.namespaces.getPermissionOnSubscription(request.namespace).asScala.toMap
@@ -1959,6 +2172,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def revokePermissionOnSubscription(request: RevokePermissionOnSubscriptionRequest): Future[RevokePermissionOnSubscriptionResponse] =
         logger.debug(s"Revoke roles for subscription ${request.subscription} for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             adminClient.namespaces.grantPermissionOnSubscription(request.namespace, request.subscription, Set().asJava)
@@ -1974,6 +2188,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
     override def getProperties(request: GetPropertiesRequest): Future[GetPropertiesResponse] =
         logger.debug(s"Getting properties for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
             val properties = adminClient.namespaces.getProperties(request.namespace).asScala.toMap
@@ -1988,6 +2203,8 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 Future.successful(GetPropertiesResponse(status = Some(status)))
         }
     override def setProperties(request: SetPropertiesRequest): Future[SetPropertiesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
         try {
             val properties = request.properties.asJava
 

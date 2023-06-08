@@ -7,6 +7,7 @@ import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import Session from "./Messages/Messages";
 import Schema from "./Schema/Schema";
 import Policies from "./Policies/Policies";
+import Subscriptions from './Subscriptions/Subscriptions';
 import DeleteDialog from "./DeleteDialog/DeleteDialog";
 import { routes } from "../routes";
 import { useNavigate } from "react-router";
@@ -19,7 +20,8 @@ export type TopicPageView =
   | { type: "schema-initial-screen" }
   | { type: "schema-create" }
   | { type: "schema-view"; schemaVersion: number }
-  | { type: "policies" };
+  | { type: "policies" }
+  | { type: "subscriptions" };
 export type TopicPageProps = {
   view: TopicPageView;
   tenant: string;
@@ -43,7 +45,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         topicType: props.topicType,
       }),
       text: "Messages",
-      onClick: () => {},
+      onClick: () => { },
       type: "regular",
     },
     {
@@ -54,18 +56,18 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         topicType: props.topicType,
       }),
       text: "Producers",
-      onClick: () => {},
+      onClick: () => { },
       type: "regular",
     },
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
         topicType: props.topicType,
       }),
-      text: "Consumers",
-      onClick: () => {},
+      text: "Subscriptions",
+      onClick: () => { },
       type: "regular",
     },
     {
@@ -76,7 +78,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         topicType: props.topicType,
       }),
       text: "Overview",
-      onClick: () => {},
+      onClick: () => { },
       type: "regular",
     },
     {
@@ -87,7 +89,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         topicType: props.topicType,
       }),
       text: "Schema",
-      onClick: () => {},
+      onClick: () => { },
       type: "regular",
     },
   ];
@@ -103,7 +105,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           topicType: props.topicType,
         }),
         text: "Policies",
-        onClick: () => {},
+        onClick: () => { },
         type: "regular",
         testId: "topic-policies-button",
       },
@@ -204,6 +206,9 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       )}
       {props.view.type === "policies" && (
         <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
+      )}
+      {props.view.type === "subscriptions" && (
+        <Subscriptions key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
       )}
     </div>
   );
