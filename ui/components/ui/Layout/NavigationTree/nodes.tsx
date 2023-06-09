@@ -118,7 +118,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
         return [];
       }
 
-      return res.getTopicsList().map(getTopicName);
+      return res.getTopicsList();
     },
     swrConfiguration
   );
@@ -139,7 +139,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
         notifyError(`Unable to fetch non-persistent topics. ${res.getStatus()?.getMessage()}`);
       }
 
-      return res.getTopicsList().map(getTopicName);
+      return res.getTopicsList();
     },
     swrConfiguration
   );
@@ -179,14 +179,16 @@ export type PulsarTopicProps = {
   isFetchData: boolean;
 }
 export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
+  const topicName = getTopicName(props.topic);
+
   return (
     <Link
-      to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, topicType: props.topicType })}
+      to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topic: topicName, topicType: props.topicType })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span className={s.NodeLinkText}>{props.topic}</span>
+      <span className={s.NodeLinkText}>{topicName}</span>
     </Link>
   );
 }

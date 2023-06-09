@@ -5,7 +5,68 @@ import org.apache.pulsar.client.api.PulsarClient
 import org.apache.pulsar.client.admin.PulsarAdmin
 import io.grpc.*
 import zio.*
+
 import scala.jdk.CollectionConverters.*
+import java.time.Instant
+import java.util.TimerTask
+
+case class PulsarAdminCacheEntry(
+    client: PulsarAdmin,
+    expiresAt: Instant
+)
+case class PulsarClientCacheEntry(
+    client: PulsarClient,
+    expiresAt: Instant
+)
+
+// In case we make a new client for each user's request, after some time it fails with the following error:
+// You are creating too many HashedWheelTimer instances.
+// HashedWheelTimer is a shared resource that must be reused across the JVM, so that only a few instances are created.
+//
+// To handle this case, we cache the clients and reuse them for some time.
+object ClientsCache:
+    private val ttl = scala.concurrent.duration.Duration(10, scala.concurrent.duration.MINUTES)
+    private val ttlTimer = new java.util.Timer()
+    private val updateTtlTimerTask: TimerTask = new TimerTask:
+        override def run(): Unit =
+            val now = Instant.now()
+            pulsarAdmin = pulsarAdmin.filter(_._2.expiresAt.isAfter(now))
+            pulsarClient = pulsarClient.filter(_._2.expiresAt.isAfter(now))
+
+    ttlTimer.scheduleAtFixedRate(updateTtlTimerTask, 0, 1000L)
+
+    private var pulsarAdmin: Map[Int, PulsarAdminCacheEntry] = Map.empty
+    private var pulsarClient: Map[Int, PulsarClientCacheEntry] = Map.empty
+
+    private def writePulsarAdmin(auth: PulsarAuth): Either[Throwable, PulsarAdmin] = makeAdminClient(auth) match
+        case Left(err) => Left(err)
+        case Right(client) =>
+            val entry = PulsarAdminCacheEntry(
+                client = client,
+                expiresAt = Instant.now().plusSeconds(ttl.toSeconds)
+            )
+            pulsarAdmin = pulsarAdmin + (auth.hashCode() -> entry)
+            Right(entry.client)
+
+    private def writePulsarClient(auth: PulsarAuth): Either[Throwable, PulsarClient] = makePulsarClient(auth) match
+        case Left(err) => Left(err)
+        case Right(client) =>
+            val entry = PulsarClientCacheEntry(
+                client = client,
+                expiresAt = Instant.now().plusSeconds(ttl.toSeconds)
+            )
+            pulsarClient = pulsarClient + (auth.hashCode() -> entry)
+            Right(entry.client)
+
+    def getPulsarAdmin(auth: PulsarAuth): Either[Throwable, PulsarAdmin] =
+        pulsarAdmin.get(auth.hashCode()) match
+            case Some(entry) => Right(entry.client)
+            case None => writePulsarAdmin(auth)
+
+    def getPulsarClient(auth: PulsarAuth): Either[Throwable, PulsarClient] =
+        pulsarClient.get(auth.hashCode()) match
+            case Some(entry) => Right(entry.client)
+            case None => writePulsarClient(auth)
 
 object RequestContext:
     val pulsarAuth: Context.Key[PulsarAuth] = Context.key("pulsar_auth")
@@ -28,12 +89,12 @@ class PulsarAuthInterceptor extends ServerInterceptor:
 
         var ctx = Context.current().withValue(RequestContext.pulsarAuth, pulsarAuth)
 
-        val pulsarAdmin = makeAdminClient(pulsarAuth)
+        val pulsarAdmin = ClientsCache.getPulsarAdmin(pulsarAuth)
         pulsarAdmin match
             case Left(_)   => // TODO send error to the client in this case.
             case Right(pa) => ctx = ctx.withValue(RequestContext.pulsarAdmin, pa)
 
-        val pulsarClient = makePulsarClient(pulsarAuth)
+        val pulsarClient = ClientsCache.getPulsarClient(pulsarAuth)
         pulsarClient match
             case Left(_)   => // TODO send error to the client in this case.
             case Right(pc) => ctx = ctx.withValue(RequestContext.pulsarClient, pc)
