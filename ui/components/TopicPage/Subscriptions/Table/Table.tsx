@@ -48,7 +48,6 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
   data: DE[]
   lazyData?: {
     loader: (visibleEntries: DE[]) => Promise<Record<DataEntryKey, LD>>
-    getKey: (visibleEntries: DE[]) => string
   },
   columns: Columns<CK, DE, LD>
   getId: (entry: DE) => DataEntryKey
@@ -65,7 +64,9 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const columnsConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
 
   const { data: lazyDataChunk, error: lazyDataChunkError } = useSWR(
-    itemsRenderedDebounced.length === 0 ? null : (props.lazyData?.getKey(itemsRenderedDebounced.map(item => item.data!)) || null),
+    itemsRenderedDebounced.length === 0 ?
+      null :
+      [props.tableId, 'lazy-data'].concat(itemsRenderedDebounced.map(item => props.getId(item.data!))),
     props.lazyData?.loader || (() => ({})),
   );
 

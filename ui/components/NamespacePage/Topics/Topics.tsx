@@ -8,15 +8,22 @@ import useSWR from 'swr';
 import { swrKeys } from '../../swrKeys';
 import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
-import _ from 'lodash';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Table from '../../TopicPage/Subscriptions/Table/Table';
+import { partition, uniq } from 'lodash';
+import A from '../../ui/A/A';
 
 type ColumnKey =
   'topicName' |
   'topicType' |
   'producersCount' |
   'subscriptionsCount'
+type TopicDataEntry = {
+  fqn: string,
+  name: string,
+  partitioningType: 'partitioned' | 'non-partitioned' | 'partition',
+  persistencyType: 'persistent' | 'non-persistent',
+}
 
 type TopicsProps = {
   tenant: string;
@@ -43,12 +50,13 @@ const Topics: React.FC<TopicsProps> = (props) => {
         return;
       }
 
-      return res.getTopicsList().map(t => t.split('/')[4]);
+      return res.getTopicsList();
     }
   );
   if (persistentTopicsError) {
     notifyError(`Unable to get persistent topics: ${persistentTopicsError}`);
   }
+  console.log('persistent topics', persistentTopics)
 
   const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
@@ -63,19 +71,17 @@ const Topics: React.FC<TopicsProps> = (props) => {
         return;
       }
 
-      return res.getTopicsList().map(t => t.split('/')[4]);
+      return res.getTopicsList();
     }
   );
   if (persistentTopicsError) {
     notifyError(`Unable to get persistent topics list. ${nonPersistentTopicsError}`);
   }
 
-  type TopicDataEntry = {
-    name: string
-  }
-  const topics: TopicDataEntry[] = (persistentTopics?.concat(nonPersistentTopics || []) || []).map(t => ({ name: t }));
-  const topicsToShow = topics?.filter((t) => t.name.includes(filterQueryDebounced));
-  console.log('topics to show', topicsToShow);
+  const allTopics = (persistentTopics?.concat(nonPersistentTopics || []) || []);
+
+  let topicsToShow = makeTopicDataEntries(detectPartitionedTopics(allTopics || []));
+  topicsToShow = topicsToShow?.filter((t) => t.name.includes(filterQueryDebounced));
 
   return (
     <div className={s.Topics}>
@@ -107,7 +113,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
               },
               topicType: {
                 title: 'Type',
-                render: () => 'Persistent',
+                render: (de) => de.persistencyType,
               }
             },
             defaultConfig: [
@@ -121,10 +127,82 @@ const Topics: React.FC<TopicsProps> = (props) => {
           getId={(d) => d.name}
           tableId='topics-table'
           defaultSort={{ type: 'by-single-column', column: 'topicName', direction: 'asc' }}
+        // lazyData={{
+        // loader: async (entries) => {
+        //   const req = new pb.GetTopicsStatsRequest();
+        //   topicServiceClient.getTopicsStats()
+        // }
+        // }}
         />
       )}
     </div>
   );
+}
+
+type DetectPartitionedTopicsResult = {
+  partitionedTopics: { topicFqn: string, partitions: string[] }[],
+  nonPartitionedTopics: { topicFqn: string }[]
+};
+
+function detectPartitionedTopics(topics: string[]): DetectPartitionedTopicsResult {
+  let [allPartitions, nonPartitionedTopicFqns] = partition(topics, (topic) => topic.match(/^(.*)(-partition-)(\d+)$/));
+
+  const nonPartitionedTopics = nonPartitionedTopicFqns.map((topicFqn) => ({ topicFqn }));
+
+  const partitionedTopicFqns = uniq(allPartitions.map((partition) => partition.replace(/^(.*)(-partition-)(\d+)$/, '$1')));
+  const partitionedTopics = partitionedTopicFqns.map((topicFqn) => {
+    const regexp = new RegExp(`^${topicFqn}-partition-\\d+$`);
+    const partitions = allPartitions.filter(p => regexp.test(p));
+    return { topicFqn, partitions };
+  });
+
+
+  return { partitionedTopics, nonPartitionedTopics };
+}
+
+function detectPersistenceType(topicFqn: string): 'persistent' | 'non-persistent' {
+  return topicFqn.startsWith('non-persistent') ? 'non-persistent' : 'persistent';
+}
+
+function getTopicName(topicFqn: string): string {
+  return topicFqn.split('/')[4];
+}
+
+function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): TopicDataEntry[] {
+  let result: TopicDataEntry[] = [];
+
+  for (const topic of topics.nonPartitionedTopics) {
+    result.push({
+      fqn: topic.topicFqn,
+      name: getTopicName(topic.topicFqn),
+      partitioningType: 'non-partitioned',
+      persistencyType: detectPersistenceType(topic.topicFqn),
+    });
+  }
+
+  for (const topic of topics.partitionedTopics) {
+    result.push(
+      {
+        fqn: topic.topicFqn,
+        name: getTopicName(topic.topicFqn),
+        partitioningType: 'partitioned',
+        persistencyType: detectPersistenceType(topic.topicFqn)
+      }
+    );
+
+    for (const partitionFqn of topic.partitions) {
+      result.push(
+        {
+          fqn: partitionFqn,
+          name: getTopicName(partitionFqn),
+          partitioningType: 'partition',
+          persistencyType: detectPersistenceType(partitionFqn)
+        }
+      );
+    }
+  }
+
+  return result;
 }
 
 export default Topics;
