@@ -53,6 +53,7 @@ def topicStatsToPb(stats: TopicStats): pb.TopicStats =
 def partitionedTopicStatsToPb(stats: PartitionedTopicStats): pb.PartitionedTopicStats =
     pb.PartitionedTopicStats(
         metadata = Option(stats.getMetadata).map(partitionedTopicMetadataToPb),
+        stats = Option(topicStatsToPb(stats)),
         partitions = Option(stats.getPartitions)
             .map(_.asScala.toMap)
             .map(_.view.mapValues(topicStatsToPb).toMap)

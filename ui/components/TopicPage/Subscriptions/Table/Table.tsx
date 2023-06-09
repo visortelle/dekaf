@@ -67,7 +67,9 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     itemsRenderedDebounced.length === 0 ?
       null :
       [props.tableId, 'lazy-data'].concat(itemsRenderedDebounced.map(item => props.getId(item.data!))),
-    props.lazyData?.loader || (() => ({})),
+    props.lazyData?.loader ?
+      () => props.lazyData?.loader(itemsRenderedDebounced.map(v => v.data!)) :
+      (() => ({}))
   );
 
   if (lazyDataChunkError) {

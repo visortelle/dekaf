@@ -118,18 +118,22 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         try {
             given ExecutionContext = ExecutionContext.global
 
-            val getTopicsStatsFutures = request.topics.map(t => adminClient.topics.getStatsAsync(t, true, true, true).asScala)
+            val getTopicsStatsFutures = request.topics.map(t => adminClient.topics.getStatsAsync(t, request.isGetPreciseBacklog, request.isSubscriptionBacklogSize, request.isEarliestTimeInBacklog).asScala)
             val topicsStats = Await.result(Future.sequence(getTopicsStatsFutures), Duration(1, TimeUnit.MINUTES))
             val topicsStatsMap: Map[String, org.apache.pulsar.common.policies.data.TopicStats] = request.topics.zip(topicsStats).toMap
 
             val getPartitionedTopicsStatsFutures =
-                request.partitionedTopics.map(t => adminClient.topics.getPartitionedStatsAsync(t, true, true, true, true).asScala)
+                request.partitionedTopics.map(t => adminClient.topics.getPartitionedStatsAsync(t, request.isPerPartition, request.isGetPreciseBacklog, request.isSubscriptionBacklogSize, request.isEarliestTimeInBacklog).asScala)
             val partitionedTopicsStats = Await.result(Future.sequence(getPartitionedTopicsStatsFutures), Duration(1, TimeUnit.MINUTES))
             val partitionedTopicsStatsMap: Map[String, org.apache.pulsar.common.policies.data.PartitionedTopicStats] =
                 request.partitionedTopics.zip(partitionedTopicsStats).toMap
 
             val status: Status = Status(code = Code.OK.index)
-            Future.successful(pb.GetTopicsStatsResponse(status = Some(status)))
+            Future.successful(pb.GetTopicsStatsResponse(
+                status = Some(status),
+                topicStats = topicsStatsMap.view.mapValues(topicStatsToPb).toMap,
+                partitionedTopicStats = partitionedTopicsStatsMap.view.mapValues(partitionedTopicStatsToPb).toMap
+            ))
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
