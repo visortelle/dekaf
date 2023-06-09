@@ -11,19 +11,25 @@ import { useDebounce } from 'use-debounce';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Table from '../../TopicPage/Subscriptions/Table/Table';
 import { partition, uniq } from 'lodash';
+import * as pbUtils from '../../../pbUtils/pbUtils';
 import A from '../../ui/A/A';
 
 type ColumnKey =
   'topicName' |
   'topicType' |
   'producersCount' |
-  'subscriptionsCount'
-type TopicDataEntry = {
+  'subscriptionsCount' |
+  'msgRateIn';
+
+type DataEntry = {
   fqn: string,
   name: string,
   partitioningType: 'partitioned' | 'non-partitioned' | 'partition',
   persistencyType: 'persistent' | 'non-persistent',
 }
+type LazyDataEntry = {
+  stats: pb.TopicStats,
+};
 
 type TopicsProps = {
   tenant: string;
@@ -56,7 +62,6 @@ const Topics: React.FC<TopicsProps> = (props) => {
   if (persistentTopicsError) {
     notifyError(`Unable to get persistent topics: ${persistentTopicsError}`);
   }
-  console.log('persistent topics', persistentTopics)
 
   const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
@@ -95,7 +100,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
       </div>
 
       {(topicsToShow || []).length > 0 && (
-        <Table<ColumnKey, TopicDataEntry, {}>
+        <Table<ColumnKey, DataEntry, LazyDataEntry>
           columns={{
             columns: {
               topicName: {
@@ -114,6 +119,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
               topicType: {
                 title: 'Type',
                 render: (de) => de.persistencyType,
+              },
+              msgRateIn: {
+                title: 'Msg Rate In',
+                render: (_, ld) => ld?.stats.getMsgRateIn()?.getValue(),
               }
             },
             defaultConfig: [
@@ -121,18 +130,39 @@ const Topics: React.FC<TopicsProps> = (props) => {
               { key: 'topicType', visibility: 'visible', stickyTo: 'none', width: 200 },
               { key: 'producersCount', visibility: 'visible', stickyTo: 'none', width: 100 },
               { key: 'subscriptionsCount', visibility: 'visible', stickyTo: 'none', width: 100 },
+              { key: 'msgRateIn', visibility: 'visible', stickyTo: 'none', width: 100 },
             ]
           }}
           data={topicsToShow}
-          getId={(d) => d.name}
+          getId={(d) => d.fqn}
           tableId='topics-table'
           defaultSort={{ type: 'by-single-column', column: 'topicName', direction: 'asc' }}
-        // lazyData={{
-        // loader: async (entries) => {
-        //   const req = new pb.GetTopicsStatsRequest();
-        //   topicServiceClient.getTopicsStats()
-        // }
-        // }}
+          lazyData={{
+            loader: async (entries) => {
+              console.log('entries', entries);
+              const req = new pb.GetTopicsStatsRequest();
+
+              req.setIsGetPreciseBacklog(true);
+              req.setIsEarliestTimeInBacklog(true);
+              req.setIsSubscriptionBacklogSize(true);
+              req.setIsPerPartition(false);
+
+              const nonPartitionedTopics = entries.filter((entry) => entry.partitioningType !== 'partitioned');
+              req.setTopicsList(nonPartitionedTopics.map((entry) => entry.fqn));
+
+              const partitionedTopics = entries.filter((entry) => entry.partitioningType === 'partitioned');
+              req.setPartitionedTopicsList(partitionedTopics.map((entry) => entry.fqn));
+
+              const res = await topicServiceClient.getTopicsStats(req, null)
+                .catch((err) => notifyError(`Unable to get topics stats: ${err}`));
+
+              if (res === undefined) {
+                return {};
+              }
+
+              return statsToLazyData(res);
+            }
+          }}
         />
       )}
     </div>
@@ -168,8 +198,8 @@ function getTopicName(topicFqn: string): string {
   return topicFqn.split('/')[4];
 }
 
-function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): TopicDataEntry[] {
-  let result: TopicDataEntry[] = [];
+function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): DataEntry[] {
+  let result: DataEntry[] = [];
 
   for (const topic of topics.nonPartitionedTopics) {
     result.push({
@@ -201,6 +231,25 @@ function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): TopicDataE
       );
     }
   }
+
+  return result;
+}
+
+function statsToLazyData(res: pb.GetTopicsStatsResponse): Record<string, LazyDataEntry> {
+  let result: Record<string, LazyDataEntry> = {};
+
+  const nonPartitionedStats = pbUtils.mapToObject(res.getTopicStatsMap());
+  Object.entries(nonPartitionedStats).forEach(([topicFqn, stats]) => {
+    result[topicFqn] = { stats };
+  });
+
+  const partitionedStats = pbUtils.mapToObject(res.getPartitionedTopicStatsMap());
+  Object.entries(partitionedStats).forEach(([topicFqn, partitionedTopicStats]) => {
+    const stats = partitionedTopicStats.getStats();
+    if (stats !== undefined) {
+      result[topicFqn] = { stats };
+    }
+  });
 
   return result;
 }
