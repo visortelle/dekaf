@@ -21,7 +21,7 @@ export type ColumnConfig<CK> = {
 export type ColumnsConfig<CK extends ColumnKey> = ColumnConfig<CK>[];
 
 export type Columns<CK extends ColumnKey, DE, LD> = {
-  columns: Record<CK, Column<DE, LD>>,
+  columns: Partial<Record<CK, Column<DE, LD>>>,
   defaultConfig: ColumnsConfig<CK>
 };
 
@@ -124,7 +124,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
       return props.data;
     }
     if (sort.type === 'by-single-column') {
-      const sortFn = props.columns.columns[sort.column].sortFn;
+      const sortFn = props.columns.columns[sort.column]!.sortFn;
       const sorted = sortFn ?
         props.data.sort((a, b) => sortFn(
           { data: a, lazyData: lazyData[props.getId(a)] },
@@ -150,8 +150,8 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
               return (
                 <Th
                   key={columnConfig.key}
-                  title={props.columns.columns[columnConfig.key].title}
-                  sortKey={props.columns.columns[columnConfig.key].sortFn ? columnConfig.key : undefined}
+                  title={props.columns.columns[columnConfig.key]!.title}
+                  sortKey={props.columns.columns[columnConfig.key]!.sortFn ? columnConfig.key : undefined}
                   style={{ width: columnConfig.width }}
                 />
               );
@@ -162,10 +162,13 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
           return (
             <>
               {columnsConfig.map((columnConfig) => {
+                const v = props.columns.columns[columnConfig.key]!.render?.(entry, lazyData[props.getId(entry)]);
                 return (
                   <td key={columnConfig.key} className={s.Td}>
                     <div style={{ width: columnConfig.width }}>
-                      {props.columns.columns[columnConfig.key].render?.(entry, lazyData[props.getId(entry)])}
+                      {v === undefined ? (
+                        <div className={s.NoData}>-</div>
+                      ) : v}
                     </div>
                   </td>
                 );
