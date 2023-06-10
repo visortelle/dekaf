@@ -1,6 +1,23 @@
 import React, { ReactNode } from 'react';
 import numeral from 'numeral';
 import dayjs from 'dayjs';
+import _humanizeDuration from 'humanize-duration';
+
+const humanizeDuration = _humanizeDuration.humanizer({
+  language: "shortEn",
+  languages: {
+    shortEn: {
+      y: () => "y",
+      mo: () => "mo",
+      w: () => "w",
+      d: () => "d",
+      h: () => "h",
+      m: () => "m",
+      s: () => "s",
+      ms: () => "ms",
+    },
+  },
+});
 
 export type Value = {
   formatBytes: (bytes: number) => string;
@@ -10,7 +27,10 @@ export type Value = {
   formatCount: (count: number) => string;
   formatCountRate: (countPerSecond: number) => string;
   formatDate: (date: Date) => string;
+  formatDuration: (millis: number) => string;
   formatLongNumber: (longNumber: number) => string;
+  formatBoolean: (boolean: boolean) => string;
+  withVoidDefault: <T>(value: T | undefined, format: (v: T) => string) => string | undefined;
 }
 
 const defaultValue: Value = {
@@ -21,7 +41,10 @@ const defaultValue: Value = {
   formatCount: (count) => count === 0 ? String(0) : numeral(count).format(count < 1000 ? '0a' : '0.00a'),
   formatCountRate: (countPerSecond) => countPerSecond === 0 ? String(0) : numeral(countPerSecond).format(countPerSecond < 1000 ? '0a' : '0.00a') + '/s',
   formatDate: (date) => dayjs(date).format('MMM DD, YYYY HH:mm:ss'),
+  formatDuration: (millis) => humanizeDuration(millis, { language: 'shortEn', units: ['y', 'mo', 'w', 'd', 'h', 'm', 's', 'ms'], largest: 2, maxDecimalPoints: 2 }),
   formatLongNumber: (longNumber) => numeral(longNumber).format('0,0'),
+  formatBoolean: (boolean) => boolean ? 'Yes' : 'No',
+  withVoidDefault: (value, format) => value === undefined ? undefined : format(value),
 };
 
 const Context = React.createContext<Value>(defaultValue);
