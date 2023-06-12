@@ -12,9 +12,10 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Table from '../../TopicPage/Subscriptions/Table/Table';
 import { partition, uniq } from 'lodash';
 import * as pbUtils from '../../../pbUtils/pbUtils';
+import { help } from './help';
 import A from '../../ui/A/A';
 
-type ColumnKey =
+export type ColumnKey =
   'topicName' |
   'topicType' |
   'producersCount' |
@@ -34,7 +35,7 @@ type ColumnKey =
   'earliestMsgPublishTimeInBacklogs' |
   'offloadedStorageSize' |
   'waitingPublishers' |
-  'replicators' |
+  'replicatorsCount' |
   'deduplicationStatus' |
   'topicEpoch' |
   'nonContiguousDeletedMessagesRanges' |
@@ -127,6 +128,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
       {(topicsToShow || []).length > 0 && (
         <Table<ColumnKey, DataEntry, LazyDataEntry>
           columns={{
+            help,
             columns: {
               topicName: {
                 title: 'Name',
@@ -205,7 +207,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 title: 'Waiting Publishers',
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getWaitingPublishers()?.getValue(), v => v.toString()),
               },
-              replicators: {
+              replicatorsCount: {
                 title: 'Replicators',
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getReplicationMap()?.getLength(), v => v.toString()),
               },
@@ -239,7 +241,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
               },
               lastCompactionDurationTimeInMills: {
                 title: 'Last Compaction Duration Time',
-                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionDurationTimeInMills()?.getValue(), i18n.formatDuration),
+                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionDurationTimeInMills()?.getValue() || undefined, i18n.formatDuration),
               },
               ownerBroker: {
                 title: 'Owner Broker',
@@ -271,7 +273,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
               { key: 'offloadedStorageSize', visibility: 'visible', stickyTo: 'none', width: 100 },
               { key: 'waitingPublishers', visibility: 'visible', stickyTo: 'none', width: 100 },
-              { key: 'replicators', visibility: 'visible', stickyTo: 'none', width: 100 },
+              { key: 'replicatorsCount', visibility: 'visible', stickyTo: 'none', width: 100 },
               { key: 'deduplicationStatus', visibility: 'visible', stickyTo: 'none', width: 100 },
               { key: 'topicEpoch', visibility: 'visible', stickyTo: 'none', width: 100 },
               { key: 'nonContiguousDeletedMessagesRanges', visibility: 'visible', stickyTo: 'none', width: 100 },

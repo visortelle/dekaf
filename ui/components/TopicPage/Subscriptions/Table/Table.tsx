@@ -8,6 +8,8 @@ import arrowUpIcon from './arrow-up.svg';
 import { useDebounce } from 'use-debounce';
 import * as Notifications from '../../../app/contexts/Notifications';
 import useSWR from 'swr';
+import { TooltipWrapper } from 'react-tooltip';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 export type ColumnKey = string;
 export type DataEntryKey = string;
@@ -23,12 +25,12 @@ export type ColumnsConfig<CK extends ColumnKey> = ColumnConfig<CK>[];
 export type Columns<CK extends ColumnKey, DE, LD> = {
   columns: Partial<Record<CK, Column<DE, LD>>>,
   defaultConfig: ColumnsConfig<CK>
+  help?: Partial<Record<CK, ReactNode>>,
 };
 
 export type Column<DE, LD> = {
   title: ReactNode,
   render?: (data: DE, lazyData: LD) => ReactNode,
-  help?: ReactNode,
   sortFn?: (a: { data: DE, lazyData: LD }, b: { data: DE, lazyData: LD }) => number,
   defaultWidth?: number,
   minWidth?: number,
@@ -81,40 +83,41 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     setLazyData(lazyData => ({ ...lazyData, ...lazyDataChunk }));
   }, [lazyDataChunk]);
 
-  const Th = useCallback((props: { title: React.ReactNode, sortKey?: CK, style?: React.CSSProperties }) => {
+  const Th = useCallback((thProps: { title: React.ReactNode, columnKey: CK, isSortable: boolean, style?: React.CSSProperties }) => {
     const handleColumnHeaderClick = () => {
-      if (props.sortKey === undefined) {
+      if (thProps.columnKey === undefined) {
         return;
       }
 
-      if (sort.type === 'by-single-column') {
-        if (sort.column === props.sortKey) {
-          setSort({
-            type: 'by-single-column',
-            column: props.sortKey,
-            direction: sort.direction === 'asc' ? 'desc' : 'asc'
-          });
-        } else {
-          setSort({
-            type: 'by-single-column',
-            column: props.sortKey,
-            direction: 'asc'
-          });
-        }
+      if (sort.type === 'by-single-column' && sort.column === thProps.columnKey) {
+        setSort({
+          type: 'by-single-column',
+          column: thProps.columnKey,
+          direction: sort.direction === 'asc' ? 'desc' : 'asc'
+        });
       }
     }
 
     return (
-      <th className={s.Th} style={props.style} onClick={handleColumnHeaderClick}>
-        <div className={props.sortKey === undefined ? '' : s.SortableTh}>
-          {props.title}
+      <th
+        className={`${s.Th} ${thProps.isSortable ? s.SortableTh : ''}`}
+        style={thProps.style}
+        onClick={handleColumnHeaderClick}
+      >
+        <TooltipWrapper
+          className={s.TooltipWrapper}
+          html={props.columns.help ? renderToStaticMarkup(<>{props.columns.help[thProps.columnKey]}</>) : undefined}
+        >
+          <div className={s.ThContent}>
+            {thProps.title}
 
-          {sort.type === 'by-single-column' && sort.column === props.sortKey && (
-            <div className={s.SortableThIcon}>
-              <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
-            </div>
-          )}
-        </div>
+            {(sort.type === 'by-single-column' && sort.column === thProps.columnKey) ? (
+              <div className={s.SortableThIcon}>
+                <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
+              </div>
+            ) : null}
+          </div>
+        </TooltipWrapper>
       </th>
     );
   }, [sort]);
@@ -151,7 +154,8 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
                 <Th
                   key={columnConfig.key}
                   title={props.columns.columns[columnConfig.key]!.title}
-                  sortKey={props.columns.columns[columnConfig.key]!.sortFn ? columnConfig.key : undefined}
+                  columnKey={columnConfig.key}
+                  isSortable={Boolean(props.columns.columns[columnConfig.key]!.sortFn)}
                   style={{ width: columnConfig.width }}
                 />
               );
