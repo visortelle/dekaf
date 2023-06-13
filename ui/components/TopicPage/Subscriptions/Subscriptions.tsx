@@ -3,7 +3,7 @@ import s from './Subscriptions.module.css'
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import useSWR from 'swr';
-import Table from './Table/Table';
+import Table from '../../ui/Table/Table';
 
 export type SubscriptionsProps = {
   tenant: string;

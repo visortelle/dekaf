@@ -118,7 +118,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
         return [];
       }
 
-      return res.getTopicsList();
+      return res.getTopicsList().map(tn => getTopicName(tn));
     },
     swrConfiguration
   );
