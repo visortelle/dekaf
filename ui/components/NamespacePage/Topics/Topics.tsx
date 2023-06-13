@@ -13,7 +13,8 @@ import Table from '../../ui/Table/Table';
 import { partition, uniq } from 'lodash';
 import * as pbUtils from '../../../pbUtils/pbUtils';
 import { help } from './help';
-import A from '../../ui/A/A';
+import Link from '../../ui/Link/Link';
+import { routes } from '../../routes';
 
 export type ColumnKey =
   'topicName' |
@@ -136,7 +137,18 @@ const Topics: React.FC<TopicsProps> = (props) => {
             },
             producersCount: {
               title: 'Producers',
-              render: (_, ld) => i18n.withVoidDefault(ld?.stats.getPublishersList()?.length, v => v.toString()),
+              render: (de, ld) => i18n.withVoidDefault(ld?.stats.getPublishersList()?.length, v => (
+                <Link
+                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
+                    tenant: props.tenant,
+                    namespace: props.namespace,
+                    topic: de.name,
+                    topicType: de.persistencyType,
+                  })}
+                >
+                  {v}
+                </Link>
+              )),
             },
             subscriptionsCount: {
               title: 'Subscriptions',

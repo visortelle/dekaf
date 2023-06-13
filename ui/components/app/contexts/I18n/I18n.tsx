@@ -30,7 +30,7 @@ export type Value = {
   formatDuration: (millis: number) => string;
   formatLongNumber: (longNumber: number) => string;
   formatBoolean: (boolean: boolean) => string;
-  withVoidDefault: <T>(value: T | undefined, format: (v: T) => string) => string | undefined;
+  withVoidDefault: <T>(value: T | undefined, format: (v: T) => ReactNode) => ReactNode | undefined;
 }
 
 const defaultValue: Value = {
