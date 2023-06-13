@@ -11,6 +11,7 @@ import Subscriptions from './Subscriptions/Subscriptions';
 import DeleteDialog from "./DeleteDialog/DeleteDialog";
 import { routes } from "../routes";
 import { useNavigate } from "react-router";
+import Producers from "./Producers/Producers";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -21,7 +22,8 @@ export type TopicPageView =
   | { type: "schema-create" }
   | { type: "schema-view"; schemaVersion: number }
   | { type: "policies" }
-  | { type: "subscriptions" };
+  | { type: "subscriptions" }
+  | { type: "producers" };
 export type TopicPageProps = {
   view: TopicPageView;
   tenant: string;
@@ -49,7 +51,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       type: "regular",
     },
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
@@ -206,6 +208,9 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       )}
       {props.view.type === "policies" && (
         <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
+      )}
+      {props.view.type === "producers" && (
+        <Producers key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
       )}
       {props.view.type === "subscriptions" && (
         <Subscriptions key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />

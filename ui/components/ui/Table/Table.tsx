@@ -2,11 +2,11 @@ import React, { ReactNode, useCallback, useEffect, useState, ReactElement } from
 import s from './Table.module.css'
 import { isEqual } from 'lodash';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
-import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
+import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowDownIcon from './arrow-down.svg';
 import arrowUpIcon from './arrow-up.svg';
 import { useDebounce } from 'use-debounce';
-import * as Notifications from '../../../app/contexts/Notifications';
+import * as Notifications from '../../app/contexts/Notifications';
 import useSWR from 'swr';
 import { TooltipWrapper } from 'react-tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -17,8 +17,8 @@ export type DataEntryKey = string;
 export type ColumnConfig<CK> = {
   key: CK,
   visibility: 'visible' | 'hidden',
-  stickyTo: 'none' | 'left'
   width: number,
+  stickyTo?: 'none' | 'left'
 };
 export type ColumnsConfig<CK extends ColumnKey> = ColumnConfig<CK>[];
 
@@ -89,11 +89,18 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         return;
       }
 
-      if (sort.type === 'by-single-column' && sort.column === thProps.columnKey) {
+      if (sort.type === 'by-single-column') {
+        let direction: 'asc' | 'desc';
+        if (sort.column === thProps.columnKey) {
+          direction = sort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          direction = 'asc';
+        }
+
         setSort({
           type: 'by-single-column',
           column: thProps.columnKey,
-          direction: sort.direction === 'asc' ? 'desc' : 'asc'
+          direction
         });
       }
     }
@@ -139,6 +146,10 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     }
   }, [props.data, sort, lazyData]);
 
+  if (props.data.length === 0) {
+    return <div className={s.NothingToShow}>Nothing to show.</div>;
+  }
+
   return (
     <div className={s.Table} ref={tableRef}>
       <TableVirtuoso
@@ -150,13 +161,15 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         fixedHeaderContent={() => (
           <tr>
             {columnsConfig.map((columnConfig) => {
+              const style: React.CSSProperties = columnConfig.stickyTo === 'left' ? { position: 'sticky', left: 0, zIndex: 10 } : {};
+
               return (
                 <Th
                   key={columnConfig.key}
                   title={props.columns.columns[columnConfig.key]!.title}
                   columnKey={columnConfig.key}
                   isSortable={Boolean(props.columns.columns[columnConfig.key]!.sortFn)}
-                  style={{ width: columnConfig.width }}
+                  style={{ width: columnConfig.width, ...style }}
                 />
               );
             })}
@@ -167,8 +180,10 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
             <>
               {columnsConfig.map((columnConfig) => {
                 const v = props.columns.columns[columnConfig.key]!.render?.(entry, lazyData[props.getId(entry)]);
+                const style: React.CSSProperties = columnConfig.stickyTo === 'left' ? { position: 'sticky', left: 0, zIndex: 10 } : {};
+
                 return (
-                  <td key={columnConfig.key} className={s.Td}>
+                  <td key={columnConfig.key} className={s.Td} style={style}>
                     <div style={{ width: columnConfig.width }}>
                       {v === undefined ? (
                         <div className={s.NoData}>-</div>

@@ -44,7 +44,7 @@
   background-color: #f5f5f5;
 }
 
-.SortableTh:hover {
+.SortableTh:hover .ThContent {
   cursor: pointer;
   opacity: 0.5;
   user-select: none;
@@ -92,8 +92,9 @@
 
 .NothingToShow {
   background-color: #f5f5f5;
-  padding: 12rem;
+  padding: 24rem;
   border-radius: 8rem;
+  margin: 12rem;
 }
 
 .LazyContent {

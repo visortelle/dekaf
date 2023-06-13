@@ -115,27 +115,36 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
     override def getTopicsStats(request: GetTopicsStatsRequest): Future[GetTopicsStatsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
 
-        try {
-            given ExecutionContext = ExecutionContext.global
+        given ExecutionContext = ExecutionContext.global
 
+        var errors: List[Throwable] = List.empty
+
+        val topicsStatsMap: Map[String, org.apache.pulsar.common.policies.data.TopicStats] = try {
             val getTopicsStatsFutures = request.topics.map(t => adminClient.topics.getStatsAsync(t, request.isGetPreciseBacklog, request.isSubscriptionBacklogSize, request.isEarliestTimeInBacklog).asScala)
             val topicsStats = Await.result(Future.sequence(getTopicsStatsFutures), Duration(1, TimeUnit.MINUTES))
-            val topicsStatsMap: Map[String, org.apache.pulsar.common.policies.data.TopicStats] = request.topics.zip(topicsStats).toMap
+            request.topics.zip(topicsStats).toMap
+        } catch {
+            case err =>
+                errors = err :: errors
+                Map.empty
+        }
 
+        val partitionedTopicsStatsMap: Map[String, org.apache.pulsar.common.policies.data.PartitionedTopicStats] = try {
             val getPartitionedTopicsStatsFutures =
                 request.partitionedTopics.map(t => adminClient.topics.getPartitionedStatsAsync(t, request.isPerPartition, request.isGetPreciseBacklog, request.isSubscriptionBacklogSize, request.isEarliestTimeInBacklog).asScala)
             val partitionedTopicsStats = Await.result(Future.sequence(getPartitionedTopicsStatsFutures), Duration(1, TimeUnit.MINUTES))
-            val partitionedTopicsStatsMap: Map[String, org.apache.pulsar.common.policies.data.PartitionedTopicStats] =
-                request.partitionedTopics.zip(partitionedTopicsStats).toMap
+            request.partitionedTopics.zip(partitionedTopicsStats).toMap
+        } catch {
+            case err =>
+                errors = err :: errors
+                Map.empty
+        }
 
-            val status: Status = Status(code = Code.OK.index)
+        // This RPC method always returns Code.OK because in case we request stats for a single topic,
+        // we want to avoid additional API calls to detect is topic partitioned or not.
+        val status: Status = Status(code = Code.OK.index, message = errors.map(_.getMessage).mkString(". "))
             Future.successful(pb.GetTopicsStatsResponse(
                 status = Some(status),
                 topicStats = topicsStatsMap.view.mapValues(topicStatsToPb).toMap,
-                partitionedTopicStats = partitionedTopicsStatsMap.view.mapValues(partitionedTopicStatsToPb).toMap
+                partitionedTopicStats = partitionedTopicsStatsMap.view.mapValues(partitionedTopicStatsToPb).toMap,
             ))
-        } catch {
-            case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(pb.GetTopicsStatsResponse(status = Some(status)))
-        }

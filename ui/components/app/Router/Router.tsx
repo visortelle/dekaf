@@ -181,6 +181,14 @@ const prepareRoutes = (): {
       },
       {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+          .producers._.path,
+        element: withLayout(
+          <RoutedTopicPage view="producers" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
           .subscriptions._.path,
         element: withLayout(
           <RoutedTopicPage view="subscriptions" />,
@@ -353,6 +361,10 @@ const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
         return <></>;
       }
       view = { type: "schema-view", schemaVersion: _schemaVersion };
+      break;
+    }
+    case "producers": {
+      view = { type: "producers" };
       break;
     }
     case "subscriptions": {

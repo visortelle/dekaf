@@ -39,8 +39,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
   const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(5000);
   const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
-  const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
-  const [childrenCountCache, setChildrenCountCache] = useState<{ [key: string]: number }>({});
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const { tenantServiceClient } = GrpcClient.useContext();
@@ -63,20 +61,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   if (tenantsError) {
     notifyError(`Unable to fetch tenants. ${tenantsError}`);
   }
-
-  const { data: childrenCount, error: childrenCountError } = useSWR(
-    itemsRenderedDebounced.length === 0 ? null : swrKeys.pulsar.batch.getTreeNodesChildrenCount._(),
-    async () => ({})
-  );
-
-  if (childrenCountError) {
-    notifyError(`Unable to get children count. ${childrenCountError}`);
-  }
-
-  useEffect(() => {
-    // Avoid visual blinking after each children count update request.
-    setChildrenCountCache(childrenCountCache => ({ ...childrenCountCache, ...childrenCount }));
-  }, [childrenCount]);
 
   useEffect(() => {
     setTree((tree) => setTenants({
@@ -134,7 +118,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       if (nodeIndex !== -1) {
         const nextCursor = scrollToPath.cursor + 1;
 
-        // XXX - fix it somehow if you can.
+        // XXX - get rid of setTimeout somehow if you can.
         setTimeout(() => virtuosoRef.current?.scrollToIndex(nodeIndex));
 
         if (nextCursor === scrollToPath.path.length) {
@@ -321,12 +305,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     }
 
     const pathStr = stringify(path);
-    let nodeChildrenCount;
-    if (node.type === 'instance') {
-      nodeChildrenCount = tenants?.length;
-    } else {
-      nodeChildrenCount = childrenCountCache[pathStr] === undefined ? undefined : childrenCountCache[pathStr];
-    }
 
     return <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick} title={node.path.map(p => p.name).join('/')}>
       <div className={s.NodeContent}>
@@ -334,7 +312,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
         <span className={s.NodeTextContent}>{nodeContent}</span>
       </div>
-      {nodeChildrenCount !== undefined && <div className={s.NodeChildrenCount}>{nodeChildrenCount}</div>}
     </div>
   }
 
