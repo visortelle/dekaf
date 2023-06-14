@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useState, ReactElement } from 'react';
+import React, { ReactNode, useEffect, useState, ReactElement, useMemo } from 'react';
 import s from './Table.module.css'
 import { isEqual } from 'lodash';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
@@ -83,26 +83,31 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     setLazyData(lazyData => ({ ...lazyData, ...lazyDataChunk }));
   }, [lazyDataChunk]);
 
-  const Th = useCallback((thProps: { title: React.ReactNode, columnKey: CK, isSortable: boolean, style?: React.CSSProperties }) => {
+  const Th = (thProps: { title: React.ReactNode, columnKey: CK, isSortable: boolean, style?: React.CSSProperties }) => {
     const handleColumnHeaderClick = () => {
-      if (thProps.columnKey === undefined) {
+      if (!thProps.isSortable) {
         return;
       }
 
-      if (sort.type === 'by-single-column') {
-        let direction: 'asc' | 'desc';
-        if (sort.column === thProps.columnKey) {
-          direction = sort.direction === 'asc' ? 'desc' : 'asc';
-        } else {
-          direction = 'asc';
+      setSort((sort) => {
+        if (sort.type === 'by-single-column') {
+          let direction: 'asc' | 'desc';
+          if (sort.column === thProps.columnKey) {
+            direction = sort.direction === 'asc' ? 'desc' : 'asc';
+          } else {
+            direction = 'asc';
+          }
+
+          return {
+            type: 'by-single-column',
+            column: thProps.columnKey,
+            direction
+          }
+
         }
 
-        setSort({
-          type: 'by-single-column',
-          column: thProps.columnKey,
-          direction
-        });
-      }
+        return sort;
+      });
     }
 
     return (
@@ -127,12 +132,9 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         </TooltipWrapper>
       </th>
     );
-  }, [sort]);
+  };
 
-  const sortedData = React.useMemo(() => {
-    if (sort.type === 'none') {
-      return props.data;
-    }
+  const sortedData = useMemo(() => {
     if (sort.type === 'by-single-column') {
       const sortFn = props.columns.columns[sort.column]!.sortFn;
       const sorted = sortFn ?
@@ -142,8 +144,10 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         ) :
         props.data;
 
-      return sort.direction === 'asc' ? sorted : sorted.reverse();
+      return sort.direction === 'asc' ? sorted : [...sorted].reverse();
     }
+
+    return props.data;
   }, [props.data, sort, lazyData]);
 
   if (props.data.length === 0) {

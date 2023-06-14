@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import s from './Producers.module.css'
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -6,8 +6,6 @@ import * as I18n from '../../app/contexts/I18n/I18n';
 import useSWR from 'swr';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Table from '../../ui/Table/Table';
-import { useDebounce } from 'use-debounce';
-import { swrKeys } from '../../swrKeys';
 import { help } from './help';
 
 export type ColumnKey =
@@ -48,14 +46,12 @@ export type ProducersProps = {
 const Producers: React.FC<ProducersProps> = (props) => {
   const { topicServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const [filterQuery, setFilterQuery] = useState('');
-  const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const i18n = I18n.useContext();
 
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const { data, error: dataError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.topicsStats._([topicFqn]),
+    `producers-${topicFqn}`,
     async () => {
       const req = new pb.GetTopicsStatsRequest();
 
@@ -128,7 +124,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
             isSupportsPartialProducer: {
               title: 'Is Supports Partial Producer',
               render: (de) => i18n.withVoidDefault(de.isSupportsPartialProducer, i18n.formatBoolean),
-              sortFn: (a, b) => (a.data.isSupportsPartialProducer || false) === (b.data.isSupportsPartialProducer || false) ? 0 : (a.data.isSupportsPartialProducer || false) ? 1 : -1,
+              sortFn: (a, b) => Number(a.data.isSupportsPartialProducer) - Number(b.data.isSupportsPartialProducer),
             },
             producerName: {
               title: 'Producer Name',
@@ -171,7 +167,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
           ],
         }}
         data={data || []}
-        getId={(entry) => entry.producerId?.toString() ?? ''}
+        getId={(entry) => entry.producerName?.toString() ?? ''}
         tableId='producers-table'
         defaultSort={{ column: 'producerName', direction: 'asc', type: 'by-single-column' }}
       />
@@ -191,7 +187,7 @@ function findTopicStats(stats: pb.GetTopicsStatsResponse, topicFqn: string): pb.
   }
 }
 
-function dataEntriesFromPb(res: pb.TopicStats): DataEntry[] {
+function dataEntriesFromPb(statsPb: pb.TopicStats): DataEntry[] {
   function producerAccessModeToString(accessMode: pb.ProducerAccessMode): string {
     switch (accessMode) {
       case pb.ProducerAccessMode.PRODUCER_ACCESS_MODE_SHARED:
@@ -207,7 +203,7 @@ function dataEntriesFromPb(res: pb.TopicStats): DataEntry[] {
     }
   }
 
-  return res.getPublishersList().map((publisher) => {
+  return statsPb.getPublishersList().map((publisher) => {
     const connectedSince = publisher.getConnectedSince()?.getValue();
     const dataEntry: DataEntry = {
       accessMode: producerAccessModeToString(publisher.getAccessMode()),
