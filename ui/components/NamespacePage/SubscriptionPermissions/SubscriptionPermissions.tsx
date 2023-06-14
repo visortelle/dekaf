@@ -209,7 +209,7 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
   return (
     <div className={`${s.SubscriptionsTable}`}>
       <H1>
-        Subscribtion permissions
+        Subscription permissions
       </H1>
       <div className={`${s.Title} ${s.Line}`}>
         <div className={`${s.LeftSide}`}>

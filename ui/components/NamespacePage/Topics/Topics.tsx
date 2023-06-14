@@ -131,8 +131,19 @@ const Topics: React.FC<TopicsProps> = (props) => {
           help,
           columns: {
             topicName: {
-              title: 'Name',
-              render: (de) => de.name,
+              title: 'Topic Name',
+              render: (de) => (
+                <Link
+                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
+                    tenant: props.tenant,
+                    namespace: props.namespace,
+                    topic: de.name,
+                    topicType: de.persistencyType,
+                  })}
+                >
+                  {de.name}
+                </Link>
+              ),
               sortFn: (a, b) => a.data.name.localeCompare(b.data.name),
             },
             producersCount: {
@@ -152,7 +163,18 @@ const Topics: React.FC<TopicsProps> = (props) => {
             },
             subscriptionsCount: {
               title: 'Subscriptions',
-              render: (_, ld) => i18n.withVoidDefault(ld?.stats.getSubscriptionsMap()?.getLength(), v => v.toString()),
+              render: (de, ld) => i18n.withVoidDefault(ld?.stats.getSubscriptionsMap()?.getLength(), v => (
+                <Link
+                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.get({
+                    tenant: props.tenant,
+                    namespace: props.namespace,
+                    topic: de.name,
+                    topicType: de.persistencyType,
+                  })}
+                >
+                  {v}
+                </Link>
+              )),
             },
             topicType: {
               title: 'Type',
@@ -265,7 +287,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
           },
           defaultConfig: [
             { key: 'topicName', visibility: 'visible', stickyTo: 'left', width: 200 },
-            { key: 'topicType', visibility: 'visible', width: 200 },
+            { key: 'topicType', visibility: 'visible', width: 100 },
             { key: 'producersCount', visibility: 'visible', width: 100 },
             { key: 'subscriptionsCount', visibility: 'visible', width: 100 },
             { key: 'msgRateIn', visibility: 'visible', width: 100 },
