@@ -150,6 +150,34 @@ export const routes = {
                     }) =>
                       `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/subscriptions`,
                   },
+                  subscription: {
+                    overview: {
+                      _: {
+                        path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/subscriptions/:subscription",
+                        get: (props: {
+                          tenant: string;
+                          namespace: string;
+                          topicType: "persistent" | "non-persistent";
+                          topic: string;
+                          subscription: string;
+                        }) =>
+                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/subscriptions/${props.subscription}`,
+                      },
+                    },
+                    consumers: {
+                      _: {
+                        path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/subscriptions/:subscription/consumers",
+                        get: (props: {
+                          tenant: string;
+                          namespace: string;
+                          topicType: "persistent" | "non-persistent";
+                          topic: string;
+                          subscription: string;
+                        }) =>
+                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/subscriptions/${props.subscription}/consumers`,
+                      }
+                    }
+                  }
                 },
                 overview: {
                   _: {

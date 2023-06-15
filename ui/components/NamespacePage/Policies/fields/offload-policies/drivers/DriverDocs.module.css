@@ -1,5 +1,5 @@
 .DriverDocs {
   padding: 12rem;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   border-radius: 8rem;
 }

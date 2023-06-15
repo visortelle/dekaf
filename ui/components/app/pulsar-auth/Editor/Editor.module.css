@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   padding: 24rem;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   border-radius: 12rem;
   margin: 24rem 0;
 }

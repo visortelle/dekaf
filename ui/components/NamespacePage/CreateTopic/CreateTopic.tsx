@@ -99,7 +99,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   return (
     <form className={s.CreateTopic} onSubmit={e => e.preventDefault()}>
       <div className={s.Title}>
-        <H1>Create topic</H1>
+        <H1>New topic</H1>
       </div>
 
       <ConfigurationTable
@@ -150,7 +150,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
             case 'non-partitioned': createNonPartitionedTopic(); break;
           }
         }}
-        text='Create topic'
+        text='Create'
         disabled={!isFormValid}
         buttonProps={{
           type: 'submit'

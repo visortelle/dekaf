@@ -7,6 +7,6 @@
   justify-content: center;
   align-items: center;
   border-radius: 8rem;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   padding: 12rem;
 }

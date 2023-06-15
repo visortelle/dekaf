@@ -4,7 +4,7 @@
 
 .Entry {
   padding: 12rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   margin-bottom: 12rem;
   border-radius: 4rem;
   display: flex;
@@ -16,7 +16,6 @@
 }
 
 .EntryButtons {
-  padding-left: 12rem;
   display: flex;
   flex-direction: column;
 }
@@ -27,8 +26,4 @@
 
 .EntryButton:last-child {
   margin-bottom: 0;
-}
-
-.Buttons > button {
-  margin: 0 5px;
 }

@@ -49,7 +49,7 @@ export const TopicIcon: React.FC<TopicIconProps> = (props) => {
 
   switch (props.topicType) {
     case 'persistent': backgroundColor = 'var(--accent-color-green)'; textColor = '#fff'; title = "to"; break;
-    case 'non-persistent': backgroundColor = '#fff'; textColor = 'var(--accent-color-green)'; title="np"; style = { backgroundColor: '#eee'}; break;
+    case 'non-persistent': backgroundColor = '#fff'; textColor = 'var(--accent-color-green)'; title = "np"; style = { backgroundColor: '#eee' }; break;
   }
 
   return (
@@ -118,7 +118,7 @@ export const InstanceIcon: React.FC<InstanceIconProps> = (props) => {
   return <NodeIcon
     title="in"
     textColor='var(--accent-color-blue)'
-    backgroundColor='#f5f5f5'
+    backgroundColor='var(--surface-color)'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}

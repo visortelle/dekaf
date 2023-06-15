@@ -188,7 +188,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
                 return (
                   <td key={columnConfig.key} className={s.Td} style={style}>
-                    <div style={{ width: columnConfig.width }}>
+                    <div className={s.TdContent} style={{ width: columnConfig.width }} title={typeof v === 'string' ? v : undefined}>
                       {v === undefined ? (
                         <div className={s.NoData}>-</div>
                       ) : v}

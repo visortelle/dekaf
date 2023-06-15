@@ -162,7 +162,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
   return (
     <form className={s.CreateNamespace} onSubmit={(e) => e.preventDefault()}>
       <div className={s.Title}>
-        <H1>Create Namespace</H1>
+        <H1>New Namespace</H1>
       </div>
 
       <ConfigurationTable

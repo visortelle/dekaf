@@ -17,7 +17,7 @@
   font-size: 13rem;
   font-weight: bold;
   padding: 4rem 12rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-left: none;
   border-top: none;
   background-color: #fff;
@@ -34,7 +34,7 @@
 
 .SummaryTh {
   font-weight: normal;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
 }
 
 .SortableTh {
@@ -68,7 +68,7 @@
 
 .Td {
   padding: 4rem 12rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-top: none;
   border-left: none;
   overflow: hidden;
@@ -93,7 +93,7 @@
 }
 
 .NothingToShow {
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   padding: 12rem;
   border-radius: 8rem;
 }
@@ -104,7 +104,7 @@
 
 .Badge {
   font-size: 12rem;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   border-radius: 6rem;
   padding: 1rem 6rem;
   margin-right: 8rem;

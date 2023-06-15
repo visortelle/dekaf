@@ -40,7 +40,7 @@
 }
 
 .BreadCrumbsAtPageTop {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .CopyNameButton {
@@ -51,17 +51,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 1rem;
 }
 
 .CopyNameButton button {
-  width: 24rem;
-  height: 24rem;
-  border: 1px solid var(--text-color);
+  width: 26rem;
+  height: 26rem;
+  border: 1px solid var(--accent-color-blue);
+  background: var(--accent-color-blue);
   box-shadow: none;
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
 }
 
 .CopyNameButton svg {
-  fill: var(--text-color);
+  fill: #fff;
   width: 16rem;
   height: 16rem;
 }

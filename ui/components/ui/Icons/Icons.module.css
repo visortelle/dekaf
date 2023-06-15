@@ -1,16 +1,16 @@
 .NodeIcon {
   position: relative;
-  font-size: 12rem;
-  width: 24rem;
-  height: 24rem;
+  font-size: 14rem;
+  width: 26rem;
+  height: 26rem;
   display: flex;
-  font-weight: bold;
+  font-weight: 500;
   align-items: center;
   justify-content: center;
   background-color: #333;
   color: #fff;
   padding: 2rem;
-  border-radius: 4rem;
+  border-radius: 6rem;
   user-select: none;
   cursor: initial;
 }
@@ -22,7 +22,9 @@
 
 .NodeIconExpandable {
   cursor: pointer;
-  border-bottom: 2rem solid rgba(0, 0, 0, 0.27);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.27);
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  margin: 1rem;
   position: relative;
   top: 1rem;
   transition: var(--transition-short);

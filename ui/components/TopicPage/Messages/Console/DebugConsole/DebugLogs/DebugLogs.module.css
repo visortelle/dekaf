@@ -34,19 +34,19 @@
 .LogLine {
   width: 100%;
   display: flex;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .LogLineMessageIndex {
   width: 60rem;
   padding: 2rem 8rem;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border-color);
 }
 
 .LogLineLevel {
   width: 60rem;
   padding: 2rem 8rem;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border-color);
 }
 
 .LogLineLogMessage {

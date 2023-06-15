@@ -16,7 +16,7 @@
 }
 
 .ContentContainer {
-  border-radius: 4rem;
+  border-radius: 12rem;
   overflow: hidden;
   min-width: 480rem;
   box-shadow: 4rem 4rem 8rem rgba(0, 0, 0, 0.27);
@@ -30,12 +30,12 @@
 }
 
 .TopBar {
-  height: 60rem;
+  height: 80rem;
   background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .Content.NoContentPadding {

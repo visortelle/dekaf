@@ -18,12 +18,11 @@
 
 .Th,
 .SummaryTh {
-  font-size: 13rem;
-  font-weight: bold;
-  border: 1px solid #ddd;
+  font-weight: normal;
+  border: 1px solid var(--border-color);
   border-left: none;
   border-top: none;
-  background-color: #fff;
+  background-color: var(--surface-color);
   left: 0;
   position: relative;
   white-space: nowrap;
@@ -41,7 +40,7 @@
 
 .SummaryTh {
   font-weight: normal;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
 }
 
 .SortableTh:hover .ThContent {
@@ -66,12 +65,19 @@
 
 .Td {
   padding: 4rem 12rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-top: none;
   border-left: none;
   overflow: hidden;
   text-overflow: ellipsis;
   background-color: #fff;
+}
+
+.TdContent {
+  min-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .Table tr:first-child .Td {
@@ -91,9 +97,10 @@
 }
 
 .NothingToShow {
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   padding: 24rem;
-  border-radius: 8rem;
+  border-radius: 4rem;
+  font-size: 14rem;
   margin: 12rem;
 }
 
@@ -103,7 +110,7 @@
 
 .Badge {
   font-size: 12rem;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   border-radius: 6rem;
   padding: 1rem 6rem;
   margin-right: 8rem;

@@ -25,7 +25,7 @@
   fill: #aaa !important;
 }
 .DatetimePicker .Picker:global(.react-datetime-picker--disabled) :global(.react-datetime-picker__wrapper) {
-  border: 1px solid #ddd !important;
+  border: 1px solid var(--border-color) !important;
 }
 
 .Picker :global(.react-datetime-picker__inputGroup) input,
@@ -80,7 +80,7 @@
 }
 
 .Calendar :global(.react-calendar__tile--now) {
-  background-color: #f5f5f5 !important;
+  background-color: var(--surface-color) !important;
   position: relative !important;
 }
 
@@ -97,7 +97,7 @@
 .Calendar :global(.react-calendar__tile--now:enabled:hover),
 .Calendar :global(.react-calendar__tile--now:enabled:focus) {
   opacity: 0.5 !important;
-  background-color: #f5f5f5 !important;
+  background-color: var(--surface-color) !important;
   transition: var(--transition-short) !important;
 }
 
@@ -140,7 +140,7 @@
 }
 
 .Picker :global(.react-datetime-picker__wrapper) {
-  border: 1px solid #ddd !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 4rem;
   height: 36rem;
   padding: 0 6rem 0 12rem;

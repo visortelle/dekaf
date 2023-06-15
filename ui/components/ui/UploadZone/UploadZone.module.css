@@ -1,5 +1,5 @@
 .UploadZone {
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   border-radius: 6rem;
   padding: 36rem;
   display: flex;

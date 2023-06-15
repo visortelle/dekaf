@@ -8,14 +8,14 @@
 }
 
 .ListFieldValues {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4rem;
 }
 
 .ListFieldValue {
   padding: 0 12rem;
   min-height: 36rem;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   font-size: 14rem;

@@ -20,6 +20,7 @@ import NamespacePage, {
   NamespacePageView,
 } from "../../NamespacePage/NamespacePage";
 import TopicPage, { TopicPageView } from "../../TopicPage/TopicPage";
+import SubscriptionPage, { SubscriptionPageView } from '../../SubscriptionPage/SubscriptionPage';
 import { TreeNode } from "../../ui/Layout/NavigationTree/TreeView";
 import InstancePage from "../../InstancePage/InstancePage";
 import ClusterPage, {
@@ -226,10 +227,25 @@ const prepareRoutes = (): {
         ),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._
-          .path,
+        path: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path,
         element: withLayout(
           <RoutedNamespacePage view="subscription-permissions" />,
+          withLayoutProps
+        ),
+      },
+
+      /* Subscriptions */
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.path,
+        element: withLayout(
+          <RoutedSubscriptionPage view="overview" />,
+          withLayoutProps
+        ),
+      },
+      {
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.path,
+        element: withLayout(
+          <RoutedSubscriptionPage view="consumers" />,
           withLayoutProps
         ),
       },
@@ -383,6 +399,33 @@ const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
       topic={topic!}
       view={view}
       topicType={topicType as "persistent" | "non-persistent"}
+    />
+  );
+};
+
+const RoutedSubscriptionPage = (props: { view: SubscriptionPageView["type"] }) => {
+  const { tenant, namespace, topic, topicType, subscription } = useParams();
+
+  let view: SubscriptionPageView;
+  switch (props.view) {
+    case "overview":
+      view = { type: "overview" };
+      break;
+    case "consumers":
+      view = { type: "consumers" };
+      break;
+    default:
+      view = { type: props.view };
+  }
+
+  return (
+    <SubscriptionPage
+      tenant={tenant!}
+      namespace={namespace!}
+      topic={topic!}
+      view={view}
+      topicType={topicType as "persistent" | "non-persistent"}
+      subscription={subscription!}
     />
   );
 };

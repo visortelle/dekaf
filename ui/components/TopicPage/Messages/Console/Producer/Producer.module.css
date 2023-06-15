@@ -38,7 +38,7 @@
 .Toolbar {
   padding: 0 12rem;
   height: 38rem;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   position: absolute;

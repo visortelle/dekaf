@@ -45,7 +45,7 @@ const Button: React.FC<ButtonProps> = (props) => {
           title: `Pulsar credentials`,
           content: <Editor onDone={modals.pop} />,
         })}
-        text={`Auth: ${currentCredentials}`}
+        text={`${currentCredentials}`}
       />
     </div>
   );

@@ -7,7 +7,7 @@
 
 .Schemas {
   width: 240rem;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
 }
@@ -18,17 +18,17 @@
 
 .SchemaListEntry {
   padding: 8rem 12rem;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .SchemaListEntry:hover {
   cursor: pointer;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   transition: var(--transition-short);
 }
 
 .SchemaListEntrySelected {
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
 }
 
 .Content {
