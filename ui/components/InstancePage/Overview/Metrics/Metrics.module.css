@@ -30,12 +30,12 @@
   font-size: 14rem;
   border-spacing: 0;
   overflow: hidden;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
 }
 
 .Cell {
   padding: 4rem 12rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-bottom: none;
   border-right: none;
 }

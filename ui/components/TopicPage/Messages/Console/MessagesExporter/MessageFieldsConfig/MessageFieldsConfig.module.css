@@ -8,7 +8,7 @@
   align-items: center;
   margin-bottom: 4rem;
   padding: 8rem 48rem 8rem 42rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4rem;
   position: relative;
   background-color: #fff;
@@ -31,7 +31,7 @@
 .DragIcon svg {
   width: 24rem;
   height: 24rem;
-  fill: #ddd;
+  fill: var(--border-color);
 }
 
 .DragIcon:hover {

@@ -1,7 +1,7 @@
 .Toolbar {
   display: flex;
   padding: 12rem;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
 }
 
 .ToolbarButton {

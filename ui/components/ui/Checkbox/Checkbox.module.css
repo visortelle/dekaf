@@ -35,7 +35,7 @@
   left: -2rem;
   height: 100%;
   width: 100%;
-  border: 2rem solid var(--accent-color-blue);
+  border: 1rem solid var(--accent-color-blue);
   border-radius: 4rem;
 }
 

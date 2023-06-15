@@ -19,13 +19,13 @@
 .Table {
   font-size: 14rem;
   border-spacing: 0;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   width: 100%;
 }
 
 .Cell {
   padding: 4rem 12rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-bottom: none;
   border-right: none;
   word-wrap: break-word;
@@ -52,7 +52,7 @@
 }
 
 .Row:hover .Cell {
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
 }
 
 .ConfigParamKeyCell {

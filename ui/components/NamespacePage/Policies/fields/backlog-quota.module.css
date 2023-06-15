@@ -4,7 +4,7 @@
 
 .Quota {
   padding: 12rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   margin-bottom: 12rem;
   border-radius: 8rem;
 }

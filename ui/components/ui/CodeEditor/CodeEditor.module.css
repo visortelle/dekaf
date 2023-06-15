@@ -1,6 +1,6 @@
 .CodeEditor {
   border-radius: 4rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   overflow: hidden;
   flex: 1;
 }

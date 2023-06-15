@@ -114,7 +114,7 @@ const CreateTenantPage: React.FC = () => {
   return (
     <form className={s.CreateTenantPage} onSubmit={e => e.preventDefault()}>
       <div className={s.Title}>
-        <H1>Create tenant</H1>
+        <H1>New tenant</H1>
       </div>
 
       <ConfigurationTable

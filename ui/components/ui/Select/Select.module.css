@@ -8,8 +8,11 @@
 
 .Select {
   height: 36rem;
-  border: 1px solid #ddd;
-  border-radius: 4rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6rem;
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  margin: 1rem;
+  overflow: hidden;
   padding: 0 12rem;
   appearance: none;
   transition: var(--transition-short);

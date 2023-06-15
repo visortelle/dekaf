@@ -1,11 +1,11 @@
 .LeftSidebar {
-  width: 380rem;
+  width: 320rem;
   height: 100vh;
   position: fixed;
   z-index: 100;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border-color);
 }
 
 .NavigationTree {
@@ -14,7 +14,7 @@
 }
 
 .Content {
-  margin-left: 380rem;
+  margin-left: 320rem;
   height: 100vh;
   display: flex;
   flex-direction: column;

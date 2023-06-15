@@ -82,11 +82,11 @@ const Producers: React.FC<ProducersProps> = (props) => {
   );
 
   if (dataError) {
-    notifyError(`Unable to get persistent topics: ${dataError}`);
+    notifyError(`Unable to get topic stats. ${dataError}`);
   }
 
   return (
-    <div className={s.Producers}>
+    <div className={s.Page}>
       <Table<ColumnKey, DataEntry, {}>
         columns={{
           help,
@@ -153,13 +153,13 @@ const Producers: React.FC<ProducersProps> = (props) => {
           },
           defaultConfig: [
             { key: 'producerName', width: 350, visibility: 'visible', stickyTo: 'left' },
-            { key: 'producerId', width: 100, visibility: 'visible' },
             { key: 'accessMode', width: 100, visibility: 'visible' },
             { key: 'msgRateIn', width: 100, visibility: 'visible' },
             { key: 'msgThroughputIn', width: 140, visibility: 'visible' },
             { key: 'averageMsgSize', width: 130, visibility: 'visible' },
             { key: 'chunkedMessageRate', width: 160, visibility: 'visible' },
             { key: 'isSupportsPartialProducer', width: 200, visibility: 'visible' },
+            { key: 'producerId', width: 100, visibility: 'visible' },
             { key: 'address', width: 200, visibility: 'visible' },
             { key: 'connectedSince', width: 200, visibility: 'visible' },
             { key: 'clientVersion', width: 200, visibility: 'visible' },

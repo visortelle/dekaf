@@ -6,6 +6,6 @@
 .PreContainer {
   overflow: hidden;
   border-radius: 8rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   max-width: 480rem;
 }

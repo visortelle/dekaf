@@ -64,7 +64,7 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
             },
             {
               linkTo: routes.instance.createTenant._.get(),
-              text: 'Create tenant',
+              text: 'New tenant',
               onClick: () => { },
               type: 'primary',
               position: 'right'

@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./BreadCrumbs.module.css";
-import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from "../Icons/Icons";
+import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon } from "../Icons/Icons";
 import * as Notifications from "../../app/contexts/Notifications";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import arrowIcon from "./arrow.svg";
@@ -12,7 +12,14 @@ import { swrKeys } from "../../swrKeys";
 import Button from "../Button/Button";
 import Favicons from "./favicons/Favicons";
 
-export type CrumbType = "instance" | "tenant" | "namespace" | "persistent-topic" | "non-persistent-topic" | "link";
+export type CrumbType =
+  "instance" |
+  "tenant" |
+  "namespace" |
+  "persistent-topic" |
+  "non-persistent-topic" |
+  "subscription" |
+  "link";
 
 export type Crumb = {
   id: string;
@@ -47,6 +54,9 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         break;
       case "non-persistent-topic":
         icon = <TopicIcon topicType='non-persistent' />;
+        break;
+      case "subscription":
+        icon = <SubscriptionIcon />;
         break;
     }
 
@@ -131,7 +141,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
               }}
               svgIcon={copyIcon}
               type={"regular"}
-              title="Copy path to clipboard"
+              title="Copy fully qualified resource name to clipboard."
             />
           </div>
         )}

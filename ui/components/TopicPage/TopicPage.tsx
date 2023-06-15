@@ -17,7 +17,6 @@ export type TopicPageView =
   | { type: "messages" }
   | { type: "overview" }
   | { type: "producers" }
-  | { type: "consumers" }
   | { type: "schema-initial-screen" }
   | { type: "schema-create" }
   | { type: "schema-view"; schemaVersion: number }
@@ -39,6 +38,17 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
   const key = `${props.tenant}-${props.namespace}-${props.topic}`;
 
   let buttons: ToolbarButtonProps[] = [
+{
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicType: props.topicType,
+      }),
+      text: "Overview",
+      onClick: () => { },
+      type: "regular",
+    },
     {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
         tenant: props.tenant,
@@ -47,17 +57,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         topicType: props.topicType,
       }),
       text: "Messages",
-      onClick: () => { },
-      type: "regular",
-    },
-    {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicType: props.topicType,
-      }),
-      text: "Producers",
       onClick: () => { },
       type: "regular",
     },
@@ -73,13 +72,13 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       type: "regular",
     },
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
         topicType: props.topicType,
       }),
-      text: "Overview",
+      text: "Producers",
       onClick: () => { },
       type: "regular",
     },

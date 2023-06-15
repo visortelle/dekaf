@@ -1,6 +1,6 @@
 .Bar {
   height: 8rem;
-  background-color: #ddd;
+  background-color: var(--border-color);
   border-radius: 4rem;
   position: relative;
   margin-bottom: 12rem;

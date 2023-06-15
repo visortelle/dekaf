@@ -27,7 +27,7 @@
   position: relative;
   background-color: #fff;
   border-radius: 4rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   padding: 0 12rem 0 12rem;
   height: 36rem;
   display: flex;

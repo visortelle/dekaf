@@ -70,7 +70,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
             },
             {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),
-              text: 'Create namespace',
+              text: 'New namespace',
               onClick: () => { },
               type: 'primary',
               position: 'right'
@@ -78,7 +78,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
           ]}
         />
       </div>
-      
+
       {props.view === 'overview' && <Overview />}
       {props.view === 'namespaces' && <Namespaces tenant={props.tenant} />}
       {props.view === 'configuration' && <Configuration tenant={props.tenant} />}

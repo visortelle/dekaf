@@ -1,12 +1,12 @@
 .SubscriptionsCursors {
   overflow: auto;
   background-color: #fff;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-color);
   flex: 1 1 auto;
 }
 
 .Topic {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 24rem;
 }
 

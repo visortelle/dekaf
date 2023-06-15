@@ -2,6 +2,7 @@
   display: flex;
   position: relative;
   align-items: center;
+  margin: 1rem;
 }
 
 .InputIcon {
@@ -25,9 +26,10 @@
 .InputInput {
   position: relative;
   background-color: #fff;
-  border-radius: 4rem;
-  border: 1px solid #ddd;
-  padding: 0 12rem 0 12rem;
+  border-radius: 6rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  padding: 0 12rem;
   height: 36rem;
   display: flex;
   flex: 1 0 auto;

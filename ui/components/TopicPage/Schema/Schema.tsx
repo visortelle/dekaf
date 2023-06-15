@@ -151,7 +151,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "8rem 12rem",
-            borderBottom: "1px solid #ddd",
+            borderBottom: "1px solid var(--border-color)",
           }}
         >
           <div style={{ display: "flex", marginRight: "12rem", flex: "0 1 auto", justifyContent: "center" }}>

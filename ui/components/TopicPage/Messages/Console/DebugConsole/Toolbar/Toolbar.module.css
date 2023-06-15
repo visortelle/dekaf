@@ -1,6 +1,6 @@
 .Toolbar {
   display: flex;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
   height: 54rem;
 }
 
@@ -16,11 +16,11 @@
 
 .Tab {
   padding: 8rem 12rem;
-  border-left: 1px solid #ddd;
+  border-left: 1px solid var(--border-color);
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
 }
 
 .Tab:hover:not(.ActiveTab) {

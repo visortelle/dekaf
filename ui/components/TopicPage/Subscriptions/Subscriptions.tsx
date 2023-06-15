@@ -7,8 +7,9 @@ import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import * as pbUtils from '../../../pbUtils/pbUtils';
 import useSWR from 'swr';
 import Table from '../../ui/Table/Table';
-import { swrKeys } from '../../swrKeys';
 import { help } from './help';
+import Link from '../../ui/Link/Link';
+import { routes } from '../../routes';
 
 export type ColumnKey =
   'subscriptionName' |
@@ -312,7 +313,17 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             },
             subscriptionName: {
               title: 'Subscription Name',
-              render: (de) => de.subscriptionName,
+              render: (de) => (
+                <Link to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.get({
+                  tenant: props.tenant,
+                  namespace: props.namespace,
+                  topic: props.topic,
+                  topicType: props.topicType,
+                  subscription: de.subscriptionName,
+                })}>
+                  {de.subscriptionName}
+                </Link>
+              ),
               sortFn: (a, b) => a.data.subscriptionName.localeCompare(b.data.subscriptionName),
             },
             subscriptionProperties: {
@@ -338,15 +349,16 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
           defaultConfig: [
             { key: "subscriptionName", width: 300, visibility: 'visible', stickyTo: 'left' },
             { key: "type", width: 80, visibility: 'visible' },
+            { key: "isDurable", width: 80, visibility: 'visible' },
             { key: "consumersCount", width: 80, visibility: 'visible' },
             { key: "activeConsumerName", width: 300, visibility: 'visible' },
-            { key: "msgRateOut", width: 200, visibility: 'visible' },
-            { key: "msgThroughputOut", width: 200, visibility: 'visible' },
-            { key: "bytesOutCounter", width: 200, visibility: 'visible' },
-            { key: "msgOutCounter", width: 200, visibility: 'visible' },
-            { key: "msgRateRedeliver", width: 200, visibility: 'visible' },
-            { key: "messageAckRate", width: 200, visibility: 'visible' },
-            { key: "chunkedMessageRate", width: 200, visibility: 'visible' },
+            { key: "msgRateOut", width: 120, visibility: 'visible' },
+            { key: "msgThroughputOut", width: 120, visibility: 'visible' },
+            { key: "bytesOutCounter", width: 120, visibility: 'visible' },
+            { key: "msgOutCounter", width: 120, visibility: 'visible' },
+            { key: "msgRateRedeliver", width: 120, visibility: 'visible' },
+            { key: "messageAckRate", width: 120, visibility: 'visible' },
+            { key: "chunkedMessageRate", width: 120, visibility: 'visible' },
             { key: "msgBacklog", width: 200, visibility: 'visible' },
             { key: "backlogSize", width: 200, visibility: 'visible' },
             { key: "earliestMsgPublishTimeInBacklog", width: 200, visibility: 'visible' },
@@ -361,7 +373,6 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             { key: "lastConsumedTimestamp", width: 200, visibility: 'visible' },
             { key: "lastAckedTimestamp", width: 200, visibility: 'visible' },
             { key: "lastMarkDeleteAdvancedTimestamp", width: 200, visibility: 'visible' },
-            { key: "isDurable", width: 200, visibility: 'visible' },
             { key: "isReplicated", width: 200, visibility: 'visible' },
             { key: "isAllowOutOfOrderDelivery", width: 200, visibility: 'visible' },
             { key: "keySharedMode", width: 200, visibility: 'visible' },
@@ -398,7 +409,7 @@ function dataEntriesFromPb(statsPb: pb.TopicStats): DataEntry[] {
       consumersAfterMarkDeletePosition: pbUtils.mapToObject(subscription.getConsumersAfterMarkDeletePositionMap()),
       consumersCount: subscription.getConsumersList().length,
       delayedMessageIndexSizeInBytes: subscription.getDelayedMessageIndexSizeInBytes()?.getValue(),
-      earliestMsgPublishTimeInBacklog: subscription.getEarliestMsgPublishTimeInBacklog()?.getValue(),
+      earliestMsgPublishTimeInBacklog: subscription.getEarliestMsgPublishTimeInBacklog()?.getValue() || undefined,
       filterAcceptedMsgCount: subscription.getFilterAcceptedMsgCount()?.getValue(),
       filterProcessedMsgCount: subscription.getFilterProcessedMsgCount()?.getValue(),
       filterRejectedMsgCount: subscription.getFilterRejectedMsgCount()?.getValue(),

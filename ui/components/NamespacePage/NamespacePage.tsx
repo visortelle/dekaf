@@ -87,7 +87,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Create topic',
+            text: 'New topic',
             onClick: () => { },
             type: 'primary',
             position: 'right'

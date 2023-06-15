@@ -10,14 +10,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 14rem;
+  font-weight: 500;
   background-color: var(--accent-color-blue);
-  padding: 2rem 8rem;
+  padding: 4rem 12rem;
   border-radius: 4rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.27);
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  margin: 1rem;
   user-select: none;
   position: relative;
   opacity: 1;
-  border-bottom: 2rem solid rgba(0, 0, 0, 0.27);
-  border-right: 1.5rem solid rgba(0, 0, 0, 0.27);
+  border: 1px solid var(--border-color);
   transition: var(--transition-short);
 }
 
@@ -27,7 +30,7 @@
 }
 
 .Regular {
-  background-color: #f5f5f5;
+  background-color: #fff;
   color: var(--text-color);
 }
 
@@ -37,6 +40,7 @@
 
 .Primary {
   background-color: var(--accent-color-blue);
+  border-color: var(--accent-color-blue);
   color: #fff;
 }
 
@@ -46,6 +50,7 @@
 
 .Danger {
   background-color: var(--accent-color-red);
+  border-color: var(--accent-color-red);
   color: #fff;
 }
 
@@ -60,9 +65,10 @@
 }
 
 .Button svg {
-  width: 16rem;
-  height: 16rem;
-  margin-right: 4rem;
+  width: 20rem;
+  height: 20rem;
+  margin: 1rem;
+  margin-right: 8rem;
 }
 
 .ButtonWithoutText {
@@ -75,12 +81,13 @@
 
 .DisabledButton {
   opacity: 1;
-  background-color: #f5f5f5 !important;
+  background-color: var(--surface-color) !important;
+  border-color: var(--border-color) !important;
   color: #999 !important;
 }
 
 .DisabledButton svg {
-  fill: #ddd;
+  fill: var(--border-color);
 }
 
 .DisabledButton:hover {
