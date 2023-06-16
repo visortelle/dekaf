@@ -4,7 +4,7 @@
 
 .Title {
   font-size: 24rem;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
   margin-bottom: 8rem;
 }
 

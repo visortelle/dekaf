@@ -3,7 +3,7 @@ import chroma from "chroma-js";
 import { Chart as ChartJs} from 'chart.js';
 
 ChartJs.defaults.font = {
-  family: 'Fira Code',
+  family: 'Inter',
   size: remToPx(14),
 }
 

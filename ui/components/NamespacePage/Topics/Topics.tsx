@@ -112,7 +112,9 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
   const allTopics = (persistentTopics?.concat(nonPersistentTopics || []) || []);
 
+  console.log('all topics', allTopics);
   let topicsToShow = makeTopicDataEntries(detectPartitionedTopics(allTopics || []));
+  console.log('tts', topicsToShow)
   topicsToShow = topicsToShow?.filter((t) => t.name.includes(filterQueryDebounced));
 
   return (
@@ -288,8 +290,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
           defaultConfig: [
             { key: 'topicName', visibility: 'visible', stickyTo: 'left', width: 200 },
             { key: 'topicType', visibility: 'visible', width: 100 },
-            { key: 'producersCount', visibility: 'visible', width: 100 },
             { key: 'subscriptionsCount', visibility: 'visible', width: 100 },
+            { key: 'producersCount', visibility: 'visible', width: 100 },
+            { key: 'storageSize', visibility: 'visible', width: 100 },
+            { key: 'backlogSize', visibility: 'visible', width: 100 },
             { key: 'msgRateIn', visibility: 'visible', width: 100 },
             { key: 'msgThroughputIn', visibility: 'visible', width: 100 },
             { key: 'msgRateOut', visibility: 'visible', width: 100 },
@@ -300,8 +304,6 @@ const Topics: React.FC<TopicsProps> = (props) => {
             { key: 'msgOutCounter', visibility: 'visible', width: 100 },
             { key: 'averageMsgSize', visibility: 'visible', width: 100 },
             { key: 'isMsgChunkPublished', visibility: 'visible', width: 100 },
-            { key: 'storageSize', visibility: 'visible', width: 100 },
-            { key: 'backlogSize', visibility: 'visible', width: 100 },
             { key: 'earliestMsgPublishTimeInBacklogs', visibility: 'visible', width: 200 },
 
             { key: 'offloadedStorageSize', visibility: 'visible', width: 100 },

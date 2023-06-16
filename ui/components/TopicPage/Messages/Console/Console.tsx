@@ -9,6 +9,7 @@ import { MessageDescriptor, SessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import EnteringFromBottomDiv from '../../../ui/animations/EnteringFromBottomDiv';
+import Tabs from '../../../ui/Tabs/Tabs';
 
 import closeIcon from './close.svg';
 
@@ -27,10 +28,10 @@ export type ConsoleProps = {
   consumerName: string;
 };
 
-type TabName = 'producer' | 'cursors' | 'visualize' | 'debug-console' | 'export';
+type TabKey = 'producer' | 'cursors' | 'visualize' | 'debug-console' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabName>('export');
+  const [activeTab, setActiveTab] = React.useState<TabKey>('export');
 
   return (
     <EnteringFromBottomDiv
@@ -38,75 +39,66 @@ const Console: React.FC<ConsoleProps> = (props) => {
       isVisible={props.isShow}
       motionKey='consumer-console'
     >
-      <div className={s.Tabs}>
-        <div className={`${s.Tab} ${activeTab === 'producer' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('producer')}>Produce</div>
-        <div className={`${s.Tab} ${activeTab === 'visualize' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('visualize')}>Visualize</div>
-        <div className={`${s.Tab} ${activeTab === 'debug-console' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('debug-console')}>Filters debugger</div>
-        <div className={`${s.Tab} ${activeTab === 'cursors' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('cursors')}>Cursors</div>
-        <div className={`${s.Tab} ${activeTab === 'export' ? s.ActiveTab : ''}`} onClick={() => setActiveTab('export')}>Export</div>
-
-        <div className={s.CloseConsole} title="Close" onClick={props.onClose}>
-          <SvgIcon svg={closeIcon} />
-        </div>
-      </div>
-
-      <TabContent isShow={activeTab === 'cursors'} isRenderAlways>
-        <CursorsTab {...props} />
-      </TabContent>
-
-      <TabContent isShow={activeTab === 'visualize'} isRenderAlways>
-        <Visualization
-          messages={props.messages}
-          isVisible={activeTab === 'visualize'}
-          sessionState={props.sessionState}
-        />
-      </TabContent>
-
-      <TabContent isShow={activeTab === 'producer'} isRenderAlways>
-        <Producer
-          preset={{
-            topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
-            key: ''
-          }}
-        />
-      </TabContent>
-
-      <TabContent isShow={activeTab === 'debug-console'} isRenderAlways>
-        <DebugConsole
-          messages={props.messages}
-          sessionState={props.sessionState}
-          consumerName={props.consumerName}
-          isVisible={activeTab === 'debug-console'}
-        />
-      </TabContent>
-
-      <TabContent isShow={activeTab === 'export'} isRenderAlways>
-        <MessagesExporter
-          messages={props.messages}
-          sessionState={props.sessionState}
-          isVisible={activeTab === 'export'}
-        />
-      </TabContent>
-
-
+      <Tabs<TabKey>
+        activeTab={activeTab}
+        onActiveTabChange={setActiveTab}
+        onClose={props.onClose}
+        tabs={{
+          'producer': {
+            title: 'Produce',
+            isRenderAlways: true,
+            render: () => (
+              <Producer
+                preset={{
+                  topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
+                  key: ''
+                }}
+              />
+            )
+          },
+          'visualize': {
+            title: 'Visualize',
+            isRenderAlways: true,
+            render: () => (
+              <Visualization
+                messages={props.messages}
+                isVisible={activeTab === 'visualize'}
+                sessionState={props.sessionState}
+              />
+            )
+          },
+          'debug-console': {
+            title: 'Filter debugger',
+            render: () => (
+              <DebugConsole
+                messages={props.messages}
+                sessionState={props.sessionState}
+                consumerName={props.consumerName}
+                isVisible={activeTab === 'debug-console'}
+              />
+            )
+          },
+          'cursors': {
+            title: 'Cursors',
+            isRenderAlways: true,
+            render: () => (
+              <CursorsTab {...props} />
+            ),
+          },
+          'export': {
+            title: 'Export',
+            isRenderAlways: true,
+            render: () => (
+              <MessagesExporter
+                messages={props.messages}
+                sessionState={props.sessionState}
+                isVisible={activeTab === 'export'}
+              />
+            )
+          }
+        }}
+      />
     </EnteringFromBottomDiv>
-  );
-}
-
-type TabContentProps = {
-  isShow: boolean;
-  isRenderAlways?: boolean;
-  children: React.ReactNode;
-}
-const TabContent: React.FC<TabContentProps> = (props) => {
-  if (!props.isShow && !props.isRenderAlways) {
-    return <></>;
-  }
-
-  return (
-    <div style={{ display: props.isShow ? 'flex' : 'none', flex: '1', overflow: 'hidden' }}>
-      {props.children}
-    </div>
   );
 }
 

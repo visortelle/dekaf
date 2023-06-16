@@ -23,7 +23,7 @@
 
 .LeftSide {
   flex: 1 1 40%;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 .LeftSide > div {
   max-width: 90%

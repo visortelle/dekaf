@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import useSWR, { SWRConfiguration } from 'swr';
 import s from './NavigationTree.module.css'
 import * as Notifications from '../../../app/contexts/Notifications';
@@ -105,7 +105,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { topicServiceClient } = GrpcClient.useContext();
 
-  const { data: persistentTopics, error: persistentTopicsError } = useSWR<string[]>(
+  const { data: _persistentTopics, error: persistentTopicsError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
     async () => {
       const req = new topicsPb.GetTopicsRequest();
@@ -118,16 +118,17 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
         return [];
       }
 
-      return res.getTopicsList().map(tn => getTopicName(tn));
+      return res.getTopicsList();
     },
     swrConfiguration
   );
+  const persistentTopics = useMemo(() => (_persistentTopics || []).map(tn => getTopicName(tn)), [_persistentTopics]);
 
   if (persistentTopicsError) {
     notifyError(`Unable to fetch persistent topics topics. ${persistentTopicsError.toString()}`);
   }
 
-  const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR<string[]>(
+  const { data: _nonPersistentTopics, error: nonPersistentTopicsError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
     async () => {
       const req = new topicsPb.GetTopicsRequest();
@@ -143,6 +144,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
     },
     swrConfiguration
   );
+  const nonPersistentTopics = useMemo(() => (_nonPersistentTopics || []).map(tn => getTopicName(tn)), [_nonPersistentTopics]);
 
   if (nonPersistentTopicsError) {
     notifyError(`Unable to fetch non-persistent topics. ${persistentTopicsError.toString()}`);

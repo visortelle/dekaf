@@ -164,7 +164,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 topicType: props.topicType,
               })}
             >
-              <SmallButton text='Create' type='primary' onClick={() => { }} />
+              <SmallButton text='New Schema' type='primary' onClick={() => { }} />
             </Link>
           </div>
           <div>

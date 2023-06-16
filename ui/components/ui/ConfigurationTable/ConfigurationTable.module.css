@@ -1,7 +1,7 @@
 .Title {
   margin: 0;
   font-size: 24rem;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
   margin-bottom: 8rem;
 }
 
@@ -11,7 +11,7 @@
 }
 
 .FieldTitle {
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .FieldTitle,
@@ -44,6 +44,6 @@
 
 .RequiredFieldMark {
   position: absolute;
-  top: -0.8ch;
-  right: -1.2ch;
+  top: -0.5ch;
+  right: -0.9ch;
 }

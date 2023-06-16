@@ -46,7 +46,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
     <div className={s.Toolbar}>
       <div className={s.ToolbarLeft}>
         <div className={s.Control}>
-          <Button
+          <SmallButton
             title={props.sessionState ? "Resume" : "Pause"}
             svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
             onClick={playButtonOnClick}
@@ -55,7 +55,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           />
         </div>
         <div className={s.Control}>
-          <Button
+          <SmallButton
             title={"Stop and empty current session"}
             svgIcon={resetIcon}
             onClick={() => props.onStopSession()}
@@ -64,13 +64,12 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           />
         </div>
         <div className={s.Control}>
-          <Button
-            title={"Toggle console"}
+          <SmallButton
+            title={"Show tools"}
             svgIcon={consoleIcon}
             onClick={props.onToggleConsoleClick}
             text="Tools"
             type={'primary'}
-            size='small'
           />
         </div>
         <div className={s.Control}>

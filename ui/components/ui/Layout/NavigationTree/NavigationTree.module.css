@@ -7,7 +7,7 @@
 }
 
 .Node {
-  padding: 8rem 12rem;
+  padding: 8rem 12rem 8rem 18rem;
   background-color: #fff;
   position: relative;
   animation: fade-in 0.2s ease-in-out;
@@ -57,6 +57,7 @@
 .NodeLinkText {
   overflow: hidden;
   text-overflow: ellipsis;
+  padding-left: 0.6ch;
 }
 
 .NodeIcon {

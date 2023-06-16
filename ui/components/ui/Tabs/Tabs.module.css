@@ -1,0 +1,60 @@
+.Tabs {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border-color);
+  background-color: #fff;
+  flex: 1;
+}
+
+.TabsList {
+  display: flex;
+  position: relative;
+}
+
+.CloseTabs {
+  margin-left: auto;
+}
+
+.CloseTabs {
+  background-color: #fff;
+  width: 27rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+}
+
+.CloseTabs:hover {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.CloseTabs svg {
+  width: 18rem;
+  height: 18rem;
+  fill: var(--text-color);
+}
+
+.Tab {
+  padding: 4rem 12rem;
+  border-right: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+}
+
+.Tab:hover:not(.ActiveTab) {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.ActiveTab {
+  border-bottom: 1px solid #fff;
+  margin-bottom: -1px;
+  background-color: #fff;
+}
+
+.TabContent {
+  background-color: #fff;
+  flex: 1;
+  display: flex;
+}

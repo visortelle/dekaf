@@ -38,45 +38,45 @@ message PersistentTopicInternalStats {
 }
 
 message ManagedLedgerInternalStats {
-  optional google.protobuf.Int64Value entries_added_counter = 1;
-  optional google.protobuf.Int64Value number_of_entries = 2;
-  optional google.protobuf.Int64Value total_size = 3;
-  optional google.protobuf.Int64Value current_ledger_entries = 4;
-  optional google.protobuf.Int64Value current_ledger_size = 5;
-  optional google.protobuf.StringValue last_ledger_created_timestamp = 6;
-  optional google.protobuf.StringValue last_ledger_creation_failure_timestamp = 7;
-  optional google.protobuf.Int32Value waiting_cursors_count = 8;
-  optional google.protobuf.Int32Value pending_entries_count = 9;
-  optional google.protobuf.StringValue last_confirmed_entry = 10;
-  optional google.protobuf.StringValue state = 11;
+  google.protobuf.Int64Value entries_added_counter = 1;
+  google.protobuf.Int64Value number_of_entries = 2;
+  google.protobuf.Int64Value total_size = 3;
+  google.protobuf.Int64Value current_ledger_entries = 4;
+  google.protobuf.Int64Value current_ledger_size = 5;
+  google.protobuf.StringValue last_ledger_created_timestamp = 6;
+  google.protobuf.StringValue last_ledger_creation_failure_timestamp = 7;
+  google.protobuf.Int32Value waiting_cursors_count = 8;
+  google.protobuf.Int32Value pending_entries_count = 9;
+  google.protobuf.StringValue last_confirmed_entry = 10;
+  google.protobuf.StringValue state = 11;
   repeated LedgerInfo ledgers = 12;
   map<string, CursorStats> cursors = 13;
 }
 
 message LedgerInfo {
-  optional google.protobuf.Int64Value ledger_id = 1;
-  optional google.protobuf.Int64Value entries = 2;
-  optional google.protobuf.Int64Value size = 3;
-  optional google.protobuf.BoolValue offloaded = 4;
-  optional google.protobuf.StringValue metadata = 5;
-  optional google.protobuf.BoolValue under_replicated = 6;
+  google.protobuf.Int64Value ledger_id = 1;
+  google.protobuf.Int64Value entries = 2;
+  google.protobuf.Int64Value size = 3;
+  google.protobuf.BoolValue offloaded = 4;
+  google.protobuf.StringValue metadata = 5;
+  google.protobuf.BoolValue under_replicated = 6;
 }
 
 message CursorStats {
-  optional google.protobuf.StringValue mark_delete_position = 1;
-  optional google.protobuf.StringValue read_position = 2;
-  optional google.protobuf.BoolValue waiting_read_op = 3;
-  optional google.protobuf.Int32Value pending_read_ops = 4;
-  optional google.protobuf.Int64Value messages_consumed_counter = 5;
-  optional google.protobuf.Int64Value cursor_ledger = 6;
-  optional google.protobuf.Int64Value cursor_ledger_last_entry = 7;
-  optional google.protobuf.StringValue individually_deleted_messages = 8;
-  optional google.protobuf.StringValue last_ledger_switch_timestamp = 9;
-  optional google.protobuf.StringValue state = 10;
-  optional google.protobuf.Int64Value number_of_entries_since_first_not_acked_message = 11;
-  optional google.protobuf.Int32Value total_non_contiguous_deleted_messages_range = 12;
-  optional google.protobuf.BoolValue subscription_have_pending_read = 13;
-  optional google.protobuf.BoolValue subscription_have_pending_replay_read = 14;
+  google.protobuf.StringValue mark_delete_position = 1;
+  google.protobuf.StringValue read_position = 2;
+  google.protobuf.BoolValue waiting_read_op = 3;
+  google.protobuf.Int32Value pending_read_ops = 4;
+  google.protobuf.Int64Value messages_consumed_counter = 5;
+  google.protobuf.Int64Value cursor_ledger = 6;
+  google.protobuf.Int64Value cursor_ledger_last_entry = 7;
+  google.protobuf.StringValue individually_deleted_messages = 8;
+  google.protobuf.StringValue last_ledger_switch_timestamp = 9;
+  google.protobuf.StringValue state = 10;
+  google.protobuf.Int64Value number_of_entries_since_first_not_acked_message = 11;
+  google.protobuf.Int32Value total_non_contiguous_deleted_messages_range = 12;
+  google.protobuf.BoolValue subscription_have_pending_read = 13;
+  google.protobuf.BoolValue subscription_have_pending_replay_read = 14;
   map<string, int64> properties = 15;
 }
 

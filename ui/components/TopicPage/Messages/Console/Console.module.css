@@ -7,58 +7,13 @@
 }
 
 .VisibleConsole {
-  border-top: 1px solid var(--border-color);
+  border-top: 4px solid var(--border-color);
   height: 480rem;
-}
-
-.Tabs {
-  display: flex;
-  background-color: var(--surface-color);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.Tab {
-  padding: 4rem 12rem;
-  border-right: 1px solid var(--border-color);
-  background-color: var(--surface-color);
-}
-
-.Tab:hover:not(.ActiveTab) {
-  opacity: 0.5;
-  cursor: pointer;
-}
-
-.ActiveTab {
-  background-color: #fff;
-  border-bottom: 1px solid #fff;
-  margin-bottom: -1px;
 }
 
 .SubscriptionsCursors {
   display: flex;
   flex: 1 1 auto;
-}
-
-.CloseConsole {
-  background-color: #fff;
-  width: 27rem;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: auto;
-  border-left: 1px solid var(--border-color);
-}
-
-.CloseConsole:hover {
-  opacity: 0.5;
-  cursor: pointer;
-}
-
-.CloseConsole svg {
-  width: 18rem;
-  height: 18rem;
-  fill: var(--text-color);
 }
 
 .NothingToShow {

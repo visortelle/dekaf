@@ -1,11 +1,11 @@
 .Toolbar {
   display: flex;
-  padding: 12rem;
+  padding: 8rem 12rem;
   background-color: var(--surface-color);
 }
 
 .ToolbarButton {
-  margin-right: 12rem;
+  margin-right: 8rem;
 }
 
 .ToolbarButton:last-child {
