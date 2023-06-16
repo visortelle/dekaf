@@ -3,17 +3,15 @@ import React from 'react';
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
 import Producer from './Producer/Producer';
 import Visualization from './Visualization/Visualization';
-import DebugConsole from './DebugConsole/DebugConsole';
 import MessagesExporter from './MessagesExporter/MessagesExporter';
 import { MessageDescriptor, SessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
-import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import EnteringFromBottomDiv from '../../../ui/animations/EnteringFromBottomDiv';
 import Tabs from '../../../ui/Tabs/Tabs';
 
-import closeIcon from './close.svg';
-
 import s from './Console.module.css'
+import DebugLogs from './FilterLogs/FilterLogs';
+import ExpressionInspector from './FilterRepl/FilterRepl';
 
 export type ConsoleProps = {
   isShow: boolean;
@@ -28,7 +26,7 @@ export type ConsoleProps = {
   consumerName: string;
 };
 
-type TabKey = 'producer' | 'cursors' | 'visualize' | 'debug-console' | 'export';
+type TabKey = 'producer' | 'cursors' | 'visualize' | 'filter-logs' | 'filter-repl' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
   const [activeTab, setActiveTab] = React.useState<TabKey>('export');
@@ -67,14 +65,23 @@ const Console: React.FC<ConsoleProps> = (props) => {
               />
             )
           },
-          'debug-console': {
-            title: 'Filter debugger',
+          'filter-repl': {
+            title: 'Filter REPL',
             render: () => (
-              <DebugConsole
+              <ExpressionInspector
+                consumerName={props.consumerName}
+                sessionState={props.sessionState}
+                isVisible={activeTab === 'filter-repl'}
+              />
+            )
+          },
+          'filter-logs': {
+            title: 'Filter logs',
+            render: () => (
+              <DebugLogs
                 messages={props.messages}
                 sessionState={props.sessionState}
-                consumerName={props.consumerName}
-                isVisible={activeTab === 'debug-console'}
+                isVisible={activeTab === 'filter-logs'}
               />
             )
           },
