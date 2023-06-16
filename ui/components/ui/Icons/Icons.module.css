@@ -44,7 +44,7 @@
   border-radius: 2rem;
   padding: 1rem 4rem;
   font-size: 12rem;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
   line-height: 1;
   white-space: no-wrap;
 }

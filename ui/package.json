@@ -52,7 +52,7 @@
     "react-virtuoso": "^4.3.8",
     "safe-stable-stringify": "^2.4.2",
     "swr": "^2.0.3",
-    "use-debounce": "^9.0.2",
+    "use-debounce": "^9.0.4",
     "use-local-storage-state": "^18.1.2",
     "use-query-params": "^1.2.3",
     "uuid": "^8.3.2"

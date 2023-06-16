@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './MemorySizeInput.module.css'
-import SelectInput from '../SelectInput/SelectInput';
-import Input from '../Input/Input';
+import Select from '../../Select/Select';
+import Input from '../../Input/Input';
 import { MemorySize, MemoryUnit, memoryUnits } from './types';
 import { bytesToMemorySize, memorySizeToBytes } from './conversions';
 import * as Notifications from '../../../app/contexts/Notifications';
@@ -48,7 +48,7 @@ const MemorySizeInput: React.FC<MemorySizeInputProps> = (props) => {
       </div>
 
       <div className={s.Unit}>
-        <SelectInput<MemoryUnit>
+        <Select<MemoryUnit>
           list={memoryUnits.map(u => ({ type: 'item', value: u, title: u }))}
           onChange={(unit) => {
             const newValue: MemorySize = { ...value, unit: unit as MemoryUnit };

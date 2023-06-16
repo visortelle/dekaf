@@ -53,7 +53,7 @@ import { help } from './Message/fields';
 import { TooltipWrapper } from 'react-tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-const consoleCss = "color: #276ff4; font-weight: bold;";
+const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
 export type SessionProps = {
   sessionKey: number;

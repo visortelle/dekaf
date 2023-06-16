@@ -6,7 +6,9 @@
 :host {
   font-size: 0.9px;
   font-family: "Inter", sans-serif;
-  font-weight: 400;
+  --font-weight-normal: 300;
+  --font-weight-bold: 500;
+  font-weight: var(--font-weight-normal);
   color: var(--text-color);
   line-height: 1.5;
   font-variant-ligatures: none;
@@ -50,8 +52,8 @@ select {
   background-color: #fff;
 }
 
-strong {
-  font-size: 0.9285714em; /* Ratio like: 14px -> 13px */
+strong, b {
+  font-weight: var(--font-weight-bold);
 }
 
 a {
@@ -104,7 +106,7 @@ hr {
 }
 
 code {
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
   padding: 0rem 8rem;
   border-radius: 4rem;
 }

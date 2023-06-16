@@ -15,7 +15,7 @@
 }
 
 .Tab {
-  padding: 8rem 12rem;
+  padding: 8rem 24rem;
   border-left: 1px solid var(--border-color);
   display: flex;
   justify-content: center;

@@ -10,7 +10,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 14rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-bold);
   background-color: var(--accent-color-blue);
   padding: 4rem 12rem;
   border-radius: 4rem;
@@ -22,6 +22,8 @@
   opacity: 1;
   border: 1px solid var(--border-color);
   transition: var(--transition-short);
+  height: 28rem;
+  min-width: 28rem;
 }
 
 .Text {
@@ -65,10 +67,11 @@
 }
 
 .Button svg {
-  width: 20rem;
-  height: 20rem;
+  width: 18rem;
+  height: 18rem;
   margin: 1rem;
-  margin-right: 8rem;
+  margin-right: 10rem;
+  margin-left: -4rem;
 }
 
 .ButtonWithoutText {
@@ -76,6 +79,7 @@
 }
 
 .ButtonWithoutText svg {
+  margin-left: 0 !important;
   margin-right: 0;
 }
 
@@ -87,7 +91,7 @@
 }
 
 .DisabledButton svg {
-  fill: var(--border-color);
+  fill: #aaa;
 }
 
 .DisabledButton:hover {

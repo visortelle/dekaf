@@ -173,7 +173,19 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             },
             consumersCount: {
               title: 'Consumers',
-              render: (de) => i18n.withVoidDefault(de.consumersCount, i18n.formatCount),
+              render: (de) => i18n.withVoidDefault(de.consumersCount, v =>
+                <Link
+                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.get({
+                    tenant: props.tenant,
+                    namespace: props.namespace,
+                    topic: props.topic,
+                    topicType: props.topicType,
+                    subscription: de.subscriptionName,
+                  })}
+                >
+                  {v}
+                </Link>
+              ),
               sortFn: (a, b) => (a.data.consumersCount ?? 0) - (b.data.consumersCount ?? 0),
             },
             delayedMessageIndexSizeInBytes: {

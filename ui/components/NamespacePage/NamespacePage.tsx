@@ -57,12 +57,6 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             type: 'regular'
           },
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Policies',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
             linkTo: routes.tenants.tenant.namespaces.namespace.permissions._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Permissions',
             onClick: () => { },
@@ -70,7 +64,13 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Sub. permissions',
+            text: 'Subscription Permissions',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
+            linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Policies',
             onClick: () => { },
             type: 'regular'
           },
@@ -97,8 +97,8 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
 
       {props.view === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
-      {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} /> }
-      {props.view === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} /> }
+      {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'create-topic' && <CreateTopic tenant={props.tenant} namespace={props.namespace} />}
     </div>
   );

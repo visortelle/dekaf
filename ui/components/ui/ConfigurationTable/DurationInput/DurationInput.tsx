@@ -1,7 +1,7 @@
 import React from 'react';
-import s from './DurationInput.module.css'
-import SelectInput from '../SelectInput/SelectInput';
-import Input from '../Input/Input';
+import s from './DurationInput.module.css';
+import Select from '../../Select/Select';
+import Input from '../../Input/Input';
 import { Duration, DurationUnit, durationUnits } from './types';
 import { durationToSeconds, secondsToDuration } from './conversions';
 
@@ -30,7 +30,7 @@ const DurationInput: React.FC<DurationInputProps> = (props) => {
       </div>
 
       <div className={s.Unit}>
-        <SelectInput<DurationUnit>
+        <Select<DurationUnit>
           list={durationUnits.map(u => ({ type: 'item', value: u, title: u }))}
           onChange={(unit) => {
             const newValue: Duration = { ...value, unit: unit as DurationUnit };

@@ -9,10 +9,10 @@
 .FormLabel {
   display: block;
   margin-bottom: 4rem;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .ValidationError {
   color: var(--accent-color-red);
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
