@@ -1,19 +1,14 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { MessageDescriptor, SessionState } from '../../../types';
-import s from './DebugLogs.module.css'
+import { MessageDescriptor, SessionState } from '../../types';
+import s from './FilterLogs.module.css'
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
-import Input from '../../../../../ui/Input/Input';
 import Highlighter from 'react-highlight-words';
 import { useDebounce } from 'use-debounce';
-import { DebugConsoleView } from '../types';
-import Toolbar from '../Toolbar/Toolbar';
-import { getLogColor, LogLevel, parseLogLine } from '../../logging/loggin';
+import { getLogColor, LogLevel, parseLogLine } from '../logging/loggin';
 
 export type DebugLogsProps = {
   messages: MessageDescriptor[],
   sessionState: SessionState,
-  view: DebugConsoleView,
-  onSwitchView: (view: DebugConsoleView) => void,
   isVisible: boolean,
 };
 
@@ -45,13 +40,7 @@ const DebugLogs: React.FC<DebugLogsProps> = (props) => {
 
   return (
     <div className={s.DebugLogs}>
-      <Toolbar onSwitchView={props.onSwitchView} view={props.view}>
-        <div className={s.SearchQueryInput}>
-          <Input value={searchQuery} onChange={(v) => setSearchQuery(v)} placeholder="Search in logs" clearable />
-        </div>
-      </Toolbar>
-
-      <div className={s.Logs} ref={scrollParentRef}>
+       <div className={s.Logs} ref={scrollParentRef}>
         <Virtuoso<MessageDescriptor>
           ref={virtuosoRef}
           itemContent={(i, message) => {

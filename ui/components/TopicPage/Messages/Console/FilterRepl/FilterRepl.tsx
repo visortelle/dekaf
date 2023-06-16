@@ -1,23 +1,19 @@
-import React, { useCallback, useEffect } from 'react';
-import Toolbar from '../Toolbar/Toolbar';
-import { DebugConsoleView } from '../types';
-import s from './ExpressionInspector.module.css'
-import * as GrpcClient from '../../../../../app/contexts/GrpcClient/GrpcClient';
-import * as Notifications from '../../../../../app/contexts/Notifications';
-import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
-import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
-import Button from '../../../../../ui/Button/Button';
-import CodeEditor from '../../../../../ui/CodeEditor/CodeEditor';
+import React, { useEffect } from 'react';
+import s from './FilterRepl.module.css'
+import * as GrpcClient from '../../../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../../../app/contexts/Notifications';
+import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
+import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
+import Button from '../../../../ui/Button/Button';
+import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import runIcon from './run.svg';
 import clearIcon from './clear.svg';
-import { getLogColor, parseLogLine } from '../../logging/loggin';
-import { SessionState } from '../../../types';
+import { getLogColor, parseLogLine } from '../logging/loggin';
+import { SessionState } from '../../types';
 
 export type ExpressionInspectorProps = {
   consumerName: string,
   sessionState: SessionState,
-  view: DebugConsoleView,
-  onSwitchView: (view: DebugConsoleView) => void,
   isVisible: boolean,
 };
 
@@ -70,16 +66,16 @@ const ExpressionInspector: React.FC<ExpressionInspectorProps> = (props) => {
         }
       }}
     >
-      <Toolbar onSwitchView={props.onSwitchView} view={props.view}>
+      <div style={{ padding: '12rem' }}>
         <div>
           Run any JavaScript expression in the context of the session. Try <code>jsLibs</code> <code>2 + 2</code> or <code>lastMessage</code>.
         </div>
         {!isConsumerCreated && (
           <div style={{ color: 'var(--accent-color-red)' }}>
-            You should first initiate the session to be able run any expression.
+            You should first initiate the session before evaluate any expression.
           </div>
         )}
-      </Toolbar>
+      </div>
 
       <div className={s.Inspector}>
         <div className={s.CodeEditor}>
