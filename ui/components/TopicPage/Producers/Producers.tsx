@@ -50,39 +50,33 @@ const Producers: React.FC<ProducersProps> = (props) => {
 
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  const { data, error: dataError } = useSWR(
-    `producers-${topicFqn}`,
-    async () => {
-      const req = new pb.GetTopicsStatsRequest();
+  const dataLoaderCacheKey = [`producers-${topicFqn}`];
+  const dataLoader = async () => {
+    const req = new pb.GetTopicsStatsRequest();
 
-      req.setIsGetPreciseBacklog(true);
-      req.setIsEarliestTimeInBacklog(true);
-      req.setIsSubscriptionBacklogSize(true);
-      req.setIsPerPartition(false);
+    req.setIsGetPreciseBacklog(true);
+    req.setIsEarliestTimeInBacklog(true);
+    req.setIsSubscriptionBacklogSize(true);
+    req.setIsPerPartition(false);
 
-      req.setTopicsList([topicFqn]);
-      req.setPartitionedTopicsList([topicFqn]);
+    req.setTopicsList([topicFqn]);
+    req.setPartitionedTopicsList([topicFqn]);
 
-      const res = await topicServiceClient.getTopicsStats(req, null)
-        .catch((err) => notifyError(`Unable to get topics stats: ${err}`));
+    const res = await topicServiceClient.getTopicsStats(req, null)
+      .catch((err) => notifyError(`Unable to get topics stats: ${err}`));
 
-      if (res === undefined) {
-        return [];
-      }
-
-      const stats = findTopicStats(res, topicFqn);
-
-      if (stats === undefined) {
-        notifyError(`Unable to find stats for topic ${topicFqn}`);
-        return;
-      }
-
-      return dataEntriesFromPb(stats);
+    if (res === undefined) {
+      return [];
     }
-  );
 
-  if (dataError) {
-    notifyError(`Unable to get topic stats. ${dataError}`);
+    const stats = findTopicStats(res, topicFqn);
+
+    if (stats === undefined) {
+      notifyError(`Unable to find stats for topic ${topicFqn}`);
+      return [];
+    }
+
+    return dataEntriesFromPb(stats);
   }
 
   return (
@@ -166,7 +160,13 @@ const Producers: React.FC<ProducersProps> = (props) => {
             { key: 'metadata', width: 200, visibility: 'visible' },
           ],
         }}
-        dataLoader={data || []}
+        dataLoader={{
+          cacheKey: dataLoaderCacheKey,
+          loader: dataLoader
+        }}
+        autoRefresh={{
+          intervalMs: 5000
+        }}
         getId={(entry) => entry.producerName?.toString() ?? ''}
         tableId='producers-table'
         defaultSort={{ column: 'producerName', direction: 'asc', type: 'by-single-column' }}

@@ -5,7 +5,6 @@ import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import * as pbUtils from '../../../pbUtils/pbUtils';
-import useSWR from 'swr';
 import Table from '../../ui/Table/Table';
 import { help } from './help';
 import Link from '../../ui/Link/Link';
@@ -106,39 +105,33 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
 
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  const { data, error: dataError } = useSWR(
-    `subscriptions-${topicFqn}`,
-    async () => {
-      const req = new pb.GetTopicsStatsRequest();
+  const dataLoaderCacheKey = [`subscriptions-${topicFqn}`];
+  const dataLoader = async () => {
+    const req = new pb.GetTopicsStatsRequest();
 
-      req.setIsGetPreciseBacklog(true);
-      req.setIsEarliestTimeInBacklog(true);
-      req.setIsSubscriptionBacklogSize(true);
-      req.setIsPerPartition(false);
+    req.setIsGetPreciseBacklog(true);
+    req.setIsEarliestTimeInBacklog(true);
+    req.setIsSubscriptionBacklogSize(true);
+    req.setIsPerPartition(false);
 
-      req.setTopicsList([topicFqn]);
-      req.setPartitionedTopicsList([topicFqn]);
+    req.setTopicsList([topicFqn]);
+    req.setPartitionedTopicsList([topicFqn]);
 
-      const res = await topicServiceClient.getTopicsStats(req, null)
-        .catch((err) => notifyError(`Unable to get topics stats: ${err}`));
+    const res = await topicServiceClient.getTopicsStats(req, null)
+      .catch((err) => notifyError(`Unable to get topics stats: ${err}`));
 
-      if (res === undefined) {
-        return [];
-      }
-
-      const stats = findTopicStats(res, topicFqn);
-
-      if (stats === undefined) {
-        notifyError(`Unable to find stats for topic ${topicFqn}`);
-        return;
-      }
-
-      return dataEntriesFromPb(stats);
+    if (res === undefined) {
+      return [];
     }
-  );
 
-  if (dataError) {
-    notifyError(`Unable to get persistent topics: ${dataError}`);
+    const stats = findTopicStats(res, topicFqn);
+
+    if (stats === undefined) {
+      notifyError(`Unable to find stats for topic ${topicFqn}`);
+      return [];
+    }
+
+    return dataEntriesFromPb(stats);
   }
 
   return (
@@ -399,8 +392,14 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             { key: "delayedMessageIndexSizeInBytes", width: 200, visibility: 'visible' }
           ],
         }}
-        dataLoader={data ?? []}
+        dataLoader={{
+          cacheKey: dataLoaderCacheKey,
+          loader: dataLoader
+        }}
         tableId='subscriptions'
+        autoRefresh={{
+          intervalMs: 5000,
+        }}
         getId={(entry) => entry.subscriptionName}
         defaultSort={{ column: 'subscriptionName', direction: 'asc', type: 'by-single-column' }}
       />
