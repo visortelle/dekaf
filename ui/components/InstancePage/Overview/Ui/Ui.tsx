@@ -11,7 +11,7 @@ const Ui: React.FC = (props) => {
       <table className={sts.Table}>
         <tbody>
           <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Version</td>
+            <td className={sts.HighlightedCell}>GammaScope Version</td>
             <td className={sts.Cell}>{config?.buildInfo.version}</td>
           </tr>
           <tr className={sts.Row}>

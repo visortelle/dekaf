@@ -10,6 +10,7 @@ import * as Notifications from '../../app/contexts/Notifications';
 import useSWR from 'swr';
 import { TooltipWrapper } from 'react-tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import NothingToShow from '../NothingToShow/NothingToShow';
 
 export type ColumnKey = string;
 export type DataEntryKey = string;
@@ -151,7 +152,11 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   }, [props.data, sort, lazyData]);
 
   if (props.data.length === 0) {
-    return <div className={s.NothingToShow}>Nothing to show.</div>;
+    return (
+      <div className={s.NothingToShow}>
+        <NothingToShow />
+      </div>
+    );
   }
 
   return (

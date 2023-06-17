@@ -1,2 +1,5 @@
 .Footer {
+  border-top: 4px solid var(--border-color);
+  background-color: var(--surface-color);
+  padding-top: 2rem;
 }

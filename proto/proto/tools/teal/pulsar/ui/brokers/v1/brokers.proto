@@ -110,6 +110,12 @@ message DeleteResourceGroupResponse {
   google.rpc.Status status = 1;
 }
 
+message GetVersionRequest {}
+message GetVersionResponse {
+  google.rpc.Status status = 1;
+  string version = 2;
+}
+
 service BrokersService {
   rpc GetRuntimeConfigurations(GetRuntimeConfigurationsRequest) returns (GetRuntimeConfigurationsResponse) {}
   rpc GetInternalConfigurationData(GetInternalConfigurationDataRequest) returns (GetInternalConfigurationDataResponse) {}
@@ -126,4 +132,6 @@ service BrokersService {
   rpc CreateResourceGroup(CreateResourceGroupRequest) returns (CreateResourceGroupResponse) {}
   rpc UpdateResourceGroup(UpdateResourceGroupRequest) returns (UpdateResourceGroupResponse) {}
   rpc DeleteResourceGroup(DeleteResourceGroupRequest) returns (DeleteResourceGroupResponse) {}
+
+  rpc GetVersion(GetVersionRequest) returns (GetVersionResponse) {}
 }

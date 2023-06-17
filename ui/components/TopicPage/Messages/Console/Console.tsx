@@ -12,6 +12,7 @@ import Tabs from '../../../ui/Tabs/Tabs';
 import s from './Console.module.css'
 import DebugLogs from './FilterLogs/FilterLogs';
 import ExpressionInspector from './FilterRepl/FilterRepl';
+import NothingToShow from '../../../ui/NothingToShow/NothingToShow';
 
 export type ConsoleProps = {
   isShow: boolean;
@@ -115,7 +116,7 @@ const CursorsTab: React.FC<ConsoleProps> = (props) => {
   return (
     <>
       {!(props.sessionState === 'running' || props.sessionState === 'paused') && (
-        <div className={s.NothingToShow}>Run session to see cursors list.</div>
+        <NothingToShow content={"Run session to see cursors list."} />
       )}
       {props.sessionConfig.topicsSelector.type === 'by-names' && (
         <>

@@ -1,0 +1,19 @@
+.NothingToShow {
+  background-color: var(--surface-color);
+  border-radius: 12rem;
+  padding: 24rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-in 0.2s ease-in-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+

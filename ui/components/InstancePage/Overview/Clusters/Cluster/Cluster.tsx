@@ -1,11 +1,11 @@
 import React from "react";
 import s from "./Cluster.module.css";
-import sts from "../../../ui/SimpleTable/SimpleTable.module.css";
-import * as Notifications from "../../../app/contexts/Notifications";
-import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
-import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
-import { Code } from "../../../../grpc-web/google/rpc/code_pb";
-import { swrKeys } from "../../../swrKeys";
+import sts from "../../../../ui/SimpleTable/SimpleTable.module.css";
+import * as Notifications from "../../../../app/contexts/Notifications";
+import * as GrpcClient from "../../../../app/contexts/GrpcClient/GrpcClient";
+import * as pb from "../../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
+import { Code } from "../../../../../grpc-web/google/rpc/code_pb";
+import { swrKeys } from "../../../../swrKeys";
 import useSWR from "swr";
 
 export type ClusterProps = {
@@ -45,41 +45,44 @@ const Cluster: React.FC<ClusterProps> = (props) => {
 
   return (
     <div className={s.Cluster}>
-      <strong>Cluster:</strong> {props.cluster}
       <table className={sts.Table}>
         <tbody>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Service URL</td>
+            <td className={sts.HighlightedCell}>Cluster Name</td>
+            <td className={sts.Cell}>{props.cluster}</td>
+          </tr>
+          <tr className={sts.Row}>
+            <td className={sts.HighlightedCell}>Service URL</td>
             <td className={sts.Cell}>
               {cluster.getServiceUrl()?.getValue() || <NoData />}
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Service URL TLS</td>
+            <td className={sts.HighlightedCell}>Service URL TLS</td>
             <td className={sts.Cell}>
               {cluster.getServiceUrlTls()?.getValue() || <NoData />}
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Broker service URL</td>
+            <td className={sts.HighlightedCell}>Broker Service URL</td>
             <td className={sts.Cell}>
               {cluster.getBrokerServiceUrl()?.getValue() || <NoData />}
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Broker service URL TLS</td>
+            <td className={sts.HighlightedCell}>Broker Service URL TLS</td>
             <td className={sts.Cell}>
               {cluster.getBrokerServiceUrlTls()?.getValue() || <NoData />}
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Proxy service URL</td>
+            <td className={sts.HighlightedCell}>Proxy Service URL</td>
             <td className={sts.Cell}>
               {cluster.getProxyServiceUrl()?.getValue() || <NoData />}
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Proxy protocol</td>
+            <td className={sts.HighlightedCell}>Proxy Protocol</td>
             <td className={sts.Cell}>
               {proxyProtocolPbToString(cluster.getProxyProtocol()) || (
                 <NoData />
@@ -87,7 +90,7 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Peer cluster names</td>
+            <td className={sts.HighlightedCell}>Peer Cluster Names</td>
             <td className={sts.Cell}>
               {cluster.getPeerClusterNamesList().length === 0 ? (
                 <NoData />
@@ -99,19 +102,19 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Authentication plugin</td>
+            <td className={sts.HighlightedCell}>Authentication Plugin</td>
             <td className={sts.Cell}>
               {cluster.getAuthenticationPlugin()?.getValue() || <NoData />}
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Authentication parameters</td>
+            <td className={sts.HighlightedCell}>Authentication Parameters</td>
             <td className={sts.Cell}>
               {cluster.getAuthenticationParameters()?.getValue() || <NoData />}
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Is broker client TLS enabled</td>
+            <td className={sts.HighlightedCell}>Is Broker Client TLS Enabled</td>
             <td className={sts.Cell}>
               {cluster.getIsBrokerClientTlsEnabled()?.getValue() ===
                 undefined ? (
@@ -124,7 +127,7 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Is TLS allow insecure connection</td>
+            <td className={sts.HighlightedCell}>Is TLS Allow Insecure Connection</td>
             <td className={sts.Cell}>
               {cluster.getIsTlsAllowInsecureConnection()?.getValue() ===
                 undefined ? (
@@ -138,8 +141,8 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>
-              Is broker client TLS enabled with key store
+            <td className={sts.HighlightedCell}>
+              Is Broker Client TLS Enabled with Key Store
             </td>
             <td className={sts.Cell}>
               {cluster.getIsBrokerClientTlsEnabledWithKeyStore()?.getValue() ===
@@ -155,7 +158,7 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Broker client TLS trust store type</td>
+            <td className={sts.HighlightedCell}>Broker Client TLS Trust Store Type</td>
             <td className={sts.Cell}>
               {cluster.getBrokerClientTlsTrustStoreType()?.getValue() || (
                 <NoData />
@@ -163,7 +166,7 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Broker client trust certs file path</td>
+            <td className={sts.HighlightedCell}>Broker Client Trust Certs File Path</td>
             <td className={sts.Cell}>
               {cluster.getBrokerClientTrustCertsFilePath()?.getValue() || (
                 <NoData />
@@ -171,7 +174,7 @@ const Cluster: React.FC<ClusterProps> = (props) => {
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Listener name</td>
+            <td className={sts.HighlightedCell}>Listener Name</td>
             <td className={sts.Cell}>
               {cluster.getListenerName()?.getValue() || <NoData />}
             </td>

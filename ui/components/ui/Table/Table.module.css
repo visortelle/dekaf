@@ -96,14 +96,6 @@
   border-right: none;
 }
 
-.NothingToShow {
-  background-color: var(--surface-color);
-  padding: 24rem;
-  border-radius: 12rem;
-  font-size: 14rem;
-  margin: 12rem;
-}
-
 .LazyContent {
   animation: fade-in 0.2s ease-in-out;
 }
@@ -122,6 +114,10 @@
 
 .Badge:last-child {
   margin-right: 0;
+}
+
+.NothingToShow {
+  padding: 12rem;
 }
 
 .NoData {

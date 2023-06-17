@@ -4,7 +4,7 @@ import com.tools.teal.pulsar.ui.brokers.v1.brokers as pb
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.typesafe.scalalogging.Logger
-import com.tools.teal.pulsar.ui.brokers.v1.brokers.{BacklogQuotaCheckRequest, BacklogQuotaCheckResponse, CreateResourceGroupRequest, CreateResourceGroupResponse, DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, DeleteResourceGroupRequest, DeleteResourceGroupResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetResourceGroupRequest, GetResourceGroupResponse, GetResourceGroupsListRequest, GetResourceGroupsListResponse, GetResourceGroupsRequest, GetResourceGroupsResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, HealthCheckRequest, HealthCheckResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse, UpdateResourceGroupRequest, UpdateResourceGroupResponse}
+import com.tools.teal.pulsar.ui.brokers.v1.brokers.{BacklogQuotaCheckRequest, BacklogQuotaCheckResponse, CreateResourceGroupRequest, CreateResourceGroupResponse, DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, DeleteResourceGroupRequest, DeleteResourceGroupResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetResourceGroupRequest, GetResourceGroupResponse, GetResourceGroupsListRequest, GetResourceGroupsListResponse, GetResourceGroupsRequest, GetResourceGroupsResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, GetVersionRequest, GetVersionResponse, HealthCheckRequest, HealthCheckResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse, UpdateResourceGroupRequest, UpdateResourceGroupResponse}
 import org.apache.pulsar.common.naming.TopicVersion
 import org.apache.pulsar.common.policies.data.ResourceGroup
 import _root_.pulsar_auth.RequestContext
@@ -285,5 +285,25 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
             case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(pb.UpdateResourceGroupResponse(status = Some(status)))
+        }
+
+    override def getVersion(request: GetVersionRequest): Future[GetVersionResponse] =
+        logger.debug(s"Getting broker version.")
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        try {
+            Option(adminClient.brokers.getVersion) match
+                case Some(version) =>
+                    Future.successful(pb.GetVersionResponse(
+                        status = Some(Status(code = Code.OK.index)),
+                        version
+                    ))
+                case None =>
+                    val status = Status(code = Code.FAILED_PRECONDITION.index, message = "Something went wrong.")
+                    Future.successful(pb.GetVersionResponse(status = Some(status)))
+        } catch {
+            case err =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.GetVersionResponse(status = Some(status)))
         }
 }

@@ -1,8 +1,8 @@
-import React, { CSSProperties, ReactNode, useState } from 'react';
+import React, { CSSProperties, ReactNode, useEffect, useState } from 'react';
 import * as GrpcClient from '../GrpcClient/GrpcClient';
 import useSWR from 'swr';
 import { swrKeys } from '../../../swrKeys';
-import { HealthCheckRequest } from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 
 type Status = 'unknown' | 'ok' | 'failed';
@@ -13,13 +13,15 @@ type HealthCheckResult = {
 
 export type Value = {
   healthCheckResult: HealthCheckResult;
+  brokerVersion: string | undefined;
 }
 
 const defaultValue: Value = {
   healthCheckResult: {
     brokerConnection: 'unknown',
     uiServerConnection: 'unknown',
-  }
+  },
+  brokerVersion: undefined
 };
 
 const Context = React.createContext<Value>(defaultValue);
@@ -31,11 +33,12 @@ type DefaultProviderProps = {
 export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const { brokersServiceClient } = GrpcClient.useContext();
   const [result, setResult] = useState<HealthCheckResult>(defaultValue.healthCheckResult);
+  const [brokerVersion, setBrokerVersion] = useState<Value['brokerVersion']>();
 
   useSWR(
     swrKeys.pulsar.brokers.healthCheck._(),
     async () => {
-      const req = new HealthCheckRequest();
+      const req = new pb.HealthCheckRequest();
       const res = await brokersServiceClient.healthCheck(req, {}).catch(() => { });
 
       if (res === undefined) {
@@ -64,6 +67,23 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
     { refreshInterval: 1000 }
   );
 
+  useEffect(() => {
+    const getBrokerVersion = async () => {
+      const req = new pb.GetVersionRequest();
+
+      const res = await brokersServiceClient.getVersion(req, {}).catch(() => {});
+      if (res === undefined || res.getStatus()?.getCode() !== Code.OK) {
+        setBrokerVersion(undefined);
+        return;
+      }
+
+      const brokerVersion = res.getVersion();
+      setBrokerVersion(brokerVersion);
+    }
+
+    getBrokerVersion();
+  }, []);
+
   const style: CSSProperties = {
     width: '100%',
     height: '100%',
@@ -74,18 +94,19 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
     padding: '48rem'
   };
   if (result.uiServerConnection === 'failed') {
-    return <div style={style}>Your browser &lt;-&gt; UI Server connection check has failed.</div>;
+    return <div style={style}>Your browser ↔ UI Server connection check has failed.</div>;
   }
 
   if (result.brokerConnection === 'failed') {
-    return <div style={style}>UI Server &lt;-&gt; Pulsar Broker connection check has failed.</div>;
+    return <div style={style}>UI Server ↔ Pulsar Broker connection check has failed.</div>;
   }
 
   return (
     <Context.Provider
       value={{
         ...defaultValue,
-        healthCheckResult: result
+        healthCheckResult: result,
+        brokerVersion
       }}
     >
       {props.children}
