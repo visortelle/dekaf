@@ -1,3 +1,4 @@
 .SettingsBar {
-  padding: 12rem 12rem 0 12rem;
+  padding: 18rem 12rem 8rem 12rem;
+  border-bottom: 1px solid var(--border-color);
 }

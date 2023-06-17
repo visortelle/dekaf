@@ -8,7 +8,6 @@ import Tenants from './Tenants/Tenants';
 import CreateTenantPage from './CreateTenantPage/CreateTenantPage';
 import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
 import ResourceGroups from './ResourceGroups/ResourceGroups';
-import KeyValueEditor from '../ui/KeyValueEditor/KeyValueEditor';
 
 export type InstancePageView =
   { type: 'overview' } |
@@ -31,24 +30,24 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
           crumbs={[
             {
               id: `instance`,
-              value: 'Pulsar',
               type: 'instance',
+              value: ''
             }
           ]}
         />
         <Toolbar
           buttons={[
             {
-              linkTo: routes.instance.tenants._.get(),
-              text: 'Tenants',
-              onClick: () => { },
-              type: 'regular',
-            },
-            {
               linkTo: routes.instance.overview._.get(),
               text: 'Overview',
               onClick: () => { },
               type: 'regular'
+            },
+            {
+              linkTo: routes.instance.tenants._.get(),
+              text: 'Tenants',
+              onClick: () => { },
+              type: 'regular',
             },
             {
               linkTo: routes.instance.configuration._.get(),
@@ -58,13 +57,13 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
             },
             {
               linkTo: routes.instance.resourceGroups._.get(),
-              text: 'Resource groups',
+              text: 'Resource Groups',
               onClick: () => { },
               type: 'regular'
             },
             {
               linkTo: routes.instance.createTenant._.get(),
-              text: 'New tenant',
+              text: 'New Tenant',
               onClick: () => { },
               type: 'primary',
               position: 'right'

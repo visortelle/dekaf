@@ -79,8 +79,8 @@ const Session: React.FC<SessionProps> = (props) => {
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);
-  const consumerName = useRef<string>('__xray_con_' + nanoid());
-  const subscriptionName = useRef<string>('__xray_sub_' + nanoid());
+  const consumerName = useRef<string>('__gammascope_' + nanoid());
+  const subscriptionName = useRef<string>('__gammascope_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const [displayMessagesLimit, setDisplayMessagesLimit] = useState<number>(10000);

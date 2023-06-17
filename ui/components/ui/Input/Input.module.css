@@ -46,7 +46,7 @@
 
 .InputInput.InputInputWithError,
 .InputInput.InputInputWithError:focus {
-  border-color: var(--accent-color-red);
+  border: 2px solid var(--accent-color-red);
 }
 
 .InputInputWithIcon {
@@ -54,7 +54,7 @@
 }
 
 .InputInput:focus {
-  border-color: var(--accent-color-blue);
+  border: 2px solid var(--accent-color-blue);
   transition: var(--transition-short);
 }
 

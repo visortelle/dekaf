@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './TealTools.module.css'
-import Logo from './Logo';
+import Logo from './Logo/Logo';
 import * as AppContext from '../../../app/contexts/AppContext';
 
 const TealTools: React.FC = () => {

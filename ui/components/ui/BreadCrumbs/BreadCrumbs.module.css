@@ -53,18 +53,3 @@
   justify-content: center;
   margin: 1rem;
 }
-
-.CopyNameButton button {
-  width: 26rem;
-  height: 26rem;
-  border: 1px solid var(--accent-color-blue);
-  background: var(--accent-color-blue);
-  box-shadow: none;
-  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
-}
-
-.CopyNameButton svg {
-  fill: #fff;
-  width: 16rem;
-  height: 16rem;
-}

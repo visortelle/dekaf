@@ -124,7 +124,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         Future.successful(PauseResponse(status = Some(status)))
 
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
-        val consumerName: ConsumerName = request.consumerName.getOrElse("__xray" + UUID.randomUUID().toString)
+        val consumerName: ConsumerName = request.consumerName.getOrElse("__gammascope" + UUID.randomUUID().toString)
         logger.info(s"Creating consumer. Consumer: $consumerName")
         val adminClient = RequestContext.pulsarAdmin.get()
         val pulsarClient = RequestContext.pulsarClient.get()

@@ -4,11 +4,15 @@
   border-bottom: 1px solid var(--border-color);
   background-color: #fff;
   flex: 1;
+  overflow: auto;
 }
 
 .TabsList {
   display: flex;
   position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .CloseTabs {
@@ -37,9 +41,14 @@
 }
 
 .Tab {
-  padding: 4rem 12rem;
+  padding: 8rem 12rem;
   border-right: 1px solid var(--border-color);
   background-color: var(--surface-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
 }
 
 .Tab:hover:not(.ActiveTab) {

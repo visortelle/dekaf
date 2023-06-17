@@ -38,6 +38,7 @@ import offloadPoliciesField from './fields/offload-policies/offload-policies';
 import publishRateField from './fields/publish-rate';
 import resourceGroupField from './fields/resource-group';
 import propertiesField from './fields/properties';
+import Tabs from '../../ui/Tabs/Tabs';
 
 import s from './Policies.module.css'
 
@@ -46,127 +47,191 @@ export type PoliciesProps = {
   namespace: string;
 };
 
+type TabsKey =
+  'namespace-config' |
+  'topics' |
+  'consumers' |
+  'subscriptions' |
+  'retention' |
+  'deduplication' |
+  'schema' |
+  'affinity' |
+  'encryption' |
+  'tiered-storage';
+
 const Policies: React.FC<PoliciesProps> = (props) => {
+  const [activeTab, setActiveTab] = React.useState<TabsKey>('namespace-config');
+
   return (
     <div className={s.Policies}>
       <div className={s.Title}>
-        <H1>Namespace policies</H1>
+        <H1>Namespace Policies</H1>
       </div>
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Namespace"
-          fields={[
-            replicationClustersField,
-            persistenceField,
-            maxTopicsPerNamespaceField,
-            compactionThresholdField,
-            delayedDeliveryField,
-            publishRateField,
-            resourceGroupField,
-            propertiesField,
-          ].map(field => field(props))}
+      <div>
+        <Tabs<TabsKey>
+          activeTab={activeTab}
+          onActiveTabChange={setActiveTab}
+          tabs={{
+            "namespace-config": {
+              title: 'Namespace Config',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Namespace policies"
+                    fields={[
+                      replicationClustersField,
+                      persistenceField,
+                      maxTopicsPerNamespaceField,
+                      compactionThresholdField,
+                      delayedDeliveryField,
+                      publishRateField,
+                      resourceGroupField,
+                      propertiesField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            topics: {
+              title: 'Topic',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Topic Policies"
+                    fields={[
+                      autoTopicCreationField,
+                      inactiveTopicPoliciesField,
+                      maxProducersPerTopicField,
+                      maxConsumersPerTopicField,
+                      maxSubscriptionsPerTopicField,
+                      dispatchRateField,
+                      subscribeRateField,
+                      replicatorDispatchRateField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            consumers: {
+              title: 'Consumer',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Consumer Policies"
+                    fields={[
+                      maxUnackedMessagesPerConsumerField
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            subscriptions: {
+              title: 'Subscriptions',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Subscriptions"
+                    fields={[
+                      autoSubscriptionCreationField,
+                      subscriptionTypesEnabledField,
+                      subscriptionDispatchRateField,
+                      subscriptionExpirationTimeField,
+                      subscriptionAuthModeField,
+                      maxConsumersPerSubscriptionField,
+                      maxUnackedMessagesPerSubscriptionField
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            retention: {
+              title: 'Retention',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Retention"
+                    fields={[
+                      retentionField,
+                      backlogQuotaField,
+                      messageTtlField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            deduplication: {
+              title: 'Deduplication',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Deduplication"
+                    fields={[
+                      deduplicationField,
+                      deduplicationSnapshotIntervalField
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            schema: {
+              title: 'Schema',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Schema"
+                    fields={[
+                      schemaCompatibilityStrategyField,
+                      isALlowAutoUpdateSchemaField,
+                      schemaValidationEnforceField
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            affinity: {
+              title: 'Affinity',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Affinity"
+                    fields={[
+                      antiAffinityGroupField,
+                      bookieAffinityGroupField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            encryption: {
+              title: 'Encryption',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Encryption"
+                    fields={[
+                      encryptionRequiredField,
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            },
+            'tiered-storage': {
+              title: 'Tiered Storage',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Tiered storage"
+                    fields={[
+                      offloadPoliciesField
+                    ].map(field => field(props))}
+                  />
+                </div>
+              )
+            }
+          }}
         />
       </div>
 
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Topics"
-          fields={[
-            autoTopicCreationField,
-            inactiveTopicPoliciesField,
-            maxProducersPerTopicField,
-            maxConsumersPerTopicField,
-            maxSubscriptionsPerTopicField,
-            dispatchRateField,
-            subscribeRateField,
-            replicatorDispatchRateField,
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Consumers"
-          fields={[
-            maxUnackedMessagesPerConsumerField
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Subscriptions"
-          fields={[
-            autoSubscriptionCreationField,
-            subscriptionTypesEnabledField,
-            subscriptionDispatchRateField,
-            subscriptionExpirationTimeField,
-            subscriptionAuthModeField,
-            maxConsumersPerSubscriptionField,
-            maxUnackedMessagesPerSubscriptionField
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Retention"
-          fields={[
-            retentionField,
-            backlogQuotaField,
-            messageTtlField,
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Deduplication"
-          fields={[
-            deduplicationField,
-            deduplicationSnapshotIntervalField
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Schema"
-          fields={[
-            schemaCompatibilityStrategyField,
-            isALlowAutoUpdateSchemaField,
-            schemaValidationEnforceField
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Affinity"
-          fields={[
-            antiAffinityGroupField,
-            bookieAffinityGroupField,
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Encryption"
-          fields={[
-            encryptionRequiredField,
-          ].map(field => field(props))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Tiered storage"
-          fields={[
-            offloadPoliciesField
-          ].map(field => field(props))}
-        />
-      </div>
     </div>
   );
 }

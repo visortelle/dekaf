@@ -20,6 +20,8 @@ import { useNavigate } from 'react-router';
 import { useTimeout } from '@react-hook/timeout';
 import { remToPx } from '../../rem-to-px';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
+import collapseAllIcon from './collapse-all.svg';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -330,7 +332,10 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       </div>
       <div className={s.TreeControlButtons}>
         <div>
-          <SmallButton text='▲' onClick={() => setExpandedPaths([])} type='regular' />
+          <SmallButton svgIcon={collapseAllIcon} onClick={() => setExpandedPaths([])} type='regular' />
+        </div>
+        <div>
+          <CredentialsButton />
         </div>
       </div>
 

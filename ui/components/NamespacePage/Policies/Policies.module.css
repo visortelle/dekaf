@@ -7,6 +7,7 @@
 
 .ConfigurationTable {
   margin-bottom: 48rem;
-  padding: 24rem 12rem 0 12rem;
+  padding: 24rem 24rem 0 24rem;
+  flex: 1;
 }
 

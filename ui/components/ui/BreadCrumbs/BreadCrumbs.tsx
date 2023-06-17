@@ -1,6 +1,7 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import s from "./BreadCrumbs.module.css";
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon } from "../Icons/Icons";
+import * as AppContext from '../../app/contexts/AppContext';
 import * as Notifications from "../../app/contexts/Notifications";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import arrowIcon from "./arrow.svg";
@@ -9,8 +10,8 @@ import Link from "../Link/Link";
 import { routes } from "../../routes";
 import { mutate } from "swr";
 import { swrKeys } from "../../swrKeys";
-import Button from "../Button/Button";
 import Favicons from "./favicons/Favicons";
+import SmallButton from "../SmallButton/SmallButton";
 
 export type CrumbType =
   "instance" |
@@ -32,6 +33,7 @@ export type BreadCrumbsProps = {
 };
 
 const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
+  const { config } = AppContext.useContext();
   const tenant = props.crumbs[1]?.value;
   const namespace = props.crumbs[2]?.value;
   const topic = props.crumbs[3]?.value;
@@ -106,14 +108,16 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
           mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant, namespace }));
           mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant, namespace }));
         }
-        break;
+          break;
       }
     };
+
+    const crumbValue = crumb.type === 'instance' ? (config.pulsarInstance.name || 'Pulsar Instance') : crumb.value;
 
     return (
       <Link key={crumb.id} className={s.Crumb} to={href} onClick={onClick}>
         <div className={s.CrumbIcon}>{icon}</div>
-        <div className={s.CrumbTitle}>{crumb.value}</div>
+        <div className={s.CrumbTitle}>{crumbValue}</div>
         {!isLast && (
           <div className={s.CrumbArrow}>
             <SvgIcon svg={arrowIcon} />
@@ -132,7 +136,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
 
         {qualifiedResourceName !== undefined && (
           <div className={s.CopyNameButton}>
-            <Button
+            <SmallButton
               onClick={() => {
                 if (qualifiedResourceName !== undefined) {
                   navigator.clipboard.writeText(qualifiedResourceName);

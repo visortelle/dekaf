@@ -85,7 +85,7 @@ case class TlsConfig(
 case class Config(
     @describe("The port the server listens on.")
     port: Int,
-    @describe("When running X-Ray behind a reverse-proxy, you need to provide a public URL to let X-Ray know how to render links and redirects correctly.")
+    @describe("When running the application behind a reverse-proxy, you need to provide a public URL to let the application know how to render links and redirects correctly.")
     publicUrl: String,
     @describe("The Pulsar instance configuration.")
     pulsarInstance: PulsarInstanceConfig,

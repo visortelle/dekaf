@@ -10,6 +10,8 @@ import Router from "./Router/Router";
 import { TooltipProvider } from "react-tooltip";
 import Tooltip from "../ui/Tooltip/Tooltip";
 import { HelmetProvider } from "react-helmet-async";
+import InstanceColor from "./instance-color/InstanceColor";
+import * as HealthCheckContext from './contexts/HealthCheckContext/HealthCheckContext';
 
 type AppProps = {
   config: AppContext.Config;
@@ -42,17 +44,20 @@ const _App: React.FC<AppProps> = (props) => {
       }}
     >
       <GrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, "")}/api`}>
-        <Notifications.DefaultProvider>
-          <BrokerConfig.DefaultProvider>
-            <HelmetProvider>
-              <TooltipProvider>
-                <Router />
-                <Tooltip />
-              </TooltipProvider>
-            </HelmetProvider>
-          </BrokerConfig.DefaultProvider>
-        </Notifications.DefaultProvider>
+        <HealthCheckContext.DefaultProvider>
+          <Notifications.DefaultProvider>
+            <BrokerConfig.DefaultProvider>
+              <HelmetProvider>
+                <TooltipProvider>
+                  <Router />
+                  <Tooltip />
+                </TooltipProvider>
+              </HelmetProvider>
+            </BrokerConfig.DefaultProvider>
+          </Notifications.DefaultProvider>
+        </HealthCheckContext.DefaultProvider>
       </GrpcClient.DefaultProvider>
+      <InstanceColor color={props.config.pulsarInstance.color} />
     </SWRConfig>
   );
 };

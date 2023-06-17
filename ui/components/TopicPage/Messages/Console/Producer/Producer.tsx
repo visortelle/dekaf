@@ -33,7 +33,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
   const [key, setKey] = React.useState<string>(props.preset.key);
   const [valueType, setValueType] = React.useState<ValueType>('json');
   const [value, setValue] = React.useState<string>('');
-  const producerName = React.useRef<string>(`__xray_prod_` + nanoid());
+  const producerName = React.useRef<string>(`__gammascope_` + nanoid());
   const [eventTime, setEventTime] = React.useState<Date | undefined>(undefined);
   const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>("{}");
   const { notifyError, notifySuccess } = Notifications.useContext();

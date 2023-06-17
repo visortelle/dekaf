@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import useSWR, { SWRConfiguration } from 'swr';
 import s from './NavigationTree.module.css'
+import * as AppContext from '../../../app/contexts/AppContext';
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as namespacePb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
@@ -19,14 +20,16 @@ export type PulsarInstanceProps = {
   isActive: boolean;
 }
 export const PulsarInstance: React.FC<PulsarInstanceProps> = (props) => {
+  const { config } = AppContext.useContext();
+
   return (
     <Link
-      to={routes.instance.tenants._.get()}
+      to={routes.instance.overview._.get()}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span className={s.NodeLinkText}>Pulsar</span>
+      <span className={s.NodeLinkText}>{config.pulsarInstance.name || 'Pulsar Instance'}</span>
     </Link>
   );
 }

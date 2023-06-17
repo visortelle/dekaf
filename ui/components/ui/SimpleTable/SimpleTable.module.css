@@ -5,11 +5,26 @@
   border: 1px solid var(--border-color);
 }
 
-.Cell {
+.Cell,
+.HeaderCell,
+.HighlightedCell {
   padding: 4rem 12rem;
   border: 1px solid var(--border-color);
   border-bottom: none;
   border-right: none;
+}
+
+.HeaderCell {
+  background-color: var(--surface-color);
+}
+
+tr .HighlightedCell:first-child {
+  background-color: var(--surface-color);
+  border-left: none;
+}
+
+tr:first-child .HighlightedCell {
+  border-top: none;
 }
 
 thead .Row:last-child .Cell {

@@ -1,0 +1,12 @@
+.NoData {
+  color: #aaa;
+}
+
+.NothingToShow {
+  background-color: var(--surface-color);
+  border-radius: 12rem;
+  padding: 24rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

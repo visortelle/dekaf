@@ -28,7 +28,7 @@ const Configuration = () => {
   const { brokersServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [isShowDynamicOnly, setIsShowDynamicOnly] = useQueryParam('showDynamicOnly', withDefault(BooleanParam, false));
-  const [paramFilter, setParamFilter] = useQueryParam('paramFilter', withDefault(StringParam, ''));
+  const [propertyFilter, setPropertyFilter] = useQueryParam('propertyFilter', withDefault(StringParam, ''));
 
   const { data: availableDynamicConfigKeys, error: availableDynamicConfigKeysError } = useSWR(
     swrKeys.pulsar.brokers.availableDynamicConfigKeys._(),
@@ -47,12 +47,12 @@ const Configuration = () => {
   );
 
   if (availableDynamicConfigKeysError) {
-    notifyError(`Unable to get dynamic configuration parameters list. ${availableDynamicConfigKeysError}`);
+    notifyError(`Unable to get dynamic configuration properties list. ${availableDynamicConfigKeysError}`);
   }
 
   let allKeys = Array.from(new Set([...Object.keys(dynamicConfig), ...Object.keys(runtimeConfig)])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
-  if (paramFilter !== '') {
-    allKeys = allKeys.filter(key => key.toLowerCase().includes(paramFilter.toLowerCase()));
+  if (propertyFilter !== '') {
+    allKeys = allKeys.filter(key => key.toLowerCase().includes(propertyFilter.toLowerCase()));
   }
   if (isShowDynamicOnly) {
     allKeys = allKeys.filter((key) => availableDynamicConfigKeys?.includes(key));
@@ -62,7 +62,7 @@ const Configuration = () => {
     <div className={s.Configuration}>
       <div className={s.Toolbar}>
         <div style={{ width: '480rem' }}>
-          <Input value={paramFilter} onChange={v => setParamFilter(v)} placeholder="managedLedger" focusOnMount={true} clearable={true} />
+          <Input value={propertyFilter} onChange={v => setPropertyFilter(v)} placeholder="Search by property name" focusOnMount={true} clearable={true} />
         </div>
         <div style={{ marginLeft: 'auto', marginTop: 'auto' }}>
           <SmallButton
@@ -77,7 +77,7 @@ const Configuration = () => {
         <table className={s.Table}>
           <thead>
             <tr className={s.Row}>
-              <th className={s.Cell}>Param</th>
+              <th className={s.Cell}>Property</th>
               <th className={s.Cell}>Runtime config</th>
               <th className={s.Cell}>Dynamic config</th>
             </tr>
@@ -93,7 +93,7 @@ const Configuration = () => {
                     >
                       <Highlighter
                         highlightClassName="highlight-substring"
-                        searchWords={[paramFilter]}
+                        searchWords={[propertyFilter]}
                         autoEscape={true}
                         textToHighlight={key}
                       />
@@ -159,7 +159,7 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
       return;
     }
 
-    notifySuccess(`Dynamic configuration parameter ${props.configKey} has been successfully update.`);
+    notifySuccess(`Dynamic configuration property ${props.configKey} has been successfully update.`);
     setIsShowEditor(false);
 
     await mutate(swrKeys.pulsar.brokers.runtimeConfig._());
@@ -178,7 +178,7 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
       return;
     }
 
-    notifySuccess(`Dynamic configuration parameter ${props.configKey} has been successfully deleted.`);
+    notifySuccess(`Dynamic configuration property ${props.configKey} has been successfully deleted.`);
     setIsShowEditor(false);
 
     await mutate(swrKeys.pulsar.brokers.runtimeConfig._());

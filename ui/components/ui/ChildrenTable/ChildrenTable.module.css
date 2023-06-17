@@ -14,8 +14,8 @@
 
 .Th,
 .SummaryTh {
-  font-size: 13rem;
-  font-weight: var(--font-weight-bold);
+  font-size: 14rem;
+  font-weight: var(--font-weight-normal);
   padding: 4rem 12rem;
   border: 1px solid var(--border-color);
   border-left: none;

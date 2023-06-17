@@ -1,83 +1,29 @@
-import React from "react";
+import React, { ReactNode, useState } from "react";
 import s from "./HealthCheck.module.css";
 import sts from "../../../ui/SimpleTable/SimpleTable.module.css";
-import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
-import * as Notifications from "../../../app/contexts/Notifications";
-import useSWR from "swr";
-import { swrKeys } from "../../../swrKeys";
-import { HealthCheckRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb";
-import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import * as HealthCheckContext from '../../../app/contexts/HealthCheckContext/HealthCheckContext';
 
 const HealthCheck: React.FC = () => {
-  const { notifyError } = Notifications.useContext();
-  const { brokersServiceClient } = GrpcClient.useContext();
-
-  const { data: healthCheck, error: healthCheckError } = useSWR(
-    swrKeys.pulsar.brokers.healthCheck._(),
-    async () => {
-      const req = new HealthCheckRequest();
-      const res = await brokersServiceClient.healthCheck(req, {});
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to health check: ${res.getStatus()?.getMessage()}`);
-        return false;
-      }
-      return res.getIsOk();
-    },
-    { refreshInterval: 1000 }
-  );
-  if (healthCheckError) {
-    notifyError(`Unable to health check. ${healthCheckError}`);
-  }
-
-  const { data: backlogQuotaCheck, error: backlogQuotaCheckError } = useSWR(
-    swrKeys.pulsar.brokers.backlogQuotaHealthCheck._(),
-    async () => {
-      const req = new HealthCheckRequest();
-      const res = await brokersServiceClient.backlogQuotaCheck(req, {});
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(
-          `Unable to backlog quota check: ${res.getStatus()?.getMessage()}`
-        );
-        return false;
-      }
-      return res.getIsOk();
-    },
-    { refreshInterval: 1000 }
-  );
-  if (backlogQuotaCheckError) {
-    notifyError(`Unable to backlog quota check. ${backlogQuotaCheckError}`);
-  }
+  const { healthCheckResult } = HealthCheckContext.useContext();
 
   return (
     <div className={s.InternalConfig}>
       <table className={sts.Table}>
         <tbody>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Connection</td>
+            <td className={sts.HighlightedCell}>Your browser &lt;-&gt; UI server connection</td>
             <td className={sts.Cell}>
-              {healthCheck ? (
-                <strong style={{ color: "var(--accent-color-green)" }}>
-                  OK
-                </strong>
-              ) : (
-                <strong style={{ color: "var(--accent-color-red)" }}>
-                  Fail
-                </strong>
-              )}
+              {healthCheckResult.brokerConnection === 'unknown' && <strong style={{ color: "var(--accent-color-yellow)" }}>Unknown</strong>}
+              {healthCheckResult.brokerConnection === 'ok' && <strong style={{ color: "var(--accent-color-green)" }}>OK</strong>}
+              {healthCheckResult.brokerConnection === 'failed' && <strong style={{ color: "var(--accent-color-red)" }}>Failed</strong>}
             </td>
           </tr>
           <tr className={sts.Row}>
-            <td className={sts.Cell}>Backlog quota</td>
+            <td className={sts.HighlightedCell}>UI server &lt;-&gt; Pulsar broker connection</td>
             <td className={sts.Cell}>
-              {backlogQuotaCheck ? (
-                <strong style={{ color: "var(--accent-color-green)" }}>
-                  OK
-                </strong>
-              ) : (
-                <strong style={{ color: "var(--accent-color-red)" }}>
-                  Fail
-                </strong>
-              )}
+              {healthCheckResult.brokerConnection === 'unknown' && <strong style={{ color: "var(--accent-color-yellow)" }}>Unknown</strong>}
+              {healthCheckResult.brokerConnection === 'ok' && <strong style={{ color: "var(--accent-color-green)" }}>OK</strong>}
+              {healthCheckResult.brokerConnection === 'failed' && <strong style={{ color: "var(--accent-color-red)" }}>Failed</strong>}
             </td>
           </tr>
         </tbody>

@@ -7,6 +7,7 @@ export type ButtonProps = {
   svgIcon?: string,
   title?: string,
   type: 'primary' | 'regular' | 'danger',
+  state?: 'regular' | 'active',
   testId?: string,
   size?: 'regular' | 'small',
   disabled?: boolean,
