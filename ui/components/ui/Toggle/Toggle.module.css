@@ -1,0 +1,57 @@
+.Toggle {
+  display: inline-flex;
+  align-items: center;
+  margin: 16rem 0;
+}
+
+.Toggle:hover {
+  cursor: pointer;
+}
+
+.Body {
+  height: 16rem;
+  width: 42rem;
+  border-radius: 99999px;
+  background-color: #aaa;
+  border: 2rem solid #aaa;
+}
+
+.Body:focus {
+  outline: none;
+  border-color: var(--accent-color-blue);
+}
+
+.True .Body {
+  background-color: var(--accent-color-blue);
+  border-color: var(--accent-color-blue);
+}
+
+.True .Body:focus {
+  border-color: var(--accent-color-blue);
+}
+
+.False .Body {
+  background-color: #aaa;
+}
+
+.Label {
+  margin-left: 12rem;
+}
+
+.Circle {
+  background-color: #fff;
+  border-radius: 50%;
+  width: 20rem;
+  height: 20rem;
+  box-shadow: 1rem 1rem 2rem rgba(0, 0, 0, 0.4);
+  position: relative;
+  top: calc(-5rem);
+  left: calc(-6rem);
+  transform: translate(0, 0);
+  transition: transform 0.1s ease-in-out;
+}
+
+.True .Circle {
+  transform: translate(32rem, 0);
+  transition: transform 0.1s ease-in-out;
+}

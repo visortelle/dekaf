@@ -4,7 +4,6 @@ import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
-import useSWR from 'swr';
 import { swrKeys } from '../../swrKeys';
 import Input from '../../ui/Input/Input';
 import { useDebounce } from 'use-debounce';
@@ -70,9 +69,17 @@ const Topics: React.FC<TopicsProps> = (props) => {
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const i18n = I18n.useContext();
 
-  const { data: persistentTopics, error: persistentTopicsError } = useSWR(
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
-    async () => {
+  const dataLoaderCacheKey =
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({
+      tenant: props.tenant,
+      namespace: props.namespace
+    }).concat(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({
+      tenant: props.tenant,
+      namespace: props.namespace
+    }));
+
+  const dataLoader = async () => {
+    const fetchPersistentTopics = async () => {
       const req = new pb.GetTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT);
@@ -85,14 +92,8 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
       return res.getTopicsList();
     }
-  );
-  if (persistentTopicsError) {
-    notifyError(`Unable to get persistent topics: ${persistentTopicsError}`);
-  }
 
-  const { data: nonPersistentTopics, error: nonPersistentTopicsError } = useSWR(
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }),
-    async () => {
+    const fetchNonPersistentTopics = async () => {
       const req = new pb.GetTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT);
@@ -105,26 +106,24 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
       return res.getTopicsList();
     }
-  );
-  if (persistentTopicsError) {
-    notifyError(`Unable to get persistent topics list. ${nonPersistentTopicsError}`);
-  }
 
-  const allTopics = (persistentTopics?.concat(nonPersistentTopics || []) || []);
+    const [persistentTopics, nonPersistentTopics] = await Promise.all([
+      fetchPersistentTopics(),
+      fetchNonPersistentTopics(),
+    ]);
 
-  console.log('all topics', allTopics);
-  let topicsToShow = makeTopicDataEntries(detectPartitionedTopics(allTopics || []));
-  console.log('tts', topicsToShow)
-  topicsToShow = topicsToShow?.filter((t) => t.name.includes(filterQueryDebounced));
+    const allTopics = (persistentTopics?.concat(nonPersistentTopics || []) || []);
+
+    let topicsToShow = makeTopicDataEntries(detectPartitionedTopics(allTopics || []));
+    topicsToShow = topicsToShow?.filter((t) => t.name.includes(filterQueryDebounced));
+    return topicsToShow;
+  };
 
   return (
     <div className={s.Topics}>
       <div className={s.Toolbar}>
         <div className={s.FilterInput}>
           <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="topic-name" focusOnMount={true} clearable={true} />
-        </div>
-        <div>
-          <strong>{topicsToShow.length}</strong> <span style={{ fontWeight: 'normal' }}>of</span> <strong>{topicsToShow.length}</strong> topics.
         </div>
       </div>
 
@@ -232,7 +231,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
             },
             earliestMsgPublishTimeInBacklogs: {
               title: 'Earliest Msg Publish Time In Backlogs',
-              render: (_, ld) => i18n.withVoidDefault(ld?.stats.getEarliestMsgPublishTimeInBacklogs()?.getValue() || undefined, (v) => i18n.formatDate(new Date(v))),
+              render: (_, ld) => i18n.withVoidDefault(ld?.stats.getEarliestMsgPublishTimeInBacklogs()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
             },
             offloadedStorageSize: {
               title: 'Offloaded Storage Size',
@@ -268,11 +267,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
             },
             lastCompactionSucceedTimestamp: {
               title: 'Last Compaction Succeed Timestamp',
-              render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionSucceedTimestamp()?.getValue() || undefined, (v) => i18n.formatDate(new Date(v))),
+              render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionSucceedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
             },
             lastCompactionFailedTimestamp: {
               title: 'Last Compaction Failed Timestamp',
-              render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined, (v) => i18n.formatDate(new Date(v))),
+              render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
             },
             lastCompactionDurationTimeInMills: {
               title: 'Last Compaction Duration Time',
@@ -295,12 +294,12 @@ const Topics: React.FC<TopicsProps> = (props) => {
             { key: 'storageSize', visibility: 'visible', width: 100 },
             { key: 'backlogSize', visibility: 'visible', width: 100 },
             { key: 'msgRateIn', visibility: 'visible', width: 100 },
-            { key: 'msgThroughputIn', visibility: 'visible', width: 100 },
             { key: 'msgRateOut', visibility: 'visible', width: 100 },
+            { key: 'msgThroughputIn', visibility: 'visible', width: 100 },
             { key: 'msgThroughputOut', visibility: 'visible', width: 100 },
             { key: 'bytesInCounter', visibility: 'visible', width: 100 },
-            { key: 'msgInCounter', visibility: 'visible', width: 100 },
             { key: 'bytesOutCounter', visibility: 'visible', width: 100 },
+            { key: 'msgInCounter', visibility: 'visible', width: 100 },
             { key: 'msgOutCounter', visibility: 'visible', width: 100 },
             { key: 'averageMsgSize', visibility: 'visible', width: 100 },
             { key: 'isMsgChunkPublished', visibility: 'visible', width: 100 },
@@ -321,11 +320,17 @@ const Topics: React.FC<TopicsProps> = (props) => {
             { key: 'delayedMessageIndexSizeInBytes', visibility: 'visible', width: 100 },
           ]
         }}
-        data={topicsToShow}
+        autoRefresh={{
+          intervalMs: 5000
+        }}
+        dataLoader={{
+          cacheKey: dataLoaderCacheKey,
+          loader: dataLoader
+        }}
         getId={(d) => d.fqn}
         tableId='topics-table'
         defaultSort={{ type: 'by-single-column', column: 'topicName', direction: 'asc' }}
-        lazyData={{
+        lazyDataLoader={{
           loader: async (entries) => {
             const req = new pb.GetTopicsStatsRequest();
 

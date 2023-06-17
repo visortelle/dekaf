@@ -136,3 +136,23 @@
     opacity: 1;
   }
 }
+
+.Toolbar {
+  display: flex;
+  position: sticky;
+  left: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rem 12rem;
+  height: 36rem;
+  background-color: var(--surface-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.TableName {
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: var(--font-weight-bold);
+}

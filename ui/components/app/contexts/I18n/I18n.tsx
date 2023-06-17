@@ -26,7 +26,8 @@ export type Value = {
   hexStringToBytes: (hexString: string) => Uint8Array;
   formatCount: (count: number) => string;
   formatCountRate: (countPerSecond: number) => string;
-  formatDate: (date: Date) => string;
+  formatTime: (date: Date) => string;
+  formatDateTime: (date: Date) => string;
   formatDuration: (millis: number) => string;
   formatLongNumber: (longNumber: number) => string;
   formatBoolean: (boolean: boolean) => string;
@@ -40,7 +41,8 @@ const defaultValue: Value = {
   hexStringToBytes: (hexString) => hexStringToBytes(hexString),
   formatCount: (count) => count === 0 ? String(0) : numeral(count).format(count < 1000 ? '0a' : '0.00a'),
   formatCountRate: (countPerSecond) => countPerSecond === 0 ? String(0) : numeral(countPerSecond).format(countPerSecond < 1000 ? '0a' : '0.00a') + '/s',
-  formatDate: (date) => dayjs(date).format('MMM DD, YYYY HH:mm:ss'),
+  formatTime: (date) => dayjs(date).format('HH:mm:ss'),
+  formatDateTime: (date) => dayjs(date).format('MMM DD, YYYY HH:mm:ss'),
   formatDuration: (millis) => humanizeDuration(millis, { language: 'shortEn', units: ['y', 'mo', 'w', 'd', 'h', 'm', 's', 'ms'], largest: 2, maxDecimalPoints: 2 }),
   formatLongNumber: (longNumber) => numeral(longNumber).format('0,0'),
   formatBoolean: (boolean) => boolean ? 'Yes' : 'No',

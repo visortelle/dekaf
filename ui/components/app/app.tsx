@@ -37,7 +37,7 @@ const _App: React.FC<AppProps> = (props) => {
       value={{
         shouldRetryOnError: false,
         focusThrottleInterval: 120,
-        refreshInterval: 0,
+        refreshInterval: 0, // Don't change it without re-checking the whole app functionality.
         revalidateOnFocus: false,
         revalidateOnMount: true,
         revalidateIfStale: true,

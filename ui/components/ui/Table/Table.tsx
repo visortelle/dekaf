@@ -7,13 +7,30 @@ import arrowDownIcon from './arrow-down.svg';
 import arrowUpIcon from './arrow-up.svg';
 import { useDebounce } from 'use-debounce';
 import * as Notifications from '../../app/contexts/Notifications';
-import useSWR from 'swr';
+import useSWR, { SWRConfiguration, mutate } from 'swr';
 import { TooltipWrapper } from 'react-tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 import NothingToShow from '../NothingToShow/NothingToShow';
+import * as AppContext from '../../app/contexts/AppContext';
+import * as I18n from '../../app/contexts/I18n/I18n';
+import Toggle from '../Toggle/Toggle';
+import SmallButton from '../SmallButton/SmallButton';
+import refreshIcon from './refresh.svg';
+import NoData from '../NoData/NoData';
 
 export type ColumnKey = string;
 export type DataEntryKey = string;
+
+export type AutoRefreshConfig = {
+  periodsMs: number[]
+};
+
+export type AutoRefreshValue = {
+  type: "disabled"
+} | {
+  type: "enabled",
+  periodMs: number
+};
 
 export type ColumnConfig<CK> = {
   key: CK,
@@ -47,14 +64,20 @@ export type Sort<CK extends ColumnKey> = {
 };
 
 export type TableProps<CK extends ColumnKey, DE, LD> = {
-  tableId: string
-  data: DE[]
-  lazyData?: {
+  tableId: string,
+  dataLoader: {
+    cacheKey: string[] | null,
+    loader: () => Promise<DE[]>
+  }
+  lazyDataLoader?: {
     loader: (visibleEntries: DE[]) => Promise<Record<DataEntryKey, LD>>
   },
   columns: Columns<CK, DE, LD>
   getId: (entry: DE) => DataEntryKey
   defaultSort?: Sort<CK>
+  autoRefresh: {
+    intervalMs: number,
+  }
 };
 
 function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {
@@ -65,18 +88,42 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const [sort, setSort] = useState<Sort<CK>>(props.defaultSort ?? { type: 'none' });
   const { notifyError } = Notifications.useContext();
   const columnsConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
+  const { autoRefresh, setAutoRefresh } = AppContext.useContext();
+  const [lastUpdated, setLastUpdated] = useState<Date | undefined>();
+  const i18n = I18n.useContext();
+
+  const swrOptions: SWRConfiguration = {
+    refreshInterval: autoRefresh.type === 'enabled' ? props.autoRefresh.intervalMs : 0,
+  }
+
+  const { data: loadedData, error: loadedDataError } = useSWR(
+    props.dataLoader.cacheKey,
+    props.dataLoader.loader,
+    {
+      ...swrOptions,
+      onSuccess: () => setLastUpdated(new Date()),
+    }
+  );
+
+  if (loadedDataError) {
+    notifyError(`Unable to load table data. ${loadedDataError}`);
+  }
+
+  const data = loadedData ?? [];
+  const lazyDataLoadedCacheKey = itemsRenderedDebounced.length === 0 ?
+    null :
+    [props.tableId, 'lazy-data'].concat(itemsRenderedDebounced.map(item => props.getId(item.data!)))
 
   const { data: lazyDataChunk, error: lazyDataChunkError } = useSWR(
-    itemsRenderedDebounced.length === 0 ?
-      null :
-      [props.tableId, 'lazy-data'].concat(itemsRenderedDebounced.map(item => props.getId(item.data!))),
-    props.lazyData?.loader ?
-      () => props.lazyData?.loader(itemsRenderedDebounced.map(v => v.data!)) :
-      (() => ({}))
+    lazyDataLoadedCacheKey,
+    props.lazyDataLoader?.loader ?
+      () => props.lazyDataLoader?.loader(itemsRenderedDebounced.map(v => v.data!)) :
+      (() => ({})),
+    swrOptions
   );
 
   if (lazyDataChunkError) {
-    notifyError(`Unable to load additional table info. ${lazyDataChunkError}`);
+    notifyError(`Unable to load additional table data. ${lazyDataChunkError}`);
   }
 
   useEffect(() => {
@@ -104,7 +151,6 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
             column: thProps.columnKey,
             direction
           }
-
         }
 
         return sort;
@@ -139,19 +185,19 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     if (sort.type === 'by-single-column') {
       const sortFn = props.columns.columns[sort.column]!.sortFn;
       const sorted = sortFn ?
-        props.data.sort((a, b) => sortFn(
+        data.sort((a, b) => sortFn(
           { data: a, lazyData: lazyData[props.getId(a)] },
           { data: b, lazyData: lazyData[props.getId(b)] })
         ) :
-        props.data;
+        data;
 
       return sort.direction === 'asc' ? sorted : [...sorted].reverse();
     }
 
-    return props.data;
-  }, [props.data, sort, lazyData]);
+    return data;
+  }, [loadedData, sort, lazyData]);
 
-  if (props.data.length === 0) {
+  if (data.length === 0) {
     return (
       <div className={s.NothingToShow}>
         <NothingToShow />
@@ -161,6 +207,34 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
   return (
     <div className={s.Table} ref={tableRef}>
+      <div className={s.Toolbar}>
+        <div>
+          <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> items
+        </div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '24rem' }}>
+          <SmallButton
+            type='regular'
+            title="Refresh table data"
+            onClick={async () => {
+              await mutate(props.dataLoader.cacheKey);
+              await mutate(lazyDataLoadedCacheKey);
+            }}
+            svgIcon={refreshIcon}
+          />
+
+          <Toggle
+            label='Auto refresh'
+            value={autoRefresh.type === 'enabled'}
+            onChange={(v) => setAutoRefresh({ ...autoRefresh, type: v ? 'enabled' : 'disabled' })}
+          />
+
+          <div>
+            <strong>Last updated: </strong>
+            {lastUpdated === undefined ? <NoData /> : i18n.formatTime(lastUpdated)}
+          </div>
+        </div>
+      </div>
+
       <TableVirtuoso
         data={sortedData}
         overscan={{
@@ -205,7 +279,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
           );
         }}
         customScrollParent={tableRef.current || undefined}
-        totalCount={props.data?.length}
+        totalCount={data?.length}
         itemsRendered={(items) => {
           const isShouldUpdate = !isEqual(itemsRendered, items)
           if (isShouldUpdate) {
