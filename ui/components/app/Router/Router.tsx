@@ -23,9 +23,6 @@ import TopicPage, { TopicPageView } from "../../TopicPage/TopicPage";
 import SubscriptionPage, { SubscriptionPageView } from '../../SubscriptionPage/SubscriptionPage';
 import { TreeNode } from "../../ui/Layout/NavigationTree/TreeView";
 import InstancePage from "../../InstancePage/InstancePage";
-import ClusterPage, {
-  ClusterPageView,
-} from "../../InstancePage/ClusterPage/ClusterPage";
 
 type WithLayoutProps = { layout: Omit<LayoutProps, "children"> };
 type WithLayout = (
@@ -124,15 +121,6 @@ const prepareRoutes = (): {
             )}
           </WithParams>,
           withLayoutProps
-        ),
-      },
-
-      /* Cluster */
-      {
-        path: routes.instance.clusters.cluster._.path,
-        element: withLayout(
-          <RoutedClusterPage view="overview" />,
-          setScrollMode(withLayoutProps, "page-own")
         ),
       },
 
@@ -329,11 +317,6 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   };
 
   return useRoutes(getRoutes({ withLayout, withLayoutProps }));
-};
-
-const RoutedClusterPage = (props: { view: ClusterPageView }) => {
-  const { cluster } = useParams();
-  return <ClusterPage cluster={cluster!} view={props.view} />;
 };
 
 const RoutedTenantPage = (props: { view: TenantPageView }) => {

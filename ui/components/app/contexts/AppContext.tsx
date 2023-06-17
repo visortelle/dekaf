@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 type BuildInfo = {
   name: string,
@@ -14,7 +14,7 @@ export type Config = {
     color: string,
     brokerServiceUrl: string,
     webServiceUrl: string,
-  }
+  },
 }
 
 export type PerformanceOptimizations = {
@@ -41,7 +41,7 @@ const defaultValue: Value = {
       color: '',
       brokerServiceUrl: '',
       webServiceUrl: '',
-    }
+    },
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },
   setPerformanceOptimizations: () => undefined,

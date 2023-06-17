@@ -3,6 +3,7 @@ import s from './InternalConfig.module.css'
 import sts from '../../../ui/SimpleTable/SimpleTable.module.css';
 import * as BrokersConfig from '../../../app/contexts/BrokersConfig';
 import _ from 'lodash';
+import NothingToShow from '../../../ui/NothingToShow/NothingToShow';
 
 export type InternalConfigProps = {};
 
@@ -10,7 +11,7 @@ const InternalConfig: React.FC<InternalConfigProps> = () => {
   const { internalConfig } = BrokersConfig.useContext();
 
   if (Object.keys(internalConfig).length === 0) {
-    return <div className={s.NothingToShow}>Nothing to show.</div>
+    return <NothingToShow />
   }
 
   return (

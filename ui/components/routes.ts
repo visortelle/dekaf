@@ -6,18 +6,6 @@ export const routes = {
         get: () => `/tenants`,
       },
     },
-    clusters: {
-      _: {
-        path: "/clusters",
-        get: () => `/clusters`,
-      },
-      cluster: {
-        _: {
-          path: "/clusters/cluster/:cluster",
-          get: (props: { cluster: string }) => `/clusters/cluster/${props.cluster}`,
-        }
-      }
-    },
     overview: {
       _: {
         path: "/",

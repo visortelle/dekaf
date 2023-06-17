@@ -9,6 +9,8 @@ import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Link from "../../../ui/Link/Link";
 import { routes } from "../../../routes";
 import sts from "../../../ui/SimpleTable/SimpleTable.module.css";
+import Cluster from "./Cluster/Cluster";
+import NothingToShow from "../../../ui/NothingToShow/NothingToShow";
 
 const Clusters: React.FC = () => {
   const { notifyError } = Notifications.useContext();
@@ -37,26 +39,20 @@ const Clusters: React.FC = () => {
     notifyError(`Unable to get clusters list. ${clustersError}`);
   }
 
+  if (!clusters?.length) {
+    return <NothingToShow />;
+  }
+
   return (
     <div className={s.Clusters}>
-      <table className={sts.Table}>
-        <thead>
-          <tr className={sts.Row}>
-            <th className={sts.Cell}>Cluster</th>
-          </tr>
-        </thead>
-        <tbody>
-          {clusters?.map((cluster) => (
-            <tr key={cluster} className={sts.Row}>
-              <td className={sts.Cell}>
-                <Link to={routes.instance.clusters.cluster._.get({ cluster })}>
-                  {cluster}
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {clusters?.map((cluster) => {
+        return (
+          <Cluster
+            key={cluster}
+            cluster={cluster}
+          />
+        );
+      })}
     </div>
   );
 };

@@ -1,5 +1,4 @@
 .Overview {
-  padding: 24rem 12rem;
 }
 
 .Section {
@@ -16,4 +15,10 @@
 
 .SectionHeader {
   margin-bottom: 8rem;
+}
+
+.LeftPane {
+  width: 55%;
+  border-right: 1px solid var(--border-color);
+  padding: 24rem 12rem;
 }
