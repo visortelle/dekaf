@@ -1,4 +1,6 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
+import useLocalStorage from "use-local-storage-state";
+import { localStorageKeys } from '../../local-storage-keys';
 
 type BuildInfo = {
   name: string,
@@ -21,10 +23,14 @@ export type PerformanceOptimizations = {
   pulsarConsumerState: 'inactive' | 'active';
 }
 
+export type AutoRefresh = { type: 'enabled' | 'disabled' };
+
 export type Value = {
   config: Config,
   performanceOptimizations: PerformanceOptimizations
   setPerformanceOptimizations: (performanceOptimizations: PerformanceOptimizations) => void;
+  autoRefresh: AutoRefresh;
+  setAutoRefresh: (autoRefresh: AutoRefresh) => void;
 }
 
 const defaultValue: Value = {
@@ -45,6 +51,8 @@ const defaultValue: Value = {
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },
   setPerformanceOptimizations: () => undefined,
+  autoRefresh: { type: 'enabled' },
+  setAutoRefresh: () => undefined,
 };
 
 const Context = React.createContext<Value>(defaultValue);
@@ -56,6 +64,7 @@ type DefaultProviderProps = {
 
 export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const [performanceOptimizations, setPerformanceOptimizations] = useState<PerformanceOptimizations>(defaultValue.performanceOptimizations);
+  const [autoRefresh, setAutoRefresh] = useLocalStorage<AutoRefresh>(localStorageKeys.autoRefresh, { defaultValue: defaultValue.autoRefresh });
 
   return (
     <Context.Provider
@@ -64,6 +73,8 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
         config: props.config,
         performanceOptimizations,
         setPerformanceOptimizations: (performanceOptimizations: PerformanceOptimizations) => setPerformanceOptimizations(performanceOptimizations),
+        autoRefresh,
+        setAutoRefresh
       }}
     >
       {props.children}

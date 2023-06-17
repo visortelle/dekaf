@@ -71,7 +71,7 @@ type FieldProps = {
 export const PublishTimeField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
   const date = props.message.publishTime === null ? undefined : new Date(props.message.publishTime);
-  return <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={date === undefined ? undefined : i18n.formatDate(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.publishTime} />
+  return <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.publishTime} />
 }
 
 export const KeyField: React.FC<FieldProps> = (props) => {
@@ -116,13 +116,13 @@ export const PropertiesField: React.FC<FieldProps> = (props) => {
 export const EventTimeField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
   const date = props.message.eventTime === null ? undefined : new Date(props.message.eventTime);
-  return <Field isShowTooltips={props.isShowTooltips} title="Event time" value={date === undefined ? undefined : i18n.formatDate(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.eventTime} />
+  return <Field isShowTooltips={props.isShowTooltips} title="Event time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.eventTime} />
 }
 
 export const BrokerPublishTimeField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
   const date = props.message.brokerPublishTime === null ? undefined : new Date(props.message.brokerPublishTime);
-  return <Field isShowTooltips={props.isShowTooltips} title="Broker pub. time" value={date === undefined ? undefined : i18n.formatDate(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.brokerPublishTime} />
+  return <Field isShowTooltips={props.isShowTooltips} title="Broker pub. time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.brokerPublishTime} />
 }
 
 export const MessageIdField: React.FC<FieldProps> = (props) => {

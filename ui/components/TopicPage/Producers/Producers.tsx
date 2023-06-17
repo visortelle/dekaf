@@ -138,7 +138,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
             },
             connectedSince: {
               title: 'Connected Since',
-              render: (de) => i18n.withVoidDefault(de.connectedSince, i18n.formatDate),
+              render: (de) => i18n.withVoidDefault(de.connectedSince, i18n.formatDateTime),
               sortFn: (a, b) => (a.data.connectedSince?.getTime() || 0) - (b.data.connectedSince?.getTime() || 0),
             },
             clientVersion: {
@@ -166,7 +166,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
             { key: 'metadata', width: 200, visibility: 'visible' },
           ],
         }}
-        data={data || []}
+        dataLoader={data || []}
         getId={(entry) => entry.producerName?.toString() ?? ''}
         tableId='producers-table'
         defaultSort={{ column: 'producerName', direction: 'asc', type: 'by-single-column' }}

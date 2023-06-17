@@ -64,7 +64,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
         uiServerConnection: 'ok',
       });
     },
-    { refreshInterval: 1000 }
+    { refreshInterval: 5000 }
   );
 
   useEffect(() => {

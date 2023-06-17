@@ -38,11 +38,12 @@ const Button: React.FC<ButtonProps> = (props) => {
   return (
     <div className={s.Button}>
       <SmallButton
-        type='regular'
+        title='Edit Pulsar Credentials'
+        type='primary'
         svgIcon={icon}
         onClick={() => modals.push({
           id: 'auth-modal',
-          title: `Pulsar credentials`,
+          title: `Pulsar Credentials`,
           content: <Editor onDone={modals.pop} />,
         })}
         text={`${currentCredentials}`}

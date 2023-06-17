@@ -14,13 +14,13 @@
   background-color: var(--accent-color-blue);
   padding: 4rem 12rem;
   border-radius: 4rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.27);
   box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
   margin: 1rem;
   user-select: none;
   position: relative;
   opacity: 1;
   border: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.27);
   transition: var(--transition-short);
   height: 28rem;
   min-width: 28rem;
@@ -43,6 +43,7 @@
 .Primary {
   background-color: var(--accent-color-blue);
   border-color: var(--accent-color-blue);
+  border-bottom-color: rgba(0, 0, 0, 0.27);
   color: #fff;
 }
 
@@ -53,6 +54,7 @@
 .Danger {
   background-color: var(--accent-color-red);
   border-color: var(--accent-color-red);
+  border-bottom-color: rgba(0, 0, 0, 0.27);
   color: #fff;
 }
 

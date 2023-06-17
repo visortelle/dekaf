@@ -195,7 +195,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             },
             earliestMsgPublishTimeInBacklog: {
               title: 'Earliest Message Publish Time In Backlog',
-              render: (de) => i18n.withVoidDefault(de.earliestMsgPublishTimeInBacklog === undefined ? undefined : new Date(de.earliestMsgPublishTimeInBacklog), i18n.formatDate),
+              render: (de) => i18n.withVoidDefault(de.earliestMsgPublishTimeInBacklog === undefined ? undefined : new Date(de.earliestMsgPublishTimeInBacklog), i18n.formatDateTime),
               sortFn: (a, b) => (a.data.earliestMsgPublishTimeInBacklog ?? 0) - (b.data.earliestMsgPublishTimeInBacklog ?? 0),
             },
             filterAcceptedMsgCount: {
@@ -245,27 +245,27 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             },
             lastAckedTimestamp: {
               title: 'Last Acknowledged Timestamp',
-              render: (de) => i18n.withVoidDefault(de.lastAckedTimestamp === undefined ? undefined : new Date(de.lastAckedTimestamp), i18n.formatDate),
+              render: (de) => i18n.withVoidDefault(de.lastAckedTimestamp === undefined ? undefined : new Date(de.lastAckedTimestamp), i18n.formatDateTime),
               sortFn: (a, b) => (a.data.lastAckedTimestamp ?? 0) - (b.data.lastAckedTimestamp ?? 0),
             },
             lastConsumedFlowTimestamp: {
               title: 'Last Consumed Flow Timestamp',
-              render: (de) => i18n.withVoidDefault(de.lastConsumedFlowTimestamp === undefined ? undefined : new Date(de.lastConsumedFlowTimestamp), i18n.formatDate),
+              render: (de) => i18n.withVoidDefault(de.lastConsumedFlowTimestamp === undefined ? undefined : new Date(de.lastConsumedFlowTimestamp), i18n.formatDateTime),
               sortFn: (a, b) => (a.data.lastConsumedFlowTimestamp ?? 0) - (b.data.lastConsumedFlowTimestamp ?? 0),
             },
             lastConsumedTimestamp: {
               title: 'Last Consumed Timestamp',
-              render: (de) => i18n.withVoidDefault(de.lastConsumedTimestamp === undefined ? undefined : new Date(de.lastConsumedTimestamp), i18n.formatDate),
+              render: (de) => i18n.withVoidDefault(de.lastConsumedTimestamp === undefined ? undefined : new Date(de.lastConsumedTimestamp), i18n.formatDateTime),
               sortFn: (a, b) => (a.data.lastConsumedTimestamp ?? 0) - (b.data.lastConsumedTimestamp ?? 0),
             },
             lastExpireTimestamp: {
               title: 'Last Expire Timestamp',
-              render: (de) => i18n.withVoidDefault(de.lastExpireTimestamp === undefined ? undefined : new Date(de.lastExpireTimestamp), i18n.formatDate),
+              render: (de) => i18n.withVoidDefault(de.lastExpireTimestamp === undefined ? undefined : new Date(de.lastExpireTimestamp), i18n.formatDateTime),
               sortFn: (a, b) => (a.data.lastExpireTimestamp ?? 0) - (b.data.lastExpireTimestamp ?? 0),
             },
             lastMarkDeleteAdvancedTimestamp: {
               title: 'Last Mark Delete Advanced Timestamp',
-              render: (de) => i18n.withVoidDefault(de.lastMarkDeleteAdvancedTimestamp === undefined ? undefined : new Date(de.lastMarkDeleteAdvancedTimestamp), i18n.formatDate),
+              render: (de) => i18n.withVoidDefault(de.lastMarkDeleteAdvancedTimestamp === undefined ? undefined : new Date(de.lastMarkDeleteAdvancedTimestamp), i18n.formatDateTime),
               sortFn: (a, b) => (a.data.lastMarkDeleteAdvancedTimestamp ?? 0) - (b.data.lastMarkDeleteAdvancedTimestamp ?? 0),
             },
             messageAckRate: {
@@ -399,7 +399,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             { key: "delayedMessageIndexSizeInBytes", width: 200, visibility: 'visible' }
           ],
         }}
-        data={data ?? []}
+        dataLoader={data ?? []}
         tableId='subscriptions'
         getId={(entry) => entry.subscriptionName}
         defaultSort={{ column: 'subscriptionName', direction: 'asc', type: 'by-single-column' }}

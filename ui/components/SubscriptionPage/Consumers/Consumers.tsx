@@ -148,7 +148,7 @@ const Producers: React.FC<ConsumersProps> = (props) => {
             },
             connectedSince: {
               title: 'Connected Since',
-              render: (entry) => i18n.withVoidDefault(entry.connectedSince, i18n.formatDate),
+              render: (entry) => i18n.withVoidDefault(entry.connectedSince, i18n.formatDateTime),
               sortFn: (a, b) => (a.data.connectedSince?.getTime() || 0) - (b.data.connectedSince?.getTime() || 0),
             },
             consumerName: {
@@ -167,17 +167,17 @@ const Producers: React.FC<ConsumersProps> = (props) => {
             },
             lastAckedTimestamp: {
               title: 'Last Acked Timestamp',
-              render: (entry) => i18n.withVoidDefault(entry.lastAckedTimestamp, i18n.formatDate),
+              render: (entry) => i18n.withVoidDefault(entry.lastAckedTimestamp, i18n.formatDateTime),
               sortFn: (a, b) => (a.data.lastAckedTimestamp?.getTime() || 0) - (b.data.lastAckedTimestamp?.getTime() || 0),
             },
             lastConsumedFlowTimestamp: {
               title: 'Last Consumed Flow Timestamp',
-              render: (entry) => i18n.withVoidDefault(entry.lastConsumedFlowTimestamp, i18n.formatDate),
+              render: (entry) => i18n.withVoidDefault(entry.lastConsumedFlowTimestamp, i18n.formatDateTime),
               sortFn: (a, b) => (a.data.lastConsumedFlowTimestamp?.getTime() || 0) - (b.data.lastConsumedFlowTimestamp?.getTime() || 0),
             },
             lastConsumedTimestamp: {
               title: 'Last Consumed Timestamp',
-              render: (entry) => i18n.withVoidDefault(entry.lastConsumedTimestamp, i18n.formatDate),
+              render: (entry) => i18n.withVoidDefault(entry.lastConsumedTimestamp, i18n.formatDateTime),
               sortFn: (a, b) => (a.data.lastConsumedTimestamp?.getTime() || 0) - (b.data.lastConsumedTimestamp?.getTime() || 0),
             },
             messageAckRate: {
@@ -243,7 +243,7 @@ const Producers: React.FC<ConsumersProps> = (props) => {
             { key: 'metadata', width: 300, visibility: 'visible' },
           ],
         }}
-        data={data || []}
+        dataLoader={data || []}
         getId={(entry) => entry.consumerName?.toString() ?? ''}
         tableId='consumers-table'
         defaultSort={{ column: 'consumerName', direction: 'asc', type: 'by-single-column' }}

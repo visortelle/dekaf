@@ -87,9 +87,9 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
                   </div>
               )
             })()}
-            {(props.config.startFrom.type === 'date') && <div>{i18n.formatDate(props.config.startFrom.date)}</div>}
-            {(props.config.startFrom.type === 'timestamp') && <div>{i18n.formatDate(timestampToDate(props.config.startFrom.ts))}</div>}
-            {props.config.startFrom.type === 'quickDate' && <div>{i18n.formatDate(quickDateToDate(props.config.startFrom.quickDate, props.config.startFrom.relativeTo))}</div>}
+            {(props.config.startFrom.type === 'date') && <div>{i18n.formatDateTime(props.config.startFrom.date)}</div>}
+            {(props.config.startFrom.type === 'timestamp') && <div>{i18n.formatDateTime(timestampToDate(props.config.startFrom.ts))}</div>}
+            {props.config.startFrom.type === 'quickDate' && <div>{i18n.formatDateTime(quickDateToDate(props.config.startFrom.quickDate, props.config.startFrom.relativeTo))}</div>}
           </div>
         </div>
         <div className={s.Control}>

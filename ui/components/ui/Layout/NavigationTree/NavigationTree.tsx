@@ -332,7 +332,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       </div>
       <div className={s.TreeControlButtons}>
         <div>
-          <SmallButton svgIcon={collapseAllIcon} onClick={() => setExpandedPaths([])} type='regular' />
+          <SmallButton
+            title="Collapse All"
+            svgIcon={collapseAllIcon}
+            onClick={() => setExpandedPaths([])}
+            type='regular'
+          />
         </div>
         <div>
           <CredentialsButton />

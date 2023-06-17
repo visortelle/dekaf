@@ -10,6 +10,7 @@
   user-select: none;
   transition: var(--transition-short);
   border: 1px solid var(--border-color);
+  border-bottom-color: rgba(0, 0, 0, 0.27);
   box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
   margin: 1rem;
   appearance: none;
@@ -49,12 +50,14 @@
 .Primary {
   background-color: var(--accent-color-blue);
   border-color: var(--accent-color-blue);
+  border-bottom-color: rgba(0, 0, 0, 0.27);
   color: #fff;
 }
 
 .Danger {
   background-color: var(--accent-color-red);
   border-color: var(--accent-color-red);
+  border-bottom-color: rgba(0, 0, 0, 0.27);
   color: #fff;
 }
 
@@ -62,6 +65,7 @@
   opacity: 1;
   background-color: var(--surface-color) !important;
   border-color: var(--border-color) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.27);
   color: #999 !important;
 }
 
