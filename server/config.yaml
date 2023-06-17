@@ -5,8 +5,8 @@ library:
   path: "./library"
 
 pulsarInstance:
-  name: "local"
-  color: "#ff0000"
+  name: "StreamNative instance-d"
+#  color: "#ff0000"
 #  brokerServiceUrl: "pulsar://localhost:6650"
   brokerServiceUrl: "pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651"
 #  webServiceUrl: "http://localhost:8080"

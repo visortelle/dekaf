@@ -1,7 +1,8 @@
 import s from './Icons.module.css';
+import pulsarLogo from './pular-logo.svg';
+import SvgIcon from '../SvgIcon/SvgIcon';
 
 export type NodeIconsProps = {
-  title: string;
   textColor: string;
   backgroundColor: string;
   isExpandable?: boolean;
@@ -11,6 +12,8 @@ export type NodeIconsProps = {
   isGray?: boolean;
   style?: React.CSSProperties;
   addon?: string;
+  title?: string;
+  svgIcon?: string;
 }
 export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
   const style = props.isGray ? {
@@ -28,6 +31,11 @@ export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
       onClick={props.onClick}
     >
       {props.title}
+      {props.svgIcon && (
+        <div className={s.SvgIcon}>
+          <SvgIcon svg={props.svgIcon} />
+        </div>
+      )}
       {props.addon ? <div className={s.NodeIconAddon}>{props.addon}</div> : null}
     </div>
   );
@@ -116,9 +124,9 @@ export type InstanceIconProps = {
 }
 export const InstanceIcon: React.FC<InstanceIconProps> = (props) => {
   return <NodeIcon
-    title="in"
+    svgIcon={pulsarLogo}
     textColor='var(--accent-color-blue)'
-    backgroundColor='var(--surface-color)'
+    backgroundColor="#fff"
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}

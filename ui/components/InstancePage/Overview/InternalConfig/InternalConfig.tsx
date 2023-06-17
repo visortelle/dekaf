@@ -9,14 +9,18 @@ export type InternalConfigProps = {};
 const InternalConfig: React.FC<InternalConfigProps> = () => {
   const { internalConfig } = BrokersConfig.useContext();
 
+  if (Object.keys(internalConfig).length === 0) {
+    return <div className={s.NothingToShow}>Nothing to show.</div>
+  }
+
   return (
     <div className={s.InternalConfig}>
       <table className={sts.Table}>
         <tbody>
           {_(internalConfig).toPairs().sortBy().value().map(([key, value]) => (
             <tr className={sts.Row} key={key}>
-              <td className={sts.Cell}>{key}</td>
-              <td className={sts.Cell}>{value}</td>
+              <td className={sts.HighlightedCell}>{key}</td>
+              <td className={sts.Cell}>{value || <div className={s.NoData}>-</div>}</td>
             </tr>
           ))}
           </tbody>

@@ -45,7 +45,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         topic: props.topic,
         topicType: props.topicType,
       }),
-      text: "Overview",
+      text: "Details",
       onClick: () => { },
       type: "regular",
     },

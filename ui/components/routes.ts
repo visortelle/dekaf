@@ -2,8 +2,8 @@ export const routes = {
   instance: {
     tenants: {
       _: {
-        path: "/",
-        get: () => `/`,
+        path: "/tenants",
+        get: () => `/tenants`,
       },
     },
     clusters: {
@@ -20,8 +20,8 @@ export const routes = {
     },
     overview: {
       _: {
-        path: "/instance/overview",
-        get: () => `/instance/overview`,
+        path: "/",
+        get: () => `/`,
       },
     },
     configuration: {

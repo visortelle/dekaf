@@ -47,6 +47,12 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
           buttons={[
             {
               linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
+              text: 'Details',
+              onClick: () => { },
+              type: 'regular'
+            },
+            {
+              linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
               text: 'Namespaces',
               onClick: () => { },
               type: 'regular'
@@ -62,7 +68,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
               type: 'danger',
               onClick: () => modals.push({
                 id: 'delete-tenant',
-                title: `Delete tenant`,
+                title: `Delete Tenant`,
                 content: <DeleteDialog tenant={props.tenant} navigate={navigate} />,
                 styleMode: 'no-content-padding'
               }),
@@ -70,7 +76,7 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
             },
             {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),
-              text: 'New namespace',
+              text: 'New Namespace',
               onClick: () => { },
               type: 'primary',
               position: 'right'

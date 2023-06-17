@@ -1,0 +1,8 @@
+.Logo {
+  display: inline-flex;
+  align-items: center;
+  font-family: "Baloo Bhai 2", cursive;
+  margin: 0;
+  position: relative;
+  line-height: 1;
+}

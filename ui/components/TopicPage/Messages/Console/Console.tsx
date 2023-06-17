@@ -67,6 +67,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
           },
           'filter-repl': {
             title: 'Filter REPL',
+            isRenderAlways: true,
             render: () => (
               <ExpressionInspector
                 consumerName={props.consumerName}
@@ -77,6 +78,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
           },
           'filter-logs': {
             title: 'Filter logs',
+            isRenderAlways: true,
             render: () => (
               <DebugLogs
                 messages={props.messages}

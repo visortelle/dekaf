@@ -52,6 +52,12 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
         buttons={[
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Details',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Topics',
             onClick: () => { },
             type: 'regular'

@@ -48,3 +48,8 @@
   line-height: 1;
   white-space: no-wrap;
 }
+
+.SvgIcon svg {
+  width: 22rem;
+  height: 22rem;
+}

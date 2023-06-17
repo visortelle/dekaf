@@ -1,13 +1,19 @@
 .Overview {
-  padding: 24rem 12rem 0 12rem;
+  padding: 24rem 12rem;
 }
 
 .Section {
-  margin-bottom: 48rem;
+  margin-bottom: 36rem;
 }
 
-.SectionTitle {
-  font-size: 28rem;
-  font-weight: var(--font-weight-bold);
+.SubSection {
+  margin-bottom: 24rem;
+}
+
+.PageHeader {
   margin-bottom: 12rem;
+}
+
+.SectionHeader {
+  margin-bottom: 8rem;
 }

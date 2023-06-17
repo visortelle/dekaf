@@ -33,6 +33,9 @@
 
 .Table thead .Cell {
   border-top: none;
+  font-weight: var(--font-weight-normal);
+  text-align: left;
+  background-color: var(--surface-color);
 }
 
 .Table thead .Cell:first-child {
