@@ -15,7 +15,8 @@ import * as pbUtils from '../../../pbUtils/pbUtils';
 
 export type ColumnKey =
   'topicName' |
-  'topicType' |
+  'persistency' |
+  'partitionsCount' |
   'producersCount' |
   'subscriptionsCount' |
   'msgRateIn' |
@@ -44,16 +45,17 @@ export type ColumnKey =
   'lastCompactionDurationTimeInMills' |
   'ownerBroker' |
   'delayedMessageIndexSizeInBytes' |
-  'partitioningType';
+  'partitioning';
 
 type DataEntry = {
   fqn: string,
   name: string,
-  partitioningType: 'partitioned' | 'non-partitioned' | 'partition',
-  persistencyType: 'persistent' | 'non-persistent',
+  partitioning: 'partitioned' | 'non-partitioned' | 'partition',
+  persistency: 'persistent' | 'non-persistent',
 }
 type LazyDataEntry = {
   stats: pb.TopicStats,
+  partitionedTopicMetadata?: pb.PartitionedTopicMetadata,
 };
 
 type TopicsProps = {
@@ -117,6 +119,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
     <div className={s.Topics}>
       <div className={s.Table}>
         <Table<ColumnKey, DataEntry, LazyDataEntry>
+          itemNamePlural='topics'
           columns={{
             help,
             columns: {
@@ -128,7 +131,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistencyType,
+                      topicType: de.persistency,
                     })}
                   >
                     {de.name}
@@ -149,6 +152,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   },
                 }
               },
+              partitionsCount: {
+                title: 'Partitions',
+                render: (_, ld) => i18n.withVoidDefault(ld?.partitionedTopicMetadata?.getPartitions()?.getValue(), v => v),
+              },
               producersCount: {
                 title: 'Producers',
                 render: (de, ld) => i18n.withVoidDefault(ld?.stats.getPublishersList()?.length, v => (
@@ -157,7 +164,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistencyType,
+                      topicType: de.persistency,
                     })}
                   >
                     {v}
@@ -172,16 +179,16 @@ const Topics: React.FC<TopicsProps> = (props) => {
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistencyType,
+                      topicType: de.persistency,
                     })}
                   >
                     {v}
                   </Link>
                 )),
               },
-              topicType: {
-                title: 'Type',
-                render: (de) => de.persistencyType,
+              persistency: {
+                title: 'Persistency',
+                render: (de) => de.persistency,
                 filter: {
                   descriptor: {
                     type: 'singleOption',
@@ -200,10 +207,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
                     let result = true;
                     switch (filterValue.value) {
                       case 'persistent':
-                        result = de.persistencyType === 'persistent';
+                        result = de.persistency === 'persistent';
                         break;
                       case 'non-persistent':
-                        result = de.persistencyType === 'non-persistent';
+                        result = de.persistency === 'non-persistent';
                         break;
                     }
 
@@ -211,14 +218,14 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   },
                 }
               },
-              "partitioningType": {
-                title: 'Partitioning Type',
-                render: (de) => de.partitioningType,
-                sortFn: (a, b) => a.data.partitioningType.localeCompare(b.data.partitioningType),
+              "partitioning": {
+                title: 'Partitioning',
+                render: (de) => de.partitioning,
+                sortFn: (a, b) => a.data.partitioning.localeCompare(b.data.partitioning),
                 filter: {
                   descriptor: {
                     type: 'singleOption',
-                    options: [{ value: 'all', label: 'Show All Topics' }, { value: 'hide-partitions', label: 'Hide Partitions' }],
+                    options: [{ value: 'all', label: 'All' }, { value: 'hide-partitions', label: 'Hide Partitions' }],
                     defaultValue: { type: 'singleOption', value: 'all' },
                   },
                   testFn: (de, _, filterValue) => {
@@ -229,7 +236,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                     let result = true;
                     switch (filterValue.value) {
                       case 'hide-partitions':
-                        result = de.partitioningType !== 'partition';
+                        result = de.partitioning !== 'partition';
                         break;
                       case 'all':
                         result = true;
@@ -346,7 +353,8 @@ const Topics: React.FC<TopicsProps> = (props) => {
             },
             defaultConfig: [
               { key: 'topicName', visibility: 'visible', stickyTo: 'left', width: 200 },
-              { key: 'topicType', visibility: 'visible', width: 100 },
+              { key: 'persistency', visibility: 'visible', width: 100 },
+              { key: 'partitionsCount', visibility: 'visible', width: 60 },
               { key: 'subscriptionsCount', visibility: 'visible', width: 100 },
               { key: 'producersCount', visibility: 'visible', width: 100 },
               { key: 'storageSize', visibility: 'visible', width: 100 },
@@ -376,7 +384,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
               { key: 'lastCompactionDurationTimeInMills', visibility: 'visible', width: 100 },
               { key: 'ownerBroker', visibility: 'visible', width: 100 },
               { key: 'delayedMessageIndexSizeInBytes', visibility: 'visible', width: 100 },
-              { key: 'partitioningType', visibility: 'visible', width: 100 },
+              { key: 'partitioning', visibility: 'visible', width: 100 },
             ]
           }}
           autoRefresh={{
@@ -394,13 +402,13 @@ const Topics: React.FC<TopicsProps> = (props) => {
               state: 'active',
               value: { 'type': 'string', value: '' }
             },
-            'topicType': {
+            'persistency': {
               state: 'active',
               value: { 'type': 'singleOption', value: 'all' }
             },
-            'partitioningType': {
+            'partitioning': {
               state: 'active',
-              value: { 'type': 'singleOption', value: 'all' }
+              value: { 'type': 'singleOption', value: 'hide-partitions' }
             }
           }}
           lazyDataLoader={{
@@ -412,10 +420,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
               req.setIsSubscriptionBacklogSize(true);
               req.setIsPerPartition(false);
 
-              const nonPartitionedTopics = entries.filter((entry) => entry.partitioningType !== 'partitioned');
+              const nonPartitionedTopics = entries.filter((entry) => entry.partitioning !== 'partitioned');
               req.setTopicsList(nonPartitionedTopics.map((entry) => entry.fqn));
 
-              const partitionedTopics = entries.filter((entry) => entry.partitioningType === 'partitioned');
+              const partitionedTopics = entries.filter((entry) => entry.partitioning === 'partitioned');
               req.setPartitionedTopicsList(partitionedTopics.map((entry) => entry.fqn));
 
               const res = await topicServiceClient.getTopicsStats(req, null)
@@ -476,8 +484,8 @@ function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): DataEntry[
     result.push({
       fqn: topic.topicFqn,
       name: getTopicName(topic.topicFqn),
-      partitioningType: 'non-partitioned',
-      persistencyType: detectPersistenceType(topic.topicFqn),
+      partitioning: 'non-partitioned',
+      persistency: detectPersistenceType(topic.topicFqn),
     });
   }
 
@@ -486,8 +494,8 @@ function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): DataEntry[
       {
         fqn: topic.topicFqn,
         name: getTopicName(topic.topicFqn),
-        partitioningType: 'partitioned',
-        persistencyType: detectPersistenceType(topic.topicFqn)
+        partitioning: 'partitioned',
+        persistency: detectPersistenceType(topic.topicFqn)
       }
     );
 
@@ -496,8 +504,8 @@ function makeTopicDataEntries(topics: DetectPartitionedTopicsResult): DataEntry[
         {
           fqn: partitionFqn,
           name: getTopicName(partitionFqn),
-          partitioningType: 'partition',
-          persistencyType: detectPersistenceType(partitionFqn)
+          partitioning: 'partition',
+          persistency: detectPersistenceType(partitionFqn)
         }
       );
     }
@@ -517,8 +525,10 @@ function statsToLazyData(res: pb.GetTopicsStatsResponse): Record<string, LazyDat
   const partitionedStats = pbUtils.mapToObject(res.getPartitionedTopicStatsMap());
   Object.entries(partitionedStats).forEach(([topicFqn, partitionedTopicStats]) => {
     const stats = partitionedTopicStats.getStats();
+    const partitionedTopicMetadata = partitionedTopicStats.getMetadata();
+
     if (stats !== undefined) {
-      result[topicFqn] = { stats };
+      result[topicFqn] = { stats, partitionedTopicMetadata };
     }
   });
 
