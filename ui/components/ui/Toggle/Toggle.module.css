@@ -1,7 +1,6 @@
 .Toggle {
   display: inline-flex;
   align-items: center;
-  margin: 16rem 0;
 }
 
 .Toggle:hover {

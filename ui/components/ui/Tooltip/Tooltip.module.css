@@ -3,6 +3,11 @@
   font-size: 14rem;
 }
 
+.TooltipRoot {
+  z-index: 9999;
+  position: fixed;
+}
+
 .Tooltip a {
   color: #ffffff;
   text-decoration: underline;

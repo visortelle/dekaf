@@ -48,7 +48,7 @@
     "react-router-dom": "^6.6.0",
     "react-select": "^5.7.0",
     "react-toastify": "^8.1.0",
-    "react-tooltip": "^5.13.2",
+    "react-tooltip": "5.6.0",
     "react-virtuoso": "^4.3.10",
     "safe-stable-stringify": "^2.4.2",
     "swr": "^2.0.3",

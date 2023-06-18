@@ -328,6 +328,12 @@ const Topics: React.FC<TopicsProps> = (props) => {
           getId={(d) => d.fqn}
           tableId='topics-table'
           defaultSort={{ type: 'by-single-column', column: 'topicName', direction: 'asc' }}
+          defaultFiltersInUse={{
+            'topicName': {
+              state: 'active',
+              value: { 'type': 'string', value: '' }
+            }
+          }}
           lazyDataLoader={{
             loader: async (entries) => {
               const req = new pb.GetTopicsStatsRequest();
