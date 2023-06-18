@@ -7,6 +7,7 @@ import StringFilterInput from '../filters/StringFilterInput/StringFilterInput';
 import { Columns } from '../Table';
 import Toggle from '../../Toggle/Toggle';
 import SmallButton from '../../SmallButton/SmallButton';
+import OptionFilterInput from '../filters/OptionFilterInput/OptionFilterInput';
 
 export type FilterInUse = {
   state: 'active' | 'inactive',
@@ -96,6 +97,16 @@ function FilterEditor(props: FilterEditorProps) {
           onChange={(v) => props.onChange({ ...props.value, value: { type: 'string', value: v.value } })}
         />
       )}
+
+      {(props.filterDescriptor.type === 'singleOption' && props.value.value.type === 'singleOption') && (
+        <OptionFilterInput
+          descriptor={props.filterDescriptor}
+          value={{ type: 'singleOption', value: props.value.value.value }}
+          onChange={(v) => props.onChange({ ...props.value, value: { type: 'singleOption', value: v.value } })}
+        />
+      )}
+
+
     </div>
   );
 };
