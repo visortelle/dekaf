@@ -3,7 +3,7 @@ import { ColumnKey } from "./Topics";
 
 export const help: Partial<Record<ColumnKey, ReactNode>> = {
   topicName: "The name of the topic.",
-  topicType: (
+  persistency: (
     <div>
       This identifies the type of topic. Pulsar supports two kind of topics: persistent and non-persistent.
       <br />
@@ -51,4 +51,6 @@ export const help: Partial<Record<ColumnKey, ReactNode>> = {
   ownerBroker: "The broker that owns this topic.",
   delayedMessageIndexSizeInBytes: "Delayed message index size.",
   replicatorsCount: "The number of replicators for this topic.",
+  partitioning: "Partitioned and non-partitioned topics.",
+  partitionsCount: "The number of partitions for this topic.",
 };

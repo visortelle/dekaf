@@ -7,7 +7,6 @@ import * as I18n from "./contexts/I18n/I18n";
 import "react-toastify/dist/ReactToastify.css";
 import { SWRConfig } from "swr";
 import Router from "./Router/Router";
-import { TooltipProvider } from "react-tooltip";
 import Tooltip from "../ui/Tooltip/Tooltip";
 import { HelmetProvider } from "react-helmet-async";
 import InstanceColor from "./instance-color/InstanceColor";
@@ -48,10 +47,8 @@ const _App: React.FC<AppProps> = (props) => {
           <Notifications.DefaultProvider>
             <BrokerConfig.DefaultProvider>
               <HelmetProvider>
-                <TooltipProvider>
-                  <Router />
-                  <Tooltip />
-                </TooltipProvider>
+                <Router />
+                <Tooltip />
               </HelmetProvider>
             </BrokerConfig.DefaultProvider>
           </Notifications.DefaultProvider>
