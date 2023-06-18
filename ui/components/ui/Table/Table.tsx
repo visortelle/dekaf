@@ -19,7 +19,6 @@ import refreshIcon from './refresh.svg';
 import NoData from '../NoData/NoData';
 
 import { TableFilterDescriptor, TableFilterValue } from './filters/types';
-import StringFilterInput from './filters/StringFilterInput/StringFilterInput';
 import filterIcon from './filter.svg';
 import FiltersToolbar, { FilterInUse } from './FiltersToolbar/FiltersToolbar';
 
@@ -235,20 +234,36 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   };
 
   const sortedData = useMemo(() => {
+    const activeFilters = Object.entries<FilterInUse>(filtersInUse as Record<string, FilterInUse>).filter(([_, filter]) => {
+      return filter.state === 'active';
+    }) as [CK, FilterInUse][];
+
+    const dataToSort = data.filter((de) => {
+      return activeFilters.every(([columnKey, filter]) => {
+        const testFn = props.columns.columns[columnKey]?.filter?.testFn;
+        if (testFn === undefined) {
+          return true;
+        }
+
+        const testResult = testFn(de, lazyData[props.getId(de)], filter.value);
+        return testResult;
+      });
+    });
+
     if (sort.type === 'by-single-column') {
       const sortFn = props.columns.columns[sort.column]!.sortFn;
       const sorted = sortFn ?
-        data.sort((a, b) => sortFn(
+        dataToSort.sort((a, b) => sortFn(
           { data: a, lazyData: lazyData[props.getId(a)] },
           { data: b, lazyData: lazyData[props.getId(b)] })
         ) :
-        data;
+        dataToSort;
 
       return sort.direction === 'asc' ? sorted : [...sorted].reverse();
     }
 
     return data;
-  }, [loadedData, sort, lazyData]);
+  }, [loadedData, sort, lazyData, filtersInUse]);
 
   if (data.length === 0) {
     return (
