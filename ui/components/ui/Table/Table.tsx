@@ -18,6 +18,11 @@ import SmallButton from '../SmallButton/SmallButton';
 import refreshIcon from './refresh.svg';
 import NoData from '../NoData/NoData';
 
+import { TableFilterDescriptor, TableFilterValue } from './filters/types';
+import StringFilterInput from './filters/StringFilterInput/StringFilterInput';
+import filterIcon from './filter.svg';
+import FiltersToolbar, { FilterInUse } from './FiltersToolbar/FiltersToolbar';
+
 export type ColumnKey = string;
 export type DataEntryKey = string;
 
@@ -50,6 +55,10 @@ export type Column<DE, LD> = {
   title: ReactNode,
   render?: (data: DE, lazyData: LD) => ReactNode,
   sortFn?: (a: { data: DE, lazyData: LD }, b: { data: DE, lazyData: LD }) => number,
+  filter?: {
+    descriptor: TableFilterDescriptor,
+    testFn: (data: DE, lazyData: LD, filterValue: TableFilterValue) => boolean,
+  },
   defaultWidth?: number,
   minWidth?: number,
   maxWidth?: number,
@@ -90,6 +99,8 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const columnsConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
   const { autoRefresh, setAutoRefresh } = AppContext.useContext();
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>();
+  const [filtersInUse, setFiltersInUse] = useState<Partial<Record<CK, FilterInUse>>>({});
+
   const i18n = I18n.useContext();
 
   const swrOptions: SWRConfiguration = {
@@ -131,7 +142,14 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     setLazyData(lazyData => ({ ...lazyData, ...lazyDataChunk }));
   }, [lazyDataChunk]);
 
-  const Th = (thProps: { title: React.ReactNode, columnKey: CK, isSortable: boolean, style?: React.CSSProperties }) => {
+  type ThProps = {
+    title: React.ReactNode,
+    columnKey: CK,
+    isSortable: boolean,
+    filter: Column<DE, LD>['filter'],
+    style?: React.CSSProperties
+  };
+  const Th = (thProps: ThProps) => {
     const handleColumnHeaderClick = () => {
       if (!thProps.isSortable) {
         return;
@@ -157,6 +175,8 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
       });
     }
 
+    const isColumnFiltered = Boolean(filtersInUse[thProps.columnKey]);
+
     return (
       <th
         className={`${s.Th} ${thProps.isSortable ? s.SortableTh : ''}`}
@@ -170,11 +190,44 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
           <div className={s.ThContent}>
             {thProps.title}
 
-            {(sort.type === 'by-single-column' && sort.column === thProps.columnKey) ? (
-              <div className={s.SortableThIcon}>
-                <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
-              </div>
-            ) : null}
+            <div className={s.ThIcons}>
+              {(thProps.filter !== undefined && !isColumnFiltered) ? (
+                <div
+                  className={s.FilterableThIcon}
+                  title="Filter by this column"
+                  onClick={(e) => {
+                    e.stopPropagation();
+
+                    if (isColumnFiltered) {
+                      return;
+                    }
+
+                    setFiltersInUse(filtersInUse => {
+                      const filter = thProps.filter;
+                      if (filter === undefined) {
+                        return filtersInUse;
+                      }
+
+                      const filterInUse: FilterInUse = {
+                        state: 'active',
+                        title: thProps.title,
+                        descriptor: filter.descriptor,
+                        value: { type: 'string', value: '' }
+                      };
+                      return { ...filtersInUse, [thProps.columnKey]: filterInUse };
+                    });
+                  }}
+                >
+                  <SvgIcon svg={filterIcon} />
+                </div>
+              ) : null}
+
+              {(sort.type === 'by-single-column' && sort.column === thProps.columnKey) ? (
+                <div className={s.SortableThIcon}>
+                  <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
+                </div>
+              ) : null}
+            </div>
           </div>
         </TooltipWrapper>
       </th>
@@ -228,12 +281,19 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
             onChange={(v) => setAutoRefresh({ ...autoRefresh, type: v ? 'enabled' : 'disabled' })}
           />
 
-          <div>
+          <div style={{ display: 'flex', gap: '0.3ch' }}>
             <strong>Last updated: </strong>
-            {lastUpdated === undefined ? <NoData /> : i18n.formatTime(lastUpdated)}
+            <span style={{ width: '7ch', textAlign: 'right' }}>{lastUpdated === undefined ? <NoData /> : i18n.formatTime(lastUpdated)}</span>
           </div>
         </div>
       </div>
+
+      {Boolean(Object.keys(filtersInUse).length) && <div className={s.FiltersToolbar}>
+        <FiltersToolbar<CK>
+          filters={filtersInUse}
+          onChange={setFiltersInUse}
+        />
+      </div>}
 
       <TableVirtuoso
         data={sortedData}
@@ -252,6 +312,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
                   title={props.columns.columns[columnConfig.key]!.title}
                   columnKey={columnConfig.key}
                   isSortable={Boolean(props.columns.columns[columnConfig.key]!.sortFn)}
+                  filter={props.columns.columns[columnConfig.key]!.filter}
                   style={{ width: columnConfig.width, ...style }}
                 />
               );

@@ -117,7 +117,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     return (
       <Link key={crumb.id} className={s.Crumb} to={href} onClick={onClick}>
         <div className={s.CrumbIcon}>{icon}</div>
-        <div className={s.CrumbTitle}>{crumbValue}</div>
+        <div className={s.CrumbTitle} title={crumbValue}>{crumbValue}</div>
         {!isLast && (
           <div className={s.CrumbArrow}>
             <SvgIcon svg={arrowIcon} />

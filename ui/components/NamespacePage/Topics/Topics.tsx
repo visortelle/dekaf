@@ -10,10 +10,10 @@ import { useDebounce } from 'use-debounce';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Table from '../../ui/Table/Table';
 import { partition, uniq } from 'lodash';
-import * as pbUtils from '../../../pbUtils/pbUtils';
 import { help } from './help';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
+import * as pbUtils from '../../../pbUtils/pbUtils';
 
 export type ColumnKey =
   'topicName' |
@@ -123,7 +123,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
     <div className={s.Topics}>
       <div className={s.Toolbar}>
         <div className={s.FilterInput}>
-          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="topic-name" focusOnMount={true} clearable={true} />
+          <Input value={filterQuery} onChange={(v) => setFilterQuery(v)} placeholder="Topic Name" focusOnMount={true} clearable={true} />
         </div>
       </div>
 
@@ -146,6 +146,16 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 </Link>
               ),
               sortFn: (a, b) => a.data.name.localeCompare(b.data.name),
+              filter: {
+                descriptor: { type: 'string' },
+                testFn: (de, _, filterValue) => {
+                  if (filterValue.type !== 'string') {
+                    return false
+                  };
+
+                  return de.name.includes(filterValue.value);
+                },
+              }
             },
             producersCount: {
               title: 'Producers',
