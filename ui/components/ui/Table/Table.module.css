@@ -36,6 +36,9 @@
 
 .ThContent {
   padding: 4rem 12rem;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .SummaryTh {
@@ -49,18 +52,31 @@
   user-select: none;
 }
 
-.SortableThIcon {
-  position: absolute;
-  right: 2rem;
-  top: 0;
-  bottom: 0;
+.ThIcons {
   display: flex;
-  align-items: center;
+  gap: 8rem;
+  margin-left: auto;
+}
+
+.SortableThIcon,
+.FilterableThIcon {
+  display: flex;
+  justify-content: center;
+  width: 24rem;
+  height: 24rem;
 }
 
 .SortableThIcon svg {
-  width: 24rem;
-  height: 24rem;
+  width: 100%;
+  height: 100%;
+}
+
+.FilterableThIcon {
+  right: 30rem;
+}
+.FilterableThIcon svg {
+  width: 70%;
+  height: 70%;
 }
 
 .Td {
@@ -141,7 +157,6 @@
   display: flex;
   position: sticky;
   left: 0;
-  width: 100%;
   align-items: center;
   justify-content: space-between;
   padding: 24rem 12rem;
@@ -156,3 +171,10 @@
   text-overflow: ellipsis;
   font-weight: var(--font-weight-bold);
 }
+
+.FiltersToolbar {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+

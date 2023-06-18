@@ -63,6 +63,12 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             type: 'regular'
           },
           {
+            linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Policies',
+            onClick: () => { },
+            type: 'regular'
+          },
+          {
             linkTo: routes.tenants.tenant.namespaces.namespace.permissions._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Permissions',
             onClick: () => { },
@@ -71,12 +77,6 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Subscription Permissions',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Policies',
             onClick: () => { },
             type: 'regular'
           },

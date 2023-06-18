@@ -9,6 +9,8 @@
   padding: 6rem 12rem;
   align-items: center;
   color: var(--text-color);
+  white-space: nowrap;
+  max-width: 320rem;
 }
 
 .Crumb:hover {
@@ -27,6 +29,8 @@
 
 .CrumbTitle {
   font-size: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .CrumbArrow {

@@ -73,18 +73,17 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           onActiveTabChange={setActiveTab}
           tabs={{
             "namespace-config": {
-              title: 'Namespace Config',
+              title: 'Namespace',
               render: () => (
                 <div className={s.ConfigurationTable}>
                   <ConfigurationTable
-                    title="Namespace policies"
+                    title="Namespace"
                     fields={[
                       replicationClustersField,
                       persistenceField,
                       maxTopicsPerNamespaceField,
                       compactionThresholdField,
                       delayedDeliveryField,
-                      publishRateField,
                       resourceGroupField,
                       propertiesField,
                     ].map(field => field(props))}
@@ -93,17 +92,18 @@ const Policies: React.FC<PoliciesProps> = (props) => {
               )
             },
             topics: {
-              title: 'Topic',
+              title: 'Topics',
               render: () => (
                 <div className={s.ConfigurationTable}>
                   <ConfigurationTable
-                    title="Topic Policies"
+                    title="Topics"
                     fields={[
                       autoTopicCreationField,
                       inactiveTopicPoliciesField,
                       maxProducersPerTopicField,
                       maxConsumersPerTopicField,
                       maxSubscriptionsPerTopicField,
+                      publishRateField,
                       dispatchRateField,
                       subscribeRateField,
                       replicatorDispatchRateField,
@@ -113,11 +113,11 @@ const Policies: React.FC<PoliciesProps> = (props) => {
               )
             },
             consumers: {
-              title: 'Consumer',
+              title: 'Consumers',
               render: () => (
                 <div className={s.ConfigurationTable}>
                   <ConfigurationTable
-                    title="Consumer Policies"
+                    title="Consumer"
                     fields={[
                       maxUnackedMessagesPerConsumerField
                     ].map(field => field(props))}

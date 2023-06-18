@@ -169,7 +169,9 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
   const deleteDynamicConfigValue = async () => {
     const req = new DeleteDynamicConfigurationRequest();
     req.setName(props.configKey);
-    const res = await brokersServiceClient.deleteDynamicConfiguration(req, {}).catch(err => notifyError(`Unable to delete dynamic configuration value: ${err}`));
+
+    const res = await brokersServiceClient.deleteDynamicConfiguration(req, {})
+    .catch(err => notifyError(`Unable to delete dynamic configuration value: ${err}`));
     if (res === undefined) {
       return;
     }
