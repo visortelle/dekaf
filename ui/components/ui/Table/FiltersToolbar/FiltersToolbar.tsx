@@ -2,8 +2,11 @@ import s from './FiltersToolbar.module.css'
 import { TableFilterDescriptor, TableFilterValue } from '../filters/types';
 import removeFilterIcon from './remove-filter.svg';
 import SvgIcon from '../../SvgIcon/SvgIcon';
+import filterIcon from './filter.svg';
 import StringFilterInput from '../filters/StringFilterInput/StringFilterInput';
 import { Columns } from '../Table';
+import Toggle from '../../Toggle/Toggle';
+import SmallButton from '../../SmallButton/SmallButton';
 
 export type FilterInUse = {
   state: 'active' | 'inactive',
@@ -24,20 +27,42 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
         const column = props.columns.columns[columnKey as CK]!;
 
         return (
-          <div key={columnKey} className={`${s.Filter} ${filterInUse.state === 'inactive' ? s.InactiveFilter : ''}`}>
-            <div
-              className={s.FilterTitle}
-              title={filterInUse.state === 'active' ? 'Disable filter' : 'Enable filter'}
-              onClick={() => {
-                const newFilters = { ...props.filters };
-                newFilters[columnKey as CK] = {
-                  ...filterInUse,
-                  state: filterInUse.state === 'active' ? 'inactive' : 'active'
-                };
-                props.onChange(newFilters);
-              }}
-            >
-              <strong>{column.title}:</strong>
+          <div key={columnKey} className={`${s.Filter}`}>
+            <div className={s.FilterTitle}>
+              <strong className={s.FilterTitleText}>
+                <div className={s.FilterIcon}>
+                  <SvgIcon svg={filterIcon} />
+                </div>
+
+                {column.title}
+              </strong>
+
+              <div className={s.ToggleFilter}>
+                <Toggle
+                  value={filterInUse.state === 'active'}
+                  onChange={(v) => {
+                    const newFilters = { ...props.filters };
+                    newFilters[columnKey as CK] = {
+                      ...filterInUse,
+                      state: v ? 'active' : 'inactive'
+                    };
+                    props.onChange(newFilters);
+                  }}
+                />
+              </div>
+
+              <div className={s.RemoveFilterIcon}>
+                <SmallButton
+                  title="Remove filter"
+                  type='danger'
+                  svgIcon={removeFilterIcon}
+                  onClick={() => {
+                    const newFilters = { ...props.filters };
+                    delete newFilters[columnKey as CK];
+                    props.onChange(newFilters);
+                  }}
+                />
+              </div>
             </div>
             <FilterEditor
               value={filterInUse}
@@ -48,18 +73,6 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
               }}
               filterDescriptor={column.filter?.descriptor!}
             />
-
-            <div
-              className={s.RemoveFilterIcon}
-              title="Remove filter"
-              onClick={() => {
-                const newFilters = { ...props.filters };
-                delete newFilters[columnKey as CK];
-                props.onChange(newFilters);
-              }}
-            >
-              <SvgIcon svg={removeFilterIcon} />
-            </div>
           </div>
         );
       })}

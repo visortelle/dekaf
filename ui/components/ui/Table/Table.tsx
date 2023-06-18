@@ -71,6 +71,8 @@ export type Sort<CK extends ColumnKey> = {
   type: 'none'
 };
 
+export type FiltersInUse<CK extends string> = Partial<Record<CK, FilterInUse>>;
+
 export type TableProps<CK extends ColumnKey, DE, LD> = {
   tableId: string,
   dataLoader: {
@@ -83,6 +85,7 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
   columns: Columns<CK, DE, LD>
   getId: (entry: DE) => DataEntryKey
   defaultSort?: Sort<CK>
+  defaultFiltersInUse?: FiltersInUse<CK>
   autoRefresh: {
     intervalMs: number,
   }
@@ -98,7 +101,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const columnsConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
   const { autoRefresh, setAutoRefresh } = AppContext.useContext();
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>();
-  const [filtersInUse, setFiltersInUse] = useState<Partial<Record<CK, FilterInUse>>>({});
+  const [filtersInUse, setFiltersInUse] = useState<FiltersInUse<CK>>(props.defaultFiltersInUse ?? {});
   const [filtersInUseDebounced] = useDebounce(filtersInUse, 400);
 
   const i18n = I18n.useContext();
@@ -274,6 +277,14 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
   return (
     <div className={s.Table} ref={tableRef}>
+      {Boolean(Object.keys(filtersInUse).length) && <div className={s.FiltersToolbar}>
+        <FiltersToolbar<CK>
+          filters={filtersInUse}
+          onChange={setFiltersInUse}
+          columns={props.columns}
+        />
+      </div>}
+
       <div className={s.Toolbar}>
         <div>
           <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> items
@@ -301,14 +312,6 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
           </div>
         </div>
       </div>
-
-      {Boolean(Object.keys(filtersInUse).length) && <div className={s.FiltersToolbar}>
-        <FiltersToolbar<CK>
-          filters={filtersInUse}
-          onChange={setFiltersInUse}
-          columns={props.columns}
-        />
-      </div>}
 
       <TableVirtuoso
         data={sortedData}
