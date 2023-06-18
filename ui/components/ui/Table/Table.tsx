@@ -88,7 +88,8 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
   defaultFiltersInUse?: FiltersInUse<CK>
   autoRefresh: {
     intervalMs: number,
-  }
+  },
+  itemNamePlural?: string,
 };
 
 function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {
@@ -287,7 +288,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
       <div className={s.Toolbar}>
         <div>
-          <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> items
+          <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> {props.itemNamePlural || 'items'}
         </div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '24rem' }}>
           <SmallButton
