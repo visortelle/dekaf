@@ -43,7 +43,8 @@ export type ColumnKey =
   'lastCompactionFailedTimestamp' |
   'lastCompactionDurationTimeInMills' |
   'ownerBroker' |
-  'delayedMessageIndexSizeInBytes';
+  'delayedMessageIndexSizeInBytes' |
+  'partitioningType';
 
 type DataEntry = {
   fqn: string,
@@ -135,10 +136,13 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 ),
                 sortFn: (a, b) => a.data.name.localeCompare(b.data.name),
                 filter: {
-                  descriptor: { type: 'string' },
+                  descriptor: {
+                    type: 'string',
+                    defaultValue: { type: 'string', value: '' }
+                  },
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'string') {
-                      return false
+                      return true
                     };
 
                     return de.name.includes(filterValue.value);
@@ -178,6 +182,62 @@ const Topics: React.FC<TopicsProps> = (props) => {
               topicType: {
                 title: 'Type',
                 render: (de) => de.persistencyType,
+                filter: {
+                  descriptor: {
+                    type: 'singleOption',
+                    options: [
+                      { value: 'all', label: 'All' },
+                      { value: 'persistent', label: 'Persistent' },
+                      { value: 'non-persistent', label: 'Non-Persistent' },
+                    ],
+                    defaultValue: { type: 'singleOption', value: 'all' }
+                  },
+                  testFn: (de, _, filterValue) => {
+                    if (filterValue.type !== 'singleOption') {
+                      return true
+                    };
+
+                    let result = true;
+                    switch (filterValue.value) {
+                      case 'persistent':
+                        result = de.persistencyType === 'persistent';
+                        break;
+                      case 'non-persistent':
+                        result = de.persistencyType === 'non-persistent';
+                        break;
+                    }
+
+                    return result;
+                  },
+                }
+              },
+              "partitioningType": {
+                title: 'Partitioning Type',
+                render: (de) => de.partitioningType,
+                sortFn: (a, b) => a.data.partitioningType.localeCompare(b.data.partitioningType),
+                filter: {
+                  descriptor: {
+                    type: 'singleOption',
+                    options: [{ value: 'all', label: 'Show All Topics' }, { value: 'hide-partitions', label: 'Hide Partitions' }],
+                    defaultValue: { type: 'singleOption', value: 'all' },
+                  },
+                  testFn: (de, _, filterValue) => {
+                    if (filterValue.type !== 'singleOption') {
+                      return true
+                    };
+
+                    let result = true;
+                    switch (filterValue.value) {
+                      case 'hide-partitions':
+                        result = de.partitioningType !== 'partition';
+                        break;
+                      case 'all':
+                        result = true;
+                    }
+
+                    return result;
+                  },
+                }
               },
               msgRateIn: {
                 title: 'Msg Rate In',
@@ -316,6 +376,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
               { key: 'lastCompactionDurationTimeInMills', visibility: 'visible', width: 100 },
               { key: 'ownerBroker', visibility: 'visible', width: 100 },
               { key: 'delayedMessageIndexSizeInBytes', visibility: 'visible', width: 100 },
+              { key: 'partitioningType', visibility: 'visible', width: 100 },
             ]
           }}
           autoRefresh={{
@@ -332,6 +393,14 @@ const Topics: React.FC<TopicsProps> = (props) => {
             'topicName': {
               state: 'active',
               value: { 'type': 'string', value: '' }
+            },
+            'topicType': {
+              state: 'active',
+              value: { 'type': 'singleOption', value: 'all' }
+            },
+            'partitioningType': {
+              state: 'active',
+              value: { 'type': 'singleOption', value: 'all' }
             }
           }}
           lazyDataLoader={{

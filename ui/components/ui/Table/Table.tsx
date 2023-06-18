@@ -95,7 +95,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const tableRef = React.useRef<HTMLDivElement>(null);
   const [lazyData, setLazyData] = useState<Record<DataEntryKey, LD>>({});
   const [itemsRendered, setItemsRendered] = useState<ListItem<DE>[]>([]);
-  const [itemsRenderedDebounced] = useDebounce(itemsRendered, 400);
+  const [itemsRenderedDebounced] = useDebounce(itemsRendered, 250);
   const [sort, setSort] = useState<Sort<CK>>(props.defaultSort ?? { type: 'none' });
   const { notifyError } = Notifications.useContext();
   const columnsConfig = props.columns.defaultConfig.filter(column => column.visibility === 'visible');
@@ -213,7 +213,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
                       const filterInUse: FilterInUse = {
                         state: 'active',
-                        value: { type: 'string', value: '' }
+                        value: filter.descriptor.defaultValue
                       };
                       return { ...filtersInUse, [thProps.columnKey]: filterInUse };
                     });

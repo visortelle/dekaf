@@ -1,11 +1,11 @@
 import React from 'react';
-import { OptionFilterValue, OptionFilterDescriptor } from '../types';
+import { SingleOptionFilterValue, SingleOptionFilterDescriptor } from '../types';
 import Select from '../../../Select/Select';
 
 export type OptionFilterInputProps = {
-  descriptor: OptionFilterDescriptor;
-  value: OptionFilterValue;
-  onChange: (value: OptionFilterValue) => void;
+  descriptor: SingleOptionFilterDescriptor;
+  value: SingleOptionFilterValue;
+  onChange: (value: SingleOptionFilterValue) => void;
 };
 
 const OptionFilterInput: React.FC<OptionFilterInputProps> = (props) => {
