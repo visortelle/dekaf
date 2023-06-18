@@ -1,8 +1,6 @@
 import s from './FiltersToolbar.module.css'
 import { TableFilterDescriptor, TableFilterValue } from '../filters/types';
 import removeFilterIcon from './remove-filter.svg';
-import SvgIcon from '../../SvgIcon/SvgIcon';
-import filterIcon from './filter.svg';
 import StringFilterInput from '../filters/StringFilterInput/StringFilterInput';
 import { Columns } from '../Table';
 import Toggle from '../../Toggle/Toggle';
@@ -31,10 +29,6 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
           <div key={columnKey} className={`${s.Filter} ${filterInUse.state === 'inactive' ? s.InactiveFilter : ''}`}>
             <div className={s.FilterTitle}>
               <strong className={s.FilterTitleText}>
-                <div className={s.FilterIcon}>
-                  <SvgIcon svg={filterIcon} />
-                </div>
-
                 {column.title}
               </strong>
 
