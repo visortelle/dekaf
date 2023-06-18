@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useState, ReactElement, useMemo } from 'react';
 import s from './Table.module.css'
-import { isEqual } from 'lodash';
+import { filter, isEqual } from 'lodash';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowDownIcon from './arrow-down.svg';
@@ -153,7 +153,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     filter: Column<DE, LD>['filter'],
     style?: React.CSSProperties
   };
-  const Th = (thProps: ThProps) => {
+  const Th = useMemo(() => (thProps: ThProps) => {
     const handleColumnHeaderClick = () => {
       if (!thProps.isSortable) {
         return;
@@ -234,7 +234,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         </div>
       </th>
     );
-  };
+  }, [sort, props.columns, filtersInUse]);
 
   const sortedData = useMemo(() => {
     const activeFilters = Object.entries<FilterInUse>(filtersInUseDebounced as Record<string, FilterInUse>).filter(([_, filter]) => {

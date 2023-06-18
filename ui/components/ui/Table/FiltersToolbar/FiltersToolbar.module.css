@@ -44,13 +44,6 @@
   margin-bottom: 4rem;
 }
 
-.FilterIcon svg {
-  width: 16rem;
-  height: 16rem;
-  fill: var(--text-color);
-  margin-right: 4rem;
-}
-
 .FilterTitleText {
   display: flex;
   margin-right: auto;
@@ -60,10 +53,12 @@
 .ToggleFilter {
   display: flex;
   opacity: 0;
+  transition: var(--transition-short);
 }
 
 .RemoveFilter {
   opacity: 0;
+  transition: var(--transition-short);
 }
 
 .Filter:hover .ToggleFilter,
