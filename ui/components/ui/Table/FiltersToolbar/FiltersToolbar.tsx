@@ -28,7 +28,7 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
         const column = props.columns.columns[columnKey as CK]!;
 
         return (
-          <div key={columnKey} className={`${s.Filter}`}>
+          <div key={columnKey} className={`${s.Filter} ${filterInUse.state === 'inactive' ? s.InactiveFilter : ''}`}>
             <div className={s.FilterTitle}>
               <strong className={s.FilterTitleText}>
                 <div className={s.FilterIcon}>
@@ -52,7 +52,7 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
                 />
               </div>
 
-              <div className={s.RemoveFilterIcon}>
+              <div className={s.RemoveFilter}>
                 <SmallButton
                   title="Remove filter"
                   type='danger'
