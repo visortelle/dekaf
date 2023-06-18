@@ -50,7 +50,7 @@ import { messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
-import { TooltipWrapper } from 'react-tooltip';
+import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
@@ -421,17 +421,19 @@ const Session: React.FC<SessionProps> = (props) => {
 
     return (
       <th className={cts.Th} style={props.style} onClick={handleColumnHeaderClick}>
-        <TooltipWrapper html={renderToStaticMarkup(props.help)}>
-          <div className={props.sortKey === undefined ? '' : cts.SortableTh}>
-            {props.title}
+        <div
+          className={props.sortKey === undefined ? '' : cts.SortableTh}
+          data-tooltip-id={tooltipId}
+          data-tooltip-html={renderToStaticMarkup(props.help)}
+        >
+          {props.title}
 
-            {sort.key === props.sortKey && (
-              <div className={cts.SortableThIcon}>
-                <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
-              </div>
-            )}
-          </div>
-        </TooltipWrapper>
+          {sort.key === props.sortKey && (
+            <div className={cts.SortableThIcon}>
+              <SvgIcon svg={sort.direction === 'asc' ? arrowUpIcon : arrowDownIcon} />
+            </div>
+          )}
+        </div>
       </th>
     );
   }, [sort]);

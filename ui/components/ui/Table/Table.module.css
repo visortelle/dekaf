@@ -4,6 +4,7 @@
   border-spacing: 0;
   flex: 1 1 auto;
   overflow: auto;
+  border-top: 1px solid var(--border-color);
 }
 
 .Table table {
@@ -138,10 +139,6 @@
 
 .NoData {
   color: #aaa;
-}
-
-.TooltipWrapper {
-  display: block;
 }
 
 @keyframes fade-in {

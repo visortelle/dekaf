@@ -8,7 +8,6 @@ import arrowUpIcon from './arrow-up.svg';
 import { useDebounce } from 'use-debounce';
 import * as Notifications from '../../app/contexts/Notifications';
 import useSWR, { SWRConfiguration, mutate } from 'swr';
-import { TooltipWrapper } from 'react-tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 import NothingToShow from '../NothingToShow/NothingToShow';
 import * as AppContext from '../../app/contexts/AppContext';
@@ -17,6 +16,7 @@ import Toggle from '../Toggle/Toggle';
 import SmallButton from '../SmallButton/SmallButton';
 import refreshIcon from './refresh.svg';
 import NoData from '../NoData/NoData';
+import { tooltipId } from '../Tooltip/Tooltip';
 
 import { TableFilterDescriptor, TableFilterValue } from './filters/types';
 import filterIcon from './filter.svg';
@@ -99,6 +99,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const { autoRefresh, setAutoRefresh } = AppContext.useContext();
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>();
   const [filtersInUse, setFiltersInUse] = useState<Partial<Record<CK, FilterInUse>>>({});
+  const [filtersInUseDebounced] = useDebounce(filtersInUse, 400);
 
   const i18n = I18n.useContext();
 
@@ -182,9 +183,9 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         style={thProps.style}
         onClick={handleColumnHeaderClick}
       >
-        <TooltipWrapper
-          className={s.TooltipWrapper}
-          html={props.columns.help ? renderToStaticMarkup(<>{props.columns.help[thProps.columnKey]}</>) : undefined}
+        <div
+          data-tooltip-id={tooltipId}
+          data-tooltip-html={props.columns.help ? renderToStaticMarkup(<>{props.columns.help[thProps.columnKey]}</>) : undefined}
         >
           <div className={s.ThContent}>
             {thProps.title}
@@ -209,8 +210,6 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
                       const filterInUse: FilterInUse = {
                         state: 'active',
-                        title: thProps.title,
-                        descriptor: filter.descriptor,
                         value: { type: 'string', value: '' }
                       };
                       return { ...filtersInUse, [thProps.columnKey]: filterInUse };
@@ -228,13 +227,13 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
               ) : null}
             </div>
           </div>
-        </TooltipWrapper>
+        </div>
       </th>
     );
   };
 
   const sortedData = useMemo(() => {
-    const activeFilters = Object.entries<FilterInUse>(filtersInUse as Record<string, FilterInUse>).filter(([_, filter]) => {
+    const activeFilters = Object.entries<FilterInUse>(filtersInUseDebounced as Record<string, FilterInUse>).filter(([_, filter]) => {
       return filter.state === 'active';
     }) as [CK, FilterInUse][];
 
@@ -263,7 +262,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     }
 
     return data;
-  }, [loadedData, sort, lazyData, filtersInUse]);
+  }, [loadedData, sort, lazyData, filtersInUseDebounced]);
 
   if (data.length === 0) {
     return (
@@ -307,6 +306,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         <FiltersToolbar<CK>
           filters={filtersInUse}
           onChange={setFiltersInUse}
+          columns={props.columns}
         />
       </div>}
 

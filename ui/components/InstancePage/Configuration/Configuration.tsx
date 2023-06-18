@@ -20,7 +20,7 @@ import Button from '../../ui/Button/Button';
 
 import s from './Configuration.module.css';
 import ActionButton from '../../ui/ActionButton/ActionButton';
-import { TooltipWrapper } from 'react-tooltip';
+import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import ReactDOMServer from 'react-dom/server';
 
 const Configuration = () => {
@@ -87,9 +87,9 @@ const Configuration = () => {
               return (
                 <tr key={key} className={s.Row}>
                   <td className={`${s.Cell} ${s.ConfigParamKeyCell}`}>
-                    <TooltipWrapper
-                      html={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}
-                      className={s.TooltipWrapper}
+                    <div
+                      data-tooltip-id={tooltipId}
+                      data-tooltip-html={ReactDOMServer.renderToStaticMarkup(help[key] || <div>-</div>)}
                     >
                       <Highlighter
                         highlightClassName="highlight-substring"
@@ -97,7 +97,7 @@ const Configuration = () => {
                         autoEscape={true}
                         textToHighlight={key}
                       />
-                    </TooltipWrapper>
+                    </div>
                   </td>
                   <td className={`${s.Cell} ${s.RuntimeConfigCell}`}>{runtimeConfig[key]}</td>
                   <td className={`${s.Cell} ${s.DynamicConfigCell}`}>
@@ -171,7 +171,7 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
     req.setName(props.configKey);
 
     const res = await brokersServiceClient.deleteDynamicConfiguration(req, {})
-    .catch(err => notifyError(`Unable to delete dynamic configuration value: ${err}`));
+      .catch(err => notifyError(`Unable to delete dynamic configuration value: ${err}`));
     if (res === undefined) {
       return;
     }
