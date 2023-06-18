@@ -1,6 +1,6 @@
 import * as Notifications from '../../../../app/contexts/Notifications';
 import s from './Field.module.css';
-import { TooltipWrapper } from 'react-tooltip';
+import { tooltipId } from '../../../../ui/Tooltip/Tooltip';
 
 export type FieldProps = {
   value?: string | React.ReactElement,
@@ -38,11 +38,13 @@ const Field: React.FC<FieldProps> = (props) => {
   }
 
   return (
-    <TooltipWrapper html={(!props.isShowTooltips || props.rawValue === undefined) ? undefined : "Click to copy"}>
-      <div className={s.Field}>
-        {valueElement}
-      </div>
-    </TooltipWrapper>
+    <div
+      className={s.Field}
+      data-tooltip-id={tooltipId}
+      data-tooltip-html={(!props.isShowTooltips || props.rawValue === undefined) ? undefined : "Click to copy"}
+    >
+      {valueElement}
+    </div>
   );
 }
 

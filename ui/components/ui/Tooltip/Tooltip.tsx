@@ -1,7 +1,6 @@
 import React from 'react';
 import s from './Tooltip.module.css'
 import { Tooltip as ReactTooltip } from 'react-tooltip';
-import 'react-tooltip/dist/react-tooltip.css'
 import ReactDOM from 'react-dom';
 
 export type TooltipProps = {
@@ -20,14 +19,14 @@ function BodyPortal({ children }: { children: React.ReactNode }) {
   );
 }
 
+export const tooltipId = `pulsar-ui-react-tooltip`;
+
 const Tooltip: React.FC<TooltipProps> = (props) => {
   return (
     <BodyPortal>
-      <ReactTooltip className={s.Tooltip} clickable delayShow={250}/>
+      <ReactTooltip id={tooltipId} className={s.Tooltip} clickable delayShow={250}/>
     </BodyPortal>
   );
 }
-
-export const tooltipId = 'react-tooltip';
 
 export default Tooltip;

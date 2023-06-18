@@ -1,21 +1,12 @@
 .Topics {
-  padding: 12rem 0 0 0;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.Toolbar {
-  padding: 0 12rem 12rem 12rem;
+.Table {
+  flex: 1 0 auto;
+  flex-direction: column;
   display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
 }
-
-.FilterInput {
-  max-width: 480rem;
-  flex: 1;
-  margin-right: 12rem;
-}
-

@@ -19,7 +19,3 @@
 .FieldTitle {
   font-weight: var(--font-weight-bold);
 }
-
-.TooltipWrapper {
-  display: block;
-}

@@ -1,19 +1,18 @@
-import React, { ReactNode } from 'react';
 import s from './FiltersToolbar.module.css'
 import { TableFilterDescriptor, TableFilterValue } from '../filters/types';
 import removeFilterIcon from './remove-filter.svg';
 import SvgIcon from '../../SvgIcon/SvgIcon';
 import StringFilterInput from '../filters/StringFilterInput/StringFilterInput';
+import { Columns } from '../Table';
 
 export type FilterInUse = {
   state: 'active' | 'inactive',
-  title: ReactNode,
-  descriptor: TableFilterDescriptor,
   value: TableFilterValue
 };
 
 export type FiltersToolbarProps<CK extends string> = {
   filters: Partial<Record<CK, FilterInUse>>;
+  columns: Columns<CK, any, any>;
   onChange: (filters: Partial<Record<CK, FilterInUse>>) => void;
 };
 
@@ -21,31 +20,33 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
   return (
     <div className={s.FiltersToolbar}>
       {Object.keys(props.filters).map((columnKey) => {
-        const filter = props.filters[columnKey as CK]!;
+        const filterInUse = props.filters[columnKey as CK]!;
+        const column = props.columns.columns[columnKey as CK]!;
 
         return (
-          <div key={columnKey} className={`${s.Filter} ${filter.state === 'inactive' ? s.InactiveFilter : ''}`}>
+          <div key={columnKey} className={`${s.Filter} ${filterInUse.state === 'inactive' ? s.InactiveFilter : ''}`}>
             <div
               className={s.FilterTitle}
-              title={filter.state === 'active' ? 'Disable filter' : 'Enable filter'}
+              title={filterInUse.state === 'active' ? 'Disable filter' : 'Enable filter'}
               onClick={() => {
                 const newFilters = { ...props.filters };
                 newFilters[columnKey as CK] = {
-                  ...filter,
-                  state: filter.state === 'active' ? 'inactive' : 'active'
+                  ...filterInUse,
+                  state: filterInUse.state === 'active' ? 'inactive' : 'active'
                 };
                 props.onChange(newFilters);
               }}
             >
-              <strong>{filter.title}:</strong>
+              <strong>{column.title}:</strong>
             </div>
             <FilterEditor
-              value={filter}
+              value={filterInUse}
               onChange={(v) => {
                 const newFilters = { ...props.filters };
                 newFilters[columnKey as CK] = v;
                 props.onChange(newFilters);
               }}
+              filterDescriptor={column.filter?.descriptor!}
             />
 
             <div
@@ -67,16 +68,17 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
 }
 
 export type FilterEditorProps = {
+  filterDescriptor: TableFilterDescriptor;
   value: FilterInUse;
   onChange: (value: FilterInUse) => void;
 }
 
-const FilterEditor: React.FC<FilterEditorProps> = (props) => {
+function FilterEditor(props: FilterEditorProps) {
   return (
     <div className={s.FilterEditor}>
-      {(props.value.descriptor.type === 'string' && props.value.value.type === 'string') && (
+      {(props.filterDescriptor.type === 'string' && props.value.value.type === 'string') && (
         <StringFilterInput
-          descriptor={props.value.descriptor}
+          descriptor={props.filterDescriptor}
           value={{ type: 'string', value: props.value.value.value }}
           onChange={(v) => props.onChange({ ...props.value, value: { type: 'string', value: v.value } })}
         />

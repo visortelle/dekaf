@@ -3,8 +3,8 @@ import s from './MessageDetails.module.css'
 import { MessageDescriptor } from '../../types';
 import JsonView from '../../../../ui/JsonView/JsonView';
 import { AccumulatorField, BrokerPublishTimeField, EventTimeField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from '../fields';
-import { TooltipWrapper } from 'react-tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { tooltipId } from '../../../../ui/Tooltip/Tooltip';
 import { help } from '../fields';
 
 export type MessageDetailsProps = {
@@ -50,9 +50,13 @@ const Field: React.FC<FieldProps> = (props) => {
   return (
     <div className={s.Field}>
       {/* TODO - fix tooltips */}
-      <TooltipWrapper html={renderToStaticMarkup(props.help)} className={s.TooltipWrapper}>
-        <div className={s.FieldTitle}>{props.title}</div>
-      </TooltipWrapper>
+      <div
+        className={s.FieldTitle}
+        data-tooltip-id={tooltipId}
+        data-tooltip-html={renderToStaticMarkup(props.help)}
+      >
+        {props.title}
+      </div>
       <div className={s.FieldValue}>{props.value}</div>
     </div>
   )
