@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
 import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
@@ -46,23 +46,25 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const { tenantServiceClient } = GrpcClient.useContext();
   const navigate = useNavigate();
 
-  const { data: tenants, error: tenantsError } = useSWR(
-    swrKeys.pulsar.tenants._(),
+  const { data: tenantsData, error: tenantsDataError } = useSWR(
+    swrKeys.pulsar.tenants.listTenants._(),
     async () => {
-      const req = new tenantPb.GetTenantsRequest();
-      const res = await tenantServiceClient.getTenants(req, {});
+      const req = new tenantPb.ListTenantsResponse();
+      const res = await tenantServiceClient.listTenants(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get tenants: ${res.getStatus()?.getMessage()}`);
-        return [];
+        return;
       }
 
-      return res.getTenantsList();
+      return res;
     }
   );
 
-  if (tenantsError) {
-    notifyError(`Unable to fetch tenants. ${tenantsError}`);
+  if (tenantsDataError) {
+    notifyError(`Unable to fetch tenants. ${tenantsDataError}`);
   }
+
+  const tenants = useMemo(() => tenantsData === undefined ? [] : tenantsData.getTenantsList(), [tenantsData]);
 
   useEffect(() => {
     setTree((tree) => setTenants({
@@ -297,7 +299,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     const handleNodeClick = async () => {
       switch (node.type) {
-        case 'instance': await mutate(swrKeys.pulsar.tenants._()); break;
+        case 'instance': await mutate(swrKeys.pulsar.tenants.listTenants()); break;
         case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
         case 'namespace': {
           await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name }));

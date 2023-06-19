@@ -390,10 +390,6 @@ const Topics: React.FC<TopicsProps> = (props) => {
           autoRefresh={{
             intervalMs: 5000
           }}
-          dataLoader={{
-            cacheKey: dataLoaderCacheKey,
-            loader: dataLoader
-          }}
           getId={(d) => d.fqn}
           tableId='topics-table'
           defaultSort={{ type: 'by-single-column', column: 'topicName', direction: 'asc' }}
@@ -410,6 +406,10 @@ const Topics: React.FC<TopicsProps> = (props) => {
               state: 'active',
               value: { 'type': 'singleOption', value: 'hide-partitions' }
             }
+          }}
+          dataLoader={{
+            cacheKey: dataLoaderCacheKey,
+            loader: dataLoader
           }}
           lazyDataLoader={{
             loader: async (entries) => {

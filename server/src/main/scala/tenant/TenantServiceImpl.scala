@@ -7,8 +7,11 @@ import com.google.rpc.code.Code
 import org.apache.pulsar.common.policies.data.TenantInfo
 import pulsar_auth.RequestContext
 
+import scala.jdk.FutureConverters.*
 import scala.jdk.CollectionConverters.*
-import scala.concurrent.Future
+import scala.concurrent.{Await, ExecutionContext, Future}
+import java.util.concurrent.{CompletableFuture, TimeUnit}
+import scala.concurrent.duration.Duration
 
 class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
     val logger: Logger = Logger(getClass.getName)
@@ -60,7 +63,7 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
     override def deleteTenant(request: pb.DeleteTenantRequest): Future[pb.DeleteTenantResponse] =
         logger.info(s"Deleting tenant: ${request.tenantName}")
         val adminClient = RequestContext.pulsarAdmin.get()
-        
+
         try {
             adminClient.tenants.deleteTenant(request.tenantName, request.force)
             val status: Status = Status(code = Code.OK.index)
@@ -71,32 +74,37 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
                 Future.successful(pb.DeleteTenantResponse(status = Some(status)))
         }
 
-    override def getTenant(request: pb.GetTenantRequest): Future[pb.GetTenantResponse] =
-        logger.debug(s"Getting tenant: ${request.tenantName}")
+    override def getTenants(request: pb.GetTenantsRequest): Future[pb.GetTenantsResponse] =
+        logger.debug(s"Getting tenants: ${request}")
         val adminClient = RequestContext.pulsarAdmin.get()
 
-        val tenant = try {
-            adminClient.tenants.getTenantInfo(request.tenantName)
+        def tenantInfoToPb(tenantInfo: TenantInfo): pb.TenantInfo = pb.TenantInfo(
+            adminRoles = tenantInfo.getAdminRoles.asScala.toSeq,
+            allowedClusters = tenantInfo.getAllowedClusters.asScala.toSeq
+        )
+
+        given ExecutionContext = ExecutionContext.global
+
+        val tenants = try {
+            val getTenantsFutures = request.tenants.map(t => adminClient.tenants.getTenantInfoAsync(t).asScala)
+            val tenantsInfo = Await.result(Future.sequence(getTenantsFutures), Duration(1, TimeUnit.MINUTES))
+                .map(tenantInfoToPb)
+            request.tenants.zip(tenantsInfo).toMap
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                return Future.successful(pb.GetTenantResponse(status = Some(status)))
+                return Future.successful(pb.GetTenantsResponse(status = Some(status)))
         }
 
-        val tenantInfoPb = pb.TenantInfo(
-            adminRoles = tenant.getAdminRoles.asScala.toSeq,
-            allowedClusters = tenant.getAllowedClusters.asScala.toSeq
-        )
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(pb.GetTenantResponse(
+        Future.successful(pb.GetTenantsResponse(
             status = Some(status),
-            tenantName = request.tenantName,
-            tenantInfo = Some(tenantInfoPb)
+            tenants
         ))
 
-    override def getTenants(request: pb.GetTenantsRequest): Future[pb.GetTenantsResponse] =
-        logger.debug(s"Getting tenants")
+    override def listTenants(request: pb.ListTenantsRequest): Future[pb.ListTenantsResponse] =
+        logger.debug(s"Listing tenants")
         val adminClient = RequestContext.pulsarAdmin.get()
 
         val tenants = try {
@@ -104,8 +112,8 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
         } catch {
             case err =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                return Future.successful(pb.GetTenantsResponse(status = Some(status)))
+                return Future.successful(pb.ListTenantsResponse(status = Some(status)))
         }
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(pb.GetTenantsResponse(status = Some(status), tenants = tenants.toSeq))
+        Future.successful(pb.ListTenantsResponse(status = Some(status), tenants = tenants.toSeq))

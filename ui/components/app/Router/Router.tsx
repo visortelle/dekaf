@@ -240,9 +240,9 @@ const prepareRoutes = (): {
 
       /* Tenants */
       {
-        path: routes.tenants.tenant.configuration._.path,
+        path: routes.tenants.tenant.overview._.path,
         element: withLayout(
-          <RoutedTenantPage view={"configuration"} />,
+          <RoutedTenantPage view={"overview"} />,
           withLayoutProps
         ),
       },

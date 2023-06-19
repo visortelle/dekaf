@@ -1,21 +1,7 @@
-.Tenants {
-  padding: 12rem 0 8rem 0;
+.Page {
+  background-color: #fff;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.Toolbar {
-  padding-bottom: 12rem;
-  padding: 0 12rem 12rem 12rem;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.FilterInput {
-  max-width: 480rem;
-  flex: 1;
-  margin-right: 12rem;
 }

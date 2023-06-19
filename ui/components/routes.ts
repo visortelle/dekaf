@@ -53,11 +53,11 @@ export const routes = {
             `/tenants/${props.tenant}/create-namespace`,
         },
       },
-      configuration: {
+      overview: {
         _: {
-          path: "tenants/:tenant/configuration",
+          path: "tenants/:tenant/overview",
           get: (props: { tenant: string }) =>
-            `/tenants/${props.tenant}/configuration`,
+            `/tenants/${props.tenant}/overview`,
         },
       },
       namespaces: {

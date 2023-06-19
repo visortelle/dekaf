@@ -99,7 +99,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     const onClick = () => {
       switch (crumb.type) {
         case "instance":
-          mutate(swrKeys.pulsar.tenants._());
+          mutate(swrKeys.pulsar.tenants.listTenants());
           break;
         case "tenant":
           mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant }));
