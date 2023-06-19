@@ -62,7 +62,7 @@ export type ConsumersProps = {
   topicType: "persistent" | "non-persistent";
   subscription: string;
 };
-const Producers: React.FC<ConsumersProps> = (props) => {
+const Consumers: React.FC<ConsumersProps> = (props) => {
   const { topicServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const i18n = I18n.useContext();
@@ -298,4 +298,4 @@ function dataEntriesFromPb(statsPb: pb.SubscriptionStats): DataEntry[] {
   });
 }
 
-export default Producers;
+export default Consumers;

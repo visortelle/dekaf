@@ -140,7 +140,9 @@ export const swrKeys = {
       }
     },
     tenants: {
-      _: () => ["pulsar", "tenants"],
+      listTenants: {
+        _: () => ["pulsar", "tenants"]
+      },
       tenant: {
         configuration: {
           _: (props: { tenant: string }) => [

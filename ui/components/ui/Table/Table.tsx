@@ -52,11 +52,11 @@ export type Columns<CK extends ColumnKey, DE, LD> = {
 
 export type Column<DE, LD> = {
   title: ReactNode,
-  render?: (data: DE, lazyData: LD) => ReactNode,
-  sortFn?: (a: { data: DE, lazyData: LD }, b: { data: DE, lazyData: LD }) => number,
+  render?: (data: DE, lazyData?: LD) => ReactNode,
+  sortFn?: (a: { data: DE, lazyData: LD | undefined }, b: { data: DE, lazyData: LD | undefined }) => number,
   filter?: {
     descriptor: TableFilterDescriptor,
-    testFn: (data: DE, lazyData: LD, filterValue: TableFilterValue) => boolean,
+    testFn: (data: DE, lazyData: LD | undefined, filterValue: TableFilterValue) => boolean,
   },
   defaultWidth?: number,
   minWidth?: number,
@@ -77,7 +77,7 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
   tableId: string,
   dataLoader: {
     cacheKey: string[] | null,
-    loader: () => Promise<DE[]>
+    loader: () => Promise<DE[]>,
   }
   lazyDataLoader?: {
     loader: (visibleEntries: DE[]) => Promise<Record<DataEntryKey, LD>>

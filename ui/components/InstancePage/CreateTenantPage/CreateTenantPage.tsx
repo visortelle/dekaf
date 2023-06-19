@@ -64,7 +64,7 @@ const CreateTenantPage: React.FC = () => {
       return;
     }
 
-    mutate(swrKeys.pulsar.tenants._());
+    mutate(swrKeys.pulsar.tenants.listTenants._());
     mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
 
     navigate(routes.instance.tenants._.get());
