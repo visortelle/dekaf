@@ -3,7 +3,6 @@ import s from './Consumers.module.css'
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
-import useSWR from 'swr';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import * as pbUtils from '../../../pbUtils/pbUtils';
 import Table from '../../ui/Table/Table';

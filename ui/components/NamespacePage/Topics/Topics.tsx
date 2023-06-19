@@ -225,8 +225,8 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 filter: {
                   descriptor: {
                     type: 'singleOption',
-                    options: [{ value: 'all', label: 'All' }, { value: 'hide-partitions', label: 'Hide Partitions' }],
-                    defaultValue: { type: 'singleOption', value: 'all' },
+                    options: [{ value: 'show-partitions', label: 'Show Partitions' }, { value: 'hide-partitions', label: 'Hide Partitions' }],
+                    defaultValue: { type: 'singleOption', value: 'hide-partitions' },
                   },
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'singleOption') {
@@ -353,7 +353,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
             },
             defaultConfig: [
               { key: 'topicName', visibility: 'visible', stickyTo: 'left', width: 200 },
-              { key: 'persistency', visibility: 'visible', width: 100 },
+              { key: 'persistency', visibility: 'visible', width: 90 },
               { key: 'partitionsCount', visibility: 'visible', width: 60 },
               { key: 'subscriptionsCount', visibility: 'visible', width: 100 },
               { key: 'producersCount', visibility: 'visible', width: 100 },

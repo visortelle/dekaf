@@ -1,9 +1,11 @@
 .FiltersToolbar {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  gap: 12rem;
   background-color: #fff;
   border-bottom: 1px solid var(--border-color);
   position: relative;
+  padding: 12rem;
 }
 
 @media (max-width: 1200px) {
@@ -22,7 +24,6 @@
   display: inline-flex;
   flex-direction: column;
   position: relative;
-  padding: 12rem 18rem;
   border-radius: 8rem;
   transition: var(--transition-short);
 }
@@ -31,10 +32,6 @@
   filter: grayscale(1);
   opacity: 0.5;
   transition: var(--transition-short);
-}
-
-.Filter:first-child {
-  margin-left: -6rem;
 }
 
 .FilterTitle {
@@ -53,12 +50,10 @@
 .ToggleFilter {
   display: flex;
   opacity: 0;
-  transition: var(--transition-short);
 }
 
 .RemoveFilter {
   opacity: 0;
-  transition: var(--transition-short);
 }
 
 .Filter:hover .ToggleFilter,
