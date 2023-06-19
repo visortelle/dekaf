@@ -50,10 +50,10 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   const { data: namespaces, error: namespacesError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }) : null,
     async () => {
-      const req = new namespacePb.GetNamespacesRequest();
+      const req = new namespacePb.ListNamespacesRequest();
       req.setTenant(props.tenant);
 
-      const res = await namespaceServiceClient.getNamespaces(req, null);
+      const res = await namespaceServiceClient.listNamespaces(req, null);
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(res.getStatus()?.getMessage());
         return [];

@@ -96,11 +96,26 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
                 return Future.successful(pb.GetTenantsResponse(status = Some(status)))
         }
 
+        val namespacesCount = try {
+            if request.isGetNamespacesCount then
+                val getNamespacesCountFutures = request.tenants.map(t => adminClient.namespaces.getNamespacesAsync(t).asScala)
+                val namespacesCount = Await.result(Future.sequence(getNamespacesCountFutures), Duration(1, TimeUnit.MINUTES))
+                    .map(_.size)
+                request.tenants.zip(namespacesCount).toMap
+            else
+                Map.empty
+        } catch {
+            case err =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                return Future.successful(pb.GetTenantsResponse(status = Some(status)))
+        }
+
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(pb.GetTenantsResponse(
             status = Some(status),
-            tenants
+            tenants,
+            namespacesCount
         ))
 
     override def listTenants(request: pb.ListTenantsRequest): Future[pb.ListTenantsResponse] =

@@ -38,11 +38,13 @@ message DeleteTenantResponse {
 
 message GetTenantsRequest {
   repeated string tenants = 1;
+  bool is_get_namespaces_count = 2;
 }
 
 message GetTenantsResponse {
   google.rpc.Status status = 1;
   map<string, TenantInfo> tenants = 2;
+  map<string, int32> namespaces_count = 3;
 }
 
 message ListTenantsRequest {
