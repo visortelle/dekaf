@@ -85,6 +85,7 @@ class TenantServiceImpl extends pb.TenantServiceGrpc.TenantService:
 
         given ExecutionContext = ExecutionContext.global
 
+        // TODO PERF - run both sets of futures (tenants and namespacesCount) in parallel.
         val tenants = try {
             val getTenantsFutures = request.tenants.map(t => adminClient.tenants.getTenantInfoAsync(t).asScala)
             val tenantsInfo = Await.result(Future.sequence(getTenantsFutures), Duration(1, TimeUnit.MINUTES))

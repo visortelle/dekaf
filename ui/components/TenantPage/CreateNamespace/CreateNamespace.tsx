@@ -97,6 +97,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
       value={namespaceName}
       onChange={setNamespaceName}
       placeholder="namespace-1"
+      focusOnMount
     />
   );
 

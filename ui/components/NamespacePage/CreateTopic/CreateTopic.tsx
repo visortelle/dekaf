@@ -34,7 +34,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   const [topicPartitioning, setTopicPartitioning] = React.useState<TopicPartitioning>('non-partitioned');
   const [numPartitions, setNumPartitions] = React.useState(2);
 
-  const topicNameInput = <Input value={topicName} onChange={setTopicName} />
+  const topicNameInput = <Input value={topicName} onChange={setTopicName} focusOnMount />
   const topicPersistencyInput = (
     <Select<TopicPersistency>
       onChange={setTopicPersistency}
