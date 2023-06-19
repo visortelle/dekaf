@@ -92,9 +92,9 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const { data: namespaces, error: namespacesError } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }),
     async () => {
-      const req = new pb.GetNamespacesRequest();
+      const req = new pb.ListNamespacesRequest();
       req.setTenant(props.tenant);
-      const res = await namespaceServiceClient.getNamespaces(req, {});
+      const res = await namespaceServiceClient.listNamespaces(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get namespaces: ${res.getStatus()?.getMessage()}`);
         return;

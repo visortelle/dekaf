@@ -24,10 +24,10 @@ message DeleteNamespaceResponse {
   google.rpc.Status status = 1;
 }
 
-message GetNamespacesRequest {
+message ListNamespacesRequest {
   string tenant = 1;
 }
-message GetNamespacesResponse {
+message ListNamespacesResponse {
   google.rpc.Status status = 1;
   repeated string namespaces = 2;
 }
@@ -1194,7 +1194,7 @@ message SetPropertiesResponse {
 service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
-  rpc GetNamespaces(GetNamespacesRequest) returns (GetNamespacesResponse);
+  rpc ListNamespaces(ListNamespacesRequest) returns (ListNamespacesResponse);
 
   rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
   rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);

@@ -17,7 +17,7 @@ export type ColumnKey =
   'namespacesCount';
 
 export type DataEntry = {
-  tenantName?: string;
+  tenantName: string;
 }
 
 export type LazyDataEntry = {
@@ -59,6 +59,19 @@ const Tenants: React.FC<TenantsProps> = (props) => {
                 </Link>
               )),
               sortFn: (a, b) => (a.data.tenantName || '').localeCompare(b.data.tenantName || ''),
+              filter: {
+                descriptor: {
+                  type: 'string',
+                  defaultValue: { type: 'string', value: '' }
+                },
+                testFn: (de, _, filterValue) => {
+                  if (filterValue.type !== 'string') {
+                    return true
+                  };
+
+                  return de.tenantName.includes(filterValue.value);
+                },
+              }
             },
             namespacesCount: {
               title: 'Namespaces',
@@ -92,6 +105,7 @@ const Tenants: React.FC<TenantsProps> = (props) => {
           loader: async (des) => {
             const req = new pb.GetTenantsRequest();
             req.setTenantsList(des.map(e => e.tenantName || ''));
+            req.setIsGetNamespacesCount(true);
 
             const res = await tenantServiceClient.getTenants(req, null).catch((err) => notifyError(`Unable to get tenants. ${err}`));
             if (res === undefined) {
@@ -102,9 +116,9 @@ const Tenants: React.FC<TenantsProps> = (props) => {
               notifyError(`Unable to get tenants. ${res.getStatus()?.getMessage()}`);
               return {};
             }
-            
 
             const tenantsPb = res.getTenantsMap();
+            const namespacesCountPb = res.getNamespacesCountMap();
 
             const lazyDataEntryPairs: [string, LazyDataEntry][] = des.map((de) => {
               const tenantPb = tenantsPb.get(de.tenantName || '');
@@ -115,6 +129,7 @@ const Tenants: React.FC<TenantsProps> = (props) => {
               const ld: LazyDataEntry = {
                 adminRoles: adminRoles?.length ? adminRoles : undefined,
                 allowedClusters: allowedClusters?.length ? allowedClusters : undefined,
+                namespacesCount: namespacesCountPb.get(de.tenantName || '')
               };
 
               return [de.tenantName || '', ld];
@@ -129,6 +144,12 @@ const Tenants: React.FC<TenantsProps> = (props) => {
         getId={(entry) => entry.tenantName ?? ''}
         tableId='tenants-table'
         defaultSort={{ column: 'tenantName', direction: 'asc', type: 'by-single-column' }}
+        defaultFiltersInUse={{
+          'tenantName': {
+            state: 'active',
+            value: { 'type': 'string', value: '' }
+          }
+        }}
       />
     </div>
   );

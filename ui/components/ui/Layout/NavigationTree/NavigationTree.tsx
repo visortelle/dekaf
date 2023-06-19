@@ -299,7 +299,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     const handleNodeClick = async () => {
       switch (node.type) {
-        case 'instance': await mutate(swrKeys.pulsar.tenants.listTenants()); break;
+        case 'instance': await mutate(swrKeys.pulsar.tenants.listTenants._()); break;
         case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
         case 'namespace': {
           await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name }));
