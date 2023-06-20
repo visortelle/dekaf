@@ -79,11 +79,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
 
   const dataLoader = async () => {
     const fetchPersistentTopics = async () => {
-      const req = new pb.GetTopicsRequest();
+      const req = new pb.ListTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT);
 
-      const res = await topicServiceClient.getTopics(req, {});
+      const res = await topicServiceClient.listTopics(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get persistent topics: ${res.getStatus()?.getMessage()}`);
         return;
@@ -93,11 +93,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
     }
 
     const fetchNonPersistentTopics = async () => {
-      const req = new pb.GetTopicsRequest();
+      const req = new pb.ListTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT);
 
-      const res = await topicServiceClient.getTopics(req, {});
+      const res = await topicServiceClient.listTopics(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get non persistent topics: ${res.getStatus()?.getMessage()}`);
         return;

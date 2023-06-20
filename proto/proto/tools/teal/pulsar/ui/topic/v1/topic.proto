@@ -11,11 +11,11 @@ enum TopicDomain {
   TOPIC_DOMAIN_NON_PERSISTENT = 2;
 }
 
-message GetTopicsRequest {
+message ListTopicsRequest {
   string namespace = 1;
   TopicDomain topic_domain = 2;
 }
-message GetTopicsResponse {
+message ListTopicsResponse {
   google.rpc.Status status = 1;
   repeated string topics = 2;
 }
@@ -287,7 +287,7 @@ service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
   rpc GetTopicsInternalStats(GetTopicsInternalStatsRequest) returns (GetTopicsInternalStatsResponse);
-  rpc GetTopics(GetTopicsRequest) returns (GetTopicsResponse);
+  rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {}
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
 }

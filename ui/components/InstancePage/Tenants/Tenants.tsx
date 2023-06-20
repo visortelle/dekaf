@@ -155,8 +155,8 @@ const Tenants: React.FC<TenantsProps> = (props) => {
   );
 }
 
-function dataEntriesFromPb(tenantsPb: pb.ListTenantsResponse): DataEntry[] {
-  return tenantsPb.getTenantsList().map((tenantName) => {
+function dataEntriesFromPb(res: pb.ListTenantsResponse): DataEntry[] {
+  return res.getTenantsList().map((tenantName) => {
     return {
       tenantName,
     }

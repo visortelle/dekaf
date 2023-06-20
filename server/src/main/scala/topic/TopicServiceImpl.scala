@@ -57,8 +57,8 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 Future.successful(pb.CreateNonPartitionedTopicResponse(status = Some(status)))
         }
 
-    override def getTopics(request: pb.GetTopicsRequest): Future[pb.GetTopicsResponse] =
-        logger.debug(s"Getting topics for namespace: ${request.namespace}")
+    override def listTopics(request: pb.ListTopicsRequest): Future[pb.ListTopicsResponse] =
+        logger.debug(s"List topics for namespace: ${request.namespace}")
         val adminClient = RequestContext.pulsarAdmin.get()
 
         val topics =
@@ -73,11 +73,11 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             catch {
                 case err =>
                     val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                    return Future.successful(pb.GetTopicsResponse(status = Some(status)))
+                    return Future.successful(pb.ListTopicsResponse(status = Some(status)))
             }
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(pb.GetTopicsResponse(status = Some(status), topics = topics.asScala.toSeq))
+        Future.successful(pb.ListTopicsResponse(status = Some(status), topics = topics.asScala.toSeq))
 
     override def getTopicsInternalStats(request: pb.GetTopicsInternalStatsRequest): Future[pb.GetTopicsInternalStatsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
