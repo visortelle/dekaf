@@ -32,6 +32,16 @@ message ListNamespacesResponse {
   repeated string namespaces = 2;
 }
 
+message GetTopicsCountRequest {
+  repeated string namespaces = 1;
+  bool is_include_system_topics = 2;
+}
+message GetTopicsCountResponse {
+  google.rpc.Status status = 1;
+  map<string, int32> topics_count = 2;
+  map<string, int32> topics_count_excluding_partitions = 3;
+}
+
 enum SchemaCompatibilityStrategy {
   SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED = 0;
   SCHEMA_COMPATIBILITY_STRATEGY_UNDEFINED = 100;
@@ -1195,6 +1205,7 @@ service NamespaceService {
   rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
   rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
   rpc ListNamespaces(ListNamespacesRequest) returns (ListNamespacesResponse);
+  rpc GetTopicsCount(GetTopicsCountRequest) returns (GetTopicsCountResponse);
 
   rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
   rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);

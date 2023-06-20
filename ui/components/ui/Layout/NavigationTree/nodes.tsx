@@ -111,11 +111,11 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { data: _persistentTopics, error: persistentTopicsError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
     async () => {
-      const req = new topicsPb.GetTopicsRequest();
+      const req = new topicsPb.ListTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setTopicDomain(topicsPb.TopicDomain.TOPIC_DOMAIN_PERSISTENT);
 
-      const res = await topicServiceClient.getTopics(req, null);
+      const res = await topicServiceClient.listTopics(req, null);
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to fetch persistent topics. ${res.getStatus()?.getMessage()}`);
         return [];
@@ -134,11 +134,11 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { data: _nonPersistentTopics, error: nonPersistentTopicsError } = useSWR<string[]>(
     props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
     async () => {
-      const req = new topicsPb.GetTopicsRequest();
+      const req = new topicsPb.ListTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setTopicDomain(topicsPb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT);
 
-      const res = await topicServiceClient.getTopics(req, null);
+      const res = await topicServiceClient.listTopics(req, null);
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to fetch non-persistent topics. ${res.getStatus()?.getMessage()}`);
       }
