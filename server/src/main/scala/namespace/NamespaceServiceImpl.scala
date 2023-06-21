@@ -2225,11 +2225,16 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
         }
 
     override def getProperties(request: GetPropertiesRequest): Future[GetPropertiesResponse] =
-        logger.debug(s"Getting properties for namespace: ${request.namespace}")
+        logger.debug(s"Get properties for namespace.")
         val adminClient = RequestContext.pulsarAdmin.get()
 
+        given ExecutionContext = ExecutionContext.global
+
         try {
-            val properties = adminClient.namespaces.getProperties(request.namespace).asScala.toMap
+            val getPropertiesFutures = request.namespaces.map(ns => adminClient.namespaces.getPropertiesAsync(ns).asScala)
+            val propertiesPerNs = Await.result(Future.sequence(getPropertiesFutures), Duration(1, TimeUnit.MINUTES))
+                .map(ps => pb.Properties(properties = ps.asScala.toMap))
+            val properties = request.namespaces.zip(propertiesPerNs).toMap
 
             Future.successful(GetPropertiesResponse(
                 status = Some(Status(code = Code.OK.index)),

@@ -1187,11 +1187,14 @@ message RevokePermissionOnSubscriptionResponse {
 }
 
 message GetPropertiesRequest {
-  string namespace = 1;
+  repeated string namespaces = 1;
+}
+message Properties {
+  map<string, string> properties = 1;
 }
 message GetPropertiesResponse {
   google.rpc.Status status = 1;
-  map<string, string> properties = 2;
+  map<string, Properties> properties = 2;
 }
 message SetPropertiesRequest {
   string namespace = 1;
