@@ -24,7 +24,7 @@ type Properties = {
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = GrpcClient.useContext();
-  const { notifyError, notifySuccess } = Notifications.useContext();
+  const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
   const swrKey = swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy });
@@ -33,14 +33,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetPropertiesRequest();
-      req.setNamespace(`${props.tenant}/${props.namespace}`);
+      req.setNamespacesList([`${props.tenant}/${props.namespace}`]);
 
       const res = await namespaceServiceClient.getProperties(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         throw new Error(`Unable to get properties. ${res.getStatus()?.getMessage()}`);
       }
 
-      const properties = mapToObject(res.getPropertiesMap())
+      const propertiesPb = mapToObject(res.getPropertiesMap())[`${props.tenant}/${props.namespace}`];
+      const properties = mapToObject(propertiesPb.getPropertiesMap());
 
       return properties;
     }
