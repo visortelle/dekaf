@@ -101,10 +101,10 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             }
           },
           defaultConfig: [
-            { key: 'namespaceName', width: 300, visibility: 'visible', stickyTo: 'left' },
-            { key: 'topicsCount', width: 100, visibility: 'visible' },
-            { key: 'topicsCountIncludingPartitions', width: 100, visibility: 'visible' },
-            { key: 'properties', width: 400, visibility: 'visible' },
+            { columnKey: 'namespaceName', width: 300, visibility: 'visible', stickyTo: 'left' },
+            { columnKey: 'topicsCount', width: 100, visibility: 'visible' },
+            { columnKey: 'topicsCountIncludingPartitions', width: 100, visibility: 'visible' },
+            { columnKey: 'properties', width: 400, visibility: 'visible' },
           ],
         }}
         dataLoader={{

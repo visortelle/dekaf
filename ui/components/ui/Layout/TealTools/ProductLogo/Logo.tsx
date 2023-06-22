@@ -10,7 +10,7 @@ const Logo = (props: { fontSize: string, isDark?: boolean, isCompact?: boolean }
           color: props.isDark ? '#fff' : 'var(--text-color)'
         }}
       >
-        <span style={{ color: 'var(--accent-color-blue)' }}>{props.isCompact ? 'g' : 'Gamma'}</span><span>{props.isCompact ? 's' : 'Scope'}</span>
+        <span style={{ color: 'var(--accent-color-blue)' }}>{props.isCompact ? 'g' : 'Gamma'}</span><span>{props.isCompact ? 's' : 'Cat'}</span>
       </div>
       <div>
         for Apache Pulsar

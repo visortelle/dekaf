@@ -91,10 +91,10 @@ const Tenants: React.FC<TenantsProps> = (props) => {
             }
           },
           defaultConfig: [
-            { key: 'tenantName', width: 300, visibility: 'visible', stickyTo: 'left' },
-            { key: 'namespacesCount', width: 100, visibility: 'visible' },
-            { key: 'allowedClusters', width: 200, visibility: 'visible' },
-            { key: 'adminRoles', width: 300, visibility: 'visible' },
+            { columnKey: 'tenantName', width: 300, visibility: 'visible', stickyTo: 'left' },
+            { columnKey: 'namespacesCount', width: 100, visibility: 'visible' },
+            { columnKey: 'allowedClusters', width: 200, visibility: 'visible' },
+            { columnKey: 'adminRoles', width: 300, visibility: 'visible' },
           ],
         }}
         dataLoader={{
