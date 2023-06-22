@@ -18,7 +18,8 @@
 }
 
 .Th,
-.SummaryTh {
+.SummaryTh,
+.HighlightedCell {
   font-weight: var(--font-weight-normal);
   border: 1px solid var(--border-color);
   border-left: none;

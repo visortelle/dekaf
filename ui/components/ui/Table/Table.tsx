@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useState, ReactElement, useMemo } from 'react';
 import s from './Table.module.css'
-import { filter, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import { ListItem, TableVirtuoso } from 'react-virtuoso';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import arrowDownIcon from './arrow-down.svg';
@@ -37,7 +37,7 @@ export type AutoRefreshValue = {
 };
 
 export type ColumnConfig<CK> = {
-  key: CK,
+  columnKey: CK,
   visibility: 'visible' | 'hidden',
   width: number,
   stickyTo?: 'none' | 'left'
@@ -52,7 +52,7 @@ export type Columns<CK extends ColumnKey, DE, LD> = {
 
 export type Column<DE, LD> = {
   title: ReactNode,
-  render?: (data: DE, lazyData?: LD) => ReactNode,
+  render: (data: DE, lazyData?: LD) => ReactNode,
   sortFn?: (a: { data: DE, lazyData: LD | undefined }, b: { data: DE, lazyData: LD | undefined }) => number,
   filter?: {
     descriptor: TableFilterDescriptor,
@@ -90,6 +90,7 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
     intervalMs: number,
   },
   itemNamePlural?: string,
+  viewMode?: 'table' | 'list',
 };
 
 function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {
@@ -268,11 +269,68 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     return data;
   }, [loadedData, sort, lazyData, filtersInUseDebounced]);
 
+  useEffect(() => {
+    if (props.viewMode === 'list') {
+      setItemsRendered(loadedData?.map(de => {
+        return {
+          index: 0, // Doesn't matter for list view.
+          offset: 0, // Doesn't matter for list view.
+          size: 1, // Doesn't matter for list view.
+          data: de
+        };
+      }) || []);
+    }
+  }, [loadedData]);
+
   if (data.length === 0) {
     return (
       <div className={s.NothingToShow}>
         <NothingToShow />
       </div>
+    );
+  }
+
+  if (props.viewMode === 'list') {
+    return (
+      <>
+        {sortedData.map((de) => {
+          return (
+            <div>
+              <table className={s.Table}>
+                <tbody>
+                  {columnsConfig.map((cc) => {
+                    const column = props.columns.columns[cc.columnKey];
+                    const columnTitle = props.columns.columns[cc.columnKey]?.title;
+
+                    if (column === undefined) {
+                      return null;
+                    }
+
+                    const cellValue = column.render(de, lazyData[props.getId(de)]);
+
+                    return (
+                      <tr className={s.Tr}>
+                        <td className={s.HighlightedCell}>
+                          <div
+                            className={s.ThContent}
+                            data-tooltip-id={tooltipId}
+                            data-tooltip-html={props.columns.help ? renderToStaticMarkup(<>{props.columns.help[cc.columnKey]}</>) : undefined}
+                          >
+                            {columnTitle}
+                          </div>
+                        </td>
+                        <td className={s.Td}>
+                          {cellValue}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        })}
+      </>
     );
   }
 
@@ -327,11 +385,11 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
 
               return (
                 <Th
-                  key={columnConfig.key}
-                  title={props.columns.columns[columnConfig.key]!.title}
-                  columnKey={columnConfig.key}
-                  isSortable={Boolean(props.columns.columns[columnConfig.key]!.sortFn)}
-                  filter={props.columns.columns[columnConfig.key]!.filter}
+                  key={columnConfig.columnKey}
+                  title={props.columns.columns[columnConfig.columnKey]!.title}
+                  columnKey={columnConfig.columnKey}
+                  isSortable={Boolean(props.columns.columns[columnConfig.columnKey]!.sortFn)}
+                  filter={props.columns.columns[columnConfig.columnKey]!.filter}
                   style={{ width: columnConfig.width, ...style }}
                 />
               );
@@ -342,11 +400,11 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
           return (
             <>
               {columnsConfig.map((columnConfig) => {
-                const v = props.columns.columns[columnConfig.key]!.render?.(entry, lazyData[props.getId(entry)]);
+                const v = props.columns.columns[columnConfig.columnKey]!.render?.(entry, lazyData[props.getId(entry)]);
                 const style: React.CSSProperties = columnConfig.stickyTo === 'left' ? { position: 'sticky', left: 0, zIndex: 10 } : {};
 
                 return (
-                  <td key={columnConfig.key} className={s.Td} style={style}>
+                  <td key={columnConfig.columnKey} className={s.Td} style={style}>
                     <div className={s.TdContent} style={{ width: columnConfig.width }} title={typeof v === 'string' ? v : undefined}>
                       {v === undefined ? (
                         <div className={s.NoData}>-</div>
