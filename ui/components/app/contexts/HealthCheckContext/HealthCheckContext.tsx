@@ -93,13 +93,13 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
     fontSize: '32rem',
     padding: '48rem'
   };
-  if (result.uiServerConnection === 'failed') {
-    return <div style={style}>Your browser ↔ UI Server connection check has failed.</div>;
-  }
+  // if (result.uiServerConnection === 'failed') {
+  //   return <div style={style}>Your browser ↔ UI Server connection check has failed.</div>;
+  // }
 
-  if (result.brokerConnection === 'failed') {
-    return <div style={style}>UI Server ↔ Pulsar Broker connection check has failed.</div>;
-  }
+  // if (result.brokerConnection === 'failed') {
+  //   return <div style={style}>UI Server ↔ Pulsar Broker connection check has failed.</div>;
+  // }
 
   return (
     <Context.Provider

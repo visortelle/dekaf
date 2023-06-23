@@ -67,7 +67,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
       <div className={s.Title}>
         <H1>Namespace Policies</H1>
       </div>
-      <div>
+      <div className={s.Tabs}>
         <Tabs<TabsKey>
           activeTab={activeTab}
           onActiveTabChange={setActiveTab}

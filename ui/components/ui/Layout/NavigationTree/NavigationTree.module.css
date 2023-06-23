@@ -58,6 +58,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   padding-left: 0.6ch;
+
+  padding-bottom: 1px; /* Otherwise some letters like "g" aren't fully visible. */
+  padding-top: 1px;
 }
 
 .NodeIcon {

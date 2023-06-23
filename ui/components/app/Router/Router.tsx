@@ -1,5 +1,6 @@
 import React from "react";
 import { QueryParamProvider } from "use-query-params";
+import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6';
 import {
   BrowserRouter,
   useParams,
@@ -10,7 +11,6 @@ import {
   useNavigate,
   Params,
 } from "react-router-dom";
-import { Location } from "react-router-dom";
 import * as Modals from "../contexts/Modals/Modals";
 
 import { routes } from "../../routes";
@@ -40,7 +40,7 @@ const Router: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <QueryParamProvider ReactRouterRoute={RouteAdapter}>
+      <QueryParamProvider adapter={ReactRouter6Adapter}>
         <Modals.DefaultProvider>
           <Routes withLayout={withLayout} />
         </Modals.DefaultProvider>
@@ -418,32 +418,6 @@ const WithParams = (props: {
 }) => {
   const params = useParams();
   return props.children(params);
-};
-
-/**
- * XXX - Fix for use-query-params
- * https://github.com/pbeshai/use-query-params/issues/108#issuecomment-785209454
- * This is the main thing you need to use to adapt the react-router v6
- * API to what use-query-params expects.
- *
- * Pass this as the `ReactRouterRoute` prop to QueryParamProvider.
- */
-const RouteAdapter = ({ children }: any) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const adaptedHistory = React.useMemo(
-    () => ({
-      replace(location: Location) {
-        navigate(location, { replace: true, state: location.state });
-      },
-      push(location: Location) {
-        navigate(location, { replace: false, state: location.state });
-      },
-    }),
-    [navigate]
-  );
-  return children({ history: adaptedHistory, location });
 };
 
 const setScrollMode = (

@@ -3,64 +3,52 @@ import s from './SubscriptionCursor.module.css';
 import { position } from '../../../../../pulsar/position';
 
 type LedgerInfo = {
-  ledgerId: number;
-  entries: number;
-  size: number;
-  offloaded: boolean;
-  metadata: string;
-  underReplicated: boolean;
+  ledgerId?: number;
+  entries?: number;
+  size?: number;
+  offloaded?: boolean;
+  metadata?: string;
+  underReplicated?: boolean;
 }
 export type Cursor = {
-  markDeletePosition: string;
-  readPosition: string,
-  waitingReadOp: boolean;
-  pendingReadOps: number;
-  messagesConsumedCounter: number;
-  cursorLedger: number;
-  cursorLedgerLastEntry: number;
-  individuallyDeletedMessages: string;
-  lastLedgerSwitchTimestamp: string;
-  state: string;
-  numberOfEntriesSinceFirstNotAckedMessage: number;
-  totalNonContiguousDeletedMessagesRange: number;
-  subscriptionHavePendingRead: boolean;
-  subscriptionHavePendingReplayRead: boolean;
-  properties: Record<string, number>;
+  markDeletePosition?: string;
+  readPosition?: string,
+  waitingReadOp?: boolean;
+  pendingReadOps?: number;
+  messagesConsumedCounter?: number;
+  cursorLedger?: number;
+  cursorLedgerLastEntry?: number;
+  individuallyDeletedMessages?: string;
+  lastLedgerSwitchTimestamp?: string;
+  state?: string;
+  numberOfEntriesSinceFirstNotAckedMessage?: number;
+  totalNonContiguousDeletedMessagesRange?: number;
+  subscriptionHavePendingRead?: boolean;
+  subscriptionHavePendingReplayRead?: boolean;
+  properties?: Record<string, number>;
 
 }
 
 export type SubscriptionCursorProps = {
   managedLedgerInternalStats: {
-    entriesAddedCounter: number;
-    numberOfEntries: number;
-    totalSize: number;
-    currentLedgerEntries: number;
-    currentLedgerSize: number;
-    lastLedgerCreatedTimestamp: string;
-    lastLedgerCreationFailureTimestamp: string;
-    waitingCursorsCount: number;
-    pendingEntriesCount: number;
-    lastConfirmedEntry: string;
-    state: string;
+    entriesAddedCounter?: number;
+    numberOfEntries?: number;
+    totalSize?: number;
+    currentLedgerEntries?: number;
+    currentLedgerSize?: number;
+    lastLedgerCreatedTimestamp?: string;
+    lastLedgerCreationFailureTimestamp?: string;
+    waitingCursorsCount?: number;
+    pendingEntriesCount?: number;
+    lastConfirmedEntry?: string;
+    state?: string;
     ledgers: LedgerInfo[];
   },
-  sessionStartCursor: Cursor;
-  cursor: Cursor;
+  sessionStartCursor?: Cursor;
+  cursor?: Cursor;
 }
 
-const parseReadPosition = (cursor: SubscriptionCursorProps['cursor']) => Number(cursor.readPosition.split(':')[1]);
-const parseMarkDeletePosition = (cursor: SubscriptionCursorProps['cursor']) => Number(cursor.markDeletePosition.split(':')[1]);
-
 const SubscriptionCursor: React.FC<SubscriptionCursorProps> = (props) => {
-  const [readPosition, setReadPosition] = useState(props.cursor.readPosition);
-  const [sessionStartReadPosition, setSessionStartReadPosition] = useState(position.gt(props.sessionStartCursor.readPosition, readPosition) ? readPosition : props.sessionStartCursor.readPosition);
-
-  useEffect(() => {
-    if (sessionStartReadPosition > readPosition) {
-      setSessionStartReadPosition(() => readPosition);
-    }
-  }, [readPosition]);
-
   // useEffect(() => {
   //   setReadPosition(() => parseReadPosition(props.cursor));
   // }, [props.cursor]);
