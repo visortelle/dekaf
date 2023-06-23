@@ -1,0 +1,39 @@
+.Overview {
+  padding: 24rem 12rem 0 12rem;
+  display: flex;
+}
+
+.LeftPanel {
+  flex: 1 0 50%;
+}
+
+.RightPanel {
+  flex: 1 0 50%;
+  border-left: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+}
+
+.Title {
+  margin-bottom: 24rem;
+}
+
+.Section {
+  margin-bottom: 24rem;
+}
+
+.SectionTitle {
+  margin-bottom: 12rem;
+}
+
+.NothingToShow {
+  padding: 12rem;
+}
+
+.Tabs {
+  margin-right: 12rem;
+}
+
+.Tab {
+  margin-top: -1rem;
+  flex: 1;
+}

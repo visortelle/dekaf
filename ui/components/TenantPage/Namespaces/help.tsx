@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { ColumnKey } from "./Tenants";
+import { ColumnKey } from "./Namespaces";
 
 export const help: Record<ColumnKey, ReactNode> = {
   tenantName: "The name of the tenant.",

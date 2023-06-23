@@ -1,7 +1,6 @@
 .Tabs {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid var(--border-color);
   background-color: #fff;
   flex: 1;
   overflow: auto;
@@ -13,6 +12,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   border-bottom: 1px solid var(--border-color);
+  border-left: 1px solid var(--border-color);
 }
 
 .CloseTabs {
@@ -60,6 +60,19 @@
   border-bottom: 1px solid #fff;
   margin-bottom: -1px;
   background-color: #fff;
+  position: relative;
+  box-shadow: 0rem 1rem 5rem rgba(0, 0, 0, 0.27);
+  border-right: 0;
+}
+
+.ActiveTab:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background-color: var(--accent-color-blue);
 }
 
 .TabContent {

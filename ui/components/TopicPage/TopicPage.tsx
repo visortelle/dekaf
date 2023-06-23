@@ -12,6 +12,7 @@ import DeleteDialog from "./DeleteDialog/DeleteDialog";
 import { routes } from "../routes";
 import { useNavigate } from "react-router";
 import Producers from "./Producers/Producers";
+import Overview from "./Overview/Overview";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -38,14 +39,14 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
   const key = `${props.tenant}-${props.namespace}-${props.topic}`;
 
   let buttons: ToolbarButtonProps[] = [
-{
+    {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
         topicType: props.topicType,
       }),
-      text: "Details",
+      text: "Overview",
       onClick: () => { },
       type: "regular",
     },
@@ -204,6 +205,9 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           topicType={props.topicType}
           view={{ type: "view-schema", schemaVersion: props.view.schemaVersion }}
         />
+      )}
+      {props.view.type === "overview" && (
+        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
       )}
       {props.view.type === "policies" && (
         <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />

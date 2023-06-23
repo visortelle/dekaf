@@ -304,11 +304,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
               },
               waitingPublishers: {
                 title: 'Waiting Publishers',
-                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getWaitingPublishers()?.getValue(), v => v.toString()),
+                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getWaitingPublishers()?.getValue(), v => v),
               },
               replicatorsCount: {
                 title: 'Replicators',
-                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getReplicationMap()?.getLength(), v => v.toString()),
+                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getReplicationMap()?.getLength(), v => v),
               },
               deduplicationStatus: {
                 title: 'Deduplication Status',
@@ -316,11 +316,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
               },
               topicEpoch: {
                 title: 'Topic Epoch',
-                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getTopicEpoch()?.getValue(), v => v.toString()),
+                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getTopicEpoch()?.getValue(), v => v),
               },
               nonContiguousDeletedMessagesRanges: {
                 title: 'Non Contiguous Deleted Messages Ranges',
-                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getNonContiguousDeletedMessagesRanges()?.getValue(), v => v.toString()),
+                render: (_, ld) => i18n.withVoidDefault(ld?.stats.getNonContiguousDeletedMessagesRanges()?.getValue(), v => v),
               },
               nonContiguousDeletedMessagesRangesSerializedSize: {
                 title: 'Non Contiguous Deleted Messages Ranges Serialized Size',
@@ -357,12 +357,12 @@ const Topics: React.FC<TopicsProps> = (props) => {
               { columnKey: 'partitionsCount', visibility: 'visible', width: 60 },
               { columnKey: 'subscriptionsCount', visibility: 'visible', width: 100 },
               { columnKey: 'producersCount', visibility: 'visible', width: 100 },
-              { columnKey: 'storageSize', visibility: 'visible', width: 100 },
-              { columnKey: 'backlogSize', visibility: 'visible', width: 100 },
               { columnKey: 'msgRateIn', visibility: 'visible', width: 100 },
               { columnKey: 'msgRateOut', visibility: 'visible', width: 100 },
               { columnKey: 'msgThroughputIn', visibility: 'visible', width: 100 },
               { columnKey: 'msgThroughputOut', visibility: 'visible', width: 100 },
+              { columnKey: 'storageSize', visibility: 'visible', width: 100 },
+              { columnKey: 'backlogSize', visibility: 'visible', width: 100 },
               { columnKey: 'bytesInCounter', visibility: 'visible', width: 100 },
               { columnKey: 'bytesOutCounter', visibility: 'visible', width: 100 },
               { columnKey: 'msgInCounter', visibility: 'visible', width: 100 },
