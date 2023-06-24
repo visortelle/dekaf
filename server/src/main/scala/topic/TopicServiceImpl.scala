@@ -14,14 +14,7 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
-import com.tools.teal.pulsar.ui.topic.v1.topic.{
-    GetPartitionedTopicStatsRequest,
-    GetPartitionedTopicStatsResponse,
-    GetTopicsStatsRequest,
-    GetTopicsStatsResponse,
-    GetTopicStatsRequest,
-    GetTopicStatsResponse
-}
+
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import org.apache.pulsar.common.naming.TopicDomain
 import pulsar_auth.RequestContext
@@ -112,7 +105,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 Future.successful(pb.DeleteTopicResponse(status = Some(status)))
         }
 
-    override def getTopicsStats(request: GetTopicsStatsRequest): Future[GetTopicsStatsResponse] =
+    override def getTopicsStats(request: pb.GetTopicsStatsRequest): Future[pb.GetTopicsStatsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
 
         given ExecutionContext = ExecutionContext.global
