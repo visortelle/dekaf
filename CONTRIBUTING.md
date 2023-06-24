@@ -20,6 +20,12 @@
 - Go to the server directory `cd ./server` and run `sbt`, then `run` here.
 - Open a second terminal, go to the UI directory `cd ./ui` and run `make dev` here.
 
+## Frontend
+
+If you're using VSCode, use a snippet to create a new component from a template.
+
+https://gist.github.com/visortelle/271627130d7dfcfa44e1f71fc5b6dfaf
+
 ## Get access to development Kubernetes cluster
 
 - [ ] Make sure that you have AWS CLI installed: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
