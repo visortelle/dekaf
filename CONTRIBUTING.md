@@ -17,8 +17,14 @@
 - Use `make dev` command at the repository root to enter the development environment shell.
 - Go to `./devenv` directory and run `make dev-local` to start local Pulsar-standalone instance in Docker.
 - Go to the Protobuf definitions directory `cd ./proto` and run `make build` here.
-- Go to the server directory `cd ./server` and run `make dev` here.
+- Go to the server directory `cd ./server` and run `sbt`, then `run` here.
 - Open a second terminal, go to the UI directory `cd ./ui` and run `make dev` here.
+
+## Frontend
+
+If you're using VSCode, use a snippet to create a new component from a template.
+
+https://gist.github.com/visortelle/271627130d7dfcfa44e1f71fc5b6dfaf
 
 ## Get access to development Kubernetes cluster
 
