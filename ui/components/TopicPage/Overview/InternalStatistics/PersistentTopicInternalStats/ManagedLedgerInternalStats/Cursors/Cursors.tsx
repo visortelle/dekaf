@@ -85,6 +85,19 @@ const Cursors: React.FC<{ cursors: Record<string, pb.CursorStats> }> = (props) =
             title: "Subscription Name",
             render: (cursor) => i18n.withVoidDefault(cursor.subscriptionName, v => v),
             sortFn: (a, b) => a.data.subscriptionName.localeCompare(b.data.subscriptionName, 'en', { numeric: true }),
+            filter: {
+              descriptor: {
+                type: 'string',
+                defaultValue: {type: 'string', value: ''}
+              },
+              testFn: (cursor, _, filter) => {
+                if (filter.type !== 'string') {
+                  return true;
+                }
+
+                return cursor.subscriptionName.includes(filter.value);
+              },
+            }
           },
           markDeletePosition: {
             title: "Mark Delete Position",
@@ -176,15 +189,15 @@ const Cursors: React.FC<{ cursors: Record<string, pb.CursorStats> }> = (props) =
           { columnKey: "messagesConsumedCounter", width: 100, visibility: 'visible' },
           { columnKey: "cursorLedger", width: 100, visibility: 'visible' },
           { columnKey: "cursorLedgerLastEntry", width: 100, visibility: 'visible' },
-          { columnKey: "individuallyDeletedMessages", width: 100, visibility: 'visible' },
-          { columnKey: "lastLedgerSwitchTimestamp", width: 100, visibility: 'visible' },
           { columnKey: "state", width: 100, visibility: 'visible' },
           { columnKey: "active", width: 100, visibility: 'visible' },
           { columnKey: "numberOfEntriesSinceFirstNotAckedMessage", width: 100, visibility: 'visible' },
           { columnKey: "totalNonContiguousDeletedMessagesRange", width: 100, visibility: 'visible' },
           { columnKey: "subscriptionHavePendingRead", width: 100, visibility: 'visible' },
           { columnKey: "subscriptionHavePendingReplayRead", width: 100, visibility: 'visible' },
+          { columnKey: "lastLedgerSwitchTimestamp", width: 180, visibility: 'visible' },
           { columnKey: "properties", width: 300, visibility: 'visible' },
+          { columnKey: "individuallyDeletedMessages", width: 400, visibility: 'visible' },
         ]
       }}
       dataLoader={{
