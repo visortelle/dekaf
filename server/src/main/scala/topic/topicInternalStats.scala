@@ -22,7 +22,7 @@ case class NonPartitionedTopic()
 type TopicType = Either[String, PartitionedTopic | NonPartitionedTopic]
 def getTopicType(pulsarAdmin: PulsarAdmin, topic: String): TopicType =
     // XXX - Pulsar admin .lookup() is truthy both for partitioned and non-partitioned topics.
-    // Therefore, the of lookups matters here.
+    // Therefore, the order of lookups matters here.
     val isPartitioned =
         try {
             pulsarAdmin.lookups().lookupPartitionedTopic(topic)
@@ -41,7 +41,7 @@ def getTopicType(pulsarAdmin: PulsarAdmin, topic: String): TopicType =
         }
     if isNonPartitioned then return Right(NonPartitionedTopic())
 
-    Left("Topic not found")
+    Left(s"Topic \"${topic}\" not found")
 
 def getNonPartitionedTopicInternalStats(pulsarAdmin: PulsarAdmin, topic: String): Either[String, PersistentTopicInternalStats] =
     try {

@@ -91,6 +91,7 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
   },
   itemNamePlural?: string,
   viewMode?: 'table' | 'list',
+  toolbar?: { visibility: 'visible' | 'hidden' },
 };
 
 function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {
@@ -344,33 +345,35 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         />
       </div>}
 
-      <div className={s.Toolbar}>
-        <div>
-          <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> {props.itemNamePlural || 'items'}
-        </div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '24rem' }}>
-          <SmallButton
-            type='regular'
-            title="Refresh table data"
-            onClick={async () => {
-              await mutate(props.dataLoader.cacheKey);
-              await mutate(lazyDataLoadedCacheKey);
-            }}
-            svgIcon={refreshIcon}
-          />
+      {props.toolbar?.visibility !== 'hidden' && (
+        <div className={s.Toolbar}>
+          <div>
+            <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> {props.itemNamePlural || 'items'}
+          </div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '24rem' }}>
+            <SmallButton
+              type='regular'
+              title="Refresh table data"
+              onClick={async () => {
+                await mutate(props.dataLoader.cacheKey);
+                await mutate(lazyDataLoadedCacheKey);
+              }}
+              svgIcon={refreshIcon}
+            />
 
-          <Toggle
-            label='Auto refresh'
-            value={autoRefresh.type === 'enabled'}
-            onChange={(v) => setAutoRefresh({ ...autoRefresh, type: v ? 'enabled' : 'disabled' })}
-          />
+            <Toggle
+              label='Auto refresh'
+              value={autoRefresh.type === 'enabled'}
+              onChange={(v) => setAutoRefresh({ ...autoRefresh, type: v ? 'enabled' : 'disabled' })}
+            />
 
-          <div style={{ display: 'flex', gap: '0.3ch' }}>
-            <strong>Last updated: </strong>
-            <span style={{ width: '7ch', textAlign: 'right' }}>{lastUpdated === undefined ? <NoData /> : i18n.formatTime(lastUpdated)}</span>
+            <div style={{ display: 'flex', gap: '0.3ch' }}>
+              <strong>Last updated: </strong>
+              <span style={{ width: '7ch', textAlign: 'right' }}>{lastUpdated === undefined ? <NoData /> : i18n.formatTime(lastUpdated)}</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <TableVirtuoso
         data={sortedData}

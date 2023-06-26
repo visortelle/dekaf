@@ -73,6 +73,7 @@ message CursorStats {
   google.protobuf.StringValue individually_deleted_messages = 8;
   google.protobuf.StringValue last_ledger_switch_timestamp = 9;
   google.protobuf.StringValue state = 10;
+  google.protobuf.BoolValue active = 16;
   google.protobuf.Int64Value number_of_entries_since_first_not_acked_message = 11;
   google.protobuf.Int32Value total_non_contiguous_deleted_messages_range = 12;
   google.protobuf.BoolValue subscription_have_pending_read = 13;

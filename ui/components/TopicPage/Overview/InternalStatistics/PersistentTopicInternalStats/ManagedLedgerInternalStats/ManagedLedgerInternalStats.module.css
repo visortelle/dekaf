@@ -1,0 +1,14 @@
+.Section {
+  margin-bottom: 24rem;
+}
+
+.SectionTitle {
+  margin-bottom: 12rem;
+}
+
+.Ledgers {
+  height: 240rem;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}

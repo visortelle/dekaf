@@ -1,6 +1,7 @@
 .Overview {
   padding: 24rem 12rem 0 12rem;
   display: flex;
+  min-height: 100%;
 }
 
 .LeftPanel {

@@ -1,0 +1,23 @@
+.PersistentTopicInternalStats {
+  padding: 24rem 0;
+}
+
+.Section {
+  margin-bottom: 24rem;
+}
+
+.SectionTitle {
+  margin-bottom: 12rem;
+}
+
+.CompactedLedger {
+  display: flex;
+  flex-direction: column;
+  height: 100rem;
+}
+
+.SchemaLedgers {
+  display: flex;
+  flex-direction: column;
+  height: 180rem;
+}

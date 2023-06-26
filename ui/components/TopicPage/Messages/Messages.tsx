@@ -104,13 +104,24 @@ const Session: React.FC<SessionProps> = (props) => {
 
       const req = new GetTopicsInternalStatsRequest();
       req.setTopicsList(props.config.topicsSelector.topics);
-      const res = await topicServiceClient.getTopicsInternalStats(req, {});
+      const res = await topicServiceClient.getTopicsInternalStats(req, {})
+        .catch((err) => notifyError(`Unable to get topics internal stats. ${err}`));
+
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get topics internal stats. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
       return res;
     },
     { refreshInterval: sessionState === 'awaiting-initial-cursor-positions' ? 200 : 1000 }
   );
 
-  if (topicsInternalStatsError || (topicsInternalStats && topicsInternalStats?.getStatus()?.getCode() !== Code.OK)) {
+  if (topicsInternalStatsError) {
     notifyError(`Unable to get topics internal stats. ${topicsInternalStatsError}`);
   }
 

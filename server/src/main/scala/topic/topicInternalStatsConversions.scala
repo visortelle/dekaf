@@ -72,6 +72,7 @@ def cursorStatsToPb(cursor: CursorStats): topicPb.CursorStats =
         individuallyDeletedMessages = Option(cursor.individuallyDeletedMessages),
         lastLedgerSwitchTimestamp = Option(cursor.lastLedgerSwitchTimestamp),
         state = Option(cursor.state),
+        active = Option(cursor.active),
         numberOfEntriesSinceFirstNotAckedMessage = Option(cursor.numberOfEntriesSinceFirstNotAckedMessage),
         totalNonContiguousDeletedMessagesRange = Option(cursor.totalNonContiguousDeletedMessagesRange),
         subscriptionHavePendingRead = Option(cursor.subscriptionHavePendingRead),
