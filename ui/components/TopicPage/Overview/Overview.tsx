@@ -17,6 +17,7 @@ import { routes } from '../../routes';
 import Tabs, { Tab } from '../../ui/Tabs/Tabs';
 import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
+import InternalStatistics from './InternalStatistics/InternalStatistics';
 
 export type OverviewProps = {
   tenant: string;
@@ -154,7 +155,16 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 },
                 'stats-internal': {
                   title: 'Internal Statistics',
-                  render: () => <>Internal Statistics</>
+                  render: () => (
+                    <div className={s.Tab}>
+                      <InternalStatistics
+                        tenant={props.tenant}
+                        namespace={props.namespace}
+                        topic={props.topic}
+                        topicType={props.topicType}
+                      />
+                    </div>
+                  )
                 }
               }}
             />
@@ -163,7 +173,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
       </div>
 
       <div className={s.RightPanel}>
-
+        <iframe src="https://grafana.wikimedia.org/d-solo/O_OXJyTVk/home-w-wiki-status?orgId=1&refresh=30s&from=1687442246712&to=1687528646712&theme=light&panelId=8" width="100%" height="200" frameBorder="0"></iframe>
       </div>
     </div>
   );

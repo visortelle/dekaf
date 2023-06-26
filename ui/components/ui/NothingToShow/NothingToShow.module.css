@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fade-in 0.2s ease-in-out;
+  animation: fade-in 0.25s ease-in-out;
 }
 
 @keyframes fade-in {
@@ -16,4 +16,3 @@
     opacity: 1;
   }
 }
-
