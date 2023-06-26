@@ -35,7 +35,7 @@ const Ledgers: React.FC<{ ledgers: pb.LedgerInfo[] }> = (props) => {
   return (
     <div className={s.Ledgers}>
       <Table<LedgersColumnKey, Ledger, {}>
-        autoRefresh={{ intervalMs: 5000 }}
+        autoRefresh={{ intervalMs: 100 }}
         toolbar={{ visibility: 'hidden' }}
         columns={{
           columns: {
@@ -74,9 +74,9 @@ const Ledgers: React.FC<{ ledgers: pb.LedgerInfo[] }> = (props) => {
             { columnKey: "ledgerId", width: 100, visibility: 'visible', stickyTo: 'left' },
             { columnKey: "entries", width: 100, visibility: 'visible' },
             { columnKey: "size", width: 100, visibility: 'visible' },
-            { columnKey: "metadata", width: 100, visibility: 'visible' },
             { columnKey: "offloaded", width: 100, visibility: 'visible' },
             { columnKey: "underReplicated", width: 100, visibility: 'visible' },
+            { columnKey: "metadata", width: 100, visibility: 'visible' },
           ]
         }}
         dataLoader={{
@@ -85,7 +85,7 @@ const Ledgers: React.FC<{ ledgers: pb.LedgerInfo[] }> = (props) => {
         }}
         getId={(ledger) => ledger.ledgerId?.toString() || ""}
         tableId='ledgers-table'
-        defaultSort={{ column: "ledgerId", direction: 'asc', type: 'by-single-column' }}
+        defaultSort={{ column: "ledgerId", direction: 'desc', type: 'by-single-column' }}
       />
     </div>
   );

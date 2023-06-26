@@ -5,6 +5,9 @@ import * as s from './ManagedLedgerInternalStats.module.css';
 import Td from '../../../../../ui/SimpleTable/Td';
 import { H3 } from '../../../../../ui/H/H';
 import Ledgers from './Ledgers/Ledgers';
+import Cursors from './Cursors/Cursors';
+import * as pbUtils from '../../../../../../pbUtils/pbUtils';
+import { useMemo } from 'react';
 
 const PersistentTopicInternalStats: React.FC<{ stats: pb.ManagedLedgerInternalStats }> = (props) => {
   const i18n = I18n.useContext();
@@ -12,6 +15,7 @@ const PersistentTopicInternalStats: React.FC<{ stats: pb.ManagedLedgerInternalSt
   const lastLedgerCreatedTimestamp = props.stats?.getLastLedgerCreatedTimestamp()?.getValue();
   const lastLedgerCreationFailure = props.stats?.getLastLedgerCreationFailureTimestamp()?.getValue();
   const ledgers = props.stats?.getLedgersList() || undefined;
+  const cursors = useMemo(() => pbUtils.mapToObject(props.stats.getCursorsMap()) || {}, [props.stats]);
 
   return (
     <div className={s.ManagedLedgerInternalStats}>
@@ -68,10 +72,23 @@ const PersistentTopicInternalStats: React.FC<{ stats: pb.ManagedLedgerInternalSt
 
       <div className={s.Section}>
         <div className={s.SectionTitle}>
+          <H3>Cursors</H3>
+        </div>
+
+        <div
+          className={s.Cursors}
+          style={props.stats.getCursorsMap().getLength() === 0 ? { height: 'auto', flexDirection: 'column' } : undefined}
+        >
+          <Cursors cursors={cursors} />
+        </div>
+      </div>
+
+      <div className={s.Section}>
+        <div className={s.SectionTitle}>
           <H3>Ledgers</H3>
         </div>
 
-        <div className={s.Ledgers} style={ledgers.length === 0 ? { height: 'auto'} : undefined}>
+        <div className={s.Ledgers} style={ledgers.length === 0 ? { height: 'auto' } : undefined}>
           <Ledgers ledgers={ledgers} />
         </div>
       </div>

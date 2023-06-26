@@ -12,12 +12,10 @@
 
 .CompactedLedger {
   display: flex;
-  flex-direction: column;
   height: 100rem;
 }
 
 .SchemaLedgers {
   display: flex;
-  flex-direction: column;
   height: 180rem;
 }
