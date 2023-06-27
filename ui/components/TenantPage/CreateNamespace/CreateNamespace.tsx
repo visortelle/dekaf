@@ -15,7 +15,7 @@ import { GetClustersRequest } from "../../../grpc-web/tools/teal/pulsar/ui/clust
 import * as Either from "fp-ts/Either";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../routes";
-import { H1 } from "../../ui/H/H";
+import { H1, H2 } from "../../ui/H/H";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
 import { CreateNamespaceRequest } from "../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 
@@ -163,7 +163,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
   return (
     <form className={s.CreateNamespace} onSubmit={(e) => e.preventDefault()}>
       <div className={s.Title}>
-        <H1>New Namespace</H1>
+        <H2>New Namespace</H2>
       </div>
 
       <ConfigurationTable

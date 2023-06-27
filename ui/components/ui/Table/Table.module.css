@@ -3,7 +3,6 @@
   font-size: 14rem;
   border-spacing: 0;
   flex: 1 1 auto;
-  border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -100,6 +99,10 @@
   background-color: #fff;
 }
 
+.TdLoading {
+
+}
+
 .TdContent {
   min-width: 100%;
   overflow: hidden;
@@ -187,3 +190,41 @@
 .FiltersToolbar {
 }
 
+@keyframes keyframes-loading-pattern {
+  0% {
+    left: -100rem;
+  }
+  100% {
+    left: calc(100% + 100rem);
+  }
+}
+
+.LoadingPattern {
+  position: relative;
+  overflow: hidden;
+}
+.LoadingPattern:after {
+  content: '';
+  position: absolute;
+  top: 0px;
+  left: -100rem;
+  width: 120rem;
+  height: 80rem;
+  opacity: 1;
+  transform: rotate(10deg);
+  background: rgba(255, 255, 255, 0.12);
+  background: linear-gradient( to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 100% );
+  animation-name: keyframes-loading-pattern;
+  animation-duration: 0.8s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+}
+.LoadingPlaceholder {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 12rem;
+  border-radius: 4rem;
+  background-color: var(--surface-color);
+}

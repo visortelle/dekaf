@@ -61,6 +61,7 @@ export type Column<DE, LD> = {
   defaultWidth?: number,
   minWidth?: number,
   maxWidth?: number,
+  isLazy?: boolean,
 };
 
 export type Sort<CK extends ColumnKey> = {
@@ -90,13 +91,13 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
     intervalMs: number,
   },
   itemNamePlural?: string,
-  viewMode?: 'table' | 'list',
   toolbar?: { visibility: 'visible' | 'hidden' },
 };
 
 function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [lazyData, setLazyData] = useState<Record<DataEntryKey, LD>>({});
+  const [lazyDataLoading, setLazyDataLoading] = useState<Record<string, boolean>>({});
   const [itemsRendered, setItemsRendered] = useState<ListItem<DE>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 250);
   const [sort, setSort] = useState<Sort<CK>>(props.defaultSort ?? { type: 'none' });
@@ -113,7 +114,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     refreshInterval: autoRefresh.type === 'enabled' ? props.autoRefresh.intervalMs : 0,
   }
 
-  const { data: loadedData, error: loadedDataError } = useSWR(
+  const { data: loadedData, error: loadedDataError, isLoading: isDataLoading } = useSWR(
     props.dataLoader.cacheKey,
     props.dataLoader.loader,
     {
@@ -134,7 +135,15 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const { data: lazyDataChunk, error: lazyDataChunkError } = useSWR(
     lazyDataLoadedCacheKey,
     props.lazyDataLoader?.loader ?
-      () => props.lazyDataLoader?.loader(itemsRenderedDebounced.map(v => v.data!)) :
+      () => {
+        const itemsToLoad = itemsRenderedDebounced.map(v => v.data!);
+        setLazyDataLoading(loadingItems => ({
+          ...loadingItems,
+          ...Object.fromEntries(itemsToLoad.map(item => [props.getId(item), true]))
+        }));
+
+        return props.lazyDataLoader?.loader(itemsToLoad);
+      } :
       (() => ({})),
     swrOptions
   );
@@ -146,6 +155,9 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   useEffect(() => {
     // Avoid visual blinking after each lazy data update.
     setLazyData(lazyData => ({ ...lazyData, ...lazyDataChunk }));
+
+    const loadedIds = Object.keys(lazyDataChunk ?? {});
+    setLazyDataLoading(loadingItems => Object.fromEntries(Object.entries(loadingItems).filter(([id]) => !loadedIds.includes(id))));
   }, [lazyDataChunk]);
 
   type ThProps = {
@@ -270,68 +282,11 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     return data;
   }, [loadedData, sort, lazyData, filtersInUseDebounced]);
 
-  useEffect(() => {
-    if (props.viewMode === 'list') {
-      setItemsRendered(loadedData?.map(de => {
-        return {
-          index: 0, // Doesn't matter for list view.
-          offset: 0, // Doesn't matter for list view.
-          size: 1, // Doesn't matter for list view.
-          data: de
-        };
-      }) || []);
-    }
-  }, [loadedData]);
-
   if (data.length === 0) {
     return (
       <div className={s.NothingToShow}>
-        <NothingToShow />
+        <NothingToShow reason={isDataLoading ? 'loading-in-progress' : 'no-items-found'} />
       </div>
-    );
-  }
-
-  if (props.viewMode === 'list') {
-    return (
-      <>
-        {sortedData.map((de) => {
-          return (
-            <div>
-              <table className={s.Table}>
-                <tbody>
-                  {columnsConfig.map((cc) => {
-                    const column = props.columns.columns[cc.columnKey];
-                    const columnTitle = props.columns.columns[cc.columnKey]?.title;
-
-                    if (column === undefined) {
-                      return null;
-                    }
-
-                    const cellValue = column.render(de, lazyData[props.getId(de)]);
-
-                    return (
-                      <tr className={s.Tr}>
-                        <td className={s.HighlightedCell}>
-                          <div
-                            className={s.ThContent}
-                            data-tooltip-id={tooltipId}
-                            data-tooltip-html={props.columns.help ? renderToStaticMarkup(<>{props.columns.help[cc.columnKey]}</>) : undefined}
-                          >
-                            {columnTitle}
-                          </div>
-                        </td>
-                        <td className={s.Td}>
-                          {cellValue}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          );
-        })}
-      </>
     );
   }
 
@@ -403,16 +358,25 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
             </tr>
           )}
           itemContent={(_, entry) => {
+            const entryId = props.getId(entry);
+            const isLoading = (lazyData[entryId] === undefined) && Boolean(lazyDataLoading[entryId]);
+
             return (
               <>
                 {columnsConfig.map((columnConfig) => {
-                  const v = props.columns.columns[columnConfig.columnKey]!.render?.(entry, lazyData[props.getId(entry)]);
+                  const v = props.columns.columns[columnConfig.columnKey]!.render?.(entry, lazyData[entryId]);
                   const style: React.CSSProperties = columnConfig.stickyTo === 'left' ? { position: 'sticky', left: 0, zIndex: 10 } : {};
+                  const isLazy = Boolean(props.columns.columns[columnConfig.columnKey]?.isLazy);
 
                   return (
-                    <td key={columnConfig.columnKey} className={s.Td} style={style}>
-                      <div className={s.TdContent} style={{ width: columnConfig.width }} title={typeof v === 'string' ? v : undefined}>
-                        {v === undefined ? (
+                    <td
+                      key={columnConfig.columnKey}
+                      className={`${s.Td}`}
+                      style={style}
+                    >
+                      <div className={`${s.TdContent} ${isLoading ? s.LoadingPattern : ''}`} style={{ width: columnConfig.width }} title={typeof v === 'string' ? v : undefined}>
+                        {(isLoading && isLazy) ? <div className={s.LoadingPlaceholder} /> : null}
+                        {(v === undefined && !isLoading) ? (
                           <div className={s.NoData}>-</div>
                         ) : v}
                       </div>

@@ -11,6 +11,7 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
 import * as pbUtils from '../../../pbUtils/pbUtils';
+import { H1, H2 } from '../../ui/H/H';
 
 export type ColumnKey =
   'namespaceName' |
@@ -53,7 +54,11 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
 
   return (
     <div className={s.Page}>
+      <div className={s.Title}>
+        <H2>Namespaces</H2>
+      </div>
       <Table<ColumnKey, DataEntry, LazyDataEntry>
+        itemNamePlural='namespaces'
         columns={{
           help,
           columns: {
@@ -81,6 +86,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             },
             topicsCount: {
               title: 'Topics',
+              isLazy: true,
               render: (_, ld) => i18n.withVoidDefault(ld?.topicsCountExcludingPartitions, v => (
                 <Link to={`${routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: _.namespaceName })}`}>
                   {v}
@@ -89,6 +95,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             },
             topicsCountIncludingPartitions: {
               title: 'Topics Including Partitions',
+              isLazy: true,
               render: (_, ld) => i18n.withVoidDefault(ld?.topicsCount, v => (
                 <Link to={`${routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: _.namespaceName })}`}>
                   {v}
@@ -97,6 +104,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             },
             properties: {
               title: 'Properties',
+              isLazy: true,
               render: (_, ld) => i18n.withVoidDefault(ld?.properties, v => JSON.stringify(v, null, 4)),
             }
           },
