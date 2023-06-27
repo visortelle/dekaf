@@ -2,8 +2,9 @@ import * as I18n from '../../../../../../app/contexts/I18n/I18n';
 import * as pb from '../../../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { useMemo } from 'react';
 import Table from '../../../../../../ui/Table/Table';
-import * as s from './Cursors.module.css';
 import * as pbUtils from '../../../../../../../pbUtils/pbUtils';
+import { routes } from '../../../../../../routes';
+import Link from '../../../../../../ui/Link/Link';
 
 type CursorsColumnKey =
   "subscriptionName" |
@@ -68,7 +69,15 @@ function cursorStatsFromPb(subscriptionName: string, stats: pb.CursorStats): Cur
   };
 }
 
-const Cursors: React.FC<{ cursors: Record<string, pb.CursorStats> }> = (props) => {
+export type CursorsProps = {
+  cursors: Record<string, pb.CursorStats>,
+  tenant: string,
+  namespace: string,
+  topic: string,
+  topicType: 'persistent' | 'non-persistent',
+};
+
+const Cursors: React.FC<CursorsProps> = (props) => {
   const i18n = I18n.useContext();
 
   const cursors = useMemo(() => {
@@ -83,12 +92,24 @@ const Cursors: React.FC<{ cursors: Record<string, pb.CursorStats> }> = (props) =
         columns: {
           subscriptionName: {
             title: "Subscription Name",
-            render: (cursor) => i18n.withVoidDefault(cursor.subscriptionName, v => v),
+            render: (cursor) => i18n.withVoidDefault(cursor.subscriptionName, v => (
+              <Link
+                to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.get({
+                  tenant: props.tenant,
+                  namespace: props.namespace,
+                  topic: props.topic,
+                  topicType: props.topicType,
+                  subscription: v,
+                })}
+              >
+                {v}
+              </Link>
+            )),
             sortFn: (a, b) => a.data.subscriptionName.localeCompare(b.data.subscriptionName, 'en', { numeric: true }),
             filter: {
               descriptor: {
                 type: 'string',
-                defaultValue: {type: 'string', value: ''}
+                defaultValue: { type: 'string', value: '' }
               },
               testFn: (cursor, _, filter) => {
                 if (filter.type !== 'string') {

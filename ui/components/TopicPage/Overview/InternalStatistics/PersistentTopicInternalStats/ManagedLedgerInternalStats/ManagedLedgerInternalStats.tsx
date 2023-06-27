@@ -9,7 +9,15 @@ import Cursors from './Cursors/Cursors';
 import * as pbUtils from '../../../../../../pbUtils/pbUtils';
 import { useMemo } from 'react';
 
-const PersistentTopicInternalStats: React.FC<{ stats: pb.ManagedLedgerInternalStats }> = (props) => {
+export type PersistentTopicInternalStatsProps = {
+  stats: pb.ManagedLedgerInternalStats;
+  tenant: string;
+  namespace: string;
+  topic: string;
+  topicType: 'persistent' | 'non-persistent';
+};
+
+const PersistentTopicInternalStats: React.FC<PersistentTopicInternalStatsProps> = (props) => {
   const i18n = I18n.useContext();
 
   const lastLedgerCreatedTimestamp = props.stats?.getLastLedgerCreatedTimestamp()?.getValue();
@@ -79,7 +87,13 @@ const PersistentTopicInternalStats: React.FC<{ stats: pb.ManagedLedgerInternalSt
           className={s.Cursors}
           style={props.stats.getCursorsMap().getLength() === 0 ? { height: 'auto', flexDirection: 'column' } : undefined}
         >
-          <Cursors cursors={cursors} />
+          <Cursors
+            cursors={cursors}
+            tenant={props.tenant}
+            namespace={props.namespace}
+            topic={props.topic}
+            topicType={props.topicType}
+          />
         </div>
       </div>
 

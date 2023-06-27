@@ -63,7 +63,13 @@ const InternalStatistics: React.FC<InternalStatisticsProps> = (props) => {
   return (
     <div className={s.InternalStatistics}>
       {nonPartitionedTopicStats && (
-        <PersistentTopicInternalStats stats={nonPartitionedTopicStats} />
+        <PersistentTopicInternalStats
+          stats={nonPartitionedTopicStats}
+          tenant={props.tenant}
+          namespace={props.namespace}
+          topic={props.topic}
+          topicType={props.topicType}
+        />
       )}
       {partitionedTopicStats && (
         <PartitionedTopicInternalStats stats={partitionedTopicStats} />

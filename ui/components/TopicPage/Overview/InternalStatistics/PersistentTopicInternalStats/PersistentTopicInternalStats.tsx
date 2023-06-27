@@ -8,6 +8,10 @@ import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 
 export type PersistentTopicInternalStatsProps = {
   stats: pb.PersistentTopicInternalStats;
+  tenant: string;
+  namespace: string;
+  topic: string;
+  topicType: 'persistent' | 'non-persistent';
 };
 
 const PersistentTopicInternalStats: React.FC<PersistentTopicInternalStatsProps> = (props) => {
@@ -22,7 +26,13 @@ const PersistentTopicInternalStats: React.FC<PersistentTopicInternalStatsProps> 
           <div className={s.SectionTitle}>
             <H3>Managed Ledger Internal Stats</H3>
           </div>
-          <ManagedLedgerInternalStats stats={managedLedgerInternalStats} />
+          <ManagedLedgerInternalStats
+            stats={managedLedgerInternalStats}
+            tenant={props.tenant}
+            namespace={props.namespace}
+            topic={props.topic}
+            topicType={props.topicType}
+          />
         </div>
       )}
 
