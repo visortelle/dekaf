@@ -64,9 +64,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
 
   return (
     <div className={s.Policies}>
-      <div className={s.Title}>
-        <H1>Namespace Policies</H1>
-      </div>
       <div className={s.Tabs}>
         <Tabs<TabsKey>
           activeTab={activeTab}

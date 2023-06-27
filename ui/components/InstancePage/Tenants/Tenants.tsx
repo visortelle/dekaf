@@ -69,7 +69,7 @@ const Tenants: React.FC<TenantsProps> = (props) => {
                     return true
                   };
 
-                  return de.tenantName.includes(filterValue.value);
+                  return de.tenantName.toLowerCase().includes(filterValue.value.toLowerCase());
                 },
               }
             },

@@ -4,7 +4,6 @@ import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import * as topicPb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Table from '../../ui/Table/Table';
 import { help } from './help';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
@@ -54,9 +53,6 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
 
   return (
     <div className={s.Page}>
-      <div className={s.Title}>
-        <H2>Namespaces</H2>
-      </div>
       <Table<ColumnKey, DataEntry, LazyDataEntry>
         itemNamePlural='namespaces'
         columns={{
@@ -80,7 +76,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
                     return true
                   };
 
-                  return de.namespaceName.includes(filterValue.value);
+                  return de.namespaceName.toLowerCase().includes(filterValue.value.toLowerCase());
                 },
               }
             },

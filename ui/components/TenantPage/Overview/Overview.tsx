@@ -255,9 +255,6 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
   return (
     <div className={s.Overview}>
-      <div className={s.Title}>
-        <H2>Overview</H2>
-      </div>
       <ConfigurationTable
         fields={[
           {

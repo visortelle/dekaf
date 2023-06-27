@@ -330,6 +330,19 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
                 </Link>
               ),
               sortFn: (a, b) => a.data.subscriptionName.localeCompare(b.data.subscriptionName),
+              filter: {
+                descriptor: {
+                  type: 'string',
+                  defaultValue: { type: 'string', value: '' },
+                },
+                testFn: (de, _, filter) => {
+                  if (filter.type !== 'string') {
+                    return true;
+                  }
+
+                  return de.subscriptionName.toLowerCase().includes(filter.value.toLowerCase())
+                },
+              }
             },
             subscriptionProperties: {
               title: 'Subscription Properties',
@@ -402,6 +415,12 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
         }}
         getId={(entry) => entry.subscriptionName}
         defaultSort={{ column: 'subscriptionName', direction: 'asc', type: 'by-single-column' }}
+        defaultFiltersInUse={{
+          subscriptionName: {
+            value: { type: 'string', value: '' },
+            state: 'active'
+          }
+        }}
       />
     </div>
   );
