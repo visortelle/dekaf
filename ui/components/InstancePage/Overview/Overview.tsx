@@ -42,13 +42,13 @@ const Overview: React.FC = () => {
                 <td className={sts.Cell}>{brokerVersion || <NoData />}</td>
               </tr>
               <tr className={sts.Row}>
-                <td className={sts.HighlightedCell}>Broker service URL</td>
+                <td className={sts.HighlightedCell}>Broker Service URL</td>
                 <td className={sts.Cell}>
                   {config.pulsarInstance.brokerServiceUrl}
                 </td>
               </tr>
               <tr className={sts.Row}>
-                <td className={sts.HighlightedCell}>Web service URL</td>
+                <td className={sts.HighlightedCell}>Web Service URL</td>
                 <td className={sts.Cell}>
                   {config.pulsarInstance.webServiceUrl}
                 </td>

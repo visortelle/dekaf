@@ -187,6 +187,13 @@ const prepareRoutes = (): {
 
       /* Namespaces */
       {
+        path: routes.tenants.tenant.namespaces.namespace.overview._.path,
+        element: withLayout(
+          <RoutedNamespacePage view="overview" />,
+          setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+      {
         path: routes.tenants.tenant.namespaces.namespace.topics._.path,
         element: withLayout(
           <RoutedNamespacePage view="topics" />,
