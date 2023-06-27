@@ -58,7 +58,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
           help,
           columns: {
             namespaceName: {
-              title: 'Namespace Name',
+              title: 'Name',
               render: (de) => i18n.withVoidDefault(de.namespaceName, v => (
                 <Link to={`${routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: de.namespaceName })}`}>
                   {v}

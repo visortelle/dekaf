@@ -121,7 +121,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
               sortFn: (a, b) => Number(a.data.isSupportsPartialProducer) - Number(b.data.isSupportsPartialProducer),
             },
             producerName: {
-              title: 'Producer Name',
+              title: 'Name',
               render: (entry) => entry.producerName,
               sortFn: (a, b) => (a.data.producerName || '').localeCompare(b.data.producerName || ''),
             },

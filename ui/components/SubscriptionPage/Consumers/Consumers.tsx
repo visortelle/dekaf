@@ -145,7 +145,7 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
               sortFn: (a, b) => (a.data.connectedSince?.getTime() || 0) - (b.data.connectedSince?.getTime() || 0),
             },
             consumerName: {
-              title: 'Consumer Name',
+              title: 'Name',
               render: (entry) => i18n.withVoidDefault(entry.consumerName, v => v),
               sortFn: (a, b) => (a.data.consumerName || '').localeCompare(b.data.consumerName || ''),
             },

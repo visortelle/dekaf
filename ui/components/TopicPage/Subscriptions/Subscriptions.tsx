@@ -317,7 +317,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
               sortFn: (a, b) => (a.data.nonContiguousDeletedMessagesRangesSerializedSize ?? 0) - (b.data.nonContiguousDeletedMessagesRangesSerializedSize ?? 0),
             },
             subscriptionName: {
-              title: 'Subscription Name',
+              title: 'Name',
               render: (de) => (
                 <Link to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.get({
                   tenant: props.tenant,

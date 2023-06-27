@@ -170,7 +170,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
         fields={[
           {
             id: "namespaceName",
-            title: "Namespace name",
+            title: "Name",
             description: <span></span>,
             input: namespaceNameInput,
             isRequired: true,

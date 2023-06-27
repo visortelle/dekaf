@@ -100,11 +100,11 @@ const Overview: React.FC<OverviewProps> = (props) => {
           <table className={st.Table}>
             <tbody>
               <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topic Name</td>
+                <td className={st.HighlightedCell}>Name</td>
                 <Td>{props.topic}</Td>
               </tr>
               <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topic FQN</td>
+                <td className={st.HighlightedCell}>Fully Qualified Name</td>
                 <Td>{topicFqn}</Td>
               </tr>
               <tr className={st.Row}>

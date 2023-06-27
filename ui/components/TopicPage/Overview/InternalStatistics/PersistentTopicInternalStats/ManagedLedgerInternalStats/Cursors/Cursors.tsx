@@ -91,7 +91,7 @@ const Cursors: React.FC<CursorsProps> = (props) => {
       columns={{
         columns: {
           subscriptionName: {
-            title: "Subscription Name",
+            title: "Subscription",
             render: (cursor) => i18n.withVoidDefault(cursor.subscriptionName, v => (
               <Link
                 to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.get({

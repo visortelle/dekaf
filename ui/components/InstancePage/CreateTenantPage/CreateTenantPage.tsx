@@ -121,7 +121,7 @@ const CreateTenantPage: React.FC = () => {
         fields={[
           {
             id: "tenantName",
-            title: "Tenant name",
+            title: "Name",
             description: <span></span>,
             input: tenantNameInput,
             isRequired: true,

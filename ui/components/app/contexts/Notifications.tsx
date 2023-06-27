@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import s from './Notifications.module.css';
 
-export const toastContainerId = '__gammascope__toast-container';
+export const toastContainerId = '__pulsocat__toast-container';
 
 export type Value = {
   notifySuccess: (content: ReactNode, notificationId?: string, isShort?: boolean) => void,
