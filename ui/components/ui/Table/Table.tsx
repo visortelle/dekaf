@@ -336,8 +336,8 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
         <TableVirtuoso
           data={sortedData}
           overscan={{
-            main: (scrollContainerRef?.current?.clientHeight || 0),
-            reverse: (scrollContainerRef?.current?.clientHeight || 0)
+            main: (scrollContainerRef?.current?.clientHeight || 0) / 3,
+            reverse: (scrollContainerRef?.current?.clientHeight || 0) / 3
           }}
           fixedHeaderContent={() => (
             <tr>
