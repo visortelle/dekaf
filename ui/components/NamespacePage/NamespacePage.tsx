@@ -13,8 +13,9 @@ import * as Modals from '../app/contexts/Modals/Modals';
 import { routes } from '../routes';
 
 import s from './NamespacePage.module.css'
+import Overview from './Overview/Overview';
 
-export type NamespacePageView = 'topics' | 'policies' | 'permissions' | 'subscription-permissions' | 'create-topic';
+export type NamespacePageView = 'overview' | 'topics' | 'policies' | 'permissions' | 'subscription-permissions' | 'create-topic';
 export type NamespacePageProps = {
   view: NamespacePageView;
   tenant: string;
@@ -51,8 +52,8 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       <Toolbar
         buttons={[
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Details',
+            linkTo: routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Overview',
             onClick: () => { },
             type: 'regular'
           },
@@ -101,6 +102,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
         ]}
       />
 
+      {props.view === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}

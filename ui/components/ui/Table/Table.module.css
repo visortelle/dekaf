@@ -3,9 +3,10 @@
   font-size: 14rem;
   border-spacing: 0;
   flex: 1 1 auto;
-  overflow: auto;
   border-top: 1px solid var(--border-color);
-  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .Table table {
@@ -16,6 +17,13 @@
   /* Fix sticky summary row z-index issue */
   position: relative;
   z-index: 0;
+}
+
+.ScrollContainer {
+  position: relative;
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
 }
 
 .Th,
@@ -152,10 +160,15 @@
   }
 }
 
-.Toolbar {
-  display: flex;
+.Toolbars {
   position: sticky;
   left: 0;
+  top: 0;
+  z-index: 10;
+}
+
+.Toolbar {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 24rem 12rem;
@@ -172,8 +185,5 @@
 }
 
 .FiltersToolbar {
-  position: sticky;
-  left: 0;
-  z-index: 10;
 }
 

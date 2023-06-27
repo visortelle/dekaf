@@ -30,7 +30,7 @@ lazy val root = project
     .enablePlugins(GitVersioning)
     .in(file("."))
     .settings(
-        name := "gammascope",
+        name := "pulsocat",
         scalaVersion := scala3Version,
         Compile / mainClass := Some("main.Main"),
         Universal / javaOptions ++= javaOpts,

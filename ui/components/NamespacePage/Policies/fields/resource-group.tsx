@@ -16,8 +16,6 @@ import { routes } from '../../../routes';
 import Link from "../../../ui/Link/Link";
 import A from "../../../ui/A/A";
 
-import s from './resource-group.module.css';
-
 const policy = 'resourceGroup';
 
 type PolicyValue = { type: 'undefined' } | {
@@ -144,7 +142,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
               }}
             />
           </div>
-          {value.type === 'specified-for-this-namespace' && resourceGroupsList.length !== 0 && (
+          {value.type === 'specified-for-this-namespace' && (
             <>
               <div className={sf.FormItem}>
                 <Select<string>

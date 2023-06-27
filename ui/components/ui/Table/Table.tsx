@@ -95,7 +95,7 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
 };
 
 function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {
-  const tableRef = React.useRef<HTMLDivElement>(null);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [lazyData, setLazyData] = useState<Record<DataEntryKey, LD>>({});
   const [itemsRendered, setItemsRendered] = useState<ListItem<DE>[]>([]);
   const [itemsRenderedDebounced] = useDebounce(itemsRendered, 250);
@@ -336,98 +336,102 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   }
 
   return (
-    <div className={s.Table} ref={tableRef}>
-      {Boolean(Object.keys(filtersInUse).length) && <div className={s.FiltersToolbar}>
-        <FiltersToolbar<CK>
-          filters={filtersInUse}
-          onChange={setFiltersInUse}
-          columns={props.columns}
-        />
-      </div>}
+    <div className={s.Table}>
+      <div className={s.Toolbars}>
+        {Boolean(Object.keys(filtersInUse).length) && <div className={s.FiltersToolbar}>
+          <FiltersToolbar<CK>
+            filters={filtersInUse}
+            onChange={setFiltersInUse}
+            columns={props.columns}
+          />
+        </div>}
 
-      {props.toolbar?.visibility !== 'hidden' && (
-        <div className={s.Toolbar}>
-          <div>
-            <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> {props.itemNamePlural || 'items'}
-          </div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '24rem' }}>
-            <SmallButton
-              type='regular'
-              title="Refresh table data"
-              onClick={async () => {
-                await mutate(props.dataLoader.cacheKey);
-                await mutate(lazyDataLoadedCacheKey);
-              }}
-              svgIcon={refreshIcon}
-            />
+        {props.toolbar?.visibility !== 'hidden' && (
+          <div className={s.Toolbar}>
+            <div>
+              <strong>{sortedData.length}</strong> of <strong>{data.length}</strong> {props.itemNamePlural || 'items'}
+            </div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '24rem' }}>
+              <SmallButton
+                type='regular'
+                title="Refresh table data"
+                onClick={async () => {
+                  await mutate(props.dataLoader.cacheKey);
+                  await mutate(lazyDataLoadedCacheKey);
+                }}
+                svgIcon={refreshIcon}
+              />
 
-            <Toggle
-              label='Auto refresh'
-              value={autoRefresh.type === 'enabled'}
-              onChange={(v) => setAutoRefresh({ ...autoRefresh, type: v ? 'enabled' : 'disabled' })}
-            />
+              <Toggle
+                label='Auto refresh'
+                value={autoRefresh.type === 'enabled'}
+                onChange={(v) => setAutoRefresh({ ...autoRefresh, type: v ? 'enabled' : 'disabled' })}
+              />
 
-            <div style={{ display: 'flex', gap: '0.3ch' }}>
-              <strong>Last updated: </strong>
-              <span style={{ width: '7ch', textAlign: 'right' }}>{lastUpdated === undefined ? <NoData /> : i18n.formatTime(lastUpdated)}</span>
+              <div style={{ display: 'flex', gap: '0.3ch' }}>
+                <strong>Last updated: </strong>
+                <span style={{ width: '7ch', textAlign: 'right' }}>{lastUpdated === undefined ? <NoData /> : i18n.formatTime(lastUpdated)}</span>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
-      <TableVirtuoso
-        data={sortedData}
-        overscan={{
-          main: (tableRef?.current?.clientHeight || 0),
-          reverse: (tableRef?.current?.clientHeight || 0)
-        }}
-        fixedHeaderContent={() => (
-          <tr>
-            {columnsConfig.map((columnConfig) => {
-              const style: React.CSSProperties = columnConfig.stickyTo === 'left' ? { position: 'sticky', left: 0, zIndex: 10 } : {};
-
-              return (
-                <Th
-                  key={columnConfig.columnKey}
-                  title={props.columns.columns[columnConfig.columnKey]!.title}
-                  columnKey={columnConfig.columnKey}
-                  isSortable={Boolean(props.columns.columns[columnConfig.columnKey]!.sortFn)}
-                  filter={props.columns.columns[columnConfig.columnKey]!.filter}
-                  style={{ width: columnConfig.width, ...style }}
-                />
-              );
-            })}
-          </tr>
         )}
-        itemContent={(_, entry) => {
-          return (
-            <>
+      </div>
+
+      <div className={s.ScrollContainer} ref={scrollContainerRef}>
+        <TableVirtuoso
+          data={sortedData}
+          overscan={{
+            main: (scrollContainerRef?.current?.clientHeight || 0),
+            reverse: (scrollContainerRef?.current?.clientHeight || 0)
+          }}
+          fixedHeaderContent={() => (
+            <tr>
               {columnsConfig.map((columnConfig) => {
-                const v = props.columns.columns[columnConfig.columnKey]!.render?.(entry, lazyData[props.getId(entry)]);
                 const style: React.CSSProperties = columnConfig.stickyTo === 'left' ? { position: 'sticky', left: 0, zIndex: 10 } : {};
 
                 return (
-                  <td key={columnConfig.columnKey} className={s.Td} style={style}>
-                    <div className={s.TdContent} style={{ width: columnConfig.width }} title={typeof v === 'string' ? v : undefined}>
-                      {v === undefined ? (
-                        <div className={s.NoData}>-</div>
-                      ) : v}
-                    </div>
-                  </td>
+                  <Th
+                    key={columnConfig.columnKey}
+                    title={props.columns.columns[columnConfig.columnKey]!.title}
+                    columnKey={columnConfig.columnKey}
+                    isSortable={Boolean(props.columns.columns[columnConfig.columnKey]!.sortFn)}
+                    filter={props.columns.columns[columnConfig.columnKey]!.filter}
+                    style={{ width: columnConfig.width, ...style }}
+                  />
                 );
               })}
-            </>
-          );
-        }}
-        customScrollParent={tableRef.current || undefined}
-        totalCount={data?.length}
-        itemsRendered={(items) => {
-          const isShouldUpdate = !isEqual(itemsRendered, items)
-          if (isShouldUpdate) {
-            setItemsRendered(() => items);
-          }
-        }}
-      />
+            </tr>
+          )}
+          itemContent={(_, entry) => {
+            return (
+              <>
+                {columnsConfig.map((columnConfig) => {
+                  const v = props.columns.columns[columnConfig.columnKey]!.render?.(entry, lazyData[props.getId(entry)]);
+                  const style: React.CSSProperties = columnConfig.stickyTo === 'left' ? { position: 'sticky', left: 0, zIndex: 10 } : {};
+
+                  return (
+                    <td key={columnConfig.columnKey} className={s.Td} style={style}>
+                      <div className={s.TdContent} style={{ width: columnConfig.width }} title={typeof v === 'string' ? v : undefined}>
+                        {v === undefined ? (
+                          <div className={s.NoData}>-</div>
+                        ) : v}
+                      </div>
+                    </td>
+                  );
+                })}
+              </>
+            );
+          }}
+          customScrollParent={scrollContainerRef.current || undefined}
+          totalCount={data?.length}
+          itemsRendered={(items) => {
+            const isShouldUpdate = !isEqual(itemsRendered, items)
+            if (isShouldUpdate) {
+              setItemsRendered(() => items);
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }

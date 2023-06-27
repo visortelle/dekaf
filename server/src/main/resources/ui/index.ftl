@@ -12,7 +12,7 @@
 
   <link data-rh="true" rel="icon" type="image/png" sizes="16x16" href="/ui/static/favicon/favicon-16x16.png"/>
 
-  <title data-rh="true">GammaScope</title>
+  <title data-rh="true">Pulsocat</title>
 </head>
 
 <body>

@@ -180,9 +180,9 @@ const Policies: React.FC<PoliciesProps> = (props) => {
                   <ConfigurationTable
                     title="Schema"
                     fields={[
+                      schemaValidationEnforceField,
                       schemaCompatibilityStrategyField,
                       isALlowAutoUpdateSchemaField,
-                      schemaValidationEnforceField
                     ].map(field => field(props))}
                   />
                 </div>
