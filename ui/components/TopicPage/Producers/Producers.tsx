@@ -124,6 +124,19 @@ const Producers: React.FC<ProducersProps> = (props) => {
               title: 'Name',
               render: (entry) => entry.producerName,
               sortFn: (a, b) => (a.data.producerName || '').localeCompare(b.data.producerName || ''),
+              filter: {
+                descriptor: {
+                  type: 'string',
+                  defaultValue: { type: 'string', value: '' },
+                },
+                testFn: (de, _, filter) => {
+                  if (filter.type !== 'string') {
+                    return true;
+                  }
+
+                  return Boolean(de.producerName?.toLowerCase().includes(filter.value.toLowerCase()))
+                },
+              }
             },
             address: {
               title: 'Address',
@@ -170,6 +183,12 @@ const Producers: React.FC<ProducersProps> = (props) => {
         getId={(entry) => entry.producerName?.toString() ?? ''}
         tableId='producers-table'
         defaultSort={{ column: 'producerName', direction: 'asc', type: 'by-single-column' }}
+        defaultFiltersInUse={{
+          producerName: {
+            state: 'active',
+            value: { type: 'string', value: '' }
+          },
+        }}
       />
     </div>
   );

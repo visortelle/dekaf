@@ -116,7 +116,7 @@ const Cursors: React.FC<CursorsProps> = (props) => {
                   return true;
                 }
 
-                return cursor.subscriptionName.includes(filter.value);
+                return cursor.subscriptionName.toLowerCase().includes(filter.value.toLowerCase());
               },
             }
           },

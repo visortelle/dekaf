@@ -2,6 +2,8 @@
   display: flex;
   position: relative;
   padding-right: 48rem; /* For copy path button */
+  overflow-x: auto;
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
 }
 
 .Crumb {

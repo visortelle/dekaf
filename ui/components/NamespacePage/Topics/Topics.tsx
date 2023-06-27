@@ -148,7 +148,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                       return true
                     };
 
-                    return de.name.includes(filterValue.value);
+                    return de.name.toLowerCase().includes(filterValue.value.toLowerCase());
                   },
                 }
               },

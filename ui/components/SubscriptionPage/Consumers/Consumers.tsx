@@ -148,6 +148,19 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
               title: 'Name',
               render: (entry) => i18n.withVoidDefault(entry.consumerName, v => v),
               sortFn: (a, b) => (a.data.consumerName || '').localeCompare(b.data.consumerName || ''),
+              filter: {
+                descriptor: {
+                  type: 'string',
+                  defaultValue: { type: 'string', value: '' },
+                },
+                testFn: (de, _, filter) => {
+                  if (filter.type !== 'string') {
+                    return true;
+                  }
+
+                  return Boolean(de.consumerName?.toLowerCase().includes(filter.value.toLowerCase()))
+                },
+              }
             },
             isBlockedConsumerOnUnackedMsgs: {
               title: 'Is Blocked Consumer On Unacked Msgs',
@@ -246,6 +259,12 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
         getId={(entry) => entry.consumerName?.toString() ?? ''}
         tableId='consumers-table'
         defaultSort={{ column: 'consumerName', direction: 'asc', type: 'by-single-column' }}
+        defaultFiltersInUse={{
+          consumerName: {
+            state: 'active',
+            value: { type: 'string', value: '' },
+          }
+        }}
       />
     </div>
   );
