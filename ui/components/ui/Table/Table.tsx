@@ -374,7 +374,7 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
                       className={`${s.Td}`}
                       style={style}
                     >
-                      <div className={`${s.TdContent} ${isLoading ? s.LoadingPattern : ''}`} style={{ width: columnConfig.width }} title={typeof v === 'string' ? v : undefined}>
+                      <div className={`${s.TdContent} ${(isLoading && isLazy) ? s.LoadingPattern : ''}`} style={{ width: columnConfig.width }} title={typeof v === 'string' ? v : undefined}>
                         {(isLoading && isLazy) ? <div className={s.LoadingPlaceholder} /> : null}
                         {(v === undefined && !isLoading) ? (
                           <div className={s.NoData}>-</div>

@@ -7,10 +7,11 @@ import CreateTopic from './CreateTopic/CreateTopic';
 import Permissions from './Permissions/Permissions';
 import DeleteDialog from './DeleteDialog/DeleteDialog'
 import SubscriptionPermissions from './SubscriptionPermissions/SubscriptionPermissions';
-import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
+import { BreadCrumbsAtPageTop, Crumb } from '../ui/BreadCrumbs/BreadCrumbs';
 import Toolbar from '../ui/Toolbar/Toolbar';
 import * as Modals from '../app/contexts/Modals/Modals';
 import { routes } from '../routes';
+import { matchPath, useLocation } from 'react-router-dom';
 
 import s from './NamespacePage.module.css'
 import Overview from './Overview/Overview';
@@ -23,10 +24,24 @@ export type NamespacePageProps = {
 };
 
 const NamespacePage: React.FC<NamespacePageProps> = (props) => {
-
   const modals = Modals.useContext();
-
   const navigate = useNavigate();
+
+  const { pathname } = useLocation();
+  let extraCrumbs: Crumb[] = [];
+  if (matchPath(routes.tenants.tenant.namespaces.namespace.overview._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'topics', value: 'Topics' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.policies._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'policies', value: 'Policies' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.permissions._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'permissions', value: 'Permissions' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'subscription-permissions', value: 'Subscription Permissions' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.createTopic._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'create-topic', value: 'New Topic' }]
+  }
 
   return (
     <div className={s.Page}>
@@ -46,7 +61,8 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             id: `namespace-${props.namespace}`,
             value: props.namespace,
             type: 'namespace',
-          }
+          },
+          ...extraCrumbs
         ]}
       />
       <Toolbar

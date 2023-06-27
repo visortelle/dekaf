@@ -1,11 +1,11 @@
 import React from "react";
 
-import * as Modals from "../app/contexts/Modals/Modals";
-import { BreadCrumbsAtPageTop } from "../ui/BreadCrumbs/BreadCrumbs";
+import { BreadCrumbsAtPageTop, Crumb } from "../ui/BreadCrumbs/BreadCrumbs";
 import s from "./SubscriptionPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import { routes } from "../routes";
 import Consumers from "./Consumers/Consumers";
+import { matchPath, useLocation } from 'react-router-dom';
 
 export type SubscriptionPageView =
   | { type: "overview" }
@@ -20,7 +20,13 @@ export type TopicPageProps = {
 };
 
 const TopicPage: React.FC<TopicPageProps> = (props) => {
-  const modals = Modals.useContext();
+  const { pathname } = useLocation();
+  let extraCrumbs: Crumb[] = [];
+  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'consumers', value: 'Consumers' }]
+  }
 
   const key = `${props.topicType}-${props.tenant}-${props.namespace}-${props.topic}-${props.subscription}`;
 
@@ -80,6 +86,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
             value: props.subscription,
             type: 'subscription'
           },
+          ...extraCrumbs
         ]}
       />
       <Toolbar buttons={buttons} />
