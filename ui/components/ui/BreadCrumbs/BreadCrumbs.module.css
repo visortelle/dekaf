@@ -11,6 +11,11 @@
   color: var(--text-color);
   white-space: nowrap;
   max-width: 320rem;
+  position: relative;
+}
+
+.Crumb:last-child {
+  font-weight: var(--font-weight-bold);
 }
 
 .Crumb:hover {
@@ -35,6 +40,7 @@
 
 .CrumbArrow {
   margin-left: 18rem;
+  margin-right: -8rem;
 }
 
 .CrumbArrow svg {

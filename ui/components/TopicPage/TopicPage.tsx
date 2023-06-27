@@ -1,7 +1,7 @@
 import React from "react";
 
 import * as Modals from "../app/contexts/Modals/Modals";
-import { BreadCrumbsAtPageTop } from "../ui/BreadCrumbs/BreadCrumbs";
+import { BreadCrumbsAtPageTop, Crumb } from "../ui/BreadCrumbs/BreadCrumbs";
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import Session from "./Messages/Messages";
@@ -13,6 +13,7 @@ import { routes } from "../routes";
 import { useNavigate } from "react-router";
 import Producers from "./Producers/Producers";
 import Overview from "./Overview/Overview";
+import { matchPath, useLocation } from 'react-router-dom';
 
 export type TopicPageView =
   | { type: "messages" }
@@ -35,6 +36,22 @@ export type TopicPageProps = {
 const TopicPage: React.FC<TopicPageProps> = (props) => {
   const modals = Modals.useContext();
   const navigate = useNavigate();
+
+  const { pathname } = useLocation();
+  let extraCrumbs: Crumb[] = [];
+  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'messages', value: 'Messages' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'producers', value: 'Producers' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.path + '*', pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'schema', value: 'Schema' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'policies', value: 'Policies' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]
+  }
 
   const key = `${props.tenant}-${props.namespace}-${props.topic}`;
 
@@ -161,6 +178,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
             value: props.topic,
             type: props.topicType === "persistent" ? "persistent-topic" : "non-persistent-topic",
           },
+          ...extraCrumbs
         ]}
       />
       <Toolbar buttons={buttons} />

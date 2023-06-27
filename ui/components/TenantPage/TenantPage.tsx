@@ -3,12 +3,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as Modals from '../app/contexts/Modals/Modals';
 import Toolbar from '../ui/Toolbar/Toolbar';
-import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
+import { BreadCrumbsAtPageTop, Crumb } from '../ui/BreadCrumbs/BreadCrumbs';
 import Overview from './Overview/Overview';
 import Namespaces from './Namespaces/Namespaces';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
 import CreateNamespace from './CreateNamespace/CreateNamespace';
 import { routes } from '../routes';
+import { matchPath, useLocation } from 'react-router-dom';
 
 import s from './TenantPage.module.css'
 
@@ -21,6 +22,16 @@ export type TenantPageProps = {
 const TenantPage: React.FC<TenantPageProps> = (props) => {
   const modals = Modals.useContext();
   const navigate = useNavigate()
+
+  const { pathname } = useLocation();
+  let extraCrumbs: Crumb[] = [];
+  if (matchPath(routes.tenants.tenant.overview._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'namespaces', value: 'Namespaces' }]
+  } else if (matchPath(routes.tenants.tenant.createNamespace._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'create-namespace', value: 'New Namespace' }]
+  }
 
   return (
     <div className={s.Page}>
@@ -35,7 +46,8 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
             id: `tenant-${props.tenant}`,
             value: props.tenant,
             type: 'tenant',
-          }
+          },
+          ...extraCrumbs,
         ]}
       />
 

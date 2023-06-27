@@ -13,7 +13,11 @@ export type FaviconsProps = {
 };
 
 const Favicons: React.FC<FaviconsProps> = (props) => {
-  const crumb = props.crumbs[props.crumbs.length - 1];
+  const crumb = props.crumbs.findLast((crumb) => crumb.type !== "link");
+
+  if (crumb === undefined) {
+    return null;
+  }
 
   let favicon;
   switch (crumb.type) {

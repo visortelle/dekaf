@@ -6,8 +6,9 @@ import Toolbar from '../ui/Toolbar/Toolbar';
 import { routes } from '../routes';
 import Tenants from './Tenants/Tenants';
 import CreateTenantPage from './CreateTenantPage/CreateTenantPage';
-import { BreadCrumbsAtPageTop } from '../ui/BreadCrumbs/BreadCrumbs';
+import { BreadCrumbsAtPageTop, Crumb } from '../ui/BreadCrumbs/BreadCrumbs';
 import ResourceGroups from './ResourceGroups/ResourceGroups';
+import { matchPath, useLocation } from 'react-router-dom';
 
 export type InstancePageView =
   { type: 'overview' } |
@@ -23,6 +24,20 @@ export type InstancePageProps = {
 };
 
 const InstancePage: React.FC<InstancePageProps> = (props) => {
+  const { pathname } = useLocation();
+  let extraCrumbs: Crumb[] = [];
+  if (matchPath(routes.instance.overview._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
+  } else if (matchPath(routes.instance.configuration._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'configuration', value: 'Configuration' }]
+  } else if (matchPath(routes.instance.tenants._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'tenants', value: 'Tenants' }]
+  } else if (matchPath(routes.instance.createTenant._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'create-tenant', value: 'New Tenant' }]
+  } else if (matchPath(routes.instance.resourceGroups._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'resource-groups', value: 'Resource Groups' }]
+  }
+
   return (
     <div className={s.Page}>
       <div className={s.PageContent}>
@@ -32,7 +47,8 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
               id: `instance`,
               type: 'instance',
               value: ''
-            }
+            },
+            ...extraCrumbs
           ]}
         />
         <Toolbar

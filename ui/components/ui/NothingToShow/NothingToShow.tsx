@@ -13,7 +13,7 @@ const NothingToShow: React.FC<NothingToShowProps> = (props) => {
       content = 'Loading...';
       break;
     default:
-      content = 'Nothing items found.';
+      content = 'No items found.';
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import s from "./BreadCrumbs.module.css";
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon } from "../Icons/Icons";
 import * as AppContext from '../../app/contexts/AppContext';
@@ -12,6 +12,7 @@ import { mutate } from "swr";
 import { swrKeys } from "../../swrKeys";
 import Favicons from "./favicons/Favicons";
 import SmallButton from "../SmallButton/SmallButton";
+import { useLocation } from "react-router-dom";
 
 export type CrumbType =
   "instance" |
@@ -38,6 +39,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
   const namespace = props.crumbs[2]?.value;
   const topic = props.crumbs[3]?.value;
   const { notifySuccess } = Notifications.useContext();
+  const { pathname } = useLocation();
 
   const renderCrumb = (crumb: Crumb, i: number, total: number) => {
     let icon = null;
@@ -65,6 +67,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     const isLast = i === total - 1;
 
     let href = "#";
+    let className = '';
     switch (crumb.type) {
       case "instance":
         href = routes.instance.tenants._.get();
@@ -92,7 +95,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         });
         break;
       case "link":
-        href = crumb.value;
+        href = pathname;
+        className = s.LinkCrumb;
         break;
     }
 
@@ -115,8 +119,13 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     const crumbValue = crumb.type === 'instance' ? (config.pulsarInstance.name || 'Pulsar Instance') : crumb.value;
 
     return (
-      <Link key={crumb.id} className={s.Crumb} to={href} onClick={onClick}>
-        <div className={s.CrumbIcon}>{icon}</div>
+      <Link
+        key={crumb.id}
+        className={`${s.Crumb} ${className}`}
+        to={href}
+        onClick={onClick}
+      >
+        {icon ? <div className={s.CrumbIcon}>{icon}</div> : null}
         <div className={s.CrumbTitle} title={crumbValue}>{crumbValue}</div>
         {!isLast && (
           <div className={s.CrumbArrow}>
@@ -132,8 +141,6 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     <>
       <Favicons crumbs={props.crumbs} />
       <div className={s.BreadCrumbs}>
-        {props.crumbs.map((crumb, i) => renderCrumb(crumb, i, props.crumbs.length))}
-
         {qualifiedResourceName !== undefined && (
           <div className={s.CopyNameButton}>
             <SmallButton
@@ -149,6 +156,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
             />
           </div>
         )}
+
+        {props.crumbs.map((crumb, i) => renderCrumb(crumb, i, props.crumbs.length))}
       </div>
     </>
   );
