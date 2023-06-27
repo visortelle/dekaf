@@ -75,6 +75,7 @@ const Tenants: React.FC<TenantsProps> = (props) => {
             },
             namespacesCount: {
               title: 'Namespaces',
+              isLazy: true,
               render: (_, ld) => i18n.withVoidDefault(ld?.namespacesCount, v => (
                 <Link to={`${routes.tenants.tenant.namespaces._.get({ tenant: _.tenantName || '' })}`}>
                   {v}
@@ -83,10 +84,12 @@ const Tenants: React.FC<TenantsProps> = (props) => {
             },
             allowedClusters: {
               title: 'Allowed Clusters',
+              isLazy: true,
               render: (_, ld) => i18n.withVoidDefault(ld?.allowedClusters, v => v.join(', ')),
             },
             adminRoles: {
               title: 'Admin Roles',
+              isLazy: true,
               render: (_, ld) => i18n.withVoidDefault(ld?.adminRoles, v => v.join(', ')),
             }
           },

@@ -19,9 +19,7 @@ export type TenantPageProps = {
 };
 
 const TenantPage: React.FC<TenantPageProps> = (props) => {
-
   const modals = Modals.useContext();
-
   const navigate = useNavigate()
 
   return (
@@ -48,13 +46,13 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
               linkTo: routes.tenants.tenant.overview._.get({ tenant: props.tenant }),
               text: 'Overview',
               onClick: () => { },
-              type: 'regular'
+              type: 'regular',
             },
             {
               linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
               text: 'Namespaces',
               onClick: () => { },
-              type: 'regular'
+              type: 'regular',
             },
             {
               text: 'Delete',
@@ -65,14 +63,14 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
                 content: <DeleteDialog tenant={props.tenant} navigate={navigate} />,
                 styleMode: 'no-content-padding'
               }),
-              testId: 'tenant-page-delete-button'
+              testId: 'tenant-page-delete-button',
             },
             {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),
               text: 'New Namespace',
               onClick: () => { },
               type: 'primary',
-              position: 'right'
+              position: 'right',
             }
           ]}
         />

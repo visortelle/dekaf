@@ -7,28 +7,29 @@ export type ButtonProps = {
   svgIcon?: string,
   title?: string,
   type: 'primary' | 'regular' | 'danger',
-  state?: 'regular' | 'active',
   testId?: string,
   size?: 'regular' | 'small',
   disabled?: boolean,
   buttonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>,
 }
 const Button: React.FC<ButtonProps> = (props) => {
-  let className = '';
+  let typeClassName = '';
   switch (props.type) {
-    case 'regular': className = s.Regular; break;
-    case 'primary': className = s.Primary; break;
-    case 'danger': className = s.Danger; break;
-  }
-
-  switch (props.size) {
-    case 'small': className += ` ${s.SmallSize}`; break;
+    case 'regular': typeClassName = s.Regular; break;
+    case 'primary': typeClassName = s.Primary; break;
+    case 'danger': typeClassName = s.Danger; break;
   }
 
   return (
     <button
       type="button"
-      className={`${s.Button} ${props.disabled ? s.DisabledButton : ''} ${props.text ? '' : s.ButtonWithoutText} ${className}`}
+      className={`
+        ${s.Button}
+        ${props.disabled ? s.DisabledButton : ''}
+        ${props.text ? '' : s.ButtonWithoutText}
+        ${props.size === 'small' ? s.SmallSize : ''}
+        ${typeClassName}
+      `}
       onClick={props.onClick}
       disabled={props.disabled}
       title={props.title}

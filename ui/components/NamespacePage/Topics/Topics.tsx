@@ -154,10 +154,12 @@ const Topics: React.FC<TopicsProps> = (props) => {
               },
               partitionsCount: {
                 title: 'Partitions',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.partitionedTopicMetadata?.getPartitions()?.getValue(), v => v),
               },
               producersCount: {
                 title: 'Producers',
+                isLazy: true,
                 render: (de, ld) => i18n.withVoidDefault(ld?.stats.getPublishersList()?.length, v => (
                   <Link
                     to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
@@ -173,6 +175,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
               },
               subscriptionsCount: {
                 title: 'Subscriptions',
+                isLazy: true,
                 render: (de, ld) => i18n.withVoidDefault(ld?.stats.getSubscriptionsMap()?.getLength(), v => (
                   <Link
                     to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.get({
@@ -248,106 +251,132 @@ const Topics: React.FC<TopicsProps> = (props) => {
               },
               msgRateIn: {
                 title: 'Msg Rate In',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getMsgRateIn()?.getValue(), i18n.formatCountRate),
               },
               msgThroughputIn: {
                 title: 'Msg Throughput In',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getMsgThroughputIn()?.getValue(), i18n.formatBytesRate),
               },
               msgRateOut: {
                 title: 'Msg Rate Out',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getMsgRateOut()?.getValue(), i18n.formatCountRate),
               },
               msgThroughputOut: {
                 title: 'Msg Throughput Out',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getMsgThroughputOut()?.getValue(), i18n.formatBytesRate),
               },
               bytesInCounter: {
                 title: 'Bytes In Counter',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getBytesInCounter()?.getValue(), i18n.formatBytes),
               },
               msgInCounter: {
                 title: 'Msg In Counter',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getMsgInCounter()?.getValue(), i18n.formatCount),
               },
               bytesOutCounter: {
                 title: 'Bytes Out Counter',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getBytesOutCounter()?.getValue(), i18n.formatBytes),
               },
               msgOutCounter: {
                 title: 'Msg Out Counter',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getMsgOutCounter()?.getValue(), i18n.formatCount),
               },
               averageMsgSize: {
                 title: 'Average Msg Size',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getAverageMsgSize()?.getValue(), i18n.formatBytes),
               },
               isMsgChunkPublished: {
                 title: 'Is Msg Chunk Published',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getIsMsgChunkPublished()?.getValue(), i18n.formatBoolean),
               },
               storageSize: {
                 title: 'Storage Size',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getStorageSize()?.getValue(), i18n.formatBytes),
               },
               backlogSize: {
                 title: 'Backlog Size',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getBacklogSize()?.getValue(), i18n.formatBytes),
               },
               earliestMsgPublishTimeInBacklogs: {
                 title: 'Earliest Msg Publish Time In Backlogs',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getEarliestMsgPublishTimeInBacklogs()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
               },
               offloadedStorageSize: {
                 title: 'Offloaded Storage Size',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getOffloadedStorageSize()?.getValue(), i18n.formatBytes),
               },
               waitingPublishers: {
                 title: 'Waiting Publishers',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getWaitingPublishers()?.getValue(), v => v),
               },
               replicatorsCount: {
                 title: 'Replicators',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getReplicationMap()?.getLength(), v => v),
               },
               deduplicationStatus: {
                 title: 'Deduplication Status',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getDeduplicationStatus()?.getValue(), v => v),
               },
               topicEpoch: {
                 title: 'Topic Epoch',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getTopicEpoch()?.getValue(), v => v),
               },
               nonContiguousDeletedMessagesRanges: {
                 title: 'Non Contiguous Deleted Messages Ranges',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getNonContiguousDeletedMessagesRanges()?.getValue(), v => v),
               },
               nonContiguousDeletedMessagesRangesSerializedSize: {
                 title: 'Non Contiguous Deleted Messages Ranges Serialized Size',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getNonContiguousDeletedMessagesRangesSerializedSize()?.getValue(), i18n.formatBytes),
               },
               lastCompactionRemovedEventCount: {
                 title: 'Last Compaction Removed Event Count',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionRemovedEventCount()?.getValue(), v => v.toString()),
               },
               lastCompactionSucceedTimestamp: {
                 title: 'Last Compaction Succeed Timestamp',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionSucceedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
               },
               lastCompactionFailedTimestamp: {
                 title: 'Last Compaction Failed Timestamp',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionFailedTimestamp()?.getValue() || undefined, (v) => i18n.formatDateTime(new Date(v))),
               },
               lastCompactionDurationTimeInMills: {
                 title: 'Last Compaction Duration Time',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getCompaction()?.getLastCompactionDurationTimeInMills()?.getValue() || undefined, i18n.formatDuration),
               },
               ownerBroker: {
                 title: 'Owner Broker',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getOwnerBroker()?.getValue(), v => v.toString()),
               },
               delayedMessageIndexSizeInBytes: {
                 title: 'Delayed Message Index Size In Bytes',
+                isLazy: true,
                 render: (_, ld) => i18n.withVoidDefault(ld?.stats.getDelayedMessageIndexSizeInBytes()?.getValue(), i18n.formatBytes),
               }
             },

@@ -18,7 +18,7 @@ import {
   TenantInfo,
   UpdateTenantRequest,
 } from "../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb";
-import { H1 } from "../../ui/H/H";
+import { H1, H2 } from "../../ui/H/H";
 
 export type ConfigurationProps = {
   tenant: string;
@@ -256,7 +256,7 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
   return (
     <div className={s.Overview}>
       <div className={s.Title}>
-        <H1>Tenant Overview</H1>
+        <H2>Overview</H2>
       </div>
       <ConfigurationTable
         fields={[
