@@ -52,7 +52,7 @@ const Tenants: React.FC<TenantsProps> = (props) => {
           help,
           columns: {
             tenantName: {
-              title: 'Tenant Name',
+              title: 'Name',
               render: (de) => i18n.withVoidDefault(de.tenantName, v => (
                 <Link to={`${routes.tenants.tenant.overview._.get({ tenant: v })}`}>
                   {v}

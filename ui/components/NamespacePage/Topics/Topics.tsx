@@ -124,7 +124,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
             help,
             columns: {
               topicName: {
-                title: 'Topic Name',
+                title: 'Name',
                 render: (de) => (
                   <Link
                     to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({

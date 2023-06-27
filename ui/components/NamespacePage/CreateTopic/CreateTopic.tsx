@@ -106,7 +106,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
         fields={[
           {
             id: "topicName",
-            title: "Topic name",
+            title: "Name",
             description: <span>Each topic has a name, unique for a specific namespace. You may have a persistent topic with the name ABC and a non-persistent topic with the same name in the same namespace simultaneously.</span>,
             input: topicNameInput,
             isRequired: true,
