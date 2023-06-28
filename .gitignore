@@ -108,9 +108,11 @@ target
 project
 
 .vscode
+.idea
 
 # Scala
 .metals
 
 # Nix
 result
+

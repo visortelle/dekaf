@@ -1,0 +1,21 @@
+package config
+
+import zio.Config
+
+case class AuthConfig(
+    jwt: String
+)
+
+case class AppConfig(
+    brokerServiceUrl: String,
+    webServiceUrl: String,
+    auth: AuthConfig,
+    clusterNames: List[String]
+)
+
+val config = AppConfig(
+  brokerServiceUrl = "pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651",
+  webServiceUrl = "https://cluster-d.o-xy6ek.snio.cloud",
+  auth = AuthConfig(jwt = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik5rRXdSVVU1TUVOQlJrWTJNalEzTVRZek9FVkZRVVUyT0RNME5qUkRRVEU1T1VNMU16STVPUSJ9.eyJodHRwczovL3N0cmVhbW5hdGl2ZS5pby91c2VybmFtZSI6ImNsdXN0ZXItYi1hZG1pbkBvLXh5NmVrLmF1dGguc3RyZWFtbmF0aXZlLmNsb3VkIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLnN0cmVhbW5hdGl2ZS5jbG91ZC8iLCJzdWIiOiJ6NUQxcVIyTllxN250amhZN0dHSnZqNkRrcG1PRk1EREBjbGllbnRzIiwiYXVkIjoidXJuOnNuOnB1bHNhcjpvLXh5NmVrOmluc3RhbmNlLWQiLCJpYXQiOjE2ODc1MDk3MjcsImV4cCI6MTY4ODExNDUyNywiYXpwIjoiejVEMXFSMk5ZcTdudGpoWTdHR0p2ajZEa3BtT0ZNREQiLCJzY29wZSI6ImFkbWluIGFjY2VzcyIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyIsInBlcm1pc3Npb25zIjpbImFkbWluIiwiYWNjZXNzIl19.r-MqeAXVyn4nRznpMZyUAIWKr5GxiXyIvDf74xuZpuC_AGTxxLmrXze4GvNxSKNFzN3hlHpOUuCNyg1PUPeJ1RmFyfdMtqXP-ZmdBs0-Zw-ameVhCRSV0fQ2EzKf6D6FjecUOqTAV3WTZMnUuwrGG2P2Eo8rOTiCDedmPK76rXhA766NT_dZGPeDZCGhm9H_4Ha4jUCfkLyDu1KzeQXnz_PYifppkdZ5uNi7RFREZ_EzGF1ZfTDhI4aPkf1wb1TiE3W0HZQzk7NFswSjSJXPoSXZe2OPqSVGoveLiClzajEhK-_QtDwpNDjHJLaCb0nm1OFcZNqMZjn2UvPAlZCJqA"),
+  clusterNames = List("cluster-d")
+)
