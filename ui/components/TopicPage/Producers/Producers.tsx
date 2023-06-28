@@ -134,6 +134,10 @@ const Producers: React.FC<ProducersProps> = (props) => {
                     return true;
                   }
 
+                  if (filter.value === '') {
+                    return true;
+                  }
+
                   return Boolean(de.producerName?.toLowerCase().includes(filter.value.toLowerCase()))
                 },
               }

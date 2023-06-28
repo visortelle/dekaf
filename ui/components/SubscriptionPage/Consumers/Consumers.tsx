@@ -158,6 +158,10 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
                     return true;
                   }
 
+                  if (filter.value === '') {
+                    return true;
+                  }
+
                   return Boolean(de.consumerName?.toLowerCase().includes(filter.value.toLowerCase()))
                 },
               }
