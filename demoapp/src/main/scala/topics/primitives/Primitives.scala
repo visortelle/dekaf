@@ -20,6 +20,7 @@ val genPayload = () =>
   def boolToByte(bool: Boolean): Byte = if bool then 1 else 0
   Array(boolToByte(faker.bool.bool))
 val getSubscriptionType = () => SubscriptionType.Shared
+val getSchemaInfo = () => SchemaInfo.builder.name("coin").`type`(SchemaType.BOOLEAN).build
 
 object Primitives:
     def startProduce(): Task[Unit] = for
@@ -37,7 +38,7 @@ object Primitives:
 object CoinTosses:
     private val namespaceName = "bool"
     private val topicFqn = s"persistent://$tenantName/$namespaceName/coin-tosses"
-    private val schema = SchemaInfo.builder.name("coin").`type`(SchemaType.BOOLEAN).build
+    private val schema = getSchemaInfo()
 
     def prepareEnv(): Task[Unit] = for {
         _ <- ZIO.attempt(adminClient.namespaces.createNamespaceAsync(s"$tenantName/$namespaceName"))

@@ -83,19 +83,21 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 .build
 
             val getTopicsFutures = request.namespaces.map(t => adminClient.namespaces.getTopicsAsync(t, options).asScala)
-            val topics = Await.result(Future.sequence(getTopicsFutures), Duration(1, TimeUnit.MINUTES)).map(_.asScala)
+            val topicsPerNamespace = Await.result(Future.sequence(getTopicsFutures), Duration(1, TimeUnit.MINUTES)).map(_.asScala)
 
-            val topicsPerNamespace = topics.map(_.size)
+            val topicsCountPerNamespace = topicsPerNamespace.map(_.size)
 
             val PartitionRegex = """(.*)-partition-\d+$""".r
-            val topicsPerNamespaceExcludingPartitions = topics.map(_.count(!PartitionRegex.matches(_)))
+            val topicsCountPerNamespaceExcludingPartitions = topicsPerNamespace.map(topics => {
+               topics.map(topic => PartitionRegex.replaceAllIn(topic, "")).toSet.size
+            })
 
             val status = Status(code = Code.OK.index)
             Future.successful(
                 GetTopicsCountResponse(
                     status = Some(status),
-                    topicsCount = request.namespaces.zip(topicsPerNamespace).toMap,
-                    topicsCountExcludingPartitions = request.namespaces.zip(topicsPerNamespaceExcludingPartitions).toMap
+                    topicsCount = request.namespaces.zip(topicsCountPerNamespace).toMap,
+                    topicsCountExcludingPartitions = request.namespaces.zip(topicsCountPerNamespaceExcludingPartitions).toMap
                 )
             )
         } catch {
