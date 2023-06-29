@@ -6,15 +6,10 @@ import * as I18n from '../../app/contexts/I18n/I18n';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
 import useSwr from 'swr';
-import { H1, H2 } from '../../ui/H/H';
 import * as st from '../../ui/SimpleTable/SimpleTable.module.css';
-import * as pbUtils from '../../../pbUtils/pbUtils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import NothingToShow from '../../ui/NothingToShow/NothingToShow';
-import Link from '../../ui/Link/Link';
-import NoData from '../../ui/NoData/NoData';
-import { routes } from '../../routes';
-import Tabs, { Tab } from '../../ui/Tabs/Tabs';
+import Tabs from '../../ui/Tabs/Tabs';
 import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
@@ -38,7 +33,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  const { data: statsData, error: statsDataError } = useSwr(
+  const { data: statsData, error: statsDataError, isLoading } = useSwr(
     swrKeys.pulsar.customApi.metrics.topicsStats._([topicFqn]),
     async () => {
       const req = new pb.GetTopicsStatsRequest();
@@ -74,7 +69,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
   if (statsData === undefined) {
     return (
       <div className={s.NothingToShow}>
-        <NothingToShow />
+        <NothingToShow reason={isLoading ? 'loading-in-progress' : 'no-items-found'} />
       </div>
     );
   }
@@ -92,19 +87,15 @@ const Overview: React.FC<OverviewProps> = (props) => {
   return (
     <div className={s.Overview}>
       <div className={s.LeftPanel}>
-        <div className={s.Title}>
-          <H1>Topic Overview</H1>
-        </div>
-
         <div className={s.Section}>
           <table className={st.Table}>
             <tbody>
               <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Name</td>
+                <td className={st.HighlightedCell}>Topic Name</td>
                 <Td>{props.topic}</Td>
               </tr>
               <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Fully Qualified Name</td>
+                <td className={st.HighlightedCell}>Topic FQN</td>
                 <Td>{topicFqn}</Td>
               </tr>
               <tr className={st.Row}>
