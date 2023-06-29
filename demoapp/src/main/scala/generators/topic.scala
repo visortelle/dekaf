@@ -39,6 +39,15 @@ object TopicPlan:
             producerGenerator.getName(i) -> ProducerPlan.make(_producerGenerator, i)
         }.toMap
 
+        val subscriptionGenerators =
+            List.tabulate(generator.getSubscriptionsCount(topicIndex))(i => generator.getSubscriptionGenerator(i))
+
+        val subscriptions = subscriptionGenerators.zipWithIndex.map { case (subscriptionGenerator, i) =>
+            val subscriptionName = subscriptionGenerator.getName(i)
+            val _subscriptionGenerator = subscriptionGenerator.focus(_.getName).replace(_ => subscriptionName)
+            subscriptionGenerator.getName(i) -> SubscriptionPlan.make(_subscriptionGenerator, i)
+        }.toMap
+
         TopicPlan(
             tenant = generator.getTenant(),
             namespace = generator.getNamespace(),
@@ -47,7 +56,7 @@ object TopicPlan:
             persistency = generator.getPersistency(topicIndex),
             partitioning = generator.getPartitioning(topicIndex),
             producers = producers,
-            subscriptions = Map.empty
+            subscriptions = subscriptions
         )
 
 case class TopicPlanGenerator(
@@ -58,8 +67,7 @@ case class TopicPlanGenerator(
     getProducersCount: TopicIndex => Int,
     getProducerGenerator: ProducerIndex => ProducerPlanGenerator,
     getSubscriptionsCount: TopicIndex => Int,
-    getConsumersPerSubscriptionCount: SubscriptionIndex => Int,
-    getMessagesPerSecond: ProducerIndex => Int,
+    getSubscriptionGenerator: SubscriptionIndex => SubscriptionPlanGenerator,
     getPayload: MessageIndex => Array[Byte],
     getSubscriptionType: SubscriptionIndex => SubscriptionType,
     getPersistency: TopicIndex => TopicPersistency,
@@ -74,8 +82,8 @@ object TopicPlanGenerator:
         getProducersCount: TopicIndex => Int = _ => 1,
         getProducerGenerator: ProducerIndex => ProducerPlanGenerator = _ => ProducerPlanGenerator.make(),
         getSubscriptionsCount: TopicIndex => Int = _ => 1,
-        getConsumersPerSubscriptionCount: SubscriptionIndex => Int = _ => 1,
-        getMessagesPerSecond: ProducerIndex => Int = _ => 1,
+        getSubscriptionGenerator: SubscriptionIndex => SubscriptionPlanGenerator = _ =>
+            SubscriptionPlanGenerator.make(),
         getPayload: MessageIndex => Array[Byte] = _ => Array.emptyByteArray,
         getSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
         getSchemaInfo: TopicIndex => SchemaInfo = _ => SchemaInfo.builder.name("default").`type`(SchemaType.NONE).build,
@@ -89,8 +97,7 @@ object TopicPlanGenerator:
             getProducersCount = getProducersCount,
             getProducerGenerator = getProducerGenerator,
             getSubscriptionsCount = getSubscriptionsCount,
-            getConsumersPerSubscriptionCount = getConsumersPerSubscriptionCount,
-            getMessagesPerSecond = getMessagesPerSecond,
+            getSubscriptionGenerator = getSubscriptionGenerator,
             getPayload = getPayload,
             getSubscriptionType = getSubscriptionType,
             getSchemaInfo = getSchemaInfo,
@@ -103,7 +110,7 @@ object TopicPlanExecutor:
         case Persistent()    => s"persistent://${topic.tenant}/${topic.namespace}/${topic.name}"
         case NonPersistent() => s"non-persistent://${topic.tenant}/${topic.namespace}/${topic.name}"
 
-    def allocate(topic: TopicPlan): Task[Unit] =
+    def allocateResources(topic: TopicPlan): Task[TopicPlan] =
         for {
             topicFqn <- ZIO.attempt(getTopicFqn(topic))
             _ <- ZIO.attempt {
@@ -113,7 +120,7 @@ object TopicPlanExecutor:
                         adminClient.topics.createNonPartitionedTopic(topicFqn)
             }
             _ <- ZIO.attempt(adminClient.schemas.createSchema(topicFqn, topic.schemaInfo))
-        } yield ()
+        } yield topic
 
     def startProduce(topic: TopicPlan) =
         val topicFqn = getTopicFqn(topic)
@@ -131,18 +138,26 @@ object TopicPlanExecutor:
             } yield ()
         }
 
-//    def startConsume() =
-//        def makeConsumers(subscriptionName: String, consumersCount: Int) = List.tabulate(consumersCount) { i =>
-//            pulsarClient.newConsumer
-//                .subscriptionName(subscriptionName)
-//                .subscriptionType(getSubscriptionType())
-//                .consumerName(s"consumer-$i")
-//                .topic(topicFqn)
-//                .messageListener((consumer, msg) => consumer.acknowledge(msg))
-//        }
-//
-//        val subscriptions = List.tabulate(getSubscriptionsCount())(i => s"subscription-$i")
-//        val consumers = subscriptions
-//            .flatMap(subscriptionName => makeConsumers(subscriptionName, getConsumersPerSubscriptionCount()))
-//
-//        ZIO.foreachPar(consumers)(consumer => ZIO.attempt(consumer.subscribe))
+    def startConsume(topic: TopicPlan) =
+        val topicFqn = getTopicFqn(topic)
+
+        def makeConsumers(subscription: SubscriptionPlan) = subscription.consumers.map { case (_, consumer) =>
+            pulsarClient.newConsumer
+                .subscriptionName(subscription.name)
+                .subscriptionType(subscription.subscriptionType)
+                .consumerName(consumer.name)
+                .topic(topicFqn)
+                .messageListener((consumer, msg) => consumer.acknowledge(msg))
+        }
+
+        val consumers = topic.subscriptions.flatMap { case (_, subscription) =>
+            makeConsumers(subscription)
+        }
+
+        ZIO.foreachPar(consumers)(consumer => ZIO.attempt(consumer.subscribe))
+
+    def start(topicPlan: TopicPlan): Task[Unit] = for {
+        produceFib <- TopicPlanExecutor.startProduce(topicPlan).fork
+        _ <- TopicPlanExecutor.startConsume(topicPlan).fork
+        _ <- produceFib.join
+    } yield ()
