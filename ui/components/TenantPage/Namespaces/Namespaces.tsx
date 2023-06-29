@@ -116,23 +116,23 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
         }}
         lazyDataLoader={{
           loader: async (des) => {
-            const req = new pb.GetTopicsCountRequest();
-            req.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
-            req.setIsIncludeSystemTopics(false);
+            const topicsCountReq = new pb.GetTopicsCountRequest();
+            topicsCountReq.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
+            topicsCountReq.setIsIncludeSystemTopics(false);
 
-            const res = await namespaceServiceClient.getTopicsCount(req, null)
+            const topicsCountRes = await namespaceServiceClient.getTopicsCount(topicsCountReq, null)
               .catch((err) => notifyError(`Unable to get topics count. ${err}`));
 
-            if (res?.getStatus()?.getCode() !== Code.OK) {
-              notifyError(`Unable to get topics count. ${res?.getStatus()?.getMessage()}`);
+            if (topicsCountRes?.getStatus()?.getCode() !== Code.OK) {
+              notifyError(`Unable to get topics count. ${topicsCountRes?.getStatus()?.getMessage()}`);
             }
 
-            const topicsCountMap = res === undefined ?
+            const topicsCountMap = topicsCountRes === undefined ?
               {} :
-              pbUtils.mapToObject(res.getTopicsCountMap());
-            const topicsCountExcludingPartitionsMap = res === undefined ?
+              pbUtils.mapToObject(topicsCountRes.getTopicsCountMap());
+            const topicsCountExcludingPartitionsMap = topicsCountRes === undefined ?
               {} :
-              pbUtils.mapToObject(res.getTopicsCountExcludingPartitionsMap());
+              pbUtils.mapToObject(topicsCountRes.getTopicsCountExcludingPartitionsMap());
 
             const propertiesReq = new pb.GetPropertiesRequest();
             propertiesReq.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
