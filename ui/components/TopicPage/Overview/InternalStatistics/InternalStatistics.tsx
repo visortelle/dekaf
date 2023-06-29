@@ -23,7 +23,7 @@ const InternalStatistics: React.FC<InternalStatisticsProps> = (props) => {
 
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
+  const { data: topicsInternalStats, error: topicsInternalStatsError, isLoading } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._([topicFqn]),
     async () => {
       const req = new pb.GetTopicsInternalStatsRequest();
@@ -48,7 +48,7 @@ const InternalStatistics: React.FC<InternalStatisticsProps> = (props) => {
   if (topicsInternalStats === undefined) {
     return (
       <div className={s.NothingToShow}>
-        <NothingToShow />
+        <NothingToShow reason={isLoading ? 'loading-in-progress' : 'no-items-found'} />
       </div>
     );
   }
@@ -72,7 +72,13 @@ const InternalStatistics: React.FC<InternalStatisticsProps> = (props) => {
         />
       )}
       {partitionedTopicStats && (
-        <PartitionedTopicInternalStats stats={partitionedTopicStats} />
+        <PartitionedTopicInternalStats
+          stats={partitionedTopicStats}
+          tenant={props.tenant}
+          namespace={props.namespace}
+          topic={props.topic}
+          topicType={props.topicType}
+        />
       )}
     </div>
   );

@@ -168,7 +168,9 @@ function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
   const namespace = crumbs[2]?.value;
   const topic = crumbs[3]?.value;
 
-  switch (crumbs[crumbs.length - 1].type) {
+  const currentResource = crumbs.findLast((crumb) => crumb.type !== "link");
+
+  switch (currentResource?.type) {
     case "tenant":
       return tenant;
     case "namespace":

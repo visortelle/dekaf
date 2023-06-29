@@ -10,7 +10,6 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
 import * as pbUtils from '../../../pbUtils/pbUtils';
-import { H1, H2 } from '../../ui/H/H';
 
 export type ColumnKey =
   'namespaceName' |

@@ -8,6 +8,10 @@ import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 export type PartitionedTopicInternalStatsProps = {
   stats: pb.PartitionedTopicInternalStats;
+  tenant: string;
+  namespace: string;
+  topic: string;
+  topicType: "persistent" | "non-persistent";
 };
 
 const PartitionedTopicInternalStats: React.FC<PartitionedTopicInternalStatsProps> = (props) => {
@@ -35,7 +39,13 @@ const PartitionedTopicInternalStats: React.FC<PartitionedTopicInternalStatsProps
       </div>
 
       <div className={s.Section}>
-        <PersistentTopicInternalStats stats={partitions[selectedPartition]} />
+        <PersistentTopicInternalStats
+          stats={partitions[selectedPartition]}
+          tenant={props.tenant}
+          namespace={props.namespace}
+          topic={props.topic}
+          topicType={props.topicType}
+        />
       </div>
     </div>
   );
