@@ -9,7 +9,7 @@ type SubscriptionIndex = Int
 case class SubscriptionPlan(
     name: SubscriptionName,
     subscriptionType: SubscriptionType,
-    consumers: Map[SubscriptionName, ConsumerPlan]
+    consumers: Map[ConsumerName, ConsumerPlan]
 )
 
 object SubscriptionPlan:
