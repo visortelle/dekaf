@@ -6,9 +6,6 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clust
 import { swrKeys } from "../../../swrKeys";
 import useSWR from "swr";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
-import Link from "../../../ui/Link/Link";
-import { routes } from "../../../routes";
-import sts from "../../../ui/SimpleTable/SimpleTable.module.css";
 import Cluster from "./Cluster/Cluster";
 import NothingToShow from "../../../ui/NothingToShow/NothingToShow";
 
@@ -16,7 +13,7 @@ const Clusters: React.FC = () => {
   const { notifyError } = Notifications.useContext();
   const { clustersServiceClient } = GrpcClient.useContext();
 
-  const { data: clusters, error: clustersError } = useSWR(
+  const { data: clusters, error: clustersError, isLoading } = useSWR(
     swrKeys.pulsar.clusters._(),
     async () => {
       const res = await clustersServiceClient.getClusters(
@@ -39,8 +36,8 @@ const Clusters: React.FC = () => {
     notifyError(`Unable to get clusters list. ${clustersError}`);
   }
 
-  if (!clusters?.length) {
-    return <NothingToShow />;
+  if (clusters === undefined || clusters?.length === 0) {
+    return <NothingToShow reason={isLoading ? 'loading-in-progress' : 'no-items-found'} />;
   }
 
   return (

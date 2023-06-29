@@ -8,10 +8,10 @@ import NothingToShow from '../../../ui/NothingToShow/NothingToShow';
 export type InternalConfigProps = {};
 
 const InternalConfig: React.FC<InternalConfigProps> = () => {
-  const { internalConfig } = BrokersConfig.useContext();
+  const { internalConfig, isLoading } = BrokersConfig.useContext();
 
   if (Object.keys(internalConfig).length === 0) {
-    return <NothingToShow />
+    return <NothingToShow reason={isLoading ? 'loading-in-progress' : 'no-items-found'} />
   }
 
   return (

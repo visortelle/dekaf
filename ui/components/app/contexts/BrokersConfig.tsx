@@ -20,6 +20,7 @@ export type Value = {
   internalConfig: Record<string, string>;
   dynamicConfig: Record<string, string>;
   get: (key: string) => ConfigValue;
+  isLoading: boolean;
 }
 
 const defaultValue: Value = {
@@ -27,6 +28,7 @@ const defaultValue: Value = {
   internalConfig: {},
   dynamicConfig: {},
   get: (_: string) => undefined,
+  isLoading: true,
 };
 
 const Context = React.createContext<Value>(defaultValue);
@@ -35,7 +37,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const { brokersServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
 
-  const { data: runtimeConfig, error: runtimeConfigError } = useSWR(
+  const { data: runtimeConfig, error: runtimeConfigError, isLoading: isRuntimeConfigLoading } = useSWR(
     swrKeys.pulsar.brokers.runtimeConfig._(),
     async () => {
       const req = new GetRuntimeConfigurationsRequest();
@@ -55,7 +57,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
     notifyError(`Unable to get broker's runtime configuration. ${runtimeConfigError}`);
   }
 
-  const { data: internalConfig, error: internalConfigError } = useSWR(
+  const { data: internalConfig, error: internalConfigError, isLoading: isInternalConfigLoading } = useSWR(
     swrKeys.pulsar.brokers.internalConfig._(),
     async () => {
       const req = new GetInternalConfigurationDataRequest();
@@ -118,7 +120,8 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
               value = { value: dynamicConfig[key], source: 'dynamic-config' };
             }
             return value;
-          }
+          },
+          isLoading: isRuntimeConfigLoading || isInternalConfigLoading,
         }}
       >
         {children}
