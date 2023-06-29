@@ -18,6 +18,9 @@ lazy val root = project
       // ZIO
       "dev.zio" %% "zio" % zioVersion,
 
+      // Lenses
+      "dev.optics" %% "monocle-core" % "3.2.0",
+
       "net.datafaker" % "datafaker" % "2.0.1",
       "org.scalameta" %% "munit" % "0.7.29" % Test
     )
