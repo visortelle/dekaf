@@ -57,7 +57,7 @@ const Ledgers: React.FC<{ ledgers: pb.LedgerInfo[] }> = (props) => {
             metadata: {
               title: "Metadata",
               render: (ledger) => i18n.withVoidDefault(ledger.metadata, v => v),
-              sortFn: (a, b) => (a.data.metadata || "").localeCompare(b.data.metadata || "")
+              sortFn: (a, b) => (a.data.metadata || "").localeCompare(b.data.metadata || "", 'en', { numeric: true })
             },
             offloaded: {
               title: "Offloaded",

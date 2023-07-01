@@ -88,7 +88,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
             accessMode: {
               title: 'Access Mode',
               render: (entry) => entry.accessMode,
-              sortFn: (a, b) => (a.data.accessMode || '').localeCompare(b.data.accessMode || ''),
+              sortFn: (a, b) => (a.data.accessMode || '').localeCompare(b.data.accessMode || '', 'en', { numeric: true }),
             },
             msgRateIn: {
               title: 'Msg Rate In',
@@ -123,7 +123,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
             producerName: {
               title: 'Name',
               render: (entry) => entry.producerName,
-              sortFn: (a, b) => (a.data.producerName || '').localeCompare(b.data.producerName || ''),
+              sortFn: (a, b) => (a.data.producerName || '').localeCompare(b.data.producerName || '', 'en', { numeric: true }),
               filter: {
                 descriptor: {
                   type: 'string',
@@ -145,7 +145,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
             address: {
               title: 'Address',
               render: (entry) => entry.address,
-              sortFn: (a, b) => (a.data.address || '').localeCompare(b.data.address || ''),
+              sortFn: (a, b) => (a.data.address || '').localeCompare(b.data.address || '', 'en', { numeric: true }),
             },
             connectedSince: {
               title: 'Connected Since',
@@ -155,7 +155,7 @@ const Producers: React.FC<ProducersProps> = (props) => {
             clientVersion: {
               title: 'Client Version',
               render: (entry) => entry.clientVersion,
-              sortFn: (a, b) => (a.data.clientVersion || '').localeCompare(b.data.clientVersion || ''),
+              sortFn: (a, b) => (a.data.clientVersion || '').localeCompare(b.data.clientVersion || '', 'en', { numeric: true }),
             },
             metadata: {
               title: 'Metadata',

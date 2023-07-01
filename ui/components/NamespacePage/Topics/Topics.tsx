@@ -137,7 +137,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                     {de.name}
                   </Link>
                 ),
-                sortFn: (a, b) => a.data.name.localeCompare(b.data.name),
+                sortFn: (a, b) => a.data.name.localeCompare(b.data.name, 'en', { numeric: true }),
                 filter: {
                   descriptor: {
                     type: 'string',

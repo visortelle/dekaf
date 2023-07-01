@@ -12,6 +12,12 @@ import scala.jdk.FutureConverters.*
 
 type TopicName = String
 type SchemasByVersion = Map[Long, SchemaInfo]
+
+object SchemasByVersion:
+    def getLatest(schemas: SchemasByVersion): Option[SchemaInfo] = schemas match
+        case _ if schemas.isEmpty => None
+        case _ => Some(schemas.maxBy(_._1)._2)
+        
 type SchemasByTopic = Map[TopicName, SchemasByVersion]
 
 def getSchemasByVersion(pulsarAdmin: PulsarAdmin, topic: TopicName): SchemasByVersion =

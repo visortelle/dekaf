@@ -77,7 +77,7 @@ class MessageFilter(config: MessageFilterConfig):
         try
             context.eval("js", s"inspect($code);").asString()
         catch {
-            case err: Throwable => s"[ERROR] ${err.getMessage()}"
+            case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
 def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =

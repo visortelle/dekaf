@@ -64,7 +64,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
                   {v}
                 </Link>
               )),
-              sortFn: (a, b) => (a.data.namespaceName || '').localeCompare(b.data.namespaceName || ''),
+              sortFn: (a, b) => (a.data.namespaceName || '').localeCompare(b.data.namespaceName || '', 'en', { numeric: true }),
               filter: {
                 descriptor: {
                   type: 'string',
