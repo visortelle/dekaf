@@ -76,9 +76,9 @@ case class TopicPlanGenerator(
 
 object TopicPlanGenerator:
     def make(
-        getTenant: () => String = () => "__pulsocat-demo__",
-        getNamespace: () => String = () => "default",
-        getName: TopicIndex => String = topicIndex => s"topic-$topicIndex",
+        getTenant: () => String = () => "pulsecat_default",
+        getNamespace: () => String = () => "pulsocat_default",
+        getName: TopicIndex => TopicName = topicIndex => s"topic-${topicIndex}",
         getProducersCount: TopicIndex => Int = _ => 1,
         getProducerGenerator: ProducerIndex => ProducerPlanGenerator = _ => ProducerPlanGenerator.make(),
         getSubscriptionsCount: TopicIndex => Int = _ => 1,
@@ -106,23 +106,23 @@ object TopicPlanGenerator:
         )
 
 object TopicPlanExecutor:
-    def getTopicFqn(topic: TopicPlan): String = topic.persistency match
+    private def getTopicFqn(topic: TopicPlan): String = topic.persistency match
         case Persistent()    => s"persistent://${topic.tenant}/${topic.namespace}/${topic.name}"
         case NonPersistent() => s"non-persistent://${topic.tenant}/${topic.namespace}/${topic.name}"
 
-    def allocateResources(topic: TopicPlan): Task[TopicPlan] =
+    def allocateResources(topicPlan: TopicPlan): Task[TopicPlan] =
         for {
-            topicFqn <- ZIO.attempt(getTopicFqn(topic))
+            topicFqn <- ZIO.attempt(getTopicFqn(topicPlan))
             _ <- ZIO.attempt {
-                topic.partitioning match
+                topicPlan.partitioning match
                     case Partitioned(partitions) => adminClient.topics.createPartitionedTopic(topicFqn, partitions)
                     case NonPartitioned() =>
                         adminClient.topics.createNonPartitionedTopic(topicFqn)
             }
-            _ <- ZIO.attempt(adminClient.schemas.createSchema(topicFqn, topic.schemaInfo))
-        } yield topic
+            _ <- ZIO.attempt(adminClient.schemas.createSchema(topicFqn, topicPlan.schemaInfo))
+        } yield topicPlan
 
-    def startProduce(topic: TopicPlan) =
+    private def startProduce(topic: TopicPlan) =
         val topicFqn = getTopicFqn(topic)
         ZIO.foreachPar(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
             for {
@@ -138,7 +138,7 @@ object TopicPlanExecutor:
             } yield ()
         }
 
-    def startConsume(topic: TopicPlan) =
+    private def startConsume(topic: TopicPlan) =
         val topicFqn = getTopicFqn(topic)
 
         def makeConsumers(subscription: SubscriptionPlan) = subscription.consumers.map { case (_, consumer) =>
