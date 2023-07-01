@@ -38,7 +38,7 @@ case class NamespacePlanGenerator(
 
 object NamespacePlanGenerator:
     def make(
-        getTenant: () => TenantName = () => "__pulsocat-demo__",
+        getTenant: () => TenantName = () => "pulsocat_default",
         getName: NamespaceIndex => NamespaceName = namespaceIndex => s"namespace-${namespaceIndex}",
         getTopicsCount: NamespaceIndex => Int = _ => 1,
         getTopicGenerator: TopicIndex => TopicPlanGenerator = _ => TopicPlanGenerator.make()
@@ -51,11 +51,19 @@ object NamespacePlanGenerator:
         )
 
 object NamespacePlanExecutor:
-    def getNamespaceFqn = (namespacePlan: NamespacePlan) => s"${namespacePlan.tenant}/${namespacePlan.name}"
+    private def getNamespaceFqn = (namespacePlan: NamespacePlan) => s"${namespacePlan.tenant}/${namespacePlan.name}"
 
     def allocateResources(namespacePlan: NamespacePlan): Task[NamespacePlan] = for {
       namespaceFqn <- ZIO.attempt(getNamespaceFqn(namespacePlan))
-      _ <- ZIO.attempt(adminClient.namespaces.createNamespace(namespaceFqn))
+      _ <- ZIO.attempt {
+        val isNamespaceExists = adminClient.namespaces.getNamespaces(namespacePlan.tenant).contains(namespaceFqn)
+        if !isNamespaceExists then
+          adminClient.namespaces.createNamespace(namespaceFqn)
+      }
       _ <- ZIO.foreachPar(namespacePlan.topics.values)(TopicPlanExecutor.allocateResources).withParallelism(10)
-//      _ <- ZIO.foreachParDiscard(topics)(TopicPlanExecutor.start)
+      _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.start)
     } yield namespacePlan
+    
+    def start(namespacePlan: NamespacePlan): Task[Unit] =
+      ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.start)
+        
