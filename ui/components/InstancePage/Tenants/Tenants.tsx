@@ -58,7 +58,7 @@ const Tenants: React.FC<TenantsProps> = (props) => {
                   {v}
                 </Link>
               )),
-              sortFn: (a, b) => (a.data.tenantName || '').localeCompare(b.data.tenantName || ''),
+              sortFn: (a, b) => (a.data.tenantName || '').localeCompare(b.data.tenantName || '', 'en', { numeric: true }),
               filter: {
                 descriptor: {
                   type: 'string',

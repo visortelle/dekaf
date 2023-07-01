@@ -18,7 +18,7 @@ export type FieldInputProps = {
 type PolicyValue = keyof typeof SchemaCompatibilityStrategy;
 const strategies = (Object.keys(SchemaCompatibilityStrategy) as PolicyValue[])
   .filter(key => key !== 'SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED')
-  .sort((a, b) => a.localeCompare(b));
+  .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { namespaceServiceClient } = GrpcClient.useContext();

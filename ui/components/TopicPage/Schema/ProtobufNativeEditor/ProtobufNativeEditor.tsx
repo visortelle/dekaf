@@ -212,7 +212,7 @@ export function sortFilePaths(filePaths: string[]): string[] {
       const aPart = aPath[i];
       const bPart = bPath[i];
       if (aPart !== bPart) {
-        return aPart.localeCompare(bPart);
+        return aPart.localeCompare(bPart, 'en', { numeric: true });
       }
     }
     return aPath.length - bPath.length;

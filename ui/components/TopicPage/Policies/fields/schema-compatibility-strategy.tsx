@@ -31,7 +31,7 @@ export type FieldInputProps = {
 
 const strategies = (Object.keys(pb.SchemaCompatibilityStrategy) as Strategies[])
   .filter(key => key !== 'SCHEMA_COMPATIBILITY_STRATEGY_UNSPECIFIED')
-  .sort((a, b) => a.localeCompare(b));
+  .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { topicpoliciesServiceClient } = GrpcClient.useContext();

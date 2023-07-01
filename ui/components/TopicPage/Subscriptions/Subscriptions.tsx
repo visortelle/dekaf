@@ -143,7 +143,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             activeConsumerName: {
               title: 'Active Consumer Name',
               render: (de) => i18n.withVoidDefault(de.activeConsumerName, v => v),
-              sortFn: (a, b) => a.data.activeConsumerName?.localeCompare(b.data.activeConsumerName ?? '') ?? 0,
+              sortFn: (a, b) => a.data.activeConsumerName?.localeCompare(b.data.activeConsumerName ?? '', 'en', { numeric: true }) ?? 0,
             },
             backlogSize: {
               title: 'Backlog Size',
@@ -234,7 +234,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             keySharedMode: {
               title: 'Key Shared Mode',
               render: (de) => i18n.withVoidDefault(de.keySharedMode, v => v),
-              sortFn: (a, b) => (a.data.keySharedMode ?? '').localeCompare(b.data.keySharedMode ?? ''),
+              sortFn: (a, b) => (a.data.keySharedMode ?? '').localeCompare(b.data.keySharedMode ?? '', 'en', { numeric: true }),
             },
             lastAckedTimestamp: {
               title: 'Last Acknowledged Timestamp',
@@ -329,7 +329,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
                   {de.subscriptionName}
                 </Link>
               ),
-              sortFn: (a, b) => a.data.subscriptionName.localeCompare(b.data.subscriptionName),
+              sortFn: (a, b) => a.data.subscriptionName.localeCompare(b.data.subscriptionName, 'en', { numeric: true }),
               filter: {
                 descriptor: {
                   type: 'string',
@@ -356,7 +356,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             type: {
               title: 'Type',
               render: (de) => de.type,
-              sortFn: (a, b) => (a.data.type || '').localeCompare(b.data.type || ''),
+              sortFn: (a, b) => (a.data.type || '').localeCompare(b.data.type || '', 'en', { numeric: true }),
             },
             unackedMessages: {
               title: 'Unacked Messages',

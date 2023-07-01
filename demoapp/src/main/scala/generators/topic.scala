@@ -8,6 +8,7 @@ import _root_.client.{adminClient, pulsarClient}
 
 type TopicName = String
 type TopicIndex = Int
+type MessageIndex = Double
 
 case class Persistent()
 case class NonPersistent()
@@ -132,7 +133,7 @@ object TopicPlanExecutor:
                 _ <- ZIO
                     .attempt {
                         val payload = producerPlan.getPayload(producerIndex)
-                        producer.sendAsync(payload)
+                        producer.newMessage().value(payload).sendAsync()
                     }
                     .repeat(producerPlan.schedule)
             } yield ()
@@ -147,7 +148,11 @@ object TopicPlanExecutor:
                 .subscriptionType(subscription.subscriptionType)
                 .consumerName(consumer.name)
                 .topic(topicFqn)
-                .messageListener((consumer, msg) => consumer.acknowledge(msg))
+                .messageListener((consumer, msg) => {
+                  val value = msg.getValue
+                  println(s"VALUE, ${value.foreach(_.toChar)}")
+                  consumer.acknowledge(msg)
+                })
         }
 
         val consumers = topic.subscriptions.flatMap { case (_, subscription) =>

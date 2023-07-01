@@ -68,7 +68,7 @@ object converters:
         val orderingKey = Option(msg.getOrderingKey)
         val topic = Option(msg.getTopicName)
         val redeliveryCount = Option(msg.getRedeliveryCount)
-        val schemaVersion = Option(msg.getSchemaVersion).map(bytesToInt64).get.toOption
+        val schemaVersion = Option(msg.getSchemaVersion).map(bytesToInt64).getOrElse(Left("")).toOption
         val isReplicated = Option(msg.isReplicated)
         val replicatedFrom = Option(msg.getReplicatedFrom)
 
@@ -116,20 +116,22 @@ object converters:
     def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
         val msgData = msg.getData
         val topicName = partitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
-        val schemaInfo = schemas.get(topicName) match
-            case Some(schemasByVersion) =>
-                val schemaVersion = Option(msg.getSchemaVersion) match
-                    case Some(v) =>
-                        bytesToInt64(v).toOption match
-                            case Some(v2) => v2
-                            case _        => return Left(new Exception(s"Invalid schema version ${bytesToInt64(v)}}"))
-                    case None => return Right(bytesToJsonString(msgData))
+        val schemasByVersion = schemas.get(topicName)
 
-                schemasByVersion.get(schemaVersion) match
-                    case Some(si) => si
-                    case None     => return Right(bytesToJsonString(msgData))
+        if schemasByVersion.isEmpty then return Right(bytesToJsonString(msgData))
 
-            case None => return Right(bytesToJsonString(msgData))
+        val msgSchemaVersion = Option(msg.getSchemaVersion) match
+            case Some(v) => bytesToInt64(v).toOption
+            case None => None
+
+        val schemaInfo =
+            if msgSchemaVersion.isEmpty
+            then
+                val latestSchema = SchemasByVersion.getLatest(schemasByVersion.get) // Try to use the latest topic schema if unable to get msg schema
+                if latestSchema.isEmpty
+                then return Right(bytesToJsonString(msgData))
+                else latestSchema.get
+            else schemasByVersion.get(msgSchemaVersion.get)
 
         schemaInfo.getType match
             case SchemaType.AVRO            => avro.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))

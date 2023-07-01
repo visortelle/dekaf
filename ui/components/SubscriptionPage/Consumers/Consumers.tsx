@@ -113,7 +113,7 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
             address: {
               title: 'Address',
               render: (entry) => i18n.withVoidDefault(entry.address, v => v),
-              sortFn: (a, b) => (a.data.address || '').localeCompare(b.data.address || ''),
+              sortFn: (a, b) => (a.data.address || '').localeCompare(b.data.address || '', 'en', { numeric: true }),
             },
             availablePermits: {
               title: 'Available Permits',
@@ -137,7 +137,7 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
             clientVersion: {
               title: 'Client Version',
               render: (entry) => i18n.withVoidDefault(entry.clientVersion, v => v),
-              sortFn: (a, b) => (a.data.clientVersion || '').localeCompare(b.data.clientVersion || ''),
+              sortFn: (a, b) => (a.data.clientVersion || '').localeCompare(b.data.clientVersion || '', 'en', { numeric: true }),
             },
             connectedSince: {
               title: 'Connected Since',
@@ -147,7 +147,7 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
             consumerName: {
               title: 'Name',
               render: (entry) => i18n.withVoidDefault(entry.consumerName, v => v),
-              sortFn: (a, b) => (a.data.consumerName || '').localeCompare(b.data.consumerName || ''),
+              sortFn: (a, b) => (a.data.consumerName || '').localeCompare(b.data.consumerName || '', 'en', { numeric: true }),
               filter: {
                 descriptor: {
                   type: 'string',
@@ -222,7 +222,7 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
             readPositionWhenJoining: {
               title: 'Read Position When Joining',
               render: (entry) => i18n.withVoidDefault(entry.readPositionWhenJoining, v => v),
-              sortFn: (a, b) => (a.data.readPositionWhenJoining || '').localeCompare(b.data.readPositionWhenJoining || ''),
+              sortFn: (a, b) => (a.data.readPositionWhenJoining || '').localeCompare(b.data.readPositionWhenJoining || '', 'en', { numeric: true }),
             },
             unackedMessages: {
               title: 'Unacked Messages',
