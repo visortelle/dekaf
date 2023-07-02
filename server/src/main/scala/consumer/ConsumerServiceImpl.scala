@@ -70,7 +70,6 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId}")
 
                     processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
-
                     val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(schemasByTopic, msg)
 
                     val (filterResult, jsonAccumulator) =

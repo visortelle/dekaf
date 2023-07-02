@@ -23,16 +23,17 @@ import io.circe.*
 import io.circe.syntax.*
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 
-class Person(val name: String, val age: Int, val hobbies: List[String])
+class PersonClass(val name: String, val age: Int, val hobbies: List[String])
+case class Person(name: String, age: Int, hobbies: List[String])
 
-//given personEntryEncoder: Encoder[Person] = deriveEncoder[Person]
-//given personEntryDecoder: Decoder[Person] = deriveDecoder[Person]
+given personEntryEncoder: Encoder[Person] = deriveEncoder[Person]
+given personEntryDecoder: Decoder[Person] = deriveDecoder[Person]
 
-val personSchema = AvroSchema.of(classOf[Person])
-val personSchemaInfo = SchemaInfo.builder.`type`(SchemaType.AVRO).schema(personSchema.getSchemaInfo.getSchema).build()
+val personSchema = AvroSchema.of(classOf[PersonClass])
+val personSchemaInfo = SchemaInfo.builder.`type`(SchemaType.JSON).schema(personSchema.getSchemaInfo.getSchema).build()
 
 val tenantPlanGenerator = {
-    val tenantName = "strange-tenant-13"
+    val tenantName = s"strange-tenant-${java.time.Instant.now.toEpochMilli.toString}"
 
     TenantPlanGenerator.make(
         getName = _ => tenantName,
@@ -49,15 +50,14 @@ val tenantPlanGenerator = {
                         getNamespace = () => namespaceName,
                         getName = topicIndex => s"strange-topic-${topicIndex.toString}",
                         getProducersCount = _ => 1,
-                        getPayload = _ =>
-                            new Person(
-                                name = faker.funnyName.name(),
-                                age = faker.number.numberBetween(0, 120),
-                                hobbies = List.tabulate(faker.number.numberBetween(0, 10))(_ => faker.hobby.activity)
-                            ).asInstanceOf[Array[Byte]],
                         getProducerGenerator = _ =>
                             ProducerPlanGenerator.make(
-                                getSchedule = _ => Schedule.fixed(Duration.fromMillis(1000))
+                                getSchedule = _ => Schedule.fixed(Duration.fromMillis(100)),
+                                getPayload = _ => Person(
+                                  name = faker.funnyName.name(),
+                                  age = faker.number.numberBetween(0, 120),
+                                  hobbies = List.tabulate(faker.number.numberBetween(0, 10))(_ => faker.hobby.activity)
+                                ).asJson.toString.getBytes("UTF-8")
                             ),
                         getSubscriptionsCount = _ => 3,
                         getSchemaInfo = _ => personSchemaInfo
