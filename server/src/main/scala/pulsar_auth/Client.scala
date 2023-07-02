@@ -36,6 +36,7 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
         We use the "accum" js-var in for MessageFilter, to aggregate some value over consumed messages.
         GraalJS doesn't allow access to a single js variable across several JVM threads,
         so we need to use only one thread per client. */
+        .listenerThreads(1)
         .ioThreads(1)
         .serviceUrl(config.pulsarInstance.brokerServiceUrl)
 

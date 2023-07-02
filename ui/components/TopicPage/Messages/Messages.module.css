@@ -32,3 +32,7 @@
   justify-content: center;
   align-items: center;
 }
+
+.Virtuoso {
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+}

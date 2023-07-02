@@ -5,6 +5,7 @@ import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import monocle.syntax.all.*
 import _root_.client.{adminClient, pulsarClient}
+import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 
 type TopicName = String
 type TopicIndex = Int
@@ -69,7 +70,6 @@ case class TopicPlanGenerator(
     getProducerGenerator: ProducerIndex => ProducerPlanGenerator,
     getSubscriptionsCount: TopicIndex => Int,
     getSubscriptionGenerator: SubscriptionIndex => SubscriptionPlanGenerator,
-    getPayload: MessageIndex => Array[Byte],
     getSubscriptionType: SubscriptionIndex => SubscriptionType,
     getPersistency: TopicIndex => TopicPersistency,
     getPartitioning: TopicIndex => TopicPartitioning
@@ -85,7 +85,6 @@ object TopicPlanGenerator:
         getSubscriptionsCount: TopicIndex => Int = _ => 1,
         getSubscriptionGenerator: SubscriptionIndex => SubscriptionPlanGenerator = _ =>
             SubscriptionPlanGenerator.make(),
-        getPayload: MessageIndex => Array[Byte] = _ => Array.emptyByteArray,
         getSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
         getSchemaInfo: TopicIndex => SchemaInfo = _ => SchemaInfo.builder.name("default").`type`(SchemaType.NONE).build,
         getPersistency: TopicIndex => TopicPersistency = _ => Persistent(),
@@ -99,7 +98,6 @@ object TopicPlanGenerator:
             getProducerGenerator = getProducerGenerator,
             getSubscriptionsCount = getSubscriptionsCount,
             getSubscriptionGenerator = getSubscriptionGenerator,
-            getPayload = getPayload,
             getSubscriptionType = getSubscriptionType,
             getSchemaInfo = getSchemaInfo,
             getPersistency = getPersistency,
@@ -127,13 +125,14 @@ object TopicPlanExecutor:
         val topicFqn = getTopicFqn(topic)
         ZIO.foreachPar(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
             for {
-                producer <- ZIO.attempt(
-                    pulsarClient.newProducer.producerName(producerPlan.name).topic(topicFqn).create()
-                )
+                producer <- ZIO.attempt({
+                  val schema = new AutoProduceBytesSchema[Array[Byte]]
+                  pulsarClient.newProducer(schema).producerName(producerPlan.name).topic(topicFqn).create
+                })
                 _ <- ZIO
                     .attempt {
                         val payload = producerPlan.getPayload(producerIndex)
-                        producer.newMessage().value(payload).sendAsync()
+                        producer.newMessage.value(payload).sendAsync
                     }
                     .repeat(producerPlan.schedule)
             } yield ()

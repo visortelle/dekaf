@@ -27,6 +27,7 @@
   padding: 12rem 24rem;
   max-height: calc(100vh - 96rem);
   overflow: auto;
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
 }
 
 .TopBar {
