@@ -79,7 +79,7 @@ object TopicPlanGenerator:
     def make(
         getTenant: () => String = () => "pulsecat_default",
         getNamespace: () => String = () => "pulsocat_default",
-        getName: TopicIndex => TopicName = topicIndex => s"topic-${topicIndex}",
+        getName: TopicIndex => TopicName = topicIndex => s"topic-$topicIndex",
         getProducersCount: TopicIndex => Int = _ => 1,
         getProducerGenerator: ProducerIndex => ProducerPlanGenerator = _ => ProducerPlanGenerator.make(),
         getSubscriptionsCount: TopicIndex => Int = _ => 1,
@@ -111,6 +111,7 @@ object TopicPlanExecutor:
 
     def allocateResources(topicPlan: TopicPlan): Task[TopicPlan] =
         for {
+            _ <- ZIO.logInfo(s"Allocating resources for topic ${topicPlan.name}")
             topicFqn <- ZIO.attempt(getTopicFqn(topicPlan))
             _ <- ZIO.attempt {
                 topicPlan.partitioning match
@@ -125,10 +126,11 @@ object TopicPlanExecutor:
         val topicFqn = getTopicFqn(topic)
         ZIO.foreachPar(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
             for {
-                producer <- ZIO.attempt({
-                  val schema = new AutoProduceBytesSchema[Array[Byte]]
-                  pulsarClient.newProducer(schema).producerName(producerPlan.name).topic(topicFqn).create
-                })
+                producer <- ZIO.attempt {
+                    val schema = new AutoProduceBytesSchema[Array[Byte]]
+                    pulsarClient.newProducer(schema).producerName(producerPlan.name).topic(topicFqn).create
+                }
+                _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topic.name}")
                 _ <- ZIO
                     .attempt {
                         val payload = producerPlan.getPayload(producerIndex)
@@ -147,20 +149,24 @@ object TopicPlanExecutor:
                 .subscriptionType(subscription.subscriptionType)
                 .consumerName(consumer.name)
                 .topic(topicFqn)
-                .messageListener((consumer, msg) => {
-                  val value = msg.getValue
-                  println(s"VALUE, ${value.foreach(_.toChar)}")
-                  consumer.acknowledge(msg)
-                })
+                .messageListener { (consumer, msg) =>
+                    consumer.acknowledge(msg)
+                }
         }
 
         val consumers = topic.subscriptions.flatMap { case (_, subscription) =>
             makeConsumers(subscription)
         }
 
-        ZIO.foreachPar(consumers)(consumer => ZIO.attempt(consumer.subscribe))
+        ZIO.foreachPar(consumers)(consumer =>
+            for {
+                c <- ZIO.attempt(consumer.subscribe)
+                _ <- ZIO.logInfo(s"Started consumer ${c.getConsumerName} for topic ${topic.name}")
+            } yield ()
+        )
 
     def start(topicPlan: TopicPlan): Task[Unit] = for {
+        _ <- ZIO.logInfo(s"Starting topic ${topicPlan.name}")
         produceFib <- TopicPlanExecutor.startProduce(topicPlan).fork
         _ <- TopicPlanExecutor.startConsume(topicPlan).fork
         _ <- produceFib.join

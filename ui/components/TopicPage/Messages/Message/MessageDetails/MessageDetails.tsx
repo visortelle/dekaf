@@ -33,7 +33,13 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
       <div className={s.RightColumn}>
         <Field
           title='Value'
-          value={<JsonView json={props.message.value === null ? undefined : props.message.value} width="480rem" height="480rem" />}
+          value={(
+            <JsonView
+              json={props.message.value === null ? undefined : props.message.value}
+              width="480rem"
+              height="480rem"
+            />
+          )}
           help={help.value}
         />
       </div>

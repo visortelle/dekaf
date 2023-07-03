@@ -12,7 +12,7 @@
   "dependencies": {
     "@dnd-kit/core": "^6.0.7",
     "@dnd-kit/sortable": "^7.0.2",
-    "@monaco-editor/react": "^4.4.6",
+    "@monaco-editor/react": "^4.5.1",
     "@react-hook/timeout": "^2.1.1",
     "@types/humanize-duration": "^3.27.1",
     "batchelorjs": "^2.0.0",
@@ -31,7 +31,7 @@
     "humanize-duration": "^3.28.0",
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
-    "monaco-editor": "^0.33.0",
+    "monaco-editor": "^0.39.0",
     "nanoid": "^4.0.0",
     "numeral": "^2.0.6",
     "object-sizeof": "^1.6.3",

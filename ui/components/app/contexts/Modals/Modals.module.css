@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 100;
+  z-index: 999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,6 +28,7 @@
   max-height: calc(100vh - 96rem);
   overflow: auto;
   overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-y: contain;
 }
 
 .TopBar {

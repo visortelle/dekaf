@@ -111,30 +111,31 @@ object converters:
         )
         (messagePb, jsonMessage, jsonValue)
 
+    private val PartitionedTopicSuffixRegexp = "-partition-\\d+$".r
+
     def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
         val msgData = msg.getData
-        val schemasByVersion = schemas.get(msg.getTopicName)
+        val topicName = PartitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
+        val schemasByVersion = schemas.get(topicName)
 
-        if schemasByVersion.isEmpty then return Right(bytesToJsonString(msgData))
+        if schemasByVersion.isEmpty
+        then return Right(bytesToJsonString(msgData))
 
         val msgSchemaVersion = Option(msg.getSchemaVersion) match
             case Some(v) => bytesToInt64(v).toOption
-            case None => None
+            case None    => None
 
         val schemaInfo =
             if msgSchemaVersion.isEmpty
-            then
-                val latestSchema = SchemasByVersion.getLatest(schemasByVersion.get) // Try to use the latest topic schema if unable to get msg schema
-                if latestSchema.isEmpty
-                then return Right(bytesToJsonString(msgData))
-                else latestSchema.get
+            then return Right(bytesToJsonString(msgData))
             else schemasByVersion.get(msgSchemaVersion.get)
 
         schemaInfo.getType match
-            case SchemaType.AVRO            => avro.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
-            case SchemaType.JSON            => msgData match
-                case v if v.isEmpty => Left(new Exception(s"Message \"${msg.getMessageId}\" uses JSON schema, but its' content isn't a valid JSON string."))
-                case _                  => Right(bytesToString(msgData))
+            case SchemaType.AVRO => avro.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
+            case SchemaType.JSON =>
+                msgData match
+                    case v if v.isEmpty => Left(new Exception(s"Message \"${msg.getMessageId}\" uses JSON schema, but its' content isn't a valid JSON string."))
+                    case _              => Right(bytesToString(msgData))
             case SchemaType.PROTOBUF        => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
             case SchemaType.PROTOBUF_NATIVE => protobufnative.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
             case SchemaType.KEY_VALUE       => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
