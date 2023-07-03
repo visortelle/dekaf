@@ -10,12 +10,15 @@ lazy val root = project
         version := "0.1.0-SNAPSHOT",
         scalaVersion := scala3Version,
         libraryDependencies ++= Seq(
-            "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
-
-            // Circe
+            // Serialization
             "io.circe" %% "circe-core" % circeVersion,
             "io.circe" %% "circe-generic" % circeVersion,
             "io.circe" %% "circe-parser" % circeVersion,
+            "org.apache.avro" % "avro" % "1.11.1",
+
+            "com.fasterxml.jackson.core" % "jackson-core" % "2.15.2",
+            "com.fasterxml.jackson.dataformat" % "jackson-dataformat-avro" % "2.15.2",
+            "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % "2.15.2",
 
             // Pulsar
             "org.apache.pulsar" % "pulsar-client-original" % pulsarVersion,
