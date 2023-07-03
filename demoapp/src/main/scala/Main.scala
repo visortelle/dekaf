@@ -37,29 +37,29 @@ val tenantPlanGenerator = {
 
     TenantPlanGenerator.make(
         getName = _ => tenantName,
-        getNamespacesCount = _ => 1,
+        getNamespacesCount = _ => 5,
         getNamespaceGenerator = namespaceIndex =>
             val namespaceName = s"strange-namespace-${namespaceIndex.toString}"
             NamespacePlanGenerator.make(
                 getTenant = () => tenantName,
                 getName = _ => namespaceName,
-                getTopicsCount = _ => 1,
+                getTopicsCount = _ => 5,
                 getTopicGenerator = _ =>
                     TopicPlanGenerator.make(
                         getTenant = () => tenantName,
                         getNamespace = () => namespaceName,
                         getName = topicIndex => s"strange-topic-${topicIndex.toString}",
-                        getProducersCount = _ => 1,
+                        getProducersCount = _ => 5,
                         getProducerGenerator = _ =>
                             ProducerPlanGenerator.make(
-                                getSchedule = _ => Schedule.fixed(Duration.fromMillis(100)),
+                                getSchedule = _ => Schedule.fixed(Duration.fromMillis(1000)),
                                 getPayload = _ => Person(
                                   name = faker.funnyName.name(),
                                   age = faker.number.numberBetween(0, 120),
                                   hobbies = List.tabulate(faker.number.numberBetween(0, 10))(_ => faker.hobby.activity)
                                 ).asJson.toString.getBytes("UTF-8")
                             ),
-                        getSubscriptionsCount = _ => 3,
+                        getSubscriptionsCount = _ => 5,
                         getSchemaInfo = _ => personSchemaInfo
                     )
             )
@@ -68,7 +68,7 @@ val tenantPlanGenerator = {
 
 val tenantPlan = TenantPlan.make(tenantPlanGenerator, 0)
 
-object MainApp extends ZIOAppDefault:
+object PulsocatDemoApp extends ZIOAppDefault:
     def run = for {
         _ <- ZIO.logInfo("Starting app...")
         _ <- TenantPlanExecutor.allocateResources(tenantPlan)

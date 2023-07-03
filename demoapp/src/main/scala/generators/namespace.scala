@@ -54,6 +54,7 @@ object NamespacePlanExecutor:
     private def getNamespaceFqn = (namespacePlan: NamespacePlan) => s"${namespacePlan.tenant}/${namespacePlan.name}"
 
     def allocateResources(namespacePlan: NamespacePlan): Task[NamespacePlan] = for {
+      _ <- ZIO.logInfo(s"Allocating resources for namespace ${namespacePlan.name}")
       namespaceFqn <- ZIO.attempt(getNamespaceFqn(namespacePlan))
       _ <- ZIO.attempt {
         val isNamespaceExists = adminClient.namespaces.getNamespaces(namespacePlan.tenant).contains(namespaceFqn)
@@ -64,6 +65,8 @@ object NamespacePlanExecutor:
       _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.start)
     } yield namespacePlan
     
-    def start(namespacePlan: NamespacePlan): Task[Unit] =
-      ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.start)
+    def start(namespacePlan: NamespacePlan): Task[Unit] = for {
+      _ <- ZIO.logInfo(s"Starting namespace ${namespacePlan.name}")
+      _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.start)
+    } yield ()
         
