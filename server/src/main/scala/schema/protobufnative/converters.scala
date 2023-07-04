@@ -29,7 +29,7 @@ object converters extends JsonSerDe[Proto3Datum]:
     def toJson(schema: Array[Byte], data: Proto3Datum): Either[Throwable, JsonAsBytes] =
         try {
             val descriptor = ProtobufNativeSchemaUtils.deserialize(schema)
-            val message = Struct.parseFrom(data)
+            val message = DynamicMessage.parseFrom(descriptor, data)
 
             val typeRegistry = JsonFormat.TypeRegistry.newBuilder.add(descriptor).build
             val json = JsonFormat

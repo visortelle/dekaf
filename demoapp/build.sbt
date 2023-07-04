@@ -2,6 +2,7 @@ val scala3Version = "3.3.0"
 val pulsarVersion = "3.0.0"
 val zioVersion = "2.0.15"
 val circeVersion = "0.14.5"
+val jacksonVersion = "2.15.2"
 
 lazy val root = project
     .in(file("."))
@@ -14,11 +15,11 @@ lazy val root = project
             "io.circe" %% "circe-core" % circeVersion,
             "io.circe" %% "circe-generic" % circeVersion,
             "io.circe" %% "circe-parser" % circeVersion,
-            "org.apache.avro" % "avro" % "1.11.1",
-
-            "com.fasterxml.jackson.core" % "jackson-core" % "2.15.2",
-            "com.fasterxml.jackson.dataformat" % "jackson-dataformat-avro" % "2.15.2",
-            "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % "2.15.2",
+            "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,
+            "com.fasterxml.jackson.dataformat" % "jackson-dataformat-avro" % jacksonVersion,
+            "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % jacksonVersion,
+            "com.google.protobuf" % "protobuf-java" % "3.23.3",
+            "com.lihaoyi" %% "os-lib" % "0.9.1",
 
             // Pulsar
             "org.apache.pulsar" % "pulsar-client-original" % pulsarVersion,
