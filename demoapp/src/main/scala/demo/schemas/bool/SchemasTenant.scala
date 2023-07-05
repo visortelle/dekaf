@@ -13,6 +13,7 @@ def tenantPlanGenerator = TenantPlanGenerator.make(
     getNamespacesCount = _ => 1,
     getNamespaceGenerator = {
         val namespaceName = "schemas"
+        val getSchemaInfos = (_: TopicIndex) => List(org.apache.pulsar.client.api.Schema.BOOL.getSchemaInfo)
         val topicPlanGenerators =
             List(
                 TopicPlanGenerator.make(
@@ -21,8 +22,9 @@ def tenantPlanGenerator = TenantPlanGenerator.make(
                     getName = _ => "bool-truthy",
                     getProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            getPayload = _ => Array(1.toByte)
-                        )
+                            getPayload = _ => _ => Array(1.toByte)
+                        ),
+                    getSchemaInfos = getSchemaInfos
                 ),
                 TopicPlanGenerator.make(
                     getTenant = () => tenantName,
@@ -30,8 +32,9 @@ def tenantPlanGenerator = TenantPlanGenerator.make(
                     getName = _ => "bool-falsy",
                     getProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            getPayload = _ => Array(0.toByte)
-                        )
+                            getPayload = _ => _ => Array(0.toByte)
+                        ),
+                    getSchemaInfos = getSchemaInfos
                 ),
                 TopicPlanGenerator.make(
                     getTenant = () => tenantName,
@@ -39,8 +42,11 @@ def tenantPlanGenerator = TenantPlanGenerator.make(
                     getName = _ => "bool-sequence",
                     getProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            getPayload = messageIndex => Array((messageIndex % 2).toByte)
-                        )
+                            getPayload = _ => messageIndex =>
+                              println(s"messageIndex: $messageIndex")
+                              Array((messageIndex % 2).toByte)
+                        ),
+                    getSchemaInfos = getSchemaInfos
                 ),
                 TopicPlanGenerator.make(
                     getTenant = () => tenantName,
@@ -48,27 +54,26 @@ def tenantPlanGenerator = TenantPlanGenerator.make(
                     getName = _ => "bool-random",
                     getProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            getPayload = _ => if faker.bool().bool then Array(1.toByte) else Array(0.toByte)
-                        )
+                            getPayload = _ => _ => if faker.bool().bool then Array(1.toByte) else Array(0.toByte)
+                        ),
+                    getSchemaInfos = getSchemaInfos
                 )
             )
 
         val getTopicsCount = (_: Int) => topicPlanGenerators.size
         val namespacePlanGenerators =
-          List(
-            NamespacePlanGenerator.make(
-                getTenant = () => tenantName,
-                getName = _ => namespaceName,
-                getTopicsCount = getTopicsCount,
-                getTopicGenerator = topicIndex => {
-                  topicPlanGenerators(topicIndex)
-                },
-                getAfterAllocation = _ => {
-                    val namespaceFqn = s"$tenantName/$namespaceName"
-                    adminClient.namespaces.setSchemaValidationEnforced(namespaceFqn, true)
-                }
+            List(
+                NamespacePlanGenerator.make(
+                    getTenant = () => tenantName,
+                    getName = _ => namespaceName,
+                    getTopicsCount = getTopicsCount,
+                    getTopicGenerator = topicIndex => topicPlanGenerators(topicIndex),
+                    getAfterAllocation = _ => {
+                        val namespaceFqn = s"$tenantName/$namespaceName"
+                        adminClient.namespaces.setSchemaValidationEnforced(namespaceFqn, true)
+                    }
+                )
             )
-        )
 
         namespacePlanGenerators(_)
     }

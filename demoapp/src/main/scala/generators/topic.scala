@@ -15,6 +15,14 @@ case class Persistent()
 case class NonPersistent()
 type TopicPersistency = Persistent | NonPersistent
 
+object TopicPersistency:
+    def fromString(persistency: String): TopicPersistency = persistency match
+        case "persistent"    => Persistent()
+        case "non-persistent" => NonPersistent()
+    def toString(persistency: TopicPersistency): String = persistency match
+        case Persistent()    => "persistent"
+        case NonPersistent() => "non-persistent"
+
 case class Partitioned(partitions: Int)
 case class NonPartitioned()
 type TopicPartitioning = Partitioned | NonPartitioned
@@ -27,7 +35,8 @@ case class TopicPlan(
     persistency: TopicPersistency,
     partitioning: TopicPartitioning,
     producers: Map[ProducerName, ProducerPlan],
-    subscriptions: Map[SubscriptionName, SubscriptionPlan]
+    subscriptions: Map[SubscriptionName, SubscriptionPlan],
+    afterAllocation: TopicPlan => Unit
 )
 
 object TopicPlan:
@@ -58,7 +67,8 @@ object TopicPlan:
             persistency = generator.getPersistency(topicIndex),
             partitioning = generator.getPartitioning(topicIndex),
             producers = producers,
-            subscriptions = subscriptions
+            subscriptions = subscriptions,
+            afterAllocation = generator.getAfterAllocation(topicIndex)
         )
 
 case class TopicPlanGenerator(
@@ -72,7 +82,8 @@ case class TopicPlanGenerator(
     getSubscriptionGenerator: SubscriptionIndex => SubscriptionPlanGenerator,
     getSubscriptionType: SubscriptionIndex => SubscriptionType,
     getPersistency: TopicIndex => TopicPersistency,
-    getPartitioning: TopicIndex => TopicPartitioning
+    getPartitioning: TopicIndex => TopicPartitioning,
+    getAfterAllocation: TopicIndex => TopicPlan => Unit
 )
 
 object TopicPlanGenerator:
@@ -88,7 +99,8 @@ object TopicPlanGenerator:
         getSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
         getSchemaInfos: TopicIndex => List[SchemaInfo] = _ => List.empty,
         getPersistency: TopicIndex => TopicPersistency = _ => Persistent(),
-        getPartitioning: TopicIndex => TopicPartitioning = _ => Partitioned(partitions = 3)
+        getPartitioning: TopicIndex => TopicPartitioning = _ => Partitioned(partitions = 3),
+        getAfterAllocation: TopicIndex => TopicPlan => Unit = _ => _ => ()
     ): TopicPlanGenerator =
         TopicPlanGenerator(
             getTenant = getTenant,
@@ -101,7 +113,8 @@ object TopicPlanGenerator:
             getSubscriptionType = getSubscriptionType,
             getSchemaInfos = getSchemaInfos,
             getPersistency = getPersistency,
-            getPartitioning = getPartitioning
+            getPartitioning = getPartitioning,
+            getAfterAllocation = getAfterAllocation
         )
 
 object TopicPlanExecutor:
@@ -122,6 +135,7 @@ object TopicPlanExecutor:
             _ <- ZIO.foreachDiscard(topicPlan.schemaInfos)(schemaInfo => {
               ZIO.attempt(adminClient.schemas.createSchema(topicFqn, schemaInfo))
             })
+            _ <- ZIO.attempt(topicPlan.afterAllocation(topicPlan))
         } yield topicPlan
 
     private def startProduce(topic: TopicPlan) =
@@ -129,14 +143,14 @@ object TopicPlanExecutor:
         ZIO.foreachPar(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
             for {
                 producer <- ZIO.attempt {
-//                    val schema = new AutoProduceBytesSchema[Array[Byte]]
-                    val schema = org.apache.pulsar.client.api.Schema.AUTO_PRODUCE_BYTES()
+                    val schema = new AutoProduceBytesSchema[Array[Byte]]
                     pulsarClient.newProducer(schema).producerName(producerPlan.name).topic(topicFqn).create
                 }
                 _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topic.name}")
                 _ <- ZIO
                     .attempt {
-                        val payload = producerPlan.getPayload(producerIndex)
+                        val payload = producerPlan.getPayload(producerPlan.messageIndex)
+                        producerPlan.messageIndex += 1
                         producer.newMessage.value(payload).sendAsync
                     }
                     .repeat(producerPlan.schedule)
