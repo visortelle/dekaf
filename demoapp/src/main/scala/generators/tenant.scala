@@ -19,6 +19,7 @@ object TenantPlan:
         val namespaces = List
             .tabulate(generator.getNamespacesCount(tenantIndex)) { namespaceIndex =>
                 val namespaceGenerator = generator.getNamespaceGenerator(namespaceIndex)
+
                 val namespacePlan = NamespacePlan.make(namespaceGenerator, namespaceIndex)
                 namespacePlan.name -> namespacePlan
             }
@@ -52,12 +53,12 @@ object TenantPlanExecutor:
         _ <- ZIO.logInfo(s"Allocating resources for tenant ${tenantPlan.name}")
         clusters <- ZIO.attempt(adminClient.clusters.getClusters.asScala.toList)
         _ <- ZIO.attempt {
-            val isTenantExists = adminClient.tenants.getTenants.asScala.contains(tenantPlan.name)
-            if !isTenantExists then
-                val tenantInfo = TenantInfo.builder.allowedClusters(clusters.toSet.asJava).build
-                adminClient.tenants.createTenant(tenantPlan.name, tenantInfo)
+            val tenantInfo = TenantInfo.builder.allowedClusters(clusters.toSet.asJava).build
+            adminClient.tenants.createTenant(tenantPlan.name, tenantInfo)
         }
-        _ <- ZIO.foreachPar(tenantPlan.namespaces.values)(NamespacePlanExecutor.allocateResources).withParallelism(10)
+        _ <- ZIO
+            .foreachParDiscard(tenantPlan.namespaces.values)(NamespacePlanExecutor.allocateResources)
+            .withParallelism(10)
     } yield tenantPlan
 
     def start(tenantPlan: TenantPlan): Task[Unit] = for {

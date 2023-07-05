@@ -23,7 +23,7 @@ case class TopicPlan(
     tenant: String,
     namespace: String,
     name: String,
-    schemaInfo: SchemaInfo,
+    schemaInfos: List[SchemaInfo],
     persistency: TopicPersistency,
     partitioning: TopicPartitioning,
     producers: Map[ProducerName, ProducerPlan],
@@ -54,7 +54,7 @@ object TopicPlan:
             tenant = generator.getTenant(),
             namespace = generator.getNamespace(),
             name = generator.getName(topicIndex),
-            schemaInfo = generator.getSchemaInfo(topicIndex),
+            schemaInfos = generator.getSchemaInfos(topicIndex),
             persistency = generator.getPersistency(topicIndex),
             partitioning = generator.getPartitioning(topicIndex),
             producers = producers,
@@ -65,7 +65,7 @@ case class TopicPlanGenerator(
     getTenant: () => String,
     getNamespace: () => String,
     getName: TopicIndex => String,
-    getSchemaInfo: TopicIndex => SchemaInfo,
+    getSchemaInfos: TopicIndex => List[SchemaInfo],
     getProducersCount: TopicIndex => Int,
     getProducerGenerator: ProducerIndex => ProducerPlanGenerator,
     getSubscriptionsCount: TopicIndex => Int,
@@ -86,7 +86,7 @@ object TopicPlanGenerator:
         getSubscriptionGenerator: SubscriptionIndex => SubscriptionPlanGenerator = _ =>
             SubscriptionPlanGenerator.make(),
         getSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
-        getSchemaInfo: TopicIndex => SchemaInfo = _ => SchemaInfo.builder.name("default").`type`(SchemaType.NONE).build,
+        getSchemaInfos: TopicIndex => List[SchemaInfo] = _ => List.empty,
         getPersistency: TopicIndex => TopicPersistency = _ => Persistent(),
         getPartitioning: TopicIndex => TopicPartitioning = _ => Partitioned(partitions = 3)
     ): TopicPlanGenerator =
@@ -99,7 +99,7 @@ object TopicPlanGenerator:
             getSubscriptionsCount = getSubscriptionsCount,
             getSubscriptionGenerator = getSubscriptionGenerator,
             getSubscriptionType = getSubscriptionType,
-            getSchemaInfo = getSchemaInfo,
+            getSchemaInfos = getSchemaInfos,
             getPersistency = getPersistency,
             getPartitioning = getPartitioning
         )
@@ -119,7 +119,9 @@ object TopicPlanExecutor:
                     case NonPartitioned() =>
                         adminClient.topics.createNonPartitionedTopic(topicFqn)
             }
-            _ <- ZIO.attempt(adminClient.schemas.createSchema(topicFqn, topicPlan.schemaInfo))
+            _ <- ZIO.foreachDiscard(topicPlan.schemaInfos)(schemaInfo => {
+              ZIO.attempt(adminClient.schemas.createSchema(topicFqn, schemaInfo))
+            })
         } yield topicPlan
 
     private def startProduce(topic: TopicPlan) =
@@ -127,7 +129,8 @@ object TopicPlanExecutor:
         ZIO.foreachPar(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
             for {
                 producer <- ZIO.attempt {
-                    val schema = new AutoProduceBytesSchema[Array[Byte]]
+//                    val schema = new AutoProduceBytesSchema[Array[Byte]]
+                    val schema = org.apache.pulsar.client.api.Schema.AUTO_PRODUCE_BYTES()
                     pulsarClient.newProducer(schema).producerName(producerPlan.name).topic(topicFqn).create
                 }
                 _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topic.name}")

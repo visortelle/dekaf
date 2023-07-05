@@ -20,6 +20,7 @@ lazy val root = project
             "com.fasterxml.jackson.dataformat" % "jackson-dataformat-protobuf" % jacksonVersion,
             "com.google.protobuf" % "protobuf-java" % "3.23.3",
             "com.lihaoyi" %% "os-lib" % "0.9.1",
+            "com.lihaoyi" %% "pprint" % "0.8.1",
 
             // Pulsar
             "org.apache.pulsar" % "pulsar-client-original" % pulsarVersion,
