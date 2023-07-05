@@ -1,7 +1,7 @@
 package generators
 
 import zio.*
-import org.apache.pulsar.client.api.SubscriptionType
+import org.apache.pulsar.client.api.{MessageRoutingMode, SubscriptionType}
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import monocle.syntax.all.*
 import _root_.client.{adminClient, pulsarClient}
@@ -17,7 +17,7 @@ type TopicPersistency = Persistent | NonPersistent
 
 object TopicPersistency:
     def fromString(persistency: String): TopicPersistency = persistency match
-        case "persistent"    => Persistent()
+        case "persistent"     => Persistent()
         case "non-persistent" => NonPersistent()
     def toString(persistency: TopicPersistency): String = persistency match
         case Persistent()    => "persistent"
@@ -40,36 +40,42 @@ case class TopicPlan(
 )
 
 object TopicPlan:
-    def make(generator: TopicPlanGenerator, topicIndex: TopicIndex): TopicPlan =
-        val producerGenerators =
-            List.tabulate(generator.getProducersCount(topicIndex))(i => generator.getProducerGenerator(i))
+    def make(generator: TopicPlanGenerator, topicIndex: TopicIndex): Task[TopicPlan] = for {
+        producerGenerators <- ZIO.foreach(0 until generator.getProducersCount(topicIndex)) { producerIndex =>
+            generator.getProducerGenerator(producerIndex)
+        }
+        producersAsPairs <- ZIO.foreach(producerGenerators.zipWithIndex) { case (producerGenerator, producerIndex) =>
+            for {
+                producerName <- ZIO.succeed(producerGenerator.getName(producerIndex))
+                _producerGenerator <- ZIO.succeed(producerGenerator.focus(_.getName).replace(_ => producerName))
+                producer <- ProducerPlan.make(_producerGenerator, producerIndex)
+            } yield producerGenerator.getName(producerIndex) -> producer
+        }
+        producers = producersAsPairs.toMap
 
-        val producers = producerGenerators.zipWithIndex.map { case (producerGenerator, i) =>
-            val producerName = producerGenerator.getName(i)
-            val _producerGenerator = producerGenerator.focus(_.getName).replace(_ => producerName)
-            producerGenerator.getName(i) -> ProducerPlan.make(_producerGenerator, i)
-        }.toMap
-
-        val subscriptionGenerators =
-            List.tabulate(generator.getSubscriptionsCount(topicIndex))(i => generator.getSubscriptionGenerator(i))
-
-        val subscriptions = subscriptionGenerators.zipWithIndex.map { case (subscriptionGenerator, i) =>
-            val subscriptionName = subscriptionGenerator.getName(i)
-            val _subscriptionGenerator = subscriptionGenerator.focus(_.getName).replace(_ => subscriptionName)
-            subscriptionGenerator.getName(i) -> SubscriptionPlan.make(_subscriptionGenerator, i)
-        }.toMap
-
-        TopicPlan(
-            tenant = generator.getTenant(),
-            namespace = generator.getNamespace(),
-            name = generator.getName(topicIndex),
-            schemaInfos = generator.getSchemaInfos(topicIndex),
-            persistency = generator.getPersistency(topicIndex),
-            partitioning = generator.getPartitioning(topicIndex),
-            producers = producers,
-            subscriptions = subscriptions,
-            afterAllocation = generator.getAfterAllocation(topicIndex)
+        topicPlan <- ZIO.succeed(
+            TopicPlan(
+                tenant = generator.getTenant(),
+                namespace = generator.getNamespace(),
+                name = generator.getName(topicIndex),
+                schemaInfos = generator.getSchemaInfos(topicIndex),
+                persistency = generator.getPersistency(topicIndex),
+                partitioning = generator.getPartitioning(topicIndex),
+                producers = producers,
+//                subscriptions = subscriptions,
+                subscriptions = Map.empty,
+                afterAllocation = generator.getAfterAllocation(topicIndex)
+            )
         )
+    } yield topicPlan
+//        val subscriptionGenerators =
+//            List.tabulate(generator.getSubscriptionsCount(topicIndex))(i => generator.getSubscriptionGenerator(i))
+//
+//        val subscriptions = subscriptionGenerators.zipWithIndex.map { case (subscriptionGenerator, i) =>
+//            val subscriptionName = subscriptionGenerator.getName(i)
+//            val _subscriptionGenerator = subscriptionGenerator.focus(_.getName).replace(_ => subscriptionName)
+//            subscriptionGenerator.getName(i) -> SubscriptionPlan.make(_subscriptionGenerator, i)
+//        }.toMap
 
 case class TopicPlanGenerator(
     getTenant: () => String,
@@ -77,9 +83,9 @@ case class TopicPlanGenerator(
     getName: TopicIndex => String,
     getSchemaInfos: TopicIndex => List[SchemaInfo],
     getProducersCount: TopicIndex => Int,
-    getProducerGenerator: ProducerIndex => ProducerPlanGenerator,
+    getProducerGenerator: ProducerIndex => Task[ProducerPlanGenerator],
     getSubscriptionsCount: TopicIndex => Int,
-    getSubscriptionGenerator: SubscriptionIndex => SubscriptionPlanGenerator,
+    getSubscriptionGenerator: SubscriptionIndex => Task[SubscriptionPlanGenerator],
     getSubscriptionType: SubscriptionIndex => SubscriptionType,
     getPersistency: TopicIndex => TopicPersistency,
     getPartitioning: TopicIndex => TopicPartitioning,
@@ -92,17 +98,17 @@ object TopicPlanGenerator:
         getNamespace: () => String = () => "pulsocat_default",
         getName: TopicIndex => TopicName = topicIndex => s"topic-$topicIndex",
         getProducersCount: TopicIndex => Int = _ => 1,
-        getProducerGenerator: ProducerIndex => ProducerPlanGenerator = _ => ProducerPlanGenerator.make(),
+        getProducerGenerator: ProducerIndex => Task[ProducerPlanGenerator] = _ => ProducerPlanGenerator.make(),
         getSubscriptionsCount: TopicIndex => Int = _ => 1,
-        getSubscriptionGenerator: SubscriptionIndex => SubscriptionPlanGenerator = _ =>
+        getSubscriptionGenerator: SubscriptionIndex => Task[SubscriptionPlanGenerator] = _ =>
             SubscriptionPlanGenerator.make(),
         getSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
         getSchemaInfos: TopicIndex => List[SchemaInfo] = _ => List.empty,
         getPersistency: TopicIndex => TopicPersistency = _ => Persistent(),
         getPartitioning: TopicIndex => TopicPartitioning = _ => Partitioned(partitions = 3),
         getAfterAllocation: TopicIndex => TopicPlan => Unit = _ => _ => ()
-    ): TopicPlanGenerator =
-        TopicPlanGenerator(
+    ): Task[TopicPlanGenerator] =
+        val topicPlanGenerator = TopicPlanGenerator(
             getTenant = getTenant,
             getNamespace = getNamespace,
             getName = getName,
@@ -116,6 +122,8 @@ object TopicPlanGenerator:
             getPartitioning = getPartitioning,
             getAfterAllocation = getAfterAllocation
         )
+
+        ZIO.succeed(topicPlanGenerator)
 
 object TopicPlanExecutor:
     private def getTopicFqn(topic: TopicPlan): String = topic.persistency match
@@ -132,32 +140,42 @@ object TopicPlanExecutor:
                     case NonPartitioned() =>
                         adminClient.topics.createNonPartitionedTopic(topicFqn)
             }
-            _ <- ZIO.foreachDiscard(topicPlan.schemaInfos)(schemaInfo => {
-              ZIO.attempt(adminClient.schemas.createSchema(topicFqn, schemaInfo))
-            })
+            _ <- ZIO.foreachDiscard(topicPlan.schemaInfos) { schemaInfo =>
+                ZIO.attempt(adminClient.schemas.createSchema(topicFqn, schemaInfo))
+            }
             _ <- ZIO.attempt(topicPlan.afterAllocation(topicPlan))
         } yield topicPlan
 
-    private def startProduce(topic: TopicPlan) =
+    private def startProduce(topic: TopicPlan): Task[Unit] =
         val topicFqn = getTopicFqn(topic)
-        ZIO.foreachPar(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
+        ZIO.foreachParDiscard(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
             for {
                 producer <- ZIO.attempt {
                     val schema = new AutoProduceBytesSchema[Array[Byte]]
-                    pulsarClient.newProducer(schema).producerName(producerPlan.name).topic(topicFqn).create
+                    pulsarClient
+                        .newProducer(schema)
+                        .producerName(producerPlan.name)
+//                        .messageRoutingMode(MessageRoutingMode.SinglePartition)
+                        .topic(topicFqn)
+                        .create
                 }
                 _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topic.name}")
-                _ <- ZIO
-                    .attempt {
-                        val payload = producerPlan.getPayload(producerPlan.messageIndex)
-                        producerPlan.messageIndex += 1
-                        producer.newMessage.value(payload).sendAsync
+                _ <- producerPlan.messageIndex
+                    .update { messageIndex =>
+                        val payload = producerPlan.getPayload(messageIndex)
+
+                        val msg = producer.newMessage
+                        producerPlan.getKey(messageIndex).foreach(msg.key)
+
+                        msg.value(payload).sendAsync
+
+                        messageIndex + 1
                     }
                     .repeat(producerPlan.schedule)
             } yield ()
         }
 
-    private def startConsume(topic: TopicPlan) =
+    private def startConsume(topic: TopicPlan): Task[Unit] =
         val topicFqn = getTopicFqn(topic)
 
         def makeConsumers(subscription: SubscriptionPlan) = subscription.consumers.map { case (_, consumer) =>
@@ -166,16 +184,14 @@ object TopicPlanExecutor:
                 .subscriptionType(subscription.subscriptionType)
                 .consumerName(consumer.name)
                 .topic(topicFqn)
-                .messageListener { (consumer, msg) =>
-                    consumer.acknowledge(msg)
-                }
+                .messageListener((consumer, msg) => consumer.acknowledge(msg))
         }
 
         val consumers = topic.subscriptions.flatMap { case (_, subscription) =>
             makeConsumers(subscription)
         }
 
-        ZIO.foreachPar(consumers)(consumer =>
+        ZIO.foreachParDiscard(consumers)(consumer =>
             for {
                 c <- ZIO.attempt(consumer.subscribe)
                 _ <- ZIO.logInfo(s"Started consumer ${c.getConsumerName} for topic ${topic.name}")

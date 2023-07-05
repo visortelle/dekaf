@@ -134,13 +134,11 @@ val personSchemaInfoAvro = AvroSchema.of(classOf[PersonClass]).getSchemaInfo
 
 //val tenantPlan = TenantPlan.make(tenantPlanGenerator, 0)
 
-val tenantPlans = List(
-//  tenantPlan,
-  demo.schemas.bool.tenantPlan
-)
-
 object PulsocatDemoApp extends ZIOAppDefault:
     def run = for {
+        schemasTenantPlan <- demo.schemas.bool.getTenantPlan
+        tenantPlans = List(schemasTenantPlan)
+
         _ <- ZIO.logInfo("Starting app...")
         _ <- ZIO.foreachParDiscard(tenantPlans)(tenantPlan => TenantPlanExecutor.allocateResources(tenantPlan))
         _ <- ZIO.foreachParDiscard(tenantPlans)(tenantPlan => TenantPlanExecutor.start(tenantPlan))

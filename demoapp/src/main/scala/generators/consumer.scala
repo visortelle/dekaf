@@ -1,5 +1,7 @@
 package generators
 
+import zio.*
+
 type ConsumerName = String
 type ConsumerIndex = Int
 
@@ -8,10 +10,12 @@ case class ConsumerPlan(
 )
 
 object ConsumerPlan:
-    def make(generator: ConsumerPlanGenerator, consumerIndex: ConsumerIndex): ConsumerPlan =
-        ConsumerPlan(
+    def make(generator: ConsumerPlanGenerator, consumerIndex: ConsumerIndex): Task[ConsumerPlan] =
+        val consumerPlan = ConsumerPlan(
             name = generator.getName(consumerIndex)
         )
+        ZIO.succeed(consumerPlan)
+    
 
 case class ConsumerPlanGenerator(
     getName: ConsumerIndex => String
@@ -20,7 +24,8 @@ case class ConsumerPlanGenerator(
 object ConsumerPlanGenerator:
     def make(
         getName: ConsumerIndex => String = i => s"consumer-$i"
-    ): ConsumerPlanGenerator =
-        ConsumerPlanGenerator(
+    ): Task[ConsumerPlanGenerator] =
+        val consumerPlanGenerator = ConsumerPlanGenerator(
             getName = getName
         )
+        ZIO.succeed(consumerPlanGenerator)
