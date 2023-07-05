@@ -14,38 +14,41 @@ case class NamespacePlan(
 )
 
 object NamespacePlan:
-    def make(generator: NamespacePlanGenerator, namespaceIndex: Int): NamespacePlan =
-        val topics = List
-            .tabulate(generator.getTopicsCount(namespaceIndex)) { topicIndex =>
-                val topicGenerator = generator.getTopicGenerator(topicIndex)
-                val topicPlan = TopicPlan.make(topicGenerator, topicIndex)
-                topicPlan.name -> topicPlan
-            }
-            .toMap
-        NamespacePlan(
-            tenant = generator.getTenant(),
-            name = generator.getName(namespaceIndex),
-            topics = topics,
-            afterAllocation = () => generator.getAfterAllocation(namespaceIndex)
-        )
+    def make(generator: NamespacePlanGenerator, namespaceIndex: Int): Task[NamespacePlan] = for {
+        topicsAsPairs <- ZIO.foreach(List.range(0, generator.getTopicsCount(namespaceIndex))) { topicIndex =>
+            for {
+                topicGenerator <- generator.getTopicGenerator(topicIndex)
+                topicPlan <- TopicPlan.make(topicGenerator, topicIndex)
+            } yield topicPlan.name -> topicPlan
+        }
+        topics <- ZIO.succeed(topicsAsPairs.toMap)
+        namespacePlan <- ZIO.succeed {
+            NamespacePlan(
+                tenant = generator.getTenant(),
+                name = generator.getName(namespaceIndex),
+                topics = topics,
+                afterAllocation = () => generator.getAfterAllocation(namespaceIndex)
+            )
+        }
+    } yield namespacePlan
 
 case class NamespacePlanGenerator(
     getTenant: () => TenantName,
     getName: NamespaceIndex => NamespaceName,
     getTopicsCount: NamespaceIndex => Int,
-    getTopicGenerator: TopicIndex => TopicPlanGenerator,
+    getTopicGenerator: TopicIndex => Task[TopicPlanGenerator],
     getAfterAllocation: NamespaceIndex => Unit = _ => ()
 )
 
 object NamespacePlanGenerator:
     def make(
         getTenant: () => TenantName = () => "pulsocat_default",
-        getName: NamespaceIndex => NamespaceName = namespaceIndex => s"namespace-${namespaceIndex}",
+        getName: NamespaceIndex => NamespaceName = namespaceIndex => s"namespace-$namespaceIndex",
         getTopicsCount: NamespaceIndex => Int = _ => 1,
-        getTopicGenerator: TopicIndex => TopicPlanGenerator = _ => TopicPlanGenerator.make(),
+        getTopicGenerator: TopicIndex => Task[TopicPlanGenerator] = _ => TopicPlanGenerator.make(),
         getAfterAllocation: NamespaceIndex => Unit = _ => ()
-    ): NamespacePlanGenerator =
-        NamespacePlanGenerator(
+    ): Task[NamespacePlanGenerator] =
+        val namespacePlanGenerator = NamespacePlanGenerator(
             getTenant = getTenant,
             getName = getName,
             getTopicsCount = getTopicsCount,
@@ -53,21 +56,22 @@ object NamespacePlanGenerator:
             getAfterAllocation = getAfterAllocation
         )
 
+        ZIO.succeed(namespacePlanGenerator)
+
 object NamespacePlanExecutor:
     private def getNamespaceFqn = (namespacePlan: NamespacePlan) => s"${namespacePlan.tenant}/${namespacePlan.name}"
 
     def allocateResources(namespacePlan: NamespacePlan): Task[NamespacePlan] = for {
-      _ <- ZIO.logInfo(s"Allocating resources for namespace ${namespacePlan.name}")
-      namespaceFqn <- ZIO.attempt(getNamespaceFqn(namespacePlan))
-      _ <- ZIO.attempt {
-          adminClient.namespaces.createNamespace(namespaceFqn)
-      }
-      _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.allocateResources).withParallelism(10)
-      _ <- ZIO.attempt(namespacePlan.afterAllocation())
+        _ <- ZIO.logInfo(s"Allocating resources for namespace ${namespacePlan.name}")
+        namespaceFqn <- ZIO.attempt(getNamespaceFqn(namespacePlan))
+        _ <- ZIO.attempt {
+            adminClient.namespaces.createNamespace(namespaceFqn)
+        }
+        _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.allocateResources).withParallelism(10)
+        _ <- ZIO.attempt(namespacePlan.afterAllocation())
     } yield namespacePlan
 
     def start(namespacePlan: NamespacePlan): Task[Unit] = for {
-      _ <- ZIO.logInfo(s"Starting namespace ${namespacePlan.name}")
-      _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.start)
+        _ <- ZIO.logInfo(s"Starting namespace ${namespacePlan.name}")
+        _ <- ZIO.foreachParDiscard(namespacePlan.topics.values)(TopicPlanExecutor.start)
     } yield ()
-

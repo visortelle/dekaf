@@ -15,38 +15,40 @@ case class TenantPlan(
 )
 
 object TenantPlan:
-    def make(generator: TenantPlanGenerator, tenantIndex: TenantIndex): TenantPlan =
-        val namespaces = List
-            .tabulate(generator.getNamespacesCount(tenantIndex)) { namespaceIndex =>
-                val namespaceGenerator = generator.getNamespaceGenerator(namespaceIndex)
-
-                val namespacePlan = NamespacePlan.make(namespaceGenerator, namespaceIndex)
-                namespacePlan.name -> namespacePlan
-            }
-            .toMap
-
-        TenantPlan(
-            name = generator.getName(tenantIndex),
-            namespaces = namespaces
+    def make(generator: TenantPlanGenerator, tenantIndex: TenantIndex): Task[TenantPlan] = for {
+        namespacesAsPairs <- ZIO.foreach(List.range(0, generator.getNamespacesCount(tenantIndex))) { namespaceIndex =>
+            for {
+                namespaceGenerator <- generator.getNamespaceGenerator(namespaceIndex)
+                namespacePlan <- NamespacePlan.make(namespaceGenerator, namespaceIndex)
+            } yield namespacePlan.name -> namespacePlan
+        }
+        namespaces <- ZIO.succeed(namespacesAsPairs.toMap)
+        tenantPlan <- ZIO.succeed(
+            TenantPlan(
+                name = generator.getName(tenantIndex),
+                namespaces = namespaces
+            )
         )
+    } yield tenantPlan
 
 case class TenantPlanGenerator(
     getName: TenantIndex => TenantName,
     getNamespacesCount: TenantIndex => Int,
-    getNamespaceGenerator: NamespaceIndex => NamespacePlanGenerator
+    getNamespaceGenerator: NamespaceIndex => Task[NamespacePlanGenerator]
 )
 
 object TenantPlanGenerator:
     def make(
         getName: TenantIndex => TenantName = tenantIndex => s"tenant-$tenantIndex",
         getNamespacesCount: TenantIndex => Int = _ => 1,
-        getNamespaceGenerator: NamespaceIndex => NamespacePlanGenerator = _ => NamespacePlanGenerator.make()
-    ): TenantPlanGenerator =
-        TenantPlanGenerator(
+        getNamespaceGenerator: NamespaceIndex => Task[NamespacePlanGenerator] = _ => NamespacePlanGenerator.make()
+    ): Task[TenantPlanGenerator] =
+        val tenantPlanGenerator = TenantPlanGenerator(
             getName = getName,
             getNamespacesCount = getNamespacesCount,
             getNamespaceGenerator = getNamespaceGenerator
         )
+        ZIO.succeed(tenantPlanGenerator)
 
 object TenantPlanExecutor:
     def allocateResources(tenantPlan: TenantPlan): Task[TenantPlan] = for {
