@@ -15,7 +15,6 @@ object ConsumerPlan:
             name = generator.getName(consumerIndex)
         )
         ZIO.succeed(consumerPlan)
-    
 
 case class ConsumerPlanGenerator(
     getName: ConsumerIndex => String

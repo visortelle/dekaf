@@ -20,12 +20,12 @@ def buildConsumer(
         logger.debug(s"Listener received a message. Consumer: $consumerName")
         streamDataHandler.onNext(msg)
 
-        if consumer.isConnected then consumer.acknowledge(msg)
+        if consumer.isConnected then consumer.acknowledgeAsync(msg)
 
     var consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(50) // Too big queue causes long time messages loading after consumer pause.
-        .batchReceivePolicy(BatchReceivePolicy.builder().maxNumMessages(1).timeout(10, SECONDS).build())
+        .receiverQueueSize(1000) // Too big queue causes long time messages loading after consumer pause.
+        .batchReceivePolicy(BatchReceivePolicy.builder().maxNumMessages(10).timeout(10, SECONDS).build())
         .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)
