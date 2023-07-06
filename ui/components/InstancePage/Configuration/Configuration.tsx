@@ -77,9 +77,30 @@ const Configuration = () => {
         <table className={s.Table}>
           <thead>
             <tr className={s.Row}>
-              <th className={s.Cell}>Property</th>
-              <th className={s.Cell}>Runtime config</th>
-              <th className={s.Cell}>Dynamic config</th>
+              <th className={s.Cell}>
+                <div
+                  data-tooltip-id={tooltipId}
+                  data-tooltip-html={ReactDOMServer.renderToStaticMarkup(help["property"] || <div>-</div>)}
+                >
+                  Property
+                </div>
+              </th>
+              <th className={s.Cell}>
+                <div
+                  data-tooltip-id={tooltipId}
+                  data-tooltip-html={ReactDOMServer.renderToStaticMarkup(help["runtimeConfig"] || <div>-</div>)}
+                >
+                Runtime config
+                </div>
+              </th>
+              <th className={s.Cell}>
+                <div
+                  data-tooltip-id={tooltipId}
+                  data-tooltip-html={ReactDOMServer.renderToStaticMarkup(help["dynamicConfig"] || <div>-</div>)}
+                >
+                  Dynamic config
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>

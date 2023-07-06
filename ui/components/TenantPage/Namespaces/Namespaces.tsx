@@ -91,16 +91,18 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             topicsCountIncludingPartitions: {
               title: 'Topics Including Partitions',
               isLazy: true,
-              render: (_, ld) => i18n.withVoidDefault(ld?.topicsCount, v => (
-                <Link to={`${routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: _.namespaceName })}`}>
-                  {v}
-                </Link>
-              )),
+              render: (_, ld) =>
+                i18n.withVoidDefault(ld?.topicsCount, v => (
+                  <Link to={`${routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: _.namespaceName })}`}>
+                    {v}
+                  </Link>
+                )),
             },
             properties: {
               title: 'Properties',
               isLazy: true,
-              render: (_, ld) => i18n.withVoidDefault(ld?.properties, v => JSON.stringify(v, null, 4)),
+              render: (_, ld) =>
+                i18n.withVoidDefault(ld?.properties, v => JSON.stringify(v, null, 4)),
             }
           },
           defaultConfig: [
@@ -130,6 +132,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             const topicsCountMap = topicsCountRes === undefined ?
               {} :
               pbUtils.mapToObject(topicsCountRes.getTopicsCountMap());
+              
             const topicsCountExcludingPartitionsMap = topicsCountRes === undefined ?
               {} :
               pbUtils.mapToObject(topicsCountRes.getTopicsCountExcludingPartitionsMap());
