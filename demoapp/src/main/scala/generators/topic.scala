@@ -53,6 +53,18 @@ object TopicPlan:
         }
         producers = producersAsPairs.toMap
 
+        subscriptionsAsPairs <- ZIO.foreach(0 until generator.getSubscriptionsCount(topicIndex)) { subscriptionIndex =>
+            for {
+                subscriptionGenerator <- generator.getSubscriptionGenerator(subscriptionIndex)
+                subscriptionName <- ZIO.succeed(subscriptionGenerator.getName(subscriptionIndex))
+                _subscriptionGenerator <- ZIO.succeed(
+                    subscriptionGenerator.focus(_.getName).replace(_ => subscriptionName)
+                )
+                subscription <- SubscriptionPlan.make(_subscriptionGenerator, subscriptionIndex)
+            } yield subscriptionGenerator.getName(subscriptionIndex) -> subscription
+        }
+        subscriptions = subscriptionsAsPairs.toMap
+
         topicPlan <- ZIO.succeed(
             TopicPlan(
                 tenant = generator.getTenant(),
@@ -62,20 +74,11 @@ object TopicPlan:
                 persistency = generator.getPersistency(topicIndex),
                 partitioning = generator.getPartitioning(topicIndex),
                 producers = producers,
-//                subscriptions = subscriptions,
-                subscriptions = Map.empty,
+                subscriptions = subscriptions,
                 afterAllocation = generator.getAfterAllocation(topicIndex)
             )
         )
     } yield topicPlan
-//        val subscriptionGenerators =
-//            List.tabulate(generator.getSubscriptionsCount(topicIndex))(i => generator.getSubscriptionGenerator(i))
-//
-//        val subscriptions = subscriptionGenerators.zipWithIndex.map { case (subscriptionGenerator, i) =>
-//            val subscriptionName = subscriptionGenerator.getName(i)
-//            val _subscriptionGenerator = subscriptionGenerator.focus(_.getName).replace(_ => subscriptionName)
-//            subscriptionGenerator.getName(i) -> SubscriptionPlan.make(_subscriptionGenerator, i)
-//        }.toMap
 
 case class TopicPlanGenerator(
     getTenant: () => String,
