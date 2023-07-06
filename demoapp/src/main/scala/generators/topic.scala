@@ -41,102 +41,102 @@ case class TopicPlan(
 
 object TopicPlan:
     def make(generator: TopicPlanGenerator, topicIndex: TopicIndex): Task[TopicPlan] = for {
-        producerGenerators <- ZIO.foreach(0 until generator.getProducersCount(topicIndex)) { producerIndex =>
-            generator.getProducerGenerator(producerIndex)
+        producerGenerators <- ZIO.foreach(0 until generator.mkProducersCount(topicIndex)) { producerIndex =>
+            generator.mkProducerGenerator(producerIndex)
         }
         producersAsPairs <- ZIO.foreach(producerGenerators.zipWithIndex) { case (producerGenerator, producerIndex) =>
             for {
-                producerName <- ZIO.succeed(producerGenerator.getName(producerIndex))
-                _producerGenerator <- ZIO.succeed(producerGenerator.focus(_.getName).replace(_ => producerName))
+                producerName <- ZIO.succeed(producerGenerator.mkName(producerIndex))
+                _producerGenerator <- ZIO.succeed(producerGenerator.focus(_.mkName).replace(_ => producerName))
                 producer <- ProducerPlan.make(_producerGenerator, producerIndex)
-            } yield producerGenerator.getName(producerIndex) -> producer
+            } yield producerGenerator.mkName(producerIndex) -> producer
         }
         producers = producersAsPairs.toMap
 
-        subscriptionsAsPairs <- ZIO.foreach(0 until generator.getSubscriptionsCount(topicIndex)) { subscriptionIndex =>
+        subscriptionsAsPairs <- ZIO.foreach(0 until generator.mkSubscriptionsCount(topicIndex)) { subscriptionIndex =>
             for {
-                subscriptionGenerator <- generator.getSubscriptionGenerator(subscriptionIndex)
-                subscriptionName <- ZIO.succeed(subscriptionGenerator.getName(subscriptionIndex))
+                subscriptionGenerator <- generator.mkSubscriptionGenerator(subscriptionIndex)
+                subscriptionName <- ZIO.succeed(subscriptionGenerator.mkName(subscriptionIndex))
                 _subscriptionGenerator <- ZIO.succeed(
-                    subscriptionGenerator.focus(_.getName).replace(_ => subscriptionName)
+                    subscriptionGenerator.focus(_.mkName).replace(_ => subscriptionName)
                 )
                 subscription <- SubscriptionPlan.make(_subscriptionGenerator, subscriptionIndex)
-            } yield subscriptionGenerator.getName(subscriptionIndex) -> subscription
+            } yield subscriptionGenerator.mkName(subscriptionIndex) -> subscription
         }
         subscriptions = subscriptionsAsPairs.toMap
 
         topicPlan <- ZIO.succeed(
             TopicPlan(
-                tenant = generator.getTenant(),
-                namespace = generator.getNamespace(),
-                name = generator.getName(topicIndex),
-                schemaInfos = generator.getSchemaInfos(topicIndex),
-                persistency = generator.getPersistency(topicIndex),
-                partitioning = generator.getPartitioning(topicIndex),
+                tenant = generator.mkTenant(),
+                namespace = generator.mkNamespace(),
+                name = generator.mkName(topicIndex),
+                schemaInfos = generator.mkSchemaInfos(topicIndex),
+                persistency = generator.mkPersistency(topicIndex),
+                partitioning = generator.mkPartitioning(topicIndex),
                 producers = producers,
                 subscriptions = subscriptions,
-                afterAllocation = generator.getAfterAllocation(topicIndex)
+                afterAllocation = generator.mkAfterAllocation(topicIndex)
             )
         )
     } yield topicPlan
 
 case class TopicPlanGenerator(
-    getTenant: () => String,
-    getNamespace: () => String,
-    getName: TopicIndex => String,
-    getSchemaInfos: TopicIndex => List[SchemaInfo],
-    getProducersCount: TopicIndex => Int,
-    getProducerGenerator: ProducerIndex => Task[ProducerPlanGenerator],
-    getSubscriptionsCount: TopicIndex => Int,
-    getSubscriptionGenerator: SubscriptionIndex => Task[SubscriptionPlanGenerator],
-    getSubscriptionType: SubscriptionIndex => SubscriptionType,
-    getPersistency: TopicIndex => TopicPersistency,
-    getPartitioning: TopicIndex => TopicPartitioning,
-    getAfterAllocation: TopicIndex => TopicPlan => Unit
+    mkTenant: () => String,
+    mkNamespace: () => String,
+    mkName: TopicIndex => String,
+    mkSchemaInfos: TopicIndex => List[SchemaInfo],
+    mkProducersCount: TopicIndex => Int,
+    mkProducerGenerator: ProducerIndex => Task[ProducerPlanGenerator],
+    mkSubscriptionsCount: TopicIndex => Int,
+    mkSubscriptionGenerator: SubscriptionIndex => Task[SubscriptionPlanGenerator],
+    mkSubscriptionType: SubscriptionIndex => SubscriptionType,
+    mkPersistency: TopicIndex => TopicPersistency,
+    mkPartitioning: TopicIndex => TopicPartitioning,
+    mkAfterAllocation: TopicIndex => TopicPlan => Unit
 )
 
 object TopicPlanGenerator:
     def make(
-        getTenant: () => String = () => "pulsecat_default",
-        getNamespace: () => String = () => "pulsocat_default",
-        getName: TopicIndex => TopicName = topicIndex => s"topic-$topicIndex",
-        getProducersCount: TopicIndex => Int = _ => 1,
-        getProducerGenerator: ProducerIndex => Task[ProducerPlanGenerator] = _ => ProducerPlanGenerator.make(),
-        getSubscriptionsCount: TopicIndex => Int = _ => 1,
-        getSubscriptionGenerator: SubscriptionIndex => Task[SubscriptionPlanGenerator] = _ =>
+        mkTenant: () => String = () => "pulsecat_default",
+        mkNamespace: () => String = () => "pulsocat_default",
+        mkName: TopicIndex => TopicName = topicIndex => s"topic-$topicIndex",
+        mkProducersCount: TopicIndex => Int = _ => 1,
+        mkProducerGenerator: ProducerIndex => Task[ProducerPlanGenerator] = _ => ProducerPlanGenerator.make(),
+        mkSubscriptionsCount: TopicIndex => Int = _ => 1,
+        mkSubscriptionGenerator: SubscriptionIndex => Task[SubscriptionPlanGenerator] = _ =>
             SubscriptionPlanGenerator.make(),
-        getSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
-        getSchemaInfos: TopicIndex => List[SchemaInfo] = _ => List.empty,
-        getPersistency: TopicIndex => TopicPersistency = _ => Persistent(),
-        getPartitioning: TopicIndex => TopicPartitioning = _ => Partitioned(partitions = 3),
-        getAfterAllocation: TopicIndex => TopicPlan => Unit = _ => _ => ()
+        mkSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
+        mkSchemaInfos: TopicIndex => List[SchemaInfo] = _ => List.empty,
+        mkPersistency: TopicIndex => TopicPersistency = _ => Persistent(),
+        mkPartitioning: TopicIndex => TopicPartitioning = _ => Partitioned(partitions = 3),
+        mkAfterAllocation: TopicIndex => TopicPlan => Unit = _ => _ => ()
     ): Task[TopicPlanGenerator] =
         val topicPlanGenerator = TopicPlanGenerator(
-            getTenant = getTenant,
-            getNamespace = getNamespace,
-            getName = getName,
-            getProducersCount = getProducersCount,
-            getProducerGenerator = getProducerGenerator,
-            getSubscriptionsCount = getSubscriptionsCount,
-            getSubscriptionGenerator = getSubscriptionGenerator,
-            getSubscriptionType = getSubscriptionType,
-            getSchemaInfos = getSchemaInfos,
-            getPersistency = getPersistency,
-            getPartitioning = getPartitioning,
-            getAfterAllocation = getAfterAllocation
+            mkTenant = mkTenant,
+            mkNamespace = mkNamespace,
+            mkName = mkName,
+            mkProducersCount = mkProducersCount,
+            mkProducerGenerator = mkProducerGenerator,
+            mkSubscriptionsCount = mkSubscriptionsCount,
+            mkSubscriptionGenerator = mkSubscriptionGenerator,
+            mkSubscriptionType = mkSubscriptionType,
+            mkSchemaInfos = mkSchemaInfos,
+            mkPersistency = mkPersistency,
+            mkPartitioning = mkPartitioning,
+            mkAfterAllocation = mkAfterAllocation
         )
 
         ZIO.succeed(topicPlanGenerator)
 
 object TopicPlanExecutor:
-    private def getTopicFqn(topic: TopicPlan): String = topic.persistency match
+    private def mkTopicFqn(topic: TopicPlan): String = topic.persistency match
         case Persistent()    => s"persistent://${topic.tenant}/${topic.namespace}/${topic.name}"
         case NonPersistent() => s"non-persistent://${topic.tenant}/${topic.namespace}/${topic.name}"
 
     def allocateResources(topicPlan: TopicPlan): Task[TopicPlan] =
         for {
             _ <- ZIO.logInfo(s"Allocating resources for topic ${topicPlan.name}")
-            topicFqn <- ZIO.attempt(getTopicFqn(topicPlan))
+            topicFqn <- ZIO.attempt(mkTopicFqn(topicPlan))
             _ <- ZIO.attempt {
                 topicPlan.partitioning match
                     case Partitioned(partitions) => adminClient.topics.createPartitionedTopic(topicFqn, partitions)
@@ -150,7 +150,7 @@ object TopicPlanExecutor:
         } yield topicPlan
 
     private def startProduce(topic: TopicPlan): Task[Unit] =
-        val topicFqn = getTopicFqn(topic)
+        val topicFqn = mkTopicFqn(topic)
         ZIO.foreachParDiscard(topic.producers.values.zipWithIndex) { case (producerPlan, producerIndex) =>
             for {
                 producer <- ZIO.attempt {
@@ -165,10 +165,10 @@ object TopicPlanExecutor:
                 _ <- ZIO.logInfo(s"Started producer ${producerPlan.name} for topic ${topic.name}")
                 _ <- producerPlan.messageIndex
                     .update { messageIndex =>
-                        val payload = producerPlan.getPayload(messageIndex)
+                        val payload = producerPlan.mkPayload(messageIndex)
 
                         val msg = producer.newMessage
-                        producerPlan.getKey(messageIndex).foreach(msg.key)
+                        producerPlan.mkKey(messageIndex).foreach(msg.key)
 
                         msg.value(payload).sendAsync
 
@@ -179,7 +179,7 @@ object TopicPlanExecutor:
         }
 
     private def startConsume(topic: TopicPlan): Task[Unit] =
-        val topicFqn = getTopicFqn(topic)
+        val topicFqn = mkTopicFqn(topic)
 
         def makeConsumers(subscription: SubscriptionPlan) = subscription.consumers.map { case (_, consumer) =>
             pulsarClient.newConsumer

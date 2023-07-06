@@ -16,37 +16,37 @@ case class TenantPlan(
 
 object TenantPlan:
     def make(generator: TenantPlanGenerator, tenantIndex: TenantIndex): Task[TenantPlan] = for {
-        namespacesAsPairs <- ZIO.foreach(List.range(0, generator.getNamespacesCount(tenantIndex))) { namespaceIndex =>
+        namespacesAsPairs <- ZIO.foreach(List.range(0, generator.mkNamespacesCount(tenantIndex))) { namespaceIndex =>
             for {
-                namespaceGenerator <- generator.getNamespaceGenerator(namespaceIndex)
+                namespaceGenerator <- generator.mkNamespaceGenerator(namespaceIndex)
                 namespacePlan <- NamespacePlan.make(namespaceGenerator, namespaceIndex)
             } yield namespacePlan.name -> namespacePlan
         }
         namespaces <- ZIO.succeed(namespacesAsPairs.toMap)
         tenantPlan <- ZIO.succeed(
             TenantPlan(
-                name = generator.getName(tenantIndex),
+                name = generator.mkName(tenantIndex),
                 namespaces = namespaces
             )
         )
     } yield tenantPlan
 
 case class TenantPlanGenerator(
-    getName: TenantIndex => TenantName,
-    getNamespacesCount: TenantIndex => Int,
-    getNamespaceGenerator: NamespaceIndex => Task[NamespacePlanGenerator]
+    mkName: TenantIndex => TenantName,
+    mkNamespacesCount: TenantIndex => Int,
+    mkNamespaceGenerator: NamespaceIndex => Task[NamespacePlanGenerator]
 )
 
 object TenantPlanGenerator:
     def make(
-        getName: TenantIndex => TenantName = tenantIndex => s"tenant-$tenantIndex",
-        getNamespacesCount: TenantIndex => Int = _ => 1,
-        getNamespaceGenerator: NamespaceIndex => Task[NamespacePlanGenerator] = _ => NamespacePlanGenerator.make()
+        mkName: TenantIndex => TenantName = tenantIndex => s"tenant-$tenantIndex",
+        mkNamespacesCount: TenantIndex => Int = _ => 1,
+        mkNamespaceGenerator: NamespaceIndex => Task[NamespacePlanGenerator] = _ => NamespacePlanGenerator.make()
     ): Task[TenantPlanGenerator] =
         val tenantPlanGenerator = TenantPlanGenerator(
-            getName = getName,
-            getNamespacesCount = getNamespacesCount,
-            getNamespaceGenerator = getNamespaceGenerator
+            mkName = mkName,
+            mkNamespacesCount = mkNamespacesCount,
+            mkNamespaceGenerator = mkNamespaceGenerator
         )
         ZIO.succeed(tenantPlanGenerator)
 

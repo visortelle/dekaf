@@ -12,19 +12,19 @@ case class ConsumerPlan(
 object ConsumerPlan:
     def make(generator: ConsumerPlanGenerator, consumerIndex: ConsumerIndex): Task[ConsumerPlan] =
         val consumerPlan = ConsumerPlan(
-            name = generator.getName(consumerIndex)
+            name = generator.mkName(consumerIndex)
         )
         ZIO.succeed(consumerPlan)
 
 case class ConsumerPlanGenerator(
-    getName: ConsumerIndex => String
+    mkName: ConsumerIndex => String
 )
 
 object ConsumerPlanGenerator:
     def make(
-        getName: ConsumerIndex => String = i => s"consumer-$i"
+        mkName: ConsumerIndex => String = i => s"consumer-$i"
     ): Task[ConsumerPlanGenerator] =
         val consumerPlanGenerator = ConsumerPlanGenerator(
-            getName = getName
+            mkName = mkName
         )
         ZIO.succeed(consumerPlanGenerator)

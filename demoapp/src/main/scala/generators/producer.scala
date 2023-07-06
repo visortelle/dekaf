@@ -8,8 +8,8 @@ type ProducerName = String
 case class ProducerPlan(
     name: ProducerName,
     schedule: Schedule[Any, Any, Any],
-    getPayload: MessageIndex => Array[Byte],
-    getKey: MessageIndex => Option[String],
+    mkPayload: MessageIndex => Array[Byte],
+    mkKey: MessageIndex => Option[String],
     messageIndex: Ref[MessageIndex]
 )
 
@@ -18,33 +18,33 @@ object ProducerPlan:
         messageIndex <- Ref.make[MessageIndex](0)
         producerPlan <- ZIO.attempt {
             ProducerPlan(
-                name = generator.getName(producerIndex),
-                getPayload = generator.getPayload(producerIndex),
-                getKey = generator.getKey(producerIndex),
-                schedule = generator.getSchedule(producerIndex),
+                name = generator.mkName(producerIndex),
+                mkPayload = generator.mkPayload(producerIndex),
+                mkKey = generator.mkKey(producerIndex),
+                schedule = generator.mkSchedule(producerIndex),
                 messageIndex = messageIndex
             )
         }
     } yield producerPlan
 
 case class ProducerPlanGenerator(
-    getName: ProducerIndex => String,
-    getPayload: ProducerIndex => MessageIndex => Array[Byte],
-    getKey: ProducerIndex => MessageIndex => Option[String],
-    getSchedule: ProducerIndex => Schedule[Any, Any, Any]
+    mkName: ProducerIndex => String,
+    mkPayload: ProducerIndex => MessageIndex => Array[Byte],
+    mkKey: ProducerIndex => MessageIndex => Option[String],
+    mkSchedule: ProducerIndex => Schedule[Any, Any, Any]
 )
 
 object ProducerPlanGenerator:
     def make(
-        getName: ProducerIndex => String = producerIndex => s"producer-$producerIndex",
-        getPayload: ProducerIndex => MessageIndex => Array[Byte] = _ => _ => Array.emptyByteArray,
-        getKey: ProducerIndex => MessageIndex => Option[String] = _ => _ => None,
-        getSchedule: ProducerIndex => Schedule[Any, Any, Any] = _ => Schedule.fixed(Duration.fromSeconds(1))
+        mkName: ProducerIndex => String = producerIndex => s"producer-$producerIndex",
+        mkPayload: ProducerIndex => MessageIndex => Array[Byte] = _ => _ => Array.emptyByteArray,
+        mkKey: ProducerIndex => MessageIndex => Option[String] = _ => _ => None,
+        mkSchedule: ProducerIndex => Schedule[Any, Any, Any] = _ => Schedule.fixed(Duration.fromSeconds(1))
     ): Task[ProducerPlanGenerator] =
         val producerPlanGenerator = ProducerPlanGenerator(
-            getName = getName,
-            getPayload = getPayload,
-            getKey = getKey,
-            getSchedule = getSchedule
+            mkName = mkName,
+            mkPayload = mkPayload,
+            mkKey = mkKey,
+            mkSchedule = mkSchedule
         )
         ZIO.succeed(producerPlanGenerator)
