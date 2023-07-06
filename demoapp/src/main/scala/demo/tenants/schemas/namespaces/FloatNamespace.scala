@@ -1,35 +1,34 @@
 package demo.tenants.schemas.namespaces
 
-import generators.*
-import zio.{Duration, Schedule}
-import net.datafaker.Faker
 import _root_.client.adminClient
+import conversions.Conversions.float32ToBytes
+import generators.*
+import net.datafaker.Faker
+import zio.{Duration, Schedule}
 
-val faker = new Faker()
-
-object BoolsNamespace:
-    def mkBoolsNamespace = (tenantName: String) =>
-        val namespaceName = "bools"
-        val mkSchemaInfos = (_: TopicIndex) => List(org.apache.pulsar.client.api.Schema.BOOL.getSchemaInfo)
+object FloatNamespace:
+    def mkPlanGenerator = (tenantName: String) =>
+        val namespaceName = "FLOAT"
+        val mkSchemaInfos = (_: TopicIndex) => List(org.apache.pulsar.client.api.Schema.FLOAT.getSchemaInfo)
         val topicPlanGenerators =
             List(
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"trues",
+                    mkName = _ => s"zeros",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(1.toByte)
+                            mkPayload = _ => _ => float32ToBytes(0)
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"trues-1k-mps",
+                    mkName = _ => s"zeros-1k-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(1.toByte),
+                            mkPayload = _ => _ => float32ToBytes(0),
                             mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
                         ),
                     mkSchemaInfos = mkSchemaInfos
@@ -37,44 +36,42 @@ object BoolsNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"falses",
+                    mkName = _ => s"max-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(0.toByte)
+                            mkPayload = _ => _ => float32ToBytes(Float.MaxValue)
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"falses-1k-mps",
+                    mkName = _ => s"min-values",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(0.toByte),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkPayload = _ => _ => float32ToBytes(Float.MinValue)
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"tic-tak",
+                    mkName = _ => s"linear",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => messageIndex => Array((messageIndex % 2).toByte)
+                            mkPayload = _ => messageIndex =>
+                              float32ToBytes(messageIndex.toFloat / 1000)
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"tic-tac-1k-mps",
-                    mkPartitioning = _ => Partitioned(3),
-                    mkProducersCount = _ => 1,
+                    mkName = _ => s"linear-1k-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload =
-                                _ => messageIndex => if messageIndex % 2 == 0 then Array(1.toByte) else Array(0.toByte),
+                            mkPayload = _ => messageIndex =>
+                              float32ToBytes(messageIndex.toFloat / 1000),
                             mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
                         ),
                     mkSchemaInfos = mkSchemaInfos
@@ -85,7 +82,20 @@ object BoolsNamespace:
                     mkName = _ => s"random",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => if faker.bool().bool then Array(1.toByte) else Array(0.toByte)
+                            mkPayload = _ =>
+                                _ => float32ToBytes(faker.random.nextFloat())
+                        ),
+                    mkSchemaInfos = mkSchemaInfos
+                ),
+                TopicPlanGenerator.make(
+                    mkTenant = () => tenantName,
+                    mkNamespace = () => namespaceName,
+                    mkName = _ => s"random-1k-mps",
+                    mkProducerGenerator = _ =>
+                        ProducerPlanGenerator.make(
+                            mkPayload = _ =>
+                                _ => float32ToBytes(faker.random().nextFloat()),
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 )

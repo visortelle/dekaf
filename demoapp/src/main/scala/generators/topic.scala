@@ -9,7 +9,7 @@ import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 
 type TopicName = String
 type TopicIndex = Int
-type MessageIndex = Double
+type MessageIndex = Long
 
 case class Persistent()
 case class NonPersistent()
