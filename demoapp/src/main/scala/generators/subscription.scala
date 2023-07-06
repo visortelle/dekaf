@@ -45,7 +45,7 @@ case class SubscriptionPlanGenerator(
 object SubscriptionPlanGenerator:
     def make(
         mkName: SubscriptionIndex => String = i => s"subscription-$i",
-        mkConsumersCount: SubscriptionIndex => Int = _ => 3,
+        mkConsumersCount: SubscriptionIndex => Int = _ => 1,
         mkSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
         mkConsumerGenerator: ConsumerIndex => Task[ConsumerPlanGenerator] = _ => ConsumerPlanGenerator.make()
     ): Task[SubscriptionPlanGenerator] =
