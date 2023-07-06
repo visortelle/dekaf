@@ -1,35 +1,17 @@
 import zio.*
 import _root_.generators
-import _root_.generators.{
-    NamespaceIndex,
-    NamespacePlan,
-    NamespacePlanExecutor,
-    NamespacePlanGenerator,
-    ProducerPlanGenerator,
-    TenantPlan,
-    TenantPlanExecutor,
-    TenantPlanGenerator,
-    TopicPlan,
-    TopicPlanExecutor,
-    TopicPlanGenerator
-}
+import _root_.generators.{NamespaceIndex, NamespacePlan, NamespacePlanExecutor, NamespacePlanGenerator, ProducerPlanGenerator, TenantPlan, TenantPlanExecutor, TenantPlanGenerator, TopicPlan, TopicPlanExecutor, TopicPlanGenerator}
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.avro.AvroMapper
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader
 import com.google.protobuf.GeneratedMessageV3
-import org.apache.pulsar.client.impl.schema.{
-    AvroSchema,
-    JSONSchema,
-    ProtobufNativeSchema,
-    ProtobufNativeSchemaUtils,
-    ProtobufSchema
-}
+import demo.schemas.SchemasTenant
+import org.apache.pulsar.client.impl.schema.{AvroSchema, JSONSchema, ProtobufNativeSchema, ProtobufNativeSchemaUtils, ProtobufSchema}
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 
 import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.client.api.schema.SchemaDefinition
-
 import net.datafaker.Faker
 val faker = new Faker()
 
@@ -93,24 +75,24 @@ val personSchemaInfoAvro = AvroSchema.of(classOf[PersonClass]).getSchemaInfo
 //    val tenantName = s"strange-tenant-${java.time.Instant.now.toEpochMilli.toString}"
 //
 //    TenantPlanGenerator.make(
-//        getName = _ => tenantName,
-//        getNamespacesCount = _ => 1,
-//        getNamespaceGenerator = namespaceIndex =>
+//        mkName = _ => tenantName,
+//        mkNamespacesCount = _ => 1,
+//        mkNamespaceGenerator = namespaceIndex =>
 //            val namespaceName = s"strange-namespace-${namespaceIndex.toString}"
 //            NamespacePlanGenerator.make(
-//                getTenant = () => tenantName,
-//                getName = _ => namespaceName,
-//                getTopicsCount = _ => 1,
-//                getTopicGenerator = _ =>
+//                mkTenant = () => tenantName,
+//                mkName = _ => namespaceName,
+//                mkTopicsCount = _ => 1,
+//                mkTopicGenerator = _ =>
 //                    TopicPlanGenerator.make(
-//                        getTenant = () => tenantName,
-//                        getNamespace = () => namespaceName,
-//                        getName = topicIndex => s"strange-topic-${topicIndex.toString}",
-//                        getProducersCount = _ => 3,
-//                        getProducerGenerator = _ =>
+//                        mkTenant = () => tenantName,
+//                        mkNamespace = () => namespaceName,
+//                        mkName = topicIndex => s"strange-topic-${topicIndex.toString}",
+//                        mkProducersCount = _ => 3,
+//                        mkProducerGenerator = _ =>
 //                            ProducerPlanGenerator.make(
-//                                getSchedule = _ => Schedule.fixed(Duration.fromMillis(1000)),
-//                                getPayload = _ =>
+//                                mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1000)),
+//                                mkPayload = _ =>
 //                                    val v = com.tools.teal.pulsar.ui.test.delivery_app.v1.Person
 //                                        .newBuilder()
 //                                        .setName(faker.funnyName.name())
@@ -123,8 +105,8 @@ val personSchemaInfoAvro = AvroSchema.of(classOf[PersonClass]).getSchemaInfo
 //                                        .build()
 //                                    Encoders.toProto(v)
 //                            ),
-//                        getSubscriptionsCount = _ => 3,
-//                        getSchemaInfos = _ =>
+//                        mkSubscriptionsCount = _ => 3,
+//                        mkSchemaInfos = _ =>
 //                            val schema = personSchemaInfoProtobufNative
 //                            List(schema)
 //                    )
@@ -136,7 +118,8 @@ val personSchemaInfoAvro = AvroSchema.of(classOf[PersonClass]).getSchemaInfo
 
 object PulsocatDemoApp extends ZIOAppDefault:
     def run = for {
-        schemasTenantPlan <- demo.schemas.bool.getTenantPlan
+        schemasTenantPlan <- SchemasTenant.mkTenantPlan
+
         tenantPlans = List(schemasTenantPlan)
 
         _ <- ZIO.logInfo("Starting app...")
