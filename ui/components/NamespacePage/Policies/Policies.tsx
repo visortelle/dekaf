@@ -1,7 +1,6 @@
 import React from 'react';
 
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
-import { H1 } from '../../ui/H/H';
 import replicationClustersField from './fields/replication-clusters';
 import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
 import backlogQuotaField from './fields/backlog-quota';

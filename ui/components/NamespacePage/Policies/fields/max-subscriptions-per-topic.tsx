@@ -9,6 +9,8 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import React from "react";
+import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
 
 const policy = 'maxSubscriptionsPerTopic';
 
@@ -141,10 +143,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
+export type TermKey =
+  'subscription'
+
+export const help: Record<TermKey, React.ReactNode> = {
+  subscription: <div>Describes who the consumers of a topic are and how they would like to consume it. Pulsar has four subscription modes (Exclusive, Shared, Failover and Key_Shared).</div>,
+}
+
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max subscriptions per topic',
-  description: <span>Max subscriptions per topic.</span>,
+  description: <span>Max <TooltipLink tooltipHelp={help["subscription"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#subscriptions">subscriptions</TooltipLink> per topic.</span>,
   input: <FieldInput {...props} />
 });
 

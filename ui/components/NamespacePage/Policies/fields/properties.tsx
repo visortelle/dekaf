@@ -10,6 +10,9 @@ import KeyValueEditor from '../../../ui/KeyValueEditor/KeyValueEditor';
 import { swrKeys } from '../../../swrKeys';
 import { mapToObject } from '../../../../pbUtils/pbUtils';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import TooltipComponent from "../../../ui/Tooltip/TooltipComponent";
+import {help} from "../../../TenantPage/Namespaces/help";
+import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
 
 const policy = 'properties';
 
@@ -92,7 +95,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Properties',
-  description: <span>Properties for a namespace.</span>,
+  description: <span><strong><TooltipLink tooltipHelp={help["properties"]} link={"#"}>Properties</TooltipLink></strong> for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

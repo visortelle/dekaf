@@ -5,11 +5,13 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Input from "../../../ui/ConfigurationTable/Input/Input";
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Select from '../../../ui/Select/Select';
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation, { ValidationError } from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import A from "../../../ui/A/A";
+import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
 
 const policy = 'persistence';
 
@@ -206,26 +208,41 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
+export type TermKey =
+  'ledger' |
+  'persistent storage' |
+  'bookie' |
+  'message' |
+  'acknowledgement' |
+  'throttling-rate-mark-delete';
+
+export const help: Record<TermKey, React.ReactNode> = {
+  ledger: <div>An append-only data structure in BookKeeper that is used to persistently store messages in Pulsar topics. It is used by a Pulsar broker to create and append entries(messages), and once closed, it becomes read-only. The ledger can be deleted when its entries are no longer required.</div>,
+  "persistent storage": <div>Mechanism that ensures message delivery by retaining non-acknowledged messages until they are delivered to and acknowledged by consumers.</div>,
+  bookie: <div>Bookie is the name of an individual BookKeeper server. It is effectively the storage server of Pulsar.</div>,
+  message: <div>Messages are the basic unit of Pulsar. They're what producers publish to topics and what consumers then consume from topics.</div>,
+  acknowledgement: <div>A message sent to a Pulsar broker by a consumer that a message has been successfully processed and it can be deleted from the system.</div>,
+  "throttling-rate-mark-delete": <div>Refers to the maximum rate at which acknowledgements (mark-delete operations) can be processed by the broker. This is a form of rate limiting that can be used to prevent overloading the system with too many acknowledgement operations in a short period of time.</div>
+}
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Persistence',
-  description: <div>Determines how BookKeeper handles persistent storage of messages. Policies determine four things:
+  description: <div>Determines how BookKeeper handles <TooltipLink tooltipHelp={help["persistent storage"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-architecture-overview/#persistent-storage">persistent storage</TooltipLink> of messages. Policies determine four things:
     <ul>
       <li>
-        Ensemble (E) size: number of bookies to use for storing entries in a ledger.
+        The ensemble size (E): number of  <TooltipLink tooltipHelp={help["bookie"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#storage">bookies</TooltipLink> the <TooltipLink tooltipHelp={help["ledger"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-architecture-overview/#ledgers">ledger</TooltipLink> will be stored on.
       </li>
       <li>
-        Write quorum (Q<sub>w</sub>) size: replication factor for storing entries (messages) in a ledger.
+        The quorum write size (Q<sub>w</sub>): number of bookies each <TooltipLink tooltipHelp={help["message"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#messages">entry (message)</TooltipLink> will be written to.
       </li>
       <li>
-        Ack quorum (Q<sub>a</sub>) size: number of guaranteed copies (acks to wait for before a write is considered completed).
+        <TooltipLink tooltipHelp={help["acknowledgement"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#acknowledgment-ack">Acknowledgment(ack)</TooltipLink> quorum (Q<sub>a</sub>) size: number of nodes an entry must be acknowledged by (number of guaranteed copies).
       </li>
       <li>
-        The throttling rate for mark-delete operations.
+        The <TooltipLink tooltipHelp={help["throttling-rate-mark-delete"]} link="https://streamnative.io/blog/deep-dive-into-topic-data-lifecycle-apache-pulsar">throttling rate for mark-delete operations</TooltipLink>.
       </li>
     </ul>
   </div>,
   input: <FieldInput {...props} />
 });
-
 export default field;

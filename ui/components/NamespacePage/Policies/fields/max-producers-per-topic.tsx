@@ -9,6 +9,8 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import React from "react";
+import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
 
 const policy = 'maxProducersPerTopic';
 
@@ -141,10 +143,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
+export type TermKey =
+  'producer'
+
+export const help: Record<TermKey, React.ReactNode> = {
+  producer: <div>A process that publishes messages to a Pulsar topic.</div>
+}
+
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max producers per topic',
-  description: <span>Max producers per topic.</span>,
+  description: <span>Max <TooltipLink tooltipHelp={help["producer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-producers/">producers</TooltipLink> per topic.</span>,
   input: <FieldInput {...props} />
 });
 

@@ -5,11 +5,13 @@ import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useState } from "react";
+import React, { useState } from "react";
 import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
+import {help} from "./max-subscriptions-per-topic";
 
 function subscriptionTypeFromPb(pbType: pb.SubscriptionType): SubscriptionType {
   switch (pbType) {
@@ -204,7 +206,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription types enabled',
-  description: <span>Subscription types enabled for a namespace.</span>,
+  description: <span>Define <TooltipLink tooltipHelp={help["subscription"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#subscriptions">subscription</TooltipLink> types enabled for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 
