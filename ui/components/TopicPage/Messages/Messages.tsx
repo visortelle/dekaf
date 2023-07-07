@@ -118,7 +118,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
       return res;
     },
-    { refreshInterval: sessionState === 'awaiting-initial-cursor-positions' ? 200 : 1000 }
+    { refreshInterval: sessionState === 'awaiting-initial-cursor-positions' ? 150 : 1000 }
   );
 
   if (topicsInternalStatsError) {

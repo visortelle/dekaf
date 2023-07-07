@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.test.delivery_app.v1;
+
+message Person {
+  string name = 1;
+  int32 age = 2;
+  repeated string hobbies = 3;
+}

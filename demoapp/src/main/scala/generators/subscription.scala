@@ -1,5 +1,6 @@
 package generators
 
+import zio.*
 import monocle.syntax.all.*
 import org.apache.pulsar.client.api.SubscriptionType
 
@@ -13,41 +14,45 @@ case class SubscriptionPlan(
 )
 
 object SubscriptionPlan:
-    def make(generator: SubscriptionPlanGenerator, subscriptionIndex: SubscriptionIndex): SubscriptionPlan =
-        val consumerGenerators =
-            List.tabulate(generator.getConsumersCount(subscriptionIndex))(consumerIndex =>
-                generator.getConsumerGenerator(consumerIndex)
+    def make(generator: SubscriptionPlanGenerator, subscriptionIndex: SubscriptionIndex): Task[SubscriptionPlan] = for {
+        consumerGenerators <- ZIO.foreach(List.range(0, generator.mkConsumersCount(subscriptionIndex))) {
+            consumerIndex => generator.mkConsumerGenerator(consumerIndex)
+        }
+        consumersAsPairs <- ZIO.foreach(consumerGenerators.zipWithIndex) { case (consumerGenerator, consumerIndex) =>
+            for {
+                consumerName <- ZIO.succeed(consumerGenerator.mkName(consumerIndex))
+                _consumerGenerator <- ZIO.succeed(consumerGenerator.focus(_.mkName).replace(_ => consumerName))
+                consumerPlan <- ConsumerPlan.make(_consumerGenerator, consumerIndex)
+            } yield consumerGenerator.mkName(consumerIndex) -> consumerPlan
+        }
+        consumers <- ZIO.succeed(consumersAsPairs.toMap)
+        subscriptionPlan <- ZIO.succeed {
+            SubscriptionPlan(
+                name = generator.mkName(subscriptionIndex),
+                subscriptionType = generator.mkSubscriptionType(subscriptionIndex),
+                consumers
             )
-
-        val consumers = consumerGenerators.zipWithIndex.map { case (consumerGenerator, i) =>
-            val consumerName = consumerGenerator.getName(i)
-            val _consumerGenerator = consumerGenerator.focus(_.getName).replace(_ => consumerName)
-            consumerGenerator.getName(i) -> ConsumerPlan.make(_consumerGenerator, i)
-        }.toMap
-
-        SubscriptionPlan(
-            name = generator.getName(subscriptionIndex),
-            subscriptionType = generator.getSubscriptionType(subscriptionIndex),
-            consumers
-        )
+        }
+    } yield subscriptionPlan
 
 case class SubscriptionPlanGenerator(
-    getName: SubscriptionIndex => String,
-    getConsumersCount: SubscriptionIndex => Int,
-    getSubscriptionType: SubscriptionIndex => SubscriptionType,
-    getConsumerGenerator: ConsumerIndex => ConsumerPlanGenerator
+    mkName: SubscriptionIndex => String,
+    mkConsumersCount: SubscriptionIndex => Int,
+    mkSubscriptionType: SubscriptionIndex => SubscriptionType,
+    mkConsumerGenerator: ConsumerIndex => Task[ConsumerPlanGenerator]
 )
 
 object SubscriptionPlanGenerator:
     def make(
-        getName: SubscriptionIndex => String = i => s"subscription-$i",
-        getConsumersCount: SubscriptionIndex => Int = _ => 3,
-        getSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
-        getConsumerGenerator: ConsumerIndex => ConsumerPlanGenerator = consumerIndex => ConsumerPlanGenerator.make()
-    ): SubscriptionPlanGenerator =
-        SubscriptionPlanGenerator(
-            getName = getName,
-            getConsumersCount = getConsumersCount,
-            getSubscriptionType = getSubscriptionType,
-            getConsumerGenerator = getConsumerGenerator
+        mkName: SubscriptionIndex => String = i => s"subscription-$i",
+        mkConsumersCount: SubscriptionIndex => Int = _ => 1,
+        mkSubscriptionType: SubscriptionIndex => SubscriptionType = _ => SubscriptionType.Exclusive,
+        mkConsumerGenerator: ConsumerIndex => Task[ConsumerPlanGenerator] = _ => ConsumerPlanGenerator.make()
+    ): Task[SubscriptionPlanGenerator] =
+        val subscriptionPlanGenerator = SubscriptionPlanGenerator(
+            mkName = mkName,
+            mkConsumersCount = mkConsumersCount,
+            mkSubscriptionType = mkSubscriptionType,
+            mkConsumerGenerator = mkConsumerGenerator
         )
+        ZIO.succeed(subscriptionPlanGenerator)
