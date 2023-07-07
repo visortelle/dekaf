@@ -71,56 +71,57 @@ val personSchemaInfoAvro = AvroSchema.of(classOf[PersonClass]).getSchemaInfo
 //    .build()
 //  Encoders.toProto(v)
 
-//val tenantPlanGenerator = {
-//    val tenantName = s"strange-tenant-${java.time.Instant.now.toEpochMilli.toString}"
-//
-//    TenantPlanGenerator.make(
-//        mkName = _ => tenantName,
-//        mkNamespacesCount = _ => 1,
-//        mkNamespaceGenerator = namespaceIndex =>
-//            val namespaceName = s"strange-namespace-${namespaceIndex.toString}"
-//            NamespacePlanGenerator.make(
-//                mkTenant = () => tenantName,
-//                mkName = _ => namespaceName,
-//                mkTopicsCount = _ => 1,
-//                mkTopicGenerator = _ =>
-//                    TopicPlanGenerator.make(
-//                        mkTenant = () => tenantName,
-//                        mkNamespace = () => namespaceName,
-//                        mkName = topicIndex => s"strange-topic-${topicIndex.toString}",
-//                        mkProducersCount = _ => 3,
-//                        mkProducerGenerator = _ =>
-//                            ProducerPlanGenerator.make(
-//                                mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1000)),
-//                                mkPayload = _ =>
-//                                    val v = com.tools.teal.pulsar.ui.test.delivery_app.v1.Person
-//                                        .newBuilder()
-//                                        .setName(faker.funnyName.name())
-//                                        .setAge(faker.number.numberBetween(0, 120))
-//                                        .addAllHobbies(() =>
-//                                            List.tabulate(faker.number.numberBetween(0, 10))(_ => faker.hobby.activity)
-//                                                .asJava
-//                                                .iterator()
-//                                        )
-//                                        .build()
-//                                    Encoders.toProto(v)
-//                            ),
-//                        mkSubscriptionsCount = _ => 3,
-//                        mkSchemaInfos = _ =>
-//                            val schema = personSchemaInfoProtobufNative
-//                            List(schema)
-//                    )
-//            )
-//    )
-//}
+def mkTenantPlanGenerator = {
+    val tenantName = s"strange-tenant-${java.time.Instant.now.toEpochMilli.toString}"
 
-//val tenantPlan = TenantPlan.make(tenantPlanGenerator, 0)
+    TenantPlanGenerator.make(
+        mkName = _ => tenantName,
+        mkNamespacesCount = _ => 1,
+        mkNamespaceGenerator = namespaceIndex =>
+            val namespaceName = s"strange-namespace-${namespaceIndex.toString}"
+            NamespacePlanGenerator.make(
+                mkTenant = () => tenantName,
+                mkName = _ => namespaceName,
+                mkTopicsCount = _ => 1,
+                mkTopicGenerator = _ =>
+                    TopicPlanGenerator.make(
+                        mkTenant = () => tenantName,
+                        mkNamespace = () => namespaceName,
+                        mkName = topicIndex => s"strange-topic-${topicIndex.toString}",
+                        mkProducersCount = _ => 3,
+                        mkProducerGenerator = _ =>
+                            ProducerPlanGenerator.make(
+                                mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1000)),
+                                mkPayload = _ => _ =>
+                                    val v = com.tools.teal.pulsar.ui.test.delivery_app.v1.Person
+                                        .newBuilder()
+                                        .setName(faker.funnyName.name())
+                                        .setAge(faker.number.numberBetween(0, 120))
+                                        .addAllHobbies(() =>
+                                            List.tabulate(faker.number.numberBetween(0, 10))(_ => faker.hobby.activity)
+                                                .asJava
+                                                .iterator()
+                                        )
+                                        .build()
+                                    Encoders.toProto(v)
+                            ),
+                        mkSubscriptionsCount = _ => 3,
+                        mkSchemaInfos = _ =>
+                            val schema = personSchemaInfoProtobufNative
+                            List(schema)
+                    )
+            )
+    )
+}
 
 object PulsocatDemoApp extends ZIOAppDefault:
     def run = for {
         schemasTenantPlan <- SchemasTenant.mkTenantPlan
+        
+        tenantPlanGenerator <- mkTenantPlanGenerator
+        tenantPlan <- TenantPlan.make(tenantPlanGenerator, 0)
 
-        tenantPlans = List(schemasTenantPlan)
+        tenantPlans = List(schemasTenantPlan, tenantPlan)
 
         _ <- ZIO.logInfo("Starting app...")
         _ <- ZIO.foreachParDiscard(tenantPlans)(tenantPlan => TenantPlanExecutor.allocateResources(tenantPlan))

@@ -15,13 +15,16 @@ import saveIcon from './icons/save.svg';
 
 import s from './FilterChain.module.css';
 
+const defaultFilter = `({ key, value, accum }) => {
+  return true;
+}`;
+
 export type FilterChainProps = {
   value: t.Chain;
   onChange: (value: t.Chain) => void;
 };
 
 const FilterChain: React.FC<FilterChainProps> = (props) => {
-
   const modals = Modals.useContext();
 
   return (
@@ -102,7 +105,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       <div className={`${s.Buttons}`}>
         <SmallButton
           onClick={() => {
-            const newFilter: t.Filter = { value: undefined };
+            const newFilter: t.Filter = { value: defaultFilter };
             const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [uuid()]: { filter: newFilter } } };
             props.onChange(newChain);
           }}
