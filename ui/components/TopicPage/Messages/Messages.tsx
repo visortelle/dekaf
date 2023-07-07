@@ -145,7 +145,9 @@ const Session: React.FC<SessionProps> = (props) => {
         .concat(messagesBuffer.current.map(msg => messageDescriptorFromPb(msg)))
         .slice(-displayMessagesLimit);
 
-      newMessages.forEach((message, i) => message.index = (i + 1));
+      newMessages.forEach((message, i) => {
+        message.index = (i + 1);
+      });
 
       messagesBuffer.current = [];
       scrollToBottom();

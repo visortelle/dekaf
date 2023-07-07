@@ -3,7 +3,6 @@
   flex-direction: column;
   background-color: #fff;
   flex: 1;
-  overflow: auto;
 }
 
 .TabsList {
@@ -13,7 +12,6 @@
   overflow-y: hidden;
   border-bottom: 1px solid var(--border-color);
   border-left: 1px solid var(--border-color);
-  flex: 1 0 auto;
 }
 
 .CloseTabs {

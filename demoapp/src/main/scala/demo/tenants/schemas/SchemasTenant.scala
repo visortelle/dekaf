@@ -20,6 +20,8 @@ object SchemasTenant:
           namespaces.Int64Namespace.mkPlanGenerator(tenantName),
           namespaces.FloatNamespace.mkPlanGenerator(tenantName),
           namespaces.DoubleNamespace.mkPlanGenerator(tenantName),
+//          namespaces.StringNamespace.mkPlanGenerator(tenantName),
+//          namespaces.BytesNamespace.mkPlanGenerator(tenantName),
       )
 
       TenantPlanGenerator.make(

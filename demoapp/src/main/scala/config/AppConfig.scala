@@ -13,6 +13,13 @@ case class AppConfig(
     clusterNames: List[String]
 )
 
+//val config = AppConfig(
+//  brokerServiceUrl = "pulsar://localhost:6650",
+//  webServiceUrl = "http://localhost:8080",
+//  auth = AuthConfig(jwt = ""),
+//  clusterNames = List("cluster-local")
+//)
+
 val config = AppConfig(
   brokerServiceUrl = "pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651",
   webServiceUrl = "https://cluster-d.o-xy6ek.snio.cloud",
