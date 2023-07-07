@@ -35,17 +35,6 @@ object StringNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"visible-utf-8-chars-1k-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => messageIndex => VisibleUtf8CharsAsBytes(messageIndex.toInt),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
                     mkName = _ => s"random-characters",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
@@ -60,6 +49,17 @@ object StringNamespace:
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => faker.lorem().word().getBytes("UTF-8")
+                        ),
+                    mkSchemaInfos = mkSchemaInfos
+                ),
+                TopicPlanGenerator.make(
+                    mkTenant = () => tenantName,
+                    mkNamespace = () => namespaceName,
+                    mkName = _ => s"random-words-100-mps",
+                    mkProducerGenerator = _ =>
+                        ProducerPlanGenerator.make(
+                            mkPayload = _ => _ => faker.lorem().word().getBytes("UTF-8"),
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -89,7 +89,8 @@ object StringNamespace:
                     mkName = _ => s"random-texts",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.lorem().paragraphs(10).asScala.mkString("\n\n").getBytes("UTF-8")
+                            mkPayload =
+                                _ => _ => faker.lorem().paragraphs(10).asScala.mkString("\n\n").getBytes("UTF-8")
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -99,37 +100,8 @@ object StringNamespace:
                     mkName = _ => s"random-big-texts",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.lorem().paragraphs(100).asScala.mkString("\n\n").getBytes("UTF-8")
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-names",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.funnyName().name().getBytes("UTF-8")
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-book-names",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.book().title().getBytes("UTF-8")
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-colors",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.color().hex().getBytes
+                            mkPayload =
+                                _ => _ => faker.lorem().paragraphs(100).asScala.mkString("\n\n").getBytes("UTF-8")
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 )

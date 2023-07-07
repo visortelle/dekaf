@@ -158,7 +158,6 @@ object TopicPlanExecutor:
                     pulsarClient
                         .newProducer(schema)
                         .producerName(producerPlan.name)
-//                        .messageRoutingMode(MessageRoutingMode.SinglePartition)
                         .topic(topicFqn)
                         .create
                 }
