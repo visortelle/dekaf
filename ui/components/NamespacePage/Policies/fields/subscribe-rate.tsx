@@ -150,7 +150,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscribe rate',
-  description: <span>Sets the maximum number of subscriptions that can be made per consumer for all topics within a namespace.</span>,
+  description: <span>Set the maximum number of messages that can be delivered to subscriptions for all topics within a namespace.</span>,
   input: <FieldInput {...props} />
 });
 
