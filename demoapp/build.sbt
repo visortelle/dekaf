@@ -4,6 +4,10 @@ val zioVersion = "2.0.15"
 val circeVersion = "0.14.5"
 val jacksonVersion = "2.15.2"
 
+// Gracefully shutdown the app on Ctrl+C when running it from SBT
+cancelable in Global := true
+fork in Global := true
+
 lazy val root = project
     .in(file("."))
     .settings(
