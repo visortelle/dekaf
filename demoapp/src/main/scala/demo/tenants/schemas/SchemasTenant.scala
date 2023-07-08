@@ -1,12 +1,9 @@
-package demo.schemas
+package demo.tenants.schemas
 
 import zio.*
 import generators.*
-import net.datafaker.Faker
 import _root_.client.adminClient
 import demo.tenants.schemas.namespaces
-
-val faker = new Faker()
 
 val tenantName = s"schema-types-${java.time.Instant.now().getEpochSecond}"
 
@@ -24,6 +21,7 @@ object SchemasTenant:
           namespaces.BytesNamespace.mkPlanGenerator(tenantName),
           namespaces.AvroNamespace.mkPlanGenerator(tenantName),
           namespaces.JsonNamespace.mkPlanGenerator(tenantName),
+          namespaces.ProtobufNativeNamespace.mkPlanGenerator(tenantName),
       )
 
       TenantPlanGenerator.make(
