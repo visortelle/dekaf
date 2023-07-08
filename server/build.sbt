@@ -18,7 +18,9 @@ val javaOpts = Seq(
 
 scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
 
+cancelable in Global := true
 fork := true
+
 javaOptions ++= javaOpts
 
 Global / resolvers += Resolver.mavenLocal

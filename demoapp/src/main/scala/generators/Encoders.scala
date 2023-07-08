@@ -18,6 +18,7 @@ object Encoders:
     // https://github.com/FasterXML/jackson-dataformats-binary/tree/2.16/avro
     val mapper = new AvroMapper()
     mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
+
     val avroSchema = mapper.schemaFrom(schema.map(_.toChar).mkString) // TODO: cache schema
     mapper.writer(avroSchema).writeValueAsBytes(value)
 

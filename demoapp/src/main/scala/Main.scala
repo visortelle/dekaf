@@ -107,12 +107,8 @@ object PulsocatDemoApp extends ZIOAppDefault:
     private def appLogic = for {
         schemasTenantPlan <- SchemasTenant.mkTenantPlan
 
-//        tenantPlanGenerator <- mkTenantPlanGenerator
-//        tenantPlan <- TenantPlan.make(tenantPlanGenerator, 0)
-
         tenantPlans = List(
             schemasTenantPlan
-//          tenantPlan
         )
 
         _ <- ZIO.logInfo("Starting app...")
