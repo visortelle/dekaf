@@ -22,6 +22,7 @@ object SchemasTenant:
           namespaces.DoubleNamespace.mkPlanGenerator(tenantName),
           namespaces.StringNamespace.mkPlanGenerator(tenantName),
           namespaces.BytesNamespace.mkPlanGenerator(tenantName),
+          namespaces.AvroNamespace.mkPlanGenerator(tenantName),
       )
 
       TenantPlanGenerator.make(

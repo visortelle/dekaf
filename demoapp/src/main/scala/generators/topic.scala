@@ -203,6 +203,6 @@ object TopicPlanExecutor:
     def start(topicPlan: TopicPlan): Task[Unit] = for {
         _ <- ZIO.logInfo(s"Starting topic ${topicPlan.name}")
         produceFib <- TopicPlanExecutor.startProduce(topicPlan).fork
-        _ <- TopicPlanExecutor.startConsume(topicPlan).fork
+//        _ <- TopicPlanExecutor.startConsume(topicPlan).fork
         _ <- produceFib.join
     } yield ()

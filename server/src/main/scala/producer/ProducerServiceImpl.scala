@@ -6,7 +6,7 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, MessageFormat, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
 import org.apache.pulsar.client.api.schema.SchemaInfoProvider
-import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
+import org.apache.pulsar.client.impl.schema.{AutoProduceBytesSchema, AvroSchema}
 import _root_.schema.avro
 import _root_.schema.protobufnative
 import com.google.protobuf
