@@ -91,7 +91,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Encryption required',
-  description: <span>Enable or disable message encryption required for a namespace.</span>,
+  description: <span>Enables or disables message encryption required for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

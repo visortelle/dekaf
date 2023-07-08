@@ -11,6 +11,7 @@ import { useState } from "react";
 import { swrKeys } from "../../../swrKeys";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation, { ValidationError } from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import A from "../../../ui/A/A";
 
 /*
 Time limit	  Size limit  Message retention
@@ -306,7 +307,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Retention',
-  description: <span>By default, when a Pulsar message arrives at a broker, the message is stored until it has been acknowledged on all subscriptions, at which point it is marked for deletion.<br />You can override this behavior and retain messages that have already been acknowledged on all subscriptions by setting a retention policy.</span>,
+  description: <span>By default, when a Pulsar message arrives at a broker, the message is stored until it has been acknowledged on all subscriptions, at which point it is marked for deletion.<br />You can override this behavior and retain messages that have already been acknowledged on all subscriptions by setting a <A isExternalLink href={"https://pulsar.apache.org/docs/next/cookbooks-retention-expiry/#retention-policies"}>retention policy</A>.</span>,
   input: <FieldInput {...props} />
 });
 

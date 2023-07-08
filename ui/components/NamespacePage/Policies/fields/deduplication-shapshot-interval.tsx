@@ -10,6 +10,9 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import stringify from 'safe-stable-stringify';
+import React from "react";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import A from "../../../ui/A/A";
 
 const policy = 'deduplicationSnapshotInterval';
 
@@ -124,10 +127,18 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
+type TermKey =
+  'deduplicationSnapshot'
+
+const help: Record<TermKey, React.ReactNode> = {
+  'deduplicationSnapshot': <div>Refers to a periodic record taken for the purpose of message deduplication. Snapshot is taken after a certain number of entries or a specific time period to assure <A isExternalLink href={"https://github.com/aahmed-se/pulsar-wiki/blob/master/PIP-6:-Guaranteed-Message-Deduplication.md"}>guaranteed message deduplication</A></div>
+}
+
+
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Deduplication snapshot interval',
-  description: <span>Deduplication snapshot interval. <code>brokerDeduplicationEnabled</code> must be set to true for this property to take effect.</span>,
+  description: <span><TooltipElement tooltipHelp={help["deduplicationSnapshot"]}>Deduplication snapshot</TooltipElement> interval. <code>brokerDeduplicationEnabled</code> must be set to true for this property to take effect.</span>,
   input: <FieldInput {...props} />
 });
 

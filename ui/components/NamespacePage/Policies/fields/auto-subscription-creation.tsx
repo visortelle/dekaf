@@ -7,6 +7,9 @@ import { swrKeys } from "../../../swrKeys";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import * as generalHelp from "./help";
+import React from "react";
 
 const policy = 'autoSubscriptionCreation';
 
@@ -114,7 +117,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Auto subscription creation',
-  description: <span>Enable or disable auto subscription creation.</span>,
+  description: <span>Enables or disable auto <TooltipElement tooltipHelp={generalHelp.help["subscription"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#subscriptions">subscription</TooltipElement> creation.</span>,
   input: <FieldInput {...props} />
 });
 

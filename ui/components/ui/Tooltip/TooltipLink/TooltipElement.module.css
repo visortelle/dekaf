@@ -1,15 +1,16 @@
-.TooltipLink {
+.TooltipElement {
   display: inline-flex;
   text-decoration: none;
   font-weight: 500;
   color: var(--color-text-primary);
+  cursor: pointer;
 }
 
-.TooltipLink:hover {
+.TooltipElement:hover {
   opacity: 0.5;
   text-decoration: underline;
 }
 
-.TooltipLink svg {
+.TooltipElement svg {
   fill: var(--accent-color-black);
 }

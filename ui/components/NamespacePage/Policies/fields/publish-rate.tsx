@@ -12,7 +12,7 @@ import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Input from "../../../ui/Input/Input";
-import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'publishRate';
 
@@ -162,7 +162,7 @@ const help: Record<TermKey, React.ReactNode> = {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Publish rate',
-  description: <span>Configured <TooltipLink tooltipHelp={help["message-publish-rate"]} link="https://pulsar.apache.org/docs/3.0.x/administration-stats/#producer-stats">message-publish-rate</TooltipLink> for all topics of the namespace.</span>,
+  description: <span>Configured <TooltipElement tooltipHelp={help["message-publish-rate"]} link="https://pulsar.apache.org/docs/3.0.x/administration-stats/#producer-stats">message-publish-rate</TooltipElement> for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
 

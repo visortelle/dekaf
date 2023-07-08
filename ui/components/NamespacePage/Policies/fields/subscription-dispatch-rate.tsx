@@ -11,7 +11,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
 import React from "react";
-import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'subscriptionDispatchRate';
 
@@ -172,17 +172,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
-export type TermKey =
-  'subscriptionMessageDispatchRate'
-
-export const help: Record<TermKey, React.ReactNode> = {
-  subscriptionMessageDispatchRate: <div>Refers to the rate at which messages are dispatched to a subscription from a Pulsar topic.</div>,
-}
-
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription dispatch rate',
-  description: <span>Set <TooltipLink tooltipHelp={help['subscriptionMessageDispatchRate']} link="#">subscription message-dispatch-rate</TooltipLink> for all topics of the namespace.</span>,
+  description: <span>Specifies the rate at which messages are dispatched to a subscription from a Pulsar topic (subscription message-dispatch-rate) for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
 

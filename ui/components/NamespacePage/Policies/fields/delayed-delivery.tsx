@@ -10,7 +10,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
-import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'delayedDelivery';
 
@@ -158,7 +158,7 @@ const help: Record<TermKey, React.ReactNode> = {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Delayed delivery',
-  description: <span>Set the <TooltipLink tooltipHelp={help["delayedDelivery"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#delayed-message-delivery">delayed delivery policy</TooltipLink> on a namespace.</span>,
+  description: <span>Sets the <TooltipElement tooltipHelp={help["delayedDelivery"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#delayed-message-delivery">delayed delivery policy</TooltipElement> on a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

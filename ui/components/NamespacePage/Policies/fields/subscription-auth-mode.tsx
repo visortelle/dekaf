@@ -8,7 +8,7 @@ import { swrKeys } from "../../../swrKeys";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import React from "react";
-import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'subscriptionAuthMode';
 
@@ -91,17 +91,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 }
 
-export type TermKey =
-  'subscriptionAuthMode'
-
-export const help: Record<TermKey, React.ReactNode> = {
-  subscriptionAuthMode: <div>Defines the authorization rules for Pulsar subscriptions. In 'None' mode, there are no restrictions; any role can use every subscription name. In 'Prefix' mode, a subscription name with an auth role prefix can only be used by the corresponding role.</div>,
-}
-
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription auth mode',
-  description: <span>Set <TooltipLink tooltipHelp={help["subscriptionAuthMode"]} link="№">subscriptions</TooltipLink>subscription auth mode on a namespace.</span>,
+  description: <span>Sets the authorization rules for Pulsar subscriptions on the namespace. In 'None' mode, there are no restrictions; any role can use every subscription name. In 'Prefix' mode, a subscription name with an auth role prefix can only be used by the corresponding role.</span>,
   input: <FieldInput {...props} />
 });
 

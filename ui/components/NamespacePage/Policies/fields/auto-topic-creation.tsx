@@ -11,9 +11,9 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../swrKeys';
-import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 import React from "react";
-import {help} from "./max-topics-per-namespace";
+import * as generalHelp from "./help";
 
 const policy = 'autoTopicCreation';
 
@@ -208,7 +208,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Auto topic creation',
-  description: <span>Enable or disable auto <TooltipLink tooltipHelp={help["topic"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/">topics</TooltipLink> creation for this namespace, overriding broker settings.</span>,
+  description: <span>Enables or disable auto <TooltipElement tooltipHelp={generalHelp.help["topic"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/">topics</TooltipElement> creation for this namespace, overriding broker settings.</span>,
   input: <FieldInput {...props} />
 });
 

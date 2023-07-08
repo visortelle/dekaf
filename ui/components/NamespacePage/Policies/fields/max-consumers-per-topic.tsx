@@ -9,7 +9,8 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import * as generalHelp from "./help";
 import React from "react";
 
 const policy = 'maxConsumersPerTopic';
@@ -144,17 +145,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
-export type TermKey =
-  'consumer'
-
-export const help: Record<TermKey, React.ReactNode> = {
-  consumer: <div>A process that establishes a subscription to a Pulsar topic and processes messages published to that topic by producers.</div>,
-}
-
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max consumers per topic',
-  description: <span>Max <TooltipLink tooltipHelp={help["consumer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-consumers/">consumers</TooltipLink> per topic.</span>,
+  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["consumer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-consumers/">consumers</TooltipElement> per topic.</span>,
   input: <FieldInput {...props} />
 });
 

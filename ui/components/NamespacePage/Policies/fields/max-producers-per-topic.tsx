@@ -10,7 +10,7 @@ import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
-import TooltipLink from "../../../ui/TooltipLink/TooltipLink";
+import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'maxProducersPerTopic';
 
@@ -153,7 +153,7 @@ export const help: Record<TermKey, React.ReactNode> = {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max producers per topic',
-  description: <span>Max <TooltipLink tooltipHelp={help["producer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-producers/">producers</TooltipLink> per topic.</span>,
+  description: <span>Max <TooltipElement tooltipHelp={help["producer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-producers/">producers</TooltipElement> per topic.</span>,
   input: <FieldInput {...props} />
 });
 
