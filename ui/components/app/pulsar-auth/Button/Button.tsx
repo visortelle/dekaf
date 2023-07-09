@@ -25,7 +25,7 @@ const Button: React.FC<ButtonProps> = (props) => {
         .catch((err) => notifyError(`Unable to get the current credentials name. ${err.message}`));
 
       if (res === undefined) {
-        return undefined;
+        return "Empty";
       }
 
       return res.getName()?.getValue();
