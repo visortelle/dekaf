@@ -11,7 +11,6 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
 import React from "react";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'subscriptionDispatchRate';
 

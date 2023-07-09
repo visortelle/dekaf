@@ -11,7 +11,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import stringify from 'safe-stable-stringify';
 import React from "react";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import A from "../../../ui/A/A";
 
 const policy = 'deduplicationSnapshotInterval';

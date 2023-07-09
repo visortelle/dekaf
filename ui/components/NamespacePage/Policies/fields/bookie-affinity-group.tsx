@@ -14,7 +14,7 @@ import Select from '../../../ui/Select/Select';
 import { uniq } from 'lodash';
 import * as generalHelp from './help' ;
 import React from "react";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'bookieAffinityGroup';
 

@@ -8,7 +8,7 @@ import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirm
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import React from "react";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'deduplication';
 

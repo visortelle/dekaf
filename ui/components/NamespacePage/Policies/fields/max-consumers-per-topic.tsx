@@ -9,7 +9,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import * as generalHelp from "./help";
 import React from "react";
 

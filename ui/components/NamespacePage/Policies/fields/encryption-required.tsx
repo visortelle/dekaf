@@ -8,6 +8,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import React from "react";
 
 const policy = 'encryptionRequired';
 

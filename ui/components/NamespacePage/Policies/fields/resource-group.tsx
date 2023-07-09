@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import stringify from 'safe-stable-stringify';
@@ -15,7 +14,6 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
 import Link from "../../../ui/Link/Link";
 import A from "../../../ui/A/A";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'resourceGroup';
 

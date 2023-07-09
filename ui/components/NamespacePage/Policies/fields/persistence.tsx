@@ -11,7 +11,7 @@ import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation, { ValidationError } from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import * as generalHelp from './help';
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'persistence';
 

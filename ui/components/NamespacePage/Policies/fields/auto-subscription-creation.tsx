@@ -7,7 +7,7 @@ import { swrKeys } from "../../../swrKeys";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import * as generalHelp from "./help";
 import React from "react";
 
@@ -44,7 +44,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_ENABLED: v = 'enabled'; break;
         case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_DISABLED: v = 'disabled'; break
         case pb.AutoSubscriptionCreation.AUTO_SUBSCRIPTION_CREATION_INHERITED_FROM_BROKER_CONFIG: v = 'inherited-from-broker-config'; break;
-      };
+      }
       return v;
     }
   );

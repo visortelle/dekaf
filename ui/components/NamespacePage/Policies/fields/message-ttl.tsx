@@ -9,7 +9,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import A from "../../../ui/A/A";
 
 const policy = 'messageTtl';

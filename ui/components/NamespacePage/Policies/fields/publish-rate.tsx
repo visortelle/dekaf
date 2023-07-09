@@ -12,7 +12,7 @@ import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Input from "../../../ui/Input/Input";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'publishRate';
 

@@ -7,9 +7,8 @@ import { swrKeys } from "../../../swrKeys";
 import { GetSchemaValidationEnforceRequest, SetSchemaValidationEnforceRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
-import A from "../../../ui/A/A";
 import * as generalHelp from "./help";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'schemaValidationEnforce';
 

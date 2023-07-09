@@ -10,7 +10,6 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import React, { useState } from 'react';
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'subscriptionExpirationTime';
 

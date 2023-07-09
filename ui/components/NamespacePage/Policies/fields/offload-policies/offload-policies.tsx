@@ -11,7 +11,7 @@ import WithUpdateConfirmation from '../../../../ui/ConfigurationTable/UpdateConf
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import { useState } from 'react';
 import { PolicyValue } from './types';
-import { defaultPolicyValueByType, offloadThresholdFromBytes, policyValueToReq, resToPolicyValue } from './conversions';
+import { defaultPolicyValueByType, policyValueToReq, resToPolicyValue } from './conversions';
 import Input from '../../../../ui/Input/Input';
 import OffloadThresholdInput from './inputs/OffloadThresholdInput';
 import AliyunOssInput from './drivers/AliyunOssInput/AliyunOssInput';
@@ -24,7 +24,7 @@ import AzureBlobInput from './drivers/AzureBlobInput/AzureBlobInput';
 import GoogleCloudStorageInput from './drivers/GoogleCloudStorageInput/GoogleCloudStorageInput';
 import S3Input from './drivers/S3Input/S3Input';
 import FilesystemInput from './drivers/FilesystemInput/FilesystemInput';
-import TooltipElement from "../../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'offloadPolicies';
 

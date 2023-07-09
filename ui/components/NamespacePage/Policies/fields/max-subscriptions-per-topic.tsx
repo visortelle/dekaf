@@ -11,7 +11,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
 import * as generalHelp from "./help";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'maxSubscriptionsPerTopic';
 

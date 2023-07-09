@@ -8,7 +8,6 @@ import { swrKeys } from "../../../swrKeys";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import React from "react";
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
 
 const policy = 'subscriptionAuthMode';
 

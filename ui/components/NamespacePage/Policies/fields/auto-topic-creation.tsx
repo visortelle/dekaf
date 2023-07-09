@@ -11,7 +11,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../swrKeys';
-import TooltipElement from "../../../ui/Tooltip/TooltipLink/TooltipElement";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import React from "react";
 import * as generalHelp from "./help";
 
@@ -75,8 +75,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             defaultNumPartitions: autoTopicCreationOverride.getDefaultNumPartitions() || defaultNumPartitions,
             topicType
           }
-        }; break;
-      };
+        } break;
+      }
 
       return v;
     }
@@ -116,7 +116,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             case 'partitioned': {
               autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED)
               autoTopicCreationOverride.setDefaultNumPartitions(v.defaultNumPartitions);
-            }; break;
+            } break;
             case 'non-partitioned': autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED); break;
           }
           req.setAutoTopicCreationOverride(autoTopicCreationOverride);

@@ -3,7 +3,8 @@ import A from "../../A/A";
 import s from "./TooltipElement.module.css";
 import TooltipComponent from "../TooltipComponent";
 
-type TooltipElementProps = React.DetailedHTMLProps<React.AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement> & {
+type TooltipElementProps = {
+  children?: React.ReactNode,
   tooltipHelp: React.ReactNode,
   link?: string,
   isExternalLink?: boolean,
