@@ -150,7 +150,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscribe rate',
-  description: <span>Set the maximum number of messages that can be delivered to subscriptions for all topics within a namespace.</span>,
+  description: <span><strong>TODO</strong> Ooops... We didn't write a good definition for this policy yet. Feel free to suggest it <a href="https://github.com/tealtools/pulsocat/discussions/new?category=ideas">here</a>.</span>,
   input: <FieldInput {...props} />
 });
 
