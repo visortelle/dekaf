@@ -22,7 +22,7 @@ def makeAdminClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
         case None    => defaultPulsarAuth.credentials.get("Default")
         case Some(c) => pulsarAuth.credentials.get(c)
     pulsarCredentials match
-        case None => Left(new Exception("No credentials found for Pulsar Admin"))
+        case None    => Left(new Exception("No credentials found for Pulsar Admin"))
         case Some(c) =>
             c match
                 case cr: JwtCredentials => builder.authentication(AuthenticationFactory.token(cr.token))

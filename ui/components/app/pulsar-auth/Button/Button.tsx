@@ -7,7 +7,7 @@ import { swrKeys } from '../../../swrKeys';
 import { GetCurrentCredentialsRequest } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/pulsar_auth_pb';
 import * as GrpcClient from '../../contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import icon from './icon.svg';
 
 export type ButtonProps = {};
@@ -22,10 +22,10 @@ const Button: React.FC<ButtonProps> = (props) => {
     async () => {
       const req = new GetCurrentCredentialsRequest();
       const res = await pulsarAuthServiceClient.getCurrentCredentials(req, {})
-        .catch((err) => notifyError(`Unable to get the current credentials name. ${err.message}`));
+        .catch((err) => notifyError(`Unable to get the current123123123 credentials name. ${err.message}`));
 
       if (res === undefined) {
-        return "Empty";
+        return undefined;
       }
 
       return res.getName()?.getValue();
