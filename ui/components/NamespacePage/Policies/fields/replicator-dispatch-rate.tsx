@@ -10,6 +10,8 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
+import React from "react";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'replicatorDispatchRate';
 
@@ -170,10 +172,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
+type TermKey =
+  'replicatorDispatchRate';
+
+const help: Record<TermKey, React.ReactNode> = {
+  'replicatorDispatchRate': <div>Rate at which replicated messages are dispatched for all topics within a namespace. Allows you to control the speed of message replication across clusters, helping to manage resource usage and network traffic.</div>
+}
+
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Replicator dispatch rate',
-  description: <span>Set replicator message-dispatch-rate for all topics of the namespace.</span>,
+  description: <span>Sets replicator <TooltipElement tooltipHelp={help["replicatorDispatchRate"]}>replicator</TooltipElement> for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
 

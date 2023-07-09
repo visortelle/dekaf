@@ -10,6 +10,8 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import React from "react";
 
 const policy = 'compactionThreshold';
 
@@ -169,10 +171,16 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
+type TermKey =
+  'compactionThreshold'
+
+const help: Record<TermKey, React.ReactNode> = {
+  'compactionThreshold': <div>Compaction threshold policy specifies how large the topic backlog can grow before compaction is triggered.</div>
+}
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Compaction threshold',
-  description: <span>Set compactionThreshold for a namespace.</span>,
+  description: <span>Sets <TooltipElement tooltipHelp={help["compactionThreshold"]} link={"https://pulsar.apache.org/docs/3.0.x/cookbooks-compaction/"}>compactionThreshold</TooltipElement> for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

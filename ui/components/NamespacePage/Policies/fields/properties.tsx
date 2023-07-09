@@ -10,6 +10,7 @@ import KeyValueEditor from '../../../ui/KeyValueEditor/KeyValueEditor';
 import { swrKeys } from '../../../swrKeys';
 import { mapToObject } from '../../../../pbUtils/pbUtils';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import {help} from "../../../TenantPage/Namespaces/help";
 
 const policy = 'properties';
 
@@ -92,7 +93,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Properties',
-  description: <span>Properties for a namespace.</span>,
+  description: <span>{help["properties"]}</span>,
   input: <FieldInput {...props} />
 });
 

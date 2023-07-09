@@ -9,7 +9,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 const policy = 'subscriptionExpirationTime';
 
@@ -146,7 +146,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription expiration time',
-  description: <span>Set subscription expiration time for all topics of the namespace.</span>,
+  description: <span>Specifies the duration after which inactive subscriptions will be deleted from the last consumption for all topics of the namespace. If this value is set to 0, inactive subscriptions will not be automatically deleted.</span>,
   input: <FieldInput {...props} />
 });
 

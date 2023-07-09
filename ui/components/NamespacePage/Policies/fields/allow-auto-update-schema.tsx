@@ -82,7 +82,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Allow auto update schema',
-  description: <span>Set the namespace whether allow auto update schema.</span>,
+  description: <span>Sets the namespace whether allow auto update schema.</span>,
   input: <FieldInput {...props} />
 });
 
