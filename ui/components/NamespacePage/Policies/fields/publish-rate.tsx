@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import stringify from 'safe-stable-stringify';
 
@@ -12,6 +12,7 @@ import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Input from "../../../ui/Input/Input";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'publishRate';
 
@@ -151,10 +152,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 }
 
+type TermKey =
+  'message-publish-rate'
+
+const help: Record<TermKey, React.ReactNode> = {
+  'message-publish-rate': <div>Specifies total rate of messages (message per second) and total throughput (byte per second) of the messages published by this publisher</div>,
+}
+
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Publish rate',
-  description: <span>Configured message-publish-rate for all topics of the namespace.</span>,
+  description: <span>Configured <TooltipElement tooltipHelp={help["message-publish-rate"]} link="https://pulsar.apache.org/docs/3.0.x/administration-stats/#producer-stats">message-publish-rate</TooltipElement> for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
 

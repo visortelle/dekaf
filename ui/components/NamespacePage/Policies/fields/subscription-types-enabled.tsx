@@ -5,7 +5,7 @@ import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import { useState } from "react";
+import React, { useState } from "react";
 import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
@@ -204,7 +204,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription types enabled',
-  description: <span>Subscription types enabled for a namespace.</span>,
+  description: <span>Defines subscription types enabled for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

@@ -1,4 +1,7 @@
 export const help: Record<string, React.ReactElement> = {
+  property: <div>Specific setting that controls some aspect of Pulsar's behavior.</div>,
+  runtimeConfig: <div>Configurations that are set when you start a Pulsar instance.</div>,
+  dynamicConfig: <div>Configurations that you can change while a Pulsar instance is running, without needing to restart the instance.</div>,
   acknowledgmentAtBatchIndexLevelEnabled: <div>Enable or disable the batch index acknowledgement.</div>,
   activeConsumerFailoverDelayTimeMillis: <div>How long to delay rewinding cursor and dispatching messages when active consumer is changed.</div>,
   additionalServletDirectory: <div>Location of broker additional servlet NAR directory</div>,

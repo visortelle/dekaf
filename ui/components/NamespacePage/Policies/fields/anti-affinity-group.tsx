@@ -8,6 +8,8 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import Select from '../../../ui/Select/Select';
+import React from "react";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'antiAffinityGroup';
 
@@ -106,10 +108,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
+type TermKey =
+  'antiAffinityGroup';
+
+const help: Record<TermKey, React.ReactNode> = {
+  antiAffinityGroup: <div>A group of namespaces within an application that are designed to avoid downtime by being owned by different failure domains and different brokers. The purpose is to ensure that if one failure domain or broker goes down, only the namespaces associated with that specific domain are affected, while the rest of the namespaces remain available without any impact.</div>
+}
+
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Anti-affinity group',
-  description: <span>Anti-affinity group name for a namespace.</span>,
+  description: <span><TooltipElement tooltipHelp={help["antiAffinityGroup"]} link="https://github.com/apache/pulsar/issues/840">Anti-affinity group</TooltipElement> name for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

@@ -9,6 +9,9 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import * as generalHelp from "./help";
+import React from "react";
 
 const policy = 'maxTopicsPerNamespace';
 
@@ -144,7 +147,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max topics per namespace',
-  description: <span>Max topics per namespace.</span>,
+  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["topic"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/">topics</TooltipElement> per namespace.</span>,
   input: <FieldInput {...props} />
 });
 

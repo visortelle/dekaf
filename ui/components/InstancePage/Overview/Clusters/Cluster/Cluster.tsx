@@ -4,20 +4,44 @@ import sts from "../../../../ui/SimpleTable/SimpleTable.module.css";
 import * as Notifications from "../../../../app/contexts/Notifications";
 import * as GrpcClient from "../../../../app/contexts/GrpcClient/GrpcClient";
 import * as pb from "../../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
-import { Code } from "../../../../../grpc-web/google/rpc/code_pb";
-import { swrKeys } from "../../../../swrKeys";
+import {Code} from "../../../../../grpc-web/google/rpc/code_pb";
+import {swrKeys} from "../../../../swrKeys";
 import useSWR from "swr";
+import {tooltipId} from "../../../../ui/Tooltip/Tooltip";
+import ReactDOMServer from "react-dom/server";
+import {help} from "./help"
+import NoData from "../../../../ui/NoData/NoData";
+import ClusterTable from "../../../../ui/ClusterTable/ClusterTable";
 
 export type ClusterProps = {
   cluster: string;
 };
 
-const Cluster: React.FC<ClusterProps> = (props) => {
-  const { notifyError } = Notifications.useContext();
-  const { clustersServiceClient } = GrpcClient.useContext();
+export type ColumnKey =
+  'clusterName' |
+  'serviceUrl' |
+  'serviceUrlTsl' |
+  'brokerServiceUrl' |
+  'brokerServiceUrlTsl' |
+  'proxyServiceUrl' |
+  'proxyProtocol' |
+  'peerClusterNames' |
+  'authenticationPlugin' |
+  'authenticationParameters' |
+  'isBrokerClientTlsEnabled' |
+  'isTlsAllowInsecureConnection' |
+  'isBrokerClientTlsEnabledWithKeyStore' |
+  'brokerClientTlsTrustStoreType' |
+  'brokerClientTrustCertsFilePath' |
+  'listenerName'
 
-  const { data: cluster, error: clusterError } = useSWR(
-    swrKeys.pulsar.clusters.cluster._({ cluster: props.cluster }),
+
+const Cluster: React.FC<ClusterProps> = (props) => {
+  const {notifyError} = Notifications.useContext();
+  const {clustersServiceClient} = GrpcClient.useContext();
+
+  const {data: cluster, error: clusterError} = useSWR(
+    swrKeys.pulsar.clusters.cluster._({cluster: props.cluster}),
     async () => {
       const req = new pb.GetClusterRequest();
       req.setCluster(props.cluster);
@@ -43,144 +67,110 @@ const Cluster: React.FC<ClusterProps> = (props) => {
     return null;
   }
 
+
   return (
     <div className={s.Cluster}>
-      <table className={sts.Table}>
-        <tbody>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Cluster Name</td>
-            <td className={sts.Cell}>{props.cluster}</td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Service URL</td>
-            <td className={sts.Cell}>
-              {cluster.getServiceUrl()?.getValue() || <NoData />}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Service URL TLS</td>
-            <td className={sts.Cell}>
-              {cluster.getServiceUrlTls()?.getValue() || <NoData />}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Broker Service URL</td>
-            <td className={sts.Cell}>
-              {cluster.getBrokerServiceUrl()?.getValue() || <NoData />}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Broker Service URL TLS</td>
-            <td className={sts.Cell}>
-              {cluster.getBrokerServiceUrlTls()?.getValue() || <NoData />}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Proxy Service URL</td>
-            <td className={sts.Cell}>
-              {cluster.getProxyServiceUrl()?.getValue() || <NoData />}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Proxy Protocol</td>
-            <td className={sts.Cell}>
-              {proxyProtocolPbToString(cluster.getProxyProtocol()) || (
-                <NoData />
-              )}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Peer Cluster Names</td>
-            <td className={sts.Cell}>
-              {cluster.getPeerClusterNamesList().length === 0 ? (
-                <NoData />
-              ) : (
-                cluster
-                  .getPeerClusterNamesList()
-                  .map((peerClusterName) => <code>{peerClusterName}</code>)
-              )}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Authentication Plugin</td>
-            <td className={sts.Cell}>
-              {cluster.getAuthenticationPlugin()?.getValue() || <NoData />}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Authentication Parameters</td>
-            <td className={sts.Cell}>
-              {cluster.getAuthenticationParameters()?.getValue() || <NoData />}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Is Broker Client TLS Enabled</td>
-            <td className={sts.Cell}>
-              {cluster.getIsBrokerClientTlsEnabled()?.getValue() ===
-                undefined ? (
-                <NoData />
-              ) : cluster.getIsBrokerClientTlsEnabled()?.getValue() === true ? (
-                "true"
-              ) : (
-                "false"
-              )}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Is TLS Allow Insecure Connection</td>
-            <td className={sts.Cell}>
-              {cluster.getIsTlsAllowInsecureConnection()?.getValue() ===
-                undefined ? (
-                <NoData />
-              ) : cluster.getIsTlsAllowInsecureConnection()?.getValue() ===
-                true ? (
-                "true"
-              ) : (
-                "false"
-              )}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>
-              Is Broker Client TLS Enabled with Key Store
-            </td>
-            <td className={sts.Cell}>
-              {cluster.getIsBrokerClientTlsEnabledWithKeyStore()?.getValue() ===
-                undefined ? (
-                <NoData />
-              ) : cluster
-                .getIsBrokerClientTlsEnabledWithKeyStore()
-                ?.getValue() === true ? (
-                "true"
-              ) : (
-                "false"
-              )}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Broker Client TLS Trust Store Type</td>
-            <td className={sts.Cell}>
-              {cluster.getBrokerClientTlsTrustStoreType()?.getValue() || (
-                <NoData />
-              )}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Broker Client Trust Certs File Path</td>
-            <td className={sts.Cell}>
-              {cluster.getBrokerClientTrustCertsFilePath()?.getValue() || (
-                <NoData />
-              )}
-            </td>
-          </tr>
-          <tr className={sts.Row}>
-            <td className={sts.HighlightedCell}>Listener Name</td>
-            <td className={sts.Cell}>
-              {cluster.getListenerName()?.getValue() || <NoData />}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+      <ClusterTable
+        help={help}
+        clusterRows={{
+          clusterName: {
+            data: props.cluster,
+            label: 'Cluster Name',
+          },
+          serviceUrl: {
+            data: cluster.getServiceUrl()?.getValue() || <NoData/>,
+            label: 'Service URL',
+          },
+          serviceUrlTsl: {
+            data: cluster.getServiceUrlTls()?.getValue() || <NoData/>,
+            label: 'Service URL TLS'
+          },
+          brokerServiceUrl: {
+            data: cluster.getBrokerServiceUrl()?.getValue() || <NoData/>,
+            label: 'Broker Service URL'
+          },
+          brokerServiceUrlTsl: {
+            data: cluster.getBrokerServiceUrlTls()?.getValue() || <NoData/>,
+            label: 'Broker Service URL TLS'
+          },
+          proxyServiceUrl: {
+            data: cluster.getProxyServiceUrl()?.getValue() || <NoData/>,
+            label: 'Proxy Service URL'
+          },
+          proxyProtocol: {
+            data: proxyProtocolPbToString(cluster.getProxyProtocol()) || <NoData/>,
+            label: 'Proxy Protocol'
+          },
+          peerClusterNames: {
+            data: cluster.getPeerClusterNamesList().length === 0 ? (
+              <NoData/>
+            ) : (
+              cluster
+                .getPeerClusterNamesList()
+                .map((peerClusterName) => <code>{peerClusterName}</code>)
+            ),
+            label: 'Peer Cluster Names'
+          },
+          authenticationPlugin: {
+            data: cluster.getAuthenticationPlugin()?.getValue() || <NoData/>,
+            label: 'Authentication Plugin'
+          },
+          authenticationParameters: {
+            data: cluster.getAuthenticationParameters()?.getValue() || <NoData/>,
+            label: 'Authentication Parameters'
+          },
+          isBrokerClientTlsEnabled: {
+            data: cluster.getIsBrokerClientTlsEnabled()?.getValue() === undefined ? (
+              <NoData/>
+            ) : cluster.getIsBrokerClientTlsEnabled()?.getValue() === true ? (
+              "true"
+            ) : (
+              "false"
+            ),
+            label: "Is Broker Client TLS Enabled"
+          },
+          isTlsAllowInsecureConnection: {
+            data: cluster.getIsTlsAllowInsecureConnection()?.getValue() === undefined ? (
+              <NoData/>
+            ) : cluster.getIsTlsAllowInsecureConnection()?.getValue() ===
+            true ? (
+              "true"
+            ) : (
+              "false"
+            ),
+            label: 'Is TLS Allow Insecure Connection'
+          },
+          isBrokerClientTlsEnabledWithKeyStore: {
+            data: cluster.getIsBrokerClientTlsEnabledWithKeyStore()?.getValue() === undefined ? (
+              <NoData/>
+            ) : cluster
+              .getIsBrokerClientTlsEnabledWithKeyStore()
+              ?.getValue() === true ? (
+              "true"
+            ) : (
+              "false"
+            ),
+            label: 'Is Broker Client TLS Enabled with Key Store'
+          },
+          brokerClientTlsTrustStoreType: {
+            data: cluster.getBrokerClientTlsTrustStoreType()?.getValue() || (
+              <NoData/>
+            ),
+            label: 'Broker Client TLS Trust Store Type'
+          },
+          brokerClientTrustCertsFilePath: {
+            data: cluster.getBrokerClientTrustCertsFilePath()?.getValue() || (
+              <NoData/>
+            ),
+            label: 'Broker Client Trust Certs File Path'
+          },
+          listenerName: {
+            data: cluster.getListenerName()?.getValue() || <NoData/>,
+            label: 'Listener Name'
+          }
+        }}
+      />
     </div>
   );
 };
@@ -193,9 +183,5 @@ function proxyProtocolPbToString(proxyProtocol: pb.ProxyProtocol) {
       return "";
   }
 }
-
-const NoData: React.FC = () => {
-  return <div className={sts.NoData}>-</div>;
-};
 
 export default Cluster;

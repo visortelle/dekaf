@@ -1,3 +1,7 @@
 .Cluster {
   margin-bottom: 12rem;
 }
+
+.HighlightedCell:hover {
+  cursor: help;
+}

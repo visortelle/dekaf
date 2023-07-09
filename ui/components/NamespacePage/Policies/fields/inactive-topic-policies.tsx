@@ -9,7 +9,8 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from "../../../swrKeys";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
-import { useState } from "react";
+import React, { useState } from "react";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'inactiveTopicPolicies';
 
@@ -186,11 +187,16 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     </WithUpdateConfirmation>
   );
 }
+type TermKey =
+  'inactiveTopicPolicies';
 
+const help: Record<TermKey, React.ReactNode> = {
+  'inactiveTopicPolicies': <div>Dictate the handling of topics that lack active producers or consumers. These policies can determine if and when such topics should be deleted due to inactivity. By default, topics are deleted after 60 seconds.</div>
+}
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Inactive topic policies',
-  description: <span>Set the inactive topic policies on a namespace.</span>,
+  description: <span>Sets the <TooltipElement tooltipHelp={help["inactiveTopicPolicies"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/#configure-inactive-topic-policies">inactive topic policies</TooltipElement> on a namespace.</span>,
   input: <FieldInput {...props} />
 });
 
