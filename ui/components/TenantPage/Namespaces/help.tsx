@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 import { ColumnKey } from "./Namespaces";
 
 export const help: Record<ColumnKey, ReactNode> = {
-  tenantName: "The name of the tenant.",
-  adminRoles: "A client with the admin role token can then create, modify and destroy namespaces, and grant and revoke permissions to other role tokens on those namespaces.",
-  allowedClusters: "The list of clusters that this tenant is allowed to use.",
-  namespacesCount: "The number of namespaces that this tenant has."
+  namespaceName: <div>The name of the namespace.</div>,
+  topicsCount: <div>The number of partitioned and non-partitioned topics that the namespace has. <br/> (Does not include partitions of partitioned topics.)</div>,
+  topicsCountIncludingPartitions: <div>The overall number of topics in this namespace includes both partitioned and non-partitioned topics, as well as their respective partitions.</div>,
+  properties: <div>Custom metadata associated with a namespace. <br/> They serve as annotations or labels that provide additional information about the namespace, such as its environment, owner, or any important notes. <br/> They are useful for organization, tracking, and potential automation tasks.</div>
 };

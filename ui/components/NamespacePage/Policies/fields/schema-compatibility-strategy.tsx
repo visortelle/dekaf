@@ -7,6 +7,7 @@ import { swrKeys } from "../../../swrKeys";
 import { GetSchemaCompatibilityStrategyRequest, SchemaCompatibilityStrategy, SetSchemaCompatibilityStrategyRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
+import A from "../../../ui/A/A";
 
 const policy = 'schemaCompatibilityStrategy';
 
@@ -87,7 +88,12 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Schema compatibility strategy',
-  description: <span>Compatibility level required for new schemas created via a Producer.</span>,
+  description: <span>Ensures that existing consumers can process the introduced messages.
+    <ul>
+        <li>
+          <A isExternalLink href="https://pulsar.apache.org/docs/next/schema-understand/#schema-compatibility-check">More info about properties</A>
+        </li>
+    </ul></span>,
   input: <FieldInput {...props} />
 });
 

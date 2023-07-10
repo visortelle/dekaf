@@ -144,7 +144,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max unacked messages per consumer',
-  description: <span>Max unacked messages per consumer.</span>,
+  description: <span>Max unacked messages per consumer. If the unacked messages exceed a threshold then the consumer gets blocked, as described by setting <code>blockedConsumerOnUnackedMsgs</code> to true</span>,
   input: <FieldInput {...props} />
 });
 

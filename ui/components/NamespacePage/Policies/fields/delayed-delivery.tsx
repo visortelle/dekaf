@@ -9,6 +9,8 @@ import { swrKeys } from "../../../swrKeys";
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import React from "react";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'delayedDelivery';
 
@@ -147,10 +149,16 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 }
 
+type TermKey =
+  'delayedDelivery'
+
+const help: Record<TermKey, React.ReactNode> = {
+  delayedDelivery: <div>Delayed message delivery enables you to consume a message later. In this mechanism, a message is stored in BookKeeper. This message will be delivered to a consumer once the specified delay is over. For <code>Key_Shared</code> subscription only  </div>
+}
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Delayed delivery',
-  description: <span>Set the delayed delivery policy on a namespace.</span>,
+  description: <span>Sets the <TooltipElement tooltipHelp={help["delayedDelivery"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#delayed-message-delivery">delayed delivery policy</TooltipElement> on a namespace.</span>,
   input: <FieldInput {...props} />
 });
 
