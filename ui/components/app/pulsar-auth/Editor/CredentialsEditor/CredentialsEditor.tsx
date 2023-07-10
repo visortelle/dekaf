@@ -87,21 +87,25 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
             const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
               method: 'POST',
               body: JSON.stringify(credentials),
-            }).catch(err => notifyError(`Unable to save credentials: ${err}`));
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            })
+            .then(async res => {
+              if (res.status === 400) {
+                let errorBody = await res.text();
+                notifyInfo(errorBody);
+              } else if (res.status !== 200) {
+                notifyInfo('Server error happened.');
+              } else {
+                props.onDone();
+              }
+            })
+            .catch(err => notifyError(`Unable to save credentials: ${err}`));
 
             if (res === undefined) {
               return;
             }
-
-            if (res.status === 400) {
-              notifyInfo('Invalid credentials provided.');
-              return;
-            } else if (res.status !== 200) {
-              notifyInfo('Server error happened.');
-              return;
-            }
-
-            props.onDone();
           }}
         />
       </div>
