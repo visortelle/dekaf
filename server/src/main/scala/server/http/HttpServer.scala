@@ -35,6 +35,11 @@ object HttpServer extends ZIOAppDefault:
                             "webServiceUrl" -> appConfig.pulsarInstance.webServiceUrl
                         ).asJava
                     ).asJava
+
+                    val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
+                    val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson).getOrElse(defaultPulsarAuth)
+                    setCookieAndSuccess(ctx, pulsarAuth)
+
                     ctx.render("/ui/index.ftl", model)
                 }
             )
@@ -58,29 +63,12 @@ object HttpServer extends ZIOAppDefault:
                             ctx.result("Credentials name shouldn't be blank")
                         else
                             val newPulsarAuth = pulsarAuth.copy(credentials = pulsarAuth.credentials - credentialsName)
-                            if newPulsarAuth.credentials.isEmpty then
-                                val newCookieHeader = pulsar_auth.pulsarAuthToCookie(defaultPulsarAuth)
-                                ctx.header(
-                                    "Set-Cookie",
-                                    newCookieHeader
-                                )
-                                ctx.status(200)
-                                ctx.result("OK")
+
+                            if newPulsarAuth.credentials.isEmpty ||
+                                (newPulsarAuth.credentials.head._1 == "Default") then
+                                setCookieAndSuccess(ctx, defaultPulsarAuth)
                             else
-                                val newCookieHeader = pulsar_auth.pulsarAuthToCookie(newPulsarAuth)
-                                ctx.header(
-                                    "Set-Cookie",
-                                    newCookieHeader
-                                )
-                                ctx.status(200)
-                                ctx.result("OK")
-/*                            val newCookieHeader = pulsar_auth.pulsarAuthToCookie(newPulsarAuth)
-                            ctx.header(
-                                "Set-Cookie",
-                                newCookieHeader
-                            )
-                            ctx.status(200)
-                            ctx.result("OK")*/
+                                setCookieAndSuccess(ctx, newPulsarAuth)
         )
         .post(
             s"/pulsar-auth/add/{credentialsName}",
@@ -137,6 +125,15 @@ object HttpServer extends ZIOAppDefault:
                             ctx.status(200)
                             ctx.result("OK")
         )
+
+    def setCookieAndSuccess(ctx: io.javalin.http.Context, pulsarAuth: PulsarAuth): Unit =
+        val newCookieHeader = pulsar_auth.pulsarAuthToCookie(pulsarAuth)
+        ctx.header(
+            "Set-Cookie",
+            newCookieHeader
+        )
+        ctx.status(200)
+        ctx.result("OK")
 
     val run: IO[Throwable, Unit] = for
         config <- readConfig

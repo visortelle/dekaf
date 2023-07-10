@@ -22,7 +22,7 @@ const Button: React.FC<ButtonProps> = (props) => {
     async () => {
       const req = new GetCurrentCredentialsRequest();
       const res = await pulsarAuthServiceClient.getCurrentCredentials(req, {})
-        .catch((err) => notifyError(`Unable to get the current123123123 credentials name. ${err.message}`));
+        .catch((err) => notifyError(`Unable to get the current credentials name. ${err.message}`));
 
       if (res === undefined) {
         return undefined;
