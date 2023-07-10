@@ -31,7 +31,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
       type={props.type}
       testId={props.testId}
       disabled={props.disabled}
-      state={props.state}
+      //state={props.state}
     />
   );
   return <div className={`${s.ToolbarButton} ${props.position === 'right' ? s.ToolbarButtonRight : ''}`}>

@@ -11,6 +11,9 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { swrKeys } from '../../../swrKeys';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import React from "react";
+import * as generalHelp from "./help";
 
 const policy = 'autoTopicCreation';
 
@@ -72,8 +75,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             defaultNumPartitions: autoTopicCreationOverride.getDefaultNumPartitions() || defaultNumPartitions,
             topicType
           }
-        }; break;
-      };
+        } break;
+      }
 
       return v;
     }
@@ -113,7 +116,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             case 'partitioned': {
               autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED)
               autoTopicCreationOverride.setDefaultNumPartitions(v.defaultNumPartitions);
-            }; break;
+            } break;
             case 'non-partitioned': autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED); break;
           }
           req.setAutoTopicCreationOverride(autoTopicCreationOverride);
@@ -205,7 +208,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Auto topic creation',
-  description: <span>Enable or disable auto topic creation for this namespace, overriding broker settings.</span>,
+  description: <span>Enables or disable auto <TooltipElement tooltipHelp={generalHelp.help["topic"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/">topics</TooltipElement> creation for this namespace, overriding broker settings.</span>,
   input: <FieldInput {...props} />
 });
 

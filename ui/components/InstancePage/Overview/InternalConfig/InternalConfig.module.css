@@ -1,3 +1,7 @@
 .NoData {
   color: #aaa;
 }
+
+.HighlightedCell:hover {
+  cursor: help;
+}

@@ -5,12 +5,13 @@ import { ConfigurationField } from "../../../../ui/ConfigurationTable/Configurat
 import DurationInput from '../../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import Select from '../../../../ui/Select/Select';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as generalHelp from "../help";
 import { swrKeys } from '../../../../swrKeys';
 import WithUpdateConfirmation from '../../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import { useState } from 'react';
 import { PolicyValue } from './types';
-import { defaultPolicyValueByType, offloadThresholdFromBytes, policyValueToReq, resToPolicyValue } from './conversions';
+import { defaultPolicyValueByType, policyValueToReq, resToPolicyValue } from './conversions';
 import Input from '../../../../ui/Input/Input';
 import OffloadThresholdInput from './inputs/OffloadThresholdInput';
 import AliyunOssInput from './drivers/AliyunOssInput/AliyunOssInput';
@@ -23,6 +24,7 @@ import AzureBlobInput from './drivers/AzureBlobInput/AzureBlobInput';
 import GoogleCloudStorageInput from './drivers/GoogleCloudStorageInput/GoogleCloudStorageInput';
 import S3Input from './drivers/S3Input/S3Input';
 import FilesystemInput from './drivers/FilesystemInput/FilesystemInput';
+import TooltipElement from "../../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'offloadPolicies';
 
@@ -214,7 +216,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
   title: 'Offload policies',
   description: (
     <>
-      <div>Tiered Storage feature allows older backlog data to be offloaded to long term storage, thereby freeing up space in BookKeeper and reducing storage costs. </div>
+      <div>Tiered Storage feature allows older <TooltipElement tooltipHelp={generalHelp.help["backlog"]} link="https://pulsar.apache.org/docs/next/cookbooks-retention-expiry/#backlog-quotas">backlog</TooltipElement> data to be offloaded to long term storage, thereby freeing up space in BookKeeper and reducing storage costs. </div>
       <br />
       More info:
       <ul>

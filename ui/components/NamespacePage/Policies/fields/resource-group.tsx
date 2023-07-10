@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import stringify from 'safe-stable-stringify';
 
@@ -173,10 +172,17 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
+export type TermKey =
+  'resourceGroup'
+
+export const help: Record<TermKey, React.ReactNode> = {
+  'resourceGroup': <div>Similar for <code>bookie affinity group</code> but for brokers</div>
+}
+
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Resource group',
-  description: <span>Set Resource group a namespace.</span>,
+  description: <span>Sets the resource group (a concept similar to a <A isExternalLink href={"https://pulsar.apache.org/docs/next/administration-isolation/"}>bookie affinity group</A> but for brokers) for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

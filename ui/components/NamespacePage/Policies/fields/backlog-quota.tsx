@@ -12,6 +12,7 @@ import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirm
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import stringify from "safe-stable-stringify";
+import React from "react";
 
 const policy = 'backlogQuota';
 
