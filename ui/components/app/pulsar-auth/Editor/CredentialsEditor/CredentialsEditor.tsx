@@ -26,7 +26,7 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
     <div className={s.CredentialsEditor}>
       <FormItem>
         <FormLabel content='Name' isRequired />
-        <Input value={credentialsName} onChange={setCredentialsName} />
+        <Input value={credentialsName} annotation="Only alfanumerics, underscores(_) and dashes(-) are availible" onChange={setCredentialsName}/>
       </FormItem>
 
       <FormItem>

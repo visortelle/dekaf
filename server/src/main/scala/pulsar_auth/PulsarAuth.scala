@@ -35,7 +35,7 @@ case class OAuth2Credentials(
 given oauth2CredentialsEncoder: Encoder[OAuth2Credentials] = deriveEncoder[OAuth2Credentials]
 given oauth2CredentialsDecoder: Decoder[OAuth2Credentials] = deriveDecoder[OAuth2Credentials]
 
-val validCredentialsName: Regex = "^[a-zA-Z0-9_]*$".r
+val validCredentialsName: Regex = "^[a-zA-Z0-9_-]+$".r
 
 case class JwtCredentials(
     `type`: JwtCredentialsType,
