@@ -7,7 +7,7 @@ import { swrKeys } from '../../../swrKeys';
 import { GetCurrentCredentialsRequest } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/pulsar_auth_pb';
 import * as GrpcClient from '../../contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import icon from './icon.svg';
 
 export type ButtonProps = {};
