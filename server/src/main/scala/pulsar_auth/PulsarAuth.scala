@@ -96,4 +96,7 @@ def parsePulsarAuthJson(json: Option[String]): Either[Throwable, PulsarAuth] =
 def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
     val cookieName = "pulsar_auth"
     val cookieValue = pulsarAuth.asJson.noSpaces
-    s"$cookieName=$cookieValue; Path=/; HttpOnly; Secure"
+    
+    config.tls match
+        case None    => s"$cookieName=$cookieValue; Path=/; HttpOnly"
+        case Some(_) => s"$cookieName=$cookieValue; Path=/; HttpOnly; Secure"
