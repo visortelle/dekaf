@@ -97,7 +97,7 @@ object HttpServer extends ZIOAppDefault:
                                         setCookieAndSuccess(ctx, newPulsarAuth)
                             case _ =>
                                 ctx.status(400)
-                                ctx.result("Credentials name should be alphanumeric")
+                                ctx.result("Credentials name contains illegal characters. Only alphanumerics, underscores(_) and dashes(-) are allowed.")
         )
         .post(
             s"/pulsar-auth/use/{credentialsName}",
