@@ -9,7 +9,7 @@ import io.javalin.http.staticfiles.{Location, StaticFileConfig}
 
 import scala.jdk.CollectionConverters.*
 import _root_.pulsar_auth
-import _root_.pulsar_auth.{credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, PulsarAuth}
+import _root_.pulsar_auth.{credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, PulsarAuth, validCredentialsName}
 import io.circe.parser.decode as decodeJson
 
 object HttpServer extends ZIOAppDefault:
@@ -84,21 +84,20 @@ object HttpServer extends ZIOAppDefault:
                         val credentialsJson = ctx.body
                         val credentials = decodeJson[pulsar_auth.JwtCredentials](credentialsJson)
 
-                        credentials match
-                            case Left(err) =>
+                        ctx.pathParam("credentialsName") match
+                            case validCredentialsName() =>
+                                credentials match
+                                    case Left(err) =>
+                                        ctx.status(400)
+                                        ctx.result(s"Unable to parse credentials JSON.\n ${err.getMessage}")
+                                    case Right(credentials) =>
+                                        val newPulsarAuth = pulsarAuth.copy(
+                                            credentials = pulsarAuth.credentials + (ctx.pathParam("credentialsName") -> credentials)
+                                        )
+                                        setCookieAndSuccess(ctx, newPulsarAuth)
+                            case _ =>
                                 ctx.status(400)
-                                ctx.result(s"Unable to parse credentials JSON. ${err.getMessage}")
-                            case Right(credentials) =>
-                                val newPulsarAuth = pulsarAuth.copy(
-                                    credentials = pulsarAuth.credentials + (ctx.pathParam("credentialsName") -> credentials)
-                                )
-                                val newCookieHeader = pulsar_auth.pulsarAuthToCookie(newPulsarAuth)
-                                ctx.header(
-                                    "Set-Cookie",
-                                    newCookieHeader
-                                )
-                                ctx.status(200)
-                                ctx.result("OK")
+                                ctx.result("Credentials name should be alphanumeric")
         )
         .post(
             s"/pulsar-auth/use/{credentialsName}",

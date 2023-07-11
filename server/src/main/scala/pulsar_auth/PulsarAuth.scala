@@ -8,7 +8,9 @@ import io.circe.syntax.*
 import cats.syntax.functor.*
 import io.circe.generic.auto.*
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+
 import scala.jdk.CollectionConverters.*
+import scala.util.matching.Regex
 
 type EmptyCredentialsType = "empty"
 type OAuth2CredentialsType = "oauth2"
@@ -33,13 +35,25 @@ case class OAuth2Credentials(
 given oauth2CredentialsEncoder: Encoder[OAuth2Credentials] = deriveEncoder[OAuth2Credentials]
 given oauth2CredentialsDecoder: Decoder[OAuth2Credentials] = deriveDecoder[OAuth2Credentials]
 
+val validCredentialsName: Regex = "^[a-zA-Z0-9_-]+$".r
+
 case class JwtCredentials(
     `type`: JwtCredentialsType,
     token: String
 )
 
 given jwtCredentialsEncoder: Encoder[JwtCredentials] = deriveEncoder[JwtCredentials]
-given jwtCredentialsDecoder: Decoder[JwtCredentials] = deriveDecoder[JwtCredentials]
+given jwtCredentialsDecoder: Decoder[JwtCredentials] = Decoder.instance {
+    cursor =>
+        for
+            token <- cursor.downField("token").as[String]
+            _ <- Either.cond(
+                token.matches("^[a-zA-Z0-9_-]*\\.[a-zA-Z0-9_-]*\\.[a-zA-Z0-9_-]*$"),
+                (),
+                DecodingFailure("Invalid JWT token format", cursor.history)
+            )
+        yield JwtCredentials(`type` = "jwt", token = token)
+}
 
 type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials
 

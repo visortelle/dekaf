@@ -9,14 +9,15 @@ export type InputProps = {
   isError?: boolean,
   isSmall?: boolean,
   iconSvg?: string,
-  focusOnMount?: boolean
+  focusOnMount?: boolean,
+  annotation?: string, 
   clearable?: boolean,
   type?: HTMLInputTypeAttribute,
   inputProps?: InputHTMLAttributes<any>,
   placeholder?: string,
   testId?: string,
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId, annotation }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -26,7 +27,8 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, ico
   }, [inputRef.current]);
 
   return (
-    <div className={s.Input}>
+    <div className={`${s.Input} ${annotation && s.InputAnnotation}` }>
+      {annotation && <span className={s.Annotation}>{annotation}</span>}
       <input
         ref={inputRef}
         className={`${s.InputInput} ${isSmall ? s.SmallInputInput : ''} ${isError ? s.InputInputWithError : ''} ${iconSvg ? s.InputInputWithIcon : ''} ${clearable ? s.InputInputClearable : ''}`}
