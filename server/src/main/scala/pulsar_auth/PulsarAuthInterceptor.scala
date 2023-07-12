@@ -91,12 +91,18 @@ class PulsarAuthInterceptor extends ServerInterceptor:
 
         val pulsarAdmin = ClientsCache.getPulsarAdmin(pulsarAuth)
         pulsarAdmin match
-            case Left(_)   => // TODO send error to the client in this case.
+            case Left(_)   => cancelWithCredentials(ctx, pulsarAuth)
             case Right(pa) => ctx = ctx.withValue(RequestContext.pulsarAdmin, pa)
 
         val pulsarClient = ClientsCache.getPulsarClient(pulsarAuth)
         pulsarClient match
-            case Left(_)   => // TODO send error to the client in this case.
+            case Left(_)   => cancelWithCredentials(ctx, pulsarAuth)
             case Right(pc) => ctx = ctx.withValue(RequestContext.pulsarClient, pc)
 
         Contexts.interceptCall(ctx, call, metadata, next)
+
+    private def cancelWithCredentials(context: Context, pulsarAuth: PulsarAuth) =
+        context.withCancellation().withValue(
+            RequestContext.pulsarAuth,
+            pulsarAuth
+        )
