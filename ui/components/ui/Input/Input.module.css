@@ -2,7 +2,19 @@
   display: flex;
   position: relative;
   align-items: center;
+  flex-direction: row;
   margin: 1rem;
+}
+
+.Annotation {
+  position: absolute;
+  top: -20rem;
+  font-size: x-small;
+  color: grey;
+}
+
+.InputAnnotation {
+  margin-top: 25rem;
 }
 
 .InputIcon {

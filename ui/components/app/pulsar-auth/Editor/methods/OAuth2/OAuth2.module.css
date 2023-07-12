@@ -1,0 +1,27 @@
+.UploadZone {
+    background-color: #f5f5f5;
+    overflow: auto;
+    font-size: 14rem;
+    color: #333;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.FileUploaded {
+    background-color: #f5f5f5;
+    overflow: auto;
+    font-size: 14rem;
+    color: #333;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.UploadZoneIcon {
+    margin-bottom: 12rem;
+}
+
+.UploadZoneIcon svg {
+    fill: var(--text-color);
+    width: 36rem;
+    height: 36rem;
+}

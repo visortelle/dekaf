@@ -8,40 +8,81 @@ import io.circe.syntax.*
 import cats.syntax.functor.*
 import io.circe.generic.auto.*
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import org.apache.commons.codec.binary.Base64
+import java.net.{URLDecoder, URLEncoder}
+import java.nio.charset.StandardCharsets.UTF_8
+
 import scala.jdk.CollectionConverters.*
+import scala.util.matching.Regex
+
+
+val validCredentialsName: Regex = "^[a-zA-Z0-9_-]+$".r
 
 type EmptyCredentialsType = "empty"
 type OAuth2CredentialsType = "oauth2"
 type JwtCredentialsType = "jwt"
+
+type CredentialsName = String
 type CredentialsType = EmptyCredentialsType | OAuth2CredentialsType | JwtCredentialsType
+type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials
 
 case class EmptyCredentials(
     `type`: EmptyCredentialsType
+)
+case class OAuth2Credentials(
+                                `type`: OAuth2CredentialsType,
+                                issuerUrl: String,
+                                privateKey: String,
+                                audience: Option[String],
+                                scope: Option[String]
+)
+
+case class JwtCredentials(
+                             `type`: JwtCredentialsType,
+                             token: String
+)
+
+case class PulsarAuth(
+                         current: Option[String],
+                         credentials: Map[CredentialsName, Credentials]
 )
 
 given emptyCredentialsEncoder: Encoder[EmptyCredentials] = deriveEncoder[EmptyCredentials]
 given emptyCredentialsDecoder: Decoder[EmptyCredentials] = deriveDecoder[EmptyCredentials]
 
-case class OAuth2Credentials(
-    `type`: EmptyCredentialsType,
-    issuerUrl: String,
-    privateKey: String,
-    audience: Option[String],
-    scope: Option[String]
-)
-
 given oauth2CredentialsEncoder: Encoder[OAuth2Credentials] = deriveEncoder[OAuth2Credentials]
-given oauth2CredentialsDecoder: Decoder[OAuth2Credentials] = deriveDecoder[OAuth2Credentials]
+given oauth2CredentialsDecoder: Decoder[OAuth2Credentials] = Decoder.instance:
+    cursor =>
+        for
+            issuerUrl <- cursor.downField("issuerUrl").as[String]
+            _ <- Either.cond(
+                issuerUrl.matches("^https?://.*$"),
+                (),
+                DecodingFailure("Invalid issuerUrl format", cursor.history)
+            )
+            privateKey <- cursor.downField("privateKey").as[String]
+            audience <- cursor.downField("audience").as[Option[String]]
+            scope <- cursor.downField("scope").as[Option[String]]
+        yield OAuth2Credentials(
+            `type` = "oauth2",
+            issuerUrl = issuerUrl,
+            privateKey = privateKey,
+            audience = audience,
+            scope = scope
+        )
 
-case class JwtCredentials(
-    `type`: JwtCredentialsType,
-    token: String
-)
 
 given jwtCredentialsEncoder: Encoder[JwtCredentials] = deriveEncoder[JwtCredentials]
-given jwtCredentialsDecoder: Decoder[JwtCredentials] = deriveDecoder[JwtCredentials]
-
-type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials
+given jwtCredentialsDecoder: Decoder[JwtCredentials] = Decoder.instance:
+    cursor =>
+        for
+            token <- cursor.downField("token").as[String]
+            _ <- Either.cond(
+                token.matches("^[a-zA-Z0-9_-]*\\.[a-zA-Z0-9_-]*\\.[a-zA-Z0-9_-]*$"),
+                (),
+                DecodingFailure("Invalid JWT token format", cursor.history)
+            )
+        yield JwtCredentials(`type` = "jwt", token = token)
 
 given credentialsEncoder: Encoder[Credentials] = Encoder.instance {
     case c: EmptyCredentials  => c.asJson
@@ -49,40 +90,75 @@ given credentialsEncoder: Encoder[Credentials] = Encoder.instance {
     case c: JwtCredentials    => c.asJson
 }
 
-given credentialsDecoder: Decoder[Credentials] = List[Decoder[Credentials]](
-    Decoder[EmptyCredentials].widen,
-    Decoder[OAuth2Credentials].widen,
-    Decoder[JwtCredentials].widen
-).reduceLeft(_ or _)
+given credentialsDecoder: Decoder[Credentials] = new Decoder[Credentials]:
+        final def apply(c: HCursor): Decoder.Result[Credentials] =
+            val decoders = List[Decoder[Credentials]](
+                Decoder[EmptyCredentials].widen,
+                Decoder[OAuth2Credentials].widen,
+                Decoder[JwtCredentials].widen
+            )
 
-type CredentialsName = String
-case class PulsarAuth(
-    current: Option[String],
-    credentials: Map[CredentialsName, Credentials]
-)
+            decoders
+                .map(decoder => decoder.tryDecode(c))
+                .collectFirst { case Right(value) => Right(value) }
+                .getOrElse(Left(DecodingFailure("Incorrect credentials provided.", c.history)))
+
+given pulsarAuthEncoder: Encoder[PulsarAuth] = deriveEncoder[PulsarAuth]
+given pulsarAuthDecoder: Decoder[PulsarAuth] = deriveDecoder[PulsarAuth]
 
 val defaultPulsarAuth = PulsarAuth(
     credentials = Map("Default" -> EmptyCredentials(`type` = "empty")),
     current = Some("Default")
 )
 
-given pulsarAuthEncoder: Encoder[PulsarAuth] = deriveEncoder[PulsarAuth]
-given pulsarAuthDecoder: Decoder[PulsarAuth] = deriveDecoder[PulsarAuth]
-
 def parsePulsarAuthJson(json: Option[String]): Either[Throwable, PulsarAuth] =
     json match
         case None => Right(defaultPulsarAuth)
-        case Some(v) =>
+        case Some(encodedValue) =>
+            val v = URLDecoder.decode(encodedValue, UTF_8)
+
             decode[PulsarAuth](v) match
                 case Left(err) =>
                     println(s"Unable to parse cookie: ${err.getMessage}")
                     Left(new Exception(s"Unable to parse pulsar_auth cookie."))
-                case Right(pulsarAuth) => Right(pulsarAuth)
+                case Right(pulsarAuth) => Right(
+                    PulsarAuth(
+                        current = pulsarAuth.current,
+                        credentials = pulsarAuth.credentials.map((name, credentials) => credentials match
+                            case cr: EmptyCredentials => (name, cr)
+                            case cr: OAuth2Credentials => (
+                                name,
+                                cr.copy(
+                                    issuerUrl = URLDecoder.decode(cr.issuerUrl, UTF_8),
+                                    privateKey = "data:application/json;base64,"+ URLDecoder.decode(cr.privateKey, UTF_8),
+                                    audience = cr.audience.map(audience => URLDecoder.decode(audience, UTF_8)),
+                                    scope = cr.scope.map(scope => URLDecoder.decode(scope, UTF_8))
+                                )
+                            )
+                            case cr: JwtCredentials => (name, cr)
+                        )
+                    )
+                )
 
 def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
+    val pulsarAuthWithoutEncodingMetadata = pulsarAuth.copy(
+        credentials = pulsarAuth.credentials.map((name, credentials) => credentials match
+            case cr: OAuth2Credentials => (
+                name,
+                cr.copy(
+                    issuerUrl = URLEncoder.encode(cr.issuerUrl, UTF_8),
+                    privateKey = URLEncoder.encode(cr.privateKey.replace("data:application/json;base64,", ""), UTF_8),
+                    audience = cr.audience.map(audience => URLEncoder.encode(audience, UTF_8)),
+                    scope = cr.scope.map(scope => URLEncoder.encode(scope, UTF_8))
+                )
+            )
+            case _ => (name, credentials)
+        )
+    )
+
     val cookieName = "pulsar_auth"
-    val cookieValue = pulsarAuth.asJson.noSpaces
-    
+    val cookieValue = pulsarAuthWithoutEncodingMetadata.asJson.noSpaces
+
     config.tls match
         case None    => s"$cookieName=$cookieValue; Path=/; HttpOnly"
         case Some(_) => s"$cookieName=$cookieValue; Path=/; HttpOnly; Secure"
