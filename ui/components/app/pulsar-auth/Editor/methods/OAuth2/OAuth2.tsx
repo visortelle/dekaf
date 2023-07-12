@@ -4,6 +4,11 @@ import { OAuth2Credentials } from '../../../domain';
 import Input from '../../../../../ui/Input/Input';
 import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import UploadZone from '../../../../../ui/UploadZone/UploadZone';
+import { FileEntry } from '../../../../../ui/UploadZone/UploadZone';
+import * as Notifications from '../../../../contexts/Notifications';
+import SvgIcon from "../../../../../ui/SvgIcon/SvgIcon";
+import uploadCompleteIcon from './complete.svg';
 
 export type OAuth2Props = {
   value: OAuth2Credentials
@@ -11,28 +16,82 @@ export type OAuth2Props = {
 };
 
 const OAuth2: React.FC<OAuth2Props> = (props) => {
+  const { notifyInfo } = Notifications.useContext();
+  const [ isFileLoaded, setIsFileLoaded ] = React.useState<boolean>(false);
+
+  const MAX_SIZE_KB = 5;
+
+  const getBase64 = (file: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        const base64Data = base64String.split(',')[1];
+        resolve(base64Data);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  }
+
+  const submitKeyFile = async (files: FileEntry[]) => {
+    const file = files[0];
+
+    try {
+      JSON.parse(file.content);
+    } catch (e) {
+      notifyInfo("Unable to parse the private key file.\nPlease make sure it's a valid JSON file.")
+      return;
+    }
+
+    const base64Content = await getBase64(new Blob([file.content], { type: "application/json" }));
+
+    const sizeInKB = file.content.length / 1024;
+    if (sizeInKB > MAX_SIZE_KB) {
+      notifyInfo(`The file size is larger than ${MAX_SIZE_KB}KB.`);
+      return;
+    }
+
+    setIsFileLoaded(true);
+
+    props.onChange({ ...props.value, privateKey: base64Content });
+  }
+
   return (
     <div className={s.OAuth2}>
       <FormItem>
         <FormLabel content='Issuer URL' isRequired />
         <Input
-          onChange={() => props.onChange({ ...props.value, issuerUrl: '' })}
+          onChange={v => props.onChange({ ...props.value, issuerUrl: v })}
           value={props.value.issuerUrl}
         />
       </FormItem>
 
       <FormItem>
         <FormLabel content='Private Key' isRequired />
-        <Input
-          onChange={() => props.onChange({ ...props.value, privateKey: '' })}
-          value={props.value.privateKey}
-        />
+        <UploadZone isDirectory={false} onFiles={(files) => submitKeyFile(files)} isUploadPictureVisible={!isFileLoaded}>
+          {!isFileLoaded && 
+           <div className={s.UploadZone}>
+              <span>Click here or drag'n'drop a .json file</span> 
+            </div>
+          }
+          {isFileLoaded && 
+            <>
+              <div className={s.UploadZoneIcon}>
+                <SvgIcon svg={uploadCompleteIcon} />
+              </div>
+              <div className={s.FileUploaded}>
+                <span>File loaded!</span>
+              </div>
+            </>
+          }
+        </UploadZone>
       </FormItem>
 
       <FormItem>
         <FormLabel content='Audience' />
         <Input
-          onChange={() => props.onChange({ ...props.value, audience: '' })}
+          onChange={v => props.onChange({ ...props.value, audience: v })}
           value={props.value.audience}
         />
       </FormItem>
@@ -40,7 +99,7 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
       <FormItem>
         <FormLabel content='Scope' />
         <Input
-          onChange={() => props.onChange({ ...props.value, scope: '' })}
+          onChange={v => props.onChange({ ...props.value, scope: v })}
           value={props.value.scope}
         />
       </FormItem>

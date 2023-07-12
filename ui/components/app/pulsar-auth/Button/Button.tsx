@@ -44,7 +44,12 @@ const Button: React.FC<ButtonProps> = (props) => {
         onClick={() => modals.push({
           id: 'auth-modal',
           title: `Pulsar Credentials`,
-          content: <Editor onDone={modals.pop} />,
+          content: <Editor onDone={
+            async () => {
+              modals.pop();
+              await mutate(swrKeys.pulsar.tenants.listTenants._())
+            }
+          } />,
         })}
         text={`${currentCredentials}`}
       />
