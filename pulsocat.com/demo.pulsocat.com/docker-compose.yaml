@@ -1,0 +1,7 @@
+services:
+  pulsocat:
+    image: "tealtools/pulsocat:main"
+    ports:
+      - "8090:8090"
+  demoapp:
+    image: "tealtools/pulsocat-demoapp:main"

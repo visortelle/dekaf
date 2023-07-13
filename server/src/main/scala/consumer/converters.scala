@@ -137,7 +137,8 @@ object converters:
                     case v if v.isEmpty => Left(new Exception(s"Message \"${msg.getMessageId}\" uses JSON schema, but its' content isn't a valid JSON string."))
                     case _              => Right(bytesToString(msgData))
             case SchemaType.PROTOBUF        => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
-            case SchemaType.PROTOBUF_NATIVE => protobufnative.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
+            case SchemaType.PROTOBUF_NATIVE =>
+                protobufnative.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
             case SchemaType.KEY_VALUE       => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
             case SchemaType.BOOLEAN         => bytesToBoolean(msgData).map(v => if v then "true" else "false")
             case SchemaType.INT8            => bytesToInt8(msgData).map(_.toString)
