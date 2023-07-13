@@ -94,7 +94,7 @@ case class Config(
     @describe("TLS configuration")
     tls: Option[TlsConfig] = None,
     @describe("Internal configuration. Not intended to be changed by the user.")
-    internal: Option[InternalConfig] = None
+    internal: Option[InternalConfig] = None,
 )
 
 val defaultConfig = Config(
@@ -115,7 +115,7 @@ val defaultConfig = Config(
     library = LibraryConfig(
         path = "./library"
     ),
-    tls = None
+    tls = None,
 )
 
 val configDescriptor = descriptor[Config].default(defaultConfig)

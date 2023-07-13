@@ -19,14 +19,13 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
   const [credentialsName, setCredentialsName] = React.useState<string>('');
   const [credentials, setCredentials] = React.useState<Credentials>({ type: 'empty' });
   const { config } = AppContext.useContext();
-  const { notifyInfo, notifyError } = Notifications.useContext();
-  const [errors, setErrors] = React.useState<string[]>([]);
+  const { notifyError } = Notifications.useContext();
 
   return (
     <div className={s.CredentialsEditor}>
       <FormItem>
         <FormLabel content='Name' isRequired />
-        <Input value={credentialsName} onChange={setCredentialsName} />
+        <Input value={credentialsName} annotation="Only alphanumerics, underscores(_) and dashes(-) are allowed." onChange={setCredentialsName} />
       </FormItem>
 
       <FormItem>
@@ -69,39 +68,35 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
         )}
       </div>
 
-      {errors.length > 0 && (
-        <div className={s.Errors}>
-          {errors.map((error, i) => (
-            <div key={i}>{error}</div>
-          ))}
-        </div>
-      )}
-
       <div className={s.Footer}>
         <Button type='regular' text='Cancel' onClick={props.onDone} />
         <Button
           type='primary'
-          disabled={credentialsName.length === 0 || errors.length > 0}
+          disabled={credentialsName.length === 0}
           text='Save'
           onClick={async () => {
             const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
               method: 'POST',
               body: JSON.stringify(credentials),
-            }).catch(err => notifyError(`Unable to save credentials: ${err}`));
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            })
+            .then(async res => {
+              if (res.status === 400) {
+                let errorBody = await res.text();
+                notifyError(errorBody);
+              } else if (res.status !== 200) {
+                notifyError('Server error happened.');
+              } else {
+                props.onDone();
+              }
+            })
+            .catch(err => notifyError(`Unable to save credentials: ${err}`));
 
             if (res === undefined) {
               return;
             }
-
-            if (res.status === 400) {
-              notifyInfo('Invalid credentials provided.');
-              return;
-            } else if (res.status !== 200) {
-              notifyInfo('Server error happened.');
-              return;
-            }
-
-            props.onDone();
           }}
         />
       </div>

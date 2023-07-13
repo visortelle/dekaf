@@ -2,14 +2,19 @@ package server.http
 
 import zio.*
 import zio.ZIOAppDefault
-import _root_.config.{readConfig, Config}
+import _root_.config.{Config, readConfig}
 import io.javalin.Javalin
 import io.javalin.rendering.template.JavalinFreemarker
 import io.javalin.http.staticfiles.{Location, StaticFileConfig}
 
 import scala.jdk.CollectionConverters.*
 import _root_.pulsar_auth
-import _root_.pulsar_auth.{credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, PulsarAuth}
+import io.circe.parser.decode as decodeJson
+import _root_.pulsar_auth.{PulsarAuthRoutes, defaultPulsarAuth}
+import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
+import scala.jdk.CollectionConverters.*
+import _root_.pulsar_auth
+import _root_.pulsar_auth.{credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, PulsarAuth, validCredentialsName}
 import io.circe.parser.decode as decodeJson
 
 object HttpServer extends ZIOAppDefault:
@@ -35,92 +40,17 @@ object HttpServer extends ZIOAppDefault:
                             "webServiceUrl" -> appConfig.pulsarInstance.webServiceUrl
                         ).asJava
                     ).asJava
+
+                    val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
+                    val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson).getOrElse(defaultPulsarAuth)
+                    PulsarAuthRoutes.setCookieAndSuccess(ctx, pulsarAuth)
+
                     ctx.render("/ui/index.ftl", model)
                 }
             )
         }
         .get("/health", ctx => ctx.result("OK"))
-        // TODO: move "/pulsar-auth/*" endpoints to the pulsar_auth package
-        .post(
-            "/pulsar-auth/delete/{credentialsName}",
-            ctx =>
-                val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
-
-                pulsarAuth match
-                    case Left(_) =>
-                        ctx.status(400)
-                        ctx.result(s"Unable to parse pulsar_auth cookie")
-                    case Right(pulsarAuth) =>
-                        val credentialsName = ctx.pathParam("credentialsName")
-                        if credentialsName.isBlank then
-                            ctx.status(400)
-                            ctx.result("Credentials name shouldn't be blank")
-                        else
-                            val newPulsarAuth = pulsarAuth.copy(credentials = pulsarAuth.credentials - credentialsName)
-                            val newCookieHeader = pulsar_auth.pulsarAuthToCookie(newPulsarAuth)
-                            ctx.header(
-                                "Set-Cookie",
-                                newCookieHeader
-                            )
-                            ctx.status(200)
-                            ctx.result("OK")
-        )
-        .post(
-            s"/pulsar-auth/add/{credentialsName}",
-            ctx =>
-                val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
-
-                pulsarAuth match
-                    case Left(_) =>
-                        ctx.status(400)
-                        ctx.result("Unable to parse pulsar_auth cookie")
-                    case Right(pulsarAuth) =>
-                        val credentialsJson = ctx.body
-                        val credentials = decodeJson[pulsar_auth.JwtCredentials](credentialsJson)
-
-                        credentials match
-                            case Left(err) =>
-                                ctx.status(400)
-                                ctx.result(s"Unable to parse credentials JSON. ${err.getMessage}")
-                            case Right(credentials) =>
-                                val newPulsarAuth = pulsarAuth.copy(
-                                    credentials = pulsarAuth.credentials + (ctx.pathParam("credentialsName") -> credentials)
-                                )
-                                val newCookieHeader = pulsar_auth.pulsarAuthToCookie(newPulsarAuth)
-                                ctx.header(
-                                    "Set-Cookie",
-                                    newCookieHeader
-                                )
-                                ctx.status(200)
-                                ctx.result("OK")
-        )
-        .post(
-            s"/pulsar-auth/use/{credentialsName}",
-            ctx =>
-                val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
-
-                pulsarAuth match
-                    case Left(_) =>
-                        ctx.status(400)
-                        ctx.result("Unable to parse pulsar_auth cookie")
-                    case Right(pulsarAuth) =>
-                        val credentialsName = ctx.pathParam("credentialsName")
-                        if credentialsName.isBlank then
-                            ctx.status(400)
-                            ctx.result("Credentials name shouldn't be blank")
-                        else
-                            val newPulsarAuth = pulsarAuth.copy(current = Some(credentialsName))
-                            val newCookieHeader = pulsar_auth.pulsarAuthToCookie(newPulsarAuth)
-                            ctx.header(
-                                "Set-Cookie",
-                                newCookieHeader
-                            )
-                            ctx.status(200)
-                            ctx.result("OK")
-        )
+        .routes(PulsarAuthRoutes.routes)
 
     val run: IO[Throwable, Unit] = for
         config <- readConfig

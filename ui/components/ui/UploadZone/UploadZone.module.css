@@ -23,3 +23,6 @@
   height: 36rem;
 }
 
+.hidden {
+  display: none;
+}
