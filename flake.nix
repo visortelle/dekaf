@@ -71,7 +71,7 @@
               pkgs.sbt
               pkgs.maven
 
-              pkgs.protobuf3_20
+              pkgs.protobuf
               pkgs.buf
               protoc-gen-grpc-web
               protoc-gen-scala

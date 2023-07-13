@@ -3,7 +3,7 @@
 set -eo pipefail
 
 this_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-repo_dir=${this_dir}/..
+repo_dir=${this_dir}/../..
 
 image_tag=$("${this_dir}/get-tag.sh")
 

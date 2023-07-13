@@ -1,79 +1,8 @@
 import zio.*
 import generators.*
-import com.fasterxml.jackson.annotation.PropertyAccessor
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.avro.AvroMapper
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader
-import com.google.protobuf.GeneratedMessageV3
 import demo.tenants.schemas.SchemasTenant
-import org.apache.pulsar.client.impl.schema.{
-    AvroSchema,
-    JSONSchema,
-    ProtobufNativeSchema,
-    ProtobufNativeSchemaUtils,
-    ProtobufSchema
-}
-import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import client.{adminClient, pulsarClient}
 import scala.jdk.CollectionConverters.*
-
-//val personSchemaInfoProtobufNative = ProtobufNativeSchema
-//    .of(classOf[com.tools.teal.pulsar.ui.test.delivery_app.v1.Person])
-//    .getSchemaInfo
-
-//
-//_ =>
-//  val v = com.tools.teal.pulsar.ui.test.delivery_app.v1.Person.newBuilder()
-//    .setName(faker.funnyName.name())
-//    .setAge(faker.number.numberBetween(0, 120))
-//    .addAllHobbies(() => List.tabulate(faker.number.numberBetween(0, 10))(_ => faker.hobby.activity).asJava.iterator())
-//    .build()
-//  Encoders.toProto(v)
-
-//def mkTenantPlanGenerator = {
-//    val tenantName = s"strange-tenant-${java.time.Instant.now.toEpochMilli.toString}"
-//
-//    TenantPlanGenerator.make(
-//        mkName = _ => tenantName,
-//        mkNamespacesCount = _ => 1,
-//        mkNamespaceGenerator = namespaceIndex =>
-//            val namespaceName = s"strange-namespace-${namespaceIndex.toString}"
-//            NamespacePlanGenerator.make(
-//                mkTenant = () => tenantName,
-//                mkName = _ => namespaceName,
-//                mkTopicsCount = _ => 1,
-//                mkTopicGenerator = _ =>
-//                    TopicPlanGenerator.make(
-//                        mkTenant = () => tenantName,
-//                        mkNamespace = () => namespaceName,
-//                        mkName = topicIndex => s"strange-topic-${topicIndex.toString}",
-//                        mkProducersCount = _ => 3,
-//                        mkProducerGenerator = _ =>
-//                            ProducerPlanGenerator.make(
-//                                mkSchedule = _ => Schedule.fixed(Duration.fromMillis(100)),
-//                                mkPayload = _ =>
-//                                    _ =>
-//                                        val v = com.tools.teal.pulsar.ui.test.delivery_app.v1.Person
-//                                            .newBuilder()
-//                                            .setName(faker.funnyName.name())
-//                                            .setAge(faker.number.numberBetween(0, 120))
-//                                            .addAllHobbies(() =>
-//                                                List.tabulate(faker.number.numberBetween(0, 10))(_ =>
-//                                                    faker.hobby.activity
-//                                                ).asJava
-//                                                    .iterator()
-//                                            )
-//                                            .build()
-//                                        Encoders.toProto(v)
-//                            ),
-//                        mkSubscriptionsCount = _ => 3,
-//                        mkSchemaInfos = _ =>
-//                            val schema = personSchemaInfoProtobufNative
-//                            List(schema)
-//                    )
-//            )
-//    )
-//}
 
 object PulsocatDemoApp extends ZIOAppDefault:
     private def appLogic = for {
@@ -89,6 +18,7 @@ object PulsocatDemoApp extends ZIOAppDefault:
     } yield ()
 
     private def cleanup = for {
+        _ <- ZIO.logInfo("Stopping app...")
         _ <- ZIO.attempt(adminClient.close())
         _ <- ZIO.attempt(pulsarClient.close())
     } yield ()

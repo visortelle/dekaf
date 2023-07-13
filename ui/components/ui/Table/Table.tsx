@@ -130,7 +130,9 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
   const data = loadedData ?? [];
   const lazyDataLoadedCacheKey = itemsRenderedDebounced.length === 0 ?
     null :
-    [props.tableId, 'lazy-data'].concat(itemsRenderedDebounced.map(item => props.getId(item.data!)))
+    [props.tableId, 'lazy-data']
+      .concat(props.dataLoader.cacheKey || [])
+      .concat(itemsRenderedDebounced.map(item => props.getId(item.data!)))
 
   const { data: lazyDataChunk, error: lazyDataChunkError } = useSWR(
     lazyDataLoadedCacheKey,

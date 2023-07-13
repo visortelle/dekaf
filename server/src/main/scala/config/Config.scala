@@ -125,7 +125,7 @@ val configSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
 val internalHttpPort = getFreePort
 val internalGrpcPort = getFreePort
 
-val readConfig =
+def readConfig =
     for
         configMemo <- read(configDescriptor from configSource)
             .map(_.copy(internal = Some(InternalConfig(httpPort = internalHttpPort, grpcPort = internalGrpcPort))))
