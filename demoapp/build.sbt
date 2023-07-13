@@ -1,6 +1,7 @@
 val scala3Version = "3.3.0"
 val pulsarVersion = "3.0.0"
 val zioVersion = "2.0.15"
+val zioConfigVersion = "3.0.7"
 val circeVersion = "0.14.5"
 val jacksonVersion = "2.15.2"
 
@@ -8,10 +9,17 @@ val jacksonVersion = "2.15.2"
 cancelable in Global := true
 fork in Global := true
 
+run / javaOptions ++= Seq("-Xmx8G")
+
+scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
+
 lazy val root = project
+    .enablePlugins(BuildInfoPlugin)
+    .enablePlugins(JavaAppPackaging)
+    .enablePlugins(UniversalPlugin)
     .in(file("."))
     .settings(
-        name := "pulsocat-demo-app",
+        name := "demoapp",
         version := "0.1.0-SNAPSHOT",
         scalaVersion := scala3Version,
         libraryDependencies ++= Seq(
@@ -32,6 +40,10 @@ lazy val root = project
 
             // ZIO
             "dev.zio" %% "zio" % zioVersion,
+            "dev.zio" %% "zio-config" % zioConfigVersion,
+            "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
+            "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
+            "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
 
             // Lenses
             "dev.optics" %% "monocle-core" % "3.2.0",

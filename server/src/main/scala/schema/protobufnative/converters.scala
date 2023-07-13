@@ -3,9 +3,9 @@ package schema.protobufnative
 import _root_.schema.shared.{JsonAsBytes, JsonSerDe, Proto3Datum}
 import com.google.protobuf.util.JsonFormat
 import com.google.protobuf.Descriptors.Descriptor
-import com.google.protobuf.DynamicMessage
-import com.google.protobuf.Struct
+import com.google.protobuf.{DescriptorProtos, DynamicMessage, Struct}
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
+
 import scala.jdk.CollectionConverters.*
 
 object converters extends JsonSerDe[Proto3Datum]:
@@ -14,12 +14,13 @@ object converters extends JsonSerDe[Proto3Datum]:
             val descriptor = ProtobufNativeSchemaUtils.deserialize(schema)
             val typeRegistry = JsonFormat.TypeRegistry.newBuilder().add(descriptor).build
 
-            val structBuilder = Struct.newBuilder()
-            JsonFormat.parser.ignoringUnknownFields
+            val builder = DynamicMessage.newBuilder(descriptor)
+            JsonFormat.parser()
+                .ignoringUnknownFields
                 .usingTypeRegistry(typeRegistry)
-                .merge(new String(json), structBuilder)
+                .merge(String(json, "UTF-8"), builder)
 
-            val proto3Datum = structBuilder.build
+            val proto3Datum = builder.build
 
             Right(proto3Datum.toByteArray)
         } catch {
@@ -35,7 +36,8 @@ object converters extends JsonSerDe[Proto3Datum]:
             val json = JsonFormat
                 .printer
                 .usingTypeRegistry(typeRegistry)
-                .omittingInsignificantWhitespace
+                .preservingProtoFieldNames()
+                .omittingInsignificantWhitespace()
                 .print(message)
 
             Right(json.getBytes)
