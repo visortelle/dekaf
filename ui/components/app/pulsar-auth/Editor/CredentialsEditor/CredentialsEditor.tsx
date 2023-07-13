@@ -10,6 +10,8 @@ import * as Notifications from '../../../contexts/Notifications';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import Input from '../../../../ui/Input/Input';
+import { swrKeys } from '../../../../swrKeys';
+import { mutate } from 'swr';
 
 export type CredentialsEditorProps = {
   onDone: () => void;
@@ -86,17 +88,18 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
               if (res.status === 400) {
                 let errorBody = await res.text();
                 notifyError(errorBody);
+                return;
               } else if (res.status !== 200) {
                 notifyError('Server error happened.');
-              } else {
-                props.onDone();
+                return;
               }
             })
             .catch(err => notifyError(`Unable to save credentials: ${err}`));
 
-            if (res === undefined) {
-              return;
-            }
+            await mutate(swrKeys.pulsar.auth.credentials._());
+            await mutate(swrKeys.pulsar.auth.credentials.current._());
+
+            props.onDone();
           }}
         />
       </div>

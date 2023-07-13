@@ -39,6 +39,7 @@ object PulsarAuthRoutes:
                                         ctx.result(s"Unable to parse credentials JSON.\n ${err.getMessage}")
                                     case Right(credentials) =>
                                         val newPulsarAuth = pulsarAuth.copy(
+                                            current = Some(ctx.pathParam("credentialsName")),
                                             credentials = pulsarAuth.credentials + (ctx.pathParam("credentialsName") -> credentials)
                                         )
                                         setCookieAndSuccess(ctx, newPulsarAuth)
