@@ -9,6 +9,9 @@ build-pulsocat:
 build-demoapp:
 	cd ./docker/demoapp && make build
 
+.PHONY: build
+build: build-pulsocat build-demoapp
+
 .PHONY: dev
 dev:
 	nix develop
