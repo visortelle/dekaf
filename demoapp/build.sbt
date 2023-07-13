@@ -15,6 +15,10 @@ packageDoc / publishArtifact := false
 
 scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
 
+run / javaOptions ++= Seq("-Xmx8G")
+
+scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
+
 lazy val root = project
     .enablePlugins(BuildInfoPlugin)
     .enablePlugins(JavaAppPackaging)
