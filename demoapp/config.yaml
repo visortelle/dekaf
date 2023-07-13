@@ -4,4 +4,4 @@ auth:
   oauth2:
     issuerUrl: "https://auth.streamnative.cloud/"
     audience: "urn:sn:pulsar:o-xy6ek:instance-d"
-    keyFile: "/oauth2-private-key.json"
+    privateKey: "file:///Users/visortelle/Downloads/o-xy6ek-cluster-b-admin.json"
