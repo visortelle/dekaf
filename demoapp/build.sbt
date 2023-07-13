@@ -6,10 +6,12 @@ val circeVersion = "0.14.5"
 val jacksonVersion = "2.15.2"
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT
-cancelable in Global := true
-fork in Global := true
+Global / cancelable := true
+Global / fork := true
 
 run / javaOptions ++= Seq("-Xmx8G")
+
+packageDoc / publishArtifact := false
 
 scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
 
