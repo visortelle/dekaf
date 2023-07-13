@@ -15,9 +15,10 @@ object converters extends JsonSerDe[Proto3Datum]:
             val typeRegistry = JsonFormat.TypeRegistry.newBuilder().add(descriptor).build
 
             val structBuilder = Struct.newBuilder()
-            JsonFormat.parser.ignoringUnknownFields
+            JsonFormat.parser()
+                .ignoringUnknownFields
                 .usingTypeRegistry(typeRegistry)
-                .merge(new String(json), structBuilder)
+                .merge(String(json, "UTF-8"), structBuilder)
 
             val proto3Datum = structBuilder.build
 
@@ -29,7 +30,7 @@ object converters extends JsonSerDe[Proto3Datum]:
     def toJson(schema: Array[Byte], data: Proto3Datum): Either[Throwable, JsonAsBytes] =
         try {
             val descriptor = ProtobufNativeSchemaUtils.deserialize(schema)
-            val message = DynamicMessage.parseFrom(descriptor, data)
+            val message = Struct.parseFrom(data)
 
             val typeRegistry = JsonFormat.TypeRegistry.newBuilder.add(descriptor).build
             val json = JsonFormat

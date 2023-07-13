@@ -2,15 +2,37 @@ package client
 
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
-import org.apache.pulsar.client.api.AuthenticationFactory
-import _root_.config.config
+import org.apache.pulsar.client.api.{Authentication, AuthenticationFactory}
+import org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2
+import _root_.config.{readConfigAsync, AuthConfig, JwtConfig, OAuth2Config}
 
-val adminClient = PulsarAdmin.builder
-    .serviceHttpUrl(config.webServiceUrl)
-    .authentication(AuthenticationFactory.token(config.auth.jwt))
-    .build
+import java.net.URI
+import scala.concurrent.Await
+import scala.concurrent.duration.{Duration, SECONDS}
 
-val pulsarClient = PulsarClient.builder
-    .serviceUrl(config.brokerServiceUrl)
-    .authentication(AuthenticationFactory.token(config.auth.jwt))
-    .build
+val config = Await.result(readConfigAsync, Duration(10, SECONDS))
+
+val authentication: Option[Authentication] = config.auth match
+    case Some(AuthConfig(_, Some(JwtConfig(token)))) => Some(AuthenticationFactory.token(token))
+    case Some(AuthConfig(Some(OAuth2Config(issuerUrl, privateKey, audience, scope)), _)) =>
+        val auth = AuthenticationFactoryOAuth2.clientCredentials(
+            new URI(issuerUrl).toURL,
+            new URI(privateKey).toURL,
+            audience.orNull,
+            scope.orNull
+        )
+        Some(auth)
+    case _ => None
+
+val adminClient =
+    val builder = PulsarAdmin.builder
+        .serviceHttpUrl(config.webServiceUrl)
+    authentication.foreach(builder.authentication)
+    builder.build
+
+val pulsarClient =
+    val builder = PulsarClient.builder
+        .serviceUrl(config.brokerServiceUrl)
+        .connectionsPerBroker(16)
+    authentication.foreach(builder.authentication)
+    builder.build

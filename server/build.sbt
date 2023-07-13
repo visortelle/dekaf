@@ -16,7 +16,9 @@ val javaOpts = Seq(
     "--add-opens=java.base/sun.net=ALL-UNNAMED"
 )
 
-scalacOptions ++= Seq("-Xmax-inlines", "50") // https://github.com/softwaremill/magnolia/issues/374
+scalacOptions ++= Seq(
+  "-Xmax-inlines", "50", // https://github.com/softwaremill/magnolia/issues/374
+)
 
 cancelable in Global := true
 fork := true
@@ -84,7 +86,7 @@ lazy val root = project
 
 // Protobuf stuff. See also /project/scalapb.sbt
 libraryDependencies ++= Seq(
-    "com.google.protobuf" % "protobuf-java" % "3.23.2",
+    "com.google.protobuf" % "protobuf-java" % "3.22.2",
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
