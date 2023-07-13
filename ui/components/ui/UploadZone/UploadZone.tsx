@@ -8,6 +8,7 @@ export type UploadZoneProps = {
   children: React.ReactNode,
   onFiles: (files: FileEntry[]) => void,
   isDirectory: boolean,
+  isUploadPictureVisible?: boolean,
 }
 export type FileEntry = {
   relativePath: string;
@@ -22,7 +23,7 @@ const UploadZone: React.FC<UploadZoneProps> = (props) => {
       directory={props.isDirectory}
       beforeUpload={async (_file, _files) => {
         const content = await _file.text();
-        filesBuffer.current.push({ relativePath: _file.webkitRelativePath || _file.name, content });
+        filesBuffer.current.push({ relativePath: _file.webkitRelativePath || _file.name, content: content });
 
         if (filesBuffer.current.length === _files.length) {
           props.onFiles(filesBuffer.current);
@@ -32,7 +33,7 @@ const UploadZone: React.FC<UploadZoneProps> = (props) => {
       }}
     >
       <div className={s.UploadZone}>
-        <div className={s.UploadZoneIcon}>
+        <div className={s.UploadZoneIcon} hidden={!props.isUploadPictureVisible}>
           <SvgIcon svg={uploadIcon} />
         </div>
         {props.children}

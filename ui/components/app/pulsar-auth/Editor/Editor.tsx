@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import s from './Editor.module.css'
 import * as GrpcClient from '../../contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../../app/contexts/Notifications';
@@ -134,9 +134,9 @@ const Editor: React.FC<EditorProps> = (props) => {
       {
         view === 'new' && (
           <CredentialsEditor
-            onDone={() => {
+            onDone={async () => {
               setView('list');
-              mutate(swrKeys.pulsar.auth.credentials._());
+              await mutate(swrKeys.pulsar.auth.credentials._());
             }}
           />
         )

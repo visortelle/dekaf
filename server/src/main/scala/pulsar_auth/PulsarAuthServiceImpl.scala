@@ -38,6 +38,7 @@ class PulsarAuthServiceImpl extends pb.PulsarAuthServiceGrpc.PulsarAuthService:
 
     override def getCurrentCredentials(request: GetCurrentCredentialsRequest): Future[GetCurrentCredentialsResponse] =
         val pulsarAuth = RequestContext.pulsarAuth.get()
+        
         val status: Status = Status(code = Code.OK.index)
         Future.successful(
             GetCurrentCredentialsResponse(
