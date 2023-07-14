@@ -10,6 +10,7 @@ build-docker-images:
 	cd ./docker/demoapp && make push
 
 	cd ./docker/pulsocat && make build
+	cd ./docker/demoapp && make push
 
 .PHONY: dev
 dev:
