@@ -27,8 +27,9 @@ jobs:
       #     nix build -L
       #     nix-shell --run 'make build-app'
 
-      - name: Build Docker images
+      - name: Setting up Docker 1
         uses: docker/setup-buildx-action@v1
+      - name: Build Docker images
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
