@@ -27,11 +27,13 @@ jobs:
       #     nix build -L
       #     nix-shell --run 'make build-app'
 
-      - name: Setting up Docker 1
-        uses: docker/setup-buildx-action@v1
-      - name: Build Docker images
+      - name: Use Docker cache
+        id: podman-cache
+        uses: actions/cache@v3
         with:
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          path: ~/.local/share/containers/
+          key: podman-cache
+
+      - name: Build Docker images
         run: |
           nix-shell --run 'make build-docker-images'
