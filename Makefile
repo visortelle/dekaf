@@ -1,17 +1,13 @@
-.PHONY: build-pulsocat
-build-pulsocat:
-	# cd ./proto && make clean-and-build
-	# cd ./ui && make clean-and-build && make test
-	# cd ./server && make clean-and-build && make test
+.PHONY: build-app
+build-app:
+	cd ./proto && make clean-and-build
+	cd ./ui && make clean-and-build && make test
+	cd ./server && make clean-and-build && make test
 
-	cd ./docker/pulsocat && make build
-
-.PHONY: build-demoapp
-build-demoapp:
+.PHONY: build-docker-images
+build-docker-images:
 	cd ./docker/demoapp && make build
-
-.PHONY: build
-build: build-pulsocat build-demoapp
+	cd ./docker/pulsocat && make build
 
 .PHONY: dev
 dev:
