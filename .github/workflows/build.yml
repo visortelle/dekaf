@@ -27,14 +27,10 @@ jobs:
       #     nix build -L
       #     nix-shell --run 'make build-app'
 
-      - name: Setting up Docker 1
+      - name: Build Docker images
         uses: docker/setup-buildx-action@v1
-      - name: Setting up Docker 2
-        uses: docker/build-push-action@v2
         with:
-          context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Build Docker images
         run: |
           nix-shell --run 'make build-docker-images'
