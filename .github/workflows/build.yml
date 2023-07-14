@@ -27,7 +27,7 @@ jobs:
       #     nix build -L
       #     nix-shell --run 'make build-app'
 
-      - name: Uncomment for Debug GitHub Actions.
+      - name: Setting up debug session using SSH
         uses: lhotari/action-upterm@v1
 
       - name: Use Docker cache
