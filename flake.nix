@@ -64,6 +64,7 @@
 
             packages = [
               pkgs.gnumake
+              pkgs.coreutils
               pkgs.nodejs-18_x
 
               graalvm
