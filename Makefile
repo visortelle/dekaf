@@ -7,6 +7,8 @@ build-app:
 .PHONY: build-docker-images
 build-docker-images:
 	cd ./docker/demoapp && make build
+	cd ./docker/demoapp && make push
+
 	cd ./docker/pulsocat && make build
 
 .PHONY: dev
