@@ -23,10 +23,10 @@ lazy val root = project
     .enablePlugins(BuildInfoPlugin)
     .enablePlugins(JavaAppPackaging)
     .enablePlugins(UniversalPlugin)
+    .enablePlugins(GitVersioning)
     .in(file("."))
     .settings(
         name := "demoapp",
-        version := "0.1.0-SNAPSHOT",
         scalaVersion := scala3Version,
         libraryDependencies ++= Seq(
             // Serialization
@@ -51,7 +51,6 @@ lazy val root = project
             "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
             "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
 
-            // Lenses
             "dev.optics" %% "monocle-core" % "3.2.0",
             "net.datafaker" % "datafaker" % "2.0.1",
             "org.scalameta" %% "munit" % "0.7.29" % Test
