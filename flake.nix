@@ -58,6 +58,8 @@
               export NODE_OPTIONS=--max-old-space-size=4096
 
               export LD_LIBRARY_PATH="${runtimeLibraryPath}"
+
+              alias docker=podman
             '';
 
             packages = [
@@ -82,6 +84,8 @@
               pkgs.git
               pkgs.git-lfs
               pkgs.unzip
+
+              pkgs.podman
             ] ++ missingSysPkgs;
           };
         in
