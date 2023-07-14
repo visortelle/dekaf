@@ -22,20 +22,22 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
+      - name: Use cache
+        id: cache-all
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.local/share/containers/
+            /nix/store
+          key: cache-all
+
       # - name: Build and test app
       #   run: |
       #     nix build -L
       #     nix-shell --run 'make build-app'
 
-      - name: Setting up debug session using SSH
-        uses: lhotari/action-upterm@v1
-
-      - name: Use Docker cache
-        id: podman-cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.local/share/containers/
-          key: podman-cache
+      # - name: Setting up debug session using SSH
+      #   uses: lhotari/action-upterm@v1
 
       - name: Build Docker images
         run: |
