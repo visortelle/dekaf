@@ -26,8 +26,9 @@ jobs:
       #   run: |
       #     nix build -L
       #     nix-shell --run 'make build-app'
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+
+      # - name: Setup upterm session
+      #   uses: lhotari/action-upterm@v1
 
       - name: Use Docker cache
         id: podman-cache
