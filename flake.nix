@@ -86,6 +86,7 @@
               pkgs.unzip
 
               pkgs.podman
+              pkgs.act
             ] ++ missingSysPkgs;
           };
         in

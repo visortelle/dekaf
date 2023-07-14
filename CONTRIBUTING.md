@@ -41,6 +41,10 @@ https://gist.github.com/visortelle/271627130d7dfcfa44e1f71fc5b6dfaf
 - [ ] Configure kubectl context: `aws eks --region eu-central-1 update-kubeconfig --name pulsar-dev`
 - [ ] Ensure that you have access to the Kubernetes cluster by running `kubectl get namespaces`
 
+# CI
+
+Run `act` to run GitHub Actions job locally.
+
 ## Resources
 
 - [LEARNING.md](./LEARNING.md)
