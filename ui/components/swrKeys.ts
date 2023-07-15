@@ -260,6 +260,16 @@ export const swrKeys = {
                 props.namespace,
                 "bundles",
                 ],
+            },
+            statistics: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "statistics",
+                ],
             }
           },
         },

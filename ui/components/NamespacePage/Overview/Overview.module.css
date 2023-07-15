@@ -9,6 +9,12 @@
   margin-bottom: 24rem;
 }
 
+.StatisticsSection {
+  display: flex;
+  flex-direction: row;
+  gap: 12rem;
+}
+
 .SectionTitle {
   margin-bottom: 12rem;
 }
@@ -51,4 +57,19 @@
 
 .MethodCell > button {
   width: 25%;
+}
+
+.JsonViewer {
+  display: flex;
+  flex-direction: column;
+  width: 25vw;
+}
+
+.HighlightedCell {
+  background-color: var(--surface-color);
+  border-left: none;
+}
+
+.Table {
+  height: 200rem;
 }

@@ -15,16 +15,14 @@ import { TabContent } from "../../ui/Tabs/Tabs";
 import NothingToShow from "../../ui/NothingToShow/NothingToShow";
 import Button from "../../ui/Button/Button";
 import * as pbUtils from "../../../pbUtils/pbUtils";
-import Select from "../../ui/Select/Select";
 import Table from "../../ui/Table/Table";
-import ConfirmationDialog from "../../ui/ConfirmationDialog/ConfirmationDialog";
 import * as Modals from "../../app/contexts/Modals/Modals";
-import DeleteDialog from "../../TopicPage/DeleteDialog/DeleteDialog";
 import SplitBundle from "./SplitBundle/SplitBundle";
 import ClearBacklogBundle from "./ClearBacklogBundle/ClearBacklogBundle";
 import UnloadBundle from "./UnloadBundle/UnloadBundle";
 import UnloadAll from "./UnloadAll/UnloadAll";
 import ClearBacklog from "./ClearBacklog/ClearBacklog";
+import JsonView from "../../ui/JsonView/JsonView";
 
 export type BundleKey = string
 
@@ -50,7 +48,10 @@ const Overview: React.FC<OverviewProps> = (props) => {
   const [activeTab, setActiveTab] = React.useState<string | undefined>();
 
   const { data: topicCounts, error: topicCountsError, isLoading: isTopicCountsLoading } = useSWR(
-    `namespace-topic-counts-${props.namespace}`,
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.statistics._({
+      tenant: props.tenant,
+      namespace: props.namespace
+    }),
     async () => {
       const topicsCountReq = new pbn.GetTopicsCountRequest();
       topicsCountReq.setNamespacesList([namespaceFqn]);
@@ -100,7 +101,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
     }
   );
 
-  const { data: clusters, error: clustersError, isLoading } = useSWR(
+  const { data: clusters, error: clustersError, isLoading: isClustersLoading } = useSWR(
     swrKeys.pulsar.clusters._(),
     async () => {
       const res = await clustersServiceClient.getClusters(
@@ -133,14 +134,15 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   return (
     <div className={s.Overview}>
-      <div className={s.Section}>
-        <table className={st.Table}>
+      <div className={`${s.Section} ${s.StatisticsSection}`}>
+        <table className={`${st.Table} ${s.Table}`}>
           <tbody>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Namespace FQN</td>
               <Td>
                 <div>{namespaceFqn}</div>
               </Td>
+              <td className={`${st.HighlightedCell} ${s.HighlightedCell}`}>Properties:</td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Persistent topics count</td>
@@ -153,6 +155,15 @@ const Overview: React.FC<OverviewProps> = (props) => {
                   )
                 }
               </Td>
+              <td rowSpan={5} className={st.Cell}>
+                <div className={s.JsonViewer}>
+                  <JsonView
+                    value={topicCounts?.properties}
+                    height={'130rem'}
+                    width={'100%'}
+                  />
+                </div>
+              </td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Non-persistent topics count</td>
@@ -203,7 +214,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
           </TooltipElement>
         </div>
         {
-          (!isLoading && clusters) ? (
+          (!isClustersLoading && clusters) ? (
 
             <div className={stt.Tabs}>
               <div className={stt.TabsList}>
@@ -263,7 +274,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                         </div>
                       </div>
 
-                      <div style={{ height: '300rem', display: 'flex'}}>
+                      <div style={{ height: '500rem', display: 'flex'}}>
                         <Table<'bundle' | 'methods', BundleKey, string>
                           itemNamePlural={'bundles'}
                           tableId={"bundle-overview-table"}

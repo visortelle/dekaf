@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import _ from 'lodash';
 
 import KeyValueView from './KeyValueView/KeyValueView';
 import JsonView from '../JsonView/JsonView';
