@@ -99,6 +99,10 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
             await mutate(swrKeys.pulsar.auth.credentials._());
             await mutate(swrKeys.pulsar.auth.credentials.current._());
 
+            if (res === undefined) {
+              return;
+            }
+
             props.onDone();
           }}
         />

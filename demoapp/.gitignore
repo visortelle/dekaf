@@ -30,3 +30,5 @@ metals.sbt
 .idea
 .idea_modules
 /.worksheet/
+
+/config.yaml.example

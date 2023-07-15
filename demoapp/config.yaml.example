@@ -1,0 +1,7 @@
+brokerServiceUrl: "pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651"
+webServiceUrl: "https://cluster-d.o-xy6ek.snio.cloud"
+auth:
+  oauth2:
+    issuerUrl: "https://auth.streamnative.cloud/"
+    audience: "urn:sn:pulsar:o-xy6ek:instance-d"
+    keyFile: "/oauth2-private-key.json"

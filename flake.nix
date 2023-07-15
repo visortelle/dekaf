@@ -58,10 +58,13 @@
               export NODE_OPTIONS=--max-old-space-size=4096
 
               export LD_LIBRARY_PATH="${runtimeLibraryPath}"
+
+              alias docker=podman
             '';
 
             packages = [
               pkgs.gnumake
+              pkgs.coreutils
               pkgs.nodejs-18_x
 
               graalvm
@@ -82,6 +85,9 @@
               pkgs.git
               pkgs.git-lfs
               pkgs.unzip
+
+              pkgs.podman
+              pkgs.act
             ] ++ missingSysPkgs;
           };
         in
