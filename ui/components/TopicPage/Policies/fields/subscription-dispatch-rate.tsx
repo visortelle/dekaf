@@ -32,7 +32,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -47,7 +47,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getSubscriptionDispatchRate(req, {});
+      const res = await topicPoliciesServiceClient.getSubscriptionDispatchRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get dispatch rate. ${res.getStatus()?.getMessage()}`);
         return;
@@ -94,7 +94,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await topicpoliciesServiceClient.removeSubscriptionDispatchRate(req, {});
+          const res = await topicPoliciesServiceClient.removeSubscriptionDispatchRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set dispatch rate. ${res.getStatus()?.getMessage()}`);
           }
@@ -109,7 +109,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setPeriodInSecond(value.periodInSecond);
           req.setIsRelativeToPublishRate(value.isRelativeToPublishRate);
 
-          const res = await topicpoliciesServiceClient.setSubscriptionDispatchRate(req, {});
+          const res = await topicPoliciesServiceClient.setSubscriptionDispatchRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set dispatch rate. ${res.getStatus()?.getMessage()}`);
           }

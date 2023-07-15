@@ -7,7 +7,6 @@ type TooltipElementProps = {
   children?: React.ReactNode,
   tooltipHelp: React.ReactNode,
   link?: string,
-  isExternalLink?: boolean,
 }
 
 const TooltipElement: React.FC<TooltipElementProps> = ({children, tooltipHelp, link}) => {

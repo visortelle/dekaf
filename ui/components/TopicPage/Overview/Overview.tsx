@@ -1,12 +1,12 @@
 import React from 'react';
 import s from './Overview.module.css'
+import st from '../../ui/SimpleTable/SimpleTable.module.css';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
 import useSwr from 'swr';
-import * as st from '../../ui/SimpleTable/SimpleTable.module.css';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import NothingToShow from '../../ui/NothingToShow/NothingToShow';
 import Tabs from '../../ui/Tabs/Tabs';

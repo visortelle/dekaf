@@ -33,7 +33,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -49,7 +49,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getInactiveTopicPolicies(req, {});
+      const res = await topicPoliciesServiceClient.getInactiveTopicPolicies(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get inactive topic policies: ${res.getStatus()?.getMessage()}`);
         return;
@@ -98,7 +98,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.removeInactiveTopicPolicies(req, {});
+      const res = await topicPoliciesServiceClient.removeInactiveTopicPolicies(req, {});
 
       if (res !== undefined && (res.getStatus()?.getCode() !== Code.OK)) {
         notifyError(`Unable to set inactive topic policies: ${res.getStatus()?.getMessage()}`);
@@ -121,7 +121,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setMaxInactiveDurationSeconds(Math.floor(value.maxInactiveDurationSeconds));
       req.setDeleteWhileInactive(value.deleteWhileInactive);
 
-      const res = await topicpoliciesServiceClient.setInactiveTopicPolicies(req, {});
+      const res = await topicPoliciesServiceClient.setInactiveTopicPolicies(req, {});
       if (res !== undefined && (res.getStatus()?.getCode() !== Code.OK)) {
         notifyError(`Unable to set inactive topic policies: ${res.getStatus()?.getMessage()}`);
       }

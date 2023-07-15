@@ -29,7 +29,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -44,7 +44,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getDeduplicationSnapshotInterval(req, {});
+      const res = await topicPoliciesServiceClient.getDeduplicationSnapshotInterval(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
       }
@@ -82,7 +82,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveDeduplicationSnapshotIntervalRequest();
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
-          const res = await topicpoliciesServiceClient.removeDeduplicationSnapshotInterval(req, {});
+          const res = await topicPoliciesServiceClient.removeDeduplicationSnapshotInterval(req, {});
           if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
           }
@@ -99,7 +99,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
           req.setInterval(Math.floor(value.intervalSeconds));
-          const res = await topicpoliciesServiceClient.setDeduplicationSnapshotInterval(req, {});
+          const res = await topicPoliciesServiceClient.setDeduplicationSnapshotInterval(req, {});
           if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
           }

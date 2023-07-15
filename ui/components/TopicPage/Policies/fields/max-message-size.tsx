@@ -30,7 +30,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext()
+  const { topicPoliciesServiceClient } = GrpcClient.useContext()
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -44,7 +44,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetMaxMessageSizeRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
-      const res = await topicpoliciesServiceClient.getMaxMessageSize(req, {});
+      const res = await topicPoliciesServiceClient.getMaxMessageSize(req, {});
       if (res === undefined) {
         return;
       }
@@ -90,7 +90,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
 
-            const res = await topicpoliciesServiceClient.removeMaxMessageSize(req, {});
+            const res = await topicPoliciesServiceClient.removeMaxMessageSize(req, {});
 
             if (res === undefined) {
               return;
@@ -108,7 +108,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setIsGlobal(props.isGlobal);
             req.setMaxMessageSize(Math.floor(value.sizeBytes));
 
-            const res = await topicpoliciesServiceClient.setMaxMessageSize(req, {});
+            const res = await topicPoliciesServiceClient.setMaxMessageSize(req, {});
             if (res === undefined) {
               return;
             }
@@ -125,7 +125,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setIsGlobal(props.isGlobal);
             req.setMaxMessageSize(0);
 
-            const res = await topicpoliciesServiceClient.setMaxMessageSize(req, {});
+            const res = await topicPoliciesServiceClient.setMaxMessageSize(req, {});
             if (res === undefined) {
               return;
             }

@@ -121,6 +121,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             const topicsCountReq = new pb.GetTopicsCountRequest();
             topicsCountReq.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
             topicsCountReq.setIsIncludeSystemTopics(false);
+            topicsCountReq.setIsIncludePersistedAndNonPersistedTopics(false);
 
             const topicsCountRes = await namespaceServiceClient.getTopicsCount(topicsCountReq, null)
               .catch((err) => notifyError(`Unable to get topics count. ${err}`));
@@ -132,7 +133,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             const topicsCountMap = topicsCountRes === undefined ?
               {} :
               pbUtils.mapToObject(topicsCountRes.getTopicsCountMap());
-              
+
             const topicsCountExcludingPartitionsMap = topicsCountRes === undefined ?
               {} :
               pbUtils.mapToObject(topicsCountRes.getTopicsCountExcludingPartitionsMap());

@@ -251,6 +251,16 @@ export const swrKeys = {
                   props.policy,
                 ],
             },
+            bundles: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "bundles",
+                ],
+            }
           },
         },
       },
