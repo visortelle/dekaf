@@ -33,7 +33,7 @@ RUN cp ./server/config.yaml /pulsar-ui/
 
 ################################################################
 
-FROM ghcr.io/graalvm/graalvm-community:20.0.1
+FROM ghcr.io/graalvm/graalvm-community:20.0.1 as pulsocat
 RUN gu install js
 
 RUN useradd --user-group --system --create-home --no-log-init pulsocat
@@ -43,3 +43,8 @@ WORKDIR /workdir
 COPY --from=builder --chown=pulsocat:pulsocat /pulsar-ui .
 
 ENTRYPOINT [ "/workdir/bin/pulsar-ui" ]
+
+# ################################################################
+
+# FROM pulsocat as pulsocat-standalone
+
