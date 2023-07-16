@@ -13,6 +13,7 @@ import Tabs from '../../ui/Tabs/Tabs';
 import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
+import JsonView from "../../ui/JsonView/JsonView";
 
 export type OverviewProps = {
   tenant: string;
@@ -83,20 +84,30 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   const partitionedTopicMetadata = statsData.getPartitionedTopicStatsMap().get(topicFqn)?.getMetadata();
   const partitionsCount = partitionedTopicMetadata?.getPartitions()?.getValue();
+  const properties = statsData.getPropertiesMap().get(topicFqn)?.getPropertiesMap() || new Map<string, string>();
 
   return (
     <div className={s.Overview}>
-      <div className={s.LeftPanel}>
         <div className={s.Section}>
           <table className={st.Table}>
             <tbody>
               <tr className={st.Row}>
                 <td className={st.HighlightedCell}>Topic Name</td>
                 <Td>{props.topic}</Td>
+                <td className={s.HighlightedCell}>Properties:</td>
               </tr>
               <tr className={st.Row}>
                 <td className={st.HighlightedCell}>Topic FQN</td>
                 <Td>{topicFqn}</Td>
+                <td rowSpan={5} className={st.Cell}>
+                  <div className={s.JsonViewer}>
+                    <JsonView
+                      value={Object.fromEntries(properties.entries())}
+                      height={'110rem'}
+                      width={'100%'}
+                    />
+                  </div>
+                </td>
               </tr>
               <tr className={st.Row}>
                 <td className={st.HighlightedCell}>Persistency</td>
@@ -161,11 +172,6 @@ const Overview: React.FC<OverviewProps> = (props) => {
             />
           </div>
         </div>
-      </div>
-
-      <div className={s.RightPanel}>
-        <iframe src="https://grafana.wikimedia.org/d-solo/O_OXJyTVk/home-w-wiki-status?orgId=1&refresh=30s&from=1687442246712&to=1687528646712&theme=light&panelId=8" width="100%" height="200" frameBorder="0"></iframe>
-      </div>
     </div>
   );
 }

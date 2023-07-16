@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import { useSWRConfig } from 'swr';
+import {mutate, useSWRConfig} from 'swr';
 
 import * as Notifications from '../../app/contexts/Notifications';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
@@ -41,8 +41,10 @@ const DeleteNamespace: React.FC<DeleteNamespaceProps> = (props) => {
 
       notifySuccess(`Namespace ${props.tenant}/${props.namespace} has been successfully deleted.`);
 
-      await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }));
-      await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+      const mutateNamespaces = mutate(swrKeys.pulsar.tenants.tenant.namespaces._({tenant: props.tenant}));
+      const mutateTree = mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+
+      await Promise.all([mutateNamespaces, mutateTree]);
 
       props.navigate(routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }));
       modals.pop();

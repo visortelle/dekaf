@@ -9,6 +9,7 @@ message CreateNamespaceRequest {
   string namespace_name = 1;
   int32 num_bundles = 2;
   repeated string replication_clusters = 3;
+  map<string, string> properties = 4;
 }
 
 message CreateNamespaceResponse {

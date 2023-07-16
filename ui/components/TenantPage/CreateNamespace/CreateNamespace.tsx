@@ -18,10 +18,17 @@ import { routes } from "../../routes";
 import { H1, H2 } from "../../ui/H/H";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
 import { CreateNamespaceRequest } from "../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import {help} from "../Namespaces/help";
+import keyValueEditor from "../../ui/KeyValueEditor/KeyValueEditor";
+import KeyValueEditor from "../../ui/KeyValueEditor/KeyValueEditor";
 
 export type CreateNamespaceProps = {
   tenant: string;
 };
+
+type Properties = {
+  [key: string]: string;
+}
 
 const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
   const { notifyError } = Notifications.useContext();
@@ -30,6 +37,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
   const [namespaceName, setNamespaceName] = useState("");
   const [replicationClusters, setReplicationClusters] = useState<string[]>([]);
   const [numBundles, setNumBundles] = useState<number>(4);
+  const [properties, setProperties] = useState<Properties>({});
   const navigate = useNavigate();
 
   const { data: allClusters, error: allClustersError } = useSWR(
@@ -72,6 +80,10 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
     req.setReplicationClustersList(replicationClusters);
     req.setNumBundles(numBundles);
 
+    Object.entries(properties).map(([key, value]) => {
+      req.getPropertiesMap().set(key, value)
+    })
+
     const res = await namespaceServiceClient
       .createNamespace(req, null)
       .catch((err) => {
@@ -84,10 +96,10 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
       return;
     }
 
-    mutate(
-      swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant })
-    );
-    mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+    const mutateNamespaces = mutate(swrKeys.pulsar.tenants.tenant.namespaces._({tenant: props.tenant}));
+    const mutateTree = mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+
+    await Promise.all([mutateNamespaces, mutateTree]);
 
     navigate(routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }));
   };
@@ -157,6 +169,15 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
     />
   );
 
+  const propertiesEditorInput = (
+    <KeyValueEditor
+      value={properties}
+      onChange={setProperties}
+      height="300rem"
+      testId="properties"
+    />
+  );
+
   const isFormValid =
     namespaceName.length > 0 && replicationClusters.length > 0;
 
@@ -189,6 +210,12 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
             description: <span>Number of bundles to activate.</span>,
             input: numBundlesInput,
           },
+          {
+            id: "properties",
+            title: "Properties",
+            description: help["properties"],
+            input: propertiesEditorInput,
+          }
         ]}
       />
       <Button

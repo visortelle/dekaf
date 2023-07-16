@@ -12,9 +12,10 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
+import com.tools.teal.pulsar.ui.topic.v1.topic.TopicProperties
+
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
-
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import org.apache.pulsar.common.naming.TopicDomain
 import pulsar_auth.RequestContext
@@ -133,6 +134,16 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 Map.empty
         }
 
+        val topicsPropertiesMap: Map[String, Map[String, String]] = try {
+            val getTopicsPropertiesFutures = request.topics.map(t => adminClient.topics.getPropertiesAsync(t).asScala)
+            val topicsProperties = Await.result(Future.sequence(getTopicsPropertiesFutures), Duration(1, TimeUnit.MINUTES)).map(_.asScala.toMap)
+            request.topics.zip(topicsProperties).toMap
+        } catch {
+            case err =>
+                errors = err :: errors
+                Map.empty
+        }
+
         // This RPC method always returns Code.OK because in case we request stats for a single topic,
         // we want to avoid additional API calls to detect is topic partitioned or not.
         val status: Status = Status(code = Code.OK.index, message = errors.map(_.getMessage).mkString(". "))
@@ -140,4 +151,5 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 status = Some(status),
                 topicStats = topicsStatsMap.view.mapValues(topicStatsToPb).toMap,
                 partitionedTopicStats = partitionedTopicsStatsMap.view.mapValues(partitionedTopicStatsToPb).toMap,
+                properties = topicsPropertiesMap.view.mapValues(TopicProperties(_)).toMap
             ))

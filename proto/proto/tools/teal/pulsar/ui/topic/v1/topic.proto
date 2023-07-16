@@ -270,6 +270,10 @@ message PartitionedTopicStats {
   map<string, TopicStats> partitions = 3;
 }
 
+message TopicProperties {
+  map<string, string> properties = 1;
+}
+
 message GetTopicsStatsRequest {
   repeated string topics = 1;
   repeated string partitioned_topics = 2;
@@ -282,6 +286,7 @@ message GetTopicsStatsResponse {
   google.rpc.Status status = 1;
   map<string, TopicStats> topic_stats = 2;
   map<string, PartitionedTopicStats> partitioned_topic_stats = 3;
+  map<string, TopicProperties> properties = 4;
 }
 
 service TopicService {

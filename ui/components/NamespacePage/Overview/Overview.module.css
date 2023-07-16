@@ -62,7 +62,7 @@
 .JsonViewer {
   display: flex;
   flex-direction: column;
-  width: 25vw;
+  width: 30vw;
 }
 
 .HighlightedCell {

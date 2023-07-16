@@ -190,7 +190,7 @@ const prepareRoutes = (): {
         path: routes.tenants.tenant.namespaces.namespace.overview._.path,
         element: withLayout(
           <RoutedNamespacePage view="overview" />,
-          setScrollMode(withLayoutProps, "page-own")
+          setScrollMode(withLayoutProps,"window")
         ),
       },
       {
