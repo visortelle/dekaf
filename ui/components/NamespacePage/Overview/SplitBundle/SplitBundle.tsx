@@ -71,7 +71,7 @@ const SplitBundle: React.FC<SplitBundleProps> = ({namespaceFqn, bundleKey}) => {
             <div>Unload split bundles</div>
           </div>
           <br />
-          <div>This will split the bundle to the reassign them to different brokers to lower the  and could lead to severe consequences.</div>
+          <div>This will split the bundle to the reassign them to different brokers to lower the and could lead to severe consequences.</div>
           <br />
         </div>
       }
