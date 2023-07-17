@@ -44,9 +44,8 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
 
       const mutatePersistentTopics =  mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
       const mutateNonPersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
-      const mutateTreeNodesChildrenCount = mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
 
-      await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics, mutateTreeNodesChildrenCount]);
+      await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics]);
 
       props.navigate(routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }));
       modals.pop();

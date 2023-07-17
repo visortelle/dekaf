@@ -38,10 +38,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
 
       notifySuccess(`Tenant ${props.tenant} has been successfully deleted.`);
 
-      const mutateListTenants = mutate(swrKeys.pulsar.tenants.listTenants._());
-      const mutateTree = mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
-
-      await Promise.all([mutateListTenants, mutateTree]);
+      await mutate(swrKeys.pulsar.tenants.listTenants._());
 
       props.navigate('/')
       modals.pop()

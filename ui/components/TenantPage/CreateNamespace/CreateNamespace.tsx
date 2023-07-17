@@ -95,10 +95,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
       return;
     }
 
-    const mutateNamespaces = mutate(swrKeys.pulsar.tenants.tenant.namespaces._({tenant: props.tenant}));
-    const mutateTree = mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
-
-    await Promise.all([mutateNamespaces, mutateTree]);
+    await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({tenant: props.tenant}));
 
     navigate(routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }));
   };
