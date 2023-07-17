@@ -82,21 +82,21 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   }
 
   const createPartitionedTopic = async () => {
-    const req = new CreatePartitionedTopicRequest();
-    req.setTopic(`${topicPersistency}://${props.tenant}/${props.namespace}/${topicName}`);
-    req.setNumPartitions(numPartitions);
+    const partitionedTopicRequest = new CreatePartitionedTopicRequest();
+    partitionedTopicRequest.setTopic(`${topicPersistency}://${props.tenant}/${props.namespace}/${topicName}`);
+    partitionedTopicRequest.setNumPartitions(numPartitions);
 
     Object.entries(properties).map(([key, value]) => {
-      req.getPropertiesMap().set(key, value)
+      partitionedTopicRequest.getPropertiesMap().set(key, value)
     })
 
-    const res = await topicServiceClient.createPartitionedTopic(req, null).catch(err => notifyError(`Unable to create partitioned topic: ${err.message}`));
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to create partitioned topic: ${res.getStatus()?.getMessage()}`);
+    const partitionedTopicResponse = await topicServiceClient.createPartitionedTopic(partitionedTopicRequest, null).catch(err => notifyError(`Unable to create partitioned topic: ${err.message}`));
+    if (partitionedTopicResponse !== undefined && partitionedTopicResponse.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to create partitioned topic: ${partitionedTopicResponse.getStatus()?.getMessage()}`);
       return;
     }
 
-    postCreateTopic();
+    await postCreateTopic();
   }
 
   const createNonPartitionedTopic = async () => {
@@ -113,7 +113,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
       return;
     }
 
-    postCreateTopic();
+    await postCreateTopic();
   }
 
   const isFormValid = topicName.length > 0;

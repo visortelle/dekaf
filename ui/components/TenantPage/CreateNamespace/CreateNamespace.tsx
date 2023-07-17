@@ -19,7 +19,6 @@ import { H1, H2 } from "../../ui/H/H";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
 import { CreateNamespaceRequest } from "../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import {help} from "../Namespaces/help";
-import keyValueEditor from "../../ui/KeyValueEditor/KeyValueEditor";
 import KeyValueEditor from "../../ui/KeyValueEditor/KeyValueEditor";
 
 export type CreateNamespaceProps = {

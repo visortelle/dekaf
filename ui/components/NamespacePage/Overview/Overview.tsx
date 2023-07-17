@@ -275,7 +275,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                       </div>
 
                       <div style={{ maxHeight: "600rem", minHeight: "300rem", display: 'flex'}}>
-                        <Table<'bundle' | 'methods', BundleKey, string>
+                        <Table<'bundle' | 'methods', BundleKey, {}>
                           itemNamePlural={'bundles'}
                           tableId={"bundle-overview-table"}
                           dataLoader={{

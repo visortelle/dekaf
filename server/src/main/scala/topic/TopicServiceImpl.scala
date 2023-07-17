@@ -12,7 +12,7 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.topic.v1.topic.TopicProperties
+import com.tools.teal.pulsar.ui.topic.v1.topic.{GetTopicPropertiesRequest, GetTopicPropertiesResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties}
 
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
@@ -134,22 +134,60 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 Map.empty
         }
 
-        val topicsPropertiesMap: Map[String, Map[String, String]] = try {
-            val getTopicsPropertiesFutures = request.topics.map(t => adminClient.topics.getPropertiesAsync(t).asScala)
-            val topicsProperties = Await.result(Future.sequence(getTopicsPropertiesFutures), Duration(1, TimeUnit.MINUTES)).map(_.asScala.toMap)
-            request.topics.zip(topicsProperties).toMap
-        } catch {
-            case err =>
-                errors = err :: errors
-                Map.empty
-        }
-
         // This RPC method always returns Code.OK because in case we request stats for a single topic,
         // we want to avoid additional API calls to detect is topic partitioned or not.
         val status: Status = Status(code = Code.OK.index, message = errors.map(_.getMessage).mkString(". "))
-            Future.successful(pb.GetTopicsStatsResponse(
+
+        Future.successful(pb.GetTopicsStatsResponse(
+            status = Some(status),
+            topicStats = topicsStatsMap.view.mapValues(topicStatsToPb).toMap,
+            partitionedTopicStats = partitionedTopicsStatsMap.view.mapValues(partitionedTopicStatsToPb).toMap
+        ))
+
+    override def getTopicProperties(request: GetTopicPropertiesRequest): Future[GetTopicPropertiesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        given ExecutionContext = ExecutionContext.global
+
+        try {
+            val getTopicsPropertiesFutures = request.topics.map(adminClient.topics.getPropertiesAsync(_).asScala)
+            val topicsProperties = Await
+                .result(Future.sequence(getTopicsPropertiesFutures), Duration(1, TimeUnit.MINUTES))
+                .map(properties => Option(properties.asScala).map(_.toMap))
+
+            val prop = request.topics
+                .zip(topicsProperties)
+                .toMap
+                .view
+                .mapValues(map => TopicProperties(map.getOrElse(Map())))
+                .toMap
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.GetTopicPropertiesResponse(
                 status = Some(status),
-                topicStats = topicsStatsMap.view.mapValues(topicStatsToPb).toMap,
-                partitionedTopicStats = partitionedTopicsStatsMap.view.mapValues(partitionedTopicStatsToPb).toMap,
-                properties = topicsPropertiesMap.view.mapValues(TopicProperties(_)).toMap
+                topicProperties = prop
+
             ))
+        } catch {
+            case err: Throwable =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.GetTopicPropertiesResponse(status = Some(status)))
+        }
+
+    override def setTopicProperties(request: SetTopicPropertiesRequest): Future[SetTopicPropertiesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        given ExecutionContext = ExecutionContext.global
+
+        try {
+            adminClient.topics.updateProperties(request.topic, request.topicProperties.asJava)
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.SetTopicPropertiesResponse(
+                status = Some(status)
+            ))
+        } catch {
+            case err: Throwable =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(pb.SetTopicPropertiesResponse(status = Some(status)))
+        }

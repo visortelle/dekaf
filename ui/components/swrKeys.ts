@@ -73,6 +73,14 @@ export const swrKeys = {
             stringify(topics),
           ],
         },
+        topicsProperties: {
+          _: (topics: string[]) => [
+            "customApi",
+            "metrics",
+            "properties",
+            stringify(topics)
+          ],
+        }
       },
     },
     batch: {

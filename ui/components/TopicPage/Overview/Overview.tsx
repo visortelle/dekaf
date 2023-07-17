@@ -14,6 +14,7 @@ import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
 import JsonView from "../../ui/JsonView/JsonView";
+import * as pbUtils from '../../../pbUtils/pbUtils';
 
 export type OverviewProps = {
   tenant: string;
@@ -34,7 +35,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  const { data: statsData, error: statsDataError, isLoading } = useSwr(
+  const { data: statsResponse, error: statsError, isLoading: isStatsLoading } = useSwr(
     swrKeys.pulsar.customApi.metrics.topicsStats._([topicFqn]),
     async () => {
       const req = new pb.GetTopicsStatsRequest();
@@ -48,7 +49,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
       req.setPartitionedTopicsList([topicFqn]);
 
       const res = await topicServiceClient.getTopicsStats(req, null)
-        .catch((err) => notifyError(`Unable to get topic stats. ${err}`));
+        .catch((err) => notifyError(`Unable to get topic properties. ${err}`));
 
       if (res === undefined) {
         return;
@@ -63,28 +64,53 @@ const Overview: React.FC<OverviewProps> = (props) => {
     }
   );
 
-  if (statsDataError !== undefined) {
-    notifyError(`Unable to get topic stats. ${statsDataError}`);
+  const { data: propertiesResponse, error: propertiesResponseError, isLoading: isPropertiesResponseLoading } = useSwr(
+    swrKeys.pulsar.customApi.metrics.topicsProperties._([topicFqn]),
+    async () => {
+      const req = new pb.GetTopicPropertiesRequest();
+      req.setTopicsList([topicFqn])
+
+      const res = await topicServiceClient.getTopicProperties(req, null)
+        .catch((err) => notifyError(`Unable to get topics properties: ${err}`));
+
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get topics properties: ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      return res;
+    }
+  )
+
+  if (statsError !== undefined) {
+    notifyError(`Unable to get topic stats. ${statsError}`);
   }
 
-  if (statsData === undefined) {
+  if (statsResponse === undefined) {
     return (
       <div className={s.NothingToShow}>
-        <NothingToShow reason={isLoading ? 'loading-in-progress' : 'no-items-found'} />
+        <NothingToShow reason={isStatsLoading ? 'loading-in-progress' : 'no-items-found'} />
       </div>
     );
   }
 
   let partitioning: Partitioning | undefined;
-  if (statsData.getPartitionedTopicStatsMap().get(topicFqn)) {
+  if (statsResponse.getPartitionedTopicStatsMap().get(topicFqn)) {
     partitioning = 'partitioned';
-  } else if (statsData.getTopicStatsMap().get(topicFqn)) {
+  } else if (statsResponse.getTopicStatsMap().get(topicFqn)) {
     partitioning = topicFqn.match(/-partition-\d+$/) ? 'partition' : 'non-partitioned';
   }
 
-  const partitionedTopicMetadata = statsData.getPartitionedTopicStatsMap().get(topicFqn)?.getMetadata();
+  const partitionedTopicMetadata = statsResponse.getPartitionedTopicStatsMap().get(topicFqn)?.getMetadata();
   const partitionsCount = partitionedTopicMetadata?.getPartitions()?.getValue();
-  const properties = statsData.getPropertiesMap().get(topicFqn)?.getPropertiesMap() || new Map<string, string>();
+  let properties = propertiesResponse &&
+    propertiesResponse.getTopicPropertiesMap().get(topicFqn) &&
+    propertiesResponse.getTopicPropertiesMap().get(topicFqn)?.getPropertiesMap() ||
+    new Map<string, string>
 
   return (
     <div className={s.Overview}>
@@ -150,7 +176,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                         namespace={props.namespace}
                         topic={props.topic}
                         topicType={props.topicType}
-                        topicsStatsRes={statsData}
+                        topicsStatsRes={statsResponse}
                       />
                     </div>
                   )

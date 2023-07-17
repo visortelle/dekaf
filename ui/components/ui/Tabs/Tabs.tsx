@@ -11,7 +11,7 @@ export type Tab = {
 }
 
 export type TabsProps<TK extends string> = {
-  tabs: Record<TK, Tab> | string[];
+  tabs: Record<TK, Tab>;
   activeTab: TK;
   onActiveTabChange: (tab: TK) => void;
   onClose?: () => void;
