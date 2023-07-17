@@ -35,8 +35,8 @@ jobs:
             /nix/store
           key: cache-all
 
-      - name: Setting up debug session with SSH
-        uses: lhotari/action-upterm@v1
+      #- name: Setting up debug session with SSH
+      #  uses: lhotari/action-upterm@v1
 
       - name: Build app
         run: |
