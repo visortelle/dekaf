@@ -60,6 +60,7 @@ const SplitBundle: React.FC<SplitBundleProps> = ({namespaceFqn, bundleKey}) => {
           <Select<'range_equally_divide' | 'topic_count_equally_divide'>
             value={splitParams.splitAlgorithm}
             list={[
+              //Only two split algorithms are available through API for now
               { type: 'item', value: 'range_equally_divide', title: 'Range equally divide' },
               { type: 'item', value: 'topic_count_equally_divide', title: 'Topic count equally divide' },
             ]}
