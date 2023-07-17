@@ -30,10 +30,10 @@
 
 .BundleTableHeaderLeft {
   display: flex;
-  width: 25%;
   flex-direction: row;
   align-items: center;
   justify-content: space-around;
+  gap: 12rem;
 }
 
 .BundleTableHeaderRight {
@@ -48,15 +48,11 @@
   padding-right: 5rem;
 }
 
-.MethodCell {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-evenly;
-}
-
-.MethodCell > button {
-  width: 25%;
+.ActionsCell {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12rem;
+  width: 420rem;
 }
 
 .JsonViewer {
@@ -71,5 +67,4 @@
 }
 
 .Table {
-  height: 200rem;
 }

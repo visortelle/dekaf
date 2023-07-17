@@ -23,6 +23,7 @@ import UnloadBundle from "./UnloadBundle/UnloadBundle";
 import UnloadAll from "./UnloadAll/UnloadAll";
 import ClearBacklog from "./ClearBacklog/ClearBacklog";
 import JsonView from "../../ui/JsonView/JsonView";
+import SmallButton from '../../ui/SmallButton/SmallButton';
 
 export type BundleKey = string
 
@@ -142,7 +143,6 @@ const Overview: React.FC<OverviewProps> = (props) => {
               <Td>
                 <div>{namespaceFqn}</div>
               </Td>
-              <td className={`${st.HighlightedCell} ${s.HighlightedCell}`}>Properties:</td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Persistent topics count</td>
@@ -155,15 +155,6 @@ const Overview: React.FC<OverviewProps> = (props) => {
                   )
                 }
               </Td>
-              <td rowSpan={5} className={st.Cell}>
-                <div className={s.JsonViewer}>
-                  <JsonView
-                    value={topicCounts?.properties}
-                    height={'130rem'}
-                    width={'100%'}
-                  />
-                </div>
-              </td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Non-persistent topics count</td>
@@ -205,6 +196,17 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </table>
       </div>
 
+      <div style={{ marginBottom: '24rem' }}>
+        <strong>Properties</strong>
+        <div className={s.JsonViewer}>
+          <JsonView
+            value={topicCounts?.properties}
+            height={'130rem'}
+            width={'100%'}
+          />
+        </div>
+      </div>
+
       <div className={s.Section}>
         <div className={s.SectionTitle}>
           <TooltipElement
@@ -215,7 +217,6 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </div>
         {
           (!isClustersLoading && clusters) ? (
-
             <div className={stt.Tabs}>
               <div className={stt.TabsList}>
                 {clusters.map(tabKey => {
@@ -237,7 +238,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                     <TabContent key={tabKey} isShow={activeTab === tabKey} direction={'column'}>
                       <div className={s.BundleTableHeader}>
                         <div className={s.BundleTableHeaderLeft}>
-                          <Button
+                          <SmallButton
                             type="regular"
                             onClick={() => {
                               modals.push({
@@ -253,8 +254,8 @@ const Overview: React.FC<OverviewProps> = (props) => {
                             }}
                             text="Unload all"
                           />
-                          <Button
-                            type="regular"
+                          <SmallButton
+                            type="danger"
                             onClick={() => {
                               modals.push({
                                 id: "clear-backlog",
@@ -274,8 +275,8 @@ const Overview: React.FC<OverviewProps> = (props) => {
                         </div>
                       </div>
 
-                      <div style={{ maxHeight: "600rem", minHeight: "300rem", display: 'flex'}}>
-                        <Table<'bundle' | 'methods', BundleKey, {}>
+                      <div style={{ maxHeight: "600rem", minHeight: "300rem", display: 'flex' }}>
+                        <Table<'bundle' | 'actions', BundleKey, {}>
                           itemNamePlural={'bundles'}
                           tableId={"bundle-overview-table"}
                           dataLoader={{
@@ -297,11 +298,11 @@ const Overview: React.FC<OverviewProps> = (props) => {
                                 render: (bundleKey) =>
                                   <div className={s.BundleCell}>{bundleKey}</div>
                               },
-                              methods: {
-                                title: 'Methods',
+                              actions: {
+                                title: 'Actions',
                                 render: (bundleKey: BundleKey) =>
-                                  <div className={s.MethodCell}>
-                                    <Button
+                                  <div className={s.ActionsCell}>
+                                    <SmallButton
                                       type="regular"
                                       onClick={() => {
                                         modals.push({
@@ -318,7 +319,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                                       }}
                                       text="Split"
                                     />
-                                    <Button
+                                    <SmallButton
                                       type="regular"
                                       onClick={() => {
                                         modals.push({
@@ -335,8 +336,8 @@ const Overview: React.FC<OverviewProps> = (props) => {
                                       }}
                                       text="Unload"
                                     />
-                                    <Button
-                                      type="regular"
+                                    <SmallButton
+                                      type="danger"
                                       onClick={() => {
                                         modals.push({
                                           id: "clear-backlog-bundle",
@@ -356,8 +357,8 @@ const Overview: React.FC<OverviewProps> = (props) => {
                               }
                             },
                             defaultConfig: [
-                              { columnKey: 'bundle', visibility: 'visible', stickyTo: 'left', width: 200 },
-                              { columnKey: 'methods', visibility: 'visible', width: 300 },
+                              { columnKey: 'bundle', visibility: 'visible', stickyTo: 'left', width: 300 },
+                              { columnKey: 'actions', visibility: 'visible', width: 300 },
                             ],
                           }}
                           getId={d => d}

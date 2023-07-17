@@ -14,7 +14,6 @@ import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
 import JsonView from "../../ui/JsonView/JsonView";
-import * as pbUtils from '../../../pbUtils/pbUtils';
 
 export type OverviewProps = {
   tenant: string;
@@ -114,90 +113,91 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   return (
     <div className={s.Overview}>
-        <div className={s.Section}>
-          <table className={st.Table}>
-            <tbody>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topic Name</td>
-                <Td>{props.topic}</Td>
-                <td className={s.HighlightedCell}>Properties:</td>
-              </tr>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Topic FQN</td>
-                <Td>{topicFqn}</Td>
-                <td rowSpan={5} className={st.Cell}>
-                  <div className={s.JsonViewer}>
-                    <JsonView
-                      value={Object.fromEntries(properties.entries())}
-                      height={'110rem'}
-                      width={'100%'}
-                    />
-                  </div>
-                </td>
-              </tr>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Persistency</td>
-                <Td>{props.topicType}</Td>
-              </tr>
-              <tr className={st.Row}>
-                <td className={st.HighlightedCell}>Partitioning</td>
+      <div className={s.Section}>
+        <table className={st.Table}>
+          <tbody>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Topic Name</td>
+              <Td>{props.topic}</Td>
+            </tr>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Topic FQN</td>
+              <Td>{topicFqn}</Td>
+            </tr>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Persistency</td>
+              <Td>{props.topicType}</Td>
+            </tr>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Partitioning</td>
+              <Td>
+                {partitioning}
+                {partitionsCount === undefined ? undefined : <span> (<strong>{partitionsCount}</strong> partitions)</span>}
+              </Td>
+            </tr>
+            {partitioning === 'partitioned' && (
+              <tr>
+                <td className={st.HighlightedCell}>Deleted</td>
                 <Td>
-                  {partitioning}
-                  {partitionsCount === undefined ? undefined : <span> (<strong>{partitionsCount}</strong> partitions)</span>}
+                  {(() => {
+                    const deleted = partitionedTopicMetadata?.getDeleted()?.getValue();
+                    return <div>{deleted === undefined ? undefined : i18n.formatBoolean(deleted)}</div>
+                  })()}
                 </Td>
               </tr>
-              {partitioning === 'partitioned' && (
-                <tr>
-                  <td className={st.HighlightedCell}>Deleted</td>
-                  <Td>
-                    {(() => {
-                      const deleted = partitionedTopicMetadata?.getDeleted()?.getValue();
-                      return <div>{deleted === undefined ? undefined : i18n.formatBoolean(deleted)}</div>
-                    })()}
-                  </Td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        <div className={s.Section}>
-          <div className={s.Tabs}>
-            <Tabs<TabKey>
-              activeTab={activeTab}
-              onActiveTabChange={setActiveTab}
-              tabs={{
-                'stats': {
-                  title: 'Statistics',
-                  render: () => (
-                    <div className={s.Tab}>
-                      <Statistics
-                        tenant={props.tenant}
-                        namespace={props.namespace}
-                        topic={props.topic}
-                        topicType={props.topicType}
-                        topicsStatsRes={statsResponse}
-                      />
-                    </div>
-                  )
-                },
-                'stats-internal': {
-                  title: 'Internal Statistics',
-                  render: () => (
-                    <div className={s.Tab}>
-                      <InternalStatistics
-                        tenant={props.tenant}
-                        namespace={props.namespace}
-                        topic={props.topic}
-                        topicType={props.topicType}
-                      />
-                    </div>
-                  )
-                }
-              }}
-            />
-          </div>
+      <div style={{ marginBottom: '24rem' }}>
+        <strong>Properties</strong>
+        <div className={s.JsonViewer}>
+          <JsonView
+            value={Object.fromEntries(properties.entries())}
+            height={'110rem'}
+            width={'100%'}
+          />
         </div>
+      </div>
+
+      <div className={s.Section}>
+        <div className={s.Tabs}>
+          <Tabs<TabKey>
+            activeTab={activeTab}
+            onActiveTabChange={setActiveTab}
+            tabs={{
+              'stats': {
+                title: 'Statistics',
+                render: () => (
+                  <div className={s.Tab}>
+                    <Statistics
+                      tenant={props.tenant}
+                      namespace={props.namespace}
+                      topic={props.topic}
+                      topicType={props.topicType}
+                      topicsStatsRes={statsResponse}
+                    />
+                  </div>
+                )
+              },
+              'stats-internal': {
+                title: 'Internal Statistics',
+                render: () => (
+                  <div className={s.Tab}>
+                    <InternalStatistics
+                      tenant={props.tenant}
+                      namespace={props.namespace}
+                      topic={props.topic}
+                      topicType={props.topicType}
+                    />
+                  </div>
+                )
+              }
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
