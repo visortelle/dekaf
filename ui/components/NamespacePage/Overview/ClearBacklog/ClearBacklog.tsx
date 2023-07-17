@@ -15,6 +15,11 @@ const ClearBacklog: React.FC<ClearBacklogProps> = ({namespaceFqn}) => {
   const modals = Modals.useContext();
   const {notifyError, notifySuccess} = Notifications.useContext();
   const {namespaceServiceClient} = GrpcClient.useContext();
+  const [forceDelete, setForceDelete] = React.useState(false);
+
+  const switchForceDelete = () => {
+    setForceDelete(!forceDelete);
+  }
 
   const clearBacklog = async () => {
     const req = new pbn.ClearNamespaceBacklogRequest();
@@ -45,6 +50,7 @@ const ClearBacklog: React.FC<ClearBacklogProps> = ({namespaceFqn}) => {
       }
       onConfirm={clearBacklog}
       onCancel={modals.pop}
+      guard={"Confirm clear namespace backlog"}
       type='danger'
     />
   );

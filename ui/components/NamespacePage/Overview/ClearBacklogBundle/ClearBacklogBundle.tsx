@@ -17,6 +17,11 @@ const ClearBacklogBundle: React.FC<ClearBacklogBundleProps> = ({namespaceFqn, bu
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
+  const [forceDelete, setForceDelete] = React.useState(false);
+
+  const switchForceDelete = () => {
+    setForceDelete(!forceDelete);
+  }
 
   const clearBacklogBundle = async () => {
     const req = new pbn.ClearBundleBacklogRequest();
@@ -48,6 +53,7 @@ const ClearBacklogBundle: React.FC<ClearBacklogBundleProps> = ({namespaceFqn, bu
       }
       onConfirm={clearBacklogBundle}
       onCancel={modals.pop}
+      guard={"Confirm clear bundle backlog"}
       type='danger'
     />
   );
