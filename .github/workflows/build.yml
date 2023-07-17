@@ -35,13 +35,13 @@ jobs:
             /nix/store
           key: cache-all
 
+      - name: Setting up debug session with SSH
+        uses: lhotari/action-upterm@v1
+
       - name: Build app
         run: |
           nix build -L
           nix-shell --run 'make build-app'
-
-      # - name: Setting up debug session with SSH
-      #   uses: lhotari/action-upterm@v1
 
       - name: Build Docker images
         run: |
