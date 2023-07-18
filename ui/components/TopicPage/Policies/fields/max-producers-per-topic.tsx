@@ -11,6 +11,9 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
+import React from "react";
 
 const policy = 'maxProducers';
 
@@ -157,7 +160,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max producers per topic',
-  description: <span>Max producers per topic.</span>,
+  description: <span>Max <TooltipElement tooltipHelp={help["producer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-producers/">producers</TooltipElement> for the topic.</span>,
   input: <FieldInput {...props} />
 });
 

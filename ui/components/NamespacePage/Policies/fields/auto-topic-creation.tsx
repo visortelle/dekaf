@@ -13,7 +13,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { swrKeys } from '../../../swrKeys';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import React from "react";
-import * as generalHelp from "./help";
+import {help} from "../../../ui/help";
 
 const policy = 'autoTopicCreation';
 
@@ -208,7 +208,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Auto topic creation',
-  description: <span>Enables or disable auto <TooltipElement tooltipHelp={generalHelp.help["topic"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/">topics</TooltipElement> creation for this namespace, overriding broker settings.</span>,
+  description: <span>Enables or disable auto <TooltipElement tooltipHelp={help["topic"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/">topics</TooltipElement> creation for this namespace, overriding broker settings.</span>,
   input: <FieldInput {...props} />
 });
 

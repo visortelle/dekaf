@@ -9,6 +9,9 @@ import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { swrKeys } from "../../../swrKeys";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
+import React from "react";
 
 const policy = 'deduplication';
 
@@ -119,7 +122,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Deduplication',
-  description: <span>Enable or disable deduplication for a topic.</span>,
+  description: <span>Enables or disable <TooltipElement tooltipHelp={help["deduplication"]} link="https://pulsar.apache.org/docs/3.0.x/cookbooks-deduplication/">deduplication</TooltipElement> for the topic.</span>,
   input: <FieldInput {...props} />
 });
 

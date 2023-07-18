@@ -10,7 +10,7 @@ import Select from '../../../ui/Select/Select';
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation, { ValidationError } from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import * as generalHelp from './help';
+import * as generalHelp from '../../../ui/help';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'persistence';
@@ -208,13 +208,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
-export type TermKey =
-  'throttlingRateMarkDelete';
-
-export const help: Record<TermKey, React.ReactNode> = {
-  throttlingRateMarkDelete: <div>Refers to the maximum rate at which acknowledgements (mark-delete operations) can be processed by the broker. This is a form of rate limiting that can be used to prevent overloading the system with too many acknowledgement operations in a short period of time.</div>
-}
-
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Persistence',
@@ -230,7 +223,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
         <TooltipElement tooltipHelp={generalHelp.help["acknowledgement"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#acknowledgment-ack">Acknowledgment(ack)</TooltipElement> quorum (Q<sub>a</sub>) size: number of nodes an entry must be acknowledged by (number of guaranteed copies).
       </li>
       <li>
-        The <TooltipElement tooltipHelp={help["throttlingRateMarkDelete"]} link="https://streamnative.io/blog/deep-dive-into-topic-data-lifecycle-apache-pulsar">throttling rate for mark-delete operations</TooltipElement>.
+        The <TooltipElement tooltipHelp={generalHelp.help["throttlingRateMarkDelete"]} link="https://streamnative.io/blog/deep-dive-into-topic-data-lifecycle-apache-pulsar">throttling rate for mark-delete operations</TooltipElement>.
       </li>
     </ul>
   </div>,

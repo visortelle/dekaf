@@ -148,7 +148,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Message TTL',
-  description: <span>By default, Pulsar stores all unacknowledged messages forever. This can lead to heavy disk space usage in cases where a lot of messages are going unacknowledged. If disk space is a concern, you can set a <A isExternalLink href={"https://pulsar.apache.org/docs/next/cookbooks-retention-expiry/#time-to-live-ttl"}>time to live (TTL)</A> that determines how long unacknowledged messages will be retained.</span>,
+  description: <span>By default, Pulsar stores all unacknowledged messages forever. This can lead to heavy disk space usage in cases where a lot of messages are going unacknowledged. If disk space is a concern, you can set a <A isExternalLink href={"https://pulsar.apache.org/docs/3.0.x/cookbooks-retention-expiry/#time-to-live-ttl"}>time to live (TTL)</A> that determines how long unacknowledged messages will be retained.</span>,
   input: <FieldInput {...props} />
 });
 
