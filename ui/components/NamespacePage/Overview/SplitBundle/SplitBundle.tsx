@@ -8,6 +8,7 @@ import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialog";
 import Select from "../../../ui/Select/Select";
 import Checkbox from "../../../ui/Checkbox/Checkbox";
+import * as BrokerConfig from "../../../app/contexts/BrokersConfig";
 
 export type SplitBundleProps = {
   namespaceFqn: string,
@@ -22,9 +23,10 @@ export type SplitParams = {
 const SplitBundle: React.FC<SplitBundleProps> = ({namespaceFqn, bundleKey}) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
+  const brokersConfig = BrokerConfig.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
   const [ splitParams, setSplitParams ] = React.useState<SplitParams>({
-    splitAlgorithm: 'range_equally_divide',
+    splitAlgorithm: brokersConfig.get("")?.value,
     unloadSplitBundles: false,
   } as SplitParams);
 
@@ -46,9 +48,15 @@ const SplitBundle: React.FC<SplitBundleProps> = ({namespaceFqn, bundleKey}) => {
       return;
     }
 
-    notifySuccess('Namespace bundle successfully split');
+    notifySuccess('Namespace bundle successfully split', crypto.randomUUID());
     modals.pop();
   };
+
+  const supportedAlgorithms =
+    brokersConfig
+      .get('supportedNamespaceBundleSplitAlgorithms')?.value
+      .split(",") ?? []
+
 
   return (
     <ConfirmationDialog
@@ -57,13 +65,11 @@ const SplitBundle: React.FC<SplitBundleProps> = ({namespaceFqn, bundleKey}) => {
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
           <div>Split algorithm:</div>
-          <Select<'range_equally_divide' | 'topic_count_equally_divide'>
+          <Select<any>
             value={splitParams.splitAlgorithm}
-            list={[
-              //Only two split algorithms are available through API for now
-              { type: 'item', value: 'range_equally_divide', title: 'Range equally divide' },
-              { type: 'item', value: 'topic_count_equally_divide', title: 'Topic count equally divide' },
-            ]}
+            list={
+              supportedAlgorithms.map(x => ({ type: 'item', value: x, title: x }))
+            }
             onChange={v => setSplitParams({ splitAlgorithm: v, unloadSplitBundles: splitParams.unloadSplitBundles })}
           />
           <br />

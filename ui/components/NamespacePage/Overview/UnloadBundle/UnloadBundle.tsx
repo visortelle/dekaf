@@ -28,12 +28,13 @@ const UnloadBundle: React.FC<UnloadBundleProps> = ({namespaceFqn, bundleKey}) =>
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(
-        `Unable to unload bundle namespace. ${res.getStatus()?.getMessage()}`
+        `Unable to unload bundle namespace. ${res.getStatus()?.getMessage()}`,
+        crypto.randomUUID()
       );
       return;
     }
 
-    notifySuccess('Namespace bundle successfully unloaded');
+    notifySuccess('Namespace bundle successfully unloaded', crypto.randomUUID());
     modals.pop();
   }
 

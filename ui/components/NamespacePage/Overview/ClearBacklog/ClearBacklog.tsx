@@ -30,12 +30,13 @@ const ClearBacklog: React.FC<ClearBacklogProps> = ({namespaceFqn}) => {
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(
-        `Unable to clear namespace backlog. ${res.getStatus()?.getMessage()}`
+        `Unable to clear namespace backlog. ${res.getStatus()?.getMessage()}`,
+        crypto.randomUUID()
       );
       return;
     }
 
-    notifySuccess('Namespace backlog successfully cleared');
+    notifySuccess('Namespace backlog successfully cleared', crypto.randomUUID());
     modals.pop();
   }
 

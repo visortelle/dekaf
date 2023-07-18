@@ -25,12 +25,13 @@ const UnloadAll: React.FC<UnloadAllProps> = ({namespaceFqn}) => {
 
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(
-        `Unable to unload namespace. ${res.getStatus()?.getMessage()}`
+        `Unable to unload namespace. ${res.getStatus()?.getMessage()}`,
+        crypto.randomUUID()
       );
       return;
     }
 
-    notifySuccess('Namespace successfully unloaded');
+    notifySuccess('Namespace successfully unloaded', crypto.randomUUID());
     modals.pop();
   }
 

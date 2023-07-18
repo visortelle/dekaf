@@ -25,6 +25,7 @@
   border-bottom: none;
   border-right: none;
   word-wrap: break-word;
+  word-break: break-all;
 }
 
 .Table thead .Cell {
