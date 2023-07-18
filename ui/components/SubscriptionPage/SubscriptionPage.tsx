@@ -32,18 +32,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   let buttons: ToolbarButtonProps[] = [
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicType: props.topicType,
-        subscription: props.subscription,
-      }),
-      text: "Overview",
-      onClick: () => { },
-      type: "regular",
-    },
-    {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.get({
         tenant: props.tenant,
         namespace: props.namespace,
@@ -52,6 +40,18 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         subscription: props.subscription,
       }),
       text: "Consumers",
+      onClick: () => { },
+      type: "regular",
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicType: props.topicType,
+        subscription: props.subscription,
+      }),
+      text: "Overview",
       onClick: () => { },
       type: "regular",
     },
@@ -91,10 +91,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       />
       <Toolbar buttons={buttons} />
 
-      {props.view.type === "overview" && (
-        <div>Overview</div>
-      )}
-
       {props.view.type === "consumers" && (
         <Consumers
           key={key}
@@ -104,6 +100,10 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           topicType={props.topicType}
           subscription={props.subscription}
         />
+      )}
+
+      {props.view.type === "overview" && (
+        <div>Overview</div>
       )}
     </div>
   );
