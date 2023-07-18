@@ -30,7 +30,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext()
+  const { topicPoliciesServiceClient } = GrpcClient.useContext()
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -44,7 +44,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetCompactionThresholdRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
-      const res = await topicpoliciesServiceClient.getCompactionThreshold(req, {});
+      const res = await topicPoliciesServiceClient.getCompactionThreshold(req, {});
       if (res === undefined) {
         return;
       }
@@ -90,7 +90,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
 
-            const res = await topicpoliciesServiceClient.removeCompactionThreshold(req, {});
+            const res = await topicPoliciesServiceClient.removeCompactionThreshold(req, {});
 
             if (res === undefined) {
               return;
@@ -108,7 +108,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setIsGlobal(props.isGlobal);
             req.setThreshold(Math.floor(value.sizeBytes));
 
-            const res = await topicpoliciesServiceClient.setCompactionThreshold(req, {});
+            const res = await topicPoliciesServiceClient.setCompactionThreshold(req, {});
             if (res === undefined) {
               return;
             }
@@ -125,7 +125,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setIsGlobal(props.isGlobal);
             req.setThreshold(0);
 
-            const res = await topicpoliciesServiceClient.setCompactionThreshold(req, {});
+            const res = await topicPoliciesServiceClient.setCompactionThreshold(req, {});
             if (res === undefined) {
               return;
             }

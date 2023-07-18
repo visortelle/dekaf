@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import { useSWRConfig } from 'swr';
+import {mutate, useSWRConfig} from 'swr';
 
 import * as Modals from '../../app/contexts/Modals/Modals';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -39,7 +39,6 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
       notifySuccess(`Tenant ${props.tenant} has been successfully deleted.`);
 
       await mutate(swrKeys.pulsar.tenants.listTenants._());
-      await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
 
       props.navigate('/')
       modals.pop()

@@ -2,6 +2,7 @@
   padding: 24rem 12rem 0 12rem;
   display: flex;
   min-height: 100%;
+  flex-direction: column;
 }
 
 .LeftPanel {
@@ -33,4 +34,16 @@
 .Tab {
   margin-top: -1rem;
   flex: 1;
+}
+
+.JsonViewer {
+  display: flex;
+  flex-direction: column;
+  width: 30vw;
+}
+
+.HighlightedCell {
+  background-color: var(--surface-color);
+  border-left: none;
+  padding-left: 12rem;
 }

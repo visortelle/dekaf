@@ -10,6 +10,8 @@ import * as Notifications from '../../../contexts/Notifications';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import Input from '../../../../ui/Input/Input';
+import { swrKeys } from '../../../../swrKeys';
+import { mutate } from 'swr';
 
 export type CredentialsEditorProps = {
   onDone: () => void;
@@ -74,7 +76,7 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
           type='primary'
           disabled={credentialsName.length === 0}
           text='Save'
-          onClick={async () => {
+          onClick={ async () => {
             const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
               method: 'POST',
               body: JSON.stringify(credentials),
@@ -86,17 +88,22 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
               if (res.status === 400) {
                 let errorBody = await res.text();
                 notifyError(errorBody);
+                return;
               } else if (res.status !== 200) {
                 notifyError('Server error happened.');
-              } else {
-                props.onDone();
+                return;
               }
             })
             .catch(err => notifyError(`Unable to save credentials: ${err}`));
 
+            await mutate(swrKeys.pulsar.auth.credentials._());
+            await mutate(swrKeys.pulsar.auth.credentials.current._());
+
             if (res === undefined) {
               return;
             }
+
+            props.onDone();
           }}
         />
       </div>

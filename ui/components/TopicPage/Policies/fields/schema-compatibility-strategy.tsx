@@ -34,7 +34,7 @@ const strategies = (Object.keys(pb.SchemaCompatibilityStrategy) as Strategies[])
   .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -48,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetSchemaCompatibilityStrategyRequest();
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
-      const res = await topicpoliciesServiceClient.getSchemaCompatibilityStrategy(req, {});
+      const res = await topicPoliciesServiceClient.getSchemaCompatibilityStrategy(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Can't get schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
         return undefined;
@@ -89,7 +89,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await topicpoliciesServiceClient.removeSchemaCompatibilityStrategy(req, {});
+          const res = await topicPoliciesServiceClient.removeSchemaCompatibilityStrategy(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
             return;
@@ -102,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setIsGlobal(props.isGlobal);
           req.setStrategy(pb.SchemaCompatibilityStrategy[value.schemaCompatibilityStrategy]);
 
-          const res = await topicpoliciesServiceClient.setSchemaCompatibilityStrategy(req, {});
+          const res = await topicPoliciesServiceClient.setSchemaCompatibilityStrategy(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
             return;

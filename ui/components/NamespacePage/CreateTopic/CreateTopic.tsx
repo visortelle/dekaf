@@ -15,6 +15,8 @@ import { swrKeys } from '../../swrKeys';
 import { routes } from '../../routes';
 
 import s from './CreateTopic.module.css'
+import {help} from "../Topics/help";
+import KeyValueEditor from "../../ui/KeyValueEditor/KeyValueEditor";
 
 export type CreateTopicProps = {
   tenant: string;
@@ -33,6 +35,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   const [topicPersistency, setTopicPersistency] = React.useState<TopicPersistency>('persistent');
   const [topicPartitioning, setTopicPartitioning] = React.useState<TopicPartitioning>('non-partitioned');
   const [numPartitions, setNumPartitions] = React.useState(2);
+  const [properties, setProperties] = React.useState<{ [key: string]: string }>({});
 
   const topicNameInput = <Input value={topicName} onChange={setTopicName} focusOnMount />
   const topicPersistencyInput = (
@@ -59,31 +62,49 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
 
   const numPartitionsInput = <Input type='number' value={numPartitions.toString()} onChange={v => setNumPartitions(parseInt(v))} />
 
-  const postCreateTopic = () => {
-    mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
-    mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
-    mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+  const propertiesEditorInput = (
+    <KeyValueEditor
+      value={properties}
+      onChange={setProperties}
+      height="300rem"
+      testId="properties"
+    />
+  );
+
+  const postCreateTopic = async () => {
+    const mutatePersistentTopics =  mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
+    const mutateNonPersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
+
+    await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics]);
 
     navigate(routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }));
   }
 
   const createPartitionedTopic = async () => {
-    const req = new CreatePartitionedTopicRequest();
-    req.setTopic(`${topicPersistency}://${props.tenant}/${props.namespace}/${topicName}`);
-    req.setNumPartitions(numPartitions);
+    const partitionedTopicRequest = new CreatePartitionedTopicRequest();
+    partitionedTopicRequest.setTopic(`${topicPersistency}://${props.tenant}/${props.namespace}/${topicName}`);
+    partitionedTopicRequest.setNumPartitions(numPartitions);
 
-    const res = await topicServiceClient.createPartitionedTopic(req, null).catch(err => notifyError(`Unable to create partitioned topic: ${err.message}`));
-    if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to create partitioned topic: ${res.getStatus()?.getMessage()}`);
+    Object.entries(properties).map(([key, value]) => {
+      partitionedTopicRequest.getPropertiesMap().set(key, value)
+    })
+
+    const partitionedTopicResponse = await topicServiceClient.createPartitionedTopic(partitionedTopicRequest, null).catch(err => notifyError(`Unable to create partitioned topic: ${err.message}`));
+    if (partitionedTopicResponse !== undefined && partitionedTopicResponse.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to create partitioned topic: ${partitionedTopicResponse.getStatus()?.getMessage()}`);
       return;
     }
 
-    postCreateTopic();
+    await postCreateTopic();
   }
 
   const createNonPartitionedTopic = async () => {
     const req = new CreateNonPartitionedTopicRequest();
     req.setTopic(`${topicPersistency}://${props.tenant}/${props.namespace}/${topicName}`);
+
+    Object.entries(properties).map(([key, value]) => {
+      req.getPropertiesMap().set(key, value)
+    })
 
     const res = await topicServiceClient.createNonPartitionedTopic(req, null).catch(err => notifyError(`Unable to create non-partitioned topic: ${err.message}`));
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
@@ -91,7 +112,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
       return;
     }
 
-    postCreateTopic();
+    await postCreateTopic();
   }
 
   const isFormValid = topicName.length > 0;
@@ -138,7 +159,13 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
               description: <span></span>,
               input: numPartitionsInput,
             }
-          ] : []
+          ] : [],
+          {
+            id: "properties",
+            title: "Properties",
+            description: help["properties"],
+            input: propertiesEditorInput,
+          },
         ]}
       />
 

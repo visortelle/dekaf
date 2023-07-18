@@ -33,7 +33,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [validationError, setValidationError] = useState<ValidationError>(undefined);
@@ -49,7 +49,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getPersistence(req, {});
+      const res = await topicPoliciesServiceClient.getPersistence(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get persistence policy: ${res.getStatus()?.getMessage()}`);
         return;
@@ -93,7 +93,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.removePersistence(req, {});
+      const res = await topicPoliciesServiceClient.removePersistence(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set persistence policy: ${res.getStatus()?.getMessage()}`);
       }
@@ -109,7 +109,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setBookkeeperWriteQuorum(value.bookkeeperWriteQuorum);
       req.setManagedLedgerMaxMarkDeleteRate(value.managedLedgerMarkDeleteMaxRate);
 
-      const res = await topicpoliciesServiceClient.setPersistence(req, {});
+      const res = await topicPoliciesServiceClient.setPersistence(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set persistence policy: ${res.getStatus()?.getMessage()}`);
       }

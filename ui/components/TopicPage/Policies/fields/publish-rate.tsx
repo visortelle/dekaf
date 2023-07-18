@@ -32,7 +32,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -48,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getPublishRate(req, {});
+      const res = await topicPoliciesServiceClient.getPublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get publish rate for topic. ${res.getStatus()?.getMessage()}`);
       }
@@ -89,7 +89,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal)
 
-      const res = await topicpoliciesServiceClient.removePublishRate(req, {});
+      const res = await topicPoliciesServiceClient.removePublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set publish rate. ${res.getStatus()?.getMessage()}`);
       }
@@ -102,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setRateInMsg(value.rateInMsg);
       req.setRateInByte(value.rateInByte);
 
-      const res = await topicpoliciesServiceClient.setPublishRate(req, {});
+      const res = await topicPoliciesServiceClient.setPublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set publish rate. ${res.getStatus()?.getMessage()}`);
       }

@@ -73,12 +73,17 @@ export const swrKeys = {
             stringify(topics),
           ],
         },
+        topicsProperties: {
+          _: (topics: string[]) => [
+            "customApi",
+            "metrics",
+            "properties",
+            stringify(topics)
+          ],
+        }
       },
     },
     batch: {
-      getTreeNodesChildrenCount: {
-        _: () => ["pulsar", "batch", "getTreeNodesChildrenCount"],
-      },
       getTenantsNamespacesCount: {
         _: (tenants: string[]) => [
           "pulsar",
@@ -251,6 +256,26 @@ export const swrKeys = {
                   props.policy,
                 ],
             },
+            bundles: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "bundles",
+                ],
+            },
+            statistics: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "statistics",
+                ],
+            }
           },
         },
       },
