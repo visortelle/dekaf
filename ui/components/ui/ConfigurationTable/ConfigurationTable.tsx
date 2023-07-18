@@ -5,8 +5,8 @@ import s from './ConfigurationTable.module.css'
 export type ConfigurationField = {
   id: string;
   title: string;
-  description: React.ReactElement;
-  input: React.ReactElement;
+  description: React.ReactNode;
+  input: React.ReactNode;
   isRequired?: boolean;
 };
 

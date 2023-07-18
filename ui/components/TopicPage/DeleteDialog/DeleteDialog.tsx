@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import { useSWRConfig } from 'swr';
+import {mutate, useSWRConfig} from 'swr';
 
 import * as Notifications from '../../app/contexts/Notifications';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
@@ -42,9 +42,10 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
 
       notifySuccess(`${props.topicType === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${topicFqn} has been successfully deleted.`);
 
-      await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
-      await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
-      await mutate(swrKeys.pulsar.batch.getTreeNodesChildrenCount._());
+      const mutatePersistentTopics =  mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
+      const mutateNonPersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
+
+      await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics]);
 
       props.navigate(routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }));
       modals.pop();

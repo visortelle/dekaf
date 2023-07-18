@@ -29,7 +29,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -44,7 +44,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getMaxConsumers(req, {});
+      const res = await topicPoliciesServiceClient.getMaxConsumers(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get max consumers per topic: ${res.getStatus()?.getMessage()}`);
         return;
@@ -91,7 +91,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await topicpoliciesServiceClient.removeMaxConsumers(req, {});
+          const res = await topicPoliciesServiceClient.removeMaxConsumers(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
@@ -110,7 +110,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setMaxConsumers(value.maxConsumers);
           }
 
-          const res = await topicpoliciesServiceClient.setMaxConsumers(req, {});
+          const res = await topicPoliciesServiceClient.setMaxConsumers(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }

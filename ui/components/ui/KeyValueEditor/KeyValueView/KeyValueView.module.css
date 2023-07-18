@@ -33,14 +33,15 @@
 }
 
 .Field {
-  width: calc(50% - 38rem);
-  max-width: calc(50% - 38rem);
+  width: calc(50% - 43rem);
+  max-width: calc(50% - 43rem);
   margin-right: 8rem;
 }
 
 .Button {
   padding-left: 0;
   padding-right: 0;
+  width: 100%;
 }
 
 .ButtonBlock {

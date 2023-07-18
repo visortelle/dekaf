@@ -11,6 +11,7 @@ import { swrKeys } from '../../../swrKeys';
 import { mapToObject } from '../../../../pbUtils/pbUtils';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import {help} from "../../../TenantPage/Namespaces/help";
+import React from "react";
 
 const policy = 'properties';
 
@@ -69,7 +70,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       notifyError(`Unable to set properties. ${res.getStatus()?.getMessage()}`);
     }
 
-    mutate(swrKey);
+    await mutate(swrKey);
   }
 
   return (

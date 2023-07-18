@@ -29,7 +29,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -44,7 +44,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getMaxConsumersPerSubscription(req, {});
+      const res = await topicPoliciesServiceClient.getMaxConsumersPerSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get max consumers per subscriptions: ${res.getStatus()?.getMessage()}`);
         return;
@@ -91,7 +91,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await topicpoliciesServiceClient.removeMaxConsumersPerSubscription(req, {});
+          const res = await topicPoliciesServiceClient.removeMaxConsumersPerSubscription(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
@@ -110,7 +110,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setMaxConsumersPerSubscription(value.maxConsumersPerSubscription);
           }
 
-          const res = await topicpoliciesServiceClient.setMaxConsumersPerSubscription(req, {});
+          const res = await topicPoliciesServiceClient.setMaxConsumersPerSubscription(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }

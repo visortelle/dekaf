@@ -38,7 +38,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await adminClient.topicpoliciesServiceClient.getDeduplication(req, {});
+      const res = await adminClient.topicPoliciesServiceClient.getDeduplication(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get deduplication policy. ${res.getStatus()?.getMessage()}`);
         return;
@@ -75,7 +75,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await adminClient.topicpoliciesServiceClient.removeDeduplication(req, {});
+          const res = await adminClient.topicPoliciesServiceClient.removeDeduplication(req, {});
 
           if (res?.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set deduplication policy. ${res?.getStatus()?.getMessage()}`);
@@ -88,7 +88,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setIsGlobal(props.isGlobal);
           req.setEnabled(v === 'enabled');
 
-          const res = await adminClient.topicpoliciesServiceClient.setDeduplication(req, {})
+          const res = await adminClient.topicPoliciesServiceClient.setDeduplication(req, {})
           if (res?.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set deduplication policy. ${res?.getStatus()?.getMessage()}`);
           }

@@ -28,7 +28,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -43,7 +43,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getMaxSubscriptionsPerTopic(req, {});
+      const res = await topicPoliciesServiceClient.getMaxSubscriptionsPerTopic(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get max topics per namespace: ${res.getStatus()?.getMessage()}`);
         return;
@@ -90,7 +90,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await topicpoliciesServiceClient.removeMaxSubscriptionsPerTopic(req, {});
+          const res = await topicPoliciesServiceClient.removeMaxSubscriptionsPerTopic(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
@@ -109,7 +109,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setMaxSubscriptionsPerTopic(value.maxSubscriptionsPerTopic);
           }
 
-          const res = await topicpoliciesServiceClient.setMaxSubscriptionsPerTopic(req, {});
+          const res = await topicPoliciesServiceClient.setMaxSubscriptionsPerTopic(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }

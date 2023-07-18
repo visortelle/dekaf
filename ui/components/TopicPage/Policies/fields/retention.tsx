@@ -60,7 +60,7 @@ export type FieldInputProps = {
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
   const [validationError, setValidationError] = useState<ValidationError>(undefined);
@@ -76,7 +76,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getRetention(req, {});
+      const res = await topicPoliciesServiceClient.getRetention(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get retention policy: ${res.getStatus()?.getMessage()}`);
         return;
@@ -133,7 +133,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.removeRetention(req, {});
+      const res = await topicPoliciesServiceClient.removeRetention(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set retention policy: ${res.getStatus()?.getMessage()}`);
         return;
@@ -147,7 +147,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setRetentionSizeInMb(0);
       req.setRetentionTimeInMinutes(0);
 
-      const res = await topicpoliciesServiceClient.setRetention(req, {});
+      const res = await topicPoliciesServiceClient.setRetention(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set retention policy: ${res.getStatus()?.getMessage()}`);
       }
@@ -160,7 +160,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setRetentionSizeInMb(-1);
       req.setRetentionTimeInMinutes(-1);
 
-      const res = await topicpoliciesServiceClient.setRetention(req, {});
+      const res = await topicPoliciesServiceClient.setRetention(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set retention policy: ${res.getStatus()?.getMessage()}`);
       }
@@ -183,7 +183,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         req.setRetentionTimeInMinutes(Math.max(Math.floor(value.retentionTimeInMinutes.value), 1));
       }
 
-      const res = await topicpoliciesServiceClient.setRetention(req, {});
+      const res = await topicPoliciesServiceClient.setRetention(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set retention policy: ${res.getStatus()?.getMessage()}`);
       }

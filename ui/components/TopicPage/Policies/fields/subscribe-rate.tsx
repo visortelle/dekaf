@@ -31,7 +31,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -46,7 +46,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getSubscribeRate(req, {});
+      const res = await topicPoliciesServiceClient.getSubscribeRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get subscribe rate. ${res.getStatus()?.getMessage()}`);
         return;
@@ -91,7 +91,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await topicpoliciesServiceClient.removeSubscribeRate(req, {});
+          const res = await topicPoliciesServiceClient.removeSubscribeRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscribe rate. ${res.getStatus()?.getMessage()}`);
           }
@@ -104,7 +104,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setSubscribeThrottlingRatePerConsumer(value.subscribeThrottlingRatePerConsumer);
           req.setRatePeriodInSeconds(value.ratePeriodInSeconds);
 
-          const res = await topicpoliciesServiceClient.setSubscribeRate(req, {});
+          const res = await topicPoliciesServiceClient.setSubscribeRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscribe rate. ${res.getStatus()?.getMessage()}`);
           }

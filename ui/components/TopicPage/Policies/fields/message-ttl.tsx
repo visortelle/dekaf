@@ -29,7 +29,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -45,7 +45,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getMessageTtl(req, {});
+      const res = await topicPoliciesServiceClient.getMessageTtl(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get message TTL: ${res.getStatus()?.getMessage()}`);
         return;
@@ -88,7 +88,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.removeMessageTtl(req, {});
+      const res = await topicPoliciesServiceClient.removeMessageTtl(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
       }
@@ -107,7 +107,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         req.setMessageTtlSeconds(Math.floor(value.messageTtlSeconds));
       }
 
-      const res = await topicpoliciesServiceClient.setMessageTtl(req, {});
+      const res = await topicPoliciesServiceClient.setMessageTtl(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
       }

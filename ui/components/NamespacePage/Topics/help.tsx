@@ -53,4 +53,5 @@ export const help: Partial<Record<ColumnKey, ReactNode>> = {
   replicatorsCount: "The number of replicators for this topic.",
   partitioning: "Partitioned and non-partitioned topics.",
   partitionsCount: "The number of partitions for this topic.",
+  properties: "Custom metadata associated with a topic.",
 };

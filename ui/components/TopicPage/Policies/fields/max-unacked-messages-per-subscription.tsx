@@ -28,7 +28,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -43,7 +43,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getMaxUnackedMessagesOnSubscription(req, {});
+      const res = await topicPoliciesServiceClient.getMaxUnackedMessagesOnSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get max unacked messages on subscription: ${res.getStatus()?.getMessage()}`);
         return;
@@ -86,7 +86,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.removeMaxUnackedMessagesOnSubscription(req, {});
+      const res = await topicPoliciesServiceClient.removeMaxUnackedMessagesOnSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set max unacked messages on subscription: ${res.getStatus()?.getMessage()}`);
       }
@@ -105,7 +105,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         req.setMaxUnackedMessagesOnSubscription(value.maxUnackedMessagesOnSubscription);
       }
 
-      const res = await topicpoliciesServiceClient.setMaxUnackedMessagesOnSubscription(req, {});
+      const res = await topicPoliciesServiceClient.setMaxUnackedMessagesOnSubscription(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set max unacked messages on subscription: ${res.getStatus()?.getMessage()}`);
       }

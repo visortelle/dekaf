@@ -63,7 +63,7 @@ export type FieldInputProps = {
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -78,7 +78,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getSubscriptionTypesEnabled(req, {});
+      const res = await topicPoliciesServiceClient.getSubscriptionTypesEnabled(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get subscription types enabled. ${res.getStatus()?.getMessage()}`);
         return;
@@ -121,7 +121,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
-          const res = await topicpoliciesServiceClient.removeSubscriptionTypesEnabled(req, {});
+          const res = await topicPoliciesServiceClient.removeSubscriptionTypesEnabled(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
             return;
@@ -134,7 +134,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setIsGlobal(props.isGlobal);
           req.setTypesList(value.subscriptionTypes.map(subscriptionTypeToPb));
 
-          const res = await topicpoliciesServiceClient.setSubscriptionTypesEnabled(req, {});
+          const res = await topicPoliciesServiceClient.setSubscriptionTypesEnabled(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
             return;

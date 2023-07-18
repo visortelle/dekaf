@@ -9,18 +9,25 @@ export type Tab = {
   isRenderAlways?: boolean;
   onClose?: () => void;
 }
+
 export type TabsProps<TK extends string> = {
-  tabs: Record<TK, Tab>
+  tabs: Record<TK, Tab>;
   activeTab: TK;
   onActiveTabChange: (tab: TK) => void;
   onClose?: () => void;
 };
 
 function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
+  const { tabs } = props;
+
+  const tabEntries = Array.isArray(tabs)
+    ? tabs.map(tabKey => [tabKey, { title: tabKey, render: () => null }] as [TabKey, Tab])
+    : Object.entries<Tab>(tabs);
+
   return (
     <div className={s.Tabs}>
       <div className={s.TabsList}>
-        {Object.entries<Tab>(props.tabs).map(([tabKey, tab]) => {
+        {tabEntries.map(([tabKey, tab]) => {
           return (
             <div
               key={tabKey}
@@ -45,7 +52,7 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
       </div>
 
       <div className={s.TabContent}>
-        {Object.entries<Tab>(props.tabs).map(([tabKey, tab]) => {
+        {tabEntries.map(([tabKey, tab]) => {
           return (
             <TabContent key={tabKey} isShow={props.activeTab === tabKey} isRenderAlways={tab.isRenderAlways}>
               {tab.render()}
@@ -59,18 +66,24 @@ function Tabs<TabKey extends string>(props: TabsProps<TabKey>): ReactElement {
 
 export default Tabs;
 
-type TabContentProps = {
+export type TabContentProps = {
   isShow: boolean;
   isRenderAlways?: boolean;
+  direction?: 'row' | 'column';
   children: React.ReactNode;
 }
-const TabContent: React.FC<TabContentProps> = (props) => {
+export const TabContent: React.FC<TabContentProps> = (props) => {
   if (!props.isShow && !props.isRenderAlways) {
     return <></>;
   }
 
   return (
-    <div style={{ display: props.isShow ? 'flex' : 'none', flex: '1', overflow: 'hidden' }}>
+    <div style={{
+      display: props.isShow ? 'flex' : 'none',
+      flex: '1',
+      overflow: 'hidden',
+      flexDirection: props.direction === 'row' ? 'row' : 'column'
+    }}>
       {props.children}
     </div>
   );

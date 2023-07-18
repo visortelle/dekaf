@@ -51,7 +51,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { topicpoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -67,7 +67,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
-      const res = await topicpoliciesServiceClient.getBacklogQuotas(req, {});
+      const res = await topicPoliciesServiceClient.getBacklogQuotas(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get backlog quotas for topic. ${res.getStatus()?.getMessage()}`);
       }
@@ -127,7 +127,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
 
     req.setMessageAge(messageAgeBacklogQuotaPb)
-    const res = await topicpoliciesServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
+    const res = await topicPoliciesServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
 
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
@@ -138,7 +138,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal)
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
-      const res = await topicpoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
+      const res = await topicPoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }
@@ -149,7 +149,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal)
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
-      const res = await topicpoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
+      const res = await topicPoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }
