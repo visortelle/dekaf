@@ -82,6 +82,13 @@ case class TlsConfig(
     tlsProtocols: Option[List[String]]
 )
 
+case class LicenseConfig(
+    @describe("License id.")
+    id: String,
+    @describe("License token.")
+    token: String,
+)
+
 case class Config(
     @describe("The port the server listens on.")
     port: Int,
@@ -91,8 +98,8 @@ case class Config(
     pulsarInstance: PulsarInstanceConfig,
     @describe("Library contains user-defined objects like message filters, visualizations, etc.")
     library: LibraryConfig,
-    @describe("License key that you can get at the customer portal: https://pulsocat.com")
-    licenseKey: Option[String],
+    @describe("You need a license to run the application. You can obtain it at https://pulsocat.com")
+    license: Option[LicenseConfig],
     @describe("TLS configuration")
     tls: Option[TlsConfig] = None,
     @describe("Internal configuration. Not intended to be changed by the user.")
@@ -117,7 +124,7 @@ val defaultConfig = Config(
     library = LibraryConfig(
         path = "./library"
     ),
-    licenseKey = None,
+    license = Some(LicenseConfig(id = "", token = "")),
     tls = None,
 )
 
