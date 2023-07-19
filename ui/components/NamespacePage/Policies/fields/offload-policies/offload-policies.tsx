@@ -5,7 +5,7 @@ import { ConfigurationField } from "../../../../ui/ConfigurationTable/Configurat
 import DurationInput from '../../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import Select from '../../../../ui/Select/Select';
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import * as generalHelp from "../help";
+import * as generalHelp from "../../../../ui/help";
 import { swrKeys } from '../../../../swrKeys';
 import WithUpdateConfirmation from '../../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
@@ -216,7 +216,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
   title: 'Offload policies',
   description: (
     <>
-      <div>Tiered Storage feature allows older <TooltipElement tooltipHelp={generalHelp.help["backlog"]} link="https://pulsar.apache.org/docs/next/cookbooks-retention-expiry/#backlog-quotas">backlog</TooltipElement> data to be offloaded to long term storage, thereby freeing up space in BookKeeper and reducing storage costs. </div>
+      <div>Tiered Storage feature allows older <TooltipElement tooltipHelp={generalHelp.help["backlog"]} link="https://pulsar.apache.org/docs/3.0.x/cookbooks-retention-expiry/#backlog-quotas">backlog</TooltipElement> data to be offloaded to long term storage, thereby freeing up space in BookKeeper and reducing storage costs. </div>
       <br />
       More info:
       <ul>

@@ -12,6 +12,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import stringify from 'safe-stable-stringify';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import React from "react";
+import {help} from "../../../ui/help";
 
 const policy = 'compactionThreshold';
 
@@ -171,12 +172,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
-type TermKey =
-  'compactionThreshold'
-
-const help: Record<TermKey, React.ReactNode> = {
-  'compactionThreshold': <div>Compaction threshold policy specifies how large the topic backlog can grow before compaction is triggered.</div>
-}
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Compaction threshold',

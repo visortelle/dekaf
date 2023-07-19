@@ -10,6 +10,9 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import React from "react";
+import {help} from "../../../ui/help";
 
 const policy = 'replicatorDispatchRate';
 
@@ -183,7 +186,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Replicator dispatch rate',
-  description: <span>Set replicator message-dispatch-rate for all topics of the topic.</span>,
+  description: <span>Sets replicator <TooltipElement tooltipHelp={help["replicatorDispatchRate"]}>replicator</TooltipElement> for the topic.</span>,
   input: <FieldInput {...props} />
 });
 

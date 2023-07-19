@@ -11,6 +11,9 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import * as generalHelp from "../../../ui/help";
+import React from "react";
 
 const policy = 'maxSubscriptionsPerTopic';
 
@@ -157,7 +160,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max subscriptions per topic',
-  description: <span>Max subscriptions per topic.</span>,
+  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["subscription"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#subscriptions">subscriptions</TooltipElement> per topic.</span>,
   input: <FieldInput {...props} />
 });
 

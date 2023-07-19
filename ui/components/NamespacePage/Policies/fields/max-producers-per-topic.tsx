@@ -11,6 +11,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
 
 const policy = 'maxProducersPerTopic';
 
@@ -141,13 +142,6 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }}
     </WithUpdateConfirmation>
   )
-}
-
-export type TermKey =
-  'producer'
-
-export const help: Record<TermKey, React.ReactNode> = {
-  producer: <div>A process that publishes messages to a Pulsar topic.</div>
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({

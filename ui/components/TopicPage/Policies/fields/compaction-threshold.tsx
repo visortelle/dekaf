@@ -11,6 +11,9 @@ import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
+import React from "react";
 
 const policy = 'compactionThreshold';
 
@@ -183,7 +186,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Compaction threshold',
-  description: <span>Set compactionThreshold for a namespace.</span>,
+  description: <span>Sets <TooltipElement tooltipHelp={help["compactionThreshold"]} link={"https://pulsar.apache.org/docs/3.0.x/cookbooks-compaction/"}>compactionThreshold</TooltipElement> for the topic.</span>,
   input: <FieldInput {...props} />
 });
 
