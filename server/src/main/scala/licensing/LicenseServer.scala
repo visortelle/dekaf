@@ -49,7 +49,6 @@ object LicenseServer extends ZIOAppDefault:
                     println(s"License id: $id")
                     println(s"License token: $maskedToken")
                 case _ =>
-                    println("License should be set in the application config file. You can obtain the license here: https://pulsocat.com")
                     println("Exit 1")
                     java.lang.System.exit(1)
         }
@@ -70,7 +69,11 @@ object LicenseServer extends ZIOAppDefault:
         keygenLicense <- keygenClient
             .validateLicense(licenseId = license.id, licenseToken = license.token)
             .provide(Client.default)
-        _ <- ZIO.logInfo("FFFFFFFFF")
+        product <- ZIO.attempt(ProductFamily.find(p => p.keygenProductId == keygenLicense.data.relationships.product.data.id))
+        _ <- ZIO.whenCase(product) {
+            case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.name}.")
+            case _       => ZIO.logError(s"Provided license doesn't match any product. Please contact support team at https://support.pulsocat.com")
+        }
     } yield ()
 
     def run: IO[Throwable, Unit] = for {

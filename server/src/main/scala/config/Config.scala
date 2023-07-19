@@ -98,7 +98,7 @@ case class Config(
     pulsarInstance: PulsarInstanceConfig,
     @describe("Library contains user-defined objects like message filters, visualizations, etc.")
     library: LibraryConfig,
-    @describe("You need a license to run the application. You can obtain it at https://pulsocat.com")
+    @describe("You should specify a license to start the application. You can obtain a license at https://pulsocat.com")
     license: Option[LicenseConfig],
     @describe("TLS configuration")
     tls: Option[TlsConfig] = None,
