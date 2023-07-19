@@ -26,7 +26,13 @@ class KeygenClient(
         body <- ZIO.attempt(machine.asJson.toString)
         res <- Client.request(url, method = Method.POST, headers = headers, Body.fromString(body))
         data <- res.body.asString
-        result <- ZIO.fromTry(parse(data).getOrElse(Json.Null).as[KeygenMachine].toTry)
+        resultZIO =
+            if res.status.isSuccess
+            then
+                ZIO.succeed(parse(data).getOrElse(Json.Null).as[KeygenMachine].toTry.get)
+            else
+                ZIO.fail(new Exception(data))
+        result <- resultZIO
         _ <- ZIO.logInfo(s"License session activated with id: ${result.data.id.get}.")
     } yield result
 
