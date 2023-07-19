@@ -2,7 +2,7 @@ val scala3Version = "3.3.0"
 val graalvmVersion = "22.3.1"
 val pulsarVersion = "3.0.0"
 val circeVersion = "0.14.5"
-val zioVersion = "2.0.8"
+val zioVersion = "2.0.13"
 val zioConfigVersion = "3.0.7"
 
 maintainer := "kiryl_valkovich@teal.tools"
@@ -17,7 +17,8 @@ val javaOpts = Seq(
 )
 
 scalacOptions ++= Seq(
-  "-Xmax-inlines", "50", // https://github.com/softwaremill/magnolia/issues/374
+    "-Xmax-inlines",
+    "50" // https://github.com/softwaremill/magnolia/issues/374
 )
 
 cancelable in Global := true
@@ -46,7 +47,7 @@ lazy val root = project
         Compile / packageDoc / mappings := Seq(), // https://github.com/sbt/sbt-native-packager/issues/651
         libraryDependencies ++= Seq(
             // Logging
-            "ch.qos.logback" % "logback-classic" % "1.4.5",
+            "ch.qos.logback" % "logback-classic" % "1.4.7",
             "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
             // Pulsar
             "org.apache.pulsar" % "pulsar-client-original" % pulsarVersion,
@@ -62,7 +63,8 @@ lazy val root = project
             "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
             "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
             "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
-            "dev.zio" %% "zio-process" % "0.7.1",
+            "dev.zio" %% "zio-process" % "0.7.2",
+            "dev.zio" %% "zio-http" % "3.0.0-RC2",
 
             // Serialization
             "io.circe" %% "circe-core" % circeVersion,
@@ -70,8 +72,8 @@ lazy val root = project
             "io.circe" %% "circe-parser" % circeVersion,
 
             // Javalin
-            "io.javalin" % "javalin" % "5.3.2",
-            "io.javalin" % "javalin-rendering" % "5.3.2",
+            "io.javalin" % "javalin" % "5.4.2",
+            "io.javalin" % "javalin-rendering" % "5.4.2",
             "org.freemarker" % "freemarker" % "2.3.31",
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
 

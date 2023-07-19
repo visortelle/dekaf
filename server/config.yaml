@@ -4,6 +4,8 @@ publicUrl: "http://localhost:8090"
 library:
   path: "./library"
 
+licenseKey: "activ-83e0efb7eefe60bf867079f555c574bav3"
+
 pulsarInstance:
   name: "StreamNative instance-d"
 #  color: "#ff0000"
