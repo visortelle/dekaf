@@ -55,14 +55,14 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
         <Toolbar
           buttons={[
             {
-              linkTo: routes.tenants.tenant.overview._.get({ tenant: props.tenant }),
-              text: 'Overview',
+              linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
+              text: 'Namespaces',
               onClick: () => { },
               type: 'regular',
             },
             {
-              linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
-              text: 'Namespaces',
+              linkTo: routes.tenants.tenant.overview._.get({ tenant: props.tenant }),
+              text: 'Overview',
               onClick: () => { },
               type: 'regular',
             },
@@ -88,8 +88,8 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
         />
       </div>
 
-      {props.view === 'overview' && <Overview tenant={props.tenant} />}
       {props.view === 'namespaces' && <Namespaces tenant={props.tenant} />}
+      {props.view === 'overview' && <Overview tenant={props.tenant} />}
       {props.view === 'create-namespace' && <CreateNamespace tenant={props.tenant} />}
     </div>
   );
