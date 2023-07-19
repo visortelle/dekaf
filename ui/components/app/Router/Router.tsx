@@ -231,13 +231,6 @@ const prepareRoutes = (): {
 
       /* Subscriptions */
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.path,
-        element: withLayout(
-          <RoutedSubscriptionPage view="overview" />,
-          withLayoutProps
-        ),
-      },
-      {
         path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.path,
         element: withLayout(
           <RoutedSubscriptionPage view="consumers" />,
@@ -398,9 +391,6 @@ const RoutedSubscriptionPage = (props: { view: SubscriptionPageView["type"] }) =
 
   let view: SubscriptionPageView;
   switch (props.view) {
-    case "overview":
-      view = { type: "overview" };
-      break;
     case "consumers":
       view = { type: "consumers" };
       break;

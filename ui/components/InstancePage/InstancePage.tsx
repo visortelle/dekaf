@@ -54,16 +54,16 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
         <Toolbar
           buttons={[
             {
-              linkTo: routes.instance.overview._.get(),
-              text: 'Overview',
-              onClick: () => { },
-              type: 'regular'
-            },
-            {
               linkTo: routes.instance.tenants._.get(),
               text: 'Tenants',
               onClick: () => { },
               type: 'regular',
+            },
+            {
+              linkTo: routes.instance.overview._.get(),
+              text: 'Overview',
+              onClick: () => { },
+              type: 'regular'
             },
             {
               linkTo: routes.instance.configuration._.get(),
@@ -88,9 +88,9 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
         />
       </div>
 
+      {props.view.type === 'tenants' && <Tenants />}
       {props.view.type === 'overview' && <Overview />}
       {props.view.type === 'configuration' && <Configuration />}
-      {props.view.type === 'tenants' && <Tenants />}
       {props.view.type === 'create-tenant' && <CreateTenantPage />}
       {props.view.type === 'resource-groups' && <ResourceGroups view={{ type: 'show-all-groups' }} />}
       {props.view.type === 'create-resource-group' && <ResourceGroups view={{ type: 'create' }} />}
