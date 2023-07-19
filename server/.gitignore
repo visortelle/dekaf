@@ -1,6 +1,6 @@
-.metals
+**/.metals
 .idea
 .vscode
-.bloop
+**/.bloop
 .bsp
 target
