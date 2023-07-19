@@ -39,10 +39,10 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   const { pathname } = useLocation();
   let extraCrumbs: Crumb[] = [];
-  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.path, pathname)) {
+  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'messages', value: 'Messages' }]
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.path, pathname)) {
+    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'producers', value: 'Producers' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.path + '*', pathname)) {
@@ -57,17 +57,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   let buttons: ToolbarButtonProps[] = [
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicType: props.topicType,
-      }),
-      text: "Overview",
-      onClick: () => { },
-      type: "regular",
-    },
-    {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
         tenant: props.tenant,
         namespace: props.namespace,
@@ -75,6 +64,17 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         topicType: props.topicType,
       }),
       text: "Messages",
+      onClick: () => { },
+      type: "regular",
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicType: props.topicType,
+      }),
+      text: "Overview",
       onClick: () => { },
       type: "regular",
     },

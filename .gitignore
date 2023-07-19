@@ -111,6 +111,7 @@ target
 
 # Scala
 .metals
+.bloop
 
 # Nix
 result

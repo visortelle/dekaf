@@ -2,14 +2,14 @@ export const routes = {
   instance: {
     tenants: {
       _: {
-        path: "/tenants",
-        get: () => `/tenants`,
+        path: "/",
+        get: () => `/`,
       },
     },
     overview: {
       _: {
-        path: "/",
-        get: () => `/`,
+        path: "/overview",
+        get: () => `/overview`,
       },
     },
     configuration: {

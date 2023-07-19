@@ -181,7 +181,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 title: 'Name',
                 render: (de) => (
                   <Link
-                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
