@@ -12,7 +12,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import Select from '../../../ui/Select/Select';
 import { uniq } from 'lodash';
-import * as generalHelp from './help' ;
+import {help} from '../../../ui/help' ;
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
@@ -179,15 +179,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 type TermKey =
   'bookieAffinityGroup';
 
-const help: Record<TermKey, React.ReactNode> = {
-  bookieAffinityGroup: <div>User-defined group of <TooltipElement tooltipHelp={generalHelp.help["bookie"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#storage">bookies</TooltipElement> assigned to a specific namespace. This ensures that all data belonging to that namespace is stored in the desired bookies, providing a level of data isolation.</div>
+const affinityHelp: Record<TermKey, React.ReactNode> = {
+  bookieAffinityGroup: <div>User-defined group of <TooltipElement tooltipHelp={help["bookie"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#storage">bookies</TooltipElement> assigned to a specific namespace. This ensures that all data belonging to that namespace is stored in the desired bookies, providing a level of data isolation.</div>
 }
 
 
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Bookie affinity group',
-  description: <span><TooltipElement tooltipHelp={help["bookieAffinityGroup"]} link="https://pulsar.apache.org/docs/3.0.x/administration-isolation-bookie/#configure-bookie-affinity-groups">Bookie affinity group</TooltipElement> name for a namespace.</span>,
+  description: <span><TooltipElement tooltipHelp={affinityHelp["bookieAffinityGroup"]} link="https://pulsar.apache.org/docs/3.0.x/administration-isolation-bookie/#configure-bookie-affinity-groups">Bookie affinity group</TooltipElement> name for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

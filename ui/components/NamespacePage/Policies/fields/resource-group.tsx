@@ -182,7 +182,7 @@ export const help: Record<TermKey, React.ReactNode> = {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Resource group',
-  description: <span>Sets the resource group (a concept similar to a <A isExternalLink href={"https://pulsar.apache.org/docs/next/administration-isolation/"}>bookie affinity group</A> but for brokers) for a namespace.</span>,
+  description: <span>Sets the resource group (a concept similar to a <A isExternalLink href={"https://pulsar.apache.org/docs/3.0.x/administration-isolation/"}>bookie affinity group</A> but for brokers) for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

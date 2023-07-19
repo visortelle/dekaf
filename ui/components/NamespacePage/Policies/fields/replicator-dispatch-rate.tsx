@@ -176,7 +176,7 @@ type TermKey =
   'replicatorDispatchRate';
 
 const help: Record<TermKey, React.ReactNode> = {
-  'replicatorDispatchRate': <div>Rate at which replicated messages are dispatched for all topics within a namespace. Allows you to control the speed of message replication across clusters, helping to manage resource usage and network traffic.</div>
+  replicatorDispatchRate: <div>Rate at which replicated messages are dispatched for all topics within a namespace. Allows you to control the speed of message replication across clusters, helping to manage resource usage and network traffic.</div>
 }
 
 const field = (props: FieldInputProps): ConfigurationField => ({

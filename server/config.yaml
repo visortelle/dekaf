@@ -7,7 +7,7 @@ library:
 pulsarInstance:
   name: "StreamNative instance-d"
 #  color: "#ff0000"
-#  brokerServiceUrl: "pulsar://localhost:6650"
-  brokerServiceUrl: "pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651"
-#  webServiceUrl: "http://localhost:8080"
-  webServiceUrl: "https://cluster-d.o-xy6ek.snio.cloud"
+  brokerServiceUrl: "pulsar://localhost:6650"
+#  brokerServiceUrl: "pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651"
+  webServiceUrl: "http://localhost:8080"
+#  webServiceUrl: "https://cluster-d.o-xy6ek.snio.cloud"

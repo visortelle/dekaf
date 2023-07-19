@@ -9,6 +9,7 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/name
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
 
 const policy = 'deduplication';
 
@@ -108,17 +109,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   );
 }
 
-type TermKey =
-  'deduplication';
-
-const help: Record<TermKey, React.ReactNode> = {
-  'deduplication': <div>Feature that ensures each message produced on Pulsar topics is stored only once, even if the message is produced multiple times. Also enabling of message deduplication could affect the performance of the brokers during informational snapshots.</div>
-}
-
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Deduplication',
-  description: <span>Enables or disable <TooltipElement tooltipHelp={help["deduplication"]} link="https://pulsar.apache.org/docs/next/cookbooks-deduplication/">deduplication</TooltipElement> for a namespace.</span>,
+  description: <span>Enables or disable <TooltipElement tooltipHelp={help["deduplication"]} link="https://pulsar.apache.org/docs/3.0.x/cookbooks-deduplication/">deduplication</TooltipElement> for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

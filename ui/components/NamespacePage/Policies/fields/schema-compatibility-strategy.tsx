@@ -91,7 +91,7 @@ const field = (props: FieldInputProps): ConfigurationField => ({
   description: <span>Ensures that existing consumers can process the introduced messages.
     <ul>
         <li>
-          <A isExternalLink href="https://pulsar.apache.org/docs/next/schema-understand/#schema-compatibility-check">More info about properties</A>
+          <A isExternalLink href="https://pulsar.apache.org/docs/3.0.x/schema-understand/#schema-compatibility-check">More info about properties</A>
         </li>
     </ul></span>,
   input: <FieldInput {...props} />
