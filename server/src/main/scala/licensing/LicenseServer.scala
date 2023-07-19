@@ -55,8 +55,6 @@ object LicenseServer extends ZIOAppDefault:
         _ <- ZIO.attempt {
             println(s"Started at: ${java.time.Instant.now().toString}")
         }
-        sessionId <- ZIO.attempt(UUID.randomUUID().toString)
-        _ <- ZIO.logInfo(s"License session id: $sessionId")
         config <- readConfig
         license <- ZIO.attempt(config.license.get)
         keygenClient <- ZIO.attempt {
@@ -74,21 +72,34 @@ object LicenseServer extends ZIOAppDefault:
             case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.name}.")
             case _       => ZIO.logError(s"Provided license doesn't match any product. Please contact support team at https://support.pulsocat.com")
         }
+        sessionFingerprint <- ZIO.attempt(UUID.randomUUID().toString)
+        _ <- ZIO.logInfo(s"License session fingerprint: $sessionFingerprint")
+        keygenMachine <- keygenClient
+            .activateMachine(
+                KeygenMachine(
+                    data = KeygenMachineData(
+                        id = None,
+                        `type` = "machines",
+                        attributes = KeygenMachineDataAttributes(
+                            fingerprint = sessionFingerprint,
+                            name = sessionFingerprint,
+                            metadata = Map()
+                        ),
+                        relationships = KeygenMachineRelationships(
+                            license = KeygenLinkage(
+                                data = KeygenLinkageData(
+                                    `type` = "licenses",
+                                    id = keygenLicense.data.id.get
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+            .provide(Client.default)
     } yield ()
 
     def run: IO[Throwable, Unit] = for {
         _ <- ZIO.logInfo("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-//        keygenMachine <- ZIO.attempt({
-//            keygenClient.activateMachine(KeygenMachine(
-//               data = KeygenMachineData(
-//                   `type` = "machines",
-//                   attributes = KeygenMachineDataAttributes(
-//                       fingerprint = sessionId,
-//                       name = sessionId,
-//                       metadata = Map()
-//                   ),
-//                   relationships = ???
-//               )
-//            ))
-//        })
+
     } yield ()

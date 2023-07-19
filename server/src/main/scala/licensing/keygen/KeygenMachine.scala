@@ -21,6 +21,7 @@ given Encoder[KeygenMachineRelationships] = deriveEncoder[KeygenMachineRelations
 
 case class KeygenMachineData(
     `type`: "machines",
+    id: Option[String],
     attributes: KeygenMachineDataAttributes,
     relationships: KeygenMachineRelationships
 )

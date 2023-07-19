@@ -21,10 +21,13 @@ class KeygenClient(
     private val headers = baseHeaders ++ authHeaders
 
     def activateMachine(machine: KeygenMachine): ZIO[Client, Throwable, KeygenMachine] = for {
+        _ <- ZIO.logInfo("Activating current license session.")
         url <- ZIO.attempt(s"$keygenApiBase/machines")
-        res <- Client.request(url, method = Method.POST, headers = headers)
+        body <- ZIO.attempt(machine.asJson.toString)
+        res <- Client.request(url, method = Method.POST, headers = headers, Body.fromString(body))
         data <- res.body.asString
         result <- ZIO.fromTry(parse(data).getOrElse(Json.Null).as[KeygenMachine].toTry)
+        _ <- ZIO.logInfo(s"License session activated with id: ${result.data.id.get}.")
     } yield result
 
     def validateLicense(licenseId: String, licenseToken: String): ZIO[Client, Throwable, KeygenLicense] = for {
