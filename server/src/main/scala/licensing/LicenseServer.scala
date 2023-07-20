@@ -27,7 +27,9 @@ val Graffiti =
       |""".stripMargin.replace("$", "▓")
 
 object LicenseServer:
-    def start: ZIO[Any, Throwable, Unit] = for {
+    case class InitResult(cleanup: Task[Unit])
+
+    def init: ZIO[Any, Throwable, InitResult] = for {
         _ <- ZIO.attempt {
             println(Graffiti)
             println(
@@ -101,10 +103,9 @@ object LicenseServer:
             .provide(Client.default)
             .repeat(Schedule.fixed(Duration.fromSeconds(60)))
             .fork
-    } yield ()
-
-    def stop: ZIO[Any, Throwable, Unit] = for {
-        _ <- ZIO.logInfo("Stopping license session.")
-    } yield ()
-
-
+        initResult <- ZIO.succeed(
+            InitResult(
+                cleanup = keygenClient.deactivateMachine(keygenMachine.data.id.get).provide(Client.default)
+            )
+        )
+    } yield initResult

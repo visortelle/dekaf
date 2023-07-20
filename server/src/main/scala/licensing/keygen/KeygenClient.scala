@@ -21,7 +21,7 @@ class KeygenClient(
     private val headers = baseHeaders ++ authHeaders
 
     def activateMachine(machine: KeygenMachine): ZIO[Client, Throwable, KeygenMachine] = for {
-        _ <- ZIO.logInfo("Activating current license session.")
+        _ <- ZIO.logInfo("Activating current application instance.")
         url <- ZIO.attempt(s"$keygenApiBase/machines")
         body <- ZIO.attempt(machine.asJson.toString)
         res <- Client.request(url, method = Method.POST, headers = headers, Body.fromString(body))
@@ -37,7 +37,20 @@ class KeygenClient(
                     else data
                 ZIO.fail(new Exception(errMessage))
         result <- resultZIO
-        _ <- ZIO.logInfo(s"License session: ${result.data.id.get}.")
+        _ <- ZIO.logInfo(s"Current application instance successfully activated: ${result.data.id.get}.")
+    } yield result
+
+    def deactivateMachine(machineId: String): ZIO[Client, Throwable, Unit] = for {
+        _ <- ZIO.logInfo(s"Deactivating current application instance: ${machineId}")
+        url <- ZIO.attempt(s"$keygenApiBase/machines/${machineId}")
+        res <- Client.request(url, method = Method.DELETE, headers = headers)
+        data <- res.body.asString
+        resultZIO =
+            if res.status.isSuccess
+            then ZIO.succeed(())
+            else ZIO.fail(new Exception(data))
+        result <- resultZIO
+        _ <- ZIO.logInfo(s"Current application instance has been successfully unregistered.")
     } yield result
 
     def validateLicense(licenseId: String): ZIO[Client, Throwable, KeygenLicense] = for {

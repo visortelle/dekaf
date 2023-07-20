@@ -29,6 +29,18 @@ javaOptions ++= javaOpts
 
 Global / resolvers += Resolver.mavenLocal
 
+// Define extra properties at build time that are available in runtime.
+Compile / sourceGenerators += Def.task {
+  val buildInfo = (Compile / sourceManaged).value / "ExtraBuildInfo.scala"
+  IO.write(buildInfo,
+    s"""package buildinfo
+       |object ExtraBuildInfo {
+       |  val isBinaryBuild = ${System.getProperty("isBinaryBuild") == "true"}
+       |}
+       |""".stripMargin)
+  Seq(buildInfo)
+}.taskValue
+
 lazy val root = project
     .enablePlugins(BuildInfoPlugin)
     .enablePlugins(JavaAppPackaging)
