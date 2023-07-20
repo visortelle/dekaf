@@ -28,15 +28,19 @@ class KeygenClient(
         data <- res.body.asString
         resultZIO =
             if res.status.isSuccess
-            then
-                ZIO.succeed(parse(data).getOrElse(Json.Null).as[KeygenMachine].toTry.get)
+            then ZIO.succeed(parse(data).getOrElse(Json.Null).as[KeygenMachine].toTry.get)
             else
-                ZIO.fail(new Exception(data))
+                val errors = parse(data).getOrElse(Json.Null).as[KeygenErrorRes].toTry.get
+                val errMessage =
+                    if errors.errors.exists(err => err.code.getOrElse("") == "MACHINE_LIMIT_EXCEEDED")
+                    then "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://pulsocat.com"
+                    else data
+                ZIO.fail(new Exception(errMessage))
         result <- resultZIO
-        _ <- ZIO.logInfo(s"License session activated with id: ${result.data.id.get}.")
+        _ <- ZIO.logInfo(s"License session: ${result.data.id.get}.")
     } yield result
 
-    def validateLicense(licenseId: String, licenseToken: String): ZIO[Client, Throwable, KeygenLicense] = for {
+    def validateLicense(licenseId: String): ZIO[Client, Throwable, KeygenLicense] = for {
         _ <- ZIO.logInfo("Validating license.")
         url <- ZIO.attempt(s"$keygenApiBase/licenses/$licenseId/actions/validate")
         nonce <- Random.nextInt
@@ -51,3 +55,15 @@ class KeygenClient(
         data <- res.body.asString
         result <- ZIO.fromTry(parse(data).getOrElse(Json.Null).as[KeygenLicense].toTry)
     } yield result
+
+    def licenseHeartbeatPing(machineId: String): ZIO[Client, Throwable, Unit] = for {
+        _ <- ZIO.logDebug("License session heartbeat ping.")
+        url <- ZIO.attempt(s"$keygenApiBase/machines/$machineId/actions/ping-heartbeat")
+        res <- Client.request(url, method = Method.POST, headers)
+        _ <- ZIO.whenCase(res.status) {
+            case Status.Ok => ZIO.succeed(())
+            case _ =>
+                ZIO.logError("License session heartbeat failed. Exit 1") *>
+                    ZIO.succeed(java.lang.System.exit(1))
+        }
+    } yield ()

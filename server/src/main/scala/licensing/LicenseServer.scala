@@ -26,8 +26,8 @@ val Graffiti =
       | \$$        \$$$$$$  \$$ \$$$$$$$   \$$$$$$   \$$$$$$$ \$$$$$$$   \$$$$  for Apache Pulsar
       |""".stripMargin.replace("$", "▓")
 
-object LicenseServer extends ZIOAppDefault:
-    def beforeRun: ZIO[Any, Throwable, Unit] = for {
+object LicenseServer:
+    def start: ZIO[Any, Throwable, Unit] = for {
         _ <- ZIO.attempt {
             println(Graffiti)
             println(
@@ -35,8 +35,9 @@ object LicenseServer extends ZIOAppDefault:
             )
             println(s"Product: ${buildinfo.BuildInfo.name} ${buildinfo.BuildInfo.version}")
             println(s"Built at: ${buildinfo.BuildInfo.builtAtString}")
-            println(s"More info about this product: https://pulsocat.com")
+            println(s"You can get help here: support@teal.tools")
             println(s"More products: https://teal.tools")
+            println(s"More info about this product: https://pulsocat.com")
         }
         config <- readConfig
         _ <- ZIO.attempt {
@@ -52,9 +53,7 @@ object LicenseServer extends ZIOAppDefault:
                     println("Exit 1")
                     java.lang.System.exit(1)
         }
-        _ <- ZIO.attempt {
-            println(s"Started at: ${java.time.Instant.now().toString}")
-        }
+        _ <- ZIO.logInfo(s"Started at: ${java.time.Instant.now().toString}")
         config <- readConfig
         license <- ZIO.attempt(config.license.get)
         keygenClient <- ZIO.attempt {
@@ -65,7 +64,7 @@ object LicenseServer extends ZIOAppDefault:
             )
         }
         keygenLicense <- keygenClient
-            .validateLicense(licenseId = license.id, licenseToken = license.token)
+            .validateLicense(license.id)
             .provide(Client.default)
         product <- ZIO.attempt(ProductFamily.find(p => p.keygenProductId == keygenLicense.data.relationships.product.data.id))
         _ <- ZIO.whenCase(product) {
@@ -97,9 +96,15 @@ object LicenseServer extends ZIOAppDefault:
                 )
             )
             .provide(Client.default)
+        _ <- keygenClient
+            .licenseHeartbeatPing(keygenMachine.data.id.get)
+            .provide(Client.default)
+            .repeat(Schedule.fixed(Duration.fromSeconds(60)))
+            .fork
     } yield ()
 
-    def run: IO[Throwable, Unit] = for {
-        _ <- ZIO.logInfo("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
+    def stop: ZIO[Any, Throwable, Unit] = for {
+        _ <- ZIO.logInfo("Stopping license session.")
     } yield ()
+
+

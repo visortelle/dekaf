@@ -21,7 +21,7 @@ given Decoder[KeygenError] = deriveDecoder[KeygenError]
 given Encoder[KeygenError] = deriveEncoder[KeygenError]
 
 case class KeygenErrorRes(
-    errors: Option[String]
+    errors: List[KeygenError]
 )
 
 given Decoder[KeygenErrorRes] = deriveDecoder[KeygenErrorRes]

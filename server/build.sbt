@@ -2,7 +2,7 @@ val scala3Version = "3.3.0"
 val graalvmVersion = "22.3.1"
 val pulsarVersion = "3.0.0"
 val circeVersion = "0.14.5"
-val zioVersion = "2.0.13"
+val zioVersion = "2.0.15"
 val zioConfigVersion = "3.0.7"
 
 maintainer := "kiryl_valkovich@teal.tools"
@@ -21,8 +21,9 @@ scalacOptions ++= Seq(
     "50" // https://github.com/softwaremill/magnolia/issues/374
 )
 
-cancelable in Global := true
-fork := true
+// Gracefully shutdown the app on Ctrl+C when running it from SBT
+Global / cancelable := true
+Global / fork := true
 
 javaOptions ++= javaOpts
 
@@ -72,8 +73,8 @@ lazy val root = project
             "io.circe" %% "circe-parser" % circeVersion,
 
             // Javalin
-            "io.javalin" % "javalin" % "5.4.2",
-            "io.javalin" % "javalin-rendering" % "5.4.2",
+            "io.javalin" % "javalin" % "5.6.1",
+            "io.javalin" % "javalin-rendering" % "5.6.0",
             "org.freemarker" % "freemarker" % "2.3.31",
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
 
