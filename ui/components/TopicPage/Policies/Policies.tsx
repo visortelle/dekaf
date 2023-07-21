@@ -31,6 +31,7 @@ import maxSubscriptionsPerTopicField from './fields/max-subscriptions-per-topic'
 import maxMessageSizeField from './fields/max-message-size';
 
 import s from './Policies.module.css'
+import Tabs from "../../ui/Tabs/Tabs";
 
 export type PoliciesProps = {
   tenant: string;
@@ -39,8 +40,17 @@ export type PoliciesProps = {
   topicType: 'persistent' | 'non-persistent';
 };
 
+type TabsKey =
+  'topic-config' |
+  'consumers' |
+  'subscriptions' |
+  'retention' |
+  'deduplication' |
+  'schema';
+
 const Policies: React.FC<PoliciesProps> = (props) => {
   const [isGlobal, setIsGlobal] = useQueryParam('isGlobal', withDefault(BooleanParam, false));
+  const [activeTab, setActiveTab] = React.useState<TabsKey>('topic-config');
 
   const brokersConfig = BrokersConfig.useContext();
   const isTopicLevelPoliciesEnabled = brokersConfig.get('topicLevelPoliciesEnabled')?.value;
@@ -58,89 +68,117 @@ const Policies: React.FC<PoliciesProps> = (props) => {
   return (
     <div className={s.Policies}>
 
-      <div className={s.Title}>
-        <H1>Topic policies</H1>
-      </div>
-
-      <div>
-        <span>Is global</span>
+      <div className={s.IsGlobalCheckbox}>
         <Checkbox
           checked={isGlobal}
           onChange={() => setIsGlobal(v => !v)}
         />
+        <span>Is global</span>
       </div>
 
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Topic"
-          fields={[
-            delayedDeliveryField,
-            compactionThresholdField,
-            persistenceField,
-            publishRateField,
-            subscribyRateField,
-            maxMessageSizeField,
-            inactiveTopicPoliciesField,
-            maxProducersPerTopicField,
-            maxConsumersPerTopicField,
-            maxSubscriptionsPerTopicField,
-            dispatchRateField,
-            replicatorDispatchRateField,
-          ].map(field => field({ ...props, isGlobal }))}
+      <div className={s.Tabs}>
+        <Tabs<TabsKey>
+          activeTab={activeTab}
+          onActiveTabChange={setActiveTab}
+          tabs={{
+            "topic-config": {
+              title: 'Topic ',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Topic"
+                    fields={[
+                      delayedDeliveryField,
+                      compactionThresholdField,
+                      persistenceField,
+                      publishRateField,
+                      subscribyRateField,
+                      maxMessageSizeField,
+                      inactiveTopicPoliciesField,
+                      maxProducersPerTopicField,
+                      maxConsumersPerTopicField,
+                      maxSubscriptionsPerTopicField,
+                      dispatchRateField,
+                      replicatorDispatchRateField,
+                    ].map(field => field({ ...props, isGlobal }))}
+                  />
+                </div>
+              )
+            },
+            consumers: {
+              title: 'Consumers',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Consumers"
+                    fields={[
+                      maxUnackedMessagesPerConsumerField
+                    ].map(field => field({ ...props, isGlobal }))}
+                  />
+                </div>
+              )
+            },
+            subscriptions: {
+              title: 'Subscriptions',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Subscriptions"
+                    fields={[
+                      subscriptionTypesEnabledField,
+                      subscriptionDispatchRateField,
+                      maxConsumersPerSubscriptionField,
+                      maxUnackedMessagesPerSubscriptionField
+                    ].map(field => field({ ...props, isGlobal }))}
+                  />
+                </div>
+              )
+            },
+            retention: {
+              title: 'Retention',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Retention"
+                    fields={[
+                      retentionField,
+                      backlogQuotaField,
+                      messageTtlField,
+                    ].map(field => field({ ...props, isGlobal }))}
+                  />
+                </div>
+              )
+            },
+            deduplication: {
+              title: 'Deduplication',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Deduplication"
+                    fields={[
+                      deduplicationField,
+                      deduplicationSnapshotIntervalField
+                    ].map(field => field({ ...props, isGlobal }))}
+                  />
+                </div>
+              )
+            },
+            schema: {
+              title: 'Schema',
+              render: () => (
+                <div className={s.ConfigurationTable}>
+                  <ConfigurationTable
+                    title="Schema"
+                    fields={[
+                      schemaCompatibilityStrategyField,
+                    ].map(field => field({ ...props, isGlobal }))}
+                  />
+                </div>
+              )
+            },
+          }}
         />
       </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Consumers"
-          fields={[
-            maxUnackedMessagesPerConsumerField
-          ].map(field => field({ ...props, isGlobal }))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Subscriptions"
-          fields={[
-            subscriptionTypesEnabledField,
-            subscriptionDispatchRateField,
-            maxConsumersPerSubscriptionField,
-            maxUnackedMessagesPerSubscriptionField
-          ].map(field => field({ ...props, isGlobal }))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Retention"
-          fields={[
-            retentionField,
-            backlogQuotaField,
-            messageTtlField,
-          ].map(field => field({ ...props, isGlobal }))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Deduplication"
-          fields={[
-            deduplicationField,
-            deduplicationSnapshotIntervalField
-          ].map(field => field({ ...props, isGlobal }))}
-        />
-      </div>
-
-      <div className={s.ConfigurationTable}>
-        <ConfigurationTable
-          title="Schema"
-          fields={[
-            schemaCompatibilityStrategyField,
-          ].map(field => field({ ...props, isGlobal }))}
-        />
-      </div>
-
     </div>
   );
 }

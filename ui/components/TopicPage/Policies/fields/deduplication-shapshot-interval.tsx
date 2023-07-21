@@ -11,6 +11,9 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../../swrKeys';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
+import React from "react";
 
 
 const policy = 'deduplicationSnapshotInterval';
@@ -139,7 +142,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Deduplication snapshot interval',
-  description: <span>Deduplication snapshot interval. <code>namespaceDeduplicationEnabled</code> must be set to true for this property to take effect.</span>,
+  description: <span><TooltipElement tooltipHelp={help["deduplicationSnapshot"]}>Deduplication snapshot</TooltipElement> interval. <code>namespaceDeduplicationEnabled</code> must be set to true for this property to take effect.</span>,
   input: <FieldInput {...props} />
 });
 

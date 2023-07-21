@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import useSWR, { useSWRConfig } from "swr";
 import stringify from "safe-stable-stringify";
 
@@ -12,6 +12,8 @@ import WithUpdateConfirmation, { ValidationError } from '../../../ui/Configurati
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { swrKeys } from '../../../swrKeys';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
 
 const policy = 'persistence';
 
@@ -225,19 +227,19 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Persistence',
-  description: <div>Determines how BookKeeper handles persistent storage of messages. Policies determine four things:
+  description: <div>Determines how BookKeeper handles <TooltipElement tooltipHelp={help["persistentStorage"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-architecture-overview/#persistent-storage">persistent storage</TooltipElement> of messages. Policies determine four things:
     <ul>
       <li>
-        Ensemble (E) size: number of bookies to use for storing entries in a ledger.
+        The ensemble size (E): number of  <TooltipElement tooltipHelp={help["bookie"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#storage">bookies</TooltipElement> the <TooltipElement tooltipHelp={help["ledger"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-architecture-overview/#ledgers">ledger</TooltipElement> will be stored on.
       </li>
       <li>
-        Write quorum (Q<sub>w</sub>) size: replication factor for storing entries (messages) in a ledger.
+        The quorum write size (Q<sub>w</sub>): number of bookies each <TooltipElement tooltipHelp={help["message"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#messages">entry (message)</TooltipElement> will be written to.
       </li>
       <li>
-        Ack quorum (Q<sub>a</sub>) size: number of guaranteed copies (acks to wait for before a write is considered completed).
+        <TooltipElement tooltipHelp={help["acknowledgement"]} link="https://pulsar.apache.org/docs/3.0.x/reference-terminology/#acknowledgment-ack">Acknowledgment(ack)</TooltipElement> quorum (Q<sub>a</sub>) size: number of nodes an entry must be acknowledged by (number of guaranteed copies).
       </li>
       <li>
-        The throttling rate for mark-delete operations.
+        The <TooltipElement tooltipHelp={help["throttlingRateMarkDelete"]} link="https://streamnative.io/blog/deep-dive-into-topic-data-lifecycle-apache-pulsar">throttling rate for mark-delete operations</TooltipElement>.
       </li>
     </ul>
   </div>,

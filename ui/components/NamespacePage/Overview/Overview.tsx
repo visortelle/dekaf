@@ -211,7 +211,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         <div className={s.SectionTitle}>
           <TooltipElement
             tooltipHelp={"A virtual group of topics that belong to the same namespace. A namespace bundle is defined as a range between two 32-bit hashes, such as 0x00000000 and 0xffffffff."}
-            link={"https://pulsar.apache.org/docs/next/administration-load-balance/#pulsar-load-manager-architecture"}>
+            link={"https://pulsar.apache.org/docs/3.0.x/administration-load-balance/#pulsar-load-manager-architecture"}>
             Bundles
           </TooltipElement>
         </div>

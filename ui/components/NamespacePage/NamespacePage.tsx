@@ -68,14 +68,14 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       <Toolbar
         buttons={[
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Overview',
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Topics',
             onClick: () => { },
             type: 'regular'
           },
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Topics',
+            linkTo: routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Overview',
             onClick: () => { },
             type: 'regular'
           },
@@ -118,8 +118,8 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
         ]}
       />
 
-      {props.view === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'topics' && <Topics tenant={props.tenant} namespace={props.namespace} />}
+      {props.view === 'overview' && <Overview tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'policies' && <Policies tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'permissions' && <Permissions tenant={props.tenant} namespace={props.namespace} />}
       {props.view === 'subscription-permissions' && <SubscriptionPermissions tenant={props.tenant} namespace={props.namespace} />}

@@ -11,6 +11,9 @@ import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import { swrKeys } from "../../../swrKeys";
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
+import React from "react";
 
 const policy = 'delayedDelivery';
 
@@ -166,7 +169,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Delayed delivery',
-  description: <span>Set the delayed delivery policy on a topic.</span>,
+  description: <span>Sets the <TooltipElement tooltipHelp={help["delayedDelivery"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-messaging/#delayed-message-delivery">delayed delivery policy</TooltipElement> on the topic.</span>,
   input: <FieldInput {...props} />
 });
 

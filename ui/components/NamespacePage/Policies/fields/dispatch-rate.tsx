@@ -12,6 +12,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import stringify from 'safe-stable-stringify';
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
 
 const policy = 'dispatchRate';
 
@@ -172,17 +173,10 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   )
 }
 
-type TermKey =
-  'dispatchRate';
-
-const help: Record<TermKey, React.ReactNode> = {
-  dispatchRate: <div>Sets a limit on the number of messages that can be delivered to clients from all topics within a namespace. This rate control helps to prevent traffic surges and maintain system performance by avoiding memory usage spikes due to large message payloads.</div>
-}
-
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Dispatch rate',
-  description: <span>Sets <TooltipElement tooltipHelp={help["dispatchRate"]} link="https://pulsar.apache.org/docs/next/concepts-throttling/#what-is-message-dispatch-throttling">message-dispatch-rate</TooltipElement> for all topics of the namespace.</span>,
+  description: <span>Sets <TooltipElement tooltipHelp={help["dispatchRate"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-throttling/#what-is-message-dispatch-throttling">message-dispatch-rate</TooltipElement> for all topics of the namespace.</span>,
   input: <FieldInput {...props} />
 });
 

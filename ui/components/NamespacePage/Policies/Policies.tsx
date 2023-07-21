@@ -31,7 +31,7 @@ import maxUnackedMessagesPerConsumerField from './fields/max-unacked-messages-pe
 import compactionThresholdField from './fields/compaction-threshold';
 import deduplicationSnapshotIntervalField from './fields/deduplication-shapshot-interval';
 import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
-import isALlowAutoUpdateSchemaField from './fields/allow-auto-update-schema';
+import isAllowAutoUpdateSchemaField from './fields/allow-auto-update-schema';
 import schemaValidationEnforceField from './fields/schema-validation-enforce';
 import offloadPoliciesField from './fields/offload-policies/offload-policies';
 import publishRateField from './fields/publish-rate';
@@ -178,7 +178,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
                     fields={[
                       schemaValidationEnforceField,
                       schemaCompatibilityStrategyField,
-                      isALlowAutoUpdateSchemaField,
+                      isAllowAutoUpdateSchemaField,
                     ].map(field => field(props))}
                   />
                 </div>

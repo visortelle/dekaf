@@ -7,7 +7,7 @@ import { swrKeys } from "../../../swrKeys";
 import { GetSchemaValidationEnforceRequest, SetSchemaValidationEnforceRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
-import * as generalHelp from "./help";
+import * as generalHelp from "../../../ui/help";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
 const policy = 'schemaValidationEnforce';
@@ -91,7 +91,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Schema validation enforce',
-  description: <span>Enables brokers to reject producers/consumers without a <TooltipElement tooltipHelp={generalHelp.help["schema"]} link="https://pulsar.apache.org/docs/next/schema-overview/">schema</TooltipElement>.</span>,
+  description: <span>Enables brokers to reject producers/consumers without a <TooltipElement tooltipHelp={generalHelp.help["schema"]} link="https://pulsar.apache.org/docs/3.0.x/schema-overview/">schema</TooltipElement>.</span>,
   input: <FieldInput {...props} />
 });
 
