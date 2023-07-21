@@ -17,7 +17,7 @@
 - Use `make dev` command at the repository root to enter the development environment shell.
 - Go to `./devenv` directory and run `make dev-local` to start local Pulsar-standalone instance in Docker.
 - Go to the Protobuf definitions directory `cd ./proto` and run `make build` here.
-- Go to the server directory `cd ./server` and run `sbt`, then `run` here.
+- Go to the server directory `cd ./server` and run `source ./config-dev.sh && sbt`, then `run` here.
 - Open a second terminal, go to the UI directory `cd ./ui` and run `make dev` here.
 
 ## Frontend

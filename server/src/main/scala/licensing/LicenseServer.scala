@@ -112,5 +112,5 @@ object LicenseServer:
         }
         _ <- keygenClient
             .licenseHeartbeatPing(keygenMachineId, onFail)
-            .repeat(Schedule.fixed(Duration.fromSeconds(10)))
+            .repeat(Schedule.fixed(Duration.fromSeconds(120)))
     } yield ()

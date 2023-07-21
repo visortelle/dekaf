@@ -1,17 +1,15 @@
-port: 8090
-publicUrl: "http://localhost:8090"
+port: ${PULSOCAT_PORT}
+publicUrl: ${PULSOCAT_PUBLIC_URL}
 
 library:
-  path: "./library"
+  path: ${PULSOCAT_LIBRARY_PATH}
 
 license:
-  id: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6"
-  token: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3"
+  id: ${PULSOCAT_LICENSE_ID}
+  token: ${PULSOCAT_LICENSE_TOKEN}
 
 pulsarInstance:
-  name: "StreamNative instance-d"
-#  color: "#ff0000"
-#  brokerServiceUrl: "pulsar://localhost:6650"
-  brokerServiceUrl: "pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651"
-#  webServiceUrl: "http://localhost:8080"
-  webServiceUrl: "https://cluster-d.o-xy6ek.snio.cloud"
+  name: ${PULSOCAT_PULSAR_INSTANCE_NAME}
+  color: transparent
+  brokerServiceUrl: ${PULSOCAT_PULSAR_INSTANCE_BROKER_SERVICE_URL}
+  webServiceUrl: ${PULSOCAT_PULSAR_INSTANCE_WEB_SERVICE_URL}
