@@ -19,5 +19,8 @@ object Main extends ZIOAppDefault:
     // If you know how to fix it in dev mode, do it please. :)
     override def run: IO[Throwable, Unit] = for {
         licenseServerInitResult <- LicenseServer.init
-        _ <- runApp.ensuring(licenseServerInitResult.cleanup.orElseSucceed(()))
+
+        cleanup = licenseServerInitResult.cleanup
+
+        _ <- runApp.ensuring(cleanup.timeout(10.seconds).orElseSucceed(()))
     } yield ()

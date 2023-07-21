@@ -1,7 +1,6 @@
 package licensing
 
 import zio.*
-import zio.http.Client
 import keygen.{KeygenClient, *}
 
 import java.util.UUID
@@ -65,9 +64,7 @@ object LicenseServer:
                 keygenAccountId = KeygenAccountId
             )
         }
-        keygenLicense <- keygenClient
-            .validateLicense(license.id)
-            .provide(Client.default)
+        keygenLicense <- keygenClient.validateLicense(license.id)
         product <- ZIO.attempt(ProductFamily.find(p => p.keygenProductId == keygenLicense.data.relationships.product.data.id))
         _ <- ZIO.whenCase(product) {
             case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.name}.")
@@ -97,15 +94,11 @@ object LicenseServer:
                     )
                 )
             )
-            .provide(Client.default)
         _ <- keygenClient
             .licenseHeartbeatPing(keygenMachine.data.id.get)
-            .provide(Client.default)
             .repeat(Schedule.fixed(Duration.fromSeconds(60)))
             .fork
-        initResult <- ZIO.succeed(
-            InitResult(
-                cleanup = keygenClient.deactivateMachine(keygenMachine.data.id.get).provide(Client.default)
-            )
+        initResult = InitResult(
+            cleanup = keygenClient.deactivateMachine(keygenMachine.data.id.get)
         )
     } yield initResult

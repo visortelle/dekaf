@@ -9,6 +9,7 @@ maintainer := "kiryl_valkovich@teal.tools"
 
 val javaOpts = Seq(
     "-Dpolyglot.engine.WarnInterpreterOnly=false",
+    "-Xss4M", // otherwise build fails
 
     // Fix "Cannot get DNS TTL settings from sun.net.InetAddressCachePolicy"
     // https://github.com/apache/pulsar/issues/15349
@@ -77,7 +78,8 @@ lazy val root = project
             "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
             "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
             "dev.zio" %% "zio-process" % "0.7.2",
-            "dev.zio" %% "zio-http" % "3.0.0-RC2",
+            "com.softwaremill.sttp.client4" %% "zio" % "4.0.0-M2",
+            "com.softwaremill.sttp.client4" %% "circe" % "4.0.0-M2",
 
             // Serialization
             "io.circe" %% "circe-core" % circeVersion,

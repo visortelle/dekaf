@@ -21,7 +21,6 @@ object HttpServer:
     private val isBinaryBuild = buildinfo.ExtraBuildInfo.isBinaryBuild
 
     def createApp(appConfig: Config): Javalin =
-        println(s"IS IBNARY BUBILD ${isBinaryBuild}")
         Javalin
             .create { config =>
                 JavalinFreemarker.init()

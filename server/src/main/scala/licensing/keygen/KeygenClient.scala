@@ -4,7 +4,11 @@ import io.circe.*
 import io.circe.parser.parse
 import io.circe.syntax.*
 import zio.*
-import zio.http.*
+import sttp.client4.{ResponseException, *}
+import sttp.model.*
+import sttp.client4.httpclient.zio.*
+import sttp.client4
+import sttp.client4.circe.*
 
 class KeygenClient(
     licenseToken: String,
@@ -12,50 +16,54 @@ class KeygenClient(
     keygenAccountId: String
 ):
     private val keygenApiBase = s"$keygenApiUrl/v1/accounts/$keygenAccountId"
-
-    private val baseHeaders = Headers(
-        Header.Custom("Content-Type", "application/vnd.api+json"),
-        Header.Custom("Accept", "application/vnd.api+json")
+    private val headers = Map(
+        "Content-Type" -> "application/vnd.api+json",
+        "Accept" -> "application/vnd.api+json",
+        "Authorization" -> s"Bearer $licenseToken"
     )
-    private val authHeaders = Headers(Header.Authorization.Bearer(s"$licenseToken"))
-    private val headers = baseHeaders ++ authHeaders
 
-    def activateMachine(machine: KeygenMachine): ZIO[Client, Throwable, KeygenMachine] = for {
+    def activateMachine(machine: KeygenMachine): Task[KeygenMachine] = for {
         _ <- ZIO.logInfo("Activating current application instance.")
-        url <- ZIO.attempt(s"$keygenApiBase/machines")
-        body <- ZIO.attempt(machine.asJson.toString)
-        res <- Client.request(url, method = Method.POST, headers = headers, Body.fromString(body))
-        data <- res.body.asString
+        httpBackend <- HttpClientZioBackend()
+        res <- basicRequest
+            .post(uri"$keygenApiBase/machines")
+            .headers(headers)
+            .body(machine.asJson.toString)
+            .response(asJsonEither[KeygenErrorRes, KeygenMachine].getEither)
+            .send(httpBackend)
         resultZIO =
-            if res.status.isSuccess
-            then ZIO.succeed(parse(data).getOrElse(Json.Null).as[KeygenMachine].toTry.get)
-            else
-                val errors = parse(data).getOrElse(Json.Null).as[KeygenErrorRes].toTry.get
-                val errMessage =
-                    if errors.errors.exists(err => err.code.getOrElse("") == "MACHINE_LIMIT_EXCEEDED")
-                    then "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://pulsocat.com"
-                    else data
-                ZIO.fail(new Exception(errMessage))
+            res.body match
+                case Left(err) =>
+                    if err.errors.exists(err => err.code.getOrElse("") == "MACHINE_LIMIT_EXCEEDED")
+                    then
+                        val errMessage = "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://pulsocat.com"
+                        ZIO.fail(new Exception(errMessage))
+                    else
+                        ZIO.fail(new Exception(err.errors.asJson.toString))
+                case Right(v)            => ZIO.succeed(v)
         result <- resultZIO
         _ <- ZIO.logInfo(s"Current application instance successfully activated: ${result.data.id.get}.")
     } yield result
 
-    def deactivateMachine(machineId: String): ZIO[Client, Throwable, Unit] = for {
-        _ <- ZIO.logInfo(s"Deactivating current application instance: ${machineId}")
-        url <- ZIO.attempt(s"$keygenApiBase/machines/${machineId}")
-        res <- Client.request(url, method = Method.DELETE, headers = headers)
-        data <- res.body.asString
+    def deactivateMachine(machineId: String): Task[Unit] = for {
+        _ <- ZIO.logInfo(s"Deactivating current application instance: $machineId")
+        httpBackend <- HttpClientZioBackend()
+        res <- basicRequest
+            .delete(uri"$keygenApiBase/machines/$machineId")
+            .headers(headers)
+            .response(asJsonEither[KeygenErrorRes, Unit])
+            .send(httpBackend)
         resultZIO =
-            if res.status.isSuccess
+            if res.code.isSuccess
             then ZIO.succeed(())
-            else ZIO.fail(new Exception(data))
+            else ZIO.fail(new Exception("Failed to deactivate current application instance."))
+        _ <- ZIO.logInfo(s"Current application instance has been successfully deactivated.")
         result <- resultZIO
-        _ <- ZIO.logInfo(s"Current application instance has been successfully unregistered.")
     } yield result
 
-    def validateLicense(licenseId: String): ZIO[Client, Throwable, KeygenLicense] = for {
+    def validateLicense(licenseId: String): Task[KeygenLicense] = for {
         _ <- ZIO.logInfo("Validating license.")
-        url <- ZIO.attempt(s"$keygenApiBase/licenses/$licenseId/actions/validate")
+        httpBackend <- HttpClientZioBackend()
         nonce <- Random.nextInt
         body <- ZIO.attempt(s"""
               |{
@@ -64,19 +72,26 @@ class KeygenClient(
               |  }
               |}
               |""".stripMargin)
-        res <- Client.request(url, method = Method.POST, headers, Body.fromString(body))
-        data <- res.body.asString
-        result <- ZIO.fromTry(parse(data).getOrElse(Json.Null).as[KeygenLicense].toTry)
+        res <- basicRequest
+            .post(uri"$keygenApiBase/licenses/$licenseId/actions/validate")
+            .headers(headers)
+            .body(body)
+            .response(asJsonEither[KeygenErrorRes, KeygenLicense])
+            .send(httpBackend)
+        result <- ZIO.fromEither(res.body)
     } yield result
 
-    def licenseHeartbeatPing(machineId: String): ZIO[Client, Throwable, Unit] = for {
+    def licenseHeartbeatPing(machineId: String): Task[Unit] = for {
         _ <- ZIO.logDebug("License session heartbeat ping.")
-        url <- ZIO.attempt(s"$keygenApiBase/machines/$machineId/actions/ping-heartbeat")
-        res <- Client.request(url, method = Method.POST, headers)
-        _ <- ZIO.whenCase(res.status) {
-            case Status.Ok => ZIO.succeed(())
-            case _ =>
+        httpBackend <- HttpClientZioBackend()
+        res <- basicRequest
+            .post(uri"${keygenApiBase}/machines/${machineId}/actions/ping-heartbeat")
+            .headers(headers)
+            .response(asJsonEither[KeygenErrorRes, Unit].getEither)
+            .send(httpBackend)
+        _ <- res.body match
+            case Right(_) => ZIO.succeed(())
+            case Left(_) =>
                 ZIO.logError("License session heartbeat failed. Exit 1") *>
                     ZIO.succeed(java.lang.System.exit(1))
-        }
     } yield ()
