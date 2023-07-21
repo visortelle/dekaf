@@ -35,7 +35,7 @@ import _root_.brokerstats.BrokerStatsServiceImpl
 import _root_.topicpolicies.TopicpoliciesServiceImpl
 import _root_.pulsar_auth.PulsarAuthInterceptor
 
-object GrpcServer extends ZIOAppDefault:
+object GrpcServer:
     private val pulsarAuthInterceptor = new PulsarAuthInterceptor()
 
     private def createGrpcServer(port: Int) = ServerBuilder
@@ -59,7 +59,7 @@ object GrpcServer extends ZIOAppDefault:
         .intercept(pulsarAuthInterceptor)
         .build
 
-    val run: ZIO[Any, Throwable, Unit] = for
+    def run: ZIO[Any, Throwable, Unit] = for
         config <- readConfig
         port <- ZIO.attempt(config.internal.get.grpcPort)
 

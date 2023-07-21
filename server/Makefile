@@ -12,7 +12,7 @@ clean:
 .PHONY: build
 build: # Build
 	cd ./library/js && npm install && npm run build
-	sbt universal:packageBin
+	sbt universal:packageBin -DisBinaryBuild=true
 
 .PHONY: dev
 dev: ## Start development
