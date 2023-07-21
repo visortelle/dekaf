@@ -36,11 +36,11 @@ class KeygenClient(
                 case Left(err) =>
                     if err.errors.exists(err => err.code.getOrElse("") == "MACHINE_LIMIT_EXCEEDED")
                     then
-                        val errMessage = "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://pulsocat.com"
+                        val errMessage =
+                            "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://pulsocat.com"
                         ZIO.fail(new Exception(errMessage))
-                    else
-                        ZIO.fail(new Exception(err.errors.asJson.toString))
-                case Right(v)            => ZIO.succeed(v)
+                    else ZIO.fail(new Exception(err.errors.asJson.toString))
+                case Right(v) => ZIO.succeed(v)
         result <- resultZIO
         _ <- ZIO.logInfo(s"Current application instance successfully activated: ${result.data.id.get}.")
     } yield result
@@ -81,17 +81,12 @@ class KeygenClient(
         result <- ZIO.fromEither(res.body)
     } yield result
 
-    def licenseHeartbeatPing(machineId: String): Task[Unit] = for {
-        _ <- ZIO.logDebug("License session heartbeat ping.")
+    def licenseHeartbeatPing(machineId: String, onFail: Task[Unit]): Task[Unit] = for {
+        _ <- ZIO.logInfo("License session heartbeat ping.")
         httpBackend <- HttpClientZioBackend()
         res <- basicRequest
-            .post(uri"${keygenApiBase}/machines/${machineId}/actions/ping-heartbeat")
+            .post(uri"$keygenApiBase/machines/$machineId/actions/ping-heartbeat")
             .headers(headers)
-            .response(asJsonEither[KeygenErrorRes, Unit].getEither)
             .send(httpBackend)
-        _ <- res.body match
-            case Right(_) => ZIO.succeed(())
-            case Left(_) =>
-                ZIO.logError("License session heartbeat failed. Exit 1") *>
-                    ZIO.succeed(java.lang.System.exit(1))
+        _ <- onFail.unless(res.code.isSuccess)
     } yield ()

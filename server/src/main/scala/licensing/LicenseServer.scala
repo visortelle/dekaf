@@ -26,7 +26,7 @@ val Graffiti =
       |""".stripMargin.replace("$", "▓")
 
 object LicenseServer:
-    case class InitResult(cleanup: Task[Unit])
+    case class InitResult(cleanup: Task[Unit], keygenMachine: KeygenMachine)
 
     def init: ZIO[Any, Throwable, InitResult] = for {
         _ <- ZIO.attempt {
@@ -94,11 +94,23 @@ object LicenseServer:
                     )
                 )
             )
-        _ <- keygenClient
-            .licenseHeartbeatPing(keygenMachine.data.id.get)
-            .repeat(Schedule.fixed(Duration.fromSeconds(60)))
-            .fork
-        initResult = InitResult(
-            cleanup = keygenClient.deactivateMachine(keygenMachine.data.id.get)
+        result = InitResult(
+            cleanup = keygenClient.deactivateMachine(keygenMachine.data.id.get),
+            keygenMachine = keygenMachine
         )
-    } yield initResult
+    } yield result
+
+    def startLicenseHeartbeatPing(keygenMachineId: String, onFail: Task[Unit]): Task[Unit] = for {
+        config <- readConfig
+        license <- ZIO.attempt(config.license.get)
+        keygenClient <- ZIO.attempt {
+            new KeygenClient(
+                licenseToken = license.token,
+                keygenApiUrl = KeygenApiUrl,
+                keygenAccountId = KeygenAccountId
+            )
+        }
+        _ <- keygenClient
+            .licenseHeartbeatPing(keygenMachineId, onFail)
+            .repeat(Schedule.fixed(Duration.fromSeconds(10)))
+    } yield ()

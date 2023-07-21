@@ -22,5 +22,15 @@ object Main extends ZIOAppDefault:
 
         cleanup = licenseServerInitResult.cleanup
 
-        _ <- runApp.ensuring(cleanup.timeout(10.seconds).orElseSucceed(()))
+        licenseServerFib <- LicenseServer
+            .startLicenseHeartbeatPing(
+                licenseServerInitResult.keygenMachine.data.id.get,
+                onFail = ZIO.logError("License heartbeat ping failed.") *>
+                    cleanup *>
+                    this.exit(ExitCode.failure)
+            )
+            .fork
+
+        _ <- runApp.fork
+        _ <- licenseServerFib.join.ensuring(cleanup.orElseSucceed(()))
     } yield ()
