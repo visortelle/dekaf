@@ -6,7 +6,7 @@ import _root_.config.readConfig
 
 import java.io.File
 
-object Envoy extends ZIOAppDefault:
+object Envoy:
     def run: IO[Throwable, Unit] = for
         envoyConfigParams <- readConfig.map(c =>
             EnvoyConfigParams(

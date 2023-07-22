@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import stringify from "safe-stable-stringify";
 
@@ -12,6 +12,8 @@ import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import { swrKeys } from "../../../swrKeys";
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
 
 const policy = 'inactiveTopicPolicies';
 
@@ -211,7 +213,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Inactive topic policies',
-  description: <span>Set the inactive policies on a topic.</span>,
+  description: <span>Sets the <TooltipElement tooltipHelp={help["inactiveTopicPolicies"]} link="https://pulsar.apache.org/docs/3.0.x/admin-api-topics/#configure-inactive-topic-policies">inactive topic policies</TooltipElement> on a namespace.</span>,
   input: <FieldInput {...props} />
 });
 

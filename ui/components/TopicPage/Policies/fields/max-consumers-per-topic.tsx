@@ -11,6 +11,9 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import * as generalHelp from "../../../ui/help";
+import React from "react";
 
 const policy = 'maxConsumers';
 
@@ -158,7 +161,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Max consumers per topic',
-  description: <span>Max consumers per topic.</span>,
+  description: <span>Max <TooltipElement tooltipHelp={generalHelp.help["consumer"]} link="https://pulsar.apache.org/docs/3.0.x/client-libraries-consumers/">consumers</TooltipElement> for the topic.</span>,
   input: <FieldInput {...props} />
 });
 

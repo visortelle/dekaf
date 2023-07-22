@@ -10,6 +10,9 @@ import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
+import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
+import {help} from "../../../ui/help";
+import React from "react";
 
 const policy = 'dispatchRate';
 
@@ -183,7 +186,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Dispatch rate',
-  description: <span>Set message-dispatch-rate for all topics of the topic.</span>,
+  description: <span>Sets <TooltipElement tooltipHelp={help["dispatchRate"]} link="https://pulsar.apache.org/docs/3.0.x/concepts-throttling/#what-is-message-dispatch-throttling">message-dispatch-rate</TooltipElement> for the topics.</span>,
   input: <FieldInput {...props} />
 });
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import stringify from 'safe-stable-stringify';
 import * as Either from 'fp-ts/lib/Either';
@@ -217,7 +217,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Subscription types enabled',
-  description: <span>Subscription types enabled for a topic.</span>,
+  description: <span>Defines subscription types enabled for a namespace.</span>,
   input: <FieldInput {...props} />
 });
 
