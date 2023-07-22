@@ -26,7 +26,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />
       </Td>
 
-      <Td width="48rem" className={s.ViewMessageDetailsField}>
+      <Td width="61rem" className={s.ViewMessageDetailsField}>
         <SmallButton
           onClick={() => modals.push({
             id: 'message-details',

@@ -9,7 +9,6 @@ maintainer := "kiryl_valkovich@teal.tools"
 
 val javaOpts = Seq(
     "-Dpolyglot.engine.WarnInterpreterOnly=false",
-    "-Xss4M",
     // Fix "Cannot get DNS TTL settings from sun.net.InetAddressCachePolicy"
     // https://github.com/apache/pulsar/issues/15349
     "--add-opens=java.management/sun.management=ALL-UNNAMED",

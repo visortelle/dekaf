@@ -22,7 +22,7 @@ const EnteringFromBottomDiv = ({ motionKey, children, className, isVisible }: { 
           height: isVisible ? height : (isAnimationRunning ? height : '0rem'),
         }}
       >
-        {children}
+            {children}
       </motion.div>
     </AnimatePresence>
   );

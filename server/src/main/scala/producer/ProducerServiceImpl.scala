@@ -34,23 +34,32 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
         val producerName: ProducerName = request.producerName
         logger.info(s"Creating producer: $producerName")
         val pulsarClient = RequestContext.pulsarClient.get()
+        val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
-            val schema = new AutoProduceBytesSchema[Array[Byte]]
+            val allProducersNames = adminClient.topics().getStats(request.topic).getPublishers.asScala.toSeq.map(_.getProducerName)
+            if allProducersNames.map(_ == producerName).foldLeft(false)(_ || _) then
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(CreateProducerResponse(status = Some(status)))
+            else
+                val schema = new AutoProduceBytesSchema[Array[Byte]]
 
-            val producer: Producer[Array[Byte]] = pulsarClient
-                .newProducer(schema)
-                .accessMode(ProducerAccessMode.Shared)
-                .producerName(producerName)
-                .topic(request.topic)
-                .create()
+                val producer: Producer[Array[Byte]] = pulsarClient
+                    .newProducer(schema)
+                    .accessMode(ProducerAccessMode.Exclusive)
+                    .producerName(producerName)
+                    .topic(request.topic)
+                    .create()
 
-            producers = producers + (producerName -> producer)
+                producers = producers + (producerName -> producer)
 
-            val status: Status = Status(code = Code.OK.index)
-            Future.successful(CreateProducerResponse(status = Some(status)))
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(CreateProducerResponse(status = Some(status)))
         } catch {
-            case err =>
+            case err: org.apache.pulsar.client.api.PulsarClientException.ProducerFencedException =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "Topic has an existing exclusive producer")
+                Future.successful(CreateProducerResponse(status = Some(status)))
+            case err: Exception =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(CreateProducerResponse(status = Some(status)))
         }

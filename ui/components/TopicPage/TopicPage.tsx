@@ -23,8 +23,8 @@ export type TopicPageView =
   | { type: "schema-create" }
   | { type: "schema-view"; schemaVersion: number }
   | { type: "policies" }
-  | { type: "subscriptions" }
-  | { type: "producers" };
+  | { type: "subscriptions" };
+
 export type TopicPageProps = {
   view: TopicPageView;
   tenant: string;

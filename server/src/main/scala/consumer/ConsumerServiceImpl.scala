@@ -2,7 +2,6 @@ package consumer
 
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
-import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
 import com.typesafe.scalalogging.Logger
 
@@ -27,7 +26,8 @@ import java.time.Instant
 type ConsumerName = String
 
 class StreamDataHandler:
-    var onNext: (msg: Message[Array[Byte]]) => Unit = _ => ()
+    var onNext: Message[Array[Byte]] => Unit =
+        message => ()
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     val logger: Logger = Logger(getClass.getName)
@@ -176,7 +176,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     catch
                         // Unsubscribe fails on partitioned topics in most cases.
                         // Anyway we can't handle it meaningfully.
-                        _ => ()
+                        case _ => ()
                     finally ()
                 case _ => ()
 
