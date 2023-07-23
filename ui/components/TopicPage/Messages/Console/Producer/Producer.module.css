@@ -36,7 +36,7 @@
 }
 
 .Toolbar {
-  padding: 0 330rem;
+  padding: 0 20rem;
   height: 38rem;
   border-top: 1px solid var(--border-color);
   display: flex;
