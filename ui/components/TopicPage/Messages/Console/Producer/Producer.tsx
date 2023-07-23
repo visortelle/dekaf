@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, {useCallback, useEffect, useState} from 'react';
-=======
-import React, {useCallback, useEffect} from 'react';
->>>>>>> 745effa6 (Small fixes)
 import {isPlainObject} from 'lodash';
 import {nanoid} from 'nanoid';
 import * as Either from 'fp-ts/lib/Either';
