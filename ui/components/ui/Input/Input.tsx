@@ -1,5 +1,5 @@
 import s from './Input.module.css';
-import { HTMLInputTypeAttribute, InputHTMLAttributes, useEffect, useRef } from 'react';
+import React, { HTMLInputTypeAttribute, InputHTMLAttributes, useEffect, useRef } from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import clearIcon from './clear.svg';
 
@@ -10,7 +10,7 @@ export type InputProps = {
   isSmall?: boolean,
   iconSvg?: string,
   focusOnMount?: boolean,
-  annotation?: string, 
+  annotation?: string,
   clearable?: boolean,
   type?: HTMLInputTypeAttribute,
   inputProps?: InputHTMLAttributes<any>,

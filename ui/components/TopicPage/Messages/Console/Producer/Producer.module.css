@@ -9,7 +9,6 @@
 .Content {
   display: flex;
   flex: 1 1 auto;
-  padding-bottom: 42rem;
   overflow: hidden;
 }
 
@@ -21,14 +20,40 @@
 }
 
 .ConfigLeft, .ConfigRight {
-  padding: 12rem 12rem;
- }
+  padding: 12rem 12rem 0;
+}
 
 .FormControl {
   display: flex;
   flex-direction: column;
   width: 480rem;
+  margin-bottom: 20rem;
+}
+
+.ValueFormControl {
+  display: flex;
+  flex-direction: column;
+  width: 180rem;
   margin-bottom: 12rem;
+}
+
+.DateFormControl {
+  display: flex;
+  flex-direction: column;
+  width: 280rem;
+  margin-bottom: 12rem;
+}
+
+.UpperGroup {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  gap: 37rem;
+  margin-bottom: 12rem;
+}
+
+.PropertiesEditor {
+  padding-left: 0;
 }
 
 .Value {
@@ -36,16 +61,16 @@
 }
 
 .Toolbar {
-  padding: 0 330rem;
+  padding: 0 20rem;
   height: 38rem;
   border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   background-color: #fff;
+  z-index: 999;
 }
 
 .ToolbarControl {
@@ -61,7 +86,6 @@
 }
 
 .ToolbarLoader svg {
-
   height: 18rem !important;
   width: 18rem !important;
 }

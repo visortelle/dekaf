@@ -10,7 +10,7 @@ export type KeyValues = {
   [key: string]: string,
 }
 
-type Props = {
+type Props = React.HTMLAttributes<HTMLDivElement> & {
   height?: string,
   width?: string,
   value: KeyValues,
@@ -30,7 +30,7 @@ const KeyValueEditor = (props: Props) => {
   }
 
   return (
-    <div className={`${s.KeyValueEditor}`}>
+    <div className={`${s.KeyValueEditor} ${props.className}`}>
       <div className={`${s.Line} ${s.LinkButton} ${!jsonView && s.JsonViewButton}`}>
         <SmallButton
           type="regular"

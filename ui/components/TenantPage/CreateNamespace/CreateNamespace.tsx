@@ -168,7 +168,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
   const propertiesEditorInput = (
     <KeyValueEditor
       value={properties}
-      onChange={setProperties}
+      onChange={() => setProperties}
       height="300rem"
       testId="properties"
     />

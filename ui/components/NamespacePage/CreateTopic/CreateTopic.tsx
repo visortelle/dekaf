@@ -65,7 +65,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   const propertiesEditorInput = (
     <KeyValueEditor
       value={properties}
-      onChange={setProperties}
+      onChange={() => setProperties}
       height="300rem"
       testId="properties"
     />

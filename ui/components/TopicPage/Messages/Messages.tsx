@@ -555,7 +555,7 @@ type SessionControllerProps = {
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
   const [config, setConfig] = useState<SessionConfig>(props.config);
-  const [isShowConsole, setIsShowConsole] = useState<boolean>(true);
+  const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
   return (
     <Session

@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {isPlainObject} from 'lodash';
 import {nanoid} from 'nanoid';
 import * as Either from 'fp-ts/lib/Either';
-
 import Button from '../../../../ui/Button/Button';
 import Input from '../../../../ui/Input/Input';
 import Select from '../../../../ui/Select/Select';
@@ -19,7 +18,6 @@ import {Code} from '../../../../../grpc-web/google/rpc/code_pb';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
-
 import sendIcon from './icons/send.svg';
 import doneIcon from './icons/done.svg';
 import closeIcon from '../../../../ui/Tabs/close.svg';
@@ -59,7 +57,6 @@ const Producer: React.FC<ProducerProps> = (props) => {
   });
   const {notifyError, notifySuccess} = Notifications.useContext();
   const {producerServiceClient} = GrpcClient.useContext();
-
   const sendMessage = useCallback(async () => {
     const sendReq: SendRequest = new SendRequest();
     sendReq.setProducerName(producerName.current);
@@ -235,28 +232,30 @@ const Producer: React.FC<ProducerProps> = (props) => {
 
           <div className={s.Config}>
             <div className={s.ConfigLeft}>
-              <div className={s.FormControl}>
-                <strong>Value encoding</strong>
-                <Select<ValueType>
-                  value={valueType}
-                  onChange={v => setValueType(v as ValueType)}
-                  list={[
-                    {type: 'item', title: 'JSON', value: 'json'},
-                    {type: 'item', title: 'Bytes (hex)', value: 'bytes-hex'},
-                  ]}
-                />
+              <div className={s.UpperGroup}>
+                <div className={s.ValueFormControl}>
+                  <strong>Value encoding</strong>
+                  <Select<ValueType>
+                    value={valueType}
+                    onChange={v => setValueType(v as ValueType)}
+                    list={[
+                      {type: 'item', title: 'JSON', value: 'json'},
+                      {type: 'item', title: 'Bytes (hex)', value: 'bytes-hex'},
+                    ]}
+                  />
+                </div>
+                <div className={s.DateFormControl}>
+                  <strong>Event time</strong>
+                  <DatetimePicker
+                    value={eventTime}
+                    onChange={v => setEventTime(v)}
+                    clearable
+                  />
+                </div>
               </div>
               <div className={s.FormControl}>
                 <strong>Key</strong>
                 <Input onChange={v => setKey(v)} value={key || ''} placeholder=""/>
-              </div>
-              <div className={s.FormControl}>
-                <strong>Event time</strong>
-                <DatetimePicker
-                  value={eventTime}
-                  onChange={v => setEventTime(v)}
-                  clearable
-                />
               </div>
               <div className={s.FormControl}>
                 <strong>Properties</strong>
@@ -264,6 +263,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   value={JSON.parse(propertiesJsonMap)}
                   onChange={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
                   height="200rem"
+                  className={s.PropertiesEditor}
                 />
               </div>
             </div>
@@ -276,14 +276,14 @@ const Producer: React.FC<ProducerProps> = (props) => {
                     value={value}
                     onChange={v => setValue(v || '')}
                     language="json"
-                    height="300rem"
+                    height="280rem"
                   />
                 )}
                 {valueType === 'bytes-hex' && (
                   <CodeEditor
                     value={value}
                     onChange={v => setValue(v || '')}
-                    height="300rem"
+                    height="280rem"
                   />
                 )}
               </div>

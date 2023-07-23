@@ -82,7 +82,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       {({ value, onChange }) => (
         <KeyValueEditor
           value={value}
-          onChange={onChange}
+          onChange={() => onChange}
           height="300rem"
           testId="properties"
         />
