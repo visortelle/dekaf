@@ -21,13 +21,14 @@ import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
 
 import sendIcon from './icons/send.svg';
-import startIcon from './icons/start.svg';
-import restartIcon from './icons/restart.svg';
+import doneIcon from './icons/done.svg';
+import closeIcon from '../../../../ui/Tabs/close.svg';
 
 import s from './Producer.module.css';
 import {ValueType} from './types';
 import {valueToBytes} from './lib/lib';
-import {ProgressBar} from "react-loader-spinner";
+import {ClipLoader} from "react-spinners";
+import SvgIcon from "../../../../ui/SvgIcon/SvgIcon";
 
 export type ProducerPreset = {
   topic: string | undefined;
@@ -39,7 +40,7 @@ export type ProducerProps = {
 };
 
 type ProducerInit = {
-  isStarted: boolean,
+  isReady: boolean,
   isLoading: boolean,
   initFailed: boolean
 }
@@ -52,14 +53,14 @@ const Producer: React.FC<ProducerProps> = (props) => {
   const [eventTime, setEventTime] = React.useState<Date | undefined>(undefined);
   const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>("{}");
   const [producerInit, setProducerInit] = useState<ProducerInit>({
-    isStarted: false,
+    isReady: false,
     isLoading: false,
     initFailed: false
   });
   const {notifyError, notifySuccess} = Notifications.useContext();
   const {producerServiceClient} = GrpcClient.useContext();
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     const sendReq: SendRequest = new SendRequest();
     sendReq.setProducerName(producerName.current);
 
@@ -124,9 +125,9 @@ const Producer: React.FC<ProducerProps> = (props) => {
     }
 
     notifySuccess(`Message successfully sent`, nanoid(), true);
-  }
+  }, [value, valueType, key, eventTime, propertiesJsonMap]);
 
-  const initializeProducer = async () => {
+  const initializeProducer = useCallback(async () => {
     if (props.preset.topic === undefined) {
       return;
     }
@@ -137,60 +138,20 @@ const Producer: React.FC<ProducerProps> = (props) => {
     const res = await producerServiceClient.createProducer(createProducerReq, {}).catch(err => notifyError(`Unable to create producer ${producerName.current}: ${err}`));
 
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
-      setProducerInit(() => ({isStarted: false, isLoading: false, initFailed: true}));
+      setProducerInit(() => ({isReady: false, isLoading: false, initFailed: true}));
       notifyError(`Unable to create producer ${producerName.current}: ${res.getStatus()?.getMessage()}`);
+      return Promise.reject();
     } else {
-      setProducerInit(producerInit => ({...producerInit, isLoading: false, isStarted: true}));
+      setProducerInit(init => ({isReady: true, isLoading: false, initFailed: false}));
+      return Promise.resolve();
     }
-  }
+  }, [producerInit, props.preset.topic, producerName]);
 
-  const cleanup = useCallback(async (retryCount = 0) => {
-    const deleteProducerRequest = new DeleteProducerRequest();
-    deleteProducerRequest.setProducerName(producerName.current);
-    const res = await producerServiceClient.deleteProducer(deleteProducerRequest, {});
-
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      if (retryCount < 5) {
-        setTimeout(() => cleanup(retryCount + 1), 1000);
-      } else {
-        notifyError(`Unable to delete producer ${producerName.current}: ${res.getStatus()?.getMessage()}`);
-      }
-    }
-  }, [producerName]);
-
-  useEffect(() => {
-    if (producerInit.isStarted) {
-      window.addEventListener('beforeunload', () => {
-        cleanup();
-      });
-
-      return () => {
-        cleanup();
-        window.addEventListener('beforeunload', () => {
-          cleanup();
-        });
-
-      }
-    }
-  }, [producerInit.isStarted]);
-
-  useEffect(() => {
-    if (producerInit.isLoading) {
-      (async () => {
-        await withTimeout<void>(initializeProducer(), 10000);
-      })();
-    }
-  }, [producerInit.isLoading]);
-
-  const changePropertiesJsonMap = async (v: string) => {
-    await setPropertiesJsonMap(v || "")
-  }
-
-  function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  function withMaxDuration<T>(promise: Promise<T>, durationMs: number): Promise<T> {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         reject(new Error('Creating producer timed out'));
-      }, timeoutMs);
+      }, durationMs);
 
       promise.then(
         (result) => {
@@ -205,158 +166,173 @@ const Producer: React.FC<ProducerProps> = (props) => {
     });
   }
 
+  const cleanup = useCallback(async (retryCount = 0) => {
+    if (producerInit.isReady) {
+      const deleteProducerRequest = new DeleteProducerRequest();
+      deleteProducerRequest.setProducerName(producerName.current);
+      const res = await producerServiceClient.deleteProducer(deleteProducerRequest, {});
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        if (retryCount < 5) {
+          setTimeout(() => cleanup(retryCount + 1), 1000);
+        } else {
+          notifyError(`Unable to delete producer ${producerName.current}: ${res.getStatus()?.getMessage()}`);
+        }
+      }
+    }
+  }, [producerName, producerInit.isReady]);
+
+  useEffect(() => {
+    window.addEventListener('beforeunload', () => {
+      cleanup();
+    });
+
+    return () => {
+      cleanup();
+      window.addEventListener('beforeunload', () => {
+        cleanup();
+      });
+
+    }
+  }, [producerInit.isReady]);
+
+  const changePropertiesJsonMap = async (v: string) => {
+    await setPropertiesJsonMap(v || "")
+  }
+
+  const handleMessageSend = useCallback(async () => {
+    if (!producerInit.isReady && !producerInit.isLoading) {
+      setProducerInit({isReady: false, isLoading: true, initFailed: false});
+
+      try {
+        await withMaxDuration<void>(initializeProducer(), 10000);
+        setProducerInit(prevInit => ({...prevInit, isLoading: false, isReady: true}));
+        sendMessage();
+      } catch (error) {
+        setProducerInit(prevInit => ({...prevInit, isLoading: false, initFailed: true}));
+      } finally {
+        setProducerInit(init => ({...init, isLoading: false}));
+      }
+    } else if (producerInit.isReady) {
+      sendMessage();
+    }
+  }, [initializeProducer, sendMessage]);
+
+
   return (
     <>
-      {(!producerInit.isStarted && !producerInit.isLoading && !producerInit.initFailed) && (
-        <div
-          className={s.Producer}
-          onKeyDown={async e => {
-            if (e.ctrlKey && e.key === 'Enter') {
-              setProducerInit(producerInit => ({...producerInit, isLoading: true}));
-            }
-          }}
-        >
-
-          <Button
-            onClick={() => setProducerInit(producerInit => ({...producerInit, isLoading: true}))}
-            svgIcon={startIcon}
-            type={"primary"}
-            text={"Start producer"}
-            buttonProps={{
-              style: {width: "fit-content", margin: "12rem"}
-            }}
-          />
-        </div>
-        )}
-      {producerInit.isLoading && (
-          <div className={s.NoDataToShow}>
-            Awaiting for producer initialization...
+      <div
+        className={s.Producer}
+        onKeyDown={e => {
+          if (e.ctrlKey && e.key === 'Enter') {
+            handleMessageSend();
+          }
+        }}
+      >
+        <div className={s.Content}>
+          <div className={s.Presets}>
           </div>
-        )
-      }
-      {producerInit.initFailed &&
-        <div
-          className={s.Producer}
-          onKeyDown={async e => {
-            if (e.ctrlKey && e.key === 'Enter') {
-              setProducerInit(producerInit => ({...producerInit, isLoading: true, initFailed: false}));
-            }
-          }}
-        >
-          <div className={s.NoDataToShow}>
-            There was some problem with starting the producer :(
-          </div>
-          <Button
-            onClick={() => {
-              setProducerInit(producerInit => ({...producerInit, isLoading: true, initFailed: false}));
-            }}
-            svgIcon={restartIcon}
-            type={"primary"}
-            text={"Start producer again"}
-            buttonProps={{
-              style: {width: "fit-content", margin: "12rem"}
-            }}
-          />
-        </div>
-      }
-      {producerInit.isStarted && (
-          <div
-            className={s.Producer}
-            onKeyDown={e => {
-              if (e.ctrlKey && e.key === 'Enter') {
-                sendMessage();
-              }
-            }}
-          >
-            <div className={s.Content}>
-              <div className={s.Presets}>
-              </div>
 
-              <div className={s.Config}>
-                <div className={s.ConfigLeft}>
-                  <div className={s.FormControl}>
-                    <strong>Value encoding</strong>
-                    <Select<ValueType>
-                      value={valueType}
-                      onChange={v => setValueType(v as ValueType)}
-                      list={[
-                        {type: 'item', title: 'JSON', value: 'json'},
-                        {type: 'item', title: 'Bytes (hex)', value: 'bytes-hex'},
-                      ]}
-                    />
-                  </div>
-                  <div className={s.FormControl}>
-                    <strong>Key</strong>
-                    <Input onChange={v => setKey(v)} value={key || ''} placeholder=""/>
-                  </div>
-                  <div className={s.FormControl}>
-                    <strong>Event time</strong>
-                    <DatetimePicker
-                      value={eventTime}
-                      onChange={v => setEventTime(v)}
-                      clearable
-                    />
-                  </div>
-                  <div className={s.FormControl}>
-                    <strong>Properties</strong>
-                    <KeyValueEditor
-                      value={JSON.parse(propertiesJsonMap)}
-                      onChange={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
-                      height="320rem"
-                    />
-                  </div>
-
-                  <div style={{height: '24rem'}}>
-                    {/* There is some HTML/CSS mess I can't quickly figure out.
-              It's just a hack to make bottom padding work correctly. */}
-                  </div>
-                </div>
-
-                <div className={s.ConfigRight}>
-                  <div className={s.FormControl}>
-                    <strong>Value</strong>
-                    {valueType === 'json' && (
-                      <CodeEditor
-                        value={value}
-                        onChange={v => setValue(v || '')}
-                        language="json"
-                        height="480rem"
-                      />
-                    )}
-                    {valueType === 'bytes-hex' && (
-                      <CodeEditor
-                        value={value}
-                        onChange={v => setValue(v || '')}
-                        height="480rem"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className={s.Toolbar}>
-              <div className={s.ToolbarControl}>
-                <Button
-                  onClick={sendMessage}
-                  type='primary'
-                  svgIcon={sendIcon}
-                  text="Send"
-                  size='small'
+          <div className={s.Config}>
+            <div className={s.ConfigLeft}>
+              <div className={s.FormControl}>
+                <strong>Value encoding</strong>
+                <Select<ValueType>
+                  value={valueType}
+                  onChange={v => setValueType(v as ValueType)}
+                  list={[
+                    {type: 'item', title: 'JSON', value: 'json'},
+                    {type: 'item', title: 'Bytes (hex)', value: 'bytes-hex'},
+                  ]}
                 />
-                <ProgressBar
-                  height="80"
-                  width="80"
-                  ariaLabel="progress-bar-loading"
-                  wrapperStyle={{}}
-                  wrapperClass="progress-bar-wrapper"
-                  borderColor=''
-                  barColor='#51E5FF'
+              </div>
+              <div className={s.FormControl}>
+                <strong>Key</strong>
+                <Input onChange={v => setKey(v)} value={key || ''} placeholder=""/>
+              </div>
+              <div className={s.FormControl}>
+                <strong>Event time</strong>
+                <DatetimePicker
+                  value={eventTime}
+                  onChange={v => setEventTime(v)}
+                  clearable
+                />
+              </div>
+              <div className={s.FormControl}>
+                <strong>Properties</strong>
+                <KeyValueEditor
+                  value={JSON.parse(propertiesJsonMap)}
+                  onChange={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
+                  height="200rem"
                 />
               </div>
             </div>
+
+            <div className={s.ConfigRight}>
+              <div className={s.FormControl}>
+                <strong>Value</strong>
+                {valueType === 'json' && (
+                  <CodeEditor
+                    value={value}
+                    onChange={v => setValue(v || '')}
+                    language="json"
+                    height="300rem"
+                  />
+                )}
+                {valueType === 'bytes-hex' && (
+                  <CodeEditor
+                    value={value}
+                    onChange={v => setValue(v || '')}
+                    height="300rem"
+                  />
+                )}
+              </div>
+            </div>
           </div>
-        )
-      }
+        </div>
+        <div className={s.Toolbar}>
+          <div className={s.ToolbarControl}>
+            <Button
+              onClick={handleMessageSend}
+              type='primary'
+              svgIcon={sendIcon}
+              text="Send"
+              size='small'
+            />
+            {producerInit.isLoading && (
+              <div className={s.ToolbarLoader}>
+                <ClipLoader
+                  color={"#000000"}
+                  loading={true}
+                  size={18}
+                  className={s.ToolbarSpinner}
+                  aria-label="Loading Spinner"
+                  data-testid="loader"
+                />
+                <div>
+                  Awaiting for producer initialization...
+                </div>
+              </div>
+            )}
+            {producerInit.isReady && (
+              <div className={s.ToolbarLoader}>
+                <SvgIcon svg={doneIcon} className={s.DoneIcon}/>
+                <div>
+                  Producer is ready
+                </div>
+              </div>
+            )}
+            {producerInit.initFailed && (
+              <div className={s.ToolbarLoader}>
+                <SvgIcon svg={closeIcon} className={s.CloseIcon}/>
+                <div>
+                  Error while initializing producer. Please try again.
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </>
 
   );

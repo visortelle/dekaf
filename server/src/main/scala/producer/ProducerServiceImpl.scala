@@ -46,7 +46,7 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
 
                 val producer: Producer[Array[Byte]] = pulsarClient
                     .newProducer(schema)
-                    .accessMode(ProducerAccessMode.Exclusive)
+                    .accessMode(ProducerAccessMode.Shared)
                     .producerName(producerName)
                     .topic(request.topic)
                     .create()
@@ -57,7 +57,7 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
                 Future.successful(CreateProducerResponse(status = Some(status)))
         } catch {
             case err: org.apache.pulsar.client.api.PulsarClientException.ProducerFencedException =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = "Topic has an existing exclusive producer")
+                val status: Status = Status(code = Code.ALREADY_EXISTS.index, message = "Topic already has an existing exclusive producer")
                 Future.successful(CreateProducerResponse(status = Some(status)))
             case err: Exception =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)

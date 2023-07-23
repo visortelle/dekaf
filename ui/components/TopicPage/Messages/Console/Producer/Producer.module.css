@@ -36,12 +36,12 @@
 }
 
 .Toolbar {
-  padding: 0 12rem;
+  padding: 0 330rem;
   height: 38rem;
   border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
@@ -50,6 +50,34 @@
 
 .ToolbarControl {
   margin-right: 12rem;
+  display: flex;
+}
+
+.ToolbarLoader {
+  display: flex;
+  gap: 12rem;
+  align-items: center;
+  margin-left: 12rem;
+}
+
+.ToolbarLoader svg {
+
+  height: 18rem !important;
+  width: 18rem !important;
+}
+
+.DoneIcon svg {
+  fill: var(--accent-color-green);
+}
+
+.CloseIcon svg {
+  fill: var(--accent-color-red);
+}
+
+.ToolbarSpinner {
+  border-color: var(--accent-color-blue) var(--accent-color-blue) transparent !important;
+  height: 18rem !important;
+  width: 18rem !important;
 }
 
 .NoDataToShow {
