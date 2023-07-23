@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, {useCallback, useEffect, useState} from 'react';
+=======
+import React, {useCallback, useEffect} from 'react';
+>>>>>>> 745effa6 (Small fixes)
 import {isPlainObject} from 'lodash';
 import {nanoid} from 'nanoid';
 import * as Either from 'fp-ts/lib/Either';
@@ -24,9 +28,10 @@ import sendIcon from './icons/send.svg';
 import startIcon from './icons/start.svg';
 import restartIcon from './icons/restart.svg';
 
-import s from './Producer.module.css'
+import s from './Producer.module.css';
 import {ValueType} from './types';
 import {valueToBytes} from './lib/lib';
+import {ProgressBar} from "react-loader-spinner";
 
 export type ProducerPreset = {
   topic: string | undefined;
@@ -215,6 +220,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
             }
           }}
         >
+
           <Button
             onClick={() => setProducerInit(producerInit => ({...producerInit, isLoading: true}))}
             svgIcon={startIcon}
@@ -341,13 +347,24 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   text="Send"
                   size='small'
                 />
+                <ProgressBar
+                  height="80"
+                  width="80"
+                  ariaLabel="progress-bar-loading"
+                  wrapperStyle={{}}
+                  wrapperClass="progress-bar-wrapper"
+                  borderColor=''
+                  barColor='#51E5FF'
+                />
               </div>
             </div>
           </div>
         )
       }
     </>
+
   );
+
 }
 
 export default Producer;

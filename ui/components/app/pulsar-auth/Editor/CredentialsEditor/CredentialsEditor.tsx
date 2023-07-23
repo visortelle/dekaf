@@ -93,17 +93,17 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
                 notifyError('Server error happened.');
                 return;
               }
+
+              await mutate(swrKeys.pulsar.auth.credentials._());
+              await mutate(swrKeys.pulsar.auth.credentials.current._());
+
+
+              props.onDone();
             })
-            .catch(err => notifyError(`Unable to save credentials: ${err}`));
-
-            await mutate(swrKeys.pulsar.auth.credentials._());
-            await mutate(swrKeys.pulsar.auth.credentials.current._());
-
-            if (res === undefined) {
+            .catch(err => {
+              notifyError(`Unable to save credentials: ${err}`)
               return;
-            }
-
-            props.onDone();
+            });
           }}
         />
       </div>
