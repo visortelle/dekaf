@@ -10,7 +10,7 @@ export type TableFilterValue =
   NumberFilterValue |
   SingleOptionFilterValue;
 
-export type StringFilterDescriptor = {
+export type   StringFilterDescriptor = {
   type: 'string',
   defaultValue: StringFilterValue
 };

@@ -25,6 +25,7 @@ import collapseAllIcon from './collapse-all.svg';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
+  isTreeControlButtonsHidden?: boolean;
 }
 
 const filterQuerySep = '/';
@@ -64,13 +65,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     notifyError(`Unable to fetch tenants. ${tenantsDataError}`);
   }
 
-  const tenants = useMemo(() => tenantsData === undefined ? [] : tenantsData.getTenantsList(), [tenantsData]);
+  const tenants = useMemo(() => tenantsData?.getTenantsList() ?? [] , [tenantsData]);
 
   useEffect(() => {
     setTree((tree) => setTenants({
       tree,
       tenants: tenants ? tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) : []
-    }));
+    })
+    );
   }, [tenants]);
 
   useEffect(() => {
@@ -332,18 +334,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           focusOnMount={true}
         />
       </div>
-      <div className={s.TreeControlButtons}>
-        <div>
-          <SmallButton
-            title="Collapse All"
-            svgIcon={collapseAllIcon}
-            onClick={() => setExpandedPaths([])}
-            type='regular'
-          />
-        </div>
-        <div>
-          <CredentialsButton />
-        </div>
+      <div className={s.TreeControlButtons} style={{display: !props.isTreeControlButtonsHidden ? "flex" : "none"}}>
+        <CredentialsButton />
+        <SmallButton
+          title="Collapse All"
+          svgIcon={collapseAllIcon}
+          onClick={() => setExpandedPaths([])}
+          type='regular'
+        />
       </div>
 
       <div className={s.TreeContainer}>
@@ -383,9 +381,10 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               defaultItemHeight={remToPx(40)}
               fixedItemHeight={remToPx(40)}
               components={{
-                EmptyPlaceholder: () => <div className={s.Loading} style={{ width: 'calc(100% - 24rem)' }}>
-                  <span>No items found. <br />Try another filter query.</span>
-                </div>
+                EmptyPlaceholder: () =>
+                  <div className={s.Loading} style={{ width: 'calc(100% - 24rem)' }}>
+                    <span>No items found. <br />Try another filter query.</span>
+                  </div>
               }}
               increaseViewportBy={{ top: window.innerHeight / 2, bottom: window.innerHeight / 2 }}
               totalCount={plainTree.length}
