@@ -1,0 +1,76 @@
+.ReprocessMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  justify-content: center;
+  padding: 24rem;
+  height: calc(100vh - 96rem);
+  max-width: 570rem;
+}
+
+.ReprocessMessageGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 90%;
+}
+
+.ReprocessMessageButtons {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  height: 10%;
+  padding: 24rem 12rem 0 12rem;
+}
+
+.ReprocessMessageButtons button {
+  padding: 6rem 12rem;
+}
+
+.ReprocessMessageButtons button svg {
+  margin-right:  0;
+  transform: scale(0.7);
+}
+
+.ReprocessMessageDescription {
+  padding: 12rem;
+  text-wrap: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  flex-wrap: wrap;
+}
+
+.NavigationTree {
+  height: 75%;
+  width: 100%;
+}
+
+.NavigationTreeTitle {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  font-size: 16rem;
+  padding: 16rem 12rem 0 12rem;
+}
+
+.NodeLinkActive {
+  background-color: var(--surface-color);
+  z-index: 1;
+}
+
+.NodeLinkText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 0.6ch;
+
+  padding-bottom: 1px; /* Otherwise some letters like "g" aren't fully visible. */
+  padding-top: 1px;
+}
+
+.SelectedConfirmationBullet {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 50%;
+  background-color: var(--accent-color-green);
+}

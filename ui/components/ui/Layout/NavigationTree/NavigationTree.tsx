@@ -1,17 +1,22 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, {useEffect, useState, useRef, useMemo} from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
-import treeToPlainTree, { PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
+import {TreeNodeType, TreePath} from './utils/tree-path-utils';
+import {Tree} from "./utils/tree-utils";
+import treeToPlainTree, {PlainTreeNode, TreeToPlainTreeProps} from './utils/plain-tree-utils';
+import TreePathUtils from './utils/tree-path-utils';
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as tenantPb from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
-import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
+import { setTenants, setTenantNamespaces, setNamespaceTopics } from './utils/tree-utils';
 import Input from '../../Input/Input';
 import SmallButton from '../../SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../../Icons/Icons';
-import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
+import {PulsarInstance, PulsarInstanceProps} from "./Nodes/PulsarInstance";
+import {PulsarTenant, PulsarTenantProps} from "./Nodes/PulsarTenant";
+import {PulsarNamespace, PulsarNamespaceProps} from "./Nodes/PulsarNamespace";
+import {PulsarTopic, PulsarTopicProps} from "./Nodes/PulsarTopic";
 import { swrKeys } from '../../../swrKeys';
-import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
 import { isEqual } from 'lodash';
@@ -21,11 +26,18 @@ import { useTimeout } from '@react-hook/timeout';
 import { remToPx } from '../../rem-to-px';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
-import collapseAllIcon from './collapse-all.svg';
+import collapseAllIcon from './icons/collapse-all.svg';
 
-type NavigationTreeProps = {
+type NavigationTreeProps = React.HTMLAttributes<HTMLDivElement> & {
   selectedNodePath: TreePath;
   isTreeControlButtonsHidden?: boolean;
+  isInstanceNodeHidden?: boolean;
+  nodesRender?: {
+    instanceRender?: (props: PulsarInstanceProps) => React.ReactElement;
+    tenantRender: (props: PulsarTenantProps) => React.ReactElement;
+    namespaceRender: (props: PulsarNamespaceProps) => React.ReactElement;
+    topicRender: (props: PulsarTopicProps) => React.ReactElement;
+  };
 }
 
 const filterQuerySep = '/';
@@ -35,7 +47,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const [tree, setTree] = useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
   const [plainTree, setPlainTree] = useState<PlainTreeNode[]>([]);
-  const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
+  const [filterQuery, setFilterQuery] = useState<string>(""); //useQueryParam('q', withDefault(StringParam, ''));
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
@@ -101,7 +113,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     if (scrollToPath.cursor === 0) {
       setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: props.selectedNodePath, cursor: 0, state: 'in-progress' }));
-      setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
+      setExpandedPaths((expandedPaths) => TreePathUtils.uniquePaths([...expandedPaths, ...TreePathUtils.expandAncestors(props.selectedNodePath)]));
     }
   }, [props.selectedNodePath]);
 
@@ -113,7 +125,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     if (scrollToPath.state === 'in-progress') {
       const pathToFind = scrollToPath.path.slice(0, scrollToPath.cursor + 1);
-      const nodeIndex = plainTree.findIndex(p => treePath.arePathsEqual(p.path, pathToFind));
+      const nodeIndex = plainTree.findIndex(p => TreePathUtils.arePathsEqual(p.nodePath, pathToFind));
 
       const isNotFound = nodeIndex === -1 && scrollToPath.cursor === scrollToPath.path.length - 1;
       if (isNotFound) {
@@ -182,7 +194,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             return tree.rootLabel.name.includes(filterQueryDebounced)
           }
 
-          return path.length === 1 ? true : treePath.hasPath(expandedPaths, path.slice(0, path.length - 1));
+          return path.length === 1 ? true : TreePathUtils.hasPath(expandedPaths, path.slice(0, path.length - 1));
         })(),
         subForest: (() => {
           if (path.length === 0) {
@@ -193,7 +205,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             return true;
           }
 
-          return treePath.isPathExpanded(expandedPaths, path);
+          return TreePathUtils.isPathExpanded(expandedPaths, path);
         })(),
       }),
     }
@@ -201,80 +213,97 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }, [expandedPaths, filterPath, filterQueryDebounced, tree]);
 
   const renderTreeItem = (node: PlainTreeNode) => {
-    const { path } = node;
+    const { type: nodeType, name: nodeName, nodePath } = node;
     let nodeContent: React.ReactNode = null;
     let nodeIcon = null;
 
-    const leftIndent = node.type === 'instance' ? '5ch' : `${((path.length + 1) * 3 - 1)}ch`;
+    const leftIndent = nodeType === 'instance' ? '5ch' : `${((nodePath.length + 1) * 3 - 1)}ch`;
+
+    if (props.isInstanceNodeHidden && nodeType === 'instance')
+      return <></>;
 
     const toggleNodeExpanded = () => setExpandedPaths(
-      (expandedPaths) => treePath.hasPath(expandedPaths, path) ?
-        expandedPaths.filter(p => !treePath.arePathsEqual(p, path)) :
-        expandedPaths.concat([path])
+      (expandedPaths) => TreePathUtils.hasPath(expandedPaths, nodePath) ?
+        expandedPaths.filter(p => !TreePathUtils.arePathsEqual(p, nodePath)) :
+        expandedPaths.concat([nodePath])
     );
 
-    const isExpanded = treePath.isPathExpanded(expandedPaths, path);
+    const isExpanded = TreePathUtils.isPathExpanded(expandedPaths, nodePath);
 
-    if (node.type === 'instance') {
-      const isActive = props.selectedNodePath.length === 0;
-      nodeContent = (
-        <PulsarInstance
-          forceReloadKey={forceReloadKey}
-          leftIndent={leftIndent}
-          onDoubleClick={toggleNodeExpanded}
-          isActive={isActive}
-        />
-      );
-      nodeIcon = <InstanceIcon onClick={toggleNodeExpanded} isExpandable={false} isExpanded={isExpanded} />;
-    } else if (node.type === 'tenant') {
-      const tenant = treePath.getTenant(path)!;
+    const nodeStateSetters: Record<TreeNodeType, (nodeType: TreeNodeType) => void> = {
+      'instance': () => {
+        const isActive = props.selectedNodePath.length === 0;
 
-      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) && treePath.getNamespace(props.selectedNodePath) === undefined;
+        nodeContent = (
+          <PulsarInstance
+            forceReloadKey={forceReloadKey}
+            leftIndent={leftIndent}
+            onDoubleClick={toggleNodeExpanded}
+            isActive={isActive}
+            customRender={props.nodesRender?.instanceRender || undefined}
+          />
+        );
+        nodeIcon = <InstanceIcon onClick={toggleNodeExpanded} isExpandable={false} isExpanded={isExpanded} />;
+      },
+      'tenant': () => {
+        const tenant = TreePathUtils.getTenant(nodePath)!;
 
-      nodeContent = (
-        <PulsarTenant
-          forceReloadKey={forceReloadKey}
-          tenant={node.name}
-          onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant: tenant.name, namespaces }))}
-          leftIndent={leftIndent}
-          onDoubleClick={toggleNodeExpanded}
-          isActive={isActive}
-          isFetchData={isExpanded || treePath.getTenant(filterPath)?.name === node.name}
-        />
-      );
-      nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
+        const isActive = TreePathUtils.areNodesEqual(TreePathUtils.getTenant(props.selectedNodePath)!, tenant) && TreePathUtils.getNamespace(props.selectedNodePath) === undefined;
 
-    } else if (node.type === 'namespace') {
-      const tenant = treePath.getTenant(path)!;
-      const namespace = treePath.getNamespace(path)!;
+        nodeContent = (
+          <PulsarTenant
+            forceReloadKey={forceReloadKey}
+            tenant={nodeName}
+            onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant: tenant.name, namespaces }))}
+            leftIndent={leftIndent}
+            onDoubleClick={toggleNodeExpanded}
+            isActive={isActive}
+            isFetchData={isExpanded || TreePathUtils.getTenant(filterPath)?.name === nodeName}
+            customRender={props.nodesRender?.tenantRender || undefined}
+          />
+        );
+        nodeIcon = <TenantIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
+      },
+      'namespace': () => {
+        const tenant = TreePathUtils.getTenant(nodePath)!;
+        const namespace = TreePathUtils.getNamespace(nodePath)!;
 
-      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
-        treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) && treePath.getTopic(props.selectedNodePath) === undefined;
+        const isActive = TreePathUtils.areNodesEqual(TreePathUtils.getTenant(props.selectedNodePath)!, tenant) &&
+          TreePathUtils.areNodesEqual(TreePathUtils.getNamespace(props.selectedNodePath)!, namespace) && TreePathUtils.getTopic(props.selectedNodePath) === undefined;
 
-      nodeContent = (
-        <PulsarNamespace
-          forceReloadKey={forceReloadKey}
-          tenant={tenant.name}
-          namespace={namespace.name}
-          onTopics={(topics) => setTree((tree) => setNamespaceTopics({ tree, tenant: tenant.name, namespace: namespace.name, persistentTopics: topics.persistent, nonPersistentTopics: topics.nonPersistent }))}
-          leftIndent={leftIndent}
-          onDoubleClick={toggleNodeExpanded}
-          isActive={isActive}
-          isFetchData={isExpanded || treePath.getNamespace(filterPath)?.name === node.name}
-        />
-      );
-      nodeIcon = <NamespaceIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
-    } else if (node.type === 'persistent-topic' || node.type === 'non-persistent-topic') {
-      const tenant = treePath.getTenant(path)!;
-      const namespace = treePath.getNamespace(path)!;
+        nodeContent = (
+          <PulsarNamespace
+            forceReloadKey={forceReloadKey}
+            tenant={tenant.name}
+            namespace={namespace.name}
+            onTopics={(topics) => setTree((tree) => setNamespaceTopics({ tree, tenant: tenant.name, namespace: namespace.name, persistentTopics: topics.persistent, nonPersistentTopics: topics.nonPersistent }))}
+            leftIndent={leftIndent}
+            onDoubleClick={toggleNodeExpanded}
+            isActive={isActive}
+            isFetchData={isExpanded || TreePathUtils.getNamespace(filterPath)?.name === nodeName}
+            customRender={props.nodesRender?.namespaceRender || undefined}
+          />
+        );
+        nodeIcon = <NamespaceIcon onClick={toggleNodeExpanded} isExpandable={true} isExpanded={isExpanded} />;
+      },
+      'persistent-topic' : (node) => {
+        topicStateSetters(node);
+      },
+      'non-persistent-topic': (node) => {
+        topicStateSetters(node);
+      },
+    };
+    const topicStateSetters = (nodeType: TreeNodeType) => {
+      const tenant = TreePathUtils.getTenant(nodePath)!;
+      const namespace = TreePathUtils.getNamespace(nodePath)!;
 
-      const topicName = node.name;
-      const topicType = node.type === 'persistent-topic' ? 'persistent' : 'non-persistent';
+      const topicName = nodeName;
+      const topicType = nodeType === 'persistent-topic' ? 'persistent' : 'non-persistent';
 
-      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
-        treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) &&
-        treePath.areNodesEqual(
-          treePath.getTopic(props.selectedNodePath)!, { name: topicName, type: topicType === 'persistent' ? 'persistent-topic' : 'non-persistent-topic' }
+      const isActive = TreePathUtils.areNodesEqual(TreePathUtils.getTenant(props.selectedNodePath)!, tenant) &&
+        TreePathUtils.areNodesEqual(TreePathUtils.getNamespace(props.selectedNodePath)!, namespace) &&
+        TreePathUtils.areNodesEqual(
+          TreePathUtils.getTopic(props.selectedNodePath)!, { name: topicName, type: topicType === 'persistent' ? 'persistent-topic' : 'non-persistent-topic' }
         );
 
       nodeContent = (
@@ -286,7 +315,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           onDoubleClick={toggleNodeExpanded}
           topicType={topicType}
           isActive={isActive}
-          isFetchData={isExpanded || treePath.getTopic(filterPath)?.name === node.name}
+          isFetchData={isExpanded || TreePathUtils.getTopic(filterPath)?.name === nodeName}
+          customRender={props.nodesRender?.topicRender || undefined}
         />
       );
       nodeIcon = (
@@ -296,35 +326,50 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           onClick={() => undefined}
           topicType={topicType}
         />
-      )
+      );
     }
+    const setNodeContentAndIcon = (nodeType: TreeNodeType) => {
+      const treeHandler = nodeStateSetters[nodeType];
+
+      if(treeHandler) {
+        treeHandler(nodeType);
+      }
+      else {
+        notifyError(`Error during handling node:\n Unknown node type: ${nodeType}`);
+      }
+    };
+
+    setNodeContentAndIcon(nodeType);
 
     const handleNodeClick = async () => {
-      switch (node.type) {
+      switch (nodeType) {
         case 'instance': await mutate(swrKeys.pulsar.tenants.listTenants._()); break;
-        case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.name })); break;
+        case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: TreePathUtils.getTenant(nodePath)!.name })); break;
         case 'namespace': {
-          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name }));
-          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: treePath.getTenant(path)!.name, namespace: treePath.getNamespace(path)!.name }));
-        }; break;
+          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: TreePathUtils.getTenant(nodePath)!.name, namespace: TreePathUtils.getNamespace(nodePath)!.name }));
+          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: TreePathUtils.getTenant(nodePath)!.name, namespace: TreePathUtils.getNamespace(nodePath)!.name }));
+        } break;
       }
     }
 
-    const pathStr = stringify(path);
+    const pathStr = stringify(nodePath);
 
-    return <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick} title={node.path.map(p => p.name).join('/')}>
-      <div className={s.NodeContent}>
-        <span>&nbsp;</span>
-        <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
-        <span className={s.NodeTextContent}>{nodeContent}</span>
+    return (
+      <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick}
+           title={node.nodePath.map(p => p.name).join('/')}>
+        <div className={s.NodeContent}>
+          <span>&nbsp;</span>
+          <div className={s.NodeIcon} style={{marginLeft: leftIndent}}>{nodeIcon}</div>
+          <span className={`${s.NodeTextContent} ${props.nodesRender && s.NodeTextContentOuterUsage}`}>{nodeContent}</span>
+        </div>
       </div>
-    </div>
+    );
   }
 
   const isTreeInStuckState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
 
   return (
-    <div className={s.NavigationTree}>
+    <div className={`${s.NavigationTree} ${props.className}`}>
       <div className={s.FilterQueryInput}>
         <Input
           placeholder="tenant/namespace/topic"
@@ -334,7 +379,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           focusOnMount={true}
         />
       </div>
-      <div className={s.TreeControlButtons} style={{display: !props.isTreeControlButtonsHidden ? "flex" : "none"}}>
+      <div className={`${s.TreeControlButtons} ${props.isTreeControlButtonsHidden ? s.Hidden : ''}`}>
         <CredentialsButton />
         <SmallButton
           title="Collapse All"

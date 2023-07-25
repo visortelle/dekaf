@@ -45,7 +45,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
           onClick={() => modals.push({
             id: 'message-reprocess',
             title: `Reprocess message`,
-            content: <ReprocessMessage message={props.message} />,
+            content: <ReprocessMessage message={props.message} selectedNodePath={[]}/>,
             styleMode: 'no-content-padding'
           })}
           type='primary'
