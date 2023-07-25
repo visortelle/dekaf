@@ -1,14 +1,14 @@
-import useSWR, { useSWRConfig } from "swr";
+import useSWR, {useSWRConfig} from "swr";
 import stringify from 'safe-stable-stringify';
 
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
-import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
+import {Code} from '../../../../grpc-web/google/rpc/code_pb';
+import {ConfigurationField} from "../../../ui/ConfigurationTable/ConfigurationTable";
 import KeyValueEditor from '../../../ui/KeyValueEditor/KeyValueEditor';
-import { swrKeys } from '../../../swrKeys';
-import { mapToObject } from '../../../../pbUtils/pbUtils';
+import {swrKeys} from '../../../swrKeys';
+import {mapToObject} from '../../../../pbUtils/pbUtils';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import {help} from "../../../TenantPage/Namespaces/help";
 import React from "react";
@@ -43,9 +43,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
 
       const propertiesPb = mapToObject(res.getPropertiesMap())[`${props.tenant}/${props.namespace}`];
-      const properties = mapToObject(propertiesPb.getPropertiesMap());
-
-      return properties;
+      return mapToObject(propertiesPb.getPropertiesMap());
     }
   );
 
