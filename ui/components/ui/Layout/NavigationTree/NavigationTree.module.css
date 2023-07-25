@@ -30,6 +30,12 @@
   text-overflow: ellipsis;
   padding-left: 0.4ch;
   padding-right: 12rem;
+  width: 100%;
+}
+
+.NodeTextContentOuterUsage {
+  position: relative;
+  left: -5ch;
 }
 
 .NodeLink {
@@ -67,6 +73,10 @@
   position: relative;
   z-index: 10;
   left: -6ch;
+}
+
+.Hidden {
+  display: none !important;
 }
 
 .FilterQueryInput {
