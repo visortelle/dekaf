@@ -18,4 +18,9 @@
 
 .FieldTitle {
   font-weight: var(--font-weight-bold);
+  width: fit-content;
+}
+
+.FieldValue {
+  width: fit-content;
 }

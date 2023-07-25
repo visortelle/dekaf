@@ -1,7 +1,7 @@
-import React from 'react';
+import React, {useMemo, useState} from 'react';
 
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
-import Producer from './Producer/Producer';
+import Producer, {ValueType} from './Producer/Producer';
 import Visualization from './Visualization/Visualization';
 import MessagesExporter from './MessagesExporter/MessagesExporter';
 import { MessageDescriptor, SessionConfig, SessionState } from '../types';
@@ -13,6 +13,8 @@ import s from './Console.module.css'
 import DebugLogs from './FilterLogs/FilterLogs';
 import ExpressionInspector from './FilterRepl/FilterRepl';
 import NothingToShow from '../../../ui/NothingToShow/NothingToShow';
+import * as AsyncTasks from "../../../app/contexts/AsyncTasks";
+import {ReprocessMessagePayload} from "../Message/ReprocessMessage/ReprocessMessage";
 
 export type ConsoleProps = {
   isShow: boolean;
@@ -30,7 +32,17 @@ export type ConsoleProps = {
 type TabKey = 'producer' | 'cursors' | 'visualize' | 'filter-logs' | 'filter-repl' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
-  const [activeTab, setActiveTab] = React.useState<TabKey>('export');
+  const asyncTasks = AsyncTasks.useContext();
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    asyncTasks.tasks['reprocess-message'] === undefined ? 'export' : 'producer'
+  );
+  const [_reprocessMessageTask, _setReprocessMessageTask] = useState(
+    asyncTasks.tasks['reprocess-message'] !== undefined ? (
+      JSON.parse(asyncTasks.tasks['reprocess-message']) as ReprocessMessagePayload
+    ) : undefined
+  );
+  const reprocessMessageTask: ReprocessMessagePayload | undefined = useMemo(() => _reprocessMessageTask, [_reprocessMessageTask]);
+
 
   return (
     <EnteringFromBottomDiv
@@ -46,14 +58,38 @@ const Console: React.FC<ConsoleProps> = (props) => {
           'producer': {
             title: 'Produce',
             isRenderAlways: true,
-            render: () => (
-              <Producer
-                preset={{
-                  topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
-                  key: ''
-                }}
-              />
-            )
+            render: () => {
+              if (asyncTasks.tasks['reprocess-message'] !== undefined) {
+                const reprocessMessageTask: ReprocessMessagePayload = JSON.parse(asyncTasks.tasks['reprocess-message']);
+                asyncTasks.finishTask('reprocess-message');
+
+                return (
+                  <Producer
+                    preset={{
+                      topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
+                      key: reprocessMessageTask.message.key ?? '',
+                      value: reprocessMessageTask.message.value ? JSON.parse(reprocessMessageTask.message.value) : '',
+                      valueType: 'json',
+                      eventTime: reprocessMessageTask.message.eventTime ? new Date(reprocessMessageTask.message.eventTime) : undefined,
+                      propertiesJsonMap: reprocessMessageTask.message.properties ? JSON.stringify(reprocessMessageTask.message.properties) : '{}',
+                    }}
+                  />
+                );
+              } else {
+                return (
+                  <Producer
+                    preset={{
+                      topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
+                      key: '',
+                      value: '',
+                      valueType: 'json',
+                      eventTime: undefined,
+                      propertiesJsonMap: '{}',
+                    }}
+                  />
+                );
+              }
+            }
           },
           'visualize': {
             title: 'Visualize',

@@ -25,14 +25,18 @@ import doneIcon from './icons/done.svg';
 import closeIcon from '../../../../ui/Tabs/close.svg';
 
 import s from './Producer.module.css';
-import {ValueType} from './types';
 import {valueToBytes} from './lib/lib';
 import {ClipLoader} from "react-spinners";
 import SvgIcon from "../../../../ui/SvgIcon/SvgIcon";
 
+export type ValueType = 'json' | 'bytes-hex'
 export type ProducerPreset = {
   topic: string | undefined;
   key: string;
+  value: string;
+  valueType: ValueType;
+  eventTime: Date | undefined;
+  propertiesJsonMap: string;
 }
 
 export type ProducerProps = {
@@ -40,18 +44,18 @@ export type ProducerProps = {
 };
 
 type ProducerInit = {
-  isReady: boolean,
-  isLoading: boolean,
-  initFailed: boolean
+  isReady: boolean;
+  isLoading: boolean;
+  initFailed: boolean;
 }
 
 const Producer: React.FC<ProducerProps> = (props) => {
   const [key, setKey] = React.useState<string>(props.preset.key);
-  const [valueType, setValueType] = React.useState<ValueType>('json');
-  const [value, setValue] = React.useState<string>('');
+  const [valueType, setValueType] = React.useState<ValueType>(props.preset.valueType);
+  const [value, setValue] = React.useState<string>(props.preset.value);
   const producerName = React.useRef<string>(`__pulsocat_` + nanoid());
-  const [eventTime, setEventTime] = React.useState<Date | undefined>(undefined);
-  const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>("{}");
+  const [eventTime, setEventTime] = React.useState<Date | undefined>(props.preset.eventTime);
+  const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>(props.preset.propertiesJsonMap);
   const [producerInit, setProducerInit] = useState<ProducerInit>({
     isReady: false,
     isLoading: false,
