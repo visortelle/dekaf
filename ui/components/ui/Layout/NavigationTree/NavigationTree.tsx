@@ -32,6 +32,7 @@ type NavigationTreeProps = React.HTMLAttributes<HTMLDivElement> & {
   selectedNodePath: TreePath;
   isTreeControlButtonsHidden?: boolean;
   isInstanceNodeHidden?: boolean;
+  isToggleOnNodeClick?: boolean;
   nodesRender?: {
     instanceRender?: (props: PulsarInstanceProps) => React.ReactElement;
     tenantRender: (props: PulsarTenantProps) => React.ReactElement;
@@ -355,7 +356,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     const pathStr = stringify(nodePath);
 
     return (
-      <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick}
+      <div key={`tree-node-${pathStr}`} className={s.Node} onClick={() => {handleNodeClick(); props.isToggleOnNodeClick && toggleNodeExpanded();}}
            title={node.nodePath.map(p => p.name).join('/')}>
         <div className={s.NodeContent}>
           <span>&nbsp;</span>

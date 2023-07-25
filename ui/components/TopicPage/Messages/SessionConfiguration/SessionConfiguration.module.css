@@ -17,6 +17,10 @@
   width: 66.66666666666%;
 }
 
+.Filters {
+  height: 100%;
+}
+
 .ControlLabel {
   font-weight: var(--font-weight-bold);
   margin-bottom: 4rem;

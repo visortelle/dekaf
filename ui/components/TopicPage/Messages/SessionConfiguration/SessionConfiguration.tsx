@@ -27,7 +27,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         </div>
       </div>
       <div className={s.RightColumn}>
-        <div>
+        <div className={s.Filters}>
           <div className={s.ControlLabel}>Filters</div>
           <FilterChain
             value={props.config.messageFilter}
