@@ -10,12 +10,13 @@ export type KeyValues = {
   [key: string]: string,
 }
 
-type Props = React.HTMLAttributes<HTMLDivElement> & {
+type Props =  {
   height?: string,
   width?: string,
   value: KeyValues,
   testId?: string,
   onChange: (keyValues: KeyValues) => void,
+  className?: string,
 }
 
 const KeyValueEditor = (props: Props) => {
