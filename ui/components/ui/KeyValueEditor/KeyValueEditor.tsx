@@ -10,12 +10,13 @@ export type KeyValues = {
   [key: string]: string,
 }
 
-type Props = {
+type Props =  {
   height?: string,
   width?: string,
   value: KeyValues,
   testId?: string,
   onChange: (keyValues: KeyValues) => void,
+  className?: string,
 }
 
 const KeyValueEditor = (props: Props) => {
@@ -30,7 +31,7 @@ const KeyValueEditor = (props: Props) => {
   }
 
   return (
-    <div className={`${s.KeyValueEditor}`}>
+    <div className={`${s.KeyValueEditor} ${props.className}`}>
       <div className={`${s.Line} ${s.LinkButton} ${!jsonView && s.JsonViewButton}`}>
         <SmallButton
           type="regular"

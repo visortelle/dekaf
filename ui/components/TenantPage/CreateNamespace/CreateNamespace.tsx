@@ -15,7 +15,7 @@ import { GetClustersRequest } from "../../../grpc-web/tools/teal/pulsar/ui/clust
 import * as Either from "fp-ts/Either";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../routes";
-import { H1, H2 } from "../../ui/H/H";
+import { H2 } from "../../ui/H/H";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
 import { CreateNamespaceRequest } from "../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { help } from "../Namespaces/help";
