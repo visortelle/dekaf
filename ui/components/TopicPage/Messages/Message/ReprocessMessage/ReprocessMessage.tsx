@@ -1,6 +1,6 @@
 import {MessageDescriptor} from "../../types";
-import React from "react";
-import TreePathUtils, {TreeNodeType, TreePath} from "../../../../ui/Layout/NavigationTree/utils/tree-path-utils";
+import React, {useEffect} from "react";
+import {TreePath} from "../../../../ui/Layout/NavigationTree/utils/tree-path-utils";
 import s from "./ReprocessMessage.module.css";
 
 import NavigationTree from "../../../../ui/Layout/NavigationTree/NavigationTree";
@@ -13,11 +13,6 @@ import {NodesUtils} from "../../../../ui/Layout/NavigationTree/utils/nodes-utils
 import * as Modals from "../../../../app/contexts/Modals/Modals";
 import * as AsyncTasks from "../../../../app/contexts/AsyncTasks";
 
-export type ReprocessMessageProps = {
-  message: MessageDescriptor;
-  selectedNodePath: TreePath;
-}
-
 type TopicType = 'persistent' | 'non-persistent';
 
 type TopicNode = {
@@ -27,15 +22,34 @@ type TopicNode = {
   topicType: TopicType;
 }
 
+export type ReprocessMessageProps = {
+  message: MessageDescriptor;
+  selectedNodePath: TreePath;
+}
+
+export type ReprocessMessagePayload = {
+  message: MessageDescriptor;
+  node: TopicNode;
+}
+
 const ReprocessMessage: React.FC<ReprocessMessageProps> = (props) => {
+  const modals = Modals.useContext();
+  const asyncTasks = AsyncTasks.useContext();
   const [node, setNode] = React.useState<TopicNode>({
     tenant: '',
     namespace: '',
     topicName: '',
     topicType: 'persistent',
   });
-  const modals = Modals.useContext();
-  const asyncTasks = AsyncTasks.useContext();
+  const nodeRef = React.useRef<TopicNode>(node);
+
+  useEffect(() => {
+    nodeRef.current = node;
+  }, [node]);
+
+  const areTopicNodesEqual = (nodeA: TopicNode, nodeB: TopicNode) => {
+    return nodeA.tenant === nodeB.tenant && nodeA.namespace === nodeB.namespace && nodeA.topicName === nodeB.topicName && nodeA.topicType === nodeB.topicType;
+  }
 
   return (
     <div className={s.ReprocessMessage}>
@@ -51,26 +65,47 @@ const ReprocessMessage: React.FC<ReprocessMessageProps> = (props) => {
           selectedNodePath={[]}
           isTreeControlButtonsHidden={true}
           isInstanceNodeHidden={true}
+          isToggleOnNodeClick={true}
           nodesRender={{
             instanceRender: (props) => <></>,
-            tenantRender: (props) => <div onClick={() => props.onDoubleClick()}>
+            tenantRender: (props) => <div>
               <span className={s.NodeLinkText}>{props.tenant}</span>
             </div>,
-            namespaceRender: (props) => <div onClick={() => props.onDoubleClick()}>
+            namespaceRender: (props) => <div>
               <span className={s.NodeLinkText}>{props.namespace}</span>
             </div>,
-            topicRender: (props) =>
-                <div onClick={() => setNode({tenant: props.tenant, namespace: props.namespace, topicName: props.topic, topicType: props.topicType})}>
+            topicRender: (props) => {
+              const renderedTopicNode = {
+                tenant: props.tenant,
+                namespace: props.namespace,
+                topicName: props.topic,
+                topicType: props.topicType
+              };
+              const isTopicSelected = areTopicNodesEqual(nodeRef.current, {
+                tenant: props.tenant,
+                namespace: props.namespace,
+                topicName: props.topic,
+                topicType: props.topicType
+              });
+              return (
+                <div className={s.TopicNodeGroup} onClick={() => setNode(renderedTopicNode)}>
                   <span className={s.NodeLinkText}>{NodesUtils.getTopicName(props.topic)}</span>
-                </div>
+                  {isTopicSelected && <div className={s.SelectedConfirmationBullet}></div>}
+                </div>);
+            }
           }}
         />
       </div>
       <div className={s.ReprocessMessageButtons}>
         <Link
           onClick={() => {
-            modals.pop();
+            const reprocessPayload: ReprocessMessagePayload = {
+              message: props.message,
+              node: node,
+            };
+            asyncTasks.startTask('reprocess-message', JSON.stringify(reprocessPayload));
 
+            modals.pop();
           }}
           to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: node.tenant, namespace: node.namespace, topic: node.topicName, topicType: node.topicType })}
         >

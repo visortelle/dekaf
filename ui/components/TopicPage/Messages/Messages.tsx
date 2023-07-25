@@ -52,6 +52,7 @@ import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import * as AsyncTasks from "../../app/contexts/AsyncTasks";
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
@@ -553,9 +554,12 @@ type SessionControllerProps = {
   config: SessionConfig;
 };
 const SessionController: React.FC<SessionControllerProps> = (props) => {
+  const asyncTasks = AsyncTasks.useContext();
   const [sessionKey, setSessionKey] = useState<number>(0);
   const [config, setConfig] = useState<SessionConfig>(props.config);
-  const [isShowConsole, setIsShowConsole] = useState<boolean>(true);
+  const [isShowConsole, setIsShowConsole] = useState<boolean>(
+    asyncTasks.tasks['reprocess-message'] !== undefined
+  );
 
   return (
     <Session

@@ -35,7 +35,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
           title='Value'
           value={(
             <JsonView
-              json={props.message.value === null ? undefined : props.message.value}
+              json={props.message.value === null ? undefined : JSON.parse(props.message.value)}
               width="480rem"
               height="480rem"
             />
@@ -55,7 +55,6 @@ type FieldProps = {
 const Field: React.FC<FieldProps> = (props) => {
   return (
     <div className={s.Field}>
-      {/* TODO - fix tooltips */}
       <div
         className={s.FieldTitle}
         data-tooltip-id={tooltipId}
