@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import s from './Topics.module.css'
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
@@ -13,8 +13,6 @@ import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
 import * as pbUtils from '../../../pbUtils/pbUtils';
 import {
-  GetTopicPropertiesResponse,
-  GetTopicsStatsResponse,
   PartitionedTopicStats,
   TopicProperties,
   TopicStats
@@ -200,7 +198,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'string') {
                       return true
-                    };
+                    }
 
                     return de.name.toLowerCase().includes(filterValue.value.toLowerCase());
                   },

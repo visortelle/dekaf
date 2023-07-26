@@ -168,7 +168,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumerName = request.consumerName
         logger.info(s"Deleting consumer. Consumer: $consumerName")
 
-        def tryUnsubscribe: Unit =
+        def tryUnsubscribe(): Unit =
             consumers.get(consumerName) match
                 case Some(consumer) =>
                     try
@@ -180,7 +180,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     finally ()
                 case _ => ()
 
-        tryUnsubscribe
+        tryUnsubscribe()
 
         consumers = consumers.removed(consumerName)
         streamDataHandlers = streamDataHandlers.removed(consumerName)
