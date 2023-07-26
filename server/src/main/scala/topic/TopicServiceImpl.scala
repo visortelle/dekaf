@@ -150,13 +150,26 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         given ExecutionContext = ExecutionContext.global
 
         try {
-            val getTopicsPropertiesFutures = request.topics.map(adminClient.topics.getPropertiesAsync(_).asScala)
-            val topicsProperties = Await
-                .result(Future.sequence(getTopicsPropertiesFutures), Duration(1, TimeUnit.MINUTES))
+            //  For now there is no implementation for getProperties non-persistent topics in Pulsar Broker
+            //  so for now they will be ignored
+            val persistentTopics = request.topics.filter(_.startsWith("persistent://"))
+            val nonPersistentTopics = request.topics.filter(_.startsWith("non-persistent://"))
+
+
+            val getPersistentTopicsPropertiesFutures = persistentTopics
+                .map(adminClient.topics.getPropertiesAsync(_).asScala)
+
+            val persistentProperties = Await
+                .result(Future.sequence(getPersistentTopicsPropertiesFutures), Duration(1, TimeUnit.MINUTES))
                 .map(properties => Option(properties.asScala).map(_.toMap))
 
-            val prop = request.topics
-                .zip(topicsProperties)
+
+            val nonPersistentTopicsProperties = nonPersistentTopics
+                .map(topic => topic -> TopicProperties(Map.empty[String, String]))
+                .toMap
+
+            val persistentTopicsProperties = persistentTopics
+                .zip(persistentProperties)
                 .toMap
                 .view
                 .mapValues(map => TopicProperties(map.getOrElse(Map())))
@@ -165,7 +178,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.GetTopicPropertiesResponse(
                 status = Some(status),
-                topicProperties = prop
+                topicProperties = persistentTopicsProperties ++ nonPersistentTopicsProperties
 
             ))
         } catch {

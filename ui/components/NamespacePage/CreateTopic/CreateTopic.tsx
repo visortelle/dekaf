@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 
@@ -6,7 +6,7 @@ import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import { CreateNonPartitionedTopicRequest, CreatePartitionedTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
+import ConfigurationTable, {ConfigurationField} from '../../ui/ConfigurationTable/ConfigurationTable';
 import Button from '../../ui/Button/Button';
 import Input from '../../ui/Input/Input';
 import Select from '../../ui/Select/Select';
@@ -37,7 +37,13 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   const [numPartitions, setNumPartitions] = React.useState(2);
   const [properties, setProperties] = React.useState<{ [key: string]: string }>({});
 
-  const topicNameInput = <Input value={topicName} onChange={setTopicName} focusOnMount />
+  const topicNameInput = (
+    <Input
+      value={topicName}
+      onChange={setTopicName}
+      focusOnMount />
+  );
+
   const topicPersistencyInput = (
     <Select<TopicPersistency>
       onChange={setTopicPersistency}
@@ -60,7 +66,13 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
     />
   );
 
-  const numPartitionsInput = <Input type='number' value={numPartitions.toString()} onChange={v => setNumPartitions(parseInt(v))} />
+  const numPartitionsInput = (
+      <Input
+        type='number'
+        value={numPartitions.toString()}
+        onChange={v => setNumPartitions(parseInt(v))}
+      />
+  );
 
   const propertiesEditorInput = (
     <KeyValueEditor
@@ -142,7 +154,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
             ),
             input: topicPersistencyInput,
           },
-          {
+          ...topicPersistency === 'persistent' ? [{
             id: "partitioning",
             title: "Partitioning",
             description: (
@@ -151,8 +163,8 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
               </span>
             ),
             input: topicPartitioningInput,
-          },
-          ...topicPartitioning === 'partitioned' ? [
+          }] : [],
+          ...topicPartitioning === 'partitioned' && topicPersistency === 'persistent' ? [
             {
               id: "numPartitions",
               title: "Partitions count",
@@ -160,11 +172,16 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
               input: numPartitionsInput,
             }
           ] : [],
-          {
+          topicPersistency === 'persistent' ? {
             id: "properties",
             title: "Properties",
             description: help["properties"],
             input: propertiesEditorInput,
+          }: {
+            id: "properties",
+            title: "Properties",
+            description: help["properties"],
+            input: <div>Properties are not supported for non-persistent topics.</div>,
           },
         ]}
       />
