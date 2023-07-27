@@ -39,6 +39,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     private var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
     private var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
     private var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
+    var listener: TopicMessageListener = _
+
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
         val consumerName: ConsumerName = request.consumerName
@@ -96,6 +98,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                             responseObserver.onNext(resumeResponse)
                         case _ => ()
 
+                listener.startAcceptingNewMessages()
                 consumer.resume()
                 val status: Status = Status(code = Code.OK.index)
                 Future.successful(ResumeResponse(status = Some(status)))
@@ -118,6 +121,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(PauseResponse(status = Some(status)))
 
         consumer.pause()
+        listener.stopAcceptingNewMessages()
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(PauseResponse(status = Some(status)))
@@ -137,6 +141,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             MessageFilterConfig(stdout = new ByteArrayOutputStream())
         ))
 
+        listener = TopicMessageListener(streamDataHandler)
+
         val topicsToConsume = request.topicsSelector match
             case Some(ts) =>
                 ts.topicsSelector.byNames match
@@ -151,7 +157,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
         topics = topics + (consumerName -> topicsToConsume)
 
-        val consumerBuilder = buildConsumer(pulsarClient, consumerName, request, logger, streamDataHandler) match
+        val consumerBuilder = buildConsumer(pulsarClient, consumerName, request, logger, listener) match
             case Right(consumer) => consumer
             case Left(error) =>
                 logger.warn(error)
