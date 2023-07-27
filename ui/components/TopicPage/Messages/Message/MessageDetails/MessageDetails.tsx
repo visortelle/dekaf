@@ -35,7 +35,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
           title='Value'
           value={(
             <JsonView
-              json={props.message.value === null ? undefined : JSON.parse(props.message.value)}
+              json={props.message.value === null ? undefined : JSON.stringify(JSON.parse(props.message.value))}
               width="480rem"
               height="480rem"
             />
