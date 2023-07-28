@@ -8,5 +8,11 @@ export PULSOCAT_LICENSE_TOKEN="activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3"
 
 export PULSOCAT_PULSAR_INSTANCE_NAME="StreamNative dev"
 
+export PULSOCAT_PULSAR_INSTANCE_BROKER_SERVICE_URL="pulsar://localhost:6650"
+export PULSOCAT_PULSAR_INSTANCE_WEB_SERVICE_URL="http://localhost:8080"
+
+export PULSOCAT_PULSAR_INSTANCE_BROKER_SERVICE_URL="pulsar+ssl://test2.o-xy6ek.snio.cloud:6651"
+export PULSOCAT_PULSAR_INSTANCE_WEB_SERVICE_URL="https://test2.o-xy6ek.snio.cloud"
+
 export PULSOCAT_PULSAR_INSTANCE_BROKER_SERVICE_URL="pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651"
 export PULSOCAT_PULSAR_INSTANCE_WEB_SERVICE_URL="https://cluster-d.o-xy6ek.snio.cloud"
