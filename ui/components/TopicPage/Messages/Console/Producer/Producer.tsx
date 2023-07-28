@@ -17,27 +17,42 @@ import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
 import sendIcon from './icons/send.svg';
 
 import s from './Producer.module.css'
-import { ValueType } from './types';
 import { valueToBytes } from './lib/lib';
 
+export type ValueType = 'json' | 'bytes-hex'
 export type ProducerPreset = {
   topic: string | undefined;
   key: string;
+  value: string;
+  valueType: ValueType;
+  eventTime: Date | undefined;
+  propertiesJsonMap: string;
 }
 
 export type ProducerProps = {
   preset: ProducerPreset;
 };
 
+type ProducerInit = {
+  isReady: boolean;
+  isLoading: boolean;
+  initFailed: boolean;
+}
+
 const Producer: React.FC<ProducerProps> = (props) => {
   const [key, setKey] = React.useState<string>(props.preset.key);
-  const [valueType, setValueType] = React.useState<ValueType>('json');
-  const [value, setValue] = React.useState<string>('');
+  const [valueType, setValueType] = React.useState<ValueType>(props.preset.valueType);
+  const [value, setValue] = React.useState<string>(props.preset.value);
   const producerName = React.useRef<string>(`__pulsocat_` + nanoid());
-  const [eventTime, setEventTime] = React.useState<Date | undefined>(undefined);
-  const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>("{}");
-  const { notifyError, notifySuccess } = Notifications.useContext();
-  const { producerServiceClient } = GrpcClient.useContext();
+  const [eventTime, setEventTime] = React.useState<Date | undefined>(props.preset.eventTime);
+  const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>(props.preset.propertiesJsonMap);
+  const [producerInit, setProducerInit] = React.useState<ProducerInit>({
+    isReady: false,
+    isLoading: false,
+    initFailed: false
+  });
+  const {notifyError, notifySuccess} = Notifications.useContext();
+  const {producerServiceClient} = GrpcClient.useContext();
 
   const sendMessage = async () => {
     const sendReq: SendRequest = new SendRequest();

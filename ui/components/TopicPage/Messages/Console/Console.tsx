@@ -1,7 +1,7 @@
 import React, {useMemo, useState} from 'react';
 
 import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
-import Producer, {ValueType} from './Producer/Producer';
+import Producer from './Producer/Producer';
 import Visualization from './Visualization/Visualization';
 import MessagesExporter from './MessagesExporter/MessagesExporter';
 import { MessageDescriptor, SessionConfig, SessionState } from '../types';
