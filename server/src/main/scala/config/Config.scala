@@ -89,6 +89,35 @@ case class LicenseConfig(
     token: String,
 )
 
+case class Header(
+    @describe("The key of the header.")
+    key: String,
+    @describe("The value of the header.")
+    value: String
+)
+
+case class ProxyConfig(
+    @describe("The name of the proxy.")
+    name: String,
+    @describe("The destination of the proxy.")
+    to: String,
+    @describe("The headers to be included in the proxy.")
+    headers: List[Header]
+)
+
+case class ResourcesInfoMarkdownsConfig(
+    @describe("Variables to be used in the markdowns.")
+    vars: Map[String, String],
+    @describe("The markdown for instance page.")
+    instance: String,
+    @describe("The markdown for tenant page.")
+    tenant: String,
+    @describe("The markdown for namespace page.")
+    namespace: String,
+    @describe("The markdown for topic page.")
+    topic: String,
+)
+
 case class Config(
     @describe("The port the server listens on.")
     port: Int,
@@ -100,6 +129,10 @@ case class Config(
     library: LibraryConfig,
     @describe("You should specify a license to start the application. You can obtain a license at https://pulsocat.com")
     license: Option[LicenseConfig],
+    @describe("Proxy properties")
+    proxies: List[ProxyConfig],
+    @describe("Configuration to provide embedded dashboards to the app.")
+    resourcesInfoMarkdowns: ResourcesInfoMarkdownsConfig,
     @describe("TLS configuration")
     tls: Option[TlsConfig] = None,
     @describe("Internal configuration. Not intended to be changed by the user.")
@@ -125,6 +158,14 @@ val defaultConfig = Config(
         path = "./library"
     ),
     license = Some(LicenseConfig(id = "", token = "")),
+    proxies = List.empty,
+    resourcesInfoMarkdowns = ResourcesInfoMarkdownsConfig(
+        vars = Map.empty,
+        instance = "",
+        tenant = "",
+        namespace = "",
+        topic = ""
+    ),
     tls = None,
 )
 

@@ -15,10 +15,14 @@
 ```
 
 - Use `make dev` command at the repository root to enter the development environment shell.
-- Go to `./devenv` directory and run `make dev-local` to start local Pulsar-standalone instance in Docker.
+- Go to `./devenv` directory and run `make build-grafana` to create local grafana image (no need to do this step if no
+grafana configurations was changed) and then:
+  - Run `make dev-local-pulsar` if you want to start Pulsar-standalone instance with Prometheus and Grafana.
+  - Run `make dev-local-monitoring` if you want to start only Prometheus and Grafana.
 - Go to the Protobuf definitions directory `cd ./proto` and run `make build` here.
 - Go to the server directory `cd ./server` and run `sbt`, then `run` here.
 - Open a second terminal, go to the UI directory `cd ./ui` and run `make dev` here.
+- Go to demo app directory `cd ./demo-app` and run `sbt run` here to start producing messages.
 
 ## Frontend
 
@@ -44,6 +48,10 @@ https://gist.github.com/visortelle/271627130d7dfcfa44e1f71fc5b6dfaf
 # CI
 
 Run `act` to run GitHub Actions job locally.
+
+## Grafana
+To make Grafana dashboards work you need to run the Grafana instance first (see Development environment section). 
+After that you need to log in to Grafana at http://localhost:3000 (or other depending on `config.yaml`) using `admin`/`happypulsaring` credentials and create a Service Account with role `Viewer` and generate an API key for it. Then you need to put in the token to `config.yaml` file in `proxies` headers section.
 
 ## Resources
 

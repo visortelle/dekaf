@@ -12,6 +12,11 @@
  */
 ```
 
+## Acknowledgements
+
+This project uses components from the [apache-pulsar-grafana-dashboard](https://github.com/streamnative/apache-pulsar-grafana-dashboard) project, which is licensed under the Apache 2.0 license. We have made modifications to the original components for our specific use case. You can find the original project [here](https://github.com/streamnative/apache-pulsar-grafana-dashboard), and the Apache 2.0 license [here](http://www.apache.org/licenses/LICENSE-2.0).
+
+
 ## Resources
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md)

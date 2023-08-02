@@ -1,26 +1,43 @@
 package server.http
 
-import zio.*
-import zio.ZIOAppDefault
-import _root_.config.{readConfig, Config}
+import _root_.config.{Config, readConfig}
+import _root_.pulsar_auth
+import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
+import _root_.pulsar_auth.{PulsarAuthRoutes, defaultPulsarAuth}
 import io.javalin.Javalin
-import io.javalin.rendering.template.JavalinFreemarker
 import io.javalin.http.staticfiles.{Location, StaticFileConfig}
+import io.javalin.rendering.template.JavalinFreemarker
+import jakarta.servlet.ServletConfig
+import jakarta.servlet.http.HttpServletRequest
+import org.eclipse.jetty.client.api.Request
+import org.eclipse.jetty.http.HttpHeader
+import org.eclipse.jetty.proxy.AsyncProxyServlet
+import org.eclipse.jetty.servlet.ServletHolder
+import zio.*
 
 import scala.jdk.CollectionConverters.*
-import _root_.pulsar_auth
-import io.circe.parser.decode as decodeJson
-import _root_.pulsar_auth.{defaultPulsarAuth, PulsarAuthRoutes}
-import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
-import scala.jdk.CollectionConverters.*
-import _root_.pulsar_auth
-import _root_.pulsar_auth.{credentialsDecoder, defaultPulsarAuth, jwtCredentialsDecoder, validCredentialsName, PulsarAuth}
-import io.circe.parser.decode as decodeJson
 
 object HttpServer:
     private val isBinaryBuild = buildinfo.ExtraBuildInfo.isBinaryBuild
 
+    private class CustomProxyServlet extends AsyncProxyServlet.Transparent {
+        private var authHeaderValue: String = _
+
+        override def init(config: ServletConfig): Unit = {
+            super.init(config)
+            authHeaderValue = config.getServletContext.getAttribute("authHeaderValue").asInstanceOf[String]
+        }
+
+        override def addProxyHeaders(clientRequest: HttpServletRequest, proxyRequest: Request): Unit = {
+            super.addProxyHeaders(clientRequest, proxyRequest)
+                if (authHeaderValue != null) {
+                proxyRequest.header("Authorization", authHeaderValue)
+            }
+        }
+    }
+
     def createApp(appConfig: Config): Javalin =
+
         Javalin
             .create { config =>
                 JavalinFreemarker.init()
@@ -57,6 +74,21 @@ object HttpServer:
                         ctx.render("/ui/index.ftl", model)
                     }
                 )
+
+                config.jetty.contextHandlerConfig((sch) => {
+                    appConfig.proxies.foreach { proxyConfig =>
+                        val proxyServlet = new ServletHolder(classOf[CustomProxyServlet])
+                        proxyServlet.setInitParameter("proxyTo", s"${proxyConfig.to}")
+                        proxyServlet.setInitParameter("prefix", s"/${proxyConfig.name}")
+                        sch.setAttribute("authHeaderValue",
+                            proxyConfig.headers
+                                .find(_.key == "Authorization")
+                                .get
+                                .value
+                        )
+                        sch.addServlet(proxyServlet, s"/${proxyConfig.name}/*")
+                    }
+                })
             }
             .get("/health", ctx => ctx.result("OK"))
             .routes(PulsarAuthRoutes.routes)

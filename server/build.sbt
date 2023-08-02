@@ -91,6 +91,7 @@ lazy val root = project
             "io.javalin" % "javalin-rendering" % "5.3.2",
             "org.freemarker" % "freemarker" % "2.3.31",
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
+            "org.eclipse.jetty" % "jetty-proxy" % "11.0.13",
 
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.12.0",

@@ -1,18 +1,6 @@
 version: '2.4'
 
 services:
-  pulsar:
-    image: apachepulsar/pulsar-all:3.0.0
-    command: /entrypoint.sh topic-level-policies-enabled
-    restart: always
-    ports:
-      - 6650:6650
-      - 8080:8080
-      - 2181:2181 # Zookeeper
-    volumes:
-      - $PWD/cases:/cases
-      - $PWD/entrypoint.sh:/entrypoint.sh
-  
   grafana:
     image: pulsocat-grafana
     container_name: grafana
@@ -34,5 +22,5 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./apache-pulsar-grafana-dashboard/prometheus/standalone.yml.template:/etc/prometheus/prometheus.yml
+      - ./apache-pulsar-grafana-dashboard/prometheus/${PROMETHEUS_CONFIG_FILE:-standalone.yml.template}:/etc/prometheus/prometheus.yml
     restart: always

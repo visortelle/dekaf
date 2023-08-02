@@ -1,21 +1,15 @@
 package metrics
 
-import com.tools.teal.pulsar.ui.metrics.v1.metrics as metricsPb
-import com.tools.teal.pulsar.ui.metrics.v1.metrics.{GetNamespacesMetricsRequest, GetNamespacesMetricsResponse, GetNamespacesPersistentMetricsRequest, GetNamespacesPersistentMetricsResponse, GetTenantsMetricsRequest, GetTenantsMetricsResponse, GetTenantsPersistentMetricsRequest, GetTenantsPersistentMetricsResponse, MetricsServiceGrpc, NamespaceMetrics, TenantMetrics}
-import com.typesafe.scalalogging.Logger
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
-import com.google.protobuf.ByteString
-import com.google.rpc.status.Status
 import com.google.rpc.code.Code
+import com.google.rpc.status.Status
+import com.tools.teal.pulsar.ui.metrics.v1.metrics as metricsPb
+import com.tools.teal.pulsar.ui.metrics.v1.metrics.*
+import com.typesafe.scalalogging.Logger
 import io.circe
 import io.circe.parser.decode as decodeJson
-import pulsar_auth.RequestContext
 
 import java.util.TimerTask
-import java.util.concurrent.*
+import scala.concurrent.Future
 
 class MetricsServiceImpl extends MetricsServiceGrpc.MetricsService:
     val logger: Logger = Logger(getClass.getName)
