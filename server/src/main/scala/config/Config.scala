@@ -87,6 +87,47 @@ case class Config(
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on")
     internalGrpcPort: Option[Int] = None
+
+    //Grafana
+    @describe("Proxy properties")
+    proxies: List[ProxyConfig] = List.empty,
+    @describe("Configuration to provide embedded dashboards to the app.")
+    resourcesInfoMarkdowns: ResourcesInfoMarkdownsConfig = ResourcesInfoMarkdownsConfig(
+                                                                   vars = Map.empty,
+                                                                   instance = "",
+                                                                   tenant = "",
+                                                                   namespace = "",
+                                                                   topic = ""
+                                                               ),
+)
+
+case class Header(
+    @describe("The key of the header.")
+    key: String,
+    @describe("The value of the header.")
+    value: String
+)
+
+case class ProxyConfig(
+    @describe("The name of the proxy.")
+    name: String,
+    @describe("The destination of the proxy.")
+    to: String,
+    @describe("The headers to be included in the proxy.")
+    headers: List[Header]
+)
+
+case class ResourcesInfoMarkdownsConfig(
+    @describe("Variables to be used in the markdowns.")
+    vars: Map[String, String],
+    @describe("The markdown for instance page.")
+    instance: String,
+    @describe("The markdown for tenant page.")
+    tenant: String,
+    @describe("The markdown for namespace page.")
+    namespace: String,
+    @describe("The markdown for topic page.")
+    topic: String,
 )
 
 val yamlConfigDescriptor = descriptor[Config]

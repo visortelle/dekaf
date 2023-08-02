@@ -48,7 +48,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
       req.setPartitionedTopicsList([topicFqn]);
 
       const res = await topicServiceClient.getTopicsStats(req, null)
-        .catch((err) => notifyError(`Unable to get topic properties. ${err}`));
+        .catch((err) => notifyError(`Unable to get topic stats. ${err}`));
 
       if (res === undefined) {
         return;

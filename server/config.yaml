@@ -1,0 +1,15 @@
+proxies:
+  - name: grafana
+    to: http://localhost:3000
+    headers:
+      - key: Authorization
+        value: Bearer glsa_0FcgEIq7qKCaEXThkHjRIlI1FLhp0WXw_fbb43b52
+
+resourcesInfoMarkdowns:
+  vars:
+    toolUrl: http://localhost:3000
+    instanceUrl: metrics.streamnative.cloud:443
+  instance: /ui/markdowns/instance.md
+  tenant: /ui/markdowns/tenant.md
+  namespace: /ui/markdowns/namespace.md
+  topic: /ui/markdowns/topic.md

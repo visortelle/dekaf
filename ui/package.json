@@ -55,7 +55,11 @@
     "use-debounce": "^9.0.4",
     "use-local-storage-state": "^18.3.3",
     "use-query-params": "^2.2.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "rehype-raw": "^6.1.1",
+    "react-markdown": "^8.0.7",
+    "rehype-sanitize": "^5.0.1",
+    "remark-gfm": "^3.0.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",

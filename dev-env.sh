@@ -4,6 +4,11 @@ export PULSOCAT_LICENSE_TOKEN="activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3"
 export PULSOCAT_PULSAR_BROKER_URL="pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651"
 export PULSOCAT_PULSAR_HTTP_URL="https://cluster-d.o-xy6ek.snio.cloud"
 
+export PULSAR_CLUSTER="test2"
+export GRAFANA_DOMAIN="localhost:8090"
+
+export PROMETHEUS_CONFIG_FILE="cluster.yml.template"
+
 function configure_kubectl() {
   tmp_dir=$(mktemp -d)
   kube_config_path="${tmp_dir}/kubeconfig.yml"

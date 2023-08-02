@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import InternalConfig from "./InternalConfig/InternalConfig";
 import HealthCheck from "./HealthCheck/HealthCheck";
 import Clusters from "./Clusters/Clusters";

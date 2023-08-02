@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.markdown.v1;
+
+import "google/rpc/status.proto";
+
+
+message GetInstanceMarkdownRequest {
+    string instance_url = 1;
+    string cluster_name = 2;
+}
+
+message GetInstanceMarkdownResponse {
+    string markdown = 1;
+    google.rpc.Status status = 2;
+}
+
+service MarkdownService {
+    rpc GetInstanceMarkdown(GetInstanceMarkdownRequest) returns (GetInstanceMarkdownResponse) {}
+}

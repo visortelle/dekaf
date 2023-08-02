@@ -1,8 +1,19 @@
 .PHONY: dev-local
-dev-local: ## Start development using docker-compose with Pulsar running locally
+dev-local: ## Start development using docker-compose with Pulsar, Prometheus and Grafana running locally
 	docker ps -a -q | xargs -I {} docker container rm -f {}
 	docker volume ls -q | xargs -I {} docker volume rm {}
 	docker-compose -f ./docker-compose-local.yaml up -d
+
+.PHONY: build-grafana
+build-grafana:
+	docker build -t pulsocat-grafana ./apache-pulsar-grafana-dashboard
+
+.PHONY: dev-local-monitoring
+dev-local-monitoring: ## Using docker-compose to launch Prometheus and Grafana locally without Pulsar
+	PROMETHEUS_CONFIG_FILE=cluster.yml.template
+	docker ps -a -q | xargs -I {} docker container rm -f {}
+	docker volume ls -q | xargs -I {} docker volume rm {}
+	docker-compose -f ./docker-compose-grafana.yaml up -d
 
 .PHONY: clean
 clean: ## Uninstall Helm release and delete namesapace.
