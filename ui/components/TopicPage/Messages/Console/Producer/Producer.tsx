@@ -106,7 +106,9 @@ const Producer: React.FC<ProducerProps> = (props) => {
       sendReq.setFormat(MessageFormat.MESSAGE_FORMAT_BYTES);
     }
 
-    const res = await producerServiceClient.send(sendReq, {}).catch(err => notifyError(`Unable to send a message. ${err}`));
+    const res = await producerServiceClient.send(sendReq, {})
+      .catch(err => notifyError(`Unable to send a message. ${err}`));
+
     if (res === undefined) {
       return;
     }

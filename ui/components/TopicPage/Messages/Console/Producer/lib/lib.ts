@@ -18,10 +18,10 @@ export function valueToBytes(value: string, valueType: ValueType): Either.Either
 
       const bytes = Uint8Array.from(Buffer.from(value))
       return Either.right(bytes);
-    };
+    }
     case 'bytes-hex': {
       const bytes = Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'hex'))
       return Either.right(bytes);
-    };
+    }
   }
 }

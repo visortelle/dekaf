@@ -27,6 +27,11 @@
   z-index: 1;
 }
 
+.ViewMessageDetailsField > div {
+  align-items: center;
+  justify-content: center;
+}
+
 .ReprocessButton svg {
   transform: rotate(90deg);
 }

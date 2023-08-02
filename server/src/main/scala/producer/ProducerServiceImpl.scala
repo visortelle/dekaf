@@ -120,29 +120,28 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
                     Right(message)
                 )
 
-        messages.foreach(msg =>
-            msg match
-                case Right(message) =>
-                    try {
-                        var newMessage = producer.newMessage
-                            .value(message.value)
+        messages.foreach {
+            case Right(message) =>
+                try {
+                    var newMessage = producer.newMessage
+                        .value(message.value)
                             .properties(message.properties.asJava)
-                        message.eventTime match
-                            case Some(t) => newMessage = newMessage.eventTime(t)
-                            case None    => // do nothing
-                        message.key match
-                            case Some(k) => newMessage = newMessage.key(k)
-                            case None    => // do nothing
-                        newMessage.sendAsync
-                    } catch {
-                        case err =>
-                            val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                            return Future.successful(SendResponse(status = Some(status)))
-                    }
-                case Left(err) =>
-                    val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = err.getMessage)
-                    return Future.successful(SendResponse(status = Some(status)))
-        )
+                    message.eventTime match
+                        case Some(t) => newMessage = newMessage.eventTime(t)
+                        case None => // do nothing
+                    message.key match
+                        case Some(k) => newMessage = newMessage.key(k)
+                        case None => // do nothing
+                    newMessage.sendAsync
+                } catch {
+                    case err =>
+                        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                        return Future.successful(SendResponse(status = Some(status)))
+                }
+            case Left(err) =>
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = err.getMessage)
+                return Future.successful(SendResponse(status = Some(status)))
+        }
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(SendResponse(status = Some(status)))

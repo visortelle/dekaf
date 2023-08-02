@@ -8,7 +8,7 @@ export function messageDescriptorFromPb(message: Message): MessageDescriptor {
     index: -1, // This value will be set in another place.
     messageId: message.getMessageId()?.getValue_asU8() ?? null,
     rawValue: message.getRawValue()?.getValue_asU8() ?? null,
-    value: message.getValue()?.getValue() ?? null,
+    value: message.getValue()?.getValue() ? JSON.stringify(JSON.parse(JSON.parse(message.getValue()?.getValue()!))) : null,
     brokerPublishTime: message.getBrokerPublishTime()?.getValue() ?? null,
     eventTime: message.getEventTime()?.getValue() ?? null,
     isReplicated: message.getIsReplicated()?.getValue() ?? null,

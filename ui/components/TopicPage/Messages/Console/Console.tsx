@@ -68,7 +68,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
                     preset={{
                       topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
                       key: reprocessMessageTask.message.key ?? '',
-                      value: reprocessMessageTask.message.value ? JSON.stringify(JSON.parse(reprocessMessageTask.message.value)) : '',
+                      value: reprocessMessageTask.message.value ? reprocessMessageTask.message.value : '',
                       valueType: 'json',
                       eventTime: reprocessMessageTask.message.eventTime ? new Date(reprocessMessageTask.message.eventTime) : undefined,
                       propertiesJsonMap: reprocessMessageTask.message.properties ? JSON.stringify(reprocessMessageTask.message.properties) : '{}',
