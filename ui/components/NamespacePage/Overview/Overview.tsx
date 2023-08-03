@@ -13,7 +13,6 @@ import { Code } from "../../../grpc-web/google/rpc/code_pb";
 import * as Notifications from "../../app/contexts/Notifications";
 import { TabContent } from "../../ui/Tabs/Tabs";
 import NothingToShow from "../../ui/NothingToShow/NothingToShow";
-import Button from "../../ui/Button/Button";
 import * as pbUtils from "../../../pbUtils/pbUtils";
 import Table from "../../ui/Table/Table";
 import * as Modals from "../../app/contexts/Modals/Modals";
@@ -24,6 +23,10 @@ import UnloadAll from "./UnloadAll/UnloadAll";
 import ClearBacklog from "./ClearBacklog/ClearBacklog";
 import JsonView from "../../ui/JsonView/JsonView";
 import SmallButton from '../../ui/SmallButton/SmallButton';
+import {
+  GetNamespaceMarkdownRequest
+} from "../../../grpc-web/tools/teal/pulsar/ui/markdown/v1/markdown_pb";
+import Markdown from "../../ui/Markdown/Markdown";
 
 export type BundleKey = string
 
@@ -47,6 +50,9 @@ const Overview: React.FC<OverviewProps> = (props) => {
   const { namespaceServiceClient } = GrpcClient.useContext();
   const { clustersServiceClient } = GrpcClient.useContext();
   const [activeTab, setActiveTab] = React.useState<string | undefined>();
+  const [activeClusterTab, setActiveClusterTab] = React.useState<string | undefined>();
+  const {markdownServiceClient} = GrpcClient.useContext();
+  const [markdownData, setMarkdownData] = React.useState<string>('');
 
   const { data: topicCounts, error: topicCountsError, isLoading: isTopicCountsLoading } = useSWR(
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.statistics._({
@@ -130,14 +136,43 @@ const Overview: React.FC<OverviewProps> = (props) => {
   React.useEffect(() => {
     if (clusters && !clustersError) {
       setActiveTab(clusters.at(0));
+      setActiveClusterTab(clusters.at(0));
     }
   }, [clusters, clustersError])
 
+  React.useEffect(() => {
+    const fetchNamespaceMarkdownData = async (cluster: string) => {
+      const req = new GetNamespaceMarkdownRequest();
+      req.setNamespaceFqn(namespaceFqn);
+      req.setClusterName(cluster);
+
+      const res = await markdownServiceClient.getNamespaceMarkdown(req, null)
+        .catch(err => notifyError(`Unable to get namespace markdown. ${err.getMessage()}`));
+
+      if (res === undefined) {
+        return "";
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get namespace markdown. ${res.getStatus()?.getMessage()}`);
+        return "";
+      }
+
+      return res.getMarkdown();
+    };
+
+    activeClusterTab &&
+    fetchNamespaceMarkdownData(activeClusterTab).then(markdown => {
+      setMarkdownData(markdown.toString());
+    });
+  }, [activeClusterTab]);
+
   return (
     <div className={s.Overview}>
-      <div className={`${s.Section} ${s.StatisticsSection}`}>
-        <table className={`${st.Table} ${s.Table}`}>
-          <tbody>
+      <div className={s.LeftPane}>
+        <div className={`${s.Section} ${s.StatisticsSection}`}>
+          <table className={`${st.Table} ${s.Table}`}>
+            <tbody>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Namespace FQN</td>
               <Td>
@@ -192,29 +227,193 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 }
               </Td>
             </tr>
-          </tbody>
-        </table>
-      </div>
+            </tbody>
+          </table>
+        </div>
 
-      <div style={{ marginBottom: '24rem' }}>
-        <strong>Properties</strong>
-        <div className={s.JsonViewer}>
-          <JsonView
-            value={topicCounts?.properties}
-            height={'130rem'}
-            width={'100%'}
-          />
+        <div style={{ marginBottom: '24rem' }}>
+          <strong>Properties</strong>
+          <div className={s.JsonViewer}>
+            <JsonView
+              value={topicCounts?.properties}
+              height={'130rem'}
+              width={'100%'}
+            />
+          </div>
+        </div>
+
+        <div className={s.Section}>
+          <div className={s.SectionTitle}>
+            <TooltipElement
+              tooltipHelp={"A virtual group of topics that belong to the same namespace. A namespace bundle is defined as a range between two 32-bit hashes, such as 0x00000000 and 0xffffffff."}
+              link={"https://pulsar.apache.org/docs/3.0.x/administration-load-balance/#pulsar-load-manager-architecture"}>
+              Bundles
+            </TooltipElement>
+          </div>
+          {
+            (!isClustersLoading && clusters) ? (
+              <div className={stt.Tabs}>
+                <div className={stt.TabsList}>
+                  {clusters.map(tabKey => {
+                    return (
+                      <div
+                        key={tabKey}
+                        className={`${stt.Tab} ${tabKey === activeTab ? stt.ActiveTab : ''}`}
+                        onClick={() => setActiveTab(tabKey)}
+                      >
+                        <div>{tabKey}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className={stt.TabContent}>
+                  {clusters.map(tabKey => {
+                    return (
+                      <TabContent key={tabKey} isShow={activeTab === tabKey} direction={'column'}>
+                        <div className={s.BundleTableHeader}>
+                          <div className={s.BundleTableHeaderLeft}>
+                            <SmallButton
+                              type="regular"
+                              onClick={() => {
+                                modals.push({
+                                  id: "unload-all-bundles",
+                                  title: `Unload all bundles`,
+                                  content: (
+                                    <UnloadAll
+                                      namespaceFqn={namespaceFqn}
+                                    />
+                                  ),
+                                  styleMode: "no-content-padding",
+                                });
+                              }}
+                              text="Unload all"
+                            />
+                            <SmallButton
+                              type="danger"
+                              onClick={() => {
+                                modals.push({
+                                  id: "clear-backlog",
+                                  title: `Clear backlog`,
+                                  content: (
+                                    <ClearBacklog
+                                      namespaceFqn={namespaceFqn}
+                                    />
+                                  ),
+                                  styleMode: "no-content-padding",
+                                });
+                              }}
+                              text="Clear backlog"
+                            />
+                          </div>
+                          <div className={s.BundleTableHeaderRight}>
+                          </div>
+                        </div>
+
+                        <div className={s.TableWrapper}>
+                          <Table<'bundle' | 'actions', BundleKey, {}>
+                            itemNamePlural={'bundles'}
+                            tableId={"bundle-overview-table"}
+                            dataLoader={{
+                              cacheKey: dataLoaderCacheKey,
+                              loader: async () => {
+                                const req = new pbn.GetBundlesRequest();
+                                req.setNamespace(namespaceFqn);
+
+                                const res = await namespaceServiceClient.getBundles(req, null);
+                                const bundles = res.getBundlesList().map(v => v as BundleKey);
+
+                                return bundles
+                              }
+                            }}
+                            columns={{
+                              columns: {
+                                bundle: {
+                                  title: 'Bundle',
+                                  render: (bundleKey) =>
+                                    <div className={s.BundleCell}>{bundleKey}</div>
+                                },
+                                actions: {
+                                  title: 'Actions',
+                                  render: (bundleKey: BundleKey) =>
+                                    <div className={s.ActionsCell}>
+                                      <SmallButton
+                                        type="regular"
+                                        onClick={() => {
+                                          modals.push({
+                                            id: "split-bundle",
+                                            title: `Split bundle`,
+                                            content: (
+                                              <SplitBundle
+                                                namespaceFqn={namespaceFqn}
+                                                bundleKey={bundleKey}
+                                              />
+                                            ),
+                                            styleMode: "no-content-padding",
+                                          });
+                                        }}
+                                        text="Split"
+                                      />
+                                      <SmallButton
+                                        type="regular"
+                                        onClick={() => {
+                                          modals.push({
+                                            id: "unload-bundle",
+                                            title: `Unload bundle`,
+                                            content: (
+                                              <UnloadBundle
+                                                namespaceFqn={namespaceFqn}
+                                                bundleKey={bundleKey}
+                                              />
+                                            ),
+                                            styleMode: "no-content-padding",
+                                          });
+                                        }}
+                                        text="Unload"
+                                      />
+                                      <SmallButton
+                                        type="danger"
+                                        onClick={() => {
+                                          modals.push({
+                                            id: "clear-backlog-bundle",
+                                            title: `Clear bundle backlog`,
+                                            content: (
+                                              <ClearBacklogBundle
+                                                namespaceFqn={namespaceFqn}
+                                                bundleKey={bundleKey}
+                                              />
+                                            ),
+                                            styleMode: "no-content-padding",
+                                          });
+                                        }}
+                                        text="Clear backlog"
+                                      />
+                                    </div>
+                                }
+                              },
+                              defaultConfig: [
+                                { columnKey: 'bundle', visibility: 'visible', stickyTo: 'left', width: 250 },
+                                { columnKey: 'actions', visibility: 'visible', width: 300 },
+                              ],
+                            }}
+                            getId={d => d}
+                            autoRefresh={{ intervalMs: 5000 }}
+                          />
+                        </div>
+
+                      </TabContent>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <NothingToShow reason={'no-items-found'} />
+            )
+          }
         </div>
       </div>
-
-      <div className={s.Section}>
-        <div className={s.SectionTitle}>
-          <TooltipElement
-            tooltipHelp={"A virtual group of topics that belong to the same namespace. A namespace bundle is defined as a range between two 32-bit hashes, such as 0x00000000 and 0xffffffff."}
-            link={"https://pulsar.apache.org/docs/3.0.x/administration-load-balance/#pulsar-load-manager-architecture"}>
-            Bundles
-          </TooltipElement>
-        </div>
+      <div className={s.RightPane}>
+        <div className={s.MarkdownTitle}>Markdown</div>
         {
           (!isClustersLoading && clusters) ? (
             <div className={stt.Tabs}>
@@ -223,156 +422,20 @@ const Overview: React.FC<OverviewProps> = (props) => {
                   return (
                     <div
                       key={tabKey}
-                      className={`${stt.Tab} ${tabKey === activeTab ? stt.ActiveTab : ''}`}
-                      onClick={() => setActiveTab(tabKey)}
+                      className={`${stt.Tab} ${tabKey === activeClusterTab ? stt.ActiveTab : ''}`}
+                      onClick={() => setActiveClusterTab(tabKey)}
                     >
                       <div>{tabKey}</div>
                     </div>
                   );
                 })}
               </div>
-
               <div className={stt.TabContent}>
-                {clusters.map(tabKey => {
-                  return (
-                    <TabContent key={tabKey} isShow={activeTab === tabKey} direction={'column'}>
-                      <div className={s.BundleTableHeader}>
-                        <div className={s.BundleTableHeaderLeft}>
-                          <SmallButton
-                            type="regular"
-                            onClick={() => {
-                              modals.push({
-                                id: "unload-all-bundles",
-                                title: `Unload all bundles`,
-                                content: (
-                                  <UnloadAll
-                                    namespaceFqn={namespaceFqn}
-                                  />
-                                ),
-                                styleMode: "no-content-padding",
-                              });
-                            }}
-                            text="Unload all"
-                          />
-                          <SmallButton
-                            type="danger"
-                            onClick={() => {
-                              modals.push({
-                                id: "clear-backlog",
-                                title: `Clear backlog`,
-                                content: (
-                                  <ClearBacklog
-                                    namespaceFqn={namespaceFqn}
-                                  />
-                                ),
-                                styleMode: "no-content-padding",
-                              });
-                            }}
-                            text="Clear backlog"
-                          />
-                        </div>
-                        <div className={s.BundleTableHeaderRight}>
-                        </div>
-                      </div>
-
-                      <div style={{ maxHeight: "600rem", minHeight: "300rem", display: 'flex' }}>
-                        <Table<'bundle' | 'actions', BundleKey, {}>
-                          itemNamePlural={'bundles'}
-                          tableId={"bundle-overview-table"}
-                          dataLoader={{
-                            cacheKey: dataLoaderCacheKey,
-                            loader: async () => {
-                              const req = new pbn.GetBundlesRequest();
-                              req.setNamespace(namespaceFqn);
-
-                              const res = await namespaceServiceClient.getBundles(req, null);
-                              const bundles = res.getBundlesList().map(v => v as BundleKey);
-
-                              return bundles
-                            }
-                          }}
-                          columns={{
-                            columns: {
-                              bundle: {
-                                title: 'Bundle',
-                                render: (bundleKey) =>
-                                  <div className={s.BundleCell}>{bundleKey}</div>
-                              },
-                              actions: {
-                                title: 'Actions',
-                                render: (bundleKey: BundleKey) =>
-                                  <div className={s.ActionsCell}>
-                                    <SmallButton
-                                      type="regular"
-                                      onClick={() => {
-                                        modals.push({
-                                          id: "split-bundle",
-                                          title: `Split bundle`,
-                                          content: (
-                                            <SplitBundle
-                                              namespaceFqn={namespaceFqn}
-                                              bundleKey={bundleKey}
-                                            />
-                                          ),
-                                          styleMode: "no-content-padding",
-                                        });
-                                      }}
-                                      text="Split"
-                                    />
-                                    <SmallButton
-                                      type="regular"
-                                      onClick={() => {
-                                        modals.push({
-                                          id: "unload-bundle",
-                                          title: `Unload bundle`,
-                                          content: (
-                                            <UnloadBundle
-                                              namespaceFqn={namespaceFqn}
-                                              bundleKey={bundleKey}
-                                            />
-                                          ),
-                                          styleMode: "no-content-padding",
-                                        });
-                                      }}
-                                      text="Unload"
-                                    />
-                                    <SmallButton
-                                      type="danger"
-                                      onClick={() => {
-                                        modals.push({
-                                          id: "clear-backlog-bundle",
-                                          title: `Clear bundle backlog`,
-                                          content: (
-                                            <ClearBacklogBundle
-                                              namespaceFqn={namespaceFqn}
-                                              bundleKey={bundleKey}
-                                            />
-                                          ),
-                                          styleMode: "no-content-padding",
-                                        });
-                                      }}
-                                      text="Clear backlog"
-                                    />
-                                  </div>
-                              }
-                            },
-                            defaultConfig: [
-                              { columnKey: 'bundle', visibility: 'visible', stickyTo: 'left', width: 300 },
-                              { columnKey: 'actions', visibility: 'visible', width: 300 },
-                            ],
-                          }}
-                          getId={d => d}
-                          autoRefresh={{ intervalMs: 5000 }}
-                        />
-                      </div>
-
-                    </TabContent>
-                  );
-                })}
+                <Markdown markdown={markdownData} />
               </div>
             </div>
           ) : (
-            <NothingToShow reason={'no-items-found'} />
+            <NothingToShow reason={'no-items-found'}/>
           )
         }
       </div>

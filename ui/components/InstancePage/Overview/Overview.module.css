@@ -1,4 +1,21 @@
 .Overview {
+  display: flex;
+  flex-direction: row;
+  min-height: 100%;
+}
+
+.LeftPane {
+  flex: 1 0 60%;
+  min-width: 640rem;
+  border-right: 1px solid var(--border-color);
+  padding: 24rem 12rem;
+}
+
+.RightPane {
+  flex: 1 0 40%;;
+  display: flex;
+  flex-direction: column;
+  padding: 24rem 12rem;
 }
 
 .Section {
@@ -17,9 +34,15 @@
   margin-bottom: 8rem;
 }
 
-.LeftPane {
-  width: 55%;
-  min-width: 640rem;
-  border-right: 1px solid var(--border-color);
-  padding: 24rem 12rem;
+.MarkdownTitle {
+  padding: 12rem 0;
+  font-size: 16rem;
+  font-weight: var(--font-weight-bold);
 }
+
+.Markdown iframe {
+  border: none;
+}
+
+
+

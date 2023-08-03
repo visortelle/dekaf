@@ -9,7 +9,13 @@ import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Cluster from "./Cluster/Cluster";
 import NothingToShow from "../../../ui/NothingToShow/NothingToShow";
 
-const Clusters: React.FC = () => {
+type ClustersProps = {
+  setClusters: React.Dispatch<React.SetStateAction<string[] | undefined>>
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>
+}
+
+const Clusters: React.FC<ClustersProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { clustersServiceClient } = GrpcClient.useContext();
 
@@ -28,9 +34,15 @@ const Clusters: React.FC = () => {
         return [];
       }
 
-      return res.getClustersList();
+      let clusterList = res.getClustersList();
+      props.setClusters(clusterList);
+      props.setActiveTab(clusterList.at(0) ?? "")
+
+      return clusterList;
     }
   );
+
+  props.setIsLoading(isLoading);
 
   if (clustersError) {
     notifyError(`Unable to get clusters list. ${clustersError}`);

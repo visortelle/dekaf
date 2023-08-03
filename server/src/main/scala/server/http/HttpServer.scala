@@ -2,7 +2,6 @@ package server.http
 
 import _root_.config.{Config, readConfig}
 import _root_.pulsar_auth
-import _root_.pulsar_auth.PulsarAuthRoutes.setCookieAndSuccess
 import _root_.pulsar_auth.{PulsarAuthRoutes, defaultPulsarAuth}
 import io.javalin.Javalin
 import io.javalin.http.staticfiles.{Location, StaticFileConfig}
@@ -10,7 +9,6 @@ import io.javalin.rendering.template.JavalinFreemarker
 import jakarta.servlet.ServletConfig
 import jakarta.servlet.http.HttpServletRequest
 import org.eclipse.jetty.client.api.Request
-import org.eclipse.jetty.http.HttpHeader
 import org.eclipse.jetty.proxy.AsyncProxyServlet
 import org.eclipse.jetty.servlet.ServletHolder
 import zio.*
@@ -35,6 +33,28 @@ object HttpServer:
             }
         }
     }
+
+    /*
+    For future use, if we want to proxy websockets for Grafana live.
+    Possible solution:
+        https://github.com/klemela/switch-over-proxy/blob/3dfadc9972855629fdaff2fe9615cf01ac7cb2f3/src/main/java/fi/csc/chipster/proxy/WebSocketProxyServlet.java
+
+    private class WebSocketProxyServlet extends JettyWebSocketServlet {
+        private var authHeaderValue: String = _
+
+        override def init(config: ServletConfig): Unit = {
+            super.init(config)
+            authHeaderValue = config.getServletContext.getAttribute("authHeaderValue").asInstanceOf[String]
+        }
+
+        override def configure(factory: JettyWebSocketServletFactory): Unit = {
+            factory.setCreator((req, res) => {
+                new WebSocketListener() {
+
+                }
+            })
+        }
+    } */
 
     def createApp(appConfig: Config): Javalin =
 

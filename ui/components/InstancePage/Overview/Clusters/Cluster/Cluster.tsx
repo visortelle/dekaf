@@ -9,13 +9,6 @@ import useSWR from "swr";
 import {help} from "./help"
 import NoData from "../../../../ui/NoData/NoData";
 import ClusterTable from "../../../../ui/ClusterTable/ClusterTable";
-import rehypeRaw from "rehype-raw";
-import rehypeSanitize from "rehype-sanitize/index";
-import { defaultSchema } from "rehype-sanitize";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import * as AppContext from "../../../../app/contexts/AppContext";
-import {GetInstanceMarkdownRequest} from "../../../../../grpc-web/tools/teal/pulsar/ui/markdown/v1/markdown_pb";
 
 export type ClusterProps = {
   cluster: string;
@@ -41,47 +34,9 @@ export type ColumnKey =
 
 
 const Cluster: React.FC<ClusterProps> = (props) => {
-  const { config } = AppContext.useContext();
   const {notifyError} = Notifications.useContext();
   const {clustersServiceClient} = GrpcClient.useContext();
-  const {markdownServiceClient} = GrpcClient.useContext();
-  const [markdownData, setMarkdownData] = React.useState<string>('');
 
-  const schema = {
-    ...defaultSchema,
-    tagNames: [...defaultSchema.tagNames!, 'iframe'],
-    attributes: {
-      ...defaultSchema.attributes,
-      iframe: ['src', 'width', 'height', 'frameborder']
-    }
-  }
-
-  useEffect(() => {
-    const fetchMarkdownData = async () => {
-      const req = new GetInstanceMarkdownRequest();
-      req.setInstanceUrl(config.pulsarInstance.webServiceUrl);
-      req.setClusterName(props.cluster);
-
-      const res = await markdownServiceClient.getInstanceMarkdown(req, null)
-        .catch(err => notifyError(`Unable to get cluster markdown. ${err.getMessage()}`));
-
-      if (res === undefined) {
-        return "";
-      }
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get cluster markdown. ${res.getStatus()?.getMessage()}`);
-        return "";
-      }
-
-      return res.getMarkdown();
-    };
-
-    fetchMarkdownData().then(markdown => {
-      console.log(markdown.toString());
-      setMarkdownData(markdown.toString());
-    });
-  }, []);
 
   const {data: cluster, error: clusterError} = useSWR(
     swrKeys.pulsar.clusters.cluster._({cluster: props.cluster}),
@@ -214,14 +169,6 @@ const Cluster: React.FC<ClusterProps> = (props) => {
           }
         }}
       />
-
-      <div className={s.Markdown}>
-        <ReactMarkdown
-          rehypePlugins={[rehypeRaw, [rehypeSanitize, schema]]}
-          remarkPlugins={[remarkGfm]}
-          children={markdownData}
-        />
-      </div>
     </div>
   );
 };

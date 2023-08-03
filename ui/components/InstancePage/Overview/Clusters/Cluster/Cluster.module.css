@@ -5,7 +5,3 @@
 .HighlightedCell:hover {
   cursor: help;
 }
-
-.Markdown iframe {
-  border: 1px solid var(--border-color);
-}

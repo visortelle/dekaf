@@ -15,6 +15,40 @@ message GetInstanceMarkdownResponse {
     google.rpc.Status status = 2;
 }
 
+message GetTenantMarkdownRequest {
+    string tenant = 1;
+    string cluster_name = 2;
+}
+
+message GetTenantMarkdownResponse {
+    string markdown = 1;
+    google.rpc.Status status = 2;
+}
+
+message GetNamespaceMarkdownRequest {
+    string namespace_fqn = 1;
+    string cluster_name = 2;
+}
+
+message GetNamespaceMarkdownResponse {
+    string markdown = 1;
+    google.rpc.Status status = 2;
+}
+
+message GetTopicMarkdownRequest {
+    string namespace_fqn = 1;
+    string topic_fqn = 2;
+    string cluster_name = 3;
+}
+
+message GetTopicMarkdownResponse {
+    string markdown = 1;
+    google.rpc.Status status = 2;
+}
+
 service MarkdownService {
     rpc GetInstanceMarkdown(GetInstanceMarkdownRequest) returns (GetInstanceMarkdownResponse) {}
+    rpc GetTenantMarkdown(GetTenantMarkdownRequest) returns (GetTenantMarkdownResponse) {}
+    rpc GetNamespaceMarkdown(GetNamespaceMarkdownRequest) returns (GetNamespaceMarkdownResponse) {}
+    rpc GetTopicMarkdown(GetTopicMarkdownRequest) returns (GetTopicMarkdownResponse) {}
 }

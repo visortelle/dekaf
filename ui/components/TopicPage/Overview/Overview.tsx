@@ -14,6 +14,10 @@ import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
 import JsonView from "../../ui/JsonView/JsonView";
+import {
+  GetTopicMarkdownRequest
+} from "../../../grpc-web/tools/teal/pulsar/ui/markdown/v1/markdown_pb";
+import Markdown from "../../ui/Markdown/Markdown";
 
 export type OverviewProps = {
   tenant: string;
@@ -30,9 +34,39 @@ const Overview: React.FC<OverviewProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { topicServiceClient } = GrpcClient.useContext();
   const i18n = I18n.useContext();
+  const {markdownServiceClient} = GrpcClient.useContext();
+  const [markdownData, setMarkdownData] = React.useState<string>('');
   const [activeTab, setActiveTab] = React.useState<TabKey>('stats');
 
+  const namespaceFqn = `${props.tenant}/${props.namespace}`
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+
+  React.useEffect(() => {
+    const fetchTopicMarkdownData = async (cluster: string) => {
+      const req = new GetTopicMarkdownRequest();
+      req.setNamespaceFqn(namespaceFqn);
+      req.setTopicFqn(topicFqn)
+      req.setClusterName(cluster);
+
+      const res = await markdownServiceClient.getTopicMarkdown(req, null)
+        .catch(err => notifyError(`Unable to get topic markdown. ${err.getMessage()}`));
+
+      if (res === undefined) {
+        return "";
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get topic markdown. ${res.getStatus()?.getMessage()}`);
+        return "";
+      }
+
+      return res.getMarkdown();
+    };
+
+    fetchTopicMarkdownData("All").then(markdown => {
+      setMarkdownData(markdown.toString());
+    });
+  }, []);
 
   const { data: statsResponse, error: statsError, isLoading: isStatsLoading } = useSwr(
     swrKeys.pulsar.customApi.metrics.topicsStats._([topicFqn]),
@@ -113,9 +147,10 @@ const Overview: React.FC<OverviewProps> = (props) => {
 
   return (
     <div className={s.Overview}>
-      <div className={s.Section}>
-        <table className={st.Table}>
-          <tbody>
+      <div className={s.LeftPane}>
+        <div className={s.Section}>
+          <table className={st.Table}>
+            <tbody>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Topic Name</td>
               <Td>{props.topic}</Td>
@@ -146,57 +181,62 @@ const Overview: React.FC<OverviewProps> = (props) => {
                 </Td>
               </tr>
             )}
-          </tbody>
-        </table>
-      </div>
+            </tbody>
+          </table>
+        </div>
 
-      <div style={{ marginBottom: '24rem' }}>
-        <strong>Properties</strong>
-        <div className={s.JsonViewer}>
-          <JsonView
-            value={Object.fromEntries(properties.entries())}
-            height={'110rem'}
-            width={'100%'}
-          />
+        <div style={{ marginBottom: '24rem' }}>
+          <strong>Properties</strong>
+          <div className={s.JsonViewer}>
+            <JsonView
+              value={Object.fromEntries(properties.entries())}
+              height={'110rem'}
+              width={'100%'}
+            />
+          </div>
+        </div>
+
+        <div className={s.Section}>
+          <div className={s.Tabs}>
+            <Tabs<TabKey>
+              activeTab={activeTab}
+              onActiveTabChange={setActiveTab}
+              tabs={{
+                'stats': {
+                  title: 'Statistics',
+                  render: () => (
+                    <div className={s.Tab}>
+                      <Statistics
+                        tenant={props.tenant}
+                        namespace={props.namespace}
+                        topic={props.topic}
+                        topicType={props.topicType}
+                        topicsStatsRes={statsResponse}
+                      />
+                    </div>
+                  )
+                },
+                'stats-internal': {
+                  title: 'Internal Statistics',
+                  render: () => (
+                    <div className={s.Tab}>
+                      <InternalStatistics
+                        tenant={props.tenant}
+                        namespace={props.namespace}
+                        topic={props.topic}
+                        topicType={props.topicType}
+                      />
+                    </div>
+                  )
+                }
+              }}
+            />
+          </div>
         </div>
       </div>
-
-      <div className={s.Section}>
-        <div className={s.Tabs}>
-          <Tabs<TabKey>
-            activeTab={activeTab}
-            onActiveTabChange={setActiveTab}
-            tabs={{
-              'stats': {
-                title: 'Statistics',
-                render: () => (
-                  <div className={s.Tab}>
-                    <Statistics
-                      tenant={props.tenant}
-                      namespace={props.namespace}
-                      topic={props.topic}
-                      topicType={props.topicType}
-                      topicsStatsRes={statsResponse}
-                    />
-                  </div>
-                )
-              },
-              'stats-internal': {
-                title: 'Internal Statistics',
-                render: () => (
-                  <div className={s.Tab}>
-                    <InternalStatistics
-                      tenant={props.tenant}
-                      namespace={props.namespace}
-                      topic={props.topic}
-                      topicType={props.topicType}
-                    />
-                  </div>
-                )
-              }
-            }}
-          />
-        </div>
+      <div className={s.RightPane}>
+        <div className={s.MarkdownTitle}>Markdown</div>
+        <Markdown markdown={markdownData} />
       </div>
     </div>
   );

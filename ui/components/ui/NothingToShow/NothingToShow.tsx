@@ -3,7 +3,7 @@ import s from './NothingToShow.module.css'
 
 export type NothingToShowProps = {
   content?: ReactNode;
-  reason?: 'no-items-found' | 'loading-in-progress';
+  reason?: 'no-items-found' | 'loading-in-progress' | 'no-content-found';
 };
 
 const NothingToShow: React.FC<NothingToShowProps> = (props) => {
@@ -11,6 +11,9 @@ const NothingToShow: React.FC<NothingToShowProps> = (props) => {
   switch (props.reason) {
     case 'loading-in-progress':
       content = 'Loading...';
+      break;
+    case 'no-content-found':
+      content="No content found.";
       break;
     default:
       content = 'No items found.';
