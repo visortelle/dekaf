@@ -1,3 +1,14 @@
 .Overview {
   padding: 24rem 12rem 0 12rem;
 }
+
+.Section {
+  margin-bottom: 24rem;
+}
+
+.MarkdownTitle {
+  border-bottom: 1px solid var(--border-color);
+  padding: 12rem 0;
+  font-size: 16rem;
+  font-weight: var(--font-weight-bold);
+}

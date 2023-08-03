@@ -1,6 +1,8 @@
 import React, { ReactNode, useState } from 'react';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../local-storage-keys';
+import {defaultSchema} from "rehype-sanitize";
+import {Schema} from "hast-util-sanitize";
 
 type BuildInfo = {
   name: string,
@@ -25,6 +27,7 @@ export type AutoRefresh = { type: 'enabled' | 'disabled' };
 
 export type Value = {
   config: Config,
+  markdownSchema: Schema,
   performanceOptimizations: PerformanceOptimizations
   setPerformanceOptimizations: (performanceOptimizations: PerformanceOptimizations) => void;
   autoRefresh: AutoRefresh;
@@ -44,6 +47,14 @@ const defaultValue: Value = {
       builtAtString: '',
       builtAtMillis: 0
     },
+  },
+  markdownSchema: {
+    ...defaultSchema,
+    tagNames: [...defaultSchema.tagNames!, 'iframe'],
+    attributes: {
+      ...defaultSchema.attributes,
+      iframe: ['src', 'width', 'height', 'frameborder']
+    }
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },
   setPerformanceOptimizations: () => undefined,

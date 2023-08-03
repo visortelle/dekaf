@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import s from "./Overview.module.css";
 import useSWR, { useSWRConfig } from "swr";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
@@ -18,17 +18,45 @@ import {
   TenantInfo,
   UpdateTenantRequest,
 } from "../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb";
-import { H1, H2 } from "../../ui/H/H";
+import Markdown from "../../ui/Markdown/Markdown";
+import {GetTenantMarkdownRequest} from "../../../grpc-web/tools/teal/pulsar/ui/markdown/v1/markdown_pb";
 
 export type ConfigurationProps = {
   tenant: string;
 };
 
 const Configuration: React.FC<ConfigurationProps> = (props) => {
-  const { clustersServiceClient, tenantServiceClient } =
-    GrpcClient.useContext();
+  const { clustersServiceClient, tenantServiceClient } = GrpcClient.useContext();
+  const {markdownServiceClient} = GrpcClient.useContext();
+  const [markdownData, setMarkdownData] = React.useState<string>('');
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
+
+  useEffect(() => {
+    const fetchMarkdownData = async (cluster: string) => {
+      const req = new GetTenantMarkdownRequest();
+      req.setTenant(props.tenant);
+      req.setClusterName(cluster);
+
+      const res = await markdownServiceClient.getTenantMarkdown(req, null)
+        .catch(err => notifyError(`Unable to get tenant markdown. ${err.getMessage()}`));
+
+      if (res === undefined) {
+        return "";
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get tenant markdown. ${res.getStatus()?.getMessage()}`);
+        return "";
+      }
+
+      return res.getMarkdown();
+    };
+
+    fetchMarkdownData("All").then(markdown => {
+      setMarkdownData(markdown.toString());
+    });
+  }, []);
 
   const onUpdateError = (err: string) =>
     notifyError(`Can't update tenant configuration. ${err}`);
@@ -255,29 +283,35 @@ const Configuration: React.FC<ConfigurationProps> = (props) => {
 
   return (
     <div className={s.Overview}>
-      <ConfigurationTable
-        fields={[
-          {
-            id: "allowedClusters",
-            title: "Allowed clusters",
-            description: (
-              <span>List of clusters that this tenant is restricted on.</span>
-            ),
-            input: allowedClustersInput,
-            isRequired: true,
-          },
-          {
-            id: "adminRoles",
-            title: "Admin roles",
-            description: (
-              <span>
+      <div className={s.Section}>
+        <ConfigurationTable
+          fields={[
+            {
+              id: "allowedClusters",
+              title: "Allowed clusters",
+              description: (
+                <span>List of clusters that this tenant is restricted on.</span>
+              ),
+              input: allowedClustersInput,
+              isRequired: true,
+            },
+            {
+              id: "adminRoles",
+              title: "Admin roles",
+              description: (
+                <span>
                 List of authenticated roles allowed to manage this tenant.
               </span>
-            ),
-            input: adminRolesInput,
-          },
-        ]}
-      />
+              ),
+              input: adminRolesInput,
+            },
+          ]}
+        />
+      </div>
+      <div className={s.Section}>
+        <div className={s.MarkdownTitle}>Markdown</div>
+        <Markdown markdown={markdownData} />
+      </div>
     </div>
   );
 };
