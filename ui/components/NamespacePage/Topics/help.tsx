@@ -15,6 +15,7 @@ export const help: Partial<Record<ColumnKey, ReactNode>> = {
   ),
   producersCount: "The number of producers for this topic.",
   subscriptionsCount: "The number of subscriptions for this topic.",
+  consumersCount: "The number of consumers for this topic.",
   msgRateIn: "The sum of all local and replication publishers' publish rates (message per second).",
   msgThroughputIn: "The sum of all local and replication publishers' publish rates (byte per second).",
   msgRateOut: "The sum of all local and replication consumers' dispatch rates (message per second).",

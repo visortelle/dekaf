@@ -48,6 +48,7 @@
   justify-content: center;
   text-align: center;
   border-top: 1px solid var(--border-color);
+  min-width: max-content;
 }
 
 .Tab:hover:not(.ActiveTab) {
