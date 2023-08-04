@@ -26,15 +26,6 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
-      - name: Use cache
-        id: cache-all
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.local/share/containers/
-            /nix/store
-          key: cache-all
-
       #- name: Setting up debug session with SSH
       #  uses: lhotari/action-upterm@v1
 
