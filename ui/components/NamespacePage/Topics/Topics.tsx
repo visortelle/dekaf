@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import s from './Topics.module.css'
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
@@ -21,39 +21,40 @@ import {
 } from "../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
 
 export type ColumnKey =
-  'topicName' |
-  'persistency' |
-  'partitionsCount' |
-  'producersCount' |
-  'subscriptionsCount' |
-  'msgRateIn' |
-  'msgThroughputIn' |
-  'msgRateOut' |
-  'msgThroughputOut' |
-  'bytesInCounter' |
-  'msgInCounter' |
-  'bytesOutCounter' |
-  'msgOutCounter' |
-  'averageMsgSize' |
-  'isMsgChunkPublished' |
-  'storageSize' |
-  'backlogSize' |
-  'earliestMsgPublishTimeInBacklogs' |
-  'offloadedStorageSize' |
-  'waitingPublishers' |
-  'replicatorsCount' |
-  'deduplicationStatus' |
-  'topicEpoch' |
-  'nonContiguousDeletedMessagesRanges' |
-  'nonContiguousDeletedMessagesRangesSerializedSize' |
-  'lastCompactionRemovedEventCount' |
-  'lastCompactionSucceedTimestamp' |
-  'lastCompactionFailedTimestamp' |
-  'lastCompactionDurationTimeInMills' |
-  'ownerBroker' |
-  'delayedMessageIndexSizeInBytes' |
-  'partitioning' |
-  'properties';
+    'topicName' |
+    'persistency' |
+    'partitionsCount' |
+    'producersCount' |
+    'subscriptionsCount' |
+    'consumersCount' |
+    'msgRateIn' |
+    'msgThroughputIn' |
+    'msgRateOut' |
+    'msgThroughputOut' |
+    'bytesInCounter' |
+    'msgInCounter' |
+    'bytesOutCounter' |
+    'msgOutCounter' |
+    'averageMsgSize' |
+    'isMsgChunkPublished' |
+    'storageSize' |
+    'backlogSize' |
+    'earliestMsgPublishTimeInBacklogs' |
+    'offloadedStorageSize' |
+    'waitingPublishers' |
+    'replicatorsCount' |
+    'deduplicationStatus' |
+    'topicEpoch' |
+    'nonContiguousDeletedMessagesRanges' |
+    'nonContiguousDeletedMessagesRangesSerializedSize' |
+    'lastCompactionRemovedEventCount' |
+    'lastCompactionSucceedTimestamp' |
+    'lastCompactionFailedTimestamp' |
+    'lastCompactionDurationTimeInMills' |
+    'ownerBroker' |
+    'delayedMessageIndexSizeInBytes' |
+    'partitioning' |
+    'properties';
 
 type DataEntry = {
   fqn: string,
@@ -169,6 +170,20 @@ const Topics: React.FC<TopicsProps> = (props) => {
     return statsToLazyData(topicStatsResponse, topicPropertiesResponse);
   }
 
+  const getConsumersCount = React.useCallback((topicStats: TopicStats) => {
+        let consumersCount = 0;
+
+        if (topicStats) {
+            topicStats.getSubscriptionsMap().forEach((entry, _) => {
+                consumersCount += entry.getConsumersList().length
+            })
+        } else {
+            notifyError('Unable to count consumers count.');
+        }
+
+        return consumersCount;
+    }, []);
+
   return (
     <div className={s.Topics}>
       <div className={s.Table}>
@@ -200,7 +215,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'string') {
                       return true
-                    };
+                    }
 
                     return de.name.toLowerCase().includes(filterValue.value.toLowerCase());
                   },
@@ -242,6 +257,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
                     {v}
                   </Link>
                 )),
+              },
+              consumersCount: {
+                  title: 'Consumers',
+                  isLazy: true,
+                  render: (de, ld) => i18n.withVoidDefault(ld ? getConsumersCount(ld?.stats) : 0, v => v),
               },
               persistency: {
                 title: 'Persistency',
@@ -445,6 +465,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
               { columnKey: 'partitionsCount', visibility: 'visible', width: 60 },
               { columnKey: 'subscriptionsCount', visibility: 'visible', width: 100 },
               { columnKey: 'producersCount', visibility: 'visible', width: 100 },
+              { columnKey: 'consumersCount', visibility: 'visible', width: 100},
               { columnKey: 'msgRateIn', visibility: 'visible', width: 100 },
               { columnKey: 'msgRateOut', visibility: 'visible', width: 100 },
               { columnKey: 'msgThroughputIn', visibility: 'visible', width: 100 },

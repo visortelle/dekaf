@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback, useRef} from 'react';
 import s from './Namespaces.module.css'
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -34,9 +34,10 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
   const { namespaceServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const i18n = I18n.useContext();
+  const failedRequestsCount = useRef<number>(0);
 
   const dataLoaderCacheKey = [`namespaces-table-${props.tenant}`];
-  const dataLoader = async () => {
+  const dataLoader = useCallback(async () => {
     const req = new pb.ListNamespacesRequest();
     req.setTenant(props.tenant);
 
@@ -48,7 +49,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
     }
 
     return dataEntriesFromPb(res);
-  }
+  }, [props.tenant]);
 
   return (
     <div className={s.Page}>
@@ -127,7 +128,11 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
               .catch((err) => notifyError(`Unable to get topics count. ${err}`));
 
             if (topicsCountRes?.getStatus()?.getCode() !== Code.OK) {
-              notifyError(`Unable to get topics count. ${topicsCountRes?.getStatus()?.getMessage()}`);
+              // Introduced counter of failed requests because debounced items in Table are always late after page change
+              if (failedRequestsCount.current > 3) {
+                notifyError(`Unable to get topics count. ${topicsCountRes?.getStatus()?.getMessage()}`);
+              }
+              failedRequestsCount.current++;
             }
 
             const topicsCountMap = topicsCountRes === undefined ?

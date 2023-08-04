@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import * as s from './Statistics.module.css'
 import * as st from '../../../ui/SimpleTable/SimpleTable.module.css';
 import Td from '../../../ui/SimpleTable/Td';
@@ -6,6 +6,8 @@ import { routes } from '../../../routes';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import Link from '../../../ui/Link/Link';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
+import {SubscriptionStats} from "../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
+import * as Notifications from "../../../app/contexts/Notifications";
 
 export type StatisticsProps = {
   tenant: string;
@@ -18,7 +20,22 @@ export type StatisticsProps = {
 const Statistics: React.FC<StatisticsProps> = (props) => {
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
   const i18n = I18n.useContext();
+  const { notifyError } = Notifications.useContext();
   const topicStats = props.topicsStatsRes.getTopicStatsMap().get(topicFqn) || props.topicsStatsRes.getPartitionedTopicStatsMap().get(topicFqn)?.getStats();
+
+  const getConsumersCount = useCallback(() => {
+    let consumersCount = 0;
+
+    if (topicStats) {
+        topicStats.getSubscriptionsMap().forEach((entry, _) => {
+            consumersCount += entry.getConsumersList().length
+        })
+    } else {
+        notifyError('Unable to count consumers count.');
+    }
+
+    return consumersCount;
+  }, [topicStats]);
 
   return (
     <div className={s.Statistics}>
@@ -56,6 +73,10 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
                 </Link>
               ))}
             </Td>
+          </tr>
+          <tr className={st.Row}>
+            <td className={st.HighlightedCell}>Consumers</td>
+            <Td>{i18n.withVoidDefault(getConsumersCount(), i18n.formatCountRate)}</Td>
           </tr>
           <tr className={st.Row}>
             <td className={st.HighlightedCell}>Msg Rate In</td>
