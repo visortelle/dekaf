@@ -59,6 +59,8 @@
 
               export LD_LIBRARY_PATH="${runtimeLibraryPath}"
 
+              alias docker="podman"
+
               source ./dev-env.sh
             '';
 
