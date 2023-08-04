@@ -1,2 +1,7 @@
 **/node_modules
 **/target
+**/.bloop
+**/.idea
+**/.vscode
+**/.metals
+**/.bsp

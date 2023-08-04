@@ -38,10 +38,10 @@ jobs:
       #- name: Setting up debug session with SSH
       #  uses: lhotari/action-upterm@v1
 
-      - name: Build app
-        run: |
-          nix build -L
-          nix-shell --run 'make build-app'
+      # - name: Build app
+      #   run: |
+      #     nix build -L
+      #     nix-shell --run 'make build-app'
 
       - name: Build Docker images
         run: |

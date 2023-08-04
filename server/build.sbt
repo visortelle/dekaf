@@ -9,7 +9,6 @@ maintainer := "kiryl_valkovich@teal.tools"
 
 val javaOpts = Seq(
     "-Dpolyglot.engine.WarnInterpreterOnly=false",
-    "-Xss4M", // otherwise build fails
 
     // Fix "Cannot get DNS TTL settings from sun.net.InetAddressCachePolicy"
     // https://github.com/apache/pulsar/issues/15349
@@ -19,7 +18,7 @@ val javaOpts = Seq(
 
 scalacOptions ++= Seq(
     "-Xmax-inlines",
-    "50" // https://github.com/softwaremill/magnolia/issues/374
+    "50", // https://github.com/softwaremill/magnolia/issues/374
 )
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT

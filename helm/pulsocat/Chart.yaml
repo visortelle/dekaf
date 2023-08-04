@@ -1,0 +1,8 @@
+apiVersion: v2
+name: pulsocat
+description: Pulsocat is a UI for Apache Pulsar
+
+type: application
+
+version: 0.1.0
+appVersion: "0.1.0"

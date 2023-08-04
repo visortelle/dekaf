@@ -28,7 +28,7 @@ RUN cp ./demoapp/config.yaml /demoapp/
 
 ################################################################
 
-FROM ghcr.io/graalvm/graalvm-community:20.0.1
+FROM ghcr.io/graalvm/graalvm-community:20.0.2
 
 RUN useradd --user-group --system --create-home --no-log-init pulsocat
 USER pulsocat
