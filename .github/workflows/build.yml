@@ -38,7 +38,6 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Build Docker images
+        shell: bash
         run: |
-          whoami
-          pwd
           nix-shell --run 'make build-docker-images'
