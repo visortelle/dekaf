@@ -32,6 +32,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   const playButtonState = (props.sessionState === 'new' || props.sessionState === 'paused') ? 'play' : 'pause';
 
   let playButtonOnClick: () => void;
+
   switch (props.sessionState) {
     case 'new': playButtonOnClick = () => props.onSessionStateChange('initializing'); break;
     case 'initializing': playButtonOnClick = () => undefined; break;
@@ -60,7 +61,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             svgIcon={resetIcon}
             onClick={() => props.onStopSession()}
             type={'danger'}
-            disabled={props.sessionState === 'new'}
+            disabled={props.sessionState === 'new' || props.sessionState === 'initializing'}
           />
         </div>
         <div className={s.Control}>
