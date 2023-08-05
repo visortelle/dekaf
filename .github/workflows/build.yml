@@ -2,7 +2,36 @@ on:
   - push
 
 jobs:
-  build:
+  build-and-test-application:
+    strategy:
+      matrix:
+        include:
+          - runner: arm64
+            arch: arm64
+          - runner: x64
+            arch: x64
+
+    runs-on: [self-hosted, "${{ matrix.runner }}"]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Installing Nix
+        uses: cachix/install-nix-action@v22
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          install_options: --no-daemon
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Build app
+        run: |
+          nix build -L
+          nix-shell --run 'make build-app'
+
+  build-docker-images:
     strategy:
       matrix:
         include:
@@ -29,14 +58,6 @@ jobs:
           install_options: --no-daemon
           extra_nix_config: |
             experimental-features = nix-command flakes
-
-      # - name: Setting up debug session with SSH
-      #  uses: lhotari/action-upterm@v1
-
-      # - name: Build app
-      #   run: |
-      #     nix build -L
-      #     nix-shell --run 'make build-app'
 
       - name: Setting up Docker Buildx
         uses: docker/setup-buildx-action@v1
