@@ -18,6 +18,7 @@ val javaOpts = Seq(
 
 scalacOptions ++= Seq(
     "-Xmax-inlines",
+    "-J-Xss4m",
     "100", // https://github.com/softwaremill/magnolia/issues/374
 )
 
