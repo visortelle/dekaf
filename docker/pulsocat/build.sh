@@ -25,7 +25,7 @@ docker buildx build \
   --push \
   --pull \
   --progress plain \
-  -t "${image_branch_tag}-${tag_suffix}" \
-  -t "${image_version_tag}-${tag_suffix}" \
+  -t "${image_branch_tag}${tag_suffix}" \
+  -t "${image_version_tag}${tag_suffix}" \
   -f "${this_dir}/Dockerfile" \
   "${repo_dir}"
