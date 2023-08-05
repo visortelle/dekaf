@@ -6,9 +6,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: ["arm64", "x64"]
+          - runner: arm64
+            arch: arm64
+          - runner: x64
+            arch: x64
 
-    runs-on: [self-hosted, "${{matrix.arch}}"]
+    runs-on: [self-hosted, "${{ matrix.runner }}"]
 
     env:
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
