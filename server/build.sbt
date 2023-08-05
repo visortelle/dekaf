@@ -18,7 +18,7 @@ val javaOpts = Seq(
 
 scalacOptions ++= Seq(
     "-Xmax-inlines",
-    "50", // https://github.com/softwaremill/magnolia/issues/374
+    "100", // https://github.com/softwaremill/magnolia/issues/374
 )
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT
@@ -102,7 +102,7 @@ lazy val root = project
 
 // Protobuf stuff. See also /project/scalapb.sbt
 libraryDependencies ++= Seq(
-    "com.google.protobuf" % "protobuf-java" % "3.22.2",
+    "com.google.protobuf" % "protobuf-java" % "3.23.4",
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
