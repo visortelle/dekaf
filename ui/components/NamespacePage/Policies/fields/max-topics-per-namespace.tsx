@@ -5,7 +5,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import Input from '../../../ui/Input/Input';
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
@@ -26,7 +26,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -38,7 +38,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetMaxTopicsPerNamespaceRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getMaxTopicsPerNamespace(req, {});
+      const res = await namespacePoliciesServiceClient.getMaxTopicsPerNamespace(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get max topics per namespace: ${res.getStatus()?.getMessage()}`);
         return;
@@ -83,7 +83,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveMaxTopicsPerNamespaceRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeMaxTopicsPerNamespace(req, {});
+          const res = await namespacePoliciesServiceClient.removeMaxTopicsPerNamespace(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max topics per namespace: ${res.getStatus()?.getMessage()}`);
           }
@@ -101,7 +101,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setMaxTopicsPerNamespace(value.maxTopicsPerNamespace);
           }
 
-          const res = await namespaceServiceClient.setMaxTopicsPerNamespace(req, {});
+          const res = await namespacePoliciesServiceClient.setMaxTopicsPerNamespace(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max topic per namespace: ${res.getStatus()?.getMessage()}`);
           }

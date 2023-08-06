@@ -4,7 +4,7 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../../ui/ConfigurationTable/ConfigurationTable";
 import DurationInput from '../../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import Select from '../../../../ui/Select/Select';
-import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import * as generalHelp from "../../../../ui/help";
 import { swrKeys } from '../../../../swrKeys';
 import WithUpdateConfirmation from '../../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
@@ -34,7 +34,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -48,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetOffloadPoliciesRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getOffloadPolicies(req, {});
+      const res = await namespacePoliciesServiceClient.getOffloadPolicies(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get offload policies: ${res.getStatus()?.getMessage()}`);
         return;
@@ -76,11 +76,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         let res;
         if (req instanceof pb.RemoveOffloadPoliciesRequest) {
-          res = await namespaceServiceClient.removeOffloadPolicies(req, {})
+          res = await namespacePoliciesServiceClient.removeOffloadPolicies(req, {})
             .catch(err => notifyError(`Unable to set offload policies: ${err}`));
         }
         if (req instanceof pb.SetOffloadPoliciesRequest) {
-          res = await namespaceServiceClient
+          res = await namespacePoliciesServiceClient
             .setOffloadPolicies(req, {}).catch(err => notifyError(`Unable to set offload policies: ${err}`));
         }
 

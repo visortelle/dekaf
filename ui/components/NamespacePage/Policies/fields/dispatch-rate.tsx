@@ -6,13 +6,13 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Select from '../../../ui/Select/Select';
 import Input from "../../../ui/Input/Input";
 import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 
 const policy = 'dispatchRate';
 
@@ -32,7 +32,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -44,7 +44,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetDispatchRateRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getDispatchRate(req, {});
+      const res = await namespacePoliciesServiceClient.getDispatchRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get dispatch rate. ${res.getStatus()?.getMessage()}`);
         return;
@@ -90,7 +90,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveDispatchRateRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeDispatchRate(req, {});
+          const res = await namespacePoliciesServiceClient.removeDispatchRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set dispatch rate. ${res.getStatus()?.getMessage()}`);
           }
@@ -104,7 +104,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setPeriodInSecond(value.periodInSecond);
           req.setIsRelativeToPublishRate(value.isRelativeToPublishRate);
 
-          const res = await namespaceServiceClient.setDispatchRate(req, {});
+          const res = await namespacePoliciesServiceClient.setDispatchRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set dispatch rate. ${res.getStatus()?.getMessage()}`);
           }

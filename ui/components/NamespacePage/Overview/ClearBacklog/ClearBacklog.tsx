@@ -3,7 +3,7 @@ import * as Modals from "../../../app/contexts/Modals/Modals";
 import * as Notifications from "../../../app/contexts/Notifications";
 import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as pbn from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
-import {Code} from "../../../../grpc-web/google/rpc/code_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialog";
 import s from "../ClearBacklogBundle/ClearBacklogBundle.module.css";
 
@@ -11,10 +11,10 @@ export type ClearBacklogProps = {
   namespaceFqn: string,
 }
 
-const ClearBacklog: React.FC<ClearBacklogProps> = ({namespaceFqn}) => {
+const ClearBacklog: React.FC<ClearBacklogProps> = ({ namespaceFqn }) => {
   const modals = Modals.useContext();
-  const {notifyError, notifySuccess} = Notifications.useContext();
-  const {namespaceServiceClient} = GrpcClient.useContext();
+  const { notifyError, notifySuccess } = Notifications.useContext();
+  const { namespaceServiceClient } = GrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
   const switchForceDelete = () => {

@@ -9,7 +9,7 @@ import MemorySizeInput from "../../../ui/ConfigurationTable/MemorySizeInput/Memo
 import DurationInput from "../../../ui/ConfigurationTable/DurationInput/DurationInput";
 import { swrKeys } from "../../../swrKeys";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
-import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import stringify from "safe-stable-stringify";
 import React from "react";
@@ -46,7 +46,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -57,7 +57,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     async () => {
       const req = new pb.GetBacklogQuotasRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-      const res = await namespaceServiceClient.getBacklogQuotas(req, {});
+      const res = await namespacePoliciesServiceClient.getBacklogQuotas(req, {});
 
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get backlog quotas for namespace. ${res.getStatus()?.getMessage()}`);
@@ -114,7 +114,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     }
     req.setMessageAge(messageAgeBacklogQuotaPb)
 
-    const res = await namespaceServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
+    const res = await namespacePoliciesServiceClient.setBacklogQuotas(req, {}).catch(err => notifyError(`Unable to update backlog quota policy. ${err}`));
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to update backlog quota policy. ${res.getStatus()?.getMessage()}`);
     }
@@ -123,7 +123,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
-      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
+      const res = await namespacePoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }
@@ -133,7 +133,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.RemoveBacklogQuotaRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
-      const res = await namespaceServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
+      const res = await namespacePoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
       if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to remove backlog quota policy. ${res.getStatus()?.getMessage()}`);
       }

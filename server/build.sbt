@@ -19,7 +19,6 @@ val javaOpts = Seq(
 scalacOptions ++= Seq(
     "-Xmax-inlines",
     "100", // https://github.com/softwaremill/magnolia/issues/374
-    "-J-Xss4m",
 )
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT

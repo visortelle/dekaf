@@ -1,7 +1,7 @@
 import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
@@ -56,7 +56,7 @@ export type FieldInputProps = {
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
   const [validationError, setValidationError] = useState<ValidationError>(undefined);
@@ -69,7 +69,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetRetentionRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getRetention(req, {});
+      const res = await namespacePoliciesServiceClient.getRetention(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get retention policy: ${res.getStatus()?.getMessage()}`);
         return;
@@ -130,7 +130,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveRetentionRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeRetention(req, {});
+          const res = await namespacePoliciesServiceClient.removeRetention(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set retention policy: ${res.getStatus()?.getMessage()}`);
             return;
@@ -143,7 +143,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setRetentionSizeInMb(0);
           req.setRetentionTimeInMinutes(0);
 
-          const res = await namespaceServiceClient.setRetention(req, {});
+          const res = await namespacePoliciesServiceClient.setRetention(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set retention policy: ${res.getStatus()?.getMessage()}`);
           }
@@ -155,7 +155,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setRetentionSizeInMb(-1);
           req.setRetentionTimeInMinutes(-1);
 
-          const res = await namespaceServiceClient.setRetention(req, {});
+          const res = await namespacePoliciesServiceClient.setRetention(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set retention policy: ${res.getStatus()?.getMessage()}`);
           }
@@ -177,7 +177,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setRetentionTimeInMinutes(Math.max(Math.floor(value.retentionTimeInMinutes.value), 1));
           }
 
-          const res = await namespaceServiceClient.setRetention(req, {});
+          const res = await namespacePoliciesServiceClient.setRetention(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set retention policy: ${res.getStatus()?.getMessage()}`);
           }

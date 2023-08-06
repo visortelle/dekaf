@@ -6,14 +6,14 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Select from '../../../ui/Select/Select';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import stringify from 'safe-stable-stringify';
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import A from "../../../ui/A/A";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 
 const policy = 'deduplicationSnapshotInterval';
 
@@ -28,7 +28,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -40,7 +40,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetDeduplicationSnapshotIntervalRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getDeduplicationSnapshotInterval(req, {});
+      const res = await namespacePoliciesServiceClient.getDeduplicationSnapshotInterval(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
       }
@@ -77,7 +77,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         if (value.type === 'inherited-from-broker-config') {
           const req = new pb.RemoveDeduplicationSnapshotIntervalRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-          const res = await namespaceServiceClient.removeDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to set deduplication snapshot interval: ${err}`));
+          const res = await namespacePoliciesServiceClient.removeDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to set deduplication snapshot interval: ${err}`));
           if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
           }
@@ -93,7 +93,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.SetDeduplicationSnapshotIntervalRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           req.setInterval(Math.floor(value.intervalSeconds));
-          const res = await namespaceServiceClient.setDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to set deduplication snapshot interval: ${err}`));
+          const res = await namespacePoliciesServiceClient.setDeduplicationSnapshotInterval(req, {}).catch((err) => notifyError(`Unable to set deduplication snapshot interval: ${err}`));
           if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set deduplication snapshot interval: ${res.getStatus()?.getMessage()}`);
           }
