@@ -16,6 +16,10 @@ build-docker-images:
 create-multiarch-docker-manifest:
 	cd ./docker/pulsocat && make create-multiarch-docker-manifest
 
+.PHONY: publish-helm-chart
+publish-helm-chart:
+	cd ./helm && make publish
+
 .PHONY: dev
 dev:
 	nix develop
