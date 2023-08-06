@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pulsocat-helm.fullname" . }}
+  name: {{ include "_chart-name.fullname" . }}
   labels:
-    {{- include "pulsocat-helm.labels" . | nindent 4 }}
+    {{- include "_chart-name.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "pulsocat-helm.selectorLabels" . | nindent 4 }}
+    {{- include "_chart-name.selectorLabels" . | nindent 4 }}
