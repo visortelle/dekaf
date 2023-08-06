@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pulsocat.fullname" . }}
+  name: {{ include "pulsocat-helm.fullname" . }}
   labels:
-    {{- include "pulsocat.labels" . | nindent 4 }}
+    {{- include "pulsocat-helm.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "pulsocat.selectorLabels" . | nindent 6 }}
+      {{- include "pulsocat-helm.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,7 +16,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "pulsocat.selectorLabels" . | nindent 8 }}
+        {{- include "pulsocat-helm.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

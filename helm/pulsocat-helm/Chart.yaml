@@ -1,8 +1,7 @@
 apiVersion: v2
-name: pulsocat
+name: pulsocat-helm
 description: Pulsocat is a UI for Apache Pulsar
 
 type: application
 
-version: 0.1.0
-appVersion: "0.1.0"
+version: 0.2.0-beta.1

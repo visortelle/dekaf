@@ -64,7 +64,7 @@ jobs:
         run: |
           nix-shell --run 'make build-docker-images'
 
-  create-multiarch-docker-manifest:
+  post-build-docker-images:
     runs-on: self-hosted
     needs: build-docker-images
 
@@ -90,3 +90,7 @@ jobs:
         run: |
           nix-shell --run 'make create-multiarch-docker-manifest'
 
+      - name: Publish Helm chart
+        shell: bash
+        run: |
+          nix-shell --run 'make publish-helm-chart'
