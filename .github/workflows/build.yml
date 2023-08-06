@@ -23,8 +23,7 @@ jobs:
   #       with:
   #         nix_path: nixpkgs=channel:nixos-unstable
   #         install_options: --no-daemon
-  #         extra_nix_config: |
-  #           experimental-features = nix-command flakes
+  #         extra_nix_config: experimental-features = nix-command flakes
 
   #     - name: Build app
   #       run: |
@@ -56,13 +55,11 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           install_options: --no-daemon
-          extra_nix_config: |
-            experimental-features = nix-command flakes
+          extra_nix_config: experimental-features = nix-command flakes
 
       - name: Build Docker images
         shell: bash
-        run: |
-          nix-shell --run 'make build-docker-images'
+        run: nix-shell --run 'make build-docker-images'
 
   post-build-docker-images:
     runs-on: self-hosted
@@ -82,15 +79,12 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           install_options: --no-daemon
-          extra_nix_config: |
-            experimental-features = nix-command flakes
+          extra_nix_config: experimental-features = nix-command flakes
 
       - name: Create multiarch Docker manifest
         shell: bash
-        run: |
-          nix-shell --run 'make create-multiarch-docker-manifest'
+        run: nix-shell --run 'make create-multiarch-docker-manifest'
 
       - name: Publish Helm chart
         shell: bash
-        run: |
-          nix-shell --run 'make publish-helm-chart'
+        run: nix-shell --run 'make publish-helm-chart'

@@ -22,7 +22,6 @@ const chartYaml = `${tmpChartRoot}/Chart.yaml`;
 try {
   console.info(`Setting ${chartName} as the name of Helm Chart.`);
   const chartFiles = readDirRecursive(tmpDir);
-  console.log(chartFiles);
   chartFiles.forEach(file => {
     const fileContent = fs.readFileSync(file, 'utf8');
     const newFileContent = fileContent.replace(/_chart-name/g, chartName);
