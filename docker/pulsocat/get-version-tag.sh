@@ -10,7 +10,7 @@ repo_dir=${this_dir}/../..
 set +e
 git --no-pager tag --contains | grep +* &> /dev/null
 is_public_release=$?
-if [ "$is_public_release" == "true" ]; then
+if [ $is_public_release -eq 0 ]; then
   docker_repo="pulsocat"
 else
   docker_repo="pulsocat-dev"
