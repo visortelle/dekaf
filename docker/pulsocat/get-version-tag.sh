@@ -8,7 +8,7 @@ repo_dir=${this_dir}/../..
 # If this is a public release, use the public repo.
 # Otherwise, use the dev repo.
 set +e
-git describe --tags
+git describe --tags &> /dev/null
 is_public_release=$?
 if [ $is_public_release -eq 0 ]; then
   docker_repo="pulsocat"
