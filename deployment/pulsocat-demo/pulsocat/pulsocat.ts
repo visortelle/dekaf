@@ -23,8 +23,7 @@ export const createResources = (props: { k8sProvider: k8s.Provider }) => {
   );
 
   const helmRelease = new k8s.helm.v3.Release(`${project}-${app}-${stack}`, {
-    chart: "../../helm/pulsocat",
-    version: "0.1.0",
+    chart: "../../helm/pulsocat-helm",
     namespace: namespace.metadata.name,
     skipAwait: true,
     forceUpdate: true,
