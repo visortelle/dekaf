@@ -9,7 +9,7 @@ const appFqn = `${project}-${app}-${stack}`;
 
 const gitRev = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).toString().trim();
 
-export const createResources = (props: { k8sProvider: k8s.Provider }) => {
+export const createResources = () => {
   const namespace = new k8s.core.v1.Namespace(
     appFqn,
     {
@@ -19,9 +19,6 @@ export const createResources = (props: { k8sProvider: k8s.Provider }) => {
           "istio-injection": "enabled"
         }
       }
-    },
-    {
-      provider: props.k8sProvider
     }
   );
 
@@ -36,7 +33,6 @@ export const createResources = (props: { k8sProvider: k8s.Provider }) => {
       nodeSelector: { purpose: "memory-optimized" }
     }
   }, {
-    provider: props.k8sProvider,
     dependsOn: [namespace],
   });
 
@@ -69,7 +65,7 @@ export const createResources = (props: { k8sProvider: k8s.Provider }) => {
         ]
       }
     },
-    { provider: props.k8sProvider, dependsOn: [helmRelease] }
+    { dependsOn: [helmRelease] }
   );
 
   const virtualService = new k8s.apiextensions.CustomResource(
@@ -99,7 +95,7 @@ export const createResources = (props: { k8sProvider: k8s.Provider }) => {
         ]
       }
     },
-    { provider: props.k8sProvider, dependsOn: [helmRelease] }
+    { dependsOn: [helmRelease] }
   );
 
   return {
