@@ -20,4 +20,5 @@ echo "Logging into Helm OCI registry."
 echo $DOCKER_PASS | helm registry login --password-stdin --username $DOCKER_USER docker.io
 
 pulumi stack select --create $pulumi_stack
+pulumi refresh --yes --stack $pulumi_stack
 pulumi up --stack $pulumi_stack --yes --skip-preview --non-interactive
