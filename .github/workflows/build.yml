@@ -63,7 +63,7 @@ jobs:
 
   post-build-docker-images:
     runs-on: self-hosted
-    needs: build-docker-images
+    # needs: build-docker-images
 
     env:
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
