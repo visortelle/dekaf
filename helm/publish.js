@@ -9,8 +9,9 @@ const thisDir = __dirname;
 const chartRoot = `${thisDir}/pulsocat-helm`;
 
 const publicReleaseVersion = execSync('git --no-pager tag --contains', { encoding: 'utf-8' }).toString().trim().replace(/^v/, '');
+const gitRev = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).toString().trim();
 const chartName = publicReleaseVersion ? 'pulsocat-helm' : 'pulsocat-helm-dev';
-const chartVersion = publicReleaseVersion ? publicReleaseVersion : `0.0.0-${publicReleaseVersion}`;
+const chartVersion = publicReleaseVersion ? publicReleaseVersion : `0.0.0-${gitRev}`;
 
 const tmpDir = path.join(os.tmpdir(), `pulsocat-helm-${new Date().getTime()}`);
 console.info(`Copying Helm Chart to ${tmpDir}`);
