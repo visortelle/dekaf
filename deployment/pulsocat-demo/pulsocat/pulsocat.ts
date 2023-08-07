@@ -22,85 +22,85 @@ export const createResources = () => {
     }
   );
 
-  // const helmRelease = new k8s.helm.v3.Release(`${project}-${app}-${stack}`, {
-  //   chart: "oci://docker.io/tealtools/pulsocat-helm-dev",
-  //   version: `0.0.0-${gitRev}`,
-  //   namespace: namespace.metadata.name,
-  //   skipAwait: true,
-  //   forceUpdate: true,
-  //   createNamespace: false,
-  //   values: {
-  //     fullnameOverride: appFqn,
-  //     nodeSelector: { purpose: "memory-optimized" }
-  //   }
-  // }, {
-  //   dependsOn: [namespace],
-  // });
+  const helmRelease = new k8s.helm.v3.Release(`${project}-${app}-${stack}`, {
+    chart: "oci://docker.io/tealtools/pulsocat-helm-dev",
+    version: `0.0.0-${gitRev}`,
+    namespace: namespace.metadata.name,
+    skipAwait: true,
+    forceUpdate: true,
+    createNamespace: false,
+    values: {
+      fullnameOverride: appFqn,
+      nodeSelector: { purpose: "memory-optimized" }
+    }
+  }, {
+    dependsOn: [namespace],
+  });
 
-  // const gateway = new k8s.apiextensions.CustomResource(
-  //   appFqn,
-  //   {
-  //     apiVersion: "networking.istio.io/v1beta1",
-  //     kind: "Gateway",
-  //     metadata: {
-  //       name: appFqn,
-  //       namespace: namespace.metadata.name
-  //     },
-  //     spec: {
-  //       selector: {
-  //         "istio": `ingressgateway`
-  //       },
-  //       servers: [
-  //         {
-  //           port: {
-  //             number: 443,
-  //             name: "https",
-  //             protocol: "HTTPS"
-  //           },
-  //           hosts: [`${appFqn}.dev.teal.tools`],
-  //           tls: {
-  //             mode: "SIMPLE",
-  //             credentialName: `wildcard.dev.teal.tools-tls`,
-  //           }
-  //         }
-  //       ]
-  //     }
-  //   },
-  //   { dependsOn: [helmRelease] }
-  // );
+  const gateway = new k8s.apiextensions.CustomResource(
+    appFqn,
+    {
+      apiVersion: "networking.istio.io/v1beta1",
+      kind: "Gateway",
+      metadata: {
+        name: appFqn,
+        namespace: namespace.metadata.name
+      },
+      spec: {
+        selector: {
+          "istio": `ingressgateway`
+        },
+        servers: [
+          {
+            port: {
+              number: 443,
+              name: "https",
+              protocol: "HTTPS"
+            },
+            hosts: [`${appFqn}.dev.teal.tools`],
+            tls: {
+              mode: "SIMPLE",
+              credentialName: `wildcard.dev.teal.tools-tls`,
+            }
+          }
+        ]
+      }
+    },
+    { dependsOn: [helmRelease] }
+  );
 
-  // const virtualService = new k8s.apiextensions.CustomResource(
-  //   appFqn,
-  //   {
-  //     apiVersion: "networking.istio.io/v1beta1",
-  //     kind: "VirtualService",
-  //     metadata: {
-  //       name: appFqn,
-  //       namespace: namespace.metadata.name,
-  //     },
-  //     spec: {
-  //       hosts: ["*"],
-  //       gateways: [gateway.metadata.name],
-  //       http: [
-  //         {
-  //           match: [{ uri: { prefix: "/" } }],
-  //           route: [
-  //             {
-  //               destination: {
-  //                 port: { number: 80 },
-  //                 host: appFqn
-  //               }
-  //             }
-  //           ]
-  //         }
-  //       ]
-  //     }
-  //   },
-  //   { dependsOn: [helmRelease] }
-  // );
+  const virtualService = new k8s.apiextensions.CustomResource(
+    appFqn,
+    {
+      apiVersion: "networking.istio.io/v1beta1",
+      kind: "VirtualService",
+      metadata: {
+        name: appFqn,
+        namespace: namespace.metadata.name,
+      },
+      spec: {
+        hosts: ["*"],
+        gateways: [gateway.metadata.name],
+        http: [
+          {
+            match: [{ uri: { prefix: "/" } }],
+            route: [
+              {
+                destination: {
+                  port: { number: 80 },
+                  host: appFqn
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    { dependsOn: [helmRelease] }
+  );
 
   return {
     namespace,
-    // helmRelease,
+    helmRelease,
   };
 }
