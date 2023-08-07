@@ -44,7 +44,7 @@ function publishChart(name, version) {
   }
 }
 
-const gitRev = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).toString().trim();
+const gitRev = execSync('git rev-parse --short=8 HEAD', { encoding: 'utf-8' }).toString().trim();
 const publicReleaseVersion = execSync('git --no-pager tag --contains', { encoding: 'utf-8' }).toString().trim().replace(/^v/, '');
 
 publishChart('pulsocat-helm-dev', `0.0.0-${gitRev}`);
