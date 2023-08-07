@@ -27,7 +27,7 @@ function publishChart(name, version) {
 
     console.info(`Setting ${publicReleaseVersion} as the version of Helm Chart.`);
     const chartYamlContent = fs.readFileSync(chartYaml, 'utf8');
-    const newChartYamlContent = chartYamlContent.replace(/^version: .*/gm, `version: ${chartVersion}`);
+    const newChartYamlContent = chartYamlContent.replace(/^version: .*/gm, `version: ${version}`);
     fs.writeFileSync(chartYaml, newChartYamlContent, { encoding: 'utf8' });
 
     console.info(`Pushing Helm Chart to the OCI registry...`);
