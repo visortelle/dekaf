@@ -1,10 +1,13 @@
 import * as pulumi from "@pulumi/pulumi";
+import { execSync } from "child_process";
 import * as k8s from "@pulumi/kubernetes";
 
 const app = "ui";
 const project = pulumi.getProject();
 const stack = pulumi.getStack();
 const appFqn = `${project}-${app}-${stack}`;
+
+const gitRev = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).toString().trim();
 
 export const createResources = (props: { k8sProvider: k8s.Provider }) => {
   const namespace = new k8s.core.v1.Namespace(
@@ -23,7 +26,8 @@ export const createResources = (props: { k8sProvider: k8s.Provider }) => {
   );
 
   const helmRelease = new k8s.helm.v3.Release(`${project}-${app}-${stack}`, {
-    chart: "../../helm/pulsocat-helm",
+    chart: "oci://docker.io/tealtools/pulsocat-helm-dev",
+    version: `0.0.0-${gitRev}`,
     namespace: namespace.metadata.name,
     skipAwait: true,
     forceUpdate: true,
