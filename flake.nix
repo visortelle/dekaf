@@ -79,7 +79,7 @@
               protoc-gen-grpc-web
               protoc-gen-scala
 
-              pkgs.pulumi
+              pkgs.pulumi-bin
               pkgs.kubectl
               pkgs.kubernetes-helm
               pkgs.awscli2
