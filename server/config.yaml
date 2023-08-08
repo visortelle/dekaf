@@ -15,14 +15,22 @@ proxies:
       - key: Authorization
         value: Bearer glsa_e9RlLRPKMQAIsWKN80wrtlJ32CwuRm0L_66691009
 
+auth:
+  oauth2:
+    issuerUrl: "https://auth.streamnative.cloud/"
+    privateKey: '{"type":"sn_service_account","client_id":"RxDLk8gJzIPI9CgHOR2oWMOQjwWrrgbv","client_secret":"_1fhZ6g4NshTkwmrllU1F75aAwtW2m0WVEEiKssRr1ZalF4jD8fl0mfSGz1MWT9b","client_email":"free@o-xy6ek.auth.streamnative.cloud","issuer_url":"https://auth.streamnative.cloud/"}'
+    audience: "urn:sn:pulsar:o-xy6ek:free"
+  jwt:
+    token: sdfsdfsdf.sdfsdfsdfsdf.sdfsdfsdfdf
+
 resourcesInfoMarkdowns:
   vars:
     toolUrl: http://localhost:3000
-    instanceUrl: metrics.streamnative.cloud:443
-  instance: /ui/markdowns/instance.md
-  tenant: /ui/markdowns/tenant.md
-  namespace: /ui/markdowns/namespace.md
-  topic: /ui/markdowns/topic.md
+    instance: metrics.streamnative.cloud:443
+  instanceMarkdown: /ui/markdowns/instance.md
+  tenantMarkdown: /ui/markdowns/tenant.md
+  namespaceMarkdown: /ui/markdowns/namespace.md
+  topicMarkdown: /ui/markdowns/topic.md
 
 pulsarInstance:
   name: ${PULSOCAT_PULSAR_INSTANCE_NAME}

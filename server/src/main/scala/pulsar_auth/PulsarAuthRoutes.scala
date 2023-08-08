@@ -86,16 +86,15 @@ object PulsarAuthRoutes:
                             ctx.status(400)
                             ctx.result("Credentials name shouldn't be blank")
                         else
-                            val newCredentials = pulsarAuth.credentials - credentialsName
-                            val newPulsarAuth = pulsarAuth.copy(credentials = newCredentials, current = newCredentials.keys.headOption.orElse(Some("Default")))
+                            credentialsName match
+                                case credentialsName: DefaultCredentialsName =>
+                                    ctx.status(400)
+                                    ctx.result(s"Can't delete default credentials")
+                                case credentialsName: String =>
+                                    val newCredentials = pulsarAuth.credentials - credentialsName
+                                    val newPulsarAuth = pulsarAuth.copy(credentials = newCredentials, current = newCredentials.keys.headOption.orElse(Some("Default")))
 
-                            if newPulsarAuth.credentials.isEmpty ||
-                                (newPulsarAuth.credentials.size == 1 &&
-                                    newPulsarAuth.credentials.head._1 == "Default") then
-                                setCookieAndSuccess(ctx, defaultPulsarAuth)
-                            else
-
-                                setCookieAndSuccess(ctx, newPulsarAuth)
+                                    setCookieAndSuccess(ctx, newPulsarAuth)
         )
     def setCookieAndSuccess(ctx: io.javalin.http.Context, pulsarAuth: PulsarAuth): Unit =
         val newCookieHeader = pulsar_auth.pulsarAuthToCookie(pulsarAuth)

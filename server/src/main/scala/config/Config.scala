@@ -89,6 +89,29 @@ case class LicenseConfig(
     token: String,
 )
 
+case class OAuth2Config(
+    @describe("URL identifying token's originator.")
+    issuerUrl: String,
+    @describe("Includes jsn containing the client_id and client_secret and other parameters.")
+    privateKey: String,
+    @describe("Targets recipients of the token.")
+    audience: Option[String],
+    @describe("Defines permissions for accessing user's data.")
+    scope: Option[String]
+)
+
+case class JwtConfig(
+    @describe("JWT token.")
+    token: String
+)
+
+case class AuthConfig(
+    @describe("OAuth2 configuration.")
+    oauth2: Option[OAuth2Config],
+    @describe("JWT configuration.")
+    jwt: Option[JwtConfig]
+)
+
 case class Header(
     @describe("The key of the header.")
     key: String,
@@ -109,13 +132,13 @@ case class ResourcesInfoMarkdownsConfig(
     @describe("Variables to be used in the markdowns.")
     vars: Map[String, String],
     @describe("The markdown for instance page.")
-    instance: String,
+    instanceMarkdown: String,
     @describe("The markdown for tenant page.")
-    tenant: String,
+    tenantMarkdown: String,
     @describe("The markdown for namespace page.")
-    namespace: String,
+    namespaceMarkdown: String,
     @describe("The markdown for topic page.")
-    topic: String,
+    topicMarkdown: String,
 )
 
 case class Config(
@@ -133,6 +156,8 @@ case class Config(
     proxies: List[ProxyConfig],
     @describe("Configuration to provide embedded dashboards to the app.")
     resourcesInfoMarkdowns: ResourcesInfoMarkdownsConfig,
+    @describe("Authentication configuration")
+    auth: Option[AuthConfig],
     @describe("TLS configuration")
     tls: Option[TlsConfig] = None,
     @describe("Internal configuration. Not intended to be changed by the user.")
@@ -161,11 +186,12 @@ val defaultConfig = Config(
     proxies = List.empty,
     resourcesInfoMarkdowns = ResourcesInfoMarkdownsConfig(
         vars = Map.empty,
-        instance = "",
-        tenant = "",
-        namespace = "",
-        topic = ""
+        instanceMarkdown = "",
+        tenantMarkdown = "",
+        namespaceMarkdown = "",
+        topicMarkdown = ""
     ),
+    auth = None,
     tls = None,
 )
 

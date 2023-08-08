@@ -13,14 +13,14 @@ import scala.io.Source
 class MarkdownServiceImpl(appConfig: Config) extends MarkdownServiceGrpc.MarkdownService {
     override def getInstanceMarkdown(request: GetInstanceMarkdownRequest): Future[GetInstanceMarkdownResponse] =
         try {
-            val instanceSourceStream = getClass.getResourceAsStream(appConfig.resourcesInfoMarkdowns.instance)
+            val instanceSourceStream = getClass.getResourceAsStream(appConfig.resourcesInfoMarkdowns.instanceMarkdown)
             val instanceSource = Source.fromInputStream(instanceSourceStream)
 
             val instanceMarkdown = instanceSource
                 .mkString
                 .replace("{{publicUrl}}", appConfig.publicUrl)
                 .replace("{{clusterName}}", request.clusterName)
-                .replace("{{instanceUrl}}", appConfig.resourcesInfoMarkdowns.vars("instanceUrl"))
+                .replace("{{instance}}", appConfig.resourcesInfoMarkdowns.vars("instance"))
                 .replace("{{proxyResourceName}}",
                     appConfig.proxies
                         .find(_.to == appConfig.resourcesInfoMarkdowns.vars("toolUrl"))
@@ -47,7 +47,7 @@ class MarkdownServiceImpl(appConfig: Config) extends MarkdownServiceGrpc.Markdow
 
     override def getTenantMarkdown(request: GetTenantMarkdownRequest): Future[GetTenantMarkdownResponse] =
         try {
-            val tenantSourceStream = getClass.getResourceAsStream(appConfig.resourcesInfoMarkdowns.tenant)
+            val tenantSourceStream = getClass.getResourceAsStream(appConfig.resourcesInfoMarkdowns.tenantMarkdown)
             val tenantSource = Source.fromInputStream(tenantSourceStream)
 
             val tenantMarkdown = tenantSource
@@ -81,7 +81,7 @@ class MarkdownServiceImpl(appConfig: Config) extends MarkdownServiceGrpc.Markdow
 
     override def getNamespaceMarkdown(request: GetNamespaceMarkdownRequest): Future[GetNamespaceMarkdownResponse] =
         try {
-            val namespaceSourceStream = getClass.getResourceAsStream(appConfig.resourcesInfoMarkdowns.namespace)
+            val namespaceSourceStream = getClass.getResourceAsStream(appConfig.resourcesInfoMarkdowns.namespaceMarkdown)
             val namespaceSource = Source.fromInputStream(namespaceSourceStream)
 
             val namespaceMarkdown = namespaceSource
@@ -115,7 +115,7 @@ class MarkdownServiceImpl(appConfig: Config) extends MarkdownServiceGrpc.Markdow
 
     override def getTopicMarkdown(request: GetTopicMarkdownRequest): Future[GetTopicMarkdownResponse] =
         try {
-            val topicSourceStream = getClass.getResourceAsStream(appConfig.resourcesInfoMarkdowns.topic)
+            val topicSourceStream = getClass.getResourceAsStream(appConfig.resourcesInfoMarkdowns.topicMarkdown)
             val topicSource = Source.fromInputStream(topicSourceStream)
 
             val topicMarkdown = topicSource
