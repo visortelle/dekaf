@@ -8,6 +8,7 @@ const stack = pulumi.getStack();
 const appFqn = `${project}-${app}-${stack}`;
 
 const gitRev = execSync('git rev-parse --short=8 HEAD', { encoding: 'utf-8' }).toString().trim();
+const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).toString().trim();
 
 export const createResources = () => {
   const namespace = new k8s.core.v1.Namespace(
@@ -38,7 +39,7 @@ export const createResources = () => {
       image: {
         repository: "tealtools/pulsocat-dev",
         pullPolicy: "Always",
-        tag: `0.0.0-${gitRev}`,
+        tag: gitBranch,
       }
     }
   }, {
