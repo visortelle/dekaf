@@ -15,7 +15,9 @@ static_resources:
   listeners:
     - name: listener_0
       address:
-        socket_address: { address: 0.0.0.0, port_value: ${config.listenPort} }
+        socket_address:
+          address: "::"
+          port_value: ${config.listenPort}
       filter_chains:
         - filters:
           - name: envoy.filters.network.http_connection_manager
