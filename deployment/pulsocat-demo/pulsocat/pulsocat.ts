@@ -30,6 +30,7 @@ export const createResources = () => {
     forceUpdate: true,
     createNamespace: false,
     name: appFqn,
+    replace: true,
     values: {
       fullnameOverride: appFqn,
       nodeSelector: { purpose: "memory-optimized" },
