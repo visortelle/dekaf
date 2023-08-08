@@ -11,7 +11,7 @@ spec:
       {{- include "_chart-name.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.pulsocat.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -23,36 +23,51 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.pulsocat.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- toYaml .Values.pulsocat.securityContext | nindent 12 }}
+          image: "{{ .Values.pulsocat.image.repository }}:{{ .Values.pulsocat.image.tag }}"
+          imagePullPolicy: {{ .Values.pulsocat.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: 8090
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
               port: http
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
+            {{- toYaml .Values.pulsocat.resources | nindent 12 }}
+          {{- with .Values.pulsocat.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: pulsocat-config
+              mountPath: "/pulsocat/config.yaml"
+              readOnly: true
+      volumes:
+        - name: pulsocat-config
+          configMap:
+            name: {{ include "_chart-name.fullname" . }}-pulsocat-config
+            items:
+              - key: config.yaml
+                path: config.yaml
+      {{- with .Values.pulsocat.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.pulsocat.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.pulsocat.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

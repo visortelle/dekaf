@@ -1,56 +1,64 @@
-image:
-  repository: tealtools/pulsocat
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
-
-imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+imagePullSecrets: []
 
-podAnnotations: {}
+pulsocat:
+  config: |
+    port: 8090
+    publicUrl: ""
 
-podSecurityContext: {}
-  # fsGroup: 2000
+    library:
+      path: "./library"
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+    license:
+      id: ${PULSOCAT_LICENSE_ID}
+      token: ${PULSOCAT_LICENSE_TOKEN}
 
-service:
-  type: ClusterIP
-  port: 80
+    pulsarInstance:
+      name: "default"
+      color: "transparent"
+      brokerServiceUrl: ""
+      webServiceUrl: ""
 
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  env: []
 
-resources:
-  limits:
-    cpu: 2000m
-    memory: 4096Mi
-  requests:
-    cpu: 1000m
-    memory: 2048Mi
+  image:
+    repository: tealtools/pulsocat
+    pullPolicy: IfNotPresent
+    tag: "latest"
 
-nodeSelector: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
-tolerations: []
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
 
-affinity: {}
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4096Mi
+    requests:
+      cpu: 1000m
+      memory: 2048Mi
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local

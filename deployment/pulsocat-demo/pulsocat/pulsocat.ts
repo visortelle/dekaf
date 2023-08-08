@@ -36,10 +36,16 @@ export const createResources = () => {
       fullnameOverride: appFqn,
       nodeSelector: { purpose: "memory-optimized" },
       imagePullSecrets: [{ name: "image-pull-secret" }],
-      image: {
-        repository: "tealtools/pulsocat-dev",
-        pullPolicy: "Always",
-        tag: gitBranch,
+      pulsocat: {
+        image: {
+          repository: "tealtools/pulsocat-dev",
+          pullPolicy: "Always",
+          tag: gitBranch,
+        },
+        env: [
+          { name: "PULSOCAT_LICENSE_ID", value: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6" },
+          { name: "PULSOCAT_LICENSE_TOKEN", value: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3" },
+        ]
       }
     }
   }, {

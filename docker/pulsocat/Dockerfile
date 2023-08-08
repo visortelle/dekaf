@@ -43,13 +43,8 @@ RUN useradd --user-group --system --create-home --no-log-init pulsocat
 USER pulsocat
 WORKDIR /pulsocat
 
-ENV PULSOCAT_PORT=8090
-ENV PULSOCAT_PUBLIC_URL=http://localhost:8090
-ENV PULSOCAT_LIBRARY_PATH=/pulsocat/lib
-ENV PULSOCAT_PULSAR_INSTANCE_NAME=default
-ENV PULSOCAT_PULSAR_INSTANCE_BROKER_SERVICE_URL=pulsar://localhost:6650
-ENV PULSOCAT_PULSAR_INSTANCE_WEB_SERVICE_URL=http://localhost:8080
-
 COPY --from=builder --chown=pulsocat:pulsocat /pulsocat .
+
+EXPOSE 8090
 
 ENTRYPOINT [ "/pulsocat/bin/pulsocat" ]
