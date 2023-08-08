@@ -4,7 +4,11 @@ set -ueo pipefail
 
 this_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-cd "${this_dir}" && npm ci
+is_node_modules_present=$(ls -d "${this_dir}/node_modules" || true)
+if [ -z "$is_node_modules_present" ]; then
+  echo "Installing dependencies."
+  cd "${this_dir}" && npm ci
+fi
 
 git_branch=$(git rev-parse --abbrev-ref HEAD)
 echo "${git_branch}" | iconv -t ascii//TRANSLIT | sed -E s/[^a-zA-Z0-9]+/-/g | sed -E s/^-+\|-+$//g | tr A-Z a-z
