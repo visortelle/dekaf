@@ -51,6 +51,7 @@ spec:
           volumeMounts:
             - name: pulsocat-config
               mountPath: "/pulsocat/config.yaml"
+              subPath: "config.yaml"
               readOnly: true
       volumes:
         - name: pulsocat-config
