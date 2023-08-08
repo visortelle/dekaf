@@ -29,9 +29,16 @@ export const createResources = () => {
     skipAwait: true,
     forceUpdate: true,
     createNamespace: false,
+    name: appFqn,
     values: {
       fullnameOverride: appFqn,
-      nodeSelector: { purpose: "memory-optimized" }
+      nodeSelector: { purpose: "memory-optimized" },
+      imagePullSecrets: [{ name: "image-pull-secret" }],
+      image: {
+        repository: "tealtools/pulsocat-dev",
+        pullPolicy: "Always",
+        tag: `0.0.0-${gitRev}`,
+      }
     }
   }, {
     dependsOn: [namespace],

@@ -21,3 +21,13 @@ docker manifest create \
 
 docker manifest push $image_branch_tag
 docker manifest push $image_version_tag
+
+git_branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$git_branch" == "main" ]; then
+  docker manifest create \
+    tealtools/pulsocat:latest \
+    --amend "${image_version_tag}-arm64" \
+    --amend "${image_version_tag}-amd64"
+
+  docker manifest push tealtools/pulsocat:latest
+fi

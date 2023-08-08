@@ -2,68 +2,68 @@ on:
   - push
 
 jobs:
-  # build-and-test-application:
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - runner: arm64
-  #           arch: arm64
-  #         - runner: x64
-  #           arch: x64
+  build-and-test-application:
+    strategy:
+      matrix:
+        include:
+          - runner: arm64
+            arch: arm64
+          - runner: x64
+            arch: x64
 
-  #   runs-on: [self-hosted, "${{ matrix.runner }}"]
+    runs-on: [self-hosted, "${{ matrix.runner }}"]
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-  #     - name: Installing Nix
-  #       uses: cachix/install-nix-action@v22
-  #       with:
-  #         nix_path: nixpkgs=channel:nixos-unstable
-  #         install_options: --no-daemon
-  #         extra_nix_config: experimental-features = nix-command flakes
+      - name: Installing Nix
+        uses: cachix/install-nix-action@v22
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          install_options: --no-daemon
+          extra_nix_config: experimental-features = nix-command flakes
 
-  #     - name: Build app
-  #       run: |
-  #         nix build -L
-  #         nix-shell --run 'make build-and-test-application'
+      - name: Build app
+        run: |
+          nix build -L
+          nix-shell --run 'make build-and-test-application'
 
-  # build-docker-images:
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - runner: arm64
-  #           arch: arm64
-  #         - runner: x64
-  #           arch: x64
+  build-docker-images:
+    strategy:
+      matrix:
+        include:
+          - runner: arm64
+            arch: arm64
+          - runner: x64
+            arch: x64
 
-  #   runs-on: [self-hosted, "${{ matrix.runner }}"]
+    runs-on: [self-hosted, "${{ matrix.runner }}"]
 
-  #   env:
-  #     DOCKER_USER: ${{ secrets.DOCKER_USER }}
-  #     DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+    env:
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-  #     - name: Installing Nix
-  #       uses: cachix/install-nix-action@v22
-  #       with:
-  #         nix_path: nixpkgs=channel:nixos-unstable
-  #         install_options: --no-daemon
-  #         extra_nix_config: experimental-features = nix-command flakes
+      - name: Installing Nix
+        uses: cachix/install-nix-action@v22
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          install_options: --no-daemon
+          extra_nix_config: experimental-features = nix-command flakes
 
-  #     - name: Build Docker images
-  #       shell: bash
-  #       run: nix-shell --run 'make build-docker-images'
+      - name: Build Docker images
+        shell: bash
+        run: nix-shell --run 'make build-docker-images'
 
   post-build-docker-images:
     runs-on: self-hosted
-    # needs: build-docker-images
+    needs: build-docker-images
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -97,4 +97,3 @@ jobs:
       - name: Deploy Pulsocat demo
         shell: bash
         run: nix-shell --run 'cd ./deployment/pulsocat-demo && make deploy'
-
