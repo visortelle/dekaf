@@ -1,17 +1,15 @@
 package pulsar_auth
 
-import java.net.HttpCookie
-import io.circe.*
-import io.circe.parser.decode
-import io.circe.Decoder.Result
-import io.circe.syntax.*
 import cats.syntax.functor.*
-import io.circe.generic.auto.*
+import io.circe.*
+import io.circe.Decoder.Result
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.parser.decode
+import io.circe.syntax.*
 import org.apache.commons.codec.binary.Base64
+
 import java.net.{URLDecoder, URLEncoder}
 import java.nio.charset.StandardCharsets.UTF_8
-
 import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
 
@@ -21,6 +19,8 @@ val validCredentialsName: Regex = "^[a-zA-Z0-9_-]+$".r
 type EmptyCredentialsType = "empty"
 type OAuth2CredentialsType = "oauth2"
 type JwtCredentialsType = "jwt"
+
+type DefaultCredentialsName = "Default" | "DefaultOAuth2" | "DefaultJwt"
 
 type CredentialsName = String
 type CredentialsType = EmptyCredentialsType | OAuth2CredentialsType | JwtCredentialsType
@@ -90,8 +90,8 @@ given credentialsEncoder: Encoder[Credentials] = Encoder.instance {
     case c: JwtCredentials    => c.asJson
 }
 
-given credentialsDecoder: Decoder[Credentials] = new Decoder[Credentials]:
-        final def apply(c: HCursor): Decoder.Result[Credentials] =
+given credentialsDecoder: Decoder[Credentials] = Decoder.instance:
+    cursor =>
             val decoders = List[Decoder[Credentials]](
                 Decoder[EmptyCredentials].widen,
                 Decoder[OAuth2Credentials].widen,
@@ -99,17 +99,43 @@ given credentialsDecoder: Decoder[Credentials] = new Decoder[Credentials]:
             )
 
             decoders
-                .map(decoder => decoder.tryDecode(c))
+                .map(decoder => decoder.tryDecode(cursor))
                 .collectFirst { case Right(value) => Right(value) }
-                .getOrElse(Left(DecodingFailure("Incorrect credentials provided.", c.history)))
+                .getOrElse(Left(DecodingFailure("Incorrect credentials provided.", cursor.history)))
 
 given pulsarAuthEncoder: Encoder[PulsarAuth] = deriveEncoder[PulsarAuth]
 given pulsarAuthDecoder: Decoder[PulsarAuth] = deriveDecoder[PulsarAuth]
 
 val defaultPulsarAuth = PulsarAuth(
-    credentials = Map("Default" -> EmptyCredentials(`type` = "empty")),
+    credentials = getDefaultCredentialsFromConfig,
     current = Some("Default")
 )
+
+def getDefaultCredentialsFromConfig: Map[CredentialsName, Credentials] =
+    val credentialsMap: Map[String, Credentials] = Map("Default" -> EmptyCredentials(`type` = "empty"))
+
+    config.auth match
+        case None => credentialsMap
+        case Some(auth) =>
+            val oauth2Credentials = auth.oauth2.map { oauth2 =>
+                "DefaultOAuth2" -> OAuth2Credentials(
+                    `type` = "oauth2",
+                    issuerUrl = oauth2.issuerUrl,
+                    privateKey = "data:application/json;base64," + Base64.encodeBase64String(oauth2.privateKey.getBytes(UTF_8)),
+                    audience = Some(oauth2.audience.getOrElse("")),
+                    scope = Some(oauth2.scope.getOrElse(""))
+                )
+
+            }
+
+            val jwtCredentials = auth.jwt.map { jwt =>
+                "DefaultJwt" -> JwtCredentials(
+                    `type` = "jwt",
+                    token = jwt.token
+                )
+            }
+
+            credentialsMap ++ oauth2Credentials ++ jwtCredentials
 
 def parsePulsarAuthJson(json: Option[String]): Either[Throwable, PulsarAuth] =
     json match
@@ -130,7 +156,7 @@ def parsePulsarAuthJson(json: Option[String]): Either[Throwable, PulsarAuth] =
                                 name,
                                 cr.copy(
                                     issuerUrl = URLDecoder.decode(cr.issuerUrl, UTF_8),
-                                    privateKey = "data:application/json;base64,"+ URLDecoder.decode(cr.privateKey, UTF_8),
+                                    privateKey = "data:application/json;base64," + URLDecoder.decode(cr.privateKey, UTF_8),
                                     audience = cr.audience.map(audience => URLDecoder.decode(audience, UTF_8)),
                                     scope = cr.scope.map(scope => URLDecoder.decode(scope, UTF_8))
                                 )
