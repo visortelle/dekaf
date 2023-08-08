@@ -2,33 +2,33 @@ on:
   - push
 
 jobs:
-  build-and-test-application:
-    strategy:
-      matrix:
-        include:
-          - runner: arm64
-            arch: arm64
-          - runner: x64
-            arch: x64
+  # build-and-test-application:
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - runner: arm64
+  #           arch: arm64
+  #         - runner: x64
+  #           arch: x64
 
-    runs-on: [self-hosted, "${{ matrix.runner }}"]
+  #   runs-on: [self-hosted, "${{ matrix.runner }}"]
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Installing Nix
-        uses: cachix/install-nix-action@v22
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          install_options: --no-daemon
-          extra_nix_config: experimental-features = nix-command flakes
+  #     - name: Installing Nix
+  #       uses: cachix/install-nix-action@v22
+  #       with:
+  #         nix_path: nixpkgs=channel:nixos-unstable
+  #         install_options: --no-daemon
+  #         extra_nix_config: experimental-features = nix-command flakes
 
-      - name: Build app
-        run: |
-          nix build -L
-          nix-shell --run 'make build-and-test-application'
+  #     - name: Build app
+  #       run: |
+  #         nix build -L
+  #         nix-shell --run 'make build-and-test-application'
 
   build-docker-images:
     strategy:
@@ -86,9 +86,9 @@ jobs:
           install_options: --no-daemon
           extra_nix_config: experimental-features = nix-command flakes
 
-      # - name: Create multiarch Docker manifest
-      #   shell: bash
-      #   run: nix-shell --run 'make create-multiarch-docker-manifest'
+      - name: Create multiarch Docker manifest
+        shell: bash
+        run: nix-shell --run 'make create-multiarch-docker-manifest'
 
       - name: Publish Helm chart
         shell: bash
