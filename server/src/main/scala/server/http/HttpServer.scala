@@ -50,9 +50,9 @@ object HttpServer:
                             ).asJava
                         ).asJava
 
-                        val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                        val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson).getOrElse(defaultPulsarAuth)
-                        PulsarAuthRoutes.setCookieAndSuccess(ctx, pulsarAuth)
+                        // val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
+                        // val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson).getOrElse(defaultPulsarAuth)
+                        // PulsarAuthRoutes.setCookieAndSuccess(ctx, pulsarAuth)
 
                         ctx.render("/ui/index.ftl", model)
                     }
