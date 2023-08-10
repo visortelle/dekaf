@@ -18,7 +18,7 @@
 # under the License.
 #
 
-set -e
+set -ue
 
 CHART_HOME=$(unset CDPATH && cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 cd ${CHART_HOME}
@@ -39,39 +39,38 @@ EOF
 
 symmetric=false
 
-while [[ $# -gt 0 ]]
-do
-key="$1"
+while [[ $# -gt 0 ]]; do
+    key="$1"
 
-case $key in
-    -n|--namespace)
-    namespace="$2"
-    shift
-    shift
-    ;;
-    -k|--release)
-    release="$2"
-    shift
-    shift
-    ;;
-    -s|--symmetric)
-    symmetric=true
-    shift
-    ;;
-    -l|--local)
-    local=true
-    shift
-    ;;
-    -h|--help)
-    usage
-    exit 0
-    ;;
+    case $key in
+    -n | --namespace)
+        namespace="$2"
+        shift
+        shift
+        ;;
+    -k | --release)
+        release="$2"
+        shift
+        shift
+        ;;
+    -s | --symmetric)
+        symmetric=true
+        shift
+        ;;
+    -l | --local)
+        local=true
+        shift
+        ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
     *)
-    echo "unknown option: $key"
-    usage
-    exit 1
-    ;;
-esac
+        echo "unknown option: $key"
+        usage
+        exit 1
+        ;;
+    esac
 done
 
 source ${CHART_HOME}/common_auth.sh

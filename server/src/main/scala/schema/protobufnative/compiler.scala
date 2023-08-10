@@ -93,7 +93,7 @@ object compiler:
         val protocCommand =
             s"protoc --include_imports --descriptor_set_out=$descriptorSetOut -I $srcDir -I $depsDir $inputFile &> $protocLogFile"
 
-        val protocProcess = Seq("sh", "-c", s"set -e; $protocCommand").run
+        val protocProcess = Seq("sh", "-c", s"set -ue; $protocCommand").run
 
         if protocProcess.exitValue != 0 then
             val compilationError = os.read(protocLogFile)
