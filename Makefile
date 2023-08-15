@@ -8,10 +8,6 @@ build-and-test-application:
 build-docker-images:
 	cd ./docker/pulsocat && make build
 
-.PHONY: build-docker-images
-build-docker-images:
-	cd ./docker/pulsocat && make build
-
 .PHONY: create-multiarch-docker-manifest
 create-multiarch-docker-manifest:
 	cd ./docker/pulsocat && make create-multiarch-docker-manifest

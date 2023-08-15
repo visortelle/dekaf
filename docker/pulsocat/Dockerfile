@@ -6,6 +6,7 @@ WORKDIR /workdir
 COPY ./docker/pulsocat/nix.conf /tmp/nix.conf
 RUN cat /tmp/nix.conf >> /etc/nix/nix.conf && rm /tmp/nix.conf
 RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable && nix-channel --update
+RUN nix-env -iA nixpkgs.git-lfs
 
 # Cache Nix dependencies
 COPY ./*.nix ./
