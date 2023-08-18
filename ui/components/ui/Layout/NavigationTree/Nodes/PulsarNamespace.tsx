@@ -8,7 +8,7 @@ import {Code} from "../../../../../grpc-web/google/rpc/code_pb";
 import Link from "../../../Link/Link";
 import {routes} from "../../../../routes";
 import s from "../NavigationTree.module.css";
-import  {NodesUtils, nodesSwrConfiguration} from "../utils/nodes-utils";
+import  {NavigationNodesUtils, nodesSwrConfiguration} from "../utils/navigation-nodes-utils";
 
 export type PulsarNamespaceProps = {
   forceReloadKey: number,
@@ -42,7 +42,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
       return res.getTopicsList();
     }, nodesSwrConfiguration
   );
-  const persistentTopics = useMemo(() => (_persistentTopics || []).map(tn => NodesUtils.getTopicName(tn)), [_persistentTopics]);
+  const persistentTopics = useMemo(() => (_persistentTopics || []).map(tn => NavigationNodesUtils.getNameFromPath(tn)), [_persistentTopics]);
 
   if (persistentTopicsError) {
     notifyError(`Unable to fetch persistent topics topics. ${persistentTopicsError.toString()}`);
@@ -64,7 +64,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
     },
     nodesSwrConfiguration
   );
-  const nonPersistentTopics = useMemo(() => (_nonPersistentTopics || []).map(tn => NodesUtils.getTopicName(tn)), [_nonPersistentTopics]);
+  const nonPersistentTopics = useMemo(() => (_nonPersistentTopics || []).map(tn => NavigationNodesUtils.getNameFromPath(tn)), [_nonPersistentTopics]);
 
   if (nonPersistentTopicsError) {
     notifyError(`Unable to fetch non-persistent topics. ${persistentTopicsError.toString()}`);
@@ -72,8 +72,8 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 
   useEffect(
     () => props.onTopics({
-      persistent: NodesUtils.squashPartitionedTopics((persistentTopics || [])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
-      nonPersistent: NodesUtils.squashPartitionedTopics((nonPersistentTopics || [])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+      persistent: NavigationNodesUtils.squashPartitionedTopics((persistentTopics || [])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
+      nonPersistent: NavigationNodesUtils.squashPartitionedTopics((nonPersistentTopics || [])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
     }),
     [persistentTopics, nonPersistentTopics, props.forceReloadKey]
   );

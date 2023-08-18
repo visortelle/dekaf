@@ -2,8 +2,8 @@ import { SWRConfiguration } from 'swr';
 
 export const nodesSwrConfiguration: SWRConfiguration = { dedupingInterval: 10000 };
 
-export const NodesUtils = {
-  getTopicName: (topicUrl: string): string => {
+export const NavigationNodesUtils = {
+  getNameFromPath: (topicUrl: string): string => {
     const topicUrlParts = topicUrl.split('/');
     return topicUrlParts[topicUrlParts.length - 1];
   },

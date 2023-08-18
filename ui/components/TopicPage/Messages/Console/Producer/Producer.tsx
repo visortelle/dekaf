@@ -139,7 +139,9 @@ const Producer: React.FC<ProducerProps> = (props) => {
     const createProducerReq: CreateProducerRequest = new CreateProducerRequest();
     createProducerReq.setProducerName(producerName.current);
     createProducerReq.setTopic(props.preset.topic);
-    const res = await producerServiceClient.createProducer(createProducerReq, {}).catch(err => notifyError(`Unable to create producer ${producerName.current}: ${err}`));
+
+    const res = await producerServiceClient.createProducer(createProducerReq, {})
+      .catch(err => notifyError(`Unable to create producer ${producerName.current}: ${err}`));
 
     if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
       setProducerInit(() => ({isReady: false, isLoading: false, initFailed: true}));

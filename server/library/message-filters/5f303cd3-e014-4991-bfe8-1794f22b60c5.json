@@ -1,0 +1,72 @@
+{
+  "id" : "5f303cd3-e014-4991-bfe8-1794f22b60c5",
+  "name" : "New collection",
+  "filtersMap" : {
+    "8dab1f54-7815-45c9-8628-f3b992753deb" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "31dad7f3-6cba-4c2e-b231-3ae67f7ae9ff" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filtersdfsdfsdf",
+      "scope" : {
+        "tenant" : "public",
+        "namespace" : "default",
+        "topicName" : "x",
+        "topicType" : "persistent"
+      }
+    },
+    "5ab934fb-2528-4da4-ae61-dbae86f00fdd" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "216f30ad-5770-4034-a6b1-3c26ddb9cf75" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "cfd4f4b0-8cb5-466f-941a-7d9b8094431b" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "d1e18fe4-699c-4fc4-a9cc-1c9be859c06c" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    }
+  }
+}

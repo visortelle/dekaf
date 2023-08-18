@@ -9,18 +9,11 @@ import Button from "../../../../ui/Button/Button";
 import arrowLeft from "../icons/arrow-left.svg";
 import Link from "../../../../ui/Link/Link";
 import {routes} from "../../../../routes";
-import {NodesUtils} from "../../../../ui/Layout/NavigationTree/utils/nodes-utils";
+import {NavigationNodesUtils} from "../../../../ui/Layout/NavigationTree/utils/navigation-nodes-utils";
 import * as Modals from "../../../../app/contexts/Modals/Modals";
 import * as AsyncTasks from "../../../../app/contexts/AsyncTasks";
-
-type TopicType = 'persistent' | 'non-persistent';
-
-type TopicNode = {
-  tenant: string;
-  namespace: string;
-  topicName: string;
-  topicType: TopicType;
-}
+import {isEqual} from "lodash";
+import {TopicNode} from "./types";
 
 export type ReprocessMessageProps = {
   message: MessageDescriptor;
@@ -46,10 +39,6 @@ const ReprocessMessage: React.FC<ReprocessMessageProps> = (props) => {
   useEffect(() => {
     nodeRef.current = node;
   }, [node]);
-
-  const areTopicNodesEqual = (nodeA: TopicNode, nodeB: TopicNode) => {
-    return nodeA.tenant === nodeB.tenant && nodeA.namespace === nodeB.namespace && nodeA.topicName === nodeB.topicName && nodeA.topicType === nodeB.topicType;
-  }
 
   return (
     <div className={s.ReprocessMessage}>
@@ -81,15 +70,11 @@ const ReprocessMessage: React.FC<ReprocessMessageProps> = (props) => {
                 topicName: props.topic,
                 topicType: props.topicType
               };
-              const isTopicSelected = areTopicNodesEqual(nodeRef.current, {
-                tenant: props.tenant,
-                namespace: props.namespace,
-                topicName: props.topic,
-                topicType: props.topicType
-              });
+              const isTopicSelected = isEqual(nodeRef.current, renderedTopicNode);
+
               return (
                 <div className={s.TopicNodeGroup} onClick={() => setNode(renderedTopicNode)}>
-                  <span className={s.NodeLinkText}>{NodesUtils.getTopicName(props.topic)}</span>
+                  <span className={s.NodeLinkText}>{NavigationNodesUtils.getNameFromPath(props.topic)}</span>
                   {isTopicSelected && <div className={s.SelectedConfirmationBullet}></div>}
                 </div>);
             }

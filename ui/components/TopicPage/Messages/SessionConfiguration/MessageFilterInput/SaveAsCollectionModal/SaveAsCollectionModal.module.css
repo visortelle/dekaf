@@ -1,0 +1,18 @@
+.SaveAsCollection {
+    padding: 12rem 24rem;
+    height: 160rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.CollectionInputWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6rem;
+}
+
+.CollectionInputButtonsWrapper {
+    display: flex;
+    flex-direction: row-reverse;
+}

@@ -1,0 +1,38 @@
+.NavigationTree {
+    height: 300rem;
+    width: 100%;
+}
+
+.NodeLinkText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 0.6ch;
+
+    padding-bottom: 1px; /* Otherwise some letters like "g" aren't fully visible. */
+    padding-top: 1px;
+}
+
+.SelectedConfirmationBullet {
+    width: 10rem;
+    height: 10rem;
+    border-radius: 50%;
+    background-color: var(--accent-color-green);
+}
+
+.TenantNodeGroup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.NamespaceNodeGroup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.TopicNodeGroup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

@@ -13,7 +13,7 @@ proxies:
     to: http://localhost:3000
     headers:
       - key: Authorization
-        value: Bearer glsa_e9RlLRPKMQAIsWKN80wrtlJ32CwuRm0L_66691009
+        value: Bearer glsa_xIl1QMAdH12oZsRd6rOg1q6QwdjcI2Q3_5ab9b567
 
 auth:
   oauth2:
@@ -21,7 +21,7 @@ auth:
     privateKey: '{"type":"sn_service_account","client_id":"RxDLk8gJzIPI9CgHOR2oWMOQjwWrrgbv","client_secret":"_1fhZ6g4NshTkwmrllU1F75aAwtW2m0WVEEiKssRr1ZalF4jD8fl0mfSGz1MWT9b","client_email":"free@o-xy6ek.auth.streamnative.cloud","issuer_url":"https://auth.streamnative.cloud/"}'
     audience: "urn:sn:pulsar:o-xy6ek:free"
   jwt:
-    token: sdfsdfsdf.sdfsdfsdfsdf.sdfsdfsdfdf
+    token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik5rRXdSVVU1TUVOQlJrWTJNalEzTVRZek9FVkZRVVUyT0RNME5qUkRRVEU1T1VNMU16STVPUSJ9.eyJodHRwczovL3N0cmVhbW5hdGl2ZS5pby91c2VybmFtZSI6ImZyZWVAby14eTZlay5hdXRoLnN0cmVhbW5hdGl2ZS5jbG91ZCIsImlzcyI6Imh0dHBzOi8vYXV0aC5zdHJlYW1uYXRpdmUuY2xvdWQvIiwic3ViIjoiUnhETGs4Z0p6SVBJOUNnSE9SMm9XTU9RandXcnJnYnZAY2xpZW50cyIsImF1ZCI6InVybjpzbjpwdWxzYXI6by14eTZlazpmcmVlIiwiaWF0IjoxNjkxNzU2Mzc1LCJleHAiOjE2OTIzNjExNzUsImF6cCI6IlJ4RExrOGdKeklQSTlDZ0hPUjJvV01PUWp3V3JyZ2J2Iiwic2NvcGUiOiJhZG1pbiBhY2Nlc3MiLCJndHkiOiJjbGllbnQtY3JlZGVudGlhbHMiLCJwZXJtaXNzaW9ucyI6WyJhZG1pbiIsImFjY2VzcyJdfQ.gvGd1pXNwBmv2_JbFm4U4AIYrJG8yCy5ZZZgVJSqdLthafe3l6SaPVM9mHKJrGD-l-RvhXeJ7nZUXKaqJKmTAm81tWV097xZdq9EIwE1YVfmyjY0z6bkIYCTpXwcRTXy_eN_qiPTqsHn8-JanO3la9D57qFwPBPyGeEc5va0SL9Sx9b4s_Os7YlGYdnlwRo6cfLUPf0ydCmZNAw7tGl4qPlVG8723nRlGHexXyv_rMBjWteFHizu0YYUK52d4SYw9KN-H4WyZojVQAND0VJW5C4yloKebEhNDxMjE3f76NlpCKSaKbTlj2EaSS4xzwxwyHQh8nGh4tOpzrqWvhZBTg
 
 resourcesInfoMarkdowns:
   vars:

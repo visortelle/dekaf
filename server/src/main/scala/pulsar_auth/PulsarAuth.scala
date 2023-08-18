@@ -13,14 +13,14 @@ import java.nio.charset.StandardCharsets.UTF_8
 import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
 
+type DefaultCredentialsName = "Default" | "DefaultOAuth2" | "DefaultJwt"
 
 val validCredentialsName: Regex = "^[a-zA-Z0-9_-]+$".r
+val DefaultCredentialsNames = Vector("Default", "DefaultOAuth2", "DefaultJwt")
 
 type EmptyCredentialsType = "empty"
 type OAuth2CredentialsType = "oauth2"
 type JwtCredentialsType = "jwt"
-
-type DefaultCredentialsName = "Default" | "DefaultOAuth2" | "DefaultJwt"
 
 type CredentialsName = String
 type CredentialsType = EmptyCredentialsType | OAuth2CredentialsType | JwtCredentialsType

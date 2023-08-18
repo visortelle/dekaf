@@ -65,13 +65,13 @@ class MessageFilter(config: MessageFilterConfig):
       """.stripMargin
     )
 
-    def getStdout(): String =
+    def getStdout: String =
         val logs = config.stdout.toString
         config.stdout.reset()
         logs
 
     def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-        testUsingJs(context, filterCode, jsonMessage, jsonValue)
+        MessageFilter.testUsingJs(context, filterCode, jsonMessage, jsonValue)
 
     def runCode(code: String): String =
         try
@@ -80,61 +80,62 @@ class MessageFilter(config: MessageFilterConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
-def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-    val evalCode =
-        s"""
-          | (() => {
-          |    const message = ${jsonMessage.asJson};
-          |    message.value = ${jsonValue.getOrElse("undefined")};
-          |    message.accum = globalThis.$JsonAccumulatorVarName;
-          |
-          |    globalThis.lastMessage = message; // For debug on the client side.
-          |
-          |    return ($filterCode)(message);
-          | })();
-          |""".stripMargin
+object MessageFilter:
+    def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
+        val evalCode =
+            s"""
+              | (() => {
+              |    const message = ${jsonMessage.asJson};
+              |    message.value = ${jsonValue.getOrElse("undefined")};
+              |    message.accum = globalThis.$JsonAccumulatorVarName;
+              |
+              |    globalThis.lastMessage = message; // For debug on the client side.
+              |
+              |    return ($filterCode)(message);
+              | })();
+              |""".stripMargin
 
-    val testResult =
-        try
-            Right(context.eval("js", evalCode).asBoolean)
-        catch {
-            case err => Left(s"Message filter JS error: ${err.getMessage}")
-        }
+        val testResult =
+            try
+                Right(context.eval("js", evalCode).asBoolean)
+            catch {
+                case err => Left(s"Message filter JS error: ${err.getMessage}")
+            }
 
-    val cumulativeJsonState = context.eval("js", s"stringify(globalThis.$JsonAccumulatorVarName)").asString
+        val cumulativeJsonState = context.eval("js", s"stringify(globalThis.$JsonAccumulatorVarName)").asString
 
-    (testResult, cumulativeJsonState)
+        (testResult, cumulativeJsonState)
 
-def getFilterTestResult(filter: pb.MessageFilter, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-    messageFilter.test(filter.value, jsonMessage, jsonValue)
+    private def getFilterTestResult(filter: pb.RawMessageFilter, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
+        messageFilter.test(filter.value, jsonMessage, jsonValue)
 
-def getFilterChainTestResult(
-    filterChain: Option[pb.MessageFilterChain],
-    messageFilter: MessageFilter,
-    jsonMessage: JsonMessage,
-    jsonValue: MessageValueToJsonResult
-): FilterTestResult =
-    var chain = filterChain.getOrElse(pb.MessageFilterChain(filters = Map.empty, mode = pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL))
+    def getFilterChainTestResult(
+        filterChain: Option[pb.MessageFilterChain],
+        messageFilter: MessageFilter,
+        jsonMessage: JsonMessage,
+        jsonValue: MessageValueToJsonResult
+    ): FilterTestResult =
+        var chain = filterChain.getOrElse(pb.MessageFilterChain(filters = Map.empty, mode = pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL))
 
-    // Each message filters mutate global state.
-    // For example: it stores the last message in the global variable `lastMessage`.
-    // To make it work properly, at least one filter should always present.
-    if (chain.filters.size == 0)
-        chain = chain.withFilters(chain.filters + ("dummy" -> pb.MessageFilter(value = "() => true")))
+        // Each message filters mutate global state.
+        // For example: it stores the last message in the global variable `lastMessage`.
+        // To make it work properly, at least one filter should always present.
+        if (chain.filters.size == 0)
+            chain = chain.withFilters(chain.filters + ("dummy" -> pb.RawMessageFilter(value = "() => true")))
 
-    val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilter, jsonMessage, jsonValue))
+        val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilter, jsonMessage, jsonValue))
 
-    val maybeErr = filterResults.find(fr => fr._1.isLeft)
-    val filterChainResult = maybeErr match
-        case Some(Left(err), _) => Left(err)
-        case _ =>
-            chain.mode match
-                case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL =>
-                    Right(filterResults.forall(fr => fr._1.getOrElse(false)))
-                case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY =>
-                    Right(filterResults.exists(fr => fr._1.getOrElse(false)))
+        val maybeErr = filterResults.find(fr => fr._1.isLeft)
+        val filterChainResult = maybeErr match
+            case Some(Left(err), _) => Left(err)
+            case _ =>
+                chain.mode match
+                    case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL =>
+                        Right(filterResults.forall(fr => fr._1.getOrElse(false)))
+                    case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY =>
+                        Right(filterResults.exists(fr => fr._1.getOrElse(false)))
 
-    if filterResults.nonEmpty then
-        val (_, jsonAggregate) = filterResults.last
-        (filterChainResult, jsonAggregate)
-    else (filterChainResult, "{}")
+        if filterResults.nonEmpty then
+            val (_, jsonAggregate) = filterResults.last
+            (filterChainResult, jsonAggregate)
+        else (filterChainResult, "{}")

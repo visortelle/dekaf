@@ -1,14 +1,12 @@
 package licensing.keygen
 
 import io.circe.*
-import io.circe.parser.parse
 import io.circe.syntax.*
-import zio.*
-import sttp.client4.{ResponseException, *}
-import sttp.model.*
-import sttp.client4.httpclient.zio.*
 import sttp.client4
 import sttp.client4.circe.*
+import sttp.client4.httpclient.zio.*
+import sttp.client4.{ResponseException, *}
+import zio.*
 
 class KeygenClient(
     licenseToken: String,
