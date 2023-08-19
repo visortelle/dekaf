@@ -28,5 +28,5 @@ docker build \
   -f "${this_dir}/Dockerfile" \
   "${repo_dir}"
 
-docker push $tag_1
-docker push $tag_2
+# docker push $tag_1
+# docker push $tag_2

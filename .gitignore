@@ -116,3 +116,4 @@ target
 # Nix
 result
 
+/config.yaml

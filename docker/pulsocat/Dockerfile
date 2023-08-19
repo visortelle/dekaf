@@ -37,8 +37,9 @@ RUN cp ./server/config.yaml /pulsocat/
 
 ################################################################
 
-FROM ghcr.io/graalvm/graalvm-community:20.0.2 as pulsocat
-RUN gu install js
+FROM adoptopenjdk/openjdk11:jdk-11.0.8_10-ubuntu as pulsocat
+# FROM ghcr.io/graalvm/jdk-community:20.0.2 as pulsocat
+# RUN gu install js
 
 RUN useradd --user-group --system --create-home --no-log-init pulsocat
 USER pulsocat
@@ -47,5 +48,6 @@ WORKDIR /pulsocat
 COPY --from=builder --chown=pulsocat:pulsocat /pulsocat .
 
 EXPOSE 8090
+EXPOSE 9901
 
 ENTRYPOINT [ "/pulsocat/bin/pulsocat" ]
