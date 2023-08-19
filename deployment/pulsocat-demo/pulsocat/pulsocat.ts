@@ -43,7 +43,6 @@ export const createResources = () => {
           tag: gitBranch,
         },
         env: [
-          { name: "PULSOCAT_PORT", value: 8090 },
           { name: "PULSOCAT_PUBLIC_URL", value: `https://${appFqn}.dev.teal.tools` },
           { name: "PULSOCAT_LICENSE_ID", value: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6" },
           { name: "PULSOCAT_LICENSE_TOKEN", value: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3" },

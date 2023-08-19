@@ -4,7 +4,6 @@ imagePullSecrets: []
 
 pulsocat:
   config: |
-    port: 8090
     publicUrl: ${PULSOCAT_PUBLIC_URL}
 
     license:
