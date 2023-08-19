@@ -2,7 +2,7 @@ import {
   Int64Value,
   StringValue,
 } from "google-protobuf/google/protobuf/wrappers_pb";
-import * as pb from "../../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import * as pb from "../../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
 import {
   PolicyValue,
   AnyOffloadPolicy,

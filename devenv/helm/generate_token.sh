@@ -18,7 +18,7 @@
 # under the License.
 #
 
-set -e
+set -ue
 
 CHART_HOME=$(unset CDPATH && cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 cd ${CHART_HOME}
@@ -40,44 +40,43 @@ EOF
 
 symmetric=false
 
-while [[ $# -gt 0 ]]
-do
-key="$1"
+while [[ $# -gt 0 ]]; do
+    key="$1"
 
-case $key in
-    -n|--namespace)
-    namespace="$2"
-    shift
-    shift
-    ;;
-    -k|--release)
-    release="$2"
-    shift
-    shift
-    ;;
-    -r|--role)
-    role="$2"
-    shift
-    shift
-    ;;
-    -s|--symmetric)
-    symmetric=true
-    shift
-    ;;
-    -l|--local)
-    local=true
-    shift
-    ;;
-    -h|--help)
-    usage
-    exit 0
-    ;;
+    case $key in
+    -n | --namespace)
+        namespace="$2"
+        shift
+        shift
+        ;;
+    -k | --release)
+        release="$2"
+        shift
+        shift
+        ;;
+    -r | --role)
+        role="$2"
+        shift
+        shift
+        ;;
+    -s | --symmetric)
+        symmetric=true
+        shift
+        ;;
+    -l | --local)
+        local=true
+        shift
+        ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
     *)
-    echo "unknown option: $key"
-    usage
-    exit 1
-    ;;
-esac
+        echo "unknown option: $key"
+        usage
+        exit 1
+        ;;
+    esac
 done
 
 if [[ "x${role}" == "x" ]]; then
@@ -102,7 +101,7 @@ function pulsar::jwt::get_secret() {
         cp ${type} ${tmpfile}
     else
         echo "kubectl get -n ${namespace} secrets ${secret_name} -o jsonpath="{.data.${type}}" | base64 --decode > ${tmpfile}"
-        kubectl get -n ${namespace} secrets ${secret_name} -o jsonpath="{.data['${type}']}" | base64 --decode > ${tmpfile}
+        kubectl get -n ${namespace} secrets ${secret_name} -o jsonpath="{.data['${type}']}" | base64 --decode >${tmpfile}
     fi
 }
 
@@ -115,9 +114,9 @@ function pulsar::jwt::generate_symmetric_token() {
     tokentmpfile=$(mktemp)
     trap "test -f $tokentmpfile && rm $tokentmpfile" RETURN
     pulsar::jwt::get_secret SECRETKEY ${tmpfile} ${secret_name}
-    ${PULSARCTL_BIN} token create -a HS256 --secret-key-file ${tmpfile} --subject ${role} 2&> ${tokentmpfile}
+    ${PULSARCTL_BIN} token create -a HS256 --secret-key-file ${tmpfile} --subject ${role} 2 &>${tokentmpfile}
     newtokentmpfile=$(mktemp)
-    tr -d '\n' < ${tokentmpfile} > ${newtokentmpfile}
+    tr -d '\n' <${tokentmpfile} >${newtokentmpfile}
     echo "kubectl create secret generic ${token_name} -n ${namespace} --from-file="TOKEN=${newtokentmpfile}" --from-literal="TYPE=symmetric" ${local:+ -o yaml --dry-run=client}"
     kubectl create secret generic ${token_name} -n ${namespace} --from-file="TOKEN=${newtokentmpfile}" --from-literal="TYPE=symmetric" ${local:+ -o yaml --dry-run=client}
 }
@@ -131,9 +130,9 @@ function pulsar::jwt::generate_asymmetric_token() {
     tokentmpfile=$(mktemp)
     trap "test -f $tokentmpfile && rm $tokentmpfile" RETURN
     pulsar::jwt::get_secret PRIVATEKEY ${privatekeytmpfile} ${secret_name}
-    ${PULSARCTL_BIN} token create -a RS256 --private-key-file ${privatekeytmpfile} --subject ${role} 2&> ${tokentmpfile}
+    ${PULSARCTL_BIN} token create -a RS256 --private-key-file ${privatekeytmpfile} --subject ${role} 2 &>${tokentmpfile}
     newtokentmpfile=$(mktemp)
-    tr -d '\n' < ${tokentmpfile} > ${newtokentmpfile}
+    tr -d '\n' <${tokentmpfile} >${newtokentmpfile}
     kubectl create secret generic ${token_name} -n ${namespace} --from-file="TOKEN=${newtokentmpfile}" --from-literal="TYPE=asymmetric" ${local:+ -o yaml --dry-run=client}
 }
 

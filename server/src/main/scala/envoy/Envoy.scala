@@ -22,7 +22,11 @@ object Envoy:
         _ <- ZIO.logInfo(s"Starting Envoy proxy with config: $configPath")
         _ <- ZIO.logInfo(s"Listening port: ${envoyConfigParams.listenPort}")
 
-        _ <- Command(envoyBinPath.toString, "--config-path", configPath)
-            // TODO - add option to log envoy output
-            .successfulExitCode
+        process <- Command(envoyBinPath.toString, "--config-path", configPath).run
+
+        // Uncomment to see Envoy logs
+        // TODO - make it configurable
+        // _ <- process.stdout.linesStream.foreach(line => ZIO.logInfo(line))
+        // _ <- process.stderr.linesStream.foreach(line => ZIO.logError(line))
+        _ <- process.successfulExitCode
     yield ()

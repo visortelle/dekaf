@@ -7,7 +7,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import React, { useState } from "react";
 import { swrKeys } from "../../../swrKeys";
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
@@ -57,7 +57,7 @@ export type FieldInputProps = {
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -69,7 +69,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetSubscriptionTypesEnabledRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getSubscriptionTypesEnabled(req, {});
+      const res = await namespacePoliciesServiceClient.getSubscriptionTypesEnabled(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get subscription types enabled. ${res.getStatus()?.getMessage()}`);
         return;
@@ -111,7 +111,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveSubscriptionTypesEnabledRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeSubscriptionTypesEnabled(req, {});
+          const res = await namespacePoliciesServiceClient.removeSubscriptionTypesEnabled(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
             return;
@@ -123,7 +123,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           req.setTypesList(value.subscriptionTypes.map(subscriptionTypeToPb));
 
-          const res = await namespaceServiceClient.setSubscriptionTypesEnabled(req, {});
+          const res = await namespacePoliciesServiceClient.setSubscriptionTypesEnabled(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscription types enabled. ${res.getStatus()?.getMessage()}`);
             return;

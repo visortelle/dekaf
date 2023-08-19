@@ -9,11 +9,11 @@ import Input from "../../../ui/ConfigurationTable/Input/Input";
 import Select from '../../../ui/Select/Select';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { swrKeys } from '../../../swrKeys';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import React from "react";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 
 const policy = 'autoTopicCreation';
 
@@ -33,7 +33,7 @@ export type FieldInputProps = {
 };
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -47,7 +47,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetAutoTopicCreationRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getAutoTopicCreation(req, {});
+      const res = await namespacePoliciesServiceClient.getAutoTopicCreation(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get auto topic creation policy. ${res.getStatus()?.getMessage()}`);
         return;
@@ -97,7 +97,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         if (v.type === 'inherited-from-broker-config') {
           const req = new pb.RemoveAutoTopicCreationRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-          const res = await namespaceServiceClient.removeAutoTopicCreation(req, {}).catch(err => notifyError(`Unable to set auto topic creation policy. ${err}`));
+          const res = await namespacePoliciesServiceClient.removeAutoTopicCreation(req, {}).catch(err => notifyError(`Unable to set auto topic creation policy. ${err}`));
           if (res?.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set auto topic creation policy. ${res?.getStatus()?.getMessage()}`);
             return;
@@ -121,7 +121,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
           req.setAutoTopicCreationOverride(autoTopicCreationOverride);
 
-          const res = await namespaceServiceClient.setAutoTopicCreation(req, {}).catch(err => notifyError(`Unable to set auto topic creation policy. ${err}`));
+          const res = await namespacePoliciesServiceClient.setAutoTopicCreation(req, {}).catch(err => notifyError(`Unable to set auto topic creation policy. ${err}`));
           if (res === undefined) {
             return;
           }

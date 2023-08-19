@@ -1,6 +1,6 @@
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import sf from '../../../ui/ConfigurationTable/form.module.css';
@@ -30,7 +30,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [validationError, setValidationError] = useState<ValidationError>(undefined);
@@ -42,7 +42,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     async () => {
       const req = new pb.GetPersistenceRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-      const res = await namespaceServiceClient.getPersistence(req, {});
+      const res = await namespacePoliciesServiceClient.getPersistence(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get persistence policy: ${res.getStatus()?.getMessage()}`);
         return;
@@ -87,7 +87,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         if (value.type === 'inherited-from-broker-config') {
           const req = new pb.RemovePersistenceRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-          const res = await namespaceServiceClient.removePersistence(req, {});
+          const res = await namespacePoliciesServiceClient.removePersistence(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set persistence policy: ${res.getStatus()?.getMessage()}`);
           }
@@ -102,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setBookkeeperWriteQuorum(value.bookkeeperWriteQuorum);
           req.setManagedLedgerMaxMarkDeleteRate(value.managedLedgerMarkDeleteMaxRate);
 
-          const res = await namespaceServiceClient.setPersistence(req, {});
+          const res = await namespacePoliciesServiceClient.setPersistence(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set persistence policy: ${res.getStatus()?.getMessage()}`);
           }

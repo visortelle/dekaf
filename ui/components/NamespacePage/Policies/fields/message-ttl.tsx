@@ -5,7 +5,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
@@ -25,7 +25,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -38,7 +38,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetMessageTtlRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getMessageTtl(req, {});
+      const res = await namespacePoliciesServiceClient.getMessageTtl(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get message TTL: ${res.getStatus()?.getMessage()}`);
         return;
@@ -84,7 +84,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveMessageTtlRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeMessageTtl(req, {});
+          const res = await namespacePoliciesServiceClient.removeMessageTtl(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
           }
@@ -102,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setMessageTtlSeconds(Math.floor(value.messageTtlSeconds));
           }
 
-          const res = await namespaceServiceClient.setMessageTtl(req, {});
+          const res = await namespacePoliciesServiceClient.setMessageTtl(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set message TTL: ${res.getStatus()?.getMessage()}`);
           }

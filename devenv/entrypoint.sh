@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -ueo pipefail
 
 cases_dir=/cases
 pulsar_conf_dir=/pulsar/conf

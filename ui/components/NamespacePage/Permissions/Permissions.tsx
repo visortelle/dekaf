@@ -141,7 +141,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
   //   req.setNamespace(`${props.tenant}/${props.namespace}`);
   //   req.setRole(role);
 
-  //   const res = await namespaceServiceClient.revokePermissions(req, {});
+  //   const res = await namespacePoliciesServiceClient.revokePermissions(req, {});
 
   //   if (res.getStatus()?.getCode() !== Code.OK) {
   //     notifyError(res.getStatus()?.getMessage());

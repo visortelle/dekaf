@@ -4,7 +4,7 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import Input from '../../../ui/ConfigurationTable/Input/Input';
 import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import Select from '../../../ui/Select/Select';
@@ -21,7 +21,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -33,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetNamespaceAntiAffinityGroupRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getNamespaceAntiAffinityGroup(req, {});
+      const res = await namespacePoliciesServiceClient.getNamespaceAntiAffinityGroup(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get anti-affinity group policy. ${res.getStatus()?.getMessage()}`);
         return { type: 'not-specified' };
@@ -61,7 +61,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           req.setNamespaceAntiAffinityGroup(v.group);
 
-          const res = await namespaceServiceClient.setNamespaceAntiAffinityGroup(req, {});
+          const res = await namespacePoliciesServiceClient.setNamespaceAntiAffinityGroup(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set anti-affinity group. ${res.getStatus()?.getMessage()}`);
             return;
@@ -72,7 +72,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveNamespaceAntiAffinityGroupRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeNamespaceAntiAffinityGroup(req, {});
+          const res = await namespacePoliciesServiceClient.removeNamespaceAntiAffinityGroup(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to delete anti-affinity group. ${res.getStatus()?.getMessage()}`);
             return;

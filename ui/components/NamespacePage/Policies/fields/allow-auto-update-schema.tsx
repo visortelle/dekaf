@@ -4,7 +4,7 @@ import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
-import { GetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+import { GetIsAllowAutoUpdateSchemaRequest, SetIsAllowAutoUpdateSchemaRequest } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 
@@ -18,7 +18,7 @@ export type FieldInputProps = {
 type PolicyValue = 'enabled' | 'disabled';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -30,7 +30,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     async () => {
       const req = new GetIsAllowAutoUpdateSchemaRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-      const res = await namespaceServiceClient.getIsAllowAutoUpdateSchema(req, {}).catch(err => notifyError(`Can't get is allow auto update schema policy. ${err}`));
+      const res = await namespacePoliciesServiceClient.getIsAllowAutoUpdateSchema(req, {}).catch(err => notifyError(`Can't get is allow auto update schema policy. ${err}`));
       if (res === undefined) {
         return;
       }
@@ -55,7 +55,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         req.setIsAllowAutoUpdateSchema(v === 'enabled');
         req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-        const res = await namespaceServiceClient.setIsAllowAutoUpdateSchema(req, {}).catch(err => onUpdateError(err));
+        const res = await namespacePoliciesServiceClient.setIsAllowAutoUpdateSchema(req, {}).catch(err => onUpdateError(err));
         if (res === undefined) {
           return;
         }
