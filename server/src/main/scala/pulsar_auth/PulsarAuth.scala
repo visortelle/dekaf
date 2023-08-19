@@ -160,5 +160,5 @@ def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
     val cookieValue = pulsarAuthWithoutEncodingMetadata.asJson.noSpaces
 
     config.tls match
-        case None    => s"$cookieName=$cookieValue; Path=/; HttpOnly"
-        case Some(_) => s"$cookieName=$cookieValue; Path=/; HttpOnly; Secure"
+        case None    => s"$cookieName=$cookieValue; Path=/; HttpOnly; Max-Age=31536000; "
+        case Some(_) => s"$cookieName=$cookieValue; Path=/; HttpOnly; Secure; Max-Age=31536000;"
