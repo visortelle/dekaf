@@ -11,11 +11,6 @@ case class EnvoyConfigParams(
 
 def renderEnvoyConfig(config: EnvoyConfigParams): String =
     s"""
-admin:
-  address:
-    socket_address:
-      address: 0.0.0.0
-      port_value: 9901
 static_resources:
   listeners:
     - name: listener_0
@@ -33,7 +28,7 @@ static_resources:
                 - name: envoy.access_loggers.file
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-                    path: /tmp/envoy-access.log
+                    path: /dev/stdout
               codec_type: auto
               stat_prefix: ingress_http
               route_config:
