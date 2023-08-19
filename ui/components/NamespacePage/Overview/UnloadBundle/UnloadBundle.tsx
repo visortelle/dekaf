@@ -1,6 +1,6 @@
-import {BundleKey} from "../Overview";
+import { BundleKey } from "../Overview";
 import * as pbn from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
-import {Code} from "../../../../grpc-web/google/rpc/code_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import * as Modals from "../../../app/contexts/Modals/Modals";
 import * as Notifications from "../../../app/contexts/Notifications";
 import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
@@ -13,7 +13,7 @@ export type UnloadBundleProps = {
   bundleKey: BundleKey,
 }
 
-const UnloadBundle: React.FC<UnloadBundleProps> = ({namespaceFqn, bundleKey}) => {
+const UnloadBundle: React.FC<UnloadBundleProps> = ({ namespaceFqn, bundleKey }) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();

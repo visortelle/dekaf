@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ue
 set -o pipefail
 
 kubectl proxy &

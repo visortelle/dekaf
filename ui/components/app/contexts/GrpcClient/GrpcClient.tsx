@@ -6,6 +6,7 @@ import * as _consumerServiceClient from '../../../../grpc-web/tools/teal/pulsar/
 import * as _topicServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/TopicServiceClientPb';
 import * as _schemaServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/SchemaServiceClientPb';
 import * as _namespaceServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/NamespaceServiceClientPb';
+import * as _namespacePoliciesServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/Namespace_policiesServiceClientPb';
 import * as _tenantServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/TenantServiceClientPb';
 import * as _clustersServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/ClustersServiceClientPb';
 import * as _metricsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/MetricsServiceClientPb';
@@ -21,6 +22,7 @@ export type Value = {
   topicPoliciesServiceClient: _topicpoliciesServiceClient.TopicpoliciesServiceClient,
   schemaServiceClient: _schemaServiceClient.SchemaServiceClient,
   namespaceServiceClient: _namespaceServiceClient.NamespaceServiceClient,
+  namespacePoliciesServiceClient: _namespacePoliciesServiceClient.NamespacePoliciesServiceClient,
   tenantServiceClient: _tenantServiceClient.TenantServiceClient,
   clustersServiceClient: _clustersServiceClient.ClustersServiceClient,
   metricsServiceClient: _metricsServiceClient.MetricsServiceClient,
@@ -36,6 +38,7 @@ const defaultValue: Value = {
   topicPoliciesServiceClient: new _topicpoliciesServiceClient.TopicpoliciesServiceClient(''),
   schemaServiceClient: new _schemaServiceClient.SchemaServiceClient(''),
   namespaceServiceClient: new _namespaceServiceClient.NamespaceServiceClient(''),
+  namespacePoliciesServiceClient: new _namespacePoliciesServiceClient.NamespacePoliciesServiceClient(''),
   tenantServiceClient: new _tenantServiceClient.TenantServiceClient(''),
   clustersServiceClient: new _clustersServiceClient.ClustersServiceClient(''),
   metricsServiceClient: new _metricsServiceClient.MetricsServiceClient(''),
@@ -57,6 +60,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const [topicpoliciesServiceClient] = useState(new _topicpoliciesServiceClient.TopicpoliciesServiceClient(props.grpcWebUrl));
   const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient(props.grpcWebUrl));
   const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient(props.grpcWebUrl));
+  const [namespacePoliciesServiceClient] = useState(new _namespacePoliciesServiceClient.NamespacePoliciesServiceClient(props.grpcWebUrl));
   const [tenantServiceClient] = useState(new _tenantServiceClient.TenantServiceClient(props.grpcWebUrl));
   const [clustersServiceClient] = useState(new _clustersServiceClient.ClustersServiceClient(props.grpcWebUrl));
   const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient(props.grpcWebUrl));
@@ -74,6 +78,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
           topicPoliciesServiceClient: topicpoliciesServiceClient,
           schemaServiceClient,
           namespaceServiceClient,
+          namespacePoliciesServiceClient,
           tenantServiceClient,
           clustersServiceClient,
           metricsServiceClient,

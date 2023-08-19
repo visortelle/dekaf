@@ -14,13 +14,13 @@ object SchemasTenant:
 //          namespaces.Int8Namespace.mkPlanGenerator(tenantName),
 //          namespaces.Int16Namespace.mkPlanGenerator(tenantName),
 //          namespaces.Int32Namespace.mkPlanGenerator(tenantName),
-//          namespaces.Int64Namespace.mkPlanGenerator(tenantName),
+          namespaces.Int64Namespace.mkPlanGenerator(tenantName),
 //          namespaces.FloatNamespace.mkPlanGenerator(tenantName),
-//          namespaces.DoubleNamespace.mkPlanGenerator(tenantName),
+          namespaces.DoubleNamespace.mkPlanGenerator(tenantName),
 //          namespaces.StringNamespace.mkPlanGenerator(tenantName),
 //          namespaces.BytesNamespace.mkPlanGenerator(tenantName),
 //          namespaces.AvroNamespace.mkPlanGenerator(tenantName),
-//          namespaces.JsonNamespace.mkPlanGenerator(tenantName),
+          namespaces.JsonNamespace.mkPlanGenerator(tenantName),
           namespaces.ProtobufNativeNamespace.mkPlanGenerator(tenantName),
       )
 

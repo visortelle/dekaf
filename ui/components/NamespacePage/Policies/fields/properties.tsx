@@ -10,7 +10,7 @@ import KeyValueEditor from '../../../ui/KeyValueEditor/KeyValueEditor';
 import { swrKeys } from '../../../swrKeys';
 import { mapToObject } from '../../../../pbUtils/pbUtils';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
-import {help} from "../../../TenantPage/Namespaces/help";
+import { help } from "../../../TenantPage/Namespaces/help";
 import React from "react";
 
 const policy = 'properties';

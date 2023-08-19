@@ -14,6 +14,7 @@ import com.tools.teal.pulsar.ui.api.v1.producer.ProducerServiceGrpc
 import com.tools.teal.pulsar.ui.api.v1.schema.SchemaServiceGrpc
 import com.tools.teal.pulsar.ui.tenant.v1.tenant.TenantServiceGrpc
 import com.tools.teal.pulsar.ui.namespace.v1.namespace.NamespaceServiceGrpc
+import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.NamespacePoliciesServiceGrpc
 import com.tools.teal.pulsar.ui.clusters.v1.clusters.ClustersServiceGrpc
 import com.tools.teal.pulsar.ui.topic.v1.topic.TopicServiceGrpc
 import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
@@ -28,6 +29,7 @@ import _root_.producer.ProducerServiceImpl
 import _root_.schema.SchemaServiceImpl
 import _root_.tenant.TenantServiceImpl
 import _root_.namespace.NamespaceServiceImpl
+import _root_.namespace_policies.NamespacePoliciesServiceImpl
 import _root_.clusters.ClustersServiceImpl
 import _root_.metrics.MetricsServiceImpl
 import _root_.brokers.BrokersServiceImpl
@@ -49,6 +51,7 @@ object GrpcServer:
         .addService(SchemaServiceGrpc.bindService(SchemaServiceImpl(), ExecutionContext.global))
         .addService(TenantServiceGrpc.bindService(TenantServiceImpl(), ExecutionContext.global))
         .addService(NamespaceServiceGrpc.bindService(NamespaceServiceImpl(), ExecutionContext.global))
+        .addService(NamespacePoliciesServiceGrpc.bindService(NamespacePoliciesServiceImpl(), ExecutionContext.global))
         .addService(ClustersServiceGrpc.bindService(ClustersServiceImpl(), ExecutionContext.global))
         .addService(MetricsServiceGrpc.bindService(MetricsServiceImpl(), ExecutionContext.global))
         .addService(BrokersServiceGrpc.bindService(BrokersServiceImpl(), ExecutionContext.global))

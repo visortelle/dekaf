@@ -5,11 +5,11 @@ import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 
 const policy = 'deduplication';
 
@@ -33,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetDeduplicationRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await adminClient.namespaceServiceClient.getDeduplication(req, {});
+      const res = await adminClient.namespacePoliciesServiceClient.getDeduplication(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get deduplication policy. ${res.getStatus()?.getMessage()}`);
         return;
@@ -68,7 +68,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveDeduplicationRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await adminClient.namespaceServiceClient.removeDeduplication(req, {})
+          const res = await adminClient.namespacePoliciesServiceClient.removeDeduplication(req, {})
             .catch(err => notifyError(`Unable to set deduplication policy: ${err}`));
 
           if (res?.getStatus()?.getCode() !== Code.OK) {
@@ -81,7 +81,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           req.setEnabled(v === 'enabled');
 
-          const res = await adminClient.namespaceServiceClient.setDeduplication(req, {})
+          const res = await adminClient.namespacePoliciesServiceClient.setDeduplication(req, {})
             .catch(err => notifyError(`Unable to set deduplication policy: ${err}`));
 
           if (res?.getStatus()?.getCode() !== Code.OK) {

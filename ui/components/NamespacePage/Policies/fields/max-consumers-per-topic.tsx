@@ -5,7 +5,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import Input from '../../../ui/Input/Input';
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
@@ -27,7 +27,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -39,7 +39,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetMaxConsumersPerTopicRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getMaxConsumersPerTopic(req, {});
+      const res = await namespacePoliciesServiceClient.getMaxConsumersPerTopic(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get max consumers per topic: ${res.getStatus()?.getMessage()}`);
         return;
@@ -84,7 +84,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveMaxConsumersPerTopicRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeMaxConsumersPerTopic(req, {});
+          const res = await namespacePoliciesServiceClient.removeMaxConsumersPerTopic(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }
@@ -102,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setMaxConsumersPerTopic(value.maxConsumersPerTopic);
           }
 
-          const res = await namespaceServiceClient.setMaxConsumersPerTopic(req, {});
+          const res = await namespacePoliciesServiceClient.setMaxConsumersPerTopic(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set max subscriptions per topic: ${res.getStatus()?.getMessage()}`);
           }

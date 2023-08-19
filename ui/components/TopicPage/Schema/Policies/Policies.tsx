@@ -8,7 +8,7 @@ import {
   GetSchemaCompatibilityStrategyRequest,
   GetSchemaValidationEnforceRequest,
   SchemaCompatibilityStrategy,
-} from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
+} from "../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
 import useSWR from "swr";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { H3 } from "../../../ui/H/H";
@@ -20,7 +20,7 @@ export type PoliciesProps = {
 type Strategy = keyof typeof SchemaCompatibilityStrategy;
 
 const Policies: React.FC<PoliciesProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
 
   const tenant = `${props.topic.split("://")[1].split("/")[0]}`;
@@ -35,7 +35,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
   const { data: schemaValidationEnforce, error: schemaValidationEnforceError } = useSWR(schemaValidationEnforceSwrKey, async () => {
     const req = new GetSchemaValidationEnforceRequest();
     req.setNamespace(`${tenant}/${namespace}`);
-    const res = await namespaceServiceClient
+    const res = await namespacePoliciesServiceClient
       .getSchemaValidationEnforce(req, {})
       .catch((err) => notifyError(`Can't get schema validation enforce policy. ${err}`));
     if (res === undefined) {
@@ -61,7 +61,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
   const { data: strategy, error: strategyError } = useSWR(schemaCompatibilityStrategySwrKey, async () => {
     const req = new GetSchemaCompatibilityStrategyRequest();
     req.setNamespace(`${tenant}/${namespace}`);
-    const res = await namespaceServiceClient.getSchemaCompatibilityStrategy(req, {});
+    const res = await namespacePoliciesServiceClient.getSchemaCompatibilityStrategy(req, {});
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Can't get schema compatibility strategy. ${res.getStatus()?.getMessage()}`);
       return undefined;
@@ -82,7 +82,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
   const { data: isAllowAutoUpdateSchema, error: isAllowAutoUpdateSchemaError } = useSWR(isAllowAutoUpdateSchemaSwrKey, async () => {
     const req = new GetIsAllowAutoUpdateSchemaRequest();
     req.setNamespace(`${tenant}/${namespace}`);
-    const res = await namespaceServiceClient
+    const res = await namespacePoliciesServiceClient
       .getIsAllowAutoUpdateSchema(req, {})
       .catch((err) => notifyError(`Can't get is allow auto update schema policy. ${err}`));
     if (res === undefined) {
