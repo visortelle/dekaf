@@ -1,7 +1,7 @@
 import * as pbn from "../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
-import {Code} from "../../../../grpc-web/google/rpc/code_pb";
+import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import React from "react";
-import {BundleKey} from "../Overview";
+import { BundleKey } from "../Overview";
 import * as Modals from "../../../app/contexts/Modals/Modals";
 import * as Notifications from "../../../app/contexts/Notifications";
 import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
@@ -20,12 +20,12 @@ export type SplitParams = {
   unloadSplitBundles: boolean;
 }
 
-const SplitBundle: React.FC<SplitBundleProps> = ({namespaceFqn, bundleKey}) => {
+const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) => {
   const modals = Modals.useContext();
   const { notifyError, notifySuccess } = Notifications.useContext();
   const brokersConfig = BrokerConfig.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
-  const [ splitParams, setSplitParams ] = React.useState<SplitParams>({
+  const [splitParams, setSplitParams] = React.useState<SplitParams>({
     splitAlgorithm: brokersConfig.get("")?.value,
     unloadSplitBundles: false,
   } as SplitParams);
@@ -73,8 +73,8 @@ const SplitBundle: React.FC<SplitBundleProps> = ({namespaceFqn, bundleKey}) => {
             onChange={v => setSplitParams({ splitAlgorithm: v, unloadSplitBundles: splitParams.unloadSplitBundles })}
           />
           <br />
-          <div style={{display: "flex", gap: "12rem"}}>
-            <Checkbox isInline id="unloadSplitBundles" checked={splitParams.unloadSplitBundles} onChange={() => setSplitParams({...splitParams, unloadSplitBundles: !splitParams.unloadSplitBundles})} />
+          <div style={{ display: "flex", gap: "12rem" }}>
+            <Checkbox isInline id="unloadSplitBundles" checked={splitParams.unloadSplitBundles} onChange={() => setSplitParams({ ...splitParams, unloadSplitBundles: !splitParams.unloadSplitBundles })} />
             <div>Unload split bundles</div>
           </div>
           <br />

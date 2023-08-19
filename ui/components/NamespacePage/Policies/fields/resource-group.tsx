@@ -9,7 +9,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { routes } from '../../../routes';
 import Link from "../../../ui/Link/Link";
@@ -28,7 +28,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext()
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext()
   const { notifyError } = Notifications.useContext()
   const { mutate } = useSWRConfig()
   const [resourceGroupsList, setResourceGroupsList] = useState<string[]>([''])
@@ -40,7 +40,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     async () => {
       const req = new pb.GetResourceGroupRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-      const res = await namespaceServiceClient.getResourceGroup(req, {});
+      const res = await namespacePoliciesServiceClient.getResourceGroup(req, {});
       if (res === undefined) {
         return;
       }
@@ -87,7 +87,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             const req = new pb.RemoveResourceGroupRequest();
             req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-            const res = await namespaceServiceClient.removeResourceGroup(req, {});
+            const res = await namespacePoliciesServiceClient.removeResourceGroup(req, {});
 
             if (res === undefined) {
               return;
@@ -104,7 +104,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setNamespace(`${props.tenant}/${props.namespace}`);
             req.setResourceGroup(value.resourceGroup);
 
-            const res = await namespaceServiceClient.setResourceGroup(req, {});
+            const res = await namespacePoliciesServiceClient.setResourceGroup(req, {});
             if (res === undefined) {
               return;
             }

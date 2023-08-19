@@ -3,9 +3,10 @@ FROM nixos/nix:2.11.1 as builder
 WORKDIR /workdir
 
 # Configure Nix
-RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable && nix-channel --update
 COPY ./docker/pulsocat/nix.conf /tmp/nix.conf
 RUN cat /tmp/nix.conf >> /etc/nix/nix.conf && rm /tmp/nix.conf
+RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable && nix-channel --update
+RUN nix-env -iA nixpkgs.git-lfs
 
 # Cache Nix dependencies
 COPY ./*.nix ./
@@ -27,24 +28,24 @@ RUN cd ./ui && npm ci
 
 COPY . .
 
-RUN make build-jar
-RUN cd ./server/target/universal && unzip ./pulsar-ui-*.zip && rm ./pulsar-ui-*.zip && mv ./pulsar-ui-* /pulsar-ui
-RUN cp ./server/config.yaml /pulsar-ui/
+RUN cd ./proto && make build
+RUN cd ./ui && make build
+RUN cd ./server && make build
+
+RUN cd ./server/target/universal && unzip ./pulsocat-*.zip && rm ./pulsocat-*.zip && mv ./pulsocat-* /pulsocat
+RUN cp ./server/config.yaml /pulsocat/
 
 ################################################################
 
-FROM ghcr.io/graalvm/graalvm-community:20.0.1 as pulsocat
+FROM ghcr.io/graalvm/graalvm-community:20.0.2 as pulsocat
 RUN gu install js
 
 RUN useradd --user-group --system --create-home --no-log-init pulsocat
 USER pulsocat
-WORKDIR /workdir
+WORKDIR /pulsocat
 
-COPY --from=builder --chown=pulsocat:pulsocat /pulsar-ui .
+COPY --from=builder --chown=pulsocat:pulsocat /pulsocat .
 
-ENTRYPOINT [ "/workdir/bin/pulsar-ui" ]
+EXPOSE 8090
 
-# ################################################################
-
-# FROM pulsocat as pulsocat-standalone
-
+ENTRYPOINT [ "/pulsocat/bin/pulsocat" ]

@@ -60,8 +60,6 @@
               export LD_LIBRARY_PATH="${runtimeLibraryPath}"
 
               source ./dev-env.sh
-
-              alias docker=podman
             '';
 
             packages = [
@@ -81,8 +79,11 @@
               protoc-gen-grpc-web
               protoc-gen-scala
 
+              pkgs.pulumi-bin
               pkgs.kubectl
+              pkgs.kubernetes-helm
               pkgs.awscli2
+              pkgs.aws-iam-authenticator
 
               pkgs.git
               pkgs.git-lfs

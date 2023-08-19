@@ -6,13 +6,13 @@ import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import React from "react";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 
 const policy = 'compactionThreshold';
 
@@ -29,7 +29,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext()
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext()
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -40,7 +40,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     async () => {
       const req = new pb.GetCompactionThresholdRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-      const res = await namespaceServiceClient.getCompactionThreshold(req, {});
+      const res = await namespacePoliciesServiceClient.getCompactionThreshold(req, {});
       if (res === undefined) {
         return;
       }
@@ -85,7 +85,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             const req = new pb.RemoveCompactionThresholdRequest();
             req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-            const res = await namespaceServiceClient.removeCompactionThreshold(req, {})
+            const res = await namespacePoliciesServiceClient.removeCompactionThreshold(req, {})
               .catch((err) => notifyError(`Unable to disable compaction threshold policy. ${err}`));
 
             if (res === undefined) {
@@ -103,7 +103,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setNamespace(`${props.tenant}/${props.namespace}`);
             req.setThreshold(Math.floor(value.sizeBytes));
 
-            const res = await namespaceServiceClient.setCompactionThreshold(req, {});
+            const res = await namespacePoliciesServiceClient.setCompactionThreshold(req, {});
             if (res === undefined) {
               return;
             }
@@ -119,7 +119,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setNamespace(`${props.tenant}/${props.namespace}`);
             req.setThreshold(0);
 
-            const res = await namespaceServiceClient.setCompactionThreshold(req, {});
+            const res = await namespacePoliciesServiceClient.setCompactionThreshold(req, {});
             if (res === undefined) {
               return;
             }

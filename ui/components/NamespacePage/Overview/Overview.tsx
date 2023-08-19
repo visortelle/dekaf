@@ -13,7 +13,6 @@ import { Code } from "../../../grpc-web/google/rpc/code_pb";
 import * as Notifications from "../../app/contexts/Notifications";
 import { TabContent } from "../../ui/Tabs/Tabs";
 import NothingToShow from "../../ui/NothingToShow/NothingToShow";
-import Button from "../../ui/Button/Button";
 import * as pbUtils from "../../../pbUtils/pbUtils";
 import Table from "../../ui/Table/Table";
 import * as Modals from "../../app/contexts/Modals/Modals";

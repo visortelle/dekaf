@@ -18,7 +18,7 @@ import { routes } from "../../routes";
 import { H2 } from "../../ui/H/H";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
 import { CreateNamespaceRequest } from "../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
-import {help} from "../Namespaces/help";
+import { help } from "../Namespaces/help";
 import KeyValueEditor from "../../ui/KeyValueEditor/KeyValueEditor";
 
 export type CreateNamespaceProps = {
@@ -95,7 +95,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
       return;
     }
 
-    await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({tenant: props.tenant}));
+    await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }));
 
     navigate(routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }));
   };

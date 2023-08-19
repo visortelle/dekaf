@@ -9,11 +9,11 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { swrKeys } from "../../../swrKeys";
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import Input from "../../../ui/Input/Input";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 
 const policy = 'publishRate';
 
@@ -31,7 +31,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -44,7 +44,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetPublishRateRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getPublishRate(req, {});
+      const res = await namespacePoliciesServiceClient.getPublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get publish rate for namespace. ${res.getStatus()?.getMessage()}`);
       }
@@ -84,7 +84,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.SetPublishRateRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.removePublishRate(req, {});
+      const res = await namespacePoliciesServiceClient.removePublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set publish rate. ${res.getStatus()?.getMessage()}`);
       }
@@ -96,7 +96,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       req.setRateInMsg(value.rateInMsg);
       req.setRateInByte(value.rateInByte);
 
-      const res = await namespaceServiceClient.setPublishRate(req, {});
+      const res = await namespacePoliciesServiceClient.setPublishRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to set publish rate. ${res.getStatus()?.getMessage()}`);
       }

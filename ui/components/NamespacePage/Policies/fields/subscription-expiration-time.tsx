@@ -5,7 +5,7 @@ import { ConfigurationField } from "../../../ui/ConfigurationTable/Configuration
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Select from '../../../ui/Select/Select';
 import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import DurationInput from '../../../ui/ConfigurationTable/DurationInput/DurationInput';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
@@ -27,7 +27,7 @@ export type FieldInputProps = {
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const [key, setKey] = useState(0);
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -39,7 +39,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetSubscriptionExpirationTimeRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getSubscriptionExpirationTime(req, {});
+      const res = await namespacePoliciesServiceClient.getSubscriptionExpirationTime(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get subscribe rate. ${res.getStatus()?.getMessage()}`);
         return;
@@ -82,7 +82,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveSubscriptionExpirationTimeRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeSubscriptionExpirationTime(req, {});
+          const res = await namespacePoliciesServiceClient.removeSubscriptionExpirationTime(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscribe rate. ${res.getStatus()?.getMessage()}`);
           }
@@ -93,7 +93,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setNamespace(`${props.tenant}/${props.namespace}`);
           req.setSubscriptionExpirationTimeInMinutes(Math.floor(value.subscriptionExpirationTimeInSeconds / 60));
 
-          const res = await namespaceServiceClient.setSubscriptionExpirationTime(req, {});
+          const res = await namespacePoliciesServiceClient.setSubscriptionExpirationTime(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscribe rate. ${res.getStatus()?.getMessage()}`);
           }
