@@ -9,12 +9,6 @@ image_branch_tag=$("${this_dir}/get-branch-tag.sh")
 
 echo $DOCKER_PASS | docker login --password-stdin --username $DOCKER_USER
 
-docker pull "${image_branch_tag}-arm64"
-docker pull "${image_branch_tag}-amd64"
-
-docker pull "${image_version_tag}-arm64"
-docker pull "${image_version_tag}-amd64"
-
 docker manifest create \
   $image_branch_tag \
   --amend "${image_branch_tag}-arm64" \
