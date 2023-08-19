@@ -76,7 +76,7 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
           type='primary'
           disabled={credentialsName.length === 0}
           text='Save'
-          onClick={ async () => {
+          onClick={async () => {
             const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
               method: 'POST',
               body: JSON.stringify(credentials),
@@ -84,26 +84,26 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
                 'Content-Type': 'application/json'
               }
             })
-            .then(async res => {
-              if (res.status === 400) {
-                let errorBody = await res.text();
-                notifyError(errorBody);
+              .then(async res => {
+                if (res.status === 400) {
+                  let errorBody = await res.text();
+                  notifyError(errorBody);
+                  return;
+                } else if (res.status !== 200) {
+                  notifyError('Server error happened.');
+                  return;
+                }
+
+                await mutate(swrKeys.pulsar.auth.credentials._());
+                await mutate(swrKeys.pulsar.auth.credentials.current._());
+
+
+                props.onDone();
+              })
+              .catch(err => {
+                notifyError(`Unable to save credentials: ${err}`)
                 return;
-              } else if (res.status !== 200) {
-                notifyError('Server error happened.');
-                return;
-              }
-
-              await mutate(swrKeys.pulsar.auth.credentials._());
-              await mutate(swrKeys.pulsar.auth.credentials.current._());
-
-
-              props.onDone();
-            })
-            .catch(err => {
-              notifyError(`Unable to save credentials: ${err}`)
-              return;
-            });
+              });
           }}
         />
       </div>

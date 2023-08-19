@@ -6,7 +6,7 @@ import sf from '../../../ui/ConfigurationTable/form.module.css';
 import Select from '../../../ui/Select/Select';
 import Input from "../../../ui/Input/Input";
 import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
@@ -27,7 +27,7 @@ export type FieldInputProps = {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -39,7 +39,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetSubscribeRateRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getSubscribeRate(req, {});
+      const res = await namespacePoliciesServiceClient.getSubscribeRate(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get subscribe rate. ${res.getStatus()?.getMessage()}`);
         return;
@@ -83,7 +83,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveSubscribeRateRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeSubscribeRate(req, {});
+          const res = await namespacePoliciesServiceClient.removeSubscribeRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscribe rate. ${res.getStatus()?.getMessage()}`);
           }
@@ -95,7 +95,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           req.setSubscribeThrottlingRatePerConsumer(value.subscribeThrottlingRatePerConsumer);
           req.setRatePeriodInSeconds(value.ratePeriodInSeconds);
 
-          const res = await namespaceServiceClient.setSubscribeRate(req, {});
+          const res = await namespacePoliciesServiceClient.setSubscribeRate(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set subscribe rate. ${res.getStatus()?.getMessage()}`);
           }

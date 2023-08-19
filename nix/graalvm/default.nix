@@ -3,7 +3,7 @@
 let
   src_linux_arm64 = {
     url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-20.0.1/graalvm-community-jdk-20.0.1_linux-aarch64_bin.tar.gz";
-    sha256 = "";
+    sha256 = "sha256-AfAn2Rv6Rcn1ClOfgooHQOluXSh/w0rXJVaHYmKUobQ=";
   };
 
   src_linux_x86_64 = {
@@ -22,8 +22,8 @@ let
   };
 
   js_linux_arm64 = {
-    url = "";
-    sha256 = "";
+    url = "https://github.com/oracle/graaljs/releases/download/graal-23.0.0/js-installable-svm-java20-linux-aarch64-23.0.0.jar";
+    sha256 = "sha256-dNktjzvyFIFs1rf/AbT0G8GIpZRORZL2Yc64nvl+k64=";
   };
 
   js_linux_x86_64 = {
@@ -42,8 +42,8 @@ let
   };
 
   icu4j_linux_arm64 = {
-    url = "";
-    sha256 = "";
+    url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-23.0.0/icu4j-installable-ce-java20-linux-aarch64-23.0.0.jar";
+    sha256 = "sha256-n6QxsfYEdgOFyZOi/HJ83/3lghldVScrEqR7Vata4WE=";
   };
 
   icu4j_linux_x86_64 = {
@@ -62,8 +62,8 @@ let
   };
 
   regex_linux_arm64 = {
-    url = "";
-    sha256 = "";
+    url = "https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-23.0.0/regex-installable-ce-java20-linux-aarch64-23.0.0.jar";
+    sha256 = "sha256-XkS7xxxcjcMZOBC7O4OW3zUZr9t0DuHVQIWRjErVZbw=";
   };
 
   regex_linux_x86_64 = {

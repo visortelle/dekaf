@@ -6,7 +6,7 @@ import useSWR, { useSWRConfig } from "swr";
 import ListInput from "../../../ui/ConfigurationTable/ListInput/ListInput";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import * as cpb from '../../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
@@ -27,7 +27,7 @@ type PolicyValue = {
 };
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient, clustersServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient, clustersServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
@@ -40,7 +40,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const replicationClustersReq = new pb.GetReplicationClustersRequest();
       replicationClustersReq.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const replicationClustersRes = await namespaceServiceClient.getReplicationClusters(replicationClustersReq, {});
+      const replicationClustersRes = await namespacePoliciesServiceClient.getReplicationClusters(replicationClustersReq, {});
       if (replicationClustersRes.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get replication clusters: ${replicationClustersRes.getStatus()?.getMessage()}`);
       }
@@ -81,7 +81,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         req.setNamespace(`${props.tenant}/${props.namespace}`);
         req.setReplicationClustersList(value.replicationClusters);
 
-        const res = await namespaceServiceClient.setReplicationClusters(req, {});
+        const res = await namespacePoliciesServiceClient.setReplicationClusters(req, {});
         if (res.getStatus()?.getCode() !== Code.OK) {
           notifyError(`Unable to set replication clusters: ${res.getStatus()?.getMessage()}`);
           return;

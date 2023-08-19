@@ -1,6 +1,6 @@
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import Input from '../../../ui/ConfigurationTable/Input/Input';
@@ -12,7 +12,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import Select from '../../../ui/Select/Select';
 import { uniq } from 'lodash';
-import {help} from '../../../ui/help' ;
+import { help } from '../../../ui/help';
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 
@@ -30,7 +30,7 @@ type PolicyValue = { type: 'not-specified' } | {
 }
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
@@ -42,7 +42,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetBookieAffinityGroupRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getBookieAffinityGroup(req, {});
+      const res = await namespacePoliciesServiceClient.getBookieAffinityGroup(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         throw new Error(`Unable to get bookie affinity group. ${res.getStatus()?.getMessage()}`);
       }
@@ -72,7 +72,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         if (value.type === 'not-specified') {
           const req = new pb.RemoveBookieAffinityGroupRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
-          const res = await namespaceServiceClient.removeBookieAffinityGroup(req, {}).catch((err) => notifyError(`Unable to disable bookie affinity group policy. ${err}`));
+          const res = await namespacePoliciesServiceClient.removeBookieAffinityGroup(req, {}).catch((err) => notifyError(`Unable to disable bookie affinity group policy. ${err}`));
           if (res?.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to disable bookie affinity group policy. ${res?.getStatus()?.getMessage()}`);
           }
@@ -86,7 +86,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           groupDataPb.setSecondaryList(value.secondary);
           req.setGroupData(groupDataPb);
 
-          const res = await namespaceServiceClient.setBookieAffinityGroup(req, {}).catch((err) => notifyError(`Unable to set bookie affinity group policy. ${err}`));
+          const res = await namespacePoliciesServiceClient.setBookieAffinityGroup(req, {}).catch((err) => notifyError(`Unable to set bookie affinity group policy. ${err}`));
           if (res === undefined) {
             return;
           }

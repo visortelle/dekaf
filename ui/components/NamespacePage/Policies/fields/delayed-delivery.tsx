@@ -7,11 +7,11 @@ import DurationInput from "../../../ui/ConfigurationTable/DurationInput/Duration
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import { swrKeys } from "../../../swrKeys";
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import React from "react";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
-import {help} from "../../../ui/help";
+import { help } from "../../../ui/help";
 
 const policy = 'delayedDelivery';
 
@@ -30,7 +30,7 @@ type PolicyValue = {
 };
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -42,7 +42,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetDelayedDeliveryRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getDelayedDelivery(req, {});
+      const res = await namespacePoliciesServiceClient.getDelayedDelivery(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get delayed delivery policy. ${res.getStatus()?.getMessage()}`);
         return;
@@ -85,7 +85,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const req = new pb.RemoveDelayedDeliveryRequest();
           req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-          const res = await namespaceServiceClient.removeDelayedDelivery(req, {});
+          const res = await namespacePoliciesServiceClient.removeDelayedDelivery(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set delayed delivery policy. ${res.getStatus()?.getMessage()}`);
           }
@@ -104,7 +104,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             req.setEnabled(false);
           }
 
-          const res = await namespaceServiceClient.setDelayedDelivery(req, {});
+          const res = await namespacePoliciesServiceClient.setDelayedDelivery(req, {});
           if (res.getStatus()?.getCode() !== Code.OK) {
             notifyError(`Unable to set delayed delivery policy. ${res.getStatus()?.getMessage()}`);
           }

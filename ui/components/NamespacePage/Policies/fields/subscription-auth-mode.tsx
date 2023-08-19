@@ -1,7 +1,7 @@
 import Select from "../../../ui/Select/Select";
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb';
 import useSWR, { useSWRConfig } from "swr";
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import { swrKeys } from "../../../swrKeys";
@@ -19,7 +19,7 @@ export type FieldInputProps = {
 type PolicyValue = 'None' | 'Prefix';
 
 export const FieldInput: React.FC<FieldInputProps> = (props) => {
-  const { namespaceServiceClient } = GrpcClient.useContext();
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
@@ -31,7 +31,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       const req = new pb.GetSubscriptionAuthModeRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
 
-      const res = await namespaceServiceClient.getSubscriptionAuthMode(req, {});
+      const res = await namespacePoliciesServiceClient.getSubscriptionAuthMode(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to get subscription auth mode: ${res.getStatus()?.getMessage()}`);
         return;
@@ -67,7 +67,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           case 'Prefix': req.setSubscriptionAuthMode(pb.SubscriptionAuthMode.SUBSCRIPTION_AUTH_MODE_PREFIX); break;
         }
 
-        const res = await namespaceServiceClient.setSubscriptionAuthMode(req, {}).catch((err) => notifyError(`Unable to set subscription auth mode: ${err}`));
+        const res = await namespacePoliciesServiceClient.setSubscriptionAuthMode(req, {}).catch((err) => notifyError(`Unable to set subscription auth mode: ${err}`));
         if (res?.getStatus()?.getCode() !== Code.OK) {
           throw new Error(`Unable to set subscription auth mode: ${res?.getStatus()?.getMessage()}`);
         }

@@ -3,7 +3,7 @@
 let
   src_linux_arm64 = {
     url = "https://github.com/tealtools/ScalaPB/releases/download/v0.11.12-arm64/protoc-gen-scala-0.11.12-arm64-linux-arm64.zip";
-    sha256 = "";
+    sha256 = "sha256-Dx0kWRFuayOG3bd3uskomlmTj4/z/S8cn6cbTC+zD+Y=";
   };
 
   src_linux_x86_64 = {
