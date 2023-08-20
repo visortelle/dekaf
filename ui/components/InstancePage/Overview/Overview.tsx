@@ -35,7 +35,7 @@ const Overview: React.FC = () => {
             <tbody>
               <tr className={sts.Row}>
                 <td className={sts.HighlightedCell}>Instance Name</td>
-                <td className={sts.Cell}>{config?.pulsarInstance.name}</td>
+                <td className={sts.Cell}>{config?.pulsarName}</td>
               </tr>
               <tr className={sts.Row}>
                 <td className={sts.HighlightedCell}>Broker Version</td>
@@ -44,13 +44,13 @@ const Overview: React.FC = () => {
               <tr className={sts.Row}>
                 <td className={sts.HighlightedCell}>Broker Service URL</td>
                 <td className={sts.Cell}>
-                  {config.pulsarInstance.brokerServiceUrl}
+                  {config.pulsarBrokerUrl}
                 </td>
               </tr>
               <tr className={sts.Row}>
                 <td className={sts.HighlightedCell}>Web Service URL</td>
                 <td className={sts.Cell}>
-                  {config.pulsarInstance.webServiceUrl}
+                  {config.pulsarHttpUrl}
                 </td>
               </tr>
             </tbody>

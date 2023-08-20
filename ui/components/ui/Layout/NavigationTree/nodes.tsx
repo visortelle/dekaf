@@ -29,7 +29,7 @@ export const PulsarInstance: React.FC<PulsarInstanceProps> = (props) => {
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span className={s.NodeLinkText}>{config.pulsarInstance.name || 'Pulsar Instance'}</span>
+      <span className={s.NodeLinkText}>{config.pulsarName || 'Pulsar Instance'}</span>
     </Link>
   );
 }

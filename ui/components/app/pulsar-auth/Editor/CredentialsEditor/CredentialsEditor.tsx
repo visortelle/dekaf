@@ -90,7 +90,8 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
                   notifyError(errorBody);
                   return;
                 } else if (res.status !== 200) {
-                  notifyError('Server error happened.');
+                  const json = await res.json();
+                  notifyError(`Server error happened. ${json}`);
                   return;
                 }
 
