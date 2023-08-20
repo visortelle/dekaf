@@ -28,9 +28,9 @@ case class Config(
     licenseToken: Option[String] = None,
     //
     @describe("Pulsar instance name")
-    pulsarInstanceName: Option[String] = Some("default"),
+    pulsarName: Option[String] = Some("default"),
     @describe("Optional accent color to visually distinguish this instance")
-    pulsarInstanceColor: Option[String] = Some("transparent"),
+    pulsarColor: Option[String] = Some("transparent"),
     @describe("The URL where Pulsar broker (or proxy) serves protobuf requests.")
     pulsarBrokerUrl: Option[String] = Some("pulsar://localhost:6650"),
     @describe("The URL where Pulsar broker (or proxy) serves http requests.")
@@ -90,10 +90,10 @@ case class Config(
 )
 
 val yamlConfigDescriptor = descriptor[Config]
-val envConfigDescriptor = descriptor[Config].mapKey(_.toUpperCase)
+val envConfigDescriptor = descriptor[Config].mapKey(key => s"PULSOCAT_${toUpperSnakeCase(key)}")
 
 val yamlConfigSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
-val envConfigSource = ConfigSource.fromSystemEnv(Some('_'), Some(','))
+val envConfigSource = ConfigSource.fromSystemEnv(None, Some(','))
 
 val internalHttpPort = getFreePort
 val internalGrpcPort = getFreePort
@@ -108,3 +108,5 @@ def readConfig =
     yield config
 
 def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))
+
+def toUpperSnakeCase(s: String) = s.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2").replaceAll("([a-z\\d])([A-Z])", "$1_$2").toUpperCase

@@ -10,13 +10,11 @@ type BuildInfo = {
 }
 export type Config = {
   publicUrl: string,
+  pulsarName: string,
+  pulsarColor: string,
+  pulsarBrokerUrl: string,
+  pulsarHttpUrl: string,
   buildInfo: BuildInfo,
-  pulsarInstance: {
-    name: string,
-    color: string,
-    brokerServiceUrl: string,
-    webServiceUrl: string,
-  },
 }
 
 export type PerformanceOptimizations = {
@@ -36,17 +34,15 @@ export type Value = {
 const defaultValue: Value = {
   config: {
     publicUrl: '',
+    pulsarName: '',
+    pulsarColor: '',
+    pulsarBrokerUrl: '',
+    pulsarHttpUrl: '',
     buildInfo: {
       name: '',
       version: '',
       builtAtString: '',
       builtAtMillis: 0
-    },
-    pulsarInstance: {
-      name: '',
-      color: '',
-      brokerServiceUrl: '',
-      webServiceUrl: '',
     },
   },
   performanceOptimizations: { pulsarConsumerState: 'inactive' },

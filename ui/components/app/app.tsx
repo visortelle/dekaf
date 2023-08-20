@@ -54,7 +54,7 @@ const _App: React.FC<AppProps> = (props) => {
           </Notifications.DefaultProvider>
         </HealthCheckContext.DefaultProvider>
       </GrpcClient.DefaultProvider>
-      <InstanceColor color={props.config.pulsarInstance.color} />
+      <InstanceColor color={props.config.pulsarColor} />
     </SWRConfig>
   );
 };
