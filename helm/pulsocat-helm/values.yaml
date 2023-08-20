@@ -3,16 +3,7 @@ fullnameOverride: ""
 imagePullSecrets: []
 
 pulsocat:
-  config: |
-    publicUrl: ${PULSOCAT_PUBLIC_URL}
-
-    license:
-      id: ${PULSOCAT_LICENSE_ID}
-      token: ${PULSOCAT_LICENSE_TOKEN}
-
-    pulsarInstance:
-      brokerServiceUrl: ${PULSOCAT_PULSAR_INSTANCE_BROKER_SERVICE_URL}
-      webServiceUrl: ${PULSOCAT_PULSAR_INSTANCE_WEB_SERVICE_URL}
+  config: ""
 
   env: []
 
