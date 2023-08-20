@@ -40,14 +40,12 @@ object HttpServer:
                     "/",
                     ctx => {
                         val model = Map(
-                            "publicUrl" -> appConfig.publicUrl,
+                            "publicUrl" -> appConfig.publicUrl.get,
                             "buildInfo" -> buildinfo.BuildInfo.toMap.asJava,
-                            "pulsarInstance" -> Map[String, Any](
-                                "name" -> appConfig.pulsarInstanceName.get,
-                                "color" -> appConfig.pulsarInstanceColor.get,
-                                "brokerServiceUrl" -> appConfig.pulsarBrokerUrl.get,
-                                "httpServiceUrl" -> appConfig.pulsarHttpUrl.get
-                            ).asJava
+                            "pulsarBrokerUrl" -> appConfig.pulsarBrokerUrl.get,
+                            "pulsarHttpUrl" -> appConfig.pulsarHttpUrl.get,
+                            "pulsarName" -> appConfig.pulsarName.get,
+                            "pulsarColor" -> appConfig.pulsarColor.get,
                         ).asJava
 
                         val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
