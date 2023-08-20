@@ -2,11 +2,9 @@ package config
 
 import zio.*
 import zio.config.*
-import zio.config.ConfigDescriptor
 import zio.config.ConfigSource
 import zio.config.magnolia.{describe, descriptor}
-import zio.config.typesafe.{configValueConfigDescriptor, TypesafeConfig}
-import zio.config.yaml.{YamlConfig, YamlConfigSource}
+import zio.config.yaml.YamlConfigSource
 
 import java.nio.file.Path
 import scala.concurrent.Await
@@ -34,9 +32,9 @@ case class Config(
     @describe("Optional accent color to visually distinguish this instance")
     pulsarInstanceColor: Option[String] = Some("transparent"),
     @describe("The URL where Pulsar broker (or proxy) serves protobuf requests.")
-    pulsarBrokerServiceUrl: Option[String] = Some("pulsar://localhost:6650"),
+    pulsarBrokerUrl: Option[String] = Some("pulsar://localhost:6650"),
     @describe("The URL where Pulsar broker (or proxy) serves http requests.")
-    pulsarHttpServiceUrl: Option[String] = Some("http://localhost:8090"),
+    pulsarHttpUrl: Option[String] = Some("http://localhost:8090"),
 
     //
     @describe("Path to the TLS key file.")
@@ -106,9 +104,12 @@ def readConfig =
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
         defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
 
-        config <- ZIO.succeed(defaultConfig)
-
+        config <- ZIO.succeed(mergeConfigs(defaultConfig, mergeConfigs(envConfig, yamlConfig)))
+        configValidationResult <- ZIO.succeed(validateConfig(config))
         _ <- ZIO.succeed(pprint.pprintln(config))
+        _ <- configValidationResult match
+            case Left(err) => ZIO.die(err)
+            case Right(_)  => ZIO.unit
     yield config
 
 def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))

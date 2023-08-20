@@ -14,14 +14,14 @@ case class KeygenError(
     title: Option[String],
     detail: Option[String],
     code: Option[String],
-    source: KeygenErrorSource
+    source: Option[KeygenErrorSource]
 )
 
 given Decoder[KeygenError] = deriveDecoder[KeygenError]
 given Encoder[KeygenError] = deriveEncoder[KeygenError]
 
 case class KeygenErrorRes(
-    errors: List[KeygenError]
+    errors: Option[List[KeygenError]]
 )
 
 given Decoder[KeygenErrorRes] = deriveDecoder[KeygenErrorRes]

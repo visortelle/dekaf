@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 
 def makeAdminClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
-    var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarHttpServiceUrl.get)
+    var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarHttpUrl.get)
 
     builder = tls.configureAdminClient(builder, config)
 
@@ -54,7 +54,7 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
         so we need to use only one thread per client. */
         .listenerThreads(1)
         .ioThreads(1)
-        .serviceUrl(config.pulsarBrokerServiceUrl.get)
+        .serviceUrl(config.pulsarBrokerUrl.get)
 
     builder = tls.configureClient(builder, config)
 

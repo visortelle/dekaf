@@ -45,8 +45,8 @@ object HttpServer:
                             "pulsarInstance" -> Map[String, Any](
                                 "name" -> appConfig.pulsarInstanceName.get,
                                 "color" -> appConfig.pulsarInstanceColor.get,
-                                "brokerServiceUrl" -> appConfig.pulsarBrokerServiceUrl.get,
-                                "httpServiceUrl" -> appConfig.pulsarHttpServiceUrl.get
+                                "brokerServiceUrl" -> appConfig.pulsarBrokerUrl.get,
+                                "httpServiceUrl" -> appConfig.pulsarHttpUrl.get
                             ).asJava
                         ).asJava
 
