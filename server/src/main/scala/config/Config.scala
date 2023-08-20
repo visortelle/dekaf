@@ -90,7 +90,7 @@ case class Config(
 )
 
 val yamlConfigDescriptor = descriptor[Config]
-val envConfigDescriptor = descriptor[Config].mapKey(toUpperSnakeCase)
+val envConfigDescriptor = descriptor[Config].mapKey(key => s"PULSOCAT_${toUpperSnakeCase(key)}")
 
 val yamlConfigSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
 val envConfigSource = ConfigSource.fromSystemEnv(None, Some(','))
