@@ -105,11 +105,6 @@ def readConfig =
         defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
 
         config <- ZIO.succeed(mergeConfigs(defaultConfig, mergeConfigs(envConfig, yamlConfig)))
-        configValidationResult <- ZIO.succeed(validateConfig(config))
-        _ <- ZIO.succeed(pprint.pprintln(config))
-        _ <- configValidationResult match
-            case Left(err) => ZIO.die(err)
-            case Right(_)  => ZIO.unit
     yield config
 
 def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))

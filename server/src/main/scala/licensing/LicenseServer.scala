@@ -41,6 +41,7 @@ object LicenseServer:
             println(s"More info about this product: https://pulsocat.com")
         }
         config <- readConfig
+        _ <- validateConfigOrDie(config)
         licenseId <- ZIO.attempt(config.licenseId.get)
         licenseToken <- ZIO.attempt(config.licenseToken.get)
         _ <- ZIO.attempt {

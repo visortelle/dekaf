@@ -96,7 +96,7 @@ lazy val root = project
             "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
             "com.google.guava" % "guava" % "31.1-jre",
             "com.lihaoyi" %% "os-lib" % "0.9.1",
-            "com.lihaoyi" %% "pprint" % "0.8.1",
+            "com.lihaoyi" %% "pprint" % "0.8.1", // Useful during development
             "io.netty" % "netty-all" % "4.1.93.Final"
         )
     )
