@@ -64,7 +64,7 @@ object GrpcServer:
 
     def run: ZIO[Any, Throwable, Unit] = for
         config <- readConfig
-        port <- ZIO.attempt(config.internal.get.grpcPort)
+        port <- ZIO.attempt(config.internalGrpcPort.get)
 
         _ <- ZIO.logInfo(s"gRPC server listening port: ${port}")
         server <- ZIO.attempt(createGrpcServer(port))

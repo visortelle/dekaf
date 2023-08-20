@@ -1,4 +1,4 @@
-port: ${PULSOCAT_PORT}
+port: 8095
 publicUrl: ${PULSOCAT_PUBLIC_URL}
 
 library:
@@ -7,9 +7,6 @@ library:
 license:
   id: ${PULSOCAT_LICENSE_ID}
   token: ${PULSOCAT_LICENSE_TOKEN}
-
-pulsarInstance:
-  name: ${PULSOCAT_PULSAR_INSTANCE_NAME}
-  color: transparent
-  brokerServiceUrl: ${PULSOCAT_PULSAR_INSTANCE_BROKER_SERVICE_URL}
-  webServiceUrl: ${PULSOCAT_PULSAR_INSTANCE_WEB_SERVICE_URL}
+#
+#pulsarInstance:
+#  color: transparent

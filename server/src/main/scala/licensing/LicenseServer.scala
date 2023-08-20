@@ -4,7 +4,7 @@ import zio.*
 import keygen.{KeygenClient, *}
 
 import java.util.UUID
-import _root_.config.{readConfig, LicenseConfig}
+import _root_.config.readConfig
 
 import java.time.ZoneOffset
 import java.time.temporal.ChronoField
@@ -41,30 +41,26 @@ object LicenseServer:
             println(s"More info about this product: https://pulsocat.com")
         }
         config <- readConfig
+        licenseId <- ZIO.attempt(config.licenseId.get)
+        licenseToken <- ZIO.attempt(config.licenseToken.get)
         _ <- ZIO.attempt {
-            config.license match
-                case Some(LicenseConfig(id, token)) =>
-                    val maskedToken = {
-                        val charsToMask = token.length - 4
-                        "*" * charsToMask + token.drop(charsToMask)
-                    }
-                    println(s"License id: $id")
-                    println(s"License token: $maskedToken")
-                case _ =>
-                    println("Exit 1")
-                    java.lang.System.exit(1)
+            val maskedToken = {
+                val charsToMask = licenseToken.length - 4
+                "*" * charsToMask + licenseToken.drop(charsToMask)
+            }
+            println(s"License id: $licenseId")
+            println(s"License token: $maskedToken")
         }
         _ <- ZIO.logInfo(s"Started at: ${java.time.Instant.now().toString}")
         config <- readConfig
-        license <- ZIO.attempt(config.license.get)
         keygenClient <- ZIO.attempt {
             new KeygenClient(
-                licenseToken = license.token,
+                licenseToken = config.licenseToken.get,
                 keygenApiUrl = KeygenApiUrl,
                 keygenAccountId = KeygenAccountId
             )
         }
-        keygenLicense <- keygenClient.validateLicense(license.id)
+        keygenLicense <- keygenClient.validateLicense(licenseId)
         product <- ZIO.attempt(ProductFamily.find(p => p.keygenProductId == keygenLicense.data.relationships.product.data.id))
         _ <- ZIO.whenCase(product) {
             case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.name}.")
@@ -102,10 +98,9 @@ object LicenseServer:
 
     def startLicenseHeartbeatPing(keygenMachineId: String, onFail: Task[Unit]): Task[Unit] = for {
         config <- readConfig
-        license <- ZIO.attempt(config.license.get)
         keygenClient <- ZIO.attempt {
             new KeygenClient(
-                licenseToken = license.token,
+                licenseToken = config.licenseToken.get,
                 keygenApiUrl = KeygenApiUrl,
                 keygenAccountId = KeygenAccountId
             )
