@@ -43,10 +43,10 @@ object HttpServer:
                             "publicUrl" -> appConfig.publicUrl,
                             "buildInfo" -> buildinfo.BuildInfo.toMap.asJava,
                             "pulsarInstance" -> Map[String, Any](
-                                "name" -> appConfig.pulsarInstance.name,
-                                "color" -> appConfig.pulsarInstance.color.getOrElse("transparent"),
-                                "brokerServiceUrl" -> appConfig.pulsarInstance.brokerServiceUrl,
-                                "webServiceUrl" -> appConfig.pulsarInstance.webServiceUrl
+                                "name" -> appConfig.pulsarInstanceName.get,
+                                "color" -> appConfig.pulsarInstanceColor.get,
+                                "brokerServiceUrl" -> appConfig.pulsarBrokerUrl.get,
+                                "httpServiceUrl" -> appConfig.pulsarHttpUrl.get
                             ).asJava
                         ).asJava
 
@@ -63,7 +63,7 @@ object HttpServer:
 
     def run: IO[Throwable, Unit] = for
         config <- readConfig
-        port <- ZIO.attempt(config.internal.get.httpPort)
+        port <- ZIO.attempt(config.internalHttpPort.get)
 
         _ <- ZIO.logInfo(s"HTTP server listening on port $port")
         app <- ZIO.attempt(createApp(config))

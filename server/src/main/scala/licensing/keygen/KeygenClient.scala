@@ -34,7 +34,7 @@ class KeygenClient(
         resultZIO =
             res.body match
                 case Left(err) =>
-                    if err.errors.exists(err => err.code.getOrElse("") == "MACHINE_LIMIT_EXCEEDED")
+                    if err.errors.getOrElse(List()).exists(err => err.code.getOrElse("") == "MACHINE_LIMIT_EXCEEDED")
                     then
                         val errMessage =
                             "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://pulsocat.com"
