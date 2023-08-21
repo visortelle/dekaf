@@ -55,38 +55,6 @@ export const createResources = () => {
     dependsOn: [namespace],
   });
 
-  const gateway = new k8s.apiextensions.CustomResource(
-    appFqn,
-    {
-      apiVersion: "networking.istio.io/v1beta1",
-      kind: "Gateway",
-      metadata: {
-        name: appFqn,
-        namespace: namespace.metadata.name
-      },
-      spec: {
-        selector: {
-          "istio": `ingressgateway`
-        },
-        servers: [
-          {
-            port: {
-              number: 443,
-              name: "https",
-              protocol: "HTTPS"
-            },
-            hosts: [`${appFqn}.dev.teal.tools`],
-            tls: {
-              mode: "SIMPLE",
-              credentialName: `wildcard.dev.teal.tools-tls`,
-            }
-          }
-        ]
-      }
-    },
-    { dependsOn: [helmRelease] }
-  );
-
   const virtualService = new k8s.apiextensions.CustomResource(
     appFqn,
     {
@@ -98,7 +66,7 @@ export const createResources = () => {
       },
       spec: {
         hosts: ["*"],
-        gateways: [gateway.metadata.name],
+        gateways: [`istio-system/wildcard-dev-teal-tools`],
         http: [
           {
             match: [{ uri: { prefix: "/" } }],
