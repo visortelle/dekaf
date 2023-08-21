@@ -116,7 +116,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       }
     };
 
-    const crumbValue = crumb.type === 'instance' ? (config.pulsarInstance.name || 'Pulsar Instance') : crumb.value;
+    const crumbValue = crumb.type === 'instance' ? (config.pulsarName || 'Pulsar Instance') : crumb.value;
 
     return (
       <Link
