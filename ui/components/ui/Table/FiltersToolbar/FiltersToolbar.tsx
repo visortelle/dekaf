@@ -70,7 +70,8 @@ function FiltersToolbar<CK extends string>(props: FiltersToolbarProps<CK>) {
             />
           </div>
         );
-      })}
+      }
+      )}
     </div>
   );
 }
@@ -81,7 +82,7 @@ export type FilterEditorProps = {
   onChange: (value: FilterInUse) => void;
 }
 
-function FilterEditor(props: FilterEditorProps) {
+export function FilterEditor(props: FilterEditorProps) {
   return (
     <div className={s.FilterEditor}>
       {(props.filterDescriptor.type === 'string' && props.value.value.type === 'string') && (
@@ -99,10 +100,8 @@ function FilterEditor(props: FilterEditorProps) {
           onChange={(v) => props.onChange({ ...props.value, value: { type: 'singleOption', value: v.value } })}
         />
       )}
-
-
     </div>
   );
-};
+}
 
 export default FiltersToolbar;

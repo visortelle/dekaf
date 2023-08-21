@@ -235,28 +235,30 @@ const Producer: React.FC<ProducerProps> = (props) => {
 
           <div className={s.Config}>
             <div className={s.ConfigLeft}>
-              <div className={s.FormControl}>
-                <strong>Value encoding</strong>
-                <Select<ValueType>
-                  value={valueType}
-                  onChange={v => setValueType(v as ValueType)}
-                  list={[
-                    {type: 'item', title: 'JSON', value: 'json'},
-                    {type: 'item', title: 'Bytes (hex)', value: 'bytes-hex'},
-                  ]}
-                />
+              <div className={s.UpperGroup}>
+                <div className={s.ValueFormControl}>
+                  <strong>Value encoding</strong>
+                  <Select<ValueType>
+                    value={valueType}
+                    onChange={v => setValueType(v as ValueType)}
+                    list={[
+                      {type: 'item', title: 'JSON', value: 'json'},
+                      {type: 'item', title: 'Bytes (hex)', value: 'bytes-hex'},
+                    ]}
+                  />
+                </div>
+                <div className={s.DateFormControl}>
+                  <strong>Event time</strong>
+                  <DatetimePicker
+                    value={eventTime}
+                    onChange={v => setEventTime(v)}
+                    clearable
+                  />
+                </div>
               </div>
               <div className={s.FormControl}>
                 <strong>Key</strong>
                 <Input onChange={v => setKey(v)} value={key || ''} placeholder=""/>
-              </div>
-              <div className={s.FormControl}>
-                <strong>Event time</strong>
-                <DatetimePicker
-                  value={eventTime}
-                  onChange={v => setEventTime(v)}
-                  clearable
-                />
               </div>
               <div className={s.FormControl}>
                 <strong>Properties</strong>
@@ -264,6 +266,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
                   value={JSON.parse(propertiesJsonMap)}
                   onChange={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
                   height="200rem"
+                  className={s.PropertiesEditor}
                 />
               </div>
             </div>
@@ -276,14 +279,14 @@ const Producer: React.FC<ProducerProps> = (props) => {
                     value={value}
                     onChange={v => setValue(v || '')}
                     language="json"
-                    height="300rem"
+                    height="280rem"
                   />
                 )}
                 {valueType === 'bytes-hex' && (
                   <CodeEditor
                     value={value}
                     onChange={v => setValue(v || '')}
-                    height="300rem"
+                    height="280rem"
                   />
                 )}
               </div>
