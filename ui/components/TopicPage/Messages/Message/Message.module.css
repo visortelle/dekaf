@@ -27,3 +27,6 @@
   z-index: 1;
 }
 
+.ReprocessButton svg {
+  transform: rotate(90deg);
+}

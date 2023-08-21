@@ -7,6 +7,10 @@ import { MessageDescriptor } from '../types';
 import SmallButton from '../../../ui/SmallButton/SmallButton';
 import MessageDetails from './MessageDetails/MessageDetails';
 
+import reprocessIcon from './icons/reprocess.svg';
+import viewIcon from './icons/view.svg';
+import ReprocessMessage from "./ReprocessMessage/ReprocessMessage";
+
 export type MessageProps = {
   isShowTooltips: boolean;
   message: MessageDescriptor;
@@ -34,8 +38,19 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
             content: <MessageDetails message={props.message} />,
             styleMode: 'no-content-padding'
           })}
-          text="View"
           type='primary'
+          svgIcon={viewIcon}
+        />
+        <SmallButton
+          onClick={() => modals.push({
+            id: 'message-reprocess',
+            title: `Reprocess message`,
+            content: <ReprocessMessage message={props.message} />,
+            styleMode: 'no-content-padding'
+          })}
+          type='primary'
+          svgIcon={reprocessIcon}
+          className={s.ReprocessButton}
         />
       </Td>
 
