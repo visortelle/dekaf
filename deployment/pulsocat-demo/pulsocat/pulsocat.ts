@@ -65,7 +65,7 @@ export const createResources = () => {
         namespace: namespace.metadata.name,
       },
       spec: {
-        hosts: [appFqn],
+        hosts: [`${appFqn}.dev.teal.tools`],
         gateways: [`istio-system/wildcard-dev-teal-tools`],
         http: [
           {
