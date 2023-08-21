@@ -45,7 +45,7 @@ object compiler:
         val srcDir = tempDir / "src"
         os.makeDir(srcDir)
 
-        val depsDir: os.Path = os.Path(config.library.path + "/proto", os.root)
+        val depsDir: os.Path = os.Path(config.libraryPath.get + "/proto", os.root)
 
         files.foreach(f =>
             val path = srcDir / os.PathChunk.SeqPathChunk(f.relativePath.split("/"))

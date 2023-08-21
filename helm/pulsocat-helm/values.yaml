@@ -3,22 +3,7 @@ fullnameOverride: ""
 imagePullSecrets: []
 
 pulsocat:
-  config: |
-    port: 8090
-    publicUrl: ""
-
-    library:
-      path: "./library"
-
-    license:
-      id: ${PULSOCAT_LICENSE_ID}
-      token: ${PULSOCAT_LICENSE_TOKEN}
-
-    pulsarInstance:
-      name: "default"
-      color: "transparent"
-      brokerServiceUrl: ""
-      webServiceUrl: ""
+  config: ""
 
   env: []
 

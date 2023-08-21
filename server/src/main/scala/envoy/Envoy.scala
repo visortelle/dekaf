@@ -10,9 +10,9 @@ object Envoy:
     def run: IO[Throwable, Unit] = for
         envoyConfigParams <- readConfig.map(c =>
             EnvoyConfigParams(
-              httpServerPort = c.internal.get.httpPort,
-              grpcServerPort = c.internal.get.grpcPort,
-              listenPort = c.port
+              httpServerPort = c.internalHttpPort.get,
+              grpcServerPort = c.internalGrpcPort.get,
+              listenPort = c.port.get
             )
         )
 
