@@ -6,7 +6,8 @@ import os as os
 case class EnvoyConfigParams(
     httpServerPort: Int,
     grpcServerPort: Int,
-    listenPort: Int
+    listenPort: Int,
+    basePath: String
 )
 
 def renderEnvoyConfig(config: EnvoyConfigParams): String =
@@ -38,19 +39,19 @@ static_resources:
                     domains: ["*"]
                     routes:
                       - match:
-                          prefix: "/api/"
+                          prefix: "${config.basePath}api/"
                         route:
                           cluster: pulsar_ui_grpc
-                          prefix_rewrite: "/"
+                          prefix_rewrite: "${config.basePath}"
                           timeout: 0s
                           max_stream_duration:
                             grpc_timeout_header_max: 0s
                             max_stream_duration: 0s
                       - match:
-                          prefix: "/"
+                          prefix: "${config.basePath}"
                         route:
                           cluster: pulsar_ui_http
-                          prefix_rewrite: "/"
+                          prefix_rewrite: "${config.basePath}"
                           timeout: 0s
                     cors:
                       allow_origin_string_match:

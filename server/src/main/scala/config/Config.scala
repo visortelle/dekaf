@@ -17,6 +17,8 @@ case class Config(
         "When running the application behind a reverse-proxy, you need to provide a public URL to let the application know how to render links and redirects correctly."
     )
     publicUrl: Option[String] = Some("http://localhost:8090"),
+    @describe("Base path.")
+    basePath: Option[String] = Some("/"),
     @describe("Library contains user-defined objects like message filters, visualizations, etc.")
     //
     @describe("Path to the library directory.")

@@ -4,6 +4,7 @@ def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
     Config(
         port = highPriority.port.orElse(lowPriority.port),
         publicUrl = highPriority.publicUrl.orElse(lowPriority.publicUrl),
+        basePath = highPriority.basePath.orElse(lowPriority.basePath),
         libraryPath = highPriority.libraryPath.orElse(lowPriority.libraryPath),
         licenseId = highPriority.licenseId.orElse(lowPriority.licenseId),
         licenseToken = highPriority.licenseToken.orElse(lowPriority.licenseToken),

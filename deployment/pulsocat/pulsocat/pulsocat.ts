@@ -6,12 +6,12 @@ const app = "ui";
 const project = pulumi.getProject();
 const stack = pulumi.getStack();
 const appFqn = `${project}-${app}-${stack}`;
-const isDemoPulsocatCom = stack === "demo-pulsocat-com";
 
 const gitRev = execSync('git rev-parse --short=8 HEAD', { encoding: 'utf-8' }).toString().trim();
 const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).toString().trim();
 
-const host = isDemoPulsocatCom ? "demo.pulsocat.com" : `${appFqn}.dev.teal.tool`;
+const isDemoPulsocatCom = stack === "demo-pulsocat-com";
+const host = isDemoPulsocatCom ? "pulsocat.com" : `${appFqn}.dev.teal.tool`;
 
 export const createResources = () => {
   const namespace = new k8s.core.v1.Namespace(
@@ -56,7 +56,8 @@ export const createResources = () => {
           }
         },
         env: [
-          { name: "PULSOCAT_PUBLIC_URL", value: `https://${host}` },
+          { name: "PULSOCAT_BASE_PATH", value: `/pulsocat` },
+          { name: "PULSOCAT_PUBLIC_URL", value: `https://${host}/pulsocat` },
           { name: "PULSOCAT_LICENSE_ID", value: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6" },
           { name: "PULSOCAT_LICENSE_TOKEN", value: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3" },
           { name: "PULSOCAT_PULSAR_BROKER_URL", value: "pulsar+ssl://instance-f.o-xy6ek.snio.cloud:6651" },
@@ -81,12 +82,12 @@ export const createResources = () => {
         hosts: [host],
         gateways: [
           isDemoPulsocatCom ?
-            "istio-system/wildcard-pulsocat-com" :
+            "istio-system/pulsocat-com" :
             `istio-system/wildcard-dev-teal-tools`
         ],
         http: [
           {
-            match: [{ uri: { prefix: "/" } }],
+            match: [{ uri: { prefix: "/demo" } }],
             route: [
               {
                 destination: {
