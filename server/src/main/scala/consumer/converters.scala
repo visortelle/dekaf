@@ -4,25 +4,20 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
 import _root_.schema.avro
 import _root_.schema.protobufnative
-import _root_.conversions.primitiveConv.{
-    bytesToBoolean,
-    bytesToFloat32,
-    bytesToFloat64,
-    bytesToInt16,
-    bytesToInt32,
-    bytesToInt64,
-    bytesToInt8,
-    bytesToJson,
-    bytesToJsonString,
-    bytesToString,
-    leftPad
-}
+import _root_.conversions.primitiveConv.{bytesToBoolean, bytesToFloat32, bytesToFloat64, bytesToInt16, bytesToInt32, bytesToInt64, bytesToInt8, bytesToJson, bytesToJsonString, bytesToString, leftPad}
 
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp
+import io.circe.Encoder
+import io.circe.generic.semiauto.deriveEncoder
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
+import pulsar_auth.EmptyCredentials
+import com.tools.teal.pulsar.ui.api.v1.consumer.{FiltersCollection, MessageFilter, RawMessageFilter, RawFiltersCollection}
+import consumer.EditorFilterScope
+import com.tools.teal.pulsar.ui.api.v1.consumer.Scope
+import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
 import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
@@ -151,3 +146,47 @@ object converters:
             case SchemaType.BYTES           => bytesToJson(msgData)
             case SchemaType.NONE            => bytesToJson(msgData)
             case _                          => Left(new Exception("Can't convert bytes to json"))
+
+    def convertToEditorFilter(rawFilter: pb.RawMessageFilter): EditorFilter =
+        val scope = rawFilter.scope.map(scope =>
+            EditorFilterScope(
+                tenant = Option(scope.tenant).filter(_.nonEmpty),
+                namespace = Option(scope.namespace).filter(_.nonEmpty),
+                topicName = Option(scope.topicName).filter(_.nonEmpty),
+                topicType = Option(scope.topicType).filter(_.nonEmpty)
+            )
+        )
+
+        EditorFilter(
+            value = rawFilter.value,
+            description = rawFilter.description,
+            name = rawFilter.name,
+            scope = scope
+        )
+
+    def convertToRawMessageFilter(filter: EditorFilter): pb.RawMessageFilter =
+        val scope = filter.scope.map(scope =>
+            pb.Scope(
+                tenant = scope.tenant.getOrElse(""),
+                namespace = scope.namespace.getOrElse(""),
+                topicName = scope.topicName.getOrElse(""),
+                topicType = scope.topicType.getOrElse("")
+            )
+        )
+
+        pb.RawMessageFilter(
+            value = filter.value,
+            description = filter.description,
+            name = filter.name,
+            scope = scope
+        )
+
+    def convertToFiltersCollection(messageFiltersCollection: MessageFiltersCollection): pb.RawFiltersCollection =
+        pb.RawFiltersCollection(
+            collectionId     = messageFiltersCollection.id,
+            collectionName = messageFiltersCollection.name,
+            filtersMap = messageFiltersCollection.filtersMap.map {
+                case (id, collection) =>
+                    id -> convertToRawMessageFilter(collection)
+            }
+        )

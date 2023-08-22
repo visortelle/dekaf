@@ -21,8 +21,8 @@ import NamespacePage, {
 } from "../../NamespacePage/NamespacePage";
 import TopicPage, { TopicPageView } from "../../TopicPage/TopicPage";
 import SubscriptionPage, { SubscriptionPageView } from '../../SubscriptionPage/SubscriptionPage';
-import { TreeNode } from "../../ui/Layout/NavigationTree/TreeView";
 import InstancePage from "../../InstancePage/InstancePage";
+import {TreeNode} from "../../ui/Layout/NavigationTree/utils/tree-path-utils";
 
 type WithLayoutProps = { layout: Omit<LayoutProps, "children"> };
 type WithLayout = (

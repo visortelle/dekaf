@@ -2,12 +2,29 @@
   padding-bottom: 36rem;
 }
 
+.FilterChainMainButtons {
+  display: flex;
+  gap: 8rem;
+  flex-direction: row;
+  margin-bottom: 12rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.RowButtons {
+  display: flex;
+  gap: 8rem;
+  flex-direction: row;
+  align-items: center;
+}
+
 .Entry {
-  padding: 12rem;
+  padding: 6rem 12rem 12rem 12rem;
   border: 1px solid var(--border-color);
   margin-bottom: 12rem;
   border-radius: 4rem;
   display: flex;
+  flex-direction: column;
 }
 
 .EntryFilter {
@@ -17,19 +34,22 @@
 
 .EntryButtons {
   display: flex;
-  flex-direction: column;
-  gap: 8rem;
+  justify-content: space-between;
+  padding: 0 6rem;
 }
 
 .EntryButton {
-  margin-bottom: 12rem;
+  margin-bottom: 6rem;
+  align-items: center;
+  display: flex;
 }
 
-.EntryButton:last-child {
-  margin-bottom: 0;
+.EntryButtonsRight {
+  display: flex;
+  gap: 8rem;
 }
 
-.Buttons {
+.EntryButtonsLeft {
   display: flex;
   gap: 8rem;
 }

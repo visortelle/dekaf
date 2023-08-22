@@ -2,24 +2,30 @@
   display: flex;
   padding: 12rem;
   height: 70vh;
+  gap: 6rem;
 }
 
 .Column {
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  border: 1px solid black;
+  padding: 12rem;
   min-width: 300rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6rem;
+  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
+  transition: var(--transition-short);
 }
 
 .Inactive {
-  padding: 2px 5px;
+  padding: 2rem 5rem;
 }
 
 .Active {
   background-color: var(--accent-color-blue);
   color: #fff;
+  border-radius: 4rem;
 }
+
 .Empty {
   background-color: var(--accent-color-red);
   color: #fff;
@@ -28,6 +34,13 @@
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
+}
+
+.Collections > :first-child,
+.Filters > :first-child,
+.JsonEditor > :first-child,
+.FilterInfo > :first-child {
+  margin-bottom: 6rem;
 }
 
 .Buttons {
@@ -42,17 +55,30 @@
   width: 400rem;
 }
 
-.RenameWindow {
+.FilterInfoFieldsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10rem;
+}
+
+.FilterInfoField {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.RenameCollection {
   position: absolute;
   background-color: #fff;
-  border: 1px solid black;
-  padding: 6rem;
-  margin-left: 200px;
+  border: 1px solid var(--border-color);
+  border-radius: 6rem;
+  padding: 10rem;
+  margin-left: 160rem;
   z-index: 500;
   font-size: 14pt;
   width: 300rem;
 }
-.HeadRenameWindow {
+.HeadRenameCollection {
   display: flex;
   margin-bottom: 10rem;
 }
@@ -69,9 +95,11 @@
   width: 100%;
   justify-content: flex-end;
 }
+
 .MainButtons > button:last-child {
   margin-right: 12rem;
 }
+
 .MainButtons > button {
-  margin: 0 6rem 6rem 6rem;
+  margin: 0 6rem 12rem 6rem;
 }

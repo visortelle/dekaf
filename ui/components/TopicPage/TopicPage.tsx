@@ -14,6 +14,7 @@ import { useNavigate } from "react-router";
 import Producers from "./Producers/Producers";
 import Overview from "./Overview/Overview";
 import { matchPath, useLocation } from 'react-router-dom';
+import {TopicType} from "./Messages/Message/ReprocessMessage/types";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -187,9 +188,18 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         <Session
           key={key}
           config={{
-            topicsSelector: { type: "by-names", topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] },
-            startFrom: { type: "latest" },
-            messageFilter: { filters: {}, disabledFilters: [], mode: "all" },
+            topicsSelector: {
+              type: "by-names",
+              topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`]
+            },
+            startFrom: {type: "latest"},
+            messageFilterChain: {filters: {}, disabledFilters: [], mode: "all"},
+            topicNode: {
+              tenant: props.tenant,
+              namespace: props.namespace,
+              topicName: props.topic,
+              topicType: props.topicType as TopicType,
+            }
           }}
         />
       )}

@@ -294,6 +294,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         topicStateSetters(node);
       },
     };
+
     const topicStateSetters = (nodeType: TreeNodeType) => {
       const tenant = TreePathUtils.getTenant(nodePath)!;
       const namespace = TreePathUtils.getNamespace(nodePath)!;

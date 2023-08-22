@@ -1,6 +1,7 @@
 import s from './Icons.module.css';
 import pulsarLogo from './pular-logo.svg';
 import SvgIcon from '../SvgIcon/SvgIcon';
+import React from "react";
 
 export type NodeIconsProps = {
   textColor: string;

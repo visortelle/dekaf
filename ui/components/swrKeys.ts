@@ -79,7 +79,7 @@ export const swrKeys = {
             "metrics",
             "properties",
             stringify(topics)
-          ],
+          ]
         }
       },
     },
@@ -107,6 +107,20 @@ export const swrKeys = {
           "batch",
           "getTenantsInfo",
           stringify(tenants),
+        ],
+      },
+      getFiltersCollections: {
+        _: () => [
+          "pulsar",
+          "batch",
+          "getFiltersCollections"
+        ],
+      },
+      getFiltersCollectionsInfo: {
+        _: () => [
+          "pulsar",
+          "batch",
+          "getFiltersCollectionsInfo"
         ],
       },
     },

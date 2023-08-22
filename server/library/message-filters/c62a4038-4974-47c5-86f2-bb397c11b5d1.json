@@ -1,0 +1,28 @@
+{
+  "id" : "c62a4038-4974-47c5-86f2-bb397c11b5d1",
+  "name" : "New collection",
+  "filtersMap" : {
+    "a768eb61-dddb-4f00-9c29-abc75c8ce01c" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "600ac9ab-3bdd-49dc-a195-87c175116478" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    }
+  }
+}

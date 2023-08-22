@@ -17,7 +17,7 @@
 
 .Body:focus {
   outline: none;
-  border-color: var(--accent-color-blue);
+  /*border-color: var(--accent-color-blue);*/
 }
 
 .True .Body {

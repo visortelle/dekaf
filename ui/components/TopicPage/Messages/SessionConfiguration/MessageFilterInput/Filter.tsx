@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { EditorFilter } from './FiltersEditor/FiltersEditor';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
 import dependencies from './dependecies';
 import * as t from './types';
@@ -14,17 +13,13 @@ export type FilterProps = {
   autoCompleteConfig?: boolean;
 };
 
-export const defaultJsValue = `({ value, accum }) => {
-  return true
-}`;
-
 const Filter: React.FC<FilterProps> = (props) => {
 
   return (
     <div className={s.Filter}>
       <div className={s.FormControl}>
         <CodeEditor
-          value={props.value.value}
+          value={props.value?.value}
           onChange={v => props.onChange({ ...props.value, value: v || '' })}
           height="180rem"
           language="javascript"

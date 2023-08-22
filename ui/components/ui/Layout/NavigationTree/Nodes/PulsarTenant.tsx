@@ -8,7 +8,7 @@ import {Code} from "../../../../../grpc-web/google/rpc/code_pb";
 import Link from "../../../Link/Link";
 import {routes} from "../../../../routes";
 import s from "../NavigationTree.module.css";
-import {nodesSwrConfiguration} from "../utils/nodes-utils";
+import {nodesSwrConfiguration} from "../utils/navigation-nodes-utils";
 
 export type PulsarTenantProps = {
   forceReloadKey: number;

@@ -3,23 +3,22 @@ import s from './Messages.module.css'
 import * as AppContext from '../../app/contexts/AppContext';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import {
-  Message,
-  CreateConsumerRequest,
-  ResumeRequest,
-  ResumeResponse,
-  SubscriptionType,
-  TopicsSelector,
-  DeleteConsumerRequest,
-  PauseRequest,
-  SubscriptionInitialPosition,
-  SeekRequest,
-  RegexSubscriptionMode,
-  TopicsSelectorByNames,
-  TopicsSelectorByRegex,
-  SubscriptionMode,
-  MessageFilterChain,
-  MessageFilterChainMode,
-  MessageFilter,
+    Message,
+    CreateConsumerRequest,
+    ResumeRequest,
+    ResumeResponse,
+    SubscriptionType,
+    TopicsSelector,
+    DeleteConsumerRequest,
+    PauseRequest,
+    SubscriptionInitialPosition,
+    SeekRequest,
+    RegexSubscriptionMode,
+    TopicsSelectorByNames,
+    TopicsSelectorByRegex,
+    SubscriptionMode,
+    MessageFilterChain,
+    MessageFilterChainMode, RawMessageFilter,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
@@ -371,12 +370,12 @@ const Session: React.FC<SessionProps> = (props) => {
       console.info(`%cRunning session: ${props.sessionKey}`, consoleCss);
 
       const messageFilterChain = new MessageFilterChain();
-      messageFilterChain.setMode(props.config.messageFilter.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
+      messageFilterChain.setMode(props.config.messageFilterChain.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
 
-      Object.entries(props.config.messageFilter.filters)
-        .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
+      Object.entries(props.config.messageFilterChain.filters)
+        .filter(([filterId]) => !props.config.messageFilterChain.disabledFilters.includes(filterId))
         .forEach(([filterId, filter]) => {
-          const filterPb = new MessageFilter();
+          const filterPb = new RawMessageFilter();
           filterPb.setValue(filter.filter.value || '');
           messageFilterChain.getFiltersMap().set(filterId, filterPb);
         });
@@ -578,13 +577,13 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
 export default SessionController;
 
 export function hexStringToByteArray(hexString: string): Uint8Array {
-  if (hexString.length % 2 !== 0) {
-    throw "Must have an even number of hex digits to convert to bytes";
-  }
-  var numBytes = hexString.length / 2;
-  var byteArray = new Uint8Array(numBytes);
-  for (var i = 0; i < numBytes; i++) {
-    byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
-  }
-  return byteArray;
+    if (hexString.length % 2 !== 0) {
+        throw "Must have an even number of hex digits to convert to bytes";
+    }
+    const numBytes = hexString.length / 2;
+    const byteArray = new Uint8Array(numBytes);
+    for (let i = 0; i < numBytes; i++) {
+        byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
+    }
+    return byteArray;
 }

@@ -3,7 +3,7 @@ import s from './NothingToShow.module.css'
 
 export type NothingToShowProps = {
   content?: ReactNode;
-  reason?: 'no-items-found' | 'loading-in-progress';
+  reason?: 'no-items-found' | 'loading-in-progress' | 'no-content-found' | 'server-error';
 };
 
 const NothingToShow: React.FC<NothingToShowProps> = (props) => {
@@ -12,7 +12,13 @@ const NothingToShow: React.FC<NothingToShowProps> = (props) => {
     case 'loading-in-progress':
       content = 'Loading...';
       break;
-    default:
+    case 'no-content-found':
+      content="No content found.";
+      break;
+    case 'server-error':
+        content="Server error occurred.";
+        break;
+    case 'no-items-found':
       content = 'No items found.';
   }
 

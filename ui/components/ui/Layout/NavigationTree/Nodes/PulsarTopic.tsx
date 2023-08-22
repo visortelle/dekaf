@@ -2,7 +2,7 @@ import React from "react";
 import Link from "../../../Link/Link";
 import {routes} from "../../../../routes";
 import s from "../NavigationTree.module.css";
-import {NodesUtils} from "../utils/nodes-utils";
+import {NavigationNodesUtils} from "../utils/navigation-nodes-utils";
 
 export type PulsarTopicProps = {
   tenant: string;
@@ -16,7 +16,7 @@ export type PulsarTopicProps = {
   customRender?: (props: PulsarTopicProps) => React.ReactElement;
 }
 export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
-  const topicName = NodesUtils.getTopicName(props.topic);
+  const topicName = NavigationNodesUtils.getNameFromPath(props.topic);
 
   return props.customRender?.(props) || (
     <Link

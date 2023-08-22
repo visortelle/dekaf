@@ -1,5 +1,6 @@
 import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
 import * as messageFilter from "../Messages/SessionConfiguration/MessageFilterInput/types";
+import {TopicNode, TopicType} from "./Message/ReprocessMessage/types";
 
 export type SessionState =
   | "paused"
@@ -38,7 +39,8 @@ export type StartFrom =
 export type SessionConfig = {
   startFrom: StartFrom;
   topicsSelector: SessionTopicsSelector;
-  messageFilter: messageFilter.Chain;
+  messageFilterChain: messageFilter.Chain;
+  topicNode: TopicNode
 };
 
 type Nullable<T> = T | null;

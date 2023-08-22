@@ -1,0 +1,61 @@
+{
+  "id" : "63b04c57-a22b-4b6b-be47-ffcda7b6c815",
+  "name" : "New collection",
+  "filtersMap" : {
+    "c4933aec-93e4-4862-a06d-9ede27e8995d" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : "public",
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "72506116-1312-4d83-9914-c678b3ef5cb4" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "bf31b632-5973-4ee5-a363-16a5ea5cae1f" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "922659dd-567a-451e-872f-444d30b8f09b" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    },
+    "074abe7f-27da-4cd7-9ddd-3a6615e3650f" : {
+      "value" : "({ key, value, accum }) => {\n  return true;\n}",
+      "description" : "",
+      "name" : "New filter",
+      "scope" : {
+        "tenant" : null,
+        "namespace" : null,
+        "topicName" : null,
+        "topicType" : null
+      }
+    }
+  }
+}

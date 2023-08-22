@@ -30,8 +30,9 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         <div>
           <div className={s.ControlLabel}>Filters</div>
           <FilterChain
-            value={props.config.messageFilter}
-            onChange={(v) => (props.onConfigChange({ ...props.config, messageFilter: v }))}
+            topicNode={props.config.topicNode}
+            value={props.config.messageFilterChain}
+            onChange={(chain) => props.onConfigChange({ ...props.config, messageFilterChain: chain })}
           />
         </div>
       </div>

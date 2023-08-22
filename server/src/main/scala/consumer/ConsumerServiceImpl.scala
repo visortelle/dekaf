@@ -1,33 +1,30 @@
 package consumer
 
-import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
-import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
-import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
-import com.typesafe.scalalogging.Logger
-
-import scala.concurrent.{ExecutionContext, Future}
-import io.grpc.stub.StreamObserver
-
-import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
-import com.google.protobuf.ByteString
-import com.google.rpc.status.Status
-import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
-import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
-import org.apache.pulsar.client.api.{Message, MessageId}
-import consumer.MessageFilter
 import _root_.pulsar_auth.RequestContext
+import com.google.rpc.code.Code
+import com.google.rpc.status.Status
+import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
+import com.tools.teal.pulsar.ui.api.v1.consumer.{CollectionInfo, ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, DeleteMessageFilterCollectionRequest, DeleteMessageFilterCollectionResponse, DeleteMessageFilterRequest, DeleteMessageFilterResponse, GetFiltersCollectionsInfoRequest, GetFiltersCollectionsInfoResponse, GetFiltersCollectionsNamesRequest, GetFiltersCollectionsNamesResponse, GetFiltersCollectionsRequest, GetFiltersCollectionsResponse, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SaveRawFiltersCollectionRequest, SaveRawFiltersCollectionResponse, SaveToExistingFiltersCollectionRequest, SaveToExistingFiltersCollectionResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, UpdateExistingFilterCollectionRequest, UpdateExistingFilterCollectionResponse}
+import com.typesafe.scalalogging.Logger
+import consumer.MessageFiltersCollection.*
+import io.circe.parser.decode
+import io.circe.syntax.EncoderOps
+import io.grpc.stub.StreamObserver
+import org.apache.pulsar.client.api.{Consumer, Message, MessageId}
 
-import java.io.ByteArrayOutputStream
-import java.util.UUID
+import java.io.{ByteArrayOutputStream, File, PrintWriter}
+import java.nio.file.{Files, Paths}
 import java.time.Instant
+import java.util.UUID
+import scala.concurrent.Future
+import scala.io.Source
+import scala.jdk.CollectionConverters.*
 
 type ConsumerName = String
 
 class StreamDataHandler:
-    var onNext: (msg: Message[Array[Byte]]) => Unit = _ => ()
+    var onNext: Message[Array[Byte]] => Unit =
+        message => ()
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     val logger: Logger = Logger(getClass.getName)
@@ -73,11 +70,11 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(schemasByTopic, msg)
 
                     val (filterResult, jsonAccumulator) =
-                        getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, messageValueToJsonResult)
+                        MessageFilter.getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, messageValueToJsonResult)
 
                     val messageToSend = messagePb
                         .withAccumulator(jsonAccumulator)
-                        .withDebugStdout(messageFilter.getStdout())
+                        .withDebugStdout(messageFilter.getStdout)
 
                     val messages = filterResult match
                         case Right(true) => Seq(messageToSend)
@@ -168,7 +165,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumerName = request.consumerName
         logger.info(s"Deleting consumer. Consumer: $consumerName")
 
-        def tryUnsubscribe: Unit =
+        def tryUnsubscribe(): Unit =
             consumers.get(consumerName) match
                 case Some(consumer) =>
                     try
@@ -176,11 +173,11 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     catch
                         // Unsubscribe fails on partitioned topics in most cases.
                         // Anyway we can't handle it meaningfully.
-                        _ => ()
+                        case _ => ()
                     finally ()
                 case _ => ()
 
-        tryUnsubscribe
+        tryUnsubscribe()
 
         consumers = consumers.removed(consumerName)
         streamDataHandlers = streamDataHandlers.removed(consumerName)
@@ -243,3 +240,331 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))
         Future.successful(response)
+
+    override def saveRawFiltersCollection(request: SaveRawFiltersCollectionRequest): Future[SaveRawFiltersCollectionResponse] =
+        request.rawCollection match
+            case Some(rawCollection) =>
+                val resourceName = s"library/message-filters/${rawCollection.collectionId}.json"
+                val pathToCollectionFile = Paths.get(resourceName)
+
+                if(!Files.exists(pathToCollectionFile)) then
+                    val writer = new PrintWriter(pathToCollectionFile.toFile)
+                    try
+                        val collection = MessageFiltersCollection(
+                            id = rawCollection.collectionId,
+                            name = rawCollection.collectionName,
+                            filtersMap = rawCollection.filtersMap.map {
+                                case (id, filter) =>
+                                    id -> converters.convertToEditorFilter(filter)
+                            }
+                        )
+                        val collectionJson = collection.asJson.toString
+
+                        writer.write(collectionJson)
+
+                        val status: Status = Status(code = Code.OK.index)
+                        val response = SaveRawFiltersCollectionResponse(status = Some(status))
+
+                        Future.successful(response)
+                    catch
+                        case err: Exception => {
+                            val status: Status = Status(
+                                code = Code.FAILED_PRECONDITION.index,
+                                message = s"Failed to save filters to file: ${rawCollection.collectionName}. Error: ${err.getMessage}"
+                            )
+                            val response = SaveRawFiltersCollectionResponse(status = Some(status))
+                            Future.successful(response)
+                        }
+                    finally
+                        writer.close()
+                else
+                    val status: Status = Status(
+                        code = Code.FAILED_PRECONDITION.index,
+                        message = s"Message filter collection already exists: ${rawCollection.collectionName}"
+                    )
+                    val response = SaveRawFiltersCollectionResponse(status = Some(status))
+                    Future.successful(response)
+            case None =>
+                val status: Status = Status(
+                    code = Code.FAILED_PRECONDITION.index,
+                    message = s"Raw collection is empty."
+                )
+                val response = SaveRawFiltersCollectionResponse(status = Some(status))
+                Future.successful(response)
+
+
+    override def saveToExistingFiltersCollection(request: SaveToExistingFiltersCollectionRequest): Future[SaveToExistingFiltersCollectionResponse] =
+        val resourceName = s"library/message-filters/${request.collectionId}.json"
+        val pathToCollectionFile = Paths.get(resourceName)
+
+        if (Files.exists(pathToCollectionFile)) then
+            val collectionJson = readTextFromFile(pathToCollectionFile.toFile)
+
+            decode[MessageFiltersCollection](collectionJson) match
+                case Left(err) =>
+                    val status: Status = Status(
+                        code = Code.FAILED_PRECONDITION.index,
+                        message = s"Failed to parse message filters collection. Error: ${err.getMessage}"
+                    )
+                    val response = SaveToExistingFiltersCollectionResponse(status = Some(status))
+                    Future.successful(response)
+                case Right(collection) =>
+                    val newFilters = request.filtersMap.map {
+                        case (id, filter) =>
+                            id -> converters.convertToEditorFilter(filter)
+                    }
+
+                    val updatedCollection: MessageFiltersCollection =
+                        collection.copy(filtersMap = collection.filtersMap ++ newFilters)
+                    val updatedCollectionJson = updatedCollection.asJson.toString
+
+                    val writer = new PrintWriter(pathToCollectionFile.toFile)
+                    try
+                        writer.write(updatedCollectionJson)
+                        val status: Status = Status(code = Code.OK.index)
+                        val response = SaveToExistingFiltersCollectionResponse(status = Some(status))
+                        Future.successful(response)
+                    catch
+                        case err: Exception => {
+                            val status: Status = Status(
+                                code = Code.FAILED_PRECONDITION.index,
+                                message = s"Failed to save filters to file: ${collection.name}. Error: ${err.getMessage}"
+                            )
+                            val response = SaveToExistingFiltersCollectionResponse(status = Some(status))
+                            Future.successful(response)
+                        }
+                    finally
+                        writer.close()
+
+        else
+            val status: Status = Status(
+                code = Code.FAILED_PRECONDITION.index,
+                message = s"Selected collection does not exist."
+            )
+            val response = SaveToExistingFiltersCollectionResponse(status = Some(status))
+            Future.successful(response)
+
+    override def getFiltersCollections(request: GetFiltersCollectionsRequest): Future[GetFiltersCollectionsResponse] =
+        val resourceDirectoryName = "library/message-filters"
+        val directoryPath = Paths.get(resourceDirectoryName)
+
+        val collections = Files
+            .list(directoryPath)
+            .iterator()
+            .asScala
+            .filter(Files.isRegularFile(_))
+            .map { path =>
+                val collectionJson = readTextFromFile(path.toFile)
+
+                decode[MessageFiltersCollection](collectionJson) match
+                    case Left(err) =>
+                        logger.warn(s"Unable to parse collection file: ${path.toFile.getName}")
+
+                        None
+                    case Right(collection) =>
+                        Some(collection)
+            }
+            .toSeq
+            .flatten
+
+        val status: Status = Status(code = Code.OK.index)
+        val response = GetFiltersCollectionsResponse(
+            status = Some(status),
+            filtersCollections = collections.map(converters.convertToFiltersCollection)
+        )
+        Future.successful(response)
+
+    override def getFiltersCollectionsInfo(request: GetFiltersCollectionsInfoRequest): Future[GetFiltersCollectionsInfoResponse] =
+        val resourceDirectoryName = "library/message-filters"
+        val directoryPath = Paths.get(resourceDirectoryName)
+
+        val collectionsInfo = Files
+            .list(directoryPath)
+            .iterator()
+            .asScala
+            .filter(Files.isRegularFile(_))
+            .flatMap { path =>
+                val collectionJson = readTextFromFile(path.toFile)
+
+                decode[MessageFiltersCollection](collectionJson) match
+                    case Left(err) =>
+                        logger.warn(s"Unable to parse collection file: ${path.toFile.getName}")
+
+                        None
+                    case Right(collection) =>
+                        val collectionInfo = CollectionInfo(
+                            collectionId = collection.id,
+                            collectionName = collection.name,
+                        )
+                        Some(CollectionInfo(
+                            collectionId = collection.id,
+                            collectionName = collection.name,
+                        ))
+            }
+            .toSeq
+
+        val status: Status = Status(code = Code.OK.index)
+        val response = GetFiltersCollectionsInfoResponse(
+            status = Some(status),
+            collectionsInfo = collectionsInfo
+        )
+        Future.successful(response)
+
+
+    override def deleteMessageFilter(request: DeleteMessageFilterRequest): Future[DeleteMessageFilterResponse] =
+        val resourceName = s"library/message-filters/${request.collectionId}.json"
+        val pathToCollectionFile = Paths.get(resourceName)
+
+        if (Files.exists(pathToCollectionFile)) then
+            try
+                val collectionJson = readTextFromFile(pathToCollectionFile.toFile)
+
+                decode[MessageFiltersCollection](collectionJson) match
+                    case Left(err) =>
+                        logger.warn(s"Unable to parse collection file: ${pathToCollectionFile.toFile.getName}")
+
+                        val status: Status = Status(
+                            code = Code.FAILED_PRECONDITION.index,
+                            message = "Unable to parse collection file"
+                        )
+                        val response = DeleteMessageFilterResponse(
+                            status = Some(status)
+                        )
+                        Future.successful(response)
+                    case Right(collection) =>
+                        val newFilters = collection.filtersMap.removed(request.filterId)
+
+                        val updatedCollection: MessageFiltersCollection =
+                            collection.copy(filtersMap = newFilters)
+                        val updatedCollectionJson = updatedCollection.asJson.toString
+
+                        val writer = new PrintWriter(pathToCollectionFile.toFile)
+                        try
+                            writer.write(updatedCollectionJson)
+                            val status: Status = Status(code = Code.OK.index)
+                            val response = DeleteMessageFilterResponse(status = Some(status))
+                            Future.successful(response)
+                        catch
+                            case err: Exception =>
+                                val status: Status = Status(
+                                    code = Code.FAILED_PRECONDITION.index,
+                                    message = s"Failed to save filters to file while deleting: ${collection.name} . Error: ${err.getMessage}"
+                                )
+                                val response = DeleteMessageFilterResponse(status = Some(status))
+                                Future.successful(response)
+                        finally
+                            writer.close()
+            catch
+                case err: Exception =>
+                    val status: Status = Status(
+                        code = Code.FAILED_PRECONDITION.index,
+                        message = s"Failed to delete message filter collection. Error: ${err.getMessage}"
+                    )
+                    val response = DeleteMessageFilterResponse(status = Some(status))
+                    Future.successful(response)
+        else
+            val status: Status = Status(
+                code = Code.FAILED_PRECONDITION.index,
+                message = s"Selected collection does not exist."
+            )
+            val response = DeleteMessageFilterResponse(status = Some(status))
+            Future.successful(response)
+
+
+    override def deleteMessageFilterCollection(request: DeleteMessageFilterCollectionRequest): Future[DeleteMessageFilterCollectionResponse] = 
+        val resourceName = s"library/message-filters/${request.collectionId}.json"
+        val pathToCollectionFile = Paths.get(resourceName)
+
+        if (Files.exists(pathToCollectionFile)) then
+            try
+                Files.delete(pathToCollectionFile)
+                val status: Status = Status(code = Code.OK.index)
+                val response = DeleteMessageFilterCollectionResponse(status = Some(status))
+                Future.successful(response)
+            catch
+                case err: Exception =>
+                    val status: Status = Status(
+                        code = Code.FAILED_PRECONDITION.index,
+                        message = s"Failed to delete message filter collection. Error: ${err.getMessage}"
+                    )
+                    val response = DeleteMessageFilterCollectionResponse(status = Some(status))
+                    Future.successful(response)
+        else
+            val status: Status = Status(
+                code = Code.FAILED_PRECONDITION.index,
+                message = s"Selected collection does not exist."
+            )
+            val response = DeleteMessageFilterCollectionResponse(status = Some(status))
+            Future.successful(response)
+
+
+    override def updateExistingFilterCollection(request: UpdateExistingFilterCollectionRequest): Future[UpdateExistingFilterCollectionResponse] =
+        request.rawCollection match
+            case Some(rawCollection) =>
+                val resourceName = s"library/message-filters/${rawCollection.collectionId}.json"
+                val pathToCollectionFile = Paths.get(resourceName)
+
+                if (Files.exists(pathToCollectionFile)) then
+                    val collectionJson = readTextFromFile(pathToCollectionFile.toFile)
+
+                    decode[MessageFiltersCollection](collectionJson) match
+                        case Left(err) =>
+                            val status: Status = Status(
+                                code = Code.FAILED_PRECONDITION.index,
+                                message = s"Failed to parse message filters collection. Error: ${err.getMessage}"
+                            )
+                            val response = UpdateExistingFilterCollectionResponse(status = Some(status))
+                            Future.successful(response)
+                        case Right(collection) =>
+                            val newFilters = rawCollection.filtersMap.map {
+                                case (id, filter) =>
+                                    id -> converters.convertToEditorFilter(filter)
+                            }
+
+                            val updatedCollection: MessageFiltersCollection =
+                                collection.copy(
+                                    id = rawCollection.collectionId,
+                                    name = rawCollection.collectionName,
+                                    filtersMap = collection.filtersMap ++ newFilters
+                                )
+                            val updatedCollectionJson = updatedCollection.asJson.toString
+
+                            val writer = new PrintWriter(pathToCollectionFile.toFile)
+                            try
+                                writer.write(updatedCollectionJson)
+                                val status: Status = Status(code = Code.OK.index)
+                                val response = UpdateExistingFilterCollectionResponse(status = Some(status))
+                                Future.successful(response)
+                            catch
+                                case err: Exception => {
+                                    val status: Status = Status(
+                                        code = Code.FAILED_PRECONDITION.index,
+                                        message = s"Failed to save filters to file: ${collection.name}. Error: ${err.getMessage}"
+                                    )
+                                    val response = UpdateExistingFilterCollectionResponse(status = Some(status))
+                                    Future.successful(response)
+                                }
+                            finally
+                                writer.close()
+
+                else
+                    val status: Status = Status(
+                        code = Code.FAILED_PRECONDITION.index,
+                        message = s"Selected collection does not exist."
+                    )
+                    val response = UpdateExistingFilterCollectionResponse(status = Some(status))
+                    Future.successful(response)
+            case None =>
+                val status: Status = Status(
+                    code = Code.FAILED_PRECONDITION.index,
+                    message = s"Raw collection is empty."
+                )
+                val response = UpdateExistingFilterCollectionResponse(status = Some(status))
+                Future.successful(response)
+
+    private def readTextFromFile(file: File): String =
+        val reader = Source.fromFile(file)
+        val contents = reader.mkString
+        reader.close()
+
+        contents
