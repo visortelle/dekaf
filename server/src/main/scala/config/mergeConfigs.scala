@@ -27,5 +27,11 @@ def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
         pulsarTlsCiphers = highPriority.pulsarTlsCiphers.orElse(lowPriority.pulsarTlsCiphers),
         pulsarTlsProtocols = highPriority.pulsarTlsProtocols.orElse(lowPriority.pulsarTlsProtocols),
         internalHttpPort = highPriority.internalHttpPort.orElse(lowPriority.internalHttpPort),
-        internalGrpcPort = highPriority.internalGrpcPort.orElse(lowPriority.internalGrpcPort)
+        internalGrpcPort = highPriority.internalGrpcPort.orElse(lowPriority.internalGrpcPort),
+        proxies = highPriority.proxies.orElse(lowPriority.proxies),
+        markdownsVariables = highPriority.markdownsVariables.orElse(lowPriority.markdownsVariables),
+        instanceMarkdownPath = highPriority.instanceMarkdownPath.orElse(lowPriority.instanceMarkdownPath),
+        tenantMarkdownPath = highPriority.tenantMarkdownPath.orElse(lowPriority.tenantMarkdownPath),
+        namespaceMarkdownPath = highPriority.namespaceMarkdownPath.orElse(lowPriority.namespaceMarkdownPath),
+        topicMarkdownPath = highPriority.topicMarkdownPath.orElse(lowPriority.topicMarkdownPath),
     )

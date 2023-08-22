@@ -10,44 +10,11 @@ import Cluster from "./Cluster/Cluster";
 import NothingToShow from "../../../ui/NothingToShow/NothingToShow";
 
 type ClustersProps = {
-  setClusters: React.Dispatch<React.SetStateAction<string[] | undefined>>
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
-  setActiveTab: React.Dispatch<React.SetStateAction<string>>
-}
+  clusters: string[] | undefined;
+  isLoading: boolean;
+};
 
-const Clusters: React.FC<ClustersProps> = (props) => {
-  const { notifyError } = Notifications.useContext();
-  const { clustersServiceClient } = GrpcClient.useContext();
-
-  const { data: clusters, error: clustersError, isLoading } = useSWR(
-    swrKeys.pulsar.clusters._(),
-    async () => {
-      const res = await clustersServiceClient.getClusters(
-        new pb.GetClustersRequest(),
-        null
-      );
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(
-          `Unable to get clusters list. ${res.getStatus()?.getMessage()}`
-        );
-        return [];
-      }
-
-      let clusterList = res.getClustersList();
-      props.setClusters(clusterList);
-      props.setActiveTab(clusterList.at(0) ?? "")
-
-      return clusterList;
-    }
-  );
-
-  props.setIsLoading(isLoading);
-
-  if (clustersError) {
-    notifyError(`Unable to get clusters list. ${clustersError}`);
-  }
-
+const Clusters: React.FC<ClustersProps> = ({clusters, isLoading}) => {
   if (clusters === undefined || clusters?.length === 0) {
     return <NothingToShow reason={isLoading ? 'loading-in-progress' : 'no-items-found'} />;
   }

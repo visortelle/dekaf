@@ -1,3 +1,8 @@
+.Markdown {
+  padding: 12rem;
+  width: 100%;
+}
+
 .Markdown iframe {
   border: none;
 }

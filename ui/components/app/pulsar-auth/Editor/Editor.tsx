@@ -18,7 +18,13 @@ export type EditorProps = {
   onDone: () => void;
 };
 
-type EditorView = 'list' | 'new';
+type EditorView = "list" | "new";
+type DefaultCredentialsName = "Default" | "DefaultOAuth2" | "DefaultJwt";
+
+function isDefaultCredentialsName(value: string): value is DefaultCredentialsName {
+  return value === "Default" || value === "DefaultOAuth2" || value === "DefaultJwt";
+}
+
 
 const Editor: React.FC<EditorProps> = (props) => {
   const { config } = AppContext.useContext();
@@ -93,7 +99,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                         <SmallButton
                           type='regular'
                           onClick={async () => {
-                            await fetch(`${config.publicUrl}/pulsar-auth/use/${encodeURIComponent(item.name)}`, { method: 'POST' })
+                            await fetch(`${config.publicUrl}/pulsar-auth/use/${encodeURIComponent(item.name)}`, {method: 'POST'})
                               .catch((err) => notifyError(`Unable to set current credentials: ${err}`));
                             await mutate(swrKeys.pulsar.auth.credentials._());
                             await mutate(swrKeys.pulsar.auth.credentials.current._());
@@ -103,13 +109,14 @@ const Editor: React.FC<EditorProps> = (props) => {
                         <SmallButton
                           type='danger'
                           onClick={async () => {
-                            await fetch(`${config.publicUrl}/pulsar-auth/delete/${encodeURIComponent(item.name)}`, { method: 'POST' })
+                            await fetch(`${config.publicUrl}/pulsar-auth/delete/${encodeURIComponent(item.name)}`, {method: 'POST'})
                               .catch((err) => notifyError(`Unable to delete credentials: ${err}`));
                             await mutate(swrKeys.pulsar.auth.credentials._());
                             await mutate(swrKeys.pulsar.auth.credentials.current._());
                           }}
                           title='Delete'
                           svgIcon={deleteIcon}
+                          style={{visibility: isDefaultCredentialsName(item.name) ? "hidden" : "visible"}}
                         />
                       </div>
                     </td>

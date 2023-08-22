@@ -51,7 +51,10 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             case _ =>
                 val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
+                val status: Status = Status(
+                    code = Code.FAILED_PRECONDITION.index,
+                    message = msg
+                )
                 return Future.successful(PauseResponse(status = Some(status)))
 
         val streamDataHandler = streamDataHandlers.get(consumerName)
@@ -137,10 +140,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             MessageFilterConfig(stdout = new ByteArrayOutputStream())
         ))
 
-        val topicsToConsume = request.topicsSelector match
-            case Some(ts) =>
-                ts.topicsSelector.byNames match
-                    case Some(bn) => bn.topics.toVector
+        val topicsToConsume = request.topicsSelector.flatMap(_.topicsSelector.byNames).map(_.topics.toVector) match
+            case Some(topics) => topics
             case _ =>
                 val status: Status =
                     Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
@@ -169,16 +170,15 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         logger.info(s"Deleting consumer. Consumer: $consumerName")
 
         def tryUnsubscribe: Unit =
-            consumers.get(consumerName) match
-                case Some(consumer) =>
-                    try
-                        consumer.unsubscribe()
-                    catch
-                        // Unsubscribe fails on partitioned topics in most cases.
-                        // Anyway we can't handle it meaningfully.
-                        _ => ()
-                    finally ()
-                case _ => ()
+            consumers.get(consumerName).foreach { consumer =>
+                try {
+                    consumer.unsubscribe()
+                } catch {
+                    // Unsubscribe fails on partitioned topics in most cases.
+                    // Anyway, we can't handle it meaningfully.
+                    case _: Throwable =>
+                }
+            }
 
         tryUnsubscribe
 
@@ -211,15 +211,14 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 Right(())
             case Seek.MessageId(v) =>
                 logger.info(s"Seek by message id. Consumer ${request.consumerName}. Message id: ${v.toString}")
-                try {
+                try
                     val messageId = MessageId.fromByteArray(v.toByteArray)
                     consumer.seek(messageId)
                     Right(())
-                } catch {
+                catch
                     case _ =>
                         val status: Status = Status(code = Code.INVALID_ARGUMENT.index)
                         return Future.successful(SeekResponse(status = Some(status)))
-                }
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(SeekResponse(status = Some(status)))

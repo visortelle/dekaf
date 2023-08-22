@@ -74,7 +74,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
                 testFn: (de, _, filterValue) => {
                   if (filterValue.type !== 'string') {
                     return true
-                  };
+                  }
 
                   return de.namespaceName.toLowerCase().includes(filterValue.value.toLowerCase());
                 },

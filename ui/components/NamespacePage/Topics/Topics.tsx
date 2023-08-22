@@ -13,8 +13,6 @@ import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
 import * as pbUtils from '../../../pbUtils/pbUtils';
 import {
-  GetTopicPropertiesResponse,
-  GetTopicsStatsResponse,
   PartitionedTopicStats,
   TopicProperties,
   TopicStats
@@ -279,7 +277,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'singleOption') {
                       return true
-                    };
+                    }
 
                     let result = true;
                     switch (filterValue.value) {
@@ -308,7 +306,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'singleOption') {
                       return true
-                    };
+                    }
 
                     let result = true;
                     switch (filterValue.value) {

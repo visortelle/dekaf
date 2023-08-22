@@ -94,17 +94,16 @@ object HttpServer:
                 )
 
                 config.jetty.contextHandlerConfig((sch) => {
-                    appConfig.proxies.foreach { proxyConfig =>
+                    appConfig.proxies.getOrElse(List.empty).foreach { proxyConfig =>
                         val proxyServlet = new ServletHolder(classOf[CustomProxyServlet])
-                        proxyServlet.setInitParameter("proxyTo", s"${proxyConfig.to}")
-                        proxyServlet.setInitParameter("prefix", s"/${proxyConfig.name}")
-                        sch.setAttribute("authHeaderValue",
-                            proxyConfig.headers
-                                .find(_.key == "Authorization")
-                                .get
-                                .value
-                        )
-                        sch.addServlet(proxyServlet, s"/${proxyConfig.name}/*")
+                        proxyServlet.setInitParameter("proxyTo", s"${proxyConfig.destination}")
+                        proxyServlet.setInitParameter("prefix", s"/${proxyConfig.resource}")
+
+                        proxyConfig.headers.getOrElse(Map.empty).find(_._1 == "Authorization") match
+                            case Some(header) => sch.setAttribute("authHeaderValue", header._2)
+                            case None         => sch.setAttribute("authHeaderValue", null)
+
+                        sch.addServlet(proxyServlet, s"/${proxyConfig.resource}/*")
                     }
                 })
             }

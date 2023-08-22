@@ -1,13 +1,13 @@
 import React, {useEffect} from "react";
 import InternalConfig from "./InternalConfig/InternalConfig";
 import HealthCheck from "./HealthCheck/HealthCheck";
-import Clusters from "./Clusters/Clusters";
+import ClustersInfo from "./Clusters/Clusters";
 import * as AppContext from '../../app/contexts/AppContext';
 import s from "./Overview.module.css";
 import Ui from "./Ui/Ui";
 import sts from "../../ui/SimpleTable/SimpleTable.module.css";
 import stt from '../../ui/Tabs/Tabs.module.css';
-import { H2 } from "../../ui/H/H";
+import {H2} from "../../ui/H/H";
 import * as HealthCheckContext from '../../app/contexts/HealthCheckContext/HealthCheckContext';
 import NoData from "../../ui/NoData/NoData";
 import * as GrpcClient from "../../app/contexts/GrpcClient/GrpcClient";
@@ -16,22 +16,59 @@ import {Code} from "../../../grpc-web/google/rpc/code_pb";
 import NothingToShow from "../../ui/NothingToShow/NothingToShow";
 import * as Notifications from "../../app/contexts/Notifications";
 import Markdown from "../../ui/Markdown/Markdown";
+import useSWR, {mutate} from "swr";
+import {swrKeys} from "../../swrKeys";
+import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/clusters/v1/clusters_pb";
 
 
 const Overview: React.FC = () => {
-  const { config } = AppContext.useContext();
-  const { brokerVersion } = HealthCheckContext.useContext();
+  const {config} = AppContext.useContext();
+  const {brokerVersion} = HealthCheckContext.useContext();
   const {notifyError} = Notifications.useContext();
-  const [ clusters, setClusters ] = React.useState<string[] | undefined>()
-  const [ isClustersLoading, setIsClustersLoading ] = React.useState<boolean>(false)
+  const {clustersServiceClient} = GrpcClient.useContext();
   const [activeClusterTab, setActiveClusterTab] = React.useState<string>("");
   const {markdownServiceClient} = GrpcClient.useContext();
   const [markdownData, setMarkdownData] = React.useState<string>('');
+  const markdownCache = React.useRef<{ [key: string]: string }>({});
+
+  const { data: clusters, error: clustersError, isLoading: isClustersLoading } = useSWR(
+    swrKeys.pulsar.clusters._(),
+    async () => {
+      const res = await clustersServiceClient.getClusters(
+        new pb.GetClustersRequest(),
+        null
+      );
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(
+          `Unable to get clusters list. ${res.getStatus()?.getMessage()}`
+        );
+        return [];
+      }
+
+      const clustersList = res.getClustersList();
+      setActiveClusterTab(clustersList.at(0) ?? "");
+
+      return clustersList;
+    }
+  );
+
+  if (clustersError) {
+    notifyError(`Unable to get clusters list. ${clustersError}`);
+  }
+
+  React.useEffect(() => {
+    setActiveClusterTab(prevState => prevState ? prevState : clusters?.at(0) ?? "");
+  }, [clusters]);
 
   useEffect(() => {
     const fetchMarkdownData = async (cluster: string) => {
+      if (markdownCache.current[cluster]) {
+        return markdownCache.current[cluster];
+      }
+
       const req = new GetInstanceMarkdownRequest();
-      req.setInstanceUrl(config.pulsarInstance.webServiceUrl);
+      req.setInstanceUrl(config.pulsarHttpUrl);
       req.setClusterName(cluster);
 
       const res = await markdownServiceClient.getInstanceMarkdown(req, null)
@@ -109,10 +146,9 @@ const Overview: React.FC = () => {
           <div className={s.SectionHeader}>
             <H2>Clusters</H2>
           </div>
-          <Clusters
-            setClusters={setClusters}
-            setIsLoading={setIsClustersLoading}
-            setActiveTab={setActiveClusterTab}
+          <ClustersInfo
+            clusters={clusters}
+            isLoading={isClustersLoading}
           />
         </div>
       </div>

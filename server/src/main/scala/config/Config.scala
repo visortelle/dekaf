@@ -10,6 +10,10 @@ import java.nio.file.Path
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
 
+
+type Key = String
+type Value = String
+
 case class Config(
     @describe("The port the server listens on.")
     port: Option[Int] = Some(8090),
@@ -86,48 +90,31 @@ case class Config(
     @describe("The port HTTP server listens on")
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on")
-    internalGrpcPort: Option[Int] = None
+    internalGrpcPort: Option[Int] = None,
 
-    //Grafana
     @describe("Proxy properties")
-    proxies: List[ProxyConfig] = List.empty,
-    @describe("Configuration to provide embedded dashboards to the app.")
-    resourcesInfoMarkdowns: ResourcesInfoMarkdownsConfig = ResourcesInfoMarkdownsConfig(
-                                                                   vars = Map.empty,
-                                                                   instance = "",
-                                                                   tenant = "",
-                                                                   namespace = "",
-                                                                   topic = ""
-                                                               ),
-)
+    proxies: Option[List[ProxyConfig]] = None,
 
-case class Header(
-    @describe("The key of the header.")
-    key: String,
-    @describe("The value of the header.")
-    value: String
+    //Grafana markdowns config
+    @describe("Arbitrary variables to be used in the markdowns.")
+    markdownsVariables: Option[Map[Key, Value]] = None,
+    @describe("Path to instance page markdown file.")
+    instanceMarkdownPath: Option[String] = None,
+    @describe("Path to tenant page markdown file.")
+    tenantMarkdownPath: Option[String] = None,
+    @describe("Path to namespace page markdown file.")
+    namespaceMarkdownPath: Option[String] = None,
+    @describe("Path to topic page markdown file.")
+    topicMarkdownPath: Option[String] = None,
 )
 
 case class ProxyConfig(
     @describe("The name of the proxy.")
-    name: String,
+    resource: String,
     @describe("The destination of the proxy.")
-    to: String,
+    destination: String,
     @describe("The headers to be included in the proxy.")
-    headers: List[Header]
-)
-
-case class ResourcesInfoMarkdownsConfig(
-    @describe("Variables to be used in the markdowns.")
-    vars: Map[String, String],
-    @describe("The markdown for instance page.")
-    instance: String,
-    @describe("The markdown for tenant page.")
-    tenant: String,
-    @describe("The markdown for namespace page.")
-    namespace: String,
-    @describe("The markdown for topic page.")
-    topic: String,
+    headers: Option[Map[Key, Value]]
 )
 
 val yamlConfigDescriptor = descriptor[Config]
