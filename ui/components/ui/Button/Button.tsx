@@ -5,6 +5,7 @@ export type ButtonProps = {
   onClick: () => void,
   text?: string
   svgIcon?: string,
+  svgIconFromRight?: boolean,
   title?: string,
   type: 'primary' | 'regular' | 'danger',
   testId?: string,
@@ -36,8 +37,17 @@ const Button: React.FC<ButtonProps> = (props) => {
       data-testid={props.testId}
       {...props.buttonProps}
     >
-      {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
-      {props.text}
+      {!props.svgIconFromRight ? (
+        <>
+          {props.svgIcon && <SvgIcon svg={props.svgIcon}/>}
+          {props.text}
+        </>
+      ) : (
+        <>
+          {props.text}
+          {props.svgIcon && <SvgIcon svg={props.svgIcon}/>}
+        </>
+      )}
     </button>
   );
 }

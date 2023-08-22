@@ -1,5 +1,12 @@
 import cloneDeep from "lodash/cloneDeep";
-import { Tree, TreePath } from "./TreeView";
+import {TreeNode, TreePath} from "./tree-path-utils";
+
+export type Tree = {
+  subForest: Tree[];
+  rootLabel: TreeNode;
+}
+
+type ExpandedPaths = TreePath[];
 
 export function setTenants(props: { tree: Tree; tenants: string[] }): Tree {
   let _tree = cloneDeep(props.tree);
@@ -74,8 +81,6 @@ export function setNamespaceTopics(props: {
   });
   return _tree;
 }
-
-type ExpandedPaths = TreePath[];
 export function expandDeep(
   tree: Tree,
   treePath: TreePath,

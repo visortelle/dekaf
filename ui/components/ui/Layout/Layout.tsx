@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './Layout.module.css'
 import NavigationTree from './NavigationTree/NavigationTree';
-import { TreePath } from './NavigationTree/TreeView';
+import { TreePath } from './NavigationTree/utils/tree-path-utils';
 import GlobalProgressIndicator from '../GlobalProgressIndicator/GlobalProgressIndicator';
 import Footer from './Footer';
 import SettingsBar from './SettingsBar/SettingsBar';
