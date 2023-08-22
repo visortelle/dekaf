@@ -1,0 +1,15 @@
+defaultOAuth2IssuerUrl: "https://auth.streamnative.cloud/"
+defaultOAuth2PrivateKey: '{"type":"sn_service_account","client_id":"RxDLk8gJzIPI9CgHOR2oWMOQjwWrrgbv","client_secret":"_1fhZ6g4NshTkwmrllU1F75aAwtW2m0WVEEiKssRr1ZalF4jD8fl0mfSGz1MWT9b","client_email":"free@o-xy6ek.auth.streamnative.cloud","issuer_url":"https://auth.streamnative.cloud/"}'
+defaultOAuth2Audience: "urn:sn:pulsar:o-xy6ek:free"
+defaultJwtToken: sdfsdfsdf.sdfsdfsdfsdf.sdfsdfsdfdf
+
+markdownsVariables:
+  toolUrl: http://localhost:3000
+  instance: metrics.streamnative.cloud:443
+  proxyResourceName: grafana
+  publicUrl: http://localhost:8090
+
+instanceMarkdownPath: /ui/markdowns/instance.md
+tenantMarkdownPath: /ui/markdowns/tenant.md
+namespaceMarkdownPath: /ui/markdowns/namespace.md
+topicMarkdownPath: /ui/markdowns/topic.md

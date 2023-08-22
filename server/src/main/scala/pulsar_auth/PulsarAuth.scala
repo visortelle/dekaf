@@ -114,28 +114,30 @@ val defaultPulsarAuth = PulsarAuth(
 def getDefaultCredentialsFromConfig: Map[CredentialsName, Credentials] =
     val credentialsMap: Map[String, Credentials] = Map("Default" -> EmptyCredentials(`type` = "empty"))
 
-    config.auth match
-        case None => credentialsMap
-        case Some(auth) =>
-            val oauth2Credentials = auth.oauth2.map { oauth2 =>
+    val oauth2Credentials = (config.defaultOAuth2IssuerUrl, config.defaultOAuth2PrivateKey) match
+        case (Some(issuerUrl: String), Some(privateKey: String)) =>
+            Map {
                 "DefaultOAuth2" -> OAuth2Credentials(
                     `type` = "oauth2",
-                    issuerUrl = oauth2.issuerUrl,
-                    privateKey = "data:application/json;base64," + Base64.encodeBase64String(oauth2.privateKey.getBytes(UTF_8)),
-                    audience = Some(oauth2.audience.getOrElse("")),
-                    scope = Some(oauth2.scope.getOrElse(""))
+                    issuerUrl = issuerUrl,
+                    privateKey = "data:application/json;base64," + Base64.encodeBase64String(privateKey.getBytes(UTF_8)),
+                    audience = Some(config.defaultOAuth2Audience.getOrElse("")),
+                    scope = Some(config.defaultOAuth2Scope.getOrElse(""))
                 )
-
             }
+        case _ => Map.empty
 
-            val jwtCredentials = auth.jwt.map { jwt =>
+    val jwtCredentials = config.defaultJwtToken match
+        case Some(jwtToken) =>
+            Map {
                 "DefaultJwt" -> JwtCredentials(
                     `type` = "jwt",
-                    token = jwt.token
+                    token = jwtToken
                 )
             }
+        case None => Map.empty
 
-            credentialsMap ++ oauth2Credentials ++ jwtCredentials
+    credentialsMap ++ oauth2Credentials ++ jwtCredentials
 
 def parsePulsarAuthJson(json: Option[String]): Either[Throwable, PulsarAuth] =
     json match

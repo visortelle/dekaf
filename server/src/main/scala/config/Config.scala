@@ -86,7 +86,18 @@ case class Config(
     @describe("The port HTTP server listens on")
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on")
-    internalGrpcPort: Option[Int] = None
+    internalGrpcPort: Option[Int] = None,
+
+    @describe("URL identifying token's originator.")
+    defaultOAuth2IssuerUrl: Option[String] = None,
+    @describe("JSON that contains the client_id and client_secret and other parameters.")
+    defaultOAuth2PrivateKey: Option[String] = None,
+    @describe("Targets recipients of the token.")
+    defaultOAuth2Audience: Option[String] = None,
+    @describe("Defines permissions for accessing user's data.")
+    defaultOAuth2Scope: Option[String] = None,
+    @describe("JWT token.")
+    defaultJwtToken: Option[String] = None
 )
 
 val yamlConfigDescriptor = descriptor[Config]
