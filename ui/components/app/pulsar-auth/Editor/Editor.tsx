@@ -13,6 +13,7 @@ import * as st from '../../../ui/SimpleTable/SimpleTable.module.css';
 import SmallButton from '../../../ui/SmallButton/SmallButton';
 import deleteIcon from './delete.svg';
 import * as AppContext from '../../../app/contexts/AppContext';
+import refreshIcon from '../../../ui/Table/refresh.svg';
 
 export type EditorProps = {
   onDone: () => void;
@@ -28,7 +29,7 @@ function isDefaultCredentialsName(value: string): value is DefaultCredentialsNam
 
 const Editor: React.FC<EditorProps> = (props) => {
   const { config } = AppContext.useContext();
-  const { notifyError } = Notifications.useContext();
+  const { notifyError, notifySuccess } = Notifications.useContext();
   const { pulsarAuthServiceClient } = GrpcClient.useContext();
   const [view, setView] = useState<EditorView>('list');
 
@@ -68,6 +69,34 @@ const Editor: React.FC<EditorProps> = (props) => {
 
   if (currentCredentialsError) {
     notifyError(`Unable to get the current credentials name. ${currentCredentialsError}`);
+  }
+
+  const onCredentialsUpdate = async () => {
+    const res = await fetch(`${config.publicUrl}/pulsar-auth/update/default`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(async res => {
+        if (res.status === 400) {
+          let errorBody = await res.text();
+          notifyError(errorBody);
+          return;
+        } else if (res.status !== 200) {
+          notifyError('Server error happened.');
+          return;
+        }
+
+        await mutate(swrKeys.pulsar.auth.credentials._());
+        await mutate(swrKeys.pulsar.auth.credentials.current._());
+
+        notifySuccess('Default credentials updated successfully.');
+      })
+      .catch(err => {
+        notifyError(`Unable to update credentials: ${err}`)
+        return;
+      });
   }
 
   return (
@@ -131,8 +160,18 @@ const Editor: React.FC<EditorProps> = (props) => {
           )}
 
           <div className={s.ListFooter}>
-            <Button type='regular' onClick={props.onDone} text='Done' />
-            <Button type='primary' onClick={() => setView('new')} text='Add' />
+            <div className={s.ListFooterLeft}>
+              <SmallButton
+                type='regular'
+                title='Refresh default credentials'
+                onClick={() => onCredentialsUpdate()}
+                svgIcon={refreshIcon}
+              />
+            </div>
+            <div className={s.ListFooterRight}>
+              <Button type='primary' onClick={() => setView('new')} text='Add' />
+              <Button type='regular' onClick={props.onDone} text='Done' />
+            </div>
           </div>
         </div>
       )
