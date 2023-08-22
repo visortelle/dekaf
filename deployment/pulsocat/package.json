@@ -1,5 +1,5 @@
 {
-    "name": "pulsocat-demo",
+    "name": "pulsocat",
     "devDependencies": {
         "@types/node": "^16"
     },
