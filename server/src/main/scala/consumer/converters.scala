@@ -14,7 +14,7 @@ import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import pulsar_auth.EmptyCredentials
-import com.tools.teal.pulsar.ui.api.v1.consumer.{FiltersCollection, MessageFilter, RawMessageFilter, RawFiltersCollection}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{MessageFilter, RawMessageFilter, RawFiltersCollection}
 import consumer.EditorFilterScope
 import com.tools.teal.pulsar.ui.api.v1.consumer.Scope
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
