@@ -8,7 +8,7 @@ pulsocat:
   # It should be used in pair with the "publicBaseUrl" config field.
   basePath: "/"
 
-  config: ""
+  config: {}
 
   env: []
 
