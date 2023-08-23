@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <base href="${publicUrl}/" />
+  <base href="${publicBaseUrl}/" />
 
   <meta charset="UTF-8"/>
   <meta name="viewport"
@@ -26,7 +26,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const config = {
-      publicUrl: '${publicUrl}',
+      publicBaseUrl: '${publicBaseUrl}',
       pulsarName: '${pulsarName}',
       pulsarColor: '${pulsarColor}',
       pulsarBrokerUrl: '${pulsarBrokerUrl}',
