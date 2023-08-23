@@ -11,10 +11,8 @@ spec:
       {{- include "_chart-name.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.pulsocat.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        checksum2: abcxyz
       labels:
         {{- include "_chart-name.selectorLabels" . | nindent 8 }}
     spec:
