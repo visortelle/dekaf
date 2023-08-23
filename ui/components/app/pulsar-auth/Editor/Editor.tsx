@@ -72,7 +72,7 @@ const Editor: React.FC<EditorProps> = (props) => {
   }
 
   const onCredentialsUpdate = async () => {
-    const res = await fetch(`${config.publicUrl}/pulsar-auth/update/default`, {
+    const res = await fetch(`${config.publicBaseUrl}/pulsar-auth/update/default`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
