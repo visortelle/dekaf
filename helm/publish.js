@@ -39,8 +39,8 @@ function publishChart(name, version) {
   } catch (e) {
     throw e;
   } finally {
-    console.info(`Cleaning up. Deleting ${tmpDir}`);
-    execSync(`rm -rf ${tmpDir}`);
+    // console.info(`Cleaning up. Deleting ${tmpDir}`);
+    // execSync(`rm -rf ${tmpDir}`);
   }
 }
 

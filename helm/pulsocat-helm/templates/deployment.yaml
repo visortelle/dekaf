@@ -46,11 +46,9 @@ spec:
           resources:
             {{- toYaml .Values.pulsocat.resources | nindent 12 }}
           env:
-          - name: PULSOCAT_BASE_PATH
-            value: {{ .Values.pulsocat.basePath }}
-          {{- with .Values.pulsocat.env }}
-            {{- toYaml .Values.pulsocat.env | nindent 12 }}
-          {{- end }}
+            - name: PULSOCAT_BASE_PATH
+              value: {{ .Values.pulsocat.basePath }}
+          {{- toYaml .Values.pulsocat.env | nindent 12 }}
           volumeMounts:
             - name: pulsocat-config
               mountPath: "/pulsocat/config.yaml"
