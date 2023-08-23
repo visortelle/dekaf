@@ -9,6 +9,7 @@ import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialo
 import Select from "../../../ui/Select/Select";
 import Checkbox from "../../../ui/Checkbox/Checkbox";
 import * as BrokerConfig from "../../../app/contexts/BrokersConfig";
+import s from "./SplitBundle.module.css";
 
 export type SplitBundleProps = {
   namespaceFqn: string,
@@ -55,6 +56,7 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
   const supportedAlgorithms =
     brokersConfig
       .get('supportedNamespaceBundleSplitAlgorithms')?.value
+      .replace(/[\[\]\(\)\{\}]/g, '')
       .split(",") ?? []
 
 
@@ -73,18 +75,18 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
             onChange={v => setSplitParams({ splitAlgorithm: v, unloadSplitBundles: splitParams.unloadSplitBundles })}
           />
           <br />
-          <div style={{ display: "flex", gap: "12rem" }}>
+          <div className={s.UnloadSplitBundlesCheckbox}>
             <Checkbox isInline id="unloadSplitBundles" checked={splitParams.unloadSplitBundles} onChange={() => setSplitParams({ ...splitParams, unloadSplitBundles: !splitParams.unloadSplitBundles })} />
             <div>Unload split bundles</div>
           </div>
           <br />
-          <div>This will split the bundle to the reassign them to different brokers to lower the and could lead to severe consequences.</div>
+          <div>Splitting namespace bundles can lead to dynamic reassignment of topics to different brokers based on load conditions. While this is designed to optimize load distribution, it can result in performance implications if not managed properly. Ensure you understand the implications of bundle splitting, especially in environments with significant topic growth or varying load conditions.</div>
           <br />
         </div>
       }
       onConfirm={split}
       onCancel={modals.pop}
-      type='danger'
+      type={'danger'}
     />
   );
 }
