@@ -3,6 +3,28 @@ fullnameOverride: ""
 imagePullSecrets: []
 
 pulsocat:
+  # Pulsocat license ID and token. You should obtain it on https://pulsocat.com
+  licenseId: ""
+  licenseToken: ""
+
+  # Pulsar broker URL.
+  # Example: pulsar+ssl://my-pulsar.o-xz8ek.snio.cloud:6651
+  pulsarBrokerUrl: ""
+
+  # Pulsar HTTP URL.
+  # Example: https://cluster-f.o-xzek.snio.cloud
+  pulsarHttpUrl: ""
+
+  # Optional base path. Use it if you want to make Pulsocat available on a subpath behind reverse-proxy.
+  # Should be used in pair with publicBaseUrl.
+  # Example: /pulsocat
+  basePath: "/"
+
+  # Optional public base URL. Use it if you want to make Pulsocat available on a subpath behind reverse-proxy.
+  # Should be used in pair with basePath.
+  # Example: http://my-company.com:8080/pulsocat
+  publicBaseUrl: ""
+
   config: ""
 
   env: []

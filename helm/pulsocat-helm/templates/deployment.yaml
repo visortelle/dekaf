@@ -36,17 +36,30 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /health
+              {{ $base_path_without_trailing_slash := trimSuffix "/" .Values.pulsocat.basePath }}
+              path: {{ $base_path_without_trailing_slash }}/health
               port: http
           readinessProbe:
             httpGet:
-              path: /health
+              path: {{ $base_path_without_trailing_slash }}/health
               port: http
           resources:
             {{- toYaml .Values.pulsocat.resources | nindent 12 }}
-          {{- with .Values.pulsocat.env }}
           env:
-            {{- toYaml . | nindent 12 }}
+          - name: PULSOCAT_LICENSE_ID
+            value: {{ .Values.pulsocat.licenseId }}
+          - name: PULSOCAT_LICENSE_TOKEN
+            value: {{ .Values.pulsocat.licenseToken }}
+          - name: PULSOCAT_PULSAR_BROKER_URL
+            value: {{ .Values.pulsocat.pulsarBrokerUrl }}
+          - name: PULSOCAT_PULSAR_HTTP_URL
+            value: {{ .Values.pulsocat.pulsarHttpUrl }}
+          - name: PULSOCAT_BASE_PATH
+            value: {{ .Values.pulsocat.basePath }}
+          - name: PULSOCAT_PUBLIC_BASE_URL
+            value: {{ .Values.pulsocat.publicBaseUrl }}
+          {{- with .Values.pulsocat.env }}
+            {{- toYaml .Values.pulsocat.env | nindent 12 }}
           {{- end }}
           volumeMounts:
             - name: pulsocat-config

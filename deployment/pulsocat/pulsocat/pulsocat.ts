@@ -40,6 +40,15 @@ export const createResources = () => {
       nodeSelector: { purpose: "memory-optimized" },
       imagePullSecrets: [{ name: "image-pull-secret" }],
       pulsocat: {
+        licenseId: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6",
+        licenseToken: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3",
+
+        basePath: "/pulsocat",
+        publicBaseUrl: `https://${host}/pulsocat`,
+
+        pulsarBrokerUrl: "pulsar+ssl://instance-f.o-xy6ek.snio.cloud:6651",
+        pulsarHttpUrl: "https://cluster-f.o-xy6ek.snio.cloud",
+
         image: {
           repository: "tealtools/pulsocat-dev",
           pullPolicy: "Always",
@@ -54,15 +63,7 @@ export const createResources = () => {
             cpu: isDemoPulsocatCom ? "4000m" : "100m",
             memory: isDemoPulsocatCom ? "16Gi" : "512Mi",
           }
-        },
-        env: [
-          { name: "PULSOCAT_BASE_PATH", value: `/pulsocat` },
-          { name: "PULSOCAT_PUBLIC_BASE_URL", value: `https://${host}/pulsocat` },
-          { name: "PULSOCAT_LICENSE_ID", value: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6" },
-          { name: "PULSOCAT_LICENSE_TOKEN", value: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3" },
-          { name: "PULSOCAT_PULSAR_BROKER_URL", value: "pulsar+ssl://instance-f.o-xy6ek.snio.cloud:6651" },
-          { name: "PULSOCAT_PULSAR_HTTP_URL", value: "https://cluster-f.o-xy6ek.snio.cloud" },
-        ]
+        }
       }
     }
   }, {
