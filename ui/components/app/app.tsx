@@ -47,7 +47,7 @@ const _App: React.FC<AppProps> = (props) => {
           <Notifications.DefaultProvider>
             <BrokerConfig.DefaultProvider>
               <HelmetProvider>
-                <Router />
+                <Router basename={new URL(props.config.publicUrl).pathname} />
                 <Tooltip />
               </HelmetProvider>
             </BrokerConfig.DefaultProvider>
