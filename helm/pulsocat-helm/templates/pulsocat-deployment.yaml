@@ -11,8 +11,9 @@ spec:
       {{- include "_chart-name.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.pulsocat.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print .Template.BasePath "/pulsocat-configmap.yaml") . | sha256sum }}
+      {{- with .Values.pulsocat.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
