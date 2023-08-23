@@ -40,7 +40,7 @@ object HttpServer:
                     "/",
                     ctx => {
                         val model = Map(
-                            "publicUrl" -> appConfig.publicUrl.get,
+                            "publicBaseUrl" -> appConfig.publicBaseUrl.get,
                             "buildInfo" -> buildinfo.BuildInfo.toMap.asJava,
                             "pulsarBrokerUrl" -> appConfig.pulsarBrokerUrl.get,
                             "pulsarHttpUrl" -> appConfig.pulsarHttpUrl.get,

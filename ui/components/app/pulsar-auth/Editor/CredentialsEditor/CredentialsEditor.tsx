@@ -76,8 +76,8 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
           type='primary'
           disabled={credentialsName.length === 0}
           text='Save'
-          onClick={ async () => {
-            const res = await fetch(`${config.publicUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
+          onClick={async () => {
+            const res = await fetch(`${config.publicBaseUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {
               method: 'POST',
               body: JSON.stringify(credentials),
               headers: {

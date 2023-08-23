@@ -15,6 +15,7 @@ const ClusterTable: React.FC<ClusterTableProps> = ({clusterRows, help}) => {
       <tbody>
       {Object.entries(clusterRows).map(([key, {data, label}]) => (
         <ClusterRow
+          key={key}
           label={label}
           data={data}
           tooltipHelp={help[key as ColumnKey] || <NoData/>}

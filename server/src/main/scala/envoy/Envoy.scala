@@ -12,7 +12,8 @@ object Envoy:
             EnvoyConfigParams(
               httpServerPort = c.internalHttpPort.get,
               grpcServerPort = c.internalGrpcPort.get,
-              listenPort = c.port.get
+              listenPort = c.port.get,
+              basePath = c.basePath.get,
             )
         )
 
@@ -26,7 +27,7 @@ object Envoy:
 
         // Uncomment to see Envoy logs
         // TODO - make it configurable
-        // _ <- process.stdout.linesStream.foreach(line => ZIO.logInfo(line))
-        // _ <- process.stderr.linesStream.foreach(line => ZIO.logError(line))
+//         _ <- process.stdout.linesStream.foreach(line => ZIO.logInfo(line))
+//         _ <- process.stderr.linesStream.foreach(line => ZIO.logError(line))
         _ <- process.successfulExitCode
     yield ()
