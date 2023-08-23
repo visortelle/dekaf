@@ -14,9 +14,11 @@ case class Config(
     @describe("The port the server listens on.")
     port: Option[Int] = Some(8090),
     @describe(
-        "When running the application behind a reverse-proxy, you need to provide a public URL to let the application know how to render links and redirects correctly."
+        "When running the application behind a reverse-proxy, you need to provide a public URL to let the application know how to render links and making redirects correctly."
     )
-    publicUrl: Option[String] = Some("http://localhost:8090"),
+    publicBaseUrl: Option[String] = Some("http://localhost:8090"),
+    @describe("When running the application behind a reverse-proxy, it may be useful to specify a base path.")
+    basePath: Option[String] = Some("/"),
     @describe("Library contains user-defined objects like message filters, visualizations, etc.")
     //
     @describe("Path to the library directory.")
@@ -104,7 +106,10 @@ def readConfig =
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
         defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
 
-        config <- ZIO.succeed(mergeConfigs(defaultConfig, mergeConfigs(envConfig, yamlConfig)))
+        config <- ZIO.succeed({
+            val mergedConfig = mergeConfigs(defaultConfig, mergeConfigs(envConfig, yamlConfig))
+            normalizeConfig(mergedConfig)
+        })
     yield config
 
 def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))

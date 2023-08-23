@@ -36,18 +36,19 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /health
+              {{ $base_path_without_trailing_slash := trimSuffix "/" .Values.pulsocat.basePath }}
+              path: {{ $base_path_without_trailing_slash }}/health
               port: http
           readinessProbe:
             httpGet:
-              path: /health
+              path: {{ $base_path_without_trailing_slash }}/health
               port: http
           resources:
             {{- toYaml .Values.pulsocat.resources | nindent 12 }}
-          {{- with .Values.pulsocat.env }}
           env:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            - name: PULSOCAT_BASE_PATH
+              value: {{ .Values.pulsocat.basePath }}
+          {{- toYaml .Values.pulsocat.env | nindent 12 }}
           volumeMounts:
             - name: pulsocat-config
               mountPath: "/pulsocat/config.yaml"

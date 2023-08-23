@@ -12,7 +12,7 @@ const dockerTag = execSync(
   .trim();
 
 export type PulsarUiContainer = {
-  publicUrl: string;
+  publicBaseUrl: string;
   stop: () => Promise<void>;
 };
 
