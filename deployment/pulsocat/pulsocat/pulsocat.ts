@@ -59,7 +59,7 @@ export const createResources = () => {
         basePath: "/demo",
         config: {
           publicBaseUrl: `https://${host}/demo`,
-          pulsarBrokerUrl: "pulsar+ssl://instance-f.o-xy6ek.snio.cloud:6651",
+          pulsarBrokerUrl: "pulsar+ssl://cluster-f.o-xy6ek.snio.cloud:6651",
           pulsarHttpUrl: "https://cluster-f.o-xy6ek.snio.cloud",
         },
         env: [
