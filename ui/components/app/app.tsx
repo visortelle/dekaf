@@ -42,12 +42,12 @@ const _App: React.FC<AppProps> = (props) => {
         revalidateIfStale: true,
       }}
     >
-      <GrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, "")}/api`}>
+      <GrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicBaseUrl.replace(/\/$/, "")}/api`}>
         <HealthCheckContext.DefaultProvider>
           <Notifications.DefaultProvider>
             <BrokerConfig.DefaultProvider>
               <HelmetProvider>
-                <Router />
+                <Router basename={new URL(props.config.publicBaseUrl).pathname} />
                 <Tooltip />
               </HelmetProvider>
             </BrokerConfig.DefaultProvider>
