@@ -46,18 +46,8 @@ spec:
           resources:
             {{- toYaml .Values.pulsocat.resources | nindent 12 }}
           env:
-          - name: PULSOCAT_LICENSE_ID
-            value: {{ .Values.pulsocat.licenseId }}
-          - name: PULSOCAT_LICENSE_TOKEN
-            value: {{ .Values.pulsocat.licenseToken }}
-          - name: PULSOCAT_PULSAR_BROKER_URL
-            value: {{ .Values.pulsocat.pulsarBrokerUrl }}
-          - name: PULSOCAT_PULSAR_HTTP_URL
-            value: {{ .Values.pulsocat.pulsarHttpUrl }}
           - name: PULSOCAT_BASE_PATH
             value: {{ .Values.pulsocat.basePath }}
-          - name: PULSOCAT_PUBLIC_BASE_URL
-            value: {{ .Values.pulsocat.publicBaseUrl }}
           {{- with .Values.pulsocat.env }}
             {{- toYaml .Values.pulsocat.env | nindent 12 }}
           {{- end }}
