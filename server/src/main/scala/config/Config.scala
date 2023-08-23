@@ -85,21 +85,21 @@ case class Config(
     pulsarTlsProtocols: Option[List[String]] = None,
 
     // Internal config
-    @describe("The port HTTP server listens on")
+    @describe("The port HTTP server listens on.")
     internalHttpPort: Option[Int] = None,
-    @describe("The port gRPC server listens on")
+    @describe("The port gRPC server listens on.")
     internalGrpcPort: Option[Int] = None,
 
-    @describe("URL identifying token's originator.")
+    @describe("The URL of the authentication provider which allows the Pulsar client to obtain an access token.")
     defaultOAuth2IssuerUrl: Option[String] = None,
-    @describe("JSON that contains the client_id and client_secret and other parameters.")
+    @describe("The URL to the JSON credentials file.")
     defaultOAuth2PrivateKey: Option[String] = None,
-    @describe("Targets recipients of the token.")
+    @describe("The OAuth 2.0 \"resource server\" identifier for a Pulsar cluster.")
     defaultOAuth2Audience: Option[String] = None,
-    @describe("Defines permissions for accessing user's data.")
+    @describe("The scope of an access request.")
     defaultOAuth2Scope: Option[String] = None,
-    @describe("JWT token.")
-    defaultJwtToken: Option[String] = None
+    @describe("JSON Web Token.")
+    defaultJwt: Option[String] = None
 )
 
 val yamlConfigDescriptor = descriptor[Config]

@@ -127,7 +127,7 @@ def getDefaultCredentialsFromConfig: Map[CredentialsName, Credentials] =
             }
         case _ => Map.empty
 
-    val jwtCredentials = config.defaultJwtToken match
+    val jwtCredentials = config.defaultJwt match
         case Some(jwtToken) =>
             Map {
                 "DefaultJwt" -> JwtCredentials(

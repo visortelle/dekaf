@@ -33,5 +33,5 @@ def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
         defaultOAuth2PrivateKey = highPriority.defaultOAuth2PrivateKey.orElse(lowPriority.defaultOAuth2PrivateKey),
         defaultOAuth2Audience = highPriority.defaultOAuth2Audience.orElse(lowPriority.defaultOAuth2Audience),
         defaultOAuth2Scope = highPriority.defaultOAuth2Scope.orElse(lowPriority.defaultOAuth2Scope),
-        defaultJwtToken = highPriority.defaultJwtToken.orElse(lowPriority.defaultJwtToken)
+        defaultJwt = highPriority.defaultJwt.orElse(lowPriority.defaultJwt)
     )
