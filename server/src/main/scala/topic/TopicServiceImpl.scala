@@ -96,14 +96,22 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
-            adminClient.topics.delete(request.topicName, request.force)
+            adminClient.topics.deletePartitionedTopic(request.topicName, request.force)
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.DeleteTopicResponse(status = Some(status)))
         } catch {
-            case err =>
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(pb.DeleteTopicResponse(status = Some(status)))
+            case err: Exception =>
+                try {
+                    adminClient.topics.delete(request.topicName, request.force)
+
+                    val status: Status = Status(code = Code.OK.index)
+                    Future.successful(pb.DeleteTopicResponse(status = Some(status)))
+                } catch {
+                    case err: Exception =>
+                        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                        Future.successful(pb.DeleteTopicResponse(status = Some(status)))
+                }
         }
 
     override def getTopicsStats(request: pb.GetTopicsStatsRequest): Future[pb.GetTopicsStatsResponse] =
