@@ -22,7 +22,7 @@ object PulsarAuthRoutes:
             s"/pulsar-auth/add/{credentialsName}",
             ctx =>
                 val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
+                val pulsarAuth = pulsar_auth.parsePulsarAuthCookie(pulsarAuthJson)
 
                 pulsarAuth match
                     case Left(_) =>
@@ -57,7 +57,7 @@ object PulsarAuthRoutes:
             s"/pulsar-auth/use/{credentialsName}",
             ctx =>
                 val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
+                val pulsarAuth = pulsar_auth.parsePulsarAuthCookie(pulsarAuthJson)
 
                 pulsarAuth match
                     case Left(_) =>
@@ -78,7 +78,7 @@ object PulsarAuthRoutes:
             "/pulsar-auth/delete/{credentialsName}",
             ctx =>
                 val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
+                val pulsarAuth = pulsar_auth.parsePulsarAuthCookie(pulsarAuthJson)
 
                 pulsarAuth match
                     case Left(_) =>
@@ -107,7 +107,7 @@ object PulsarAuthRoutes:
             "/pulsar-auth/update/default",
             ctx =>
                 val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson)
+                val pulsarAuth = pulsar_auth.parsePulsarAuthCookie(pulsarAuthJson)
 
                 pulsarAuth match
                     case Left(_) =>

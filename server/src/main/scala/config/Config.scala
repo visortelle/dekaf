@@ -1,14 +1,11 @@
 package config
 
-import zio.*
+import zio.{Config, *}
 import zio.config.*
-import zio.config.ConfigSource
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
 
 import java.nio.file.Path
-import scala.concurrent.Await
-import scala.concurrent.duration.{Duration, SECONDS}
 
 case class Config(
     @describe("The port the server listens on.")
@@ -91,15 +88,7 @@ case class Config(
     internalGrpcPort: Option[Int] = None,
 
     @describe("The URL of the authentication provider which allows the Pulsar client to obtain an access token.")
-    defaultOAuth2IssuerUrl: Option[String] = None,
-    @describe("The URL to the JSON credentials file.")
-    defaultOAuth2PrivateKey: Option[String] = None,
-    @describe("The OAuth 2.0 \"resource server\" identifier for a Pulsar cluster.")
-    defaultOAuth2Audience: Option[String] = None,
-    @describe("The scope of an access request.")
-    defaultOAuth2Scope: Option[String] = None,
-    @describe("JSON Web Token.")
-    defaultJwt: Option[String] = None
+    defaultPulsarAuth: Option[String] = None
 )
 
 val yamlConfigDescriptor = descriptor[Config]
