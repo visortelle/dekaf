@@ -20,6 +20,8 @@ import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, Pe
 import org.apache.pulsar.common.naming.TopicDomain
 import pulsar_auth.RequestContext
 
+import scala.util.{Failure, Success, Try}
+
 class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
     val logger: Logger = Logger(getClass.getName)
 
@@ -95,24 +97,36 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         logger.info(s"Deleting topic: ${request.topicName}")
         val adminClient = RequestContext.pulsarAdmin.get()
 
-        try {
-            adminClient.topics.deletePartitionedTopic(request.topicName, request.force)
+        def deletePartitionedTopic(): Try[Unit] = Try(adminClient.topics.deletePartitionedTopic(request.topicName, request.force))
 
-            val status: Status = Status(code = Code.OK.index)
+        def lookupPartitionedTopic(): Try[Unit] = Try(adminClient.lookups().lookupPartitionedTopic(request.topicName))
+
+        def deleteNonPartitionedTopic(): Try[Unit] = Try(adminClient.topics.delete(request.topicName, request.force))
+
+        def lookupNonPartitionedTopic(): Try[Unit] = Try(adminClient.lookups().lookupTopic(request.topicName))
+
+        def handleSuccess(): Future[pb.DeleteTopicResponse] = {
+            val status = Status(code = Code.OK.index)
             Future.successful(pb.DeleteTopicResponse(status = Some(status)))
-        } catch {
-            case err: Exception =>
-                try {
-                    adminClient.topics.delete(request.topicName, request.force)
-
-                    val status: Status = Status(code = Code.OK.index)
-                    Future.successful(pb.DeleteTopicResponse(status = Some(status)))
-                } catch {
-                    case err: Exception =>
-                        val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                        Future.successful(pb.DeleteTopicResponse(status = Some(status)))
-                }
         }
+
+        def handleFailure(err: Throwable): Future[pb.DeleteTopicResponse] = {
+            val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+            Future.successful(pb.DeleteTopicResponse(status = Some(status)))
+        }
+
+        lookupPartitionedTopic() match
+            case Success(_) =>
+                deletePartitionedTopic() match
+                    case Success(_) => handleSuccess()
+                    case Failure(err) => handleFailure(err)
+            case Failure(exception) =>
+                lookupNonPartitionedTopic() match
+                    case Success(_) =>
+                        deleteNonPartitionedTopic() match
+                            case Success(_) => handleSuccess()
+                            case Failure(err) => handleFailure(err)
+                    case Failure(err) => handleFailure(err)
 
     override def getTopicsStats(request: pb.GetTopicsStatsRequest): Future[pb.GetTopicsStatsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
