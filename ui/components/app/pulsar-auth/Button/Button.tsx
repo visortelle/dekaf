@@ -51,7 +51,7 @@ const Button: React.FC<ButtonProps> = (props) => {
             }
           } />,
         })}
-        text={`${currentCredentials}`}
+        text={currentCredentials || '-'}
       />
     </div>
   );

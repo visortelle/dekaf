@@ -12,7 +12,7 @@ import java.net.{URLDecoder, URLEncoder}
 import java.nio.charset.StandardCharsets.UTF_8
 import scala.util.matching.Regex
 
-type DefaultCredentialsName = "Default"
+val DefaultCredentialsName = "Default"
 
 val validCredentialsName: Regex = "^[a-zA-Z0-9_-]+$".r
 
@@ -155,5 +155,10 @@ def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
     val cookieName = "pulsar_auth"
     val cookieValue = pulsarAuthWithoutEncodingMetadata.asJson.noSpaces
 
-    // TODO - set secure flag when https is enabled
-    s"$cookieName=$cookieValue; Path=/; HttpOnly; Max-Age=31536000; "
+    val cookiePath = config.publicBaseUrl.map({
+        java.net.URI.create(_).getPath match
+            case "" => "/"
+            case path => path
+    }).getOrElse("/")
+
+    s"$cookieName=$cookieValue; Path=${cookiePath}; HttpOnly; Max-Age=31536000; "
