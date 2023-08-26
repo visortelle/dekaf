@@ -12,7 +12,7 @@ import java.net.{URLDecoder, URLEncoder}
 import java.nio.charset.StandardCharsets.UTF_8
 import scala.util.matching.Regex
 
-type DefaultCredentialsName = "Default"
+val DefaultCredentialsName = "Default"
 
 val validCredentialsName: Regex = "^[a-zA-Z0-9_-]+$".r
 
