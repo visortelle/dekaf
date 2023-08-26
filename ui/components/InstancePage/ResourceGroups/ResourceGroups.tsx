@@ -60,7 +60,7 @@ const ResourceGroups: React.FC<Props> = (props) => {
             onClick={() => undefined}
             linkTo={routes.instance.resourceGroups.create._.get()}
             type="primary"
-            testId='resource-group-create-button'
+            testId="resource-group-create-button"
           />
         )}
       </div>
