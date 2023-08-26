@@ -18,7 +18,9 @@ export type EditorProps = {
   onDone: () => void;
 };
 
-type EditorView = 'list' | 'new';
+const defaultCredentialsName = 'Default';
+
+type EditorView = "list" | "new";
 
 const Editor: React.FC<EditorProps> = (props) => {
   const { config } = AppContext.useContext();
@@ -110,6 +112,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                           }}
                           title='Delete'
                           svgIcon={deleteIcon}
+                          disabled={item.name === defaultCredentialsName}
                         />
                       </div>
                     </td>
@@ -124,12 +127,11 @@ const Editor: React.FC<EditorProps> = (props) => {
           )}
 
           <div className={s.ListFooter}>
-            <Button type='regular' onClick={props.onDone} text='Done' />
             <Button type='primary' onClick={() => setView('new')} text='Add' />
+            <Button type='regular' onClick={props.onDone} text='Done' />
           </div>
         </div>
-      )
-      }
+      )}
 
       {
         view === 'new' && (
