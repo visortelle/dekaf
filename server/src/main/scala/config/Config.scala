@@ -1,14 +1,11 @@
 package config
 
-import zio.*
+import zio.{Config, *}
 import zio.config.*
-import zio.config.ConfigSource
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
 
 import java.nio.file.Path
-import scala.concurrent.Await
-import scala.concurrent.duration.{Duration, SECONDS}
 
 case class Config(
     @describe("The port the server listens on.")
@@ -85,17 +82,20 @@ case class Config(
     pulsarTlsProtocols: Option[List[String]] = None,
 
     // Internal config
-    @describe("The port HTTP server listens on")
+    @describe("The port HTTP server listens on.")
     internalHttpPort: Option[Int] = None,
-    @describe("The port gRPC server listens on")
-    internalGrpcPort: Option[Int] = None
+    @describe("The port gRPC server listens on.")
+    internalGrpcPort: Option[Int] = None,
+
+    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
+    defaultPulsarAuth: Option[String] = None
 )
 
 val yamlConfigDescriptor = descriptor[Config]
 val envConfigDescriptor = descriptor[Config].mapKey(key => s"PULSOCAT_${toUpperSnakeCase(key)}")
 
 val yamlConfigSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
-val envConfigSource = ConfigSource.fromSystemEnv(None, Some(','))
+val envConfigSource = ConfigSource.fromSystemEnv(None, None)
 
 val internalHttpPort = getFreePort
 val internalGrpcPort = getFreePort
