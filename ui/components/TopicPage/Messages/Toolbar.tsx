@@ -4,7 +4,6 @@ import pauseIcon from './icons/pause.svg';
 import resumeIcon from './icons/resume.svg';
 import resetIcon from './icons/reset.svg';
 import consoleIcon from './icons/console.svg';
-import Button from '../../ui/Button/Button';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { SessionState, SessionConfig } from './types';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
