@@ -28,5 +28,6 @@ def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
         pulsarTlsCiphers = highPriority.pulsarTlsCiphers.orElse(lowPriority.pulsarTlsCiphers),
         pulsarTlsProtocols = highPriority.pulsarTlsProtocols.orElse(lowPriority.pulsarTlsProtocols),
         internalHttpPort = highPriority.internalHttpPort.orElse(lowPriority.internalHttpPort),
-        internalGrpcPort = highPriority.internalGrpcPort.orElse(lowPriority.internalGrpcPort)
+        internalGrpcPort = highPriority.internalGrpcPort.orElse(lowPriority.internalGrpcPort),
+        defaultPulsarAuth = highPriority.defaultPulsarAuth.orElse(lowPriority.defaultPulsarAuth)
     )
