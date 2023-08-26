@@ -155,5 +155,10 @@ def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
     val cookieName = "pulsar_auth"
     val cookieValue = pulsarAuthWithoutEncodingMetadata.asJson.noSpaces
 
-    val cookiePath = config.publicBaseUrl.map(java.net.URI.create(_).getPath).getOrElse("/")
+    val cookiePath = config.publicBaseUrl.map({
+        java.net.URI.create(_).getPath match
+            case "" => "/"
+            case path => path
+    }).getOrElse("/")
+
     s"$cookieName=$cookieValue; Path=${cookiePath}; HttpOnly; Max-Age=31536000; "
