@@ -11,7 +11,7 @@ const gitRev = execSync('git rev-parse --short=8 HEAD', { encoding: 'utf-8' }).t
 const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).toString().trim();
 
 const isDemoPulsocatCom = stack === "demo-pulsocat-com";
-const host = isDemoPulsocatCom ? "pulsocat.com" : `${appFqn}.dev.teal.tool`;
+const host = isDemoPulsocatCom ? "pulsocat.com" : `${appFqn}.dev.teal.tools`;
 
 export const createResources = () => {
   const namespace = new k8s.core.v1.Namespace(
