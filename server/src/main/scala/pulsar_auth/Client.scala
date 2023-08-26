@@ -64,15 +64,12 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
             c match
                 case cr: JwtCredentials => builder.authentication(AuthenticationFactory.token(cr.token))
                 case cr: OAuth2Credentials =>
-                    for
-                        audience <- cr.audience
-                        scope <- cr.scope
-                    yield builder.authentication(
+                    builder.authentication(
                         AuthenticationFactoryOAuth2.clientCredentials(
                             URL.createURL(cr.issuerUrl),
                             URL.createURL(cr.privateKey),
-                            audience,
-                            scope
+                            cr.audience.orNull,
+                            cr.scope.orNull
                         )
                     )
                 case _ => Left(new Exception("Unsupported credentials type"))

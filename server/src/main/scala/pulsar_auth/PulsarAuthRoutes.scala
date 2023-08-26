@@ -6,7 +6,7 @@ import io.javalin.Javalin
 
 import scala.jdk.CollectionConverters.*
 import _root_.pulsar_auth
-import _root_.pulsar_auth.{defaultPulsarAuth, jwtCredentialsDecoder, PulsarAuth, validCredentialsName}
+import _root_.pulsar_auth.{defaultPulsarAuth, jwtCredentialsDecoder, validCredentialsName, PulsarAuth}
 import io.circe.parser.decode as decodeJson
 
 object PulsarAuthRoutes:
@@ -32,9 +32,9 @@ object PulsarAuthRoutes:
                         val credentials = decodeJson[Credentials](credentialsJson)
 
                         ctx.pathParam("credentialsName") match
-                            case credentialsName: DefaultCredentialsName =>
+                            case DefaultCredentialsName =>
                                 ctx.status(400)
-                                ctx.result(s"Can't add credentials with name $credentialsName")
+                                ctx.result(s"Can't add credentials with name $DefaultCredentialsName")
                             case validCredentialsName() =>
                                 credentials match
                                     case Left(err) =>
@@ -90,18 +90,29 @@ object PulsarAuthRoutes:
                             ctx.result("Credentials name shouldn't be blank")
                         else
                             credentialsName match
-                                case credentialsName: DefaultCredentialsName =>
+                                case DefaultCredentialsName =>
                                     ctx.status(400)
                                     ctx.result(s"Can't delete default credentials")
                                 case credentialsName: String =>
                                     val newCredentials = pulsarAuth.credentials - credentialsName
-                                    val newPulsarAuth = pulsarAuth.copy(credentials = newCredentials, current = newCredentials.keys.headOption.orElse(Some("Default")))
+                                    val newPulsarAuth =
+                                        pulsarAuth.copy(credentials = newCredentials, current = newCredentials.keys.headOption.orElse(Some("Default")))
 
                                     setCookieAndSuccess(ctx, newPulsarAuth)
         )
 
     def setCookieAndSuccess(ctx: io.javalin.http.Context, pulsarAuth: PulsarAuth): Unit =
-        val newCookieHeader = pulsar_auth.pulsarAuthToCookie(pulsarAuth)
+        def withNewDefaultAuth(pulsarAuth: PulsarAuth): PulsarAuth =
+            // Pulsocat admin can change default credentials,
+            // so we need deliver new default credentials to users.
+            pulsarAuth.copy(credentials =
+                pulsarAuth.credentials + (
+                    DefaultCredentialsName -> defaultPulsarAuth.credentials(DefaultCredentialsName)
+                )
+            )
+
+        val newCookieHeader = pulsar_auth.pulsarAuthToCookie(withNewDefaultAuth(pulsarAuth))
+
         ctx.header(
             "Set-Cookie",
             newCookieHeader
