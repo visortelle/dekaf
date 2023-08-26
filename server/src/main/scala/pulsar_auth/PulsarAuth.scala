@@ -155,5 +155,5 @@ def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
     val cookieName = "pulsar_auth"
     val cookieValue = pulsarAuthWithoutEncodingMetadata.asJson.noSpaces
 
-    // TODO - set secure flag when https is enabled
-    s"$cookieName=$cookieValue; Path=/; HttpOnly; Max-Age=31536000; "
+    val cookiePath = config.publicBaseUrl.map(java.net.URI.create(_).getPath).getOrElse("/")
+    s"$cookieName=$cookieValue; Path=${cookiePath}; HttpOnly; Max-Age=31536000; "
