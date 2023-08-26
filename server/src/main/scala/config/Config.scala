@@ -87,7 +87,7 @@ case class Config(
     @describe("The port gRPC server listens on.")
     internalGrpcPort: Option[Int] = None,
 
-    @describe("The URL of the authentication provider which allows the Pulsar client to obtain an access token.")
+    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
     defaultPulsarAuth: Option[String] = None
 )
 
@@ -95,7 +95,7 @@ val yamlConfigDescriptor = descriptor[Config]
 val envConfigDescriptor = descriptor[Config].mapKey(key => s"PULSOCAT_${toUpperSnakeCase(key)}")
 
 val yamlConfigSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
-val envConfigSource = ConfigSource.fromSystemEnv(None, Some(','))
+val envConfigSource = ConfigSource.fromSystemEnv(None, None)
 
 val internalHttpPort = getFreePort
 val internalGrpcPort = getFreePort

@@ -12,10 +12,9 @@ import java.net.{URLDecoder, URLEncoder}
 import java.nio.charset.StandardCharsets.UTF_8
 import scala.util.matching.Regex
 
-type DefaultCredentialsName = "Default" | "DefaultOAuth2" | "DefaultJwt"
+type DefaultCredentialsName = "Default"
 
 val validCredentialsName: Regex = "^[a-zA-Z0-9_-]+$".r
-val DefaultCredentialsNames = Vector("Default", "DefaultOAuth2", "DefaultJwt")
 
 type EmptyCredentialsType = "empty"
 type OAuth2CredentialsType = "oauth2"
@@ -119,28 +118,7 @@ def getDefaultCredentialsFromConfig: Map[CredentialsName, Credentials] =
                 .getOrElse(EmptyCredentials(`type` = "empty"))
         case _ => EmptyCredentials(`type` = "empty")
 
-    Map {
-        "Default" -> getTransformedDefaultCredentials(rawDefaultCredentials)
-    }
-
-def getTransformedDefaultCredentials(credentials: Credentials): Credentials =
-    credentials match
-        case oAuth2Credentials: OAuth2Credentials =>
-            OAuth2Credentials(
-                `type` = "oauth2",
-                issuerUrl = oAuth2Credentials.issuerUrl,
-                privateKey = "data:application/json;base64," + Base64.encodeBase64String(oAuth2Credentials.privateKey.getBytes(UTF_8)),
-                audience = Some(oAuth2Credentials.audience.getOrElse("")),
-                scope = Some(oAuth2Credentials.scope.getOrElse(""))
-            )
-
-        case jwtCredentials: JwtCredentials =>
-            JwtCredentials(
-                `type` = "jwt",
-                token = jwtCredentials.token
-            )
-        case emptyCredentials: EmptyCredentials =>
-            EmptyCredentials(`type` = "empty")
+    Map { "Default" -> rawDefaultCredentials }
 
 def parsePulsarAuthCookie(json: Option[String]): Either[Throwable, PulsarAuth] =
     val clientPulsarAuth = json match
@@ -156,26 +134,7 @@ def parsePulsarAuthCookie(json: Option[String]): Either[Throwable, PulsarAuth] =
                     pulsarAuth
                 )
 
-    clientPulsarAuth.map(pulsarAuth =>
-        pulsarAuth.copy(credentials = transformCredentials(pulsarAuth.credentials))
-    )
-
-private def transformCredentials(credentials: Map[CredentialsName, Credentials]) =
-    credentials
-        .updated("Default", defaultPulsarAuth.credentials.getOrElse("Default", EmptyCredentials(`type` = "empty")))
-        .map((name, credentials) => credentials match
-            case cr: EmptyCredentials => (name, cr)
-            case cr: OAuth2Credentials => (
-                name,
-                cr.copy(
-                    issuerUrl = URLDecoder.decode(cr.issuerUrl, UTF_8),
-                    privateKey = "data:application/json;base64," + URLDecoder.decode(cr.privateKey, UTF_8).replace("data:application/json;base64,", ""),
-                    audience = cr.audience.map(audience => URLDecoder.decode(audience, UTF_8)),
-                    scope = cr.scope.map(scope => URLDecoder.decode(scope, UTF_8))
-                )
-            )
-            case cr: JwtCredentials => (name, cr)
-        )
+    clientPulsarAuth
 
 def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
     val pulsarAuthWithoutEncodingMetadata = pulsarAuth.copy(
@@ -184,7 +143,7 @@ def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
                 name,
                 cr.copy(
                     issuerUrl = URLEncoder.encode(cr.issuerUrl, UTF_8),
-                    privateKey = URLEncoder.encode(cr.privateKey.replace("data:application/json;base64,", ""), UTF_8),
+                    privateKey = URLEncoder.encode(cr.privateKey, UTF_8),
                     audience = cr.audience.map(audience => URLEncoder.encode(audience, UTF_8)),
                     scope = cr.scope.map(scope => URLEncoder.encode(scope, UTF_8))
                 )

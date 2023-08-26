@@ -14,7 +14,6 @@ object PulsarAuthRoutes:
         addCredentials()
         useCredentials()
         deleteCredentials()
-        updateDefaultCredentials()
     }
 
     private def addCredentials(): Unit =
@@ -101,25 +100,6 @@ object PulsarAuthRoutes:
                                     setCookieAndSuccess(ctx, newPulsarAuth)
         )
 
-
-    def updateDefaultCredentials(): Unit =
-        patch(
-            "/pulsar-auth/update/default",
-            ctx =>
-                val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                val pulsarAuth = pulsar_auth.parsePulsarAuthCookie(pulsarAuthJson)
-
-                pulsarAuth match
-                    case Left(_) =>
-                        ctx.status(400)
-                        ctx.result(s"Unable to parse pulsar_auth cookie")
-                    case Right(pulsarAuth) =>
-                        val newPulsarAuth = pulsarAuth.copy(
-                            credentials = pulsarAuth.credentials -- DefaultCredentialsNames ++ defaultPulsarAuth.credentials
-                        )
-                        setCookieAndSuccess(ctx, newPulsarAuth)
-
-        )
     def setCookieAndSuccess(ctx: io.javalin.http.Context, pulsarAuth: PulsarAuth): Unit =
         val newCookieHeader = pulsar_auth.pulsarAuthToCookie(pulsarAuth)
         ctx.header(

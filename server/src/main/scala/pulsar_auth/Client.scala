@@ -4,7 +4,7 @@ import org.apache.pulsar.client.api.{AuthenticationFactory, ClientBuilder, Consu
 import org.apache.pulsar.client.api.{ClientBuilder, Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminBuilder}
 import _root_.schema.Config as SchemaConfig
-import _root_.config.{Config, readConfigAsync}
+import _root_.config.{readConfigAsync, Config}
 import org.apache.pulsar.client.api.url.URL
 import org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2
 
@@ -23,26 +23,23 @@ def makeAdminClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
         case None    => defaultPulsarAuth.credentials.get("Default")
         case Some(c) => pulsarAuth.credentials.get(c)
     pulsarCredentials match
-        case None    => Left(new Exception("No credentials found for Pulsar Admin"))
+        case None => Left(new Exception("No credentials found for Pulsar Admin"))
         case Some(c) =>
             c match
                 case cr: JwtCredentials => builder.authentication(AuthenticationFactory.token(cr.token))
                 case cr: OAuth2Credentials =>
-                    for
-                        audience <- cr.audience
-                        scope <- cr.scope
-                    yield builder.authentication(
+                    builder.authentication(
                         AuthenticationFactoryOAuth2.clientCredentials(
                             URL.createURL(cr.issuerUrl),
                             URL.createURL(cr.privateKey),
-                            audience,
-                            scope,
+                            cr.audience.orNull,
+                            cr.scope.orNull
                         )
                     )
                 case _ => Left(new Exception("Unsupported credentials type"))
 
     Try(builder.build) match {
-        case Success(value) => Right(value)
+        case Success(value)     => Right(value)
         case Failure(exception) => Left(new Exception("Wrong credentials for Pulsar Admin"))
     }
 
@@ -75,13 +72,12 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
                             URL.createURL(cr.issuerUrl),
                             URL.createURL(cr.privateKey),
                             audience,
-                            scope,
+                            scope
                         )
                     )
                 case _ => Left(new Exception("Unsupported credentials type"))
 
     Try(builder.build) match {
-        case Success(value) => Right(value)
+        case Success(value)     => Right(value)
         case Failure(exception) => Left(new Exception("Wrong credentials for Pulsar Client"))
     }
-
