@@ -31,7 +31,7 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
 
   return (
     <div className={s.Container}>
-      {props.value === undefined && <div className={s.Placeholder}>{props.placeholder}</div>}
+      {props.value && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={`${s.Select} ${props.disabled ? s.DisabledSelect : ''}`}
         onChange={(v) => props.onChange(v.target.value as V)}
