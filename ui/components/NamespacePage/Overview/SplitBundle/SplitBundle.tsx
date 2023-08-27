@@ -77,40 +77,33 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
           <div>Split algorithm:</div>
-          {getSupportedAlgorithms(brokersConfig).length !== 0 ? (
-            <>
-              <Select
-                value={splitParams.splitAlgorithm}
-                list={
-                  getSupportedAlgorithms(brokersConfig).map(x => ({type: 'item', value: x, title: x}))
-                }
-                onChange={v => setSplitParams(prevState => {
-                  return {...prevState, splitAlgorithm: v}
-                })}
-              />
-              <br/>
-              <div className={s.UnloadSplitBundlesCheckbox}>
-                <Checkbox
-                  isInline
-                  id="unloadSplitBundles"
-                  checked={splitParams.unloadSplitBundles}
-                  onChange={() => setSplitParams(prevState => {
-                    return {...prevState, unloadSplitBundles: !splitParams.unloadSplitBundles}
-                  })}
-                />
-                <div>Unload split bundles</div>
-              </div>
-            </>
-          ) : (
-            <NothingToShow reason='no-items-found'/>
-          )}
+          <Select
+            value={splitParams.splitAlgorithm}
+            list={
+              getSupportedAlgorithms(brokersConfig).map(x => ({type: 'item', value: x, title: x}))
+            }
+            onChange={v => setSplitParams(prevState => {
+              return {...prevState, splitAlgorithm: v}
+            })}
+          />
+          <br/>
+          <div className={s.UnloadSplitBundlesCheckbox}>
+            <Checkbox
+              isInline
+              id="unloadSplitBundles"
+              checked={splitParams.unloadSplitBundles}
+              onChange={() => setSplitParams(prevState => {
+                return {...prevState, unloadSplitBundles: !splitParams.unloadSplitBundles}
+              })}
+            />
+            <div>Unload split bundles</div>
+          </div>
           <br />
           <div>Splitting namespace bundles can lead to dynamic reassignment of topics to different brokers based on load conditions. While this is designed to optimize load distribution, it can result in performance implications if not managed properly. Ensure you understand the implications of bundle splitting, especially in environments with significant topic growth or varying load conditions.</div>
           <br />
         </div>
       }
       onConfirm={split}
-      isConfirmDisabled={getSupportedAlgorithms(brokersConfig).length == 0}
       onCancel={modals.pop}
       type={'danger'}
     />
