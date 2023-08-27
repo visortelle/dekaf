@@ -6,11 +6,11 @@ import * as Modals from "../../../app/contexts/Modals/Modals";
 import * as Notifications from "../../../app/contexts/Notifications";
 import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialog";
-import Select from "../../../ui/Select/Select";
+import Select, {List, ListItem} from "../../../ui/Select/Select";
 import Checkbox from "../../../ui/Checkbox/Checkbox";
 import * as BrokerConfig from "../../../app/contexts/BrokersConfig";
 import s from "./SplitBundle.module.css";
-import NothingToShow from "../../../ui/NothingToShow/NothingToShow";
+import Input from "../../../ui/Input/Input";
 
 export type SplitBundleProps = {
   namespaceFqn: string,
@@ -20,6 +20,15 @@ export type SplitBundleProps = {
 export type SplitParams = {
   splitAlgorithm: string;
   unloadSplitBundles: boolean;
+}
+
+
+const getDefaultAlgorithm = (brokersConfig: BrokerConfig.Value): string => {
+  const defaultAlgorithm = brokersConfig
+    .get('defaultNamespaceBundleSplitAlgorithm')?.value
+    .replace(/[^a-zA-Z0-9_,]/g, '')
+
+  return defaultAlgorithm ?? ''
 }
 
 const getSupportedAlgorithms = (brokersConfig: BrokerConfig.Value): string[] => {
@@ -37,13 +46,42 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
   const { notifyError, notifySuccess } = Notifications.useContext();
   const brokersConfig = BrokerConfig.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
+
+  const defaultAlgorithm = getDefaultAlgorithm(brokersConfig)
+  const supportedAlgorithms = getSupportedAlgorithms(brokersConfig)
+
+  const [customAlgorithmInput, setCustomAlgorithmInput] = React.useState<string>('');
   const [splitParams, setSplitParams] = React.useState<SplitParams>({
-    splitAlgorithm: getSupportedAlgorithms(brokersConfig).at(0) ?? '',
+    splitAlgorithm: "default-algorithm",
     unloadSplitBundles: false,
   } as SplitParams);
 
+
+  const list: List<string> =  [
+    {type: 'item', value: "default-algorithm", title: `Default algorithm (${defaultAlgorithm})`},
+    {type: 'item', value: "custom-algorithm", title: "Custom algorithm"},
+    {type: 'group', title: "Supported algorithms", items: [
+        ...supportedAlgorithms.map(x => ({type: 'item', value: x, title: x} as ListItem<string>))
+      ]
+    },
+  ]
+
   const split = async () => {
-    if (!splitParams.splitAlgorithm) {
+    let splitAlgorithm: string;
+
+    switch (splitParams.splitAlgorithm) {
+      case "default-algorithm":
+        splitAlgorithm = defaultAlgorithm
+        break;
+      case "custom-algorithm":
+        splitAlgorithm = customAlgorithmInput
+        break;
+      default:
+        splitAlgorithm = splitParams.splitAlgorithm
+        break;
+    }
+
+    if (!splitAlgorithm) {
       notifyError(
         `Unable to split namespace bundle. Split algorithm is not selected`
       );
@@ -53,7 +91,7 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
     const req = new pbn.SplitNamespaceBundleRequest();
     req.setNamespace(namespaceFqn);
     req.setBundle(bundleKey);
-    req.setSplitAlgorithm(splitParams.splitAlgorithm);
+    req.setSplitAlgorithm(splitAlgorithm);
     req.setUnloadSplitBundles(splitParams.unloadSplitBundles);
 
     const res =
@@ -79,13 +117,19 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
           <div>Split algorithm:</div>
           <Select
             value={splitParams.splitAlgorithm}
-            list={
-              getSupportedAlgorithms(brokersConfig).map(x => ({type: 'item', value: x, title: x}))
-            }
+            list={list}
             onChange={v => setSplitParams(prevState => {
               return {...prevState, splitAlgorithm: v}
             })}
           />
+          {splitParams.splitAlgorithm === "custom-algorithm" && (
+            <Input
+              value={customAlgorithmInput}
+              placeholder="range_equally_divide"
+              onChange={(v) => setCustomAlgorithmInput(v)}
+            />
+          )
+          }
           <br/>
           <div className={s.UnloadSplitBundlesCheckbox}>
             <Checkbox
