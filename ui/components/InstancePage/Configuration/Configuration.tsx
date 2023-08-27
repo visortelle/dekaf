@@ -170,7 +170,7 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
   const updateDynamicConfigValue = async () => {
     const req = new UpdateDynamicConfigurationRequest();
     req.setName(props.configKey);
-    req.setValue(inputValue);
+    req.setValue(inputValue.replace(/ /g, ''));
     const res = await brokersServiceClient.updateDynamicConfiguration(req, {}).catch(err => notifyError(`Unable to update dynamic configuration value: ${err}`));
     if (res === undefined) {
       return;
