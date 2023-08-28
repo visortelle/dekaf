@@ -33,13 +33,16 @@ const defaultWithLayoutProps: WithLayoutProps = {
   layout: { navigationTree: { selectedNodePath: [] } },
 };
 
-const Router: React.FC = () => {
+type RouterProps = {
+  basename: string;
+}
+const Router: React.FC<RouterProps> = (props) => {
   const withLayout: WithLayout = (children, props) => (
     <Layout {...props.layout}>{children}</Layout>
   );
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={props.basename}>
       <QueryParamProvider adapter={ReactRouter6Adapter}>
         <Modals.DefaultProvider>
           <Routes withLayout={withLayout} />

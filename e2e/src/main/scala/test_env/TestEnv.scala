@@ -14,7 +14,7 @@ case class PulsarCluster(
 case class TextEnvConfig(pulsarClusters: List[PulsarCluster])
 
 case class TestEnv(config: TextEnvConfig):
-    private val publicUrl = "http://localhost:8090"
+    private val publicBaseUrl = "http://localhost:8090"
     private val isDebug = true
     private val playwright: Playwright = Playwright.create
     private val browser: Browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(!isDebug))
@@ -25,7 +25,7 @@ case class TestEnv(config: TextEnvConfig):
     def createNewPage(): Page =
         val newPageOptions = new NewPageOptions()
             .setViewportSize(new ViewportSize(1280, 800))
-            .setBaseURL(publicUrl)
+            .setBaseURL(publicBaseUrl)
         browser.newPage(newPageOptions)
 
 def createPulsarStandaloneEnv = TestEnv(TextEnvConfig(

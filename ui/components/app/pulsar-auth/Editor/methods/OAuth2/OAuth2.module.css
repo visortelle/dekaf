@@ -2,7 +2,7 @@
     background-color: #f5f5f5;
     overflow: auto;
     font-size: 14rem;
-    color: #333;
+    color: var(--text-color);
     white-space: pre-wrap;
     word-wrap: break-word;
 }
@@ -11,9 +11,12 @@
     background-color: #f5f5f5;
     overflow: auto;
     font-size: 14rem;
-    color: #333;
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+.FileUploaded .UploadZoneIcon svg {
+  fill: var(--accent-color-green);
 }
 
 .UploadZoneIcon {

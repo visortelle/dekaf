@@ -5,4 +5,5 @@ metadata:
   labels:
     {{- include "_chart-name.labels" . | nindent 4 }}
 data:
-  config.yaml: {{- toYaml .Values.pulsocat.config | nindent 4 }}
+  config.yaml: |
+  {{- toYaml .Values.pulsocat.config | nindent 4 }}

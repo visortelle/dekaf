@@ -25,4 +25,4 @@ echo $DOCKER_PASS | helm registry login --password-stdin --username $DOCKER_USER
 
 pulumi stack select --create $pulumi_stack
 pulumi refresh --yes --stack $pulumi_stack
-pulumi up --stack $pulumi_stack --yes --skip-preview --non-interactive
+PULUMI_K8S_ENABLE_PATCH_FORCE="true" pulumi up --stack $pulumi_stack --yes --skip-preview --non-interactive
