@@ -3,7 +3,8 @@ package config
 def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
     Config(
         port = highPriority.port.orElse(lowPriority.port),
-        publicUrl = highPriority.publicUrl.orElse(lowPriority.publicUrl),
+        publicBaseUrl = highPriority.publicBaseUrl.orElse(lowPriority.publicBaseUrl),
+        basePath = highPriority.basePath.orElse(lowPriority.basePath),
         libraryPath = highPriority.libraryPath.orElse(lowPriority.libraryPath),
         licenseId = highPriority.licenseId.orElse(lowPriority.licenseId),
         licenseToken = highPriority.licenseToken.orElse(lowPriority.licenseToken),
@@ -27,5 +28,6 @@ def mergeConfigs(lowPriority: Config, highPriority: Config): Config =
         pulsarTlsCiphers = highPriority.pulsarTlsCiphers.orElse(lowPriority.pulsarTlsCiphers),
         pulsarTlsProtocols = highPriority.pulsarTlsProtocols.orElse(lowPriority.pulsarTlsProtocols),
         internalHttpPort = highPriority.internalHttpPort.orElse(lowPriority.internalHttpPort),
-        internalGrpcPort = highPriority.internalGrpcPort.orElse(lowPriority.internalGrpcPort)
+        internalGrpcPort = highPriority.internalGrpcPort.orElse(lowPriority.internalGrpcPort),
+        defaultPulsarAuth = highPriority.defaultPulsarAuth.orElse(lowPriority.defaultPulsarAuth)
     )

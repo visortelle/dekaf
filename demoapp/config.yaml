@@ -1,7 +1,7 @@
-brokerServiceUrl: "pulsar+ssl://cluster-e.o-xy6ek.snio.cloud:6651"
+brokerServiceUrl: "pulsar+ssl://cluster-f.o-xy6ek.snio.cloud:6651"
 webServiceUrl: "https://clustere.o-xy6ek.snio.cloud"
 auth:
   oauth2:
     issuerUrl: "https://auth.streamnative.cloud/"
-    audience: "urn:sn:pulsar:o-xy6ek:instance-e"
+    audience: "urn:sn:pulsar:o-xy6ek:instance-f"
     privateKey: "file:///Users/visortelle/Downloads/o-xy6ek-cluster-b-admin.json"

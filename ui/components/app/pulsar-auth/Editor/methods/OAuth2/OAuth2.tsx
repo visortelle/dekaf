@@ -17,22 +17,7 @@ export type OAuth2Props = {
 
 const OAuth2: React.FC<OAuth2Props> = (props) => {
   const { notifyInfo } = Notifications.useContext();
-  const [ isFileLoaded, setIsFileLoaded ] = React.useState<boolean>(false);
-
-  const MAX_SIZE_KB = 5;
-
-  const getBase64 = (file: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result as string;
-        const base64Data = base64String.split(',')[1];
-        resolve(base64Data);
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  }
+  const [isFileLoaded, setIsFileLoaded] = React.useState<boolean>(false);
 
   const submitKeyFile = async (files: FileEntry[]) => {
     const file = files[0];
@@ -44,17 +29,17 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
       return;
     }
 
-    const base64Content = await getBase64(new Blob([file.content], { type: "application/json" }));
-
+    const maxSizeKb = 5;
     const sizeInKB = file.content.length / 1024;
-    if (sizeInKB > MAX_SIZE_KB) {
-      notifyInfo(`The file size is larger than ${MAX_SIZE_KB}KB.`);
+    if (sizeInKB > maxSizeKb) {
+      notifyInfo(`The file size is larger than ${maxSizeKb}KB.`);
       return;
     }
 
     setIsFileLoaded(true);
 
-    props.onChange({ ...props.value, privateKey: base64Content });
+    const privateKey = `data:application/json;base64,${btoa(file.content)}`;
+    props.onChange({ ...props.value, privateKey });
   }
 
   return (
@@ -70,20 +55,18 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
       <FormItem>
         <FormLabel content='Private Key' isRequired />
         <UploadZone isDirectory={false} onFiles={(files) => submitKeyFile(files)} isUploadPictureVisible={!isFileLoaded}>
-          {!isFileLoaded && 
-           <div className={s.UploadZone}>
-              <span>Click here or drag'n'drop a .json file</span> 
+          {!isFileLoaded &&
+            <div className={s.UploadZone}>
+              <span>Click here or drag'n'drop a .json file</span>
             </div>
           }
-          {isFileLoaded && 
-            <>
+          {isFileLoaded &&
+            <div className={s.FileUploaded}>
               <div className={s.UploadZoneIcon}>
                 <SvgIcon svg={uploadCompleteIcon} />
               </div>
-              <div className={s.FileUploaded}>
-                <span>File loaded!</span>
-              </div>
-            </>
+              <div>File loaded!</div>
+            </div>
           }
         </UploadZone>
       </FormItem>

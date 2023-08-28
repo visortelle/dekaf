@@ -18,7 +18,9 @@ export type EditorProps = {
   onDone: () => void;
 };
 
-type EditorView = 'list' | 'new';
+const defaultCredentialsName = 'Default';
+
+type EditorView = "list" | "new";
 
 const Editor: React.FC<EditorProps> = (props) => {
   const { config } = AppContext.useContext();
@@ -93,7 +95,7 @@ const Editor: React.FC<EditorProps> = (props) => {
                         <SmallButton
                           type='regular'
                           onClick={async () => {
-                            await fetch(`${config.publicUrl}/pulsar-auth/use/${encodeURIComponent(item.name)}`, { method: 'POST' })
+                            await fetch(`${config.publicBaseUrl}/pulsar-auth/use/${encodeURIComponent(item.name)}`, { method: 'POST' })
                               .catch((err) => notifyError(`Unable to set current credentials: ${err}`));
                             await mutate(swrKeys.pulsar.auth.credentials._());
                             await mutate(swrKeys.pulsar.auth.credentials.current._());
@@ -103,13 +105,14 @@ const Editor: React.FC<EditorProps> = (props) => {
                         <SmallButton
                           type='danger'
                           onClick={async () => {
-                            await fetch(`${config.publicUrl}/pulsar-auth/delete/${encodeURIComponent(item.name)}`, { method: 'POST' })
+                            await fetch(`${config.publicBaseUrl}/pulsar-auth/delete/${encodeURIComponent(item.name)}`, { method: 'POST' })
                               .catch((err) => notifyError(`Unable to delete credentials: ${err}`));
                             await mutate(swrKeys.pulsar.auth.credentials._());
                             await mutate(swrKeys.pulsar.auth.credentials.current._());
                           }}
                           title='Delete'
                           svgIcon={deleteIcon}
+                          disabled={item.name === defaultCredentialsName}
                         />
                       </div>
                     </td>
@@ -128,8 +131,7 @@ const Editor: React.FC<EditorProps> = (props) => {
             <Button type='regular' onClick={props.onDone} text='Done' />
           </div>
         </div>
-      )
-      }
+      )}
 
       {
         view === 'new' && (

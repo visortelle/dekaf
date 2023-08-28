@@ -10,6 +10,9 @@ const appFqn = `${project}-${app}-${stack}`;
 const gitRev = execSync('git rev-parse --short=8 HEAD', { encoding: 'utf-8' }).toString().trim();
 const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).toString().trim();
 
+const isDemoPulsocatCom = stack === "demo-pulsocat-com";
+const host = isDemoPulsocatCom ? "pulsocat.com" : `${appFqn}.dev.teal.tools`;
+
 export const createResources = () => {
   const namespace = new k8s.core.v1.Namespace(
     appFqn,
@@ -42,50 +45,33 @@ export const createResources = () => {
           pullPolicy: "Always",
           tag: gitBranch,
         },
+        resources: {
+          limits: {
+            cpu: isDemoPulsocatCom ? "4000m" : "1000m",
+            memory: isDemoPulsocatCom ? "16Gi" : "2Gi"
+          },
+          requests: {
+            cpu: isDemoPulsocatCom ? "4000m" : "100m",
+            memory: isDemoPulsocatCom ? "16Gi" : "512Mi",
+          }
+        },
+
+        basePath: "/demo",
+        config: {
+          publicBaseUrl: `https://${host}/demo`,
+          pulsarBrokerUrl: "pulsar+ssl://cluster-f.o-xy6ek.snio.cloud:6651",
+          pulsarHttpUrl: "https://cluster-f.o-xy6ek.snio.cloud",
+        },
         env: [
-          { name: "PULSOCAT_PUBLIC_URL", value: `https://${appFqn}.dev.teal.tools` },
           { name: "PULSOCAT_LICENSE_ID", value: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6" },
           { name: "PULSOCAT_LICENSE_TOKEN", value: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3" },
-          { name: "PULSOCAT_PULSAR_BROKER_URL", value: "pulsar+ssl://cluster-d.o-xy6ek.snio.cloud:6651" },
-          { name: "PULSOCAT_PULSAR_HTTP_URL", value: "https://cluster-d.o-xy6ek.snio.cloud" },
+          { name: "PULSOCAT_DEFAULT_PULSAR_AUTH", value: `{ "type": "oauth2", "issuerUrl": "https://auth.streamnative.cloud/", "privateKey": "data:application/json;base64,eyJ0eXBlIjoic25fc2VydmljZV9hY2NvdW50IiwiY2xpZW50X2lkIjoiYm5XT1M0STZ5dkRvSG93NEFjbU12UWpFUUdvTzRvQ1kiLCJjbGllbnRfc2VjcmV0IjoiaW1WekhvMERLSkdqejZBcWJCV0FZZ3ZlY0YxUEV0WmYtcUh4THhpQXBpMWxWVEhBVkh1MzRIZnBDNjlZc292aiIsImNsaWVudF9lbWFpbCI6ImFkbWluQG8teHk2ZWsuYXV0aC5zdHJlYW1uYXRpdmUuY2xvdWQiLCJpc3N1ZXJfdXJsIjoiaHR0cHM6Ly9hdXRoLnN0cmVhbW5hdGl2ZS5jbG91ZC8ifQ==", "audience": "urn:sn:pulsar:o-xy6ek:instance-f" }` },
         ]
       }
     }
   }, {
     dependsOn: [namespace],
   });
-
-  const gateway = new k8s.apiextensions.CustomResource(
-    appFqn,
-    {
-      apiVersion: "networking.istio.io/v1beta1",
-      kind: "Gateway",
-      metadata: {
-        name: appFqn,
-        namespace: namespace.metadata.name
-      },
-      spec: {
-        selector: {
-          "istio": `ingressgateway`
-        },
-        servers: [
-          {
-            port: {
-              number: 443,
-              name: "https",
-              protocol: "HTTPS"
-            },
-            hosts: [`${appFqn}.dev.teal.tools`],
-            tls: {
-              mode: "SIMPLE",
-              credentialName: `wildcard.dev.teal.tools-tls`,
-            }
-          }
-        ]
-      }
-    },
-    { dependsOn: [helmRelease] }
-  );
 
   const virtualService = new k8s.apiextensions.CustomResource(
     appFqn,
@@ -97,11 +83,15 @@ export const createResources = () => {
         namespace: namespace.metadata.name,
       },
       spec: {
-        hosts: ["*"],
-        gateways: [gateway.metadata.name],
+        hosts: [host],
+        gateways: [
+          isDemoPulsocatCom ?
+            "istio-system/pulsocat-com" :
+            `istio-system/wildcard-dev-teal-tools`
+        ],
         http: [
           {
-            match: [{ uri: { prefix: "/" } }],
+            match: [{ uri: { prefix: "/demo" } }],
             route: [
               {
                 destination: {

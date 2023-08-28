@@ -105,4 +105,4 @@ jobs:
 
       - name: Deploy Pulsocat demo
         shell: bash
-        run: nix-shell --run 'cd ./deployment/pulsocat-demo && make deploy'
+        run: nix-shell --run 'cd ./deployment/pulsocat && make deploy'
