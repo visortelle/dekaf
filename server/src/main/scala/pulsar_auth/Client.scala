@@ -1,20 +1,31 @@
 package pulsar_auth
 
-import org.apache.pulsar.client.api.{AuthenticationFactory, ClientBuilder, Consumer, MessageListener, PulsarClient}
-import org.apache.pulsar.client.api.{ClientBuilder, Consumer, MessageListener, PulsarClient}
-import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminBuilder}
-import _root_.schema.Config as SchemaConfig
-import _root_.config.{readConfigAsync, Config}
+import _root_.config.readConfigAsync
+import io.netty.channel.epoll.EpollEventLoopGroup
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.util.HashedWheelTimer
+import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.url.URL
+import org.apache.pulsar.client.api.{AuthenticationFactory, PulsarClient}
+import org.apache.pulsar.client.impl.PulsarClientImpl
 import org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2
+import org.apache.pulsar.client.impl.conf.ClientConfigurationData
+import org.apache.pulsar.client.util.{ExecutorProvider, ScheduledExecutorProvider}
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.util.{Failure, Success, Try}
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 
-def makeAdminClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
+val internalExecutorProvider = ExecutorProvider(8, "shared-internal-executor")
+val externalExecutorProvider = ExecutorProvider(8, "shared-external-executor")
+val scheduledExecutorProvider = ScheduledExecutorProvider(8, "scheduled-pulsar-executor")
+val sharedTimer = new HashedWheelTimer(getThreadFactory("shared-pulsar-timer"), 1, TimeUnit.MILLISECONDS)
+val sharedEventLoopGroup = new NioEventLoopGroup() // Worse than EpollEventLoopGroup on Linux, but works everywhere
+
+def makePulsarAdmin(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
     var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarHttpUrl.get)
 
     builder = tls.configureAdminClient(builder, config)
@@ -44,27 +55,47 @@ def makeAdminClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
     }
 
 def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
-    var builder = PulsarClient.builder
-        /* By default, for partitioned topics Pulsar client may use several threads.
-        We use the "accum" js-var in for MessageFilter, to aggregate some value over consumed messages.
-        GraalJS doesn't allow access to a single js variable across several JVM threads,
-        so we need to use only one thread per client. */
-        .listenerThreads(1)
-        .ioThreads(1)
-        .serviceUrl(config.pulsarBrokerUrl.get)
+    val pulsarClientConfig = ClientConfigurationData()
 
-    builder = tls.configureClient(builder, config)
+    /* By default, for partitioned topics Pulsar client may use several threads.
+    We use the "accum" js-var in for MessageFilter, to aggregate some value over consumed messages.
+    GraalJS doesn't allow access to a single js variable across several JVM threads,
+    so we need to use only one thread per client. */
+    pulsarClientConfig.setNumIoThreads(1)
+    pulsarClientConfig.setNumListenerThreads(1)
+    pulsarClientConfig.setServiceUrl(config.pulsarBrokerUrl.get)
 
+    tls.configureClient(pulsarClientConfig, config)
+
+    configureAuth(pulsarAuth, pulsarClientConfig)
+
+    val builder = PulsarClientImpl.builder
+        .conf(pulsarClientConfig)
+        .internalExecutorProvider(internalExecutorProvider)
+        .externalExecutorProvider(externalExecutorProvider)
+        .scheduledExecutorProvider(scheduledExecutorProvider)
+        .timer(sharedTimer)
+        .eventLoopGroup(sharedEventLoopGroup)
+
+    Try(builder.build) match {
+        case Success(value)     => Right(value)
+        case Failure(exception) => Left(new Exception("Wrong credentials for Pulsar Client"))
+    }
+
+def getThreadFactory(poolName: String) =
+    new ExecutorProvider.ExtendedThreadFactory(poolName, Thread.currentThread().isDaemon)
+
+def configureAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfigurationData) =
     val pulsarCredentials = pulsarAuth.current match
-        case None    => defaultPulsarAuth.credentials.get("Default")
+        case None => defaultPulsarAuth.credentials.get("Default")
         case Some(c) => pulsarAuth.credentials.get(c)
     pulsarCredentials match
         case None => Left(new Exception("No credentials found for Pulsar Admin"))
         case Some(c) =>
             c match
-                case cr: JwtCredentials => builder.authentication(AuthenticationFactory.token(cr.token))
+                case cr: JwtCredentials => pulsarClientConfig.setAuthentication(AuthenticationFactory.token(cr.token))
                 case cr: OAuth2Credentials =>
-                    builder.authentication(
+                    pulsarClientConfig.setAuthentication(
                         AuthenticationFactoryOAuth2.clientCredentials(
                             URL.createURL(cr.issuerUrl),
                             URL.createURL(cr.privateKey),
@@ -73,8 +104,3 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
                         )
                     )
                 case _ => Left(new Exception("Unsupported credentials type"))
-
-    Try(builder.build) match {
-        case Success(value)     => Right(value)
-        case Failure(exception) => Left(new Exception("Wrong credentials for Pulsar Client"))
-    }
