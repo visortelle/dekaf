@@ -1,6 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import { execSync } from "child_process";
 import * as k8s from "@pulumi/kubernetes";
+import { mkIsPublicDemo } from "../shared/shared";
 
 const app = "ui";
 const project = pulumi.getProject();
@@ -10,8 +11,8 @@ const appFqn = `${project}-${app}-${stack}`;
 const gitRev = execSync('git rev-parse --short=8 HEAD', { encoding: 'utf-8' }).toString().trim();
 const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).toString().trim();
 
-const isDemoPulsocatCom = stack === "demo-pulsocat-com";
-const host = isDemoPulsocatCom ? "pulsocat.com" : `${appFqn}.dev.teal.tools`;
+const isPublicDemo = mkIsPublicDemo();
+const host = isPublicDemo ? "pulsocat.com" : `${appFqn}.dev.teal.tools`;
 
 export const createResources = () => {
   const namespace = new k8s.core.v1.Namespace(
@@ -47,12 +48,12 @@ export const createResources = () => {
         },
         resources: {
           limits: {
-            cpu: isDemoPulsocatCom ? "4000m" : "1000m",
-            memory: isDemoPulsocatCom ? "16Gi" : "2Gi"
+            cpu: isPublicDemo ? "4000m" : "1000m",
+            memory: isPublicDemo ? "16Gi" : "2Gi"
           },
           requests: {
-            cpu: isDemoPulsocatCom ? "4000m" : "100m",
-            memory: isDemoPulsocatCom ? "16Gi" : "512Mi",
+            cpu: isPublicDemo ? "4000m" : "100m",
+            memory: isPublicDemo ? "16Gi" : "512Mi",
           }
         },
 
@@ -85,7 +86,7 @@ export const createResources = () => {
       spec: {
         hosts: [host],
         gateways: [
-          isDemoPulsocatCom ?
+          isPublicDemo ?
             "istio-system/pulsocat-com" :
             `istio-system/wildcard-dev-teal-tools`
         ],
