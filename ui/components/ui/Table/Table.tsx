@@ -92,6 +92,7 @@ export type TableProps<CK extends ColumnKey, DE, LD> = {
   },
   itemNamePlural?: string,
   toolbar?: { visibility: 'visible' | 'hidden' },
+  areRowsCustomizable?: boolean,
 };
 
 function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): ReactElement | null {

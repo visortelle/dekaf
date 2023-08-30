@@ -1,16 +1,9 @@
 package topic
 
-import org.apache.pulsar.common.policies.data.{
-    CompactionStats,
-    ConsumerStats,
-    PartitionedTopicStats,
-    PublisherStats,
-    ReplicatorStats,
-    SubscriptionStats,
-    TopicStats,
-}
+import org.apache.pulsar.common.policies.data.{CompactionStats, ConsumerStats, PartitionedTopicStats, PublisherStats, ReplicatorStats, SubscriptionStats, TopicHashPositions, TopicStats}
 import org.apache.pulsar.client.api.ProducerAccessMode
 import com.tools.teal.pulsar.ui.topic.v1.topic as pb
+
 import scala.jdk.CollectionConverters.*
 
 def topicStatsToPb(stats: TopicStats): pb.TopicStats =

@@ -80,6 +80,23 @@ export const swrKeys = {
             "properties",
             stringify(topics)
           ],
+        },
+        topicBundleRange: {
+          _: (topic: string) => [
+            "customApi",
+            "metrics",
+            "topicsBundleRange",
+            stringify(topic)
+          ]
+        },
+        topicHashPositions: {
+          _: (namespace: string, topic: string) => [
+            "customApi",
+            "metrics",
+            "topicHashPositions",
+            namespace,
+            stringify(topic)
+          ]
         }
       },
     },
@@ -265,6 +282,37 @@ export const swrKeys = {
                 props.namespace,
                 "bundles",
                 ],
+              bundle: {
+                _: (props: {
+                  tenant: string;
+                  namespace: string;
+                  bundle: string;
+                }) => [
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "bundles",
+                  props.bundle,
+                  ],
+                listTopics: {
+                   _: (props: {
+                    tenant: string;
+                    namespace: string;
+                    bundle: string;
+                   }) => [
+                    "pulsar",
+                    "tenants",
+                    props.tenant,
+                    "namespaces",
+                    props.namespace,
+                    "bundles",
+                    props.bundle,
+                    "listTopics",
+                   ]
+                }
+              }
             },
             statistics: {
               _: (props: { tenant: string; namespace: string }) => [

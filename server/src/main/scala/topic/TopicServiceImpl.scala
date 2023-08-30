@@ -12,7 +12,9 @@ import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
-import com.tools.teal.pulsar.ui.topic.v1.topic.{GetTopicPropertiesRequest, GetTopicPropertiesResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties}
+
+import concurrent.ExecutionContext.Implicits.global
+import com.tools.teal.pulsar.ui.topic.v1.topic.{GetTopicBundleRangeRequest, GetTopicBundleRangeResponse, GetTopicHashPositionsInNamespaceBundlesRequest, GetTopicHashPositionsInNamespaceBundlesResponse, GetTopicPropertiesRequest, GetTopicPropertiesResponse, ListBundleTopicsRequest, ListBundleTopicsResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties, TopicServiceGetTopicHashPositionsInNamespaceBundlesRequest, TopicServiceGetTopicHashPositionsInNamespaceBundlesResponse}
 
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
@@ -20,6 +22,7 @@ import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, Pe
 import org.apache.pulsar.common.naming.TopicDomain
 import pulsar_auth.RequestContext
 
+import scala.collection.mutable.ArrayBuffer
 import scala.util.{Failure, Success, Try}
 
 class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
@@ -185,7 +188,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 .toMap
 
             val status: Status = Status(code = Code.OK.index)
-            Future.successful(pb.GetTopicPropertiesResponse(
+            Future.successful(GetTopicPropertiesResponse(
                 status = Some(status),
                 topicProperties = prop
 
@@ -193,7 +196,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         } catch {
             case err: Throwable =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(pb.GetTopicPropertiesResponse(status = Some(status)))
+                Future.successful(GetTopicPropertiesResponse(status = Some(status)))
         }
 
     override def setTopicProperties(request: SetTopicPropertiesRequest): Future[SetTopicPropertiesResponse] =
@@ -205,11 +208,108 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
             adminClient.topics.updateProperties(request.topic, request.topicProperties.asJava)
 
             val status: Status = Status(code = Code.OK.index)
-            Future.successful(pb.SetTopicPropertiesResponse(
+            Future.successful(SetTopicPropertiesResponse(
                 status = Some(status)
             ))
         } catch {
             case err: Throwable =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                Future.successful(pb.SetTopicPropertiesResponse(status = Some(status)))
+                Future.successful(SetTopicPropertiesResponse(status = Some(status)))
         }
+
+    override def getTopicBundleRange(request: GetTopicBundleRangeRequest): Future[GetTopicBundleRangeResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        val bundleRange = adminClient.lookups().getBundleRange(request.topic)
+
+        val status: Status = Status(
+            code = Code.OK.index,
+            message = s"Bundle range for topic ${request.topic} is ${bundleRange}"
+        )
+        Future.successful(GetTopicBundleRangeResponse(
+            status = Some(status),
+            bundleRange = bundleRange
+        ))
+
+    override def getTopicHashPositionsInNamespaceBundles(request: GetTopicHashPositionsInNamespaceBundlesRequest): Future[GetTopicHashPositionsInNamespaceBundlesResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        val namespaceBundles =
+            adminClient
+                .namespaces()
+                .getBundles(request.namespace)
+                .getBoundaries
+                .asScala
+                .sliding(2)
+                .toList
+                .map {
+                    case ArrayBuffer(start, end) => s"${start}_${end}"
+                }
+
+        val namespaceBundlesTopicHashPositionsFuture = Future.sequence(
+        namespaceBundles
+                    .map(bundle =>
+                        bundle -> adminClient
+                            .namespaces()
+                            .getTopicHashPositionsAsync(request.namespace, bundle, Seq(request.topic).asJava)
+                            .asScala
+                    )
+                    .map {
+                        case (key, futureValue) => (key, futureValue.map(Some(_)).recover { case _ => None })
+                    }
+                    .map {
+                        case (key, futureValue) => futureValue.map(value => (key, value))
+                    }
+            )
+            .map(_.toMap)
+
+        val filteredNamespaceBundlesTopicHashPositionsFuture = namespaceBundlesTopicHashPositionsFuture
+            .map { resultMap =>
+                resultMap.collect { case (key, Some(value)) => (key, value) }
+            }
+            .map(resultMap =>
+                resultMap.map {
+                    case (bundle, topicHashPositions) =>
+                        bundle ->
+                            topicHashPositions
+                                .getTopicHashPositions
+                                .asScala
+                                .headOption
+                                .map(x => x._2)
+                                .map(k => k: Long)
+                                .getOrElse(0L)
+                }
+            )
+
+        try {
+            val filteredNamespaceBundlesTopicHashPositions = Await.result(filteredNamespaceBundlesTopicHashPositionsFuture, Duration(1, TimeUnit.MINUTES))
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(GetTopicHashPositionsInNamespaceBundlesResponse(
+                status = Some(status),
+                namespaceBundlesTopicHashPositions = filteredNamespaceBundlesTopicHashPositions
+            ))
+        } catch {
+            case err: Throwable =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(GetTopicHashPositionsInNamespaceBundlesResponse(status = Some(status)))
+        }
+
+    override def listBundleTopics(request: ListBundleTopicsRequest): Future[ListBundleTopicsResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        val topicsUnderBundle = adminClient.topics.getListInBundle(request.namespace, request.bundle).asScala match
+            case null => Seq.empty
+            case topics => topics.toSeq
+
+        if topicsUnderBundle.isEmpty then
+            val status: Status = Status(code = Code.NOT_FOUND.index)
+            Future.successful(ListBundleTopicsResponse(
+                status = Some(status)
+            ))
+        else
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(ListBundleTopicsResponse(
+                status = Some(status),
+                topics = topicsUnderBundle
+            ))

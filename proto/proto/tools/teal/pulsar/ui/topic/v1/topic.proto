@@ -303,6 +303,35 @@ message GetTopicsStatsResponse {
   map<string, PartitionedTopicStats> partitioned_topic_stats = 3;
 }
 
+message GetTopicBundleRangeRequest {
+  string topic = 1;
+}
+
+message GetTopicBundleRangeResponse {
+  google.rpc.Status status = 1;
+  string bundle_range = 2;
+}
+
+message GetTopicHashPositionsInNamespaceBundlesRequest {
+  string namespace = 1;
+  string topic = 2;
+}
+
+message GetTopicHashPositionsInNamespaceBundlesResponse {
+  google.rpc.Status status = 1;
+  map<string, int64> namespace_bundles_topic_hash_positions = 2;
+}
+
+message ListBundleTopicsRequest {
+  string namespace = 1;
+  string bundle = 2;
+}
+
+message ListBundleTopicsResponse {
+  google.rpc.Status status = 1;
+  repeated string topics = 2;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
@@ -312,4 +341,7 @@ service TopicService {
   rpc GetTopicProperties(GetTopicPropertiesRequest) returns (GetTopicPropertiesResponse);
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
+  rpc GetTopicBundleRange(GetTopicBundleRangeRequest) returns (GetTopicBundleRangeResponse);
+  rpc GetTopicHashPositionsInNamespaceBundles(GetTopicHashPositionsInNamespaceBundlesRequest) returns (GetTopicHashPositionsInNamespaceBundlesResponse);
+  rpc ListBundleTopics(ListBundleTopicsRequest) returns (ListBundleTopicsResponse);
 }

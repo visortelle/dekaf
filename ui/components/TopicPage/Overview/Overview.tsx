@@ -32,6 +32,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
   const i18n = I18n.useContext();
   const [activeTab, setActiveTab] = React.useState<TabKey>('stats');
 
+  const namespaceFqn = `${props.tenant}/${props.namespace}`;
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const { data: statsResponse, error: statsError, isLoading: isStatsLoading } = useSwr(
@@ -62,6 +63,53 @@ const Overview: React.FC<OverviewProps> = (props) => {
       return res;
     }
   );
+
+  const { data: topicBundleRange, error: topicBundleRangeError, isLoading: isTopicBundleRangeLoading } = useSwr(
+    swrKeys.pulsar.customApi.metrics.topicBundleRange._(topicFqn),
+    async () => {
+      const req = new pb.GetTopicBundleRangeRequest();
+      req.setTopic(topicFqn);
+
+      const res = await topicServiceClient.getTopicBundleRange(req, null)
+        .catch((err) => notifyError(`Unable to get topic bundle range. ${err}`));
+
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get topic bundle range. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      return res.getBundleRange();
+    }
+  )
+
+  const { data: namespaceBundlesTopicHashPositions, error: namespaceBundlesTopicHashPositionsError, isLoading: isTopicHashPositionLoading } = useSwr(
+    swrKeys.pulsar.customApi.metrics.topicHashPositions._(namespaceFqn, topicFqn),
+    async () => {
+      const req = new pb.GetTopicHashPositionsInNamespaceBundlesRequest();
+      req.setNamespace(namespaceFqn)
+      req.setTopic(topicFqn);
+
+      return "-"; //TODO: fix bundle hash positions lookup always returning empty map
+
+/*      const res = await topicServiceClient.getTopicHashPositionsInNamespaceBundles(req, null)
+        .catch((err) => notifyError(`Unable to get topics hash positions. ${err}`));
+
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to get topics hash positions. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      return res.getNamespaceBundlesTopicHashPositionsMap() || "-";*/
+    }
+  )
 
   const { data: propertiesResponse, error: propertiesResponseError, isLoading: isPropertiesResponseLoading } = useSwr(
     swrKeys.pulsar.customApi.metrics.topicsProperties._([topicFqn]),
@@ -123,6 +171,14 @@ const Overview: React.FC<OverviewProps> = (props) => {
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Topic FQN</td>
               <Td>{topicFqn}</Td>
+            </tr>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Topic bundle range</td>
+              <Td>{topicBundleRange}</Td>
+            </tr>
+            <tr className={st.Row}>
+              <td className={st.HighlightedCell}>Topic hash position</td>
+              <Td>{namespaceBundlesTopicHashPositions}</Td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Persistency</td>

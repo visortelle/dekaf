@@ -1,4 +1,4 @@
-import React from 'react';
+  import React from 'react';
 import s from './Overview.module.css'
 import st from '../../ui/SimpleTable/SimpleTable.module.css';
 import stt from '../../ui/Tabs/Tabs.module.css';
@@ -23,8 +23,9 @@ import UnloadAll from "./UnloadAll/UnloadAll";
 import ClearBacklog from "./ClearBacklog/ClearBacklog";
 import JsonView from "../../ui/JsonView/JsonView";
 import SmallButton from '../../ui/SmallButton/SmallButton';
+  import BundleTopics from "./BundleTopics/BundleTopics";
 
-export type BundleKey = string
+  export type BundleKey = string
 
 type TopicCountDataEntry = {
   topicsCount: number,
@@ -275,7 +276,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                       </div>
 
                       <div style={{ maxHeight: "600rem", minHeight: "300rem", display: 'flex' }}>
-                        <Table<'bundle' | 'actions', BundleKey, {}>
+                        <Table<'bundle' | 'view' | 'actions', BundleKey, {}>
                           itemNamePlural={'bundles'}
                           tableId={"bundle-overview-table"}
                           dataLoader={{
@@ -296,6 +297,27 @@ const Overview: React.FC<OverviewProps> = (props) => {
                                 title: 'Bundle',
                                 render: (bundleKey) =>
                                   <div className={s.BundleCell}>{bundleKey}</div>
+                              },
+                              view: {
+                                title: '',
+                                render: (bundleKey: BundleKey) =>
+                                  <div className={s.ViewCell}>
+                                    <SmallButton
+                                      type="primary"
+                                      onClick={() => modals.push({
+                                        id: 'bundle-topics',
+                                        title: `Bundle topics`,
+                                        content:
+                                          <BundleTopics
+                                            tenant={props.tenant}
+                                            namespace={props.namespace}
+                                            bundle={bundleKey}
+                                          />,
+                                        styleMode: 'no-content-padding'
+                                      })}
+                                      text="Topics"
+                                    />
+                                  </div>
                               },
                               actions: {
                                 title: 'Actions',
@@ -357,6 +379,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                             },
                             defaultConfig: [
                               { columnKey: 'bundle', visibility: 'visible', stickyTo: 'left', width: 300 },
+                              { columnKey: 'view', visibility: 'visible', width: 25 },
                               { columnKey: 'actions', visibility: 'visible', width: 300 },
                             ],
                           }}
