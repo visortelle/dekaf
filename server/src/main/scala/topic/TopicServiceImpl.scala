@@ -14,7 +14,7 @@ import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 
 import concurrent.ExecutionContext.Implicits.global
-import com.tools.teal.pulsar.ui.topic.v1.topic.{GetTopicBundleRangeRequest, GetTopicBundleRangeResponse, GetTopicHashPositionsInNamespaceBundlesRequest, GetTopicHashPositionsInNamespaceBundlesResponse, GetTopicPropertiesRequest, GetTopicPropertiesResponse, ListBundleTopicsRequest, ListBundleTopicsResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties, TopicServiceGetTopicHashPositionsInNamespaceBundlesRequest, TopicServiceGetTopicHashPositionsInNamespaceBundlesResponse}
+import com.tools.teal.pulsar.ui.topic.v1.topic.{GetTopicBundleRangeRequest, GetTopicBundleRangeResponse, GetTopicHashPositionsInNamespaceBundlesRequest, GetTopicHashPositionsInNamespaceBundlesResponse, GetTopicPropertiesRequest, GetTopicPropertiesResponse, ListBundleTopicsRequest, ListBundleTopicsResponse, SetTopicPropertiesRequest, SetTopicPropertiesResponse, TopicProperties}
 
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
