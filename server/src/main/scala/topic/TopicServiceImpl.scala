@@ -265,7 +265,7 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
 
         val filteredNamespaceBundlesTopicHashPositionsFuture = namespaceBundlesTopicHashPositionsFuture
             .map { resultMap =>
-                resultMap.collect { case (key, Some(value)) => (key, value) }
+                resultMap.collect { case (key, Some(value)) if !value.getTopicHashPositions.isEmpty => (key, value) }
             }
             .map(resultMap =>
                 resultMap.map {

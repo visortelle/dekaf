@@ -93,9 +93,9 @@ const Overview: React.FC<OverviewProps> = (props) => {
       req.setNamespace(namespaceFqn)
       req.setTopic(topicFqn);
 
-      return "-"; //TODO: fix bundle hash positions lookup always returning empty map
+      //return "-"; //TODO: fix bundle hash positions lookup always returning empty map
 
-/*      const res = await topicServiceClient.getTopicHashPositionsInNamespaceBundles(req, null)
+      const res = await topicServiceClient.getTopicHashPositionsInNamespaceBundles(req, null)
         .catch((err) => notifyError(`Unable to get topics hash positions. ${err}`));
 
       if (res === undefined) {
@@ -107,7 +107,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         return;
       }
 
-      return res.getNamespaceBundlesTopicHashPositionsMap() || "-";*/
+      return res.getNamespaceBundlesTopicHashPositionsMap().toArray().map(([key, value]) => `${key}->${value}`);
     }
   )
 
@@ -178,7 +178,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Topic hash position</td>
-              <Td>{namespaceBundlesTopicHashPositions}</Td>
+              <Td>{namespaceBundlesTopicHashPositions && namespaceBundlesTopicHashPositions.join(", ")}</Td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Persistency</td>
