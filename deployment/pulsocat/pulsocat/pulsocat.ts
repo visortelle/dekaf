@@ -56,7 +56,6 @@ export const createResources = () => {
             memory: isPublicDemo ? "16Gi" : "512Mi",
           }
         },
-
         basePath: "/demo",
         config: {
           publicBaseUrl: `https://${host}/demo`,
@@ -68,6 +67,13 @@ export const createResources = () => {
           { name: "PULSOCAT_LICENSE_TOKEN", value: "activ-44d2d91a3f7a41a0ff35d3d7936ffd8ev3" },
           { name: "PULSOCAT_DEFAULT_PULSAR_AUTH", value: `{ "type": "oauth2", "issuerUrl": "https://auth.streamnative.cloud/", "privateKey": "data:application/json;base64,eyJ0eXBlIjoic25fc2VydmljZV9hY2NvdW50IiwiY2xpZW50X2lkIjoiYm5XT1M0STZ5dkRvSG93NEFjbU12UWpFUUdvTzRvQ1kiLCJjbGllbnRfc2VjcmV0IjoiaW1WekhvMERLSkdqejZBcWJCV0FZZ3ZlY0YxUEV0WmYtcUh4THhpQXBpMWxWVEhBVkh1MzRIZnBDNjlZc292aiIsImNsaWVudF9lbWFpbCI6ImFkbWluQG8teHk2ZWsuYXV0aC5zdHJlYW1uYXRpdmUuY2xvdWQiLCJpc3N1ZXJfdXJsIjoiaHR0cHM6Ly9hdXRoLnN0cmVhbW5hdGl2ZS5jbG91ZC8ifQ==", "audience": "urn:sn:pulsar:o-xy6ek:instance-f" }` },
         ]
+      },
+      monitoring: {
+        prometheus: {
+          extraLabels: {
+            myLabel: "myValue",
+          }
+        }
       }
     }
   }, {

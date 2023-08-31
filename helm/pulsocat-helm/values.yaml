@@ -54,6 +54,9 @@ pulsocat:
     #    hosts:
     #      - chart-example.local
 
+# Prerequisites:
+# - Prometheus Operator https://github.com/prometheus-operator/prometheus-operator
+# - Grafana Operator https://github.com/grafana-operator/grafana-operator
 monitoring:
   enabled: true
   prometheus:
@@ -61,10 +64,8 @@ monitoring:
     scrapeConfigsSecret:
       name: prometheus-scrape-configs
       key: prometheus-scrape-configs.yaml
-    extraLabels:
-      a: b
-    extraAnnotations:
-      c: d
+    extraLabels: {}
+    extraAnnotations: {}
     extraSpec: {}
   scrapeConfigsSecret:
     enabled: true
@@ -81,30 +82,6 @@ monitoring:
             audience: "..."
         static_configs:
         - targets: [metrics.streamnative.cloud]
-  # resources:
-  #   limits:
-  #     cpu: 1000m
-  #     memory: 8Gi
-  #   requests:
-  #     cpu: 500m
-  #     memory: 2Gi
-  # storage:
-  #   emptyDir: {}
-  # nodeSelector:
-
-
-#   scrapeInterval: 30s
-#   scrapeTimeout: 10s
-#   evaluationInterval: 1m
-#   resources:
-#     limits:
-#       cpu: 1000m
-#       memory: 1024Mi
-#     requests:
-#       cpu: 100m
-#       memory: 128Mi
-#   nodeSelector: {}
-
 # alertmanager:
   # enabled: false
   # persistence: false
