@@ -61,9 +61,9 @@ monitoring:
     scrapeConfigsSecret:
       name: prometheus-scrape-configs
       key: prometheus-scrape-configs.yaml
-    extraLabels:
+    labels:
       a: b
-    extraAnnotations:
+    annotations:
       c: d
     extraSpec: {}
   scrapeConfigsSecret:

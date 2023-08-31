@@ -8,12 +8,12 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "_chart-name.labels" . | nindent 4 }}
-    {{- if .Values.monitoring.prometheus.extraLabels }}
-    {{- toYaml .Values.monitoring.prometheus.extraLabels | nindent 4 }}
+    {{- if .Values.monitoring.prometheus.labels }}
+    {{- toYaml .Values.monitoring.prometheus.labels | nindent 4 }}
     {{- end }}
   annotations:
-    {{- if .Values.monitoring.prometheus.extraAnnotations }}
-    {{- toYaml .Values.monitoring.prometheus.extraAnnotations | nindent 4 }}
+    {{- if .Values.monitoring.prometheus.annotations }}
+    {{- toYaml .Values.monitoring.prometheus.annotations | nindent 4 }}
     {{- end }}
 spec:
   serviceMonitorSelector: {} # Intentianally empty, otherwise the operator fails with error.
