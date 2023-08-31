@@ -6,6 +6,11 @@ kind: Prometheus
 metadata:
   name: pulsocat-prometheus
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "_chart-name.labels" . | nindent 4 }}
+    {{ .Values.monitoring.prometheus.extraLabels | nindent 4 }}
+  annotations:
+    {{ .Values.monitoring.prometheus.extraAnnotations | nindent 4 }}
 spec:
   serviceMonitorSelector: {}
   additionalScrapeConfigs:
