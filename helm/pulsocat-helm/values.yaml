@@ -58,7 +58,6 @@ monitoring:
   enabled: true
   prometheus:
     enabled: true
-    replicas: 1
     scrapeConfigsSecret:
       name: prometheus-scrape-configs
       key: prometheus-scrape-configs.yaml

@@ -7,8 +7,6 @@ metadata:
   name: pulsocat-prometheus
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.monitoring.prometheus.replicas }}
-  serviceMonitorSelector: {}
   additionalScrapeConfigs:
     name: {{ .Values.monitoring.prometheus.scrapeConfigsSecret.name }}
     key: {{ .Values.monitoring.prometheus.scrapeConfigsSecret.key }}
