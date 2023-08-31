@@ -54,33 +54,41 @@ pulsocat:
     #    hosts:
     #      - chart-example.local
 
-# pulsarProvider:
-#   streamNativeCloud:
-#     enabled: false
-#     oauth2:
-#       clientIdSecret: ""
-#       clientSecret: ""
-#       audience: ""
-#     metricsPath: "/cloud/metrics/export"
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    replicas: 1
+    scrapeConfigsSecret:
+      name: prometheus-scrape-configs
+      key: prometheus-scrape-configs.yaml
+    extraSpec: {}
+  scrapeConfigsSecret:
+    enabled: true
+    config: |
+      - job_name: pulsar
+        metrics_path: /metrics
+        scheme: https
+        oauth2:
+          client_id: "..."
+          client_secret: "..."
+          token_url: https://auth.streamnative.cloud/oauth/token
+          endpoint_params:
+            grant_type: "client_credentials"
+            audience: "..."
+        static_configs:
+        - targets: [metrics.streamnative.cloud]
+  # resources:
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 8Gi
+  #   requests:
+  #     cpu: 500m
+  #     memory: 2Gi
+  # storage:
+  #   emptyDir: {}
+  # nodeSelector:
 
-# monitoring:
-#   enabled: true
-
-# prometheus:
-#   enabled: false
-#   scrapeConfigs: |
-#     - job_name: pulsar
-#       metrics_path: {{ .Values.monitoring.prometheus.metricsPath }}
-#       scheme: https
-#       oauth2:
-#         client_id: "${STREAMNATIVE_CLOUD_CLIENT_ID}"
-#         client_secret: "${STREAMNATIVE_CLOUD_CLIENT_SECRET}"
-#         token_url: https://auth.streamnative.cloud/oauth/token
-#         endpoint_params:
-#           grant_type: "client_credentials"
-#           audience: "${STREAMNATIVE_CLOUD_AUDIENCE}"
-#       static_configs:
-#       - targets: [metrics.streamnative.cloud]
 
 #   scrapeInterval: 30s
 #   scrapeTimeout: 10s
