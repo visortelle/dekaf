@@ -12,7 +12,6 @@ spec:
   additionalScrapeConfigs:
     name: {{ .Values.monitoring.prometheus.scrapeConfigsSecret.name }}
     key: {{ .Values.monitoring.prometheus.scrapeConfigsSecret.key }}
-  {{ toYaml .Values.monitoring.prometheus.extraSpec | indent 2 }}
 {{ end }}
 
 {{ if .Values.monitoring.scrapeConfigsSecret.enabled }}
