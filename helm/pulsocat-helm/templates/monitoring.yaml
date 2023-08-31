@@ -3,8 +3,8 @@ kind: Prometheus
 metadata:
   name: prometheus
   namespace: {{ .Release.Namespace }}
-  labels:
-    prometheus: prometheus
+  # labels:
+    # prometheus: prometheus
 spec:
   replicas: 2
   serviceMonitorSelector: {}
