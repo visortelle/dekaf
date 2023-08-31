@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    prometheus: prometheus
+spec:
+  replicas: 2
+  serviceMonitorSelector: {}
+  additionalScrapeConfigs:
+    name: additional-scrape-configs
+    key: prometheus-additional.yaml

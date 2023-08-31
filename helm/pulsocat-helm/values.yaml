@@ -1,6 +1,7 @@
-nameOverride: ""
-fullnameOverride: ""
-imagePullSecrets: []
+global:
+  nameOverride: ""
+  fullnameOverride: ""
+  imagePullSecrets: []
 
 pulsocat:
   # Set a custom "basePath" if you want to make Pulsocat available on a subpath behind reverse-proxy.
@@ -52,3 +53,59 @@ pulsocat:
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
+
+# pulsarProvider:
+#   streamNativeCloud:
+#     enabled: false
+#     oauth2:
+#       clientIdSecret: ""
+#       clientSecret: ""
+#       audience: ""
+#     metricsPath: "/cloud/metrics/export"
+
+# monitoring:
+#   enabled: true
+
+# prometheus:
+#   enabled: false
+#   scrapeConfigs: |
+#     - job_name: pulsar
+#       metrics_path: {{ .Values.monitoring.prometheus.metricsPath }}
+#       scheme: https
+#       oauth2:
+#         client_id: "${STREAMNATIVE_CLOUD_CLIENT_ID}"
+#         client_secret: "${STREAMNATIVE_CLOUD_CLIENT_SECRET}"
+#         token_url: https://auth.streamnative.cloud/oauth/token
+#         endpoint_params:
+#           grant_type: "client_credentials"
+#           audience: "${STREAMNATIVE_CLOUD_AUDIENCE}"
+#       static_configs:
+#       - targets: [metrics.streamnative.cloud]
+
+#   scrapeInterval: 30s
+#   scrapeTimeout: 10s
+#   evaluationInterval: 1m
+#   resources:
+#     limits:
+#       cpu: 1000m
+#       memory: 1024Mi
+#     requests:
+#       cpu: 100m
+#       memory: 128Mi
+#   nodeSelector: {}
+
+# alertmanager:
+  # enabled: false
+  # persistence: false
+
+# grafana:
+#   enabled: false
+#   adminUser: ""
+#   adminPassword: ""
+#   resources:
+#     limits:
+#       cpu: 1000m
+#       memory: 1024Mi
+#     requests:
+#       cpu: 100m
+#       memory: 128Mi

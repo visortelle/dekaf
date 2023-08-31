@@ -6,8 +6,8 @@ const isPublicDemo = mkIsPublicDemo();
 
 const pulsocatResources = pulsocat.createResources();
 
-if (isPublicDemo) {
-  const grafanaResources = grafana.createResources({
-    namespace: pulsocatResources.namespace,
-  });
-}
+// if (isPublicDemo) {
+//   const grafanaResources = grafana.createResources({
+//     namespace: pulsocatResources.namespace,
+//   });
+// }
