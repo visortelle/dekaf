@@ -63,6 +63,13 @@ monitoring:
       key: prometheus-scrape-configs.yaml
     extraSpec:
       replicas: 4
+      resources:
+        limits:
+          cpu: 8000m
+          memory: 16Gi
+        requests:
+          cpu: 100m
+          memory: 128Mi
   scrapeConfigsSecret:
     enabled: true
     config: |
