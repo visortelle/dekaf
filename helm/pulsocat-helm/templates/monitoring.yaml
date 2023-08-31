@@ -15,7 +15,6 @@ kind: Secret
 metadata:
   name: prometheus-scrape-configs
   namespace: {{ .Release.Namespace }}
-type: Opaque
 stringData:
   prometheus-scrape-configs.yaml: |
   - job_name: pulsar
