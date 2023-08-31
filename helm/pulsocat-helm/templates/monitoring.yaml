@@ -9,23 +9,3 @@ spec:
   additionalScrapeConfigs:
     name: prometheus-scrape-configs
     key: prometheus-scrape-configs.yaml
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: prometheus-scrape-configs
-  namespace: {{ .Release.Namespace }}
-stringData:
-  prometheus-scrape-configs.yaml: |
-  - job_name: pulsar
-      metrics_path: /cloud/metrics/export
-      scheme: https
-      oauth2:
-        client_id: "bnWOS4I6yvDoHow4AcmMvQjEQGoO4oCY"
-        client_secret: "imVzHo0DKJGjz6AqbBWAYgvecF1PEtZf-qHxLxiApi1lVTHAVHu34HfpC69Ysovj"
-        token_url: https://auth.streamnative.cloud/oauth/token
-        endpoint_params:
-          grant_type: "client_credentials"
-          audience: "urn:sn:pulsar:o-xy6ek:instance-f"
-      static_configs:
-      - targets: [metrics.streamnative.cloud]
