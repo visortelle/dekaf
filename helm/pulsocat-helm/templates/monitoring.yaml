@@ -8,7 +8,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "_chart-name.labels" . | nindent 4 }}
-    {{ .Values.monitoring.prometheus.extraLabels | nindent 4 }}
+    {{ toYaml .Values.monitoring.prometheus.extraLabels | nindent 4 }}
 spec:
   serviceMonitorSelector: {} # Intentianally empty, otherwise the operator fails with error.
   additionalScrapeConfigs:
