@@ -16,7 +16,8 @@ metadata:
   name: prometheus-scrape-configs
   namespace: {{ .Release.Namespace }}
 type: Opaque
-stringData: |
+stringData:
+  prometheus-scrape-configs.yaml: |
   - job_name: pulsar
       metrics_path: /cloud/metrics/export
       scheme: https
