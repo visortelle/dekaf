@@ -69,10 +69,21 @@ export const createResources = () => {
         ]
       },
       monitoring: {
-        prometheus: {
-          extraLabels: {
-            myLabel: "myValue",
-          }
+        scrapeConfigsSecret: {
+          config: `
+- job_name: pulsar
+  metrics_path: /metrics
+  scheme: https
+  oauth2:
+    client_id: "..."
+    client_secret: "..."
+    token_url: https://auth.streamnative.cloud/oauth/token
+    endpoint_params:
+      grant_type: "client_credentials"
+      audience: "..."
+  static_configs:
+  - targets: [metrics.streamnative.cloud]
+`
         }
       }
     }
