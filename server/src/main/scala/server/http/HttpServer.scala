@@ -40,7 +40,7 @@ object HttpServer:
                     "/",
                     ctx => {
                         val model = Map(
-                            "publicUrl" -> appConfig.publicUrl.get,
+                            "publicBaseUrl" -> appConfig.publicBaseUrl.get,
                             "buildInfo" -> buildinfo.BuildInfo.toMap.asJava,
                             "pulsarBrokerUrl" -> appConfig.pulsarBrokerUrl.get,
                             "pulsarHttpUrl" -> appConfig.pulsarHttpUrl.get,
@@ -49,7 +49,7 @@ object HttpServer:
                         ).asJava
 
                         val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
-                        val pulsarAuth = pulsar_auth.parsePulsarAuthJson(pulsarAuthJson).getOrElse(defaultPulsarAuth)
+                        val pulsarAuth = pulsar_auth.parsePulsarAuthCookie(pulsarAuthJson).getOrElse(defaultPulsarAuth)
                         PulsarAuthRoutes.setCookieAndSuccess(ctx, pulsarAuth)
 
                         ctx.render("/ui/index.ftl", model)

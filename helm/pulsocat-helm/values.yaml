@@ -3,7 +3,12 @@ fullnameOverride: ""
 imagePullSecrets: []
 
 pulsocat:
-  config: ""
+  # Set a custom "basePath" if you want to make Pulsocat available on a subpath behind reverse-proxy.
+  # We exposed it to Helm values to make "livenessProbe" and "readinessProbe" work properly.
+  # It should be used in pair with the "publicBaseUrl" config field.
+  basePath: "/"
+
+  config: {}
 
   env: []
 
