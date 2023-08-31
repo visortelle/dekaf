@@ -63,7 +63,8 @@ monitoring:
       key: prometheus-scrape-configs.yaml
     extraLabels:
       a: b
-    extraAnnotations: {}
+    extraAnnotations:
+      c: d
     extraSpec: {}
   scrapeConfigsSecret:
     enabled: true
