@@ -8,11 +8,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "_chart-name.labels" . | nindent 4 }}
-    {{ .Values.monitoring.prometheus.extraLabels | nindent 4 }}
-  annotations:
-    {{ .Values.monitoring.prometheus.extraAnnotations | nindent 4 }}
 spec:
-  serviceMonitorSelector: {}
+  serviceMonitorSelector: {} # Intentianally empty, otherwise the operator fails with error.
   additionalScrapeConfigs:
     name: {{ .Values.monitoring.prometheus.scrapeConfigsSecret.name }}
     key: {{ .Values.monitoring.prometheus.scrapeConfigsSecret.key }}
