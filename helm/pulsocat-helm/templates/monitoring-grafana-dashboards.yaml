@@ -19,14 +19,11 @@ metadata:
     {{- end }}
 spec:
   resyncPeriod: 30s
-  datasources:
-    - inputName: "DS_default"
-      datasourceName: "pulsocat-prometheus"
   instanceSelector:
     matchLabels:
       grafana: {{ $root.Release.Name }}
   json: |
-{{ $root.Files.Get $path | indent 4 }}
+{{ $root.Files.Get $path | replace "{{ PULSAR_CLUSTER }}" "pulsocat-prometheus" | indent 4 }}
 ---
 {{ end }}
 
