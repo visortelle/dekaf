@@ -1,4 +1,4 @@
-{{ range $path, $_ :=  .Files.Glob  "./grafana-dashboards.json" }}
+{{ range $path, $_ :=  .Files.Glob  "./grafana-dashboards/**.json" }}
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
