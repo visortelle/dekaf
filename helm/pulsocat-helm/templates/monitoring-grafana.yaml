@@ -1,0 +1,32 @@
+{{ if .Values.monitoring.enabled }}
+
+{{ if .Values.monitoring.grafana.enabled }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: pulsocat-grafana
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "_chart-name.labels" . | nindent 4 }}
+    {{- if .Values.monitoring.grafana.extraLabels }}
+    {{- toYaml .Values.monitoring.grafana.extraLabels | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.monitoring.grafana.extraAnnotations }}
+    {{- toYaml .Values.monitoring.grafana.extraAnnotations | nindent 4 }}
+    {{- end }}
+spec:
+  config:
+    log:
+      mode: "console"
+    auth:
+      disable_login_form: "true"
+    security:
+      admin_user: "admin"
+      admin_password: "admin"
+  {{- with .Values.monitoring.grafana.extraSpec }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{ end }}
+
+{{ end }}
