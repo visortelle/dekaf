@@ -7,7 +7,15 @@ kind: GrafanaDashboard
 metadata:
   name: pulsocat-{{ base $path }}
   namespace: {{ .Release.Namespace }}
-
+  labels:
+    {{- include "_chart-name.labels" . | nindent 4 }}
+    {{- if .Values.monitoring.grafana.extraLabels }}
+    {{- toYaml .Values.monitoring.grafana.extraLabels | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.monitoring.grafana.extraAnnotations }}
+    {{- toYaml .Values.monitoring.grafana.extraAnnotations | nindent 4 }}
+    {{- end }}
 spec:
   resyncPeriod: 30s
   instanceSelector:
