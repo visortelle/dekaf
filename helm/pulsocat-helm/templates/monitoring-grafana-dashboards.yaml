@@ -22,8 +22,8 @@ spec:
   instanceSelector:
     matchLabels:
       grafana: {{ $root.Release.Name }}
-  json: |
-    {{ $root.Files.Get $path | quote }}
+  json: >
+    {{ $root.Files.Get $path }}
 ---
 {{ end }}
 
