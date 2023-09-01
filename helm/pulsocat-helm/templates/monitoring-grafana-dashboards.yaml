@@ -23,7 +23,7 @@ spec:
     matchLabels:
       grafana: {{ $root.Release.Name }}
   json: >
-    {{ $root.Files.Get $path }}
+  {{ $root.Files.Get $path }}
 ---
 {{ end }}
 
