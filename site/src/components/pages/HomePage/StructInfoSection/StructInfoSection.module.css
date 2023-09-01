@@ -1,0 +1,76 @@
+.structInfoSection {
+}
+
+.structInfoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  width: 100%;
+  padding: 2rem;
+}
+
+.headingsContainer {
+}
+
+.columnsContainer {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  width: 100%;
+
+  color: #333333;
+  font-size: 1.25rem;
+}
+
+.column {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  padding: 0 2rem 0 0;
+}
+
+.column img {
+  width: 100%;
+  height: auto;
+  box-shadow: 0 0 0.5rem #0000003f;
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 1600px) {
+}
+
+@media (max-width: 1200px) {
+}
+
+@media (max-width: 1024px) {
+  .columnsContainer {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .columnsContainer {
+    grid-template-columns: 100%;
+  }
+
+  .structInfoBlock {
+    gap: 1rem;
+  }
+
+  .column {
+    padding: 2rem 0 0 0;
+    border-top: 2px solid #dddddd;
+  }
+  .column:first-child {
+    margin-bottom: 4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .columnsContainer {
+    font-size: 0.83rem;
+  }
+
+  .structInfoBlock {
+    padding: 0 1rem;
+  }
+}

@@ -1,0 +1,137 @@
+.button {
+  appearance: none;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 10rem;
+  min-height: 3rem;
+  padding: 0 1.5rem;
+  outline: none;
+  border: none;
+  border-radius: 0.5rem;
+
+  font-size: 1.25rem !important;
+  font-weight: var(--ifm-font-weight-bold);
+  text-decoration: none !important;
+
+  transition: 0.2s ease-in-out;
+}
+
+.buttonPrimary {
+  border-bottom: 2px solid;
+  border-bottom-color: #26318c;
+  background-color: #6e79d6;
+
+  color: #ffffff;
+}
+.buttonSecondary {
+  border: 2px solid;
+  border-color: #6e79d6;
+  background-color: initial;
+
+  color: #6e79d6;
+}
+
+.sizeSmall {
+  min-width: 7rem;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+
+  font-size: 1rem !important;
+}
+
+/* Hover--------------------------------------------------------------------- */
+.buttonPrimary:hover {
+  border-bottom-color: #18248f;
+  background-color: #5662d1;
+
+  color: #ffffff;
+
+  transition: 0.2s ease-in-out;
+}
+.buttonSecondary:hover {
+  border-color: #26318c;
+
+  color: #26318c;
+
+  transition: 0.2s ease-in-out;
+}
+
+/* Click--------------------------------------------------------------------- */
+.buttonPrimary:active {
+  border-bottom-color: #41488a;
+  background-color: #8f96d8;
+
+  transition: none;
+}
+.buttonSecondary:active {
+  border-color: #9ea4da;
+
+  color: #9ea4da;
+
+  transition: none;
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 1600px) {
+}
+
+@media (max-width: 1200px) {
+  .button {
+    min-width: 7rem;
+    min-height: 2.5rem;
+    padding: 0 1rem;
+
+    font-size: 1rem !important;
+  }
+
+  .sizeSmall {
+    min-width: 5rem;
+    min-height: 2rem;
+    padding: 0 0.83rem;
+
+    font-size: 0.83rem !important;
+  }
+}
+
+@media (max-width: 1024px) {
+}
+
+@media (max-width: 768px) {
+  .button {
+    min-width: 6rem;
+    min-height: 2rem;
+    padding: 0 1rem;
+    border-radius: 0.25rem;
+
+    font-size: 0.83rem !important;
+  }
+
+  .sizeSmall {
+    min-width: 4rem;
+    min-height: 1.75rem;
+    padding: 0 0.67rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .button {
+    min-width: 5rem;
+    min-height: 2rem;
+    border-radius: 0.25rem;
+  }
+
+  .buttonPrimary {
+    border-bottom-width: 1px;
+  }
+
+  .sizeSmall {
+    min-width: 3.5rem;
+    min-height: 1.5rem;
+    padding: 0 0.67rem;
+
+    font-size: 0.54rem !important;
+  }
+}

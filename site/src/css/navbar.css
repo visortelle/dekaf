@@ -1,0 +1,74 @@
+/* Infima style overrides for Navbar */
+:root {
+  --ifm-navbar-height: 8rem;
+  --ifm-navbar-shadow: none;
+  --ifm-navbar-link-color: var(--primary-color);
+  --ifm-navbar-background-color: #f0f0f4;
+  --ifm-navbar-item-padding-horizontal: 2rem;
+}
+
+.navbar {
+  border-bottom: 1px solid #dddddd;
+  justify-content: center;
+}
+
+.navbar__inner {
+  max-width: 100rem;
+  padding: 0 4rem;
+}
+
+/* Items--------------------------------------------------------------------- */
+.navbar__items {
+}
+
+.navbar__items--right {
+  justify-content: space-between !important;
+  gap: 1rem;
+}
+
+/* Logo---------------------------------------------------------------------- */
+.navbar__brand {
+  margin-right: 10%;
+}
+
+.navbar__logo {
+  width: 222px;
+  height: 89px !important;
+}
+
+/* Link---------------------------------------------------------------------- */
+.navbar__link {
+  font-size: 1.25rem;
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+/* Built in earch item override---------------------------------------------- */
+.navbar__items--right > :last-child {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --ifm-navbar-item-padding-horizontal: 1rem;
+  }
+
+  .navbar__link {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --ifm-navbar-height: 6rem;
+  }
+
+  .navbar__inner {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+}
+
+@media (max-width: 480px) {
+}

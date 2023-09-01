@@ -1,0 +1,124 @@
+.featureTableContainer {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 1rem;
+  background-color: #f5f5f5;
+}
+
+/* Header-------------------------------------------------------------------- */
+.tableHeader {
+  display: flex;
+  width: 100%;
+
+  color: #333333;
+  font-size: 1.5rem;
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+.headerPadCell {
+  flex-basis: 40%;
+}
+
+.headerCell {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-basis: 20%;
+}
+
+/* Group--------------------------------------------------------------------- */
+.groupContainer {
+  margin-bottom: 2rem;
+}
+
+.groupNameRow {
+  width: 100%;
+
+  color: grey;
+  font-size: 3rem;
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+/* Row----------------------------------------------------------------------- */
+.tableRow {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-height: 3rem;
+  border-bottom: 1px solid #aaaaaa;
+
+  font-size: 2rem;
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+/* Cell---------------------------------------------------------------------- */
+.cellName {
+  flex-basis: 40%;
+}
+
+.cellValue {
+  flex-basis: 20%;
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 1600px) {
+}
+
+@media (max-width: 1200px) {
+  .featureTableContainer {
+    padding: 1rem;
+  }
+
+  .tableHeader {
+    padding-bottom: 1rem;
+
+    font-size: 0.83rem;
+  }
+
+  .groupNameRow {
+    font-size: 1.5rem;
+  }
+
+  .tableRow {
+    font-size: 1rem;
+  }
+
+  .headerPadCell {
+    flex-basis: 25%;
+  }
+  .headerCell {
+    flex-basis: 25%;
+  }
+  .cellName {
+    flex-basis: 25%;
+  }
+  .cellValue {
+    flex-basis: 25%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .groupNameRow {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+}
+
+@media (max-width: 480px) {
+  .tableHeader {
+    gap: 0.5rem;
+    
+    font-size: 0.67rem;
+  }
+
+  .groupNameRow {
+    font-size: 1rem;
+  }
+
+  .tableRow {
+    font-size: 0.83rem;
+  }
+}

@@ -1,0 +1,75 @@
+.heading {
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+.headingColored {
+  color: #6e79d6;
+}
+
+/* Align--------------------------------------------------------------------- */
+.align-left {
+  text-align: left;
+}
+.align-right {
+  text-align: right;
+}
+.align-center {
+  text-align: center;
+}
+
+/* Levels-------------------------------------------------------------------- */
+.level-1 {
+  font-size: 4.5rem; /* default 2em */
+}
+.level-2 {
+  font-size: 3rem; /* default 1.5em */
+}
+.level-3 {
+  font-size: 2rem; /* default 1.17em */
+}
+.level-4 {
+  font-size: 1rem; /* default 1em */
+}
+.level-5 {
+  font-size: 0.83rem; /* default 0.83em */
+}
+.level-6 {
+  font-size: 0.67rem; /* default 0.67em */
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 1600px) {
+  .level-1 {
+    font-size: 3.5rem;
+  }
+  .level-2 {
+    font-size: 2.5rem;
+  }
+  .level-3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .level-1 {
+    font-size: 2.5rem;
+  }
+  .level-2 {
+    font-size: 2rem;
+  }
+  .level-3 {
+    font-size: 1.67rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .level-1 {
+    font-size: 2rem;
+  }
+  .level-2 {
+    font-size: 1.5rem;
+  }
+  .level-3 {
+    font-size: 1.17rem;
+  }
+}

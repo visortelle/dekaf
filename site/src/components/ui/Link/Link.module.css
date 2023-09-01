@@ -1,0 +1,41 @@
+.link {
+  color: #6e79d6;
+  font-size: 1.5rem;
+  text-decoration: none !important;
+}
+
+.link:hover {
+  color: #26318c;
+}
+
+.align-left {
+  text-align: left;
+}
+.align-right {
+  text-align: right;
+}
+.align-center {
+  text-align: center;
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 1600px) {
+}
+
+@media (max-width: 1200px) {
+}
+
+@media (max-width: 1024px) {
+  .link {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .link {
+    font-size: 0.83rem;
+  }
+}
+
+@media (max-width: 480px) {
+}

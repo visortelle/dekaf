@@ -1,0 +1,6 @@
+{
+  "extends": ["plugin:@docusaurus/recommended"],
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  }
+}

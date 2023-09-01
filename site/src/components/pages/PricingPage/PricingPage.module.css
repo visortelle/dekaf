@@ -1,0 +1,35 @@
+/* Pricing page-------------------------------------------------------------- */
+.pricingPage {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4rem;
+  width: 100%;
+  max-width: 100rem;
+  min-height: 10rem;
+  padding: 4rem 4rem;
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 1600px) {
+}
+
+@media (max-width: 1200px) {
+  .pricingPage {
+    gap: 2rem;
+    padding: 4rem 1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+}
+
+@media (max-width: 768px) {
+}
+
+@media (max-width: 480px) {
+  .pricingPage {
+    padding: 2rem 1rem;
+  }
+}

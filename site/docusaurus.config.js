@@ -6,27 +6,17 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'Pulsocat',
+  tagline:
+    'Equip your team with a top-notch UI tool and unleash the full power of Pulsar',
   favicon: 'img/favicon.ico',
 
-  // Set the production url of your site here
   url: 'https://your-docusaurus-test-site.com',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
-
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
-
-  onBrokenLinks: 'throw',
+  trailingSlash: true,
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
-  // Even if you don't use internalization, you can use this field to set useful
-  // metadata like html lang. For example, if your site is Chinese, you may want
-  // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -52,7 +42,11 @@ const config = {
             'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: [
+            require.resolve('./src/css/fonts.css'),
+            require.resolve('./src/css/custom.css'),
+            require.resolve('./src/css/navbar.css'),
+          ],
         },
       }),
     ],
@@ -61,27 +55,27 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      colorMode: {
+        disableSwitch: true,
+      },
       navbar: {
-        title: 'My Site',
+        title: '',
         logo: {
-          alt: 'My Site Logo',
-          src: 'img/logo.svg',
+          alt: 'Pulsocat Logo',
+          src: 'img/img_logo.svg',
         },
         items: [
-          {
-            type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
-            position: 'left',
-            label: 'Tutorial',
-          },
-          {to: '/blog', label: 'Blog', position: 'left'},
-          {
-            href: 'https://github.com/facebook/docusaurus',
-            label: 'GitHub',
-            position: 'right',
-          },
+          /* Left------------------------------------------------------------ */
+          { to: '/product', label: 'Product', position: 'left' },
+          { to: '/pricing', label: 'Pricing', position: 'left' },
+          { to: '/docs', label: 'Docs', position: 'left' },
+          { to: '/community', label: 'Community', position: 'left' },
+          { to: '/company', label: 'Company', position: 'left' },
+
+          /* Right----------------------------------------------------------- */
+          // { type: 'search', position: 'right' },
+          { type: 'custom-NavbarButton', variant: 'search', position: 'right' },
+          { type: 'custom-NavbarButton', variant: 'login', position: 'right' },
         ],
       },
       footer: {
@@ -133,6 +127,11 @@ const config = {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
+      /* algolia: {
+        appId: '',
+        apiKey: '',
+        indexName: '',
+      }, */
     }),
 };
 
