@@ -18,7 +18,6 @@ metadata:
     {{- toYaml $root.Values.monitoring.grafana.extraAnnotations | nindent 4 }}
     {{- end }}
 spec:
-  resyncPeriod: 30s
   instanceSelector:
     matchLabels:
       grafana: {{ $root.Release.Name }}
