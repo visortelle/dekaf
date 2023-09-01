@@ -20,12 +20,12 @@ spec:
     log:
       mode: "console"
     users:
-      viewers_can_edit: true
+      viewers_can_edit: "true"
     auth:
-      disable_login_form: true
-      disable_signout_menu: true
+      disable_login_form: "true"
+      disable_signout_menu: "true"
     auth.anonymous:
-      enabled: true
+      enabled: "true"
       org_role: Viewer
   {{- with .Values.monitoring.grafana.extraSpec }}
   {{- toYaml . | nindent 2 }}
