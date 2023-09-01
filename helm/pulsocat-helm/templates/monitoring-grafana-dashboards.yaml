@@ -20,7 +20,7 @@ metadata:
 spec:
   resyncPeriod: 30s
   datasources:
-    - inputName: "PULSAR_CLUSTER"
+    - inputName: "DS_default"
       datasourceName: "pulsocat-prometheus"
   instanceSelector:
     matchLabels:
