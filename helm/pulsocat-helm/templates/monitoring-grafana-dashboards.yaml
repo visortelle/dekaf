@@ -7,7 +7,7 @@ spec:
   resyncPeriod: 30s
   instanceSelector:
     matchLabels:
-      dashboards: "grafana"
+      grafana: {{ .Release.Name }}
   json: >
     {{ $.Files.Get $path }}
 ---
