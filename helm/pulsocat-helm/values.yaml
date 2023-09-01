@@ -63,7 +63,7 @@ monitoring:
     enabled: true
     value: |
       - job_name: pulsar
-        metrics_path: /metrics
+        metrics_path: /cloud/metrics/export
         scheme: https
         oauth2:
           client_id: "..."
@@ -84,13 +84,15 @@ monitoring:
     extraSpec: {}
   grafana:
     enabled: true
-    extraLabels: {}
-    extraAnnotations: {}
-    extraSpec: {}
+    adminUser: admin
+    adminPassword: admin-password
     dataSources:
       enabled: true
       extraLabels: {}
       extraAnnotations: {}
+    extraLabels: {}
+    extraAnnotations: {}
+    extraSpec: {}
 
 # alertmanager:
   # enabled: false

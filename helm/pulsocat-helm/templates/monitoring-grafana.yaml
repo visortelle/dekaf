@@ -26,8 +26,8 @@ spec:
       disable_login_form: "false"
       disable_signout_menu: "false"
     security:
-      admin_user: admin
-      admin_password: secretpassword
+      admin_user: {{ .Values.monitoring.grafana.adminUser }}
+      admin_password: {{ .Values.monitoring.grafana.adminPassword }}
     auth.anonymous:
       enabled: "true"
       org_role: Viewer

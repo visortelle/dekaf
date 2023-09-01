@@ -13,7 +13,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print .Template.BasePath "/pulsocat-configmap.yaml") . | sha256sum }}
       {{- with .Values.pulsocat.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

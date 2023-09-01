@@ -1,0 +1,14 @@
+{{ range $path, $_ :=  .Files.Glob  "./grafana-dashboards.json" }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: pulsocat-{{ base $path }}
+spec:
+  resyncPeriod: 30s
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: >
+    {{ $.Files.Get $path }}
+---
+{{ end }}

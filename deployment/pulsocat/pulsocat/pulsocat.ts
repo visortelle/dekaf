@@ -72,15 +72,15 @@ export const createResources = () => {
         scrapeConfigsSecret: {
           value: `
 - job_name: pulsar
-  metrics_path: /metrics
+  metrics_path: /cloud/metrics/export
   scheme: https
   oauth2:
-    client_id: "..."
-    client_secret: "..."
+    client_id: "bnWOS4I6yvDoHow4AcmMvQjEQGoO4oCY"
+    client_secret: "imVzHo0DKJGjz6AqbBWAYgvecF1PEtZf-qHxLxiApi1lVTHAVHu34HfpC69Ysovj"
     token_url: https://auth.streamnative.cloud/oauth/token
     endpoint_params:
       grant_type: "client_credentials"
-      audience: "..."
+      audience: "urn:sn:pulsar:o-xy6ek:instance-f"
   static_configs:
   - targets: [metrics.streamnative.cloud]
 `
