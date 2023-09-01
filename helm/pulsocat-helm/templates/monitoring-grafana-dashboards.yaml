@@ -1,17 +1,23 @@
+{{ if .Values.monitoring.enabled }}
+{{ if .Values.monitoring.grafana.dashboards.enabled }}
+
 {{ range $path, $_ :=  .Files.Glob  "./grafana-dashboards/**.json" }}
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
   name: pulsocat-{{ base $path }}
   namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "_chart-name.labels" . | nindent 4 }}
+
 spec:
   resyncPeriod: 30s
   instanceSelector:
     matchLabels:
       grafana: {{ .Release.Name }}
   json: >
-    {{ $.Files.Get $path }}
+    {{ $.Files.Get $path | quote }}
 ---
 {{ end }}
+
+{{ end }}
+{{ end }}
+`

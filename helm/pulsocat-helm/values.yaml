@@ -90,6 +90,10 @@ monitoring:
       enabled: true
       extraLabels: {}
       extraAnnotations: {}
+    dashboards:
+      enabled: true
+      extraLabels: {}
+      extraAnnotations: {}
     extraLabels: {}
     extraAnnotations: {}
     extraSpec: {}
