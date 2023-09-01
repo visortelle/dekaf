@@ -3,6 +3,7 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
   name: pulsocat-{{ base $path }}
+  namespace: {{ .Release.Namespace }}
 spec:
   resyncPeriod: 30s
   instanceSelector:
