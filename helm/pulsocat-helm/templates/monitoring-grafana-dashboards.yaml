@@ -19,6 +19,9 @@ metadata:
     {{- end }}
 spec:
   resyncPeriod: 30s
+  datasources:
+    - inputName: "PULSAR_CLUSTER"
+      datasourceName: "pulsocat-prometheus"
   instanceSelector:
     matchLabels:
       grafana: {{ $root.Release.Name }}
