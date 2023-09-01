@@ -19,8 +19,6 @@ spec:
   config:
     log:
       mode: "console"
-    auth:
-      disable_login_form: "true"
     security:
       admin_user: "admin"
       admin_password: "admin"
