@@ -3,7 +3,7 @@
 
 {{ if .Values.monitoring.grafana.dataSource.enabled }}
 apiVersion: grafana.integreatly.org/v1beta1
-kind: GrafanaDataSource
+kind: GrafanaDatasource
 metadata:
   name: pulsocat-prometheus
   namespace: {{ .Release.Namespace }}
