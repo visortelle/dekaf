@@ -61,7 +61,7 @@ monitoring:
   enabled: true
   scrapeConfigsSecret:
     enabled: true
-    config: |
+    value: |
       - job_name: pulsar
         metrics_path: /metrics
         scheme: https

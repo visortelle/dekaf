@@ -70,7 +70,7 @@ export const createResources = () => {
       },
       monitoring: {
         scrapeConfigsSecret: {
-          config: `
+          value: `
 - job_name: pulsar
   metrics_path: /metrics
   scheme: https

@@ -33,7 +33,7 @@ metadata:
   name: prometheus-scrape-configs
   namespace: {{ .Release.Namespace }}
 stringData:
-  prometheus-scrape-configs.yaml:
+  prometheus-scrape-configs.yaml: {{ .Values.monitoring.scrapeConfigsSecret.value | quote }}
 {{ end }}
 
 {{ end }}
