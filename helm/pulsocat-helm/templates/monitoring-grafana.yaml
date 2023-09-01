@@ -27,7 +27,7 @@ spec:
       disable_signout_menu: "false"
     security:
       admin_user: admin
-      admin_password: admin
+      admin_password: secretpassword
     auth.anonymous:
       enabled: "true"
       org_role: Viewer
