@@ -9,7 +9,7 @@ metadata:
   name: pulsocat-{{ base $path }}
   namespace: {{ $root.Release.Namespace }}
   labels:
-    {{- include "_chart-name.labels" . | nindent 4 }}
+    {{- include "_chart-name.labels" $root | nindent 4 }}
     {{- if $root.Values.monitoring.grafana.extraLabels }}
     {{- toYaml $root.Values.monitoring.grafana.extraLabels | nindent 4 }}
     {{- end }}
