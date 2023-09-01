@@ -87,7 +87,7 @@ monitoring:
     extraLabels: {}
     extraAnnotations: {}
     extraSpec: {}
-    dataSource:
+    dataSources:
       enabled: true
       extraLabels: {}
       extraAnnotations: {}

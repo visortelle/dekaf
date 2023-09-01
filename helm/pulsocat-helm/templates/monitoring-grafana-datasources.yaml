@@ -1,7 +1,7 @@
 {{ if .Values.monitoring.enabled }}
 {{ if .Values.monitoring.grafana.enabled }}
 
-{{ if .Values.monitoring.grafana.dataSource.enabled }}
+{{ if .Values.monitoring.grafana.dataSources.enabled }}
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
@@ -10,12 +10,12 @@ metadata:
   labels:
     grafana: {{ .Release.Name }}
     {{- include "_chart-name.labels" . | nindent 4 }}
-    {{- if .Values.monitoring.grafana.dataSource.extraLabels }}
-    {{- toYaml .Values.monitoring.grafana.dataSource.extraLabels | nindent 4 }}
+    {{- if .Values.monitoring.grafana.dataSources.extraLabels }}
+    {{- toYaml .Values.monitoring.grafana.dataSources.extraLabels | nindent 4 }}
     {{- end }}
   annotations:
-    {{- if .Values.monitoring.grafana.dataSource.extraAnnotations }}
-    {{- toYaml .Values.monitoring.grafana.dataSource.extraAnnotations | nindent 4 }}
+    {{- if .Values.monitoring.grafana.dataSources.extraAnnotations }}
+    {{- toYaml .Values.monitoring.grafana.dataSources.extraAnnotations | nindent 4 }}
     {{- end }}
 spec:
   instanceSelector:
