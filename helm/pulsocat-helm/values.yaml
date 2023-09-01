@@ -87,6 +87,10 @@ monitoring:
     extraLabels: {}
     extraAnnotations: {}
     extraSpec: {}
+    dataSource:
+      enabled: true
+      extraLabels: {}
+      extraAnnotations: {}
 
 # alertmanager:
   # enabled: false

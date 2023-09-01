@@ -7,6 +7,7 @@ metadata:
   name: pulsocat-grafana
   namespace: {{ .Release.Namespace }}
   labels:
+    grafana: {{ .Release.Name }}
     {{- include "_chart-name.labels" . | nindent 4 }}
     {{- if .Values.monitoring.grafana.extraLabels }}
     {{- toYaml .Values.monitoring.grafana.extraLabels | nindent 4 }}
@@ -27,6 +28,7 @@ spec:
     auth.anonymous:
       enabled: "true"
       org_role: Viewer
+      allow_embedding: "true"
   {{- with .Values.monitoring.grafana.extraSpec }}
   {{- toYaml . | nindent 2 }}
   {{- end }}
