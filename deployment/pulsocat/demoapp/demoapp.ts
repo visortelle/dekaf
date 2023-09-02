@@ -26,6 +26,29 @@ export const createResources = () => {
     }
   );
 
+  const privateKey = `{"type":"sn_service_account","client_id":"bnWOS4I6yvDoHow4AcmMvQjEQGoO4oCY","client_secret":"imVzHo0DKJGjz6AqbBWAYgvecF1PEtZf-qHxLxiApi1lVTHAVHu34HfpC69Ysovj","client_email":"admin@o-xy6ek.auth.streamnative.cloud","issuer_url":"https://auth.streamnative.cloud/"}`;
+
+  const demoappConfig = new k8s.core.v1.ConfigMap(
+    `${appFqn}-config`,
+    {
+      metadata: {
+        name: `${appFqn}-config`,
+        namespace: namespace.metadata.name,
+      },
+      data: {
+        "config.yaml": JSON.stringify({
+          brokerServiceUrl: "pulsar+ssl://cluster-f.o-xy6ek.snio.cloud:6651",
+          webServiceUrl: "https://cluster-f.o-xy6ek.snio.cloud",
+          auth: {
+            issuerUrl: "https://auth.streamnative.cloud/",
+            audience: "urn:sn:pulsar:o-xy6ek:instance-f",
+            privateKey: `data:application/json;base64,${btoa(privateKey)}`
+          },
+        }, null, 2),
+      }
+    }
+  );
+
   const demoappDeployment = new k8s.apps.v1.Deployment(
     appFqn,
     {
@@ -50,6 +73,10 @@ export const createResources = () => {
             containers: [{
               name: appFqn,
               image: `tealtools/pulsocat-demoapp:${gitBranch}`,
+              volumeMounts: [{
+                name: `${appFqn}-config`,
+                mountPath: "/workdir/",
+              }],
               resources: {
                 limits: {
                   cpu: "4000m",
@@ -59,8 +86,14 @@ export const createResources = () => {
                   cpu: "4000m",
                   memory: "32Gi",
                 }
+              },
+            }],
+            volumes: [{
+              name: `${appFqn}-config`,
+              configMap: {
+                name: demoappConfig.metadata.name,
               }
-            }]
+            }],
           }
         }
       }
