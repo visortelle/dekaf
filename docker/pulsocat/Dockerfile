@@ -46,6 +46,9 @@ WORKDIR /pulsocat
 
 COPY --from=builder --chown=pulsocat:pulsocat /pulsocat .
 
+COPY ./server/library .
+RUN cd ./library/js && npm i && npm run build
+
 EXPOSE 8090
 
 ENTRYPOINT [ "/pulsocat/bin/pulsocat" ]
