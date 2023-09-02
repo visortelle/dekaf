@@ -27,7 +27,12 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
     <div className={s.CredentialsEditor}>
       <FormItem>
         <FormLabel content='Name' isRequired />
-        <Input value={credentialsName} annotation="Only alphanumerics, underscores(_) and dashes(-) are allowed." onChange={setCredentialsName} />
+        <Input
+          value={credentialsName}
+          annotation="Only alphanumerics, underscores(_) and dashes(-) are allowed."
+          onChange={setCredentialsName}
+          testId="pulsar-auth-credentials-name-input"
+        />
       </FormItem>
 
       <FormItem>
@@ -52,6 +57,7 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
                 break;
             }
           }}
+          testId="pulsar-auth-credentials-type-select"
         />
       </FormItem>
 
@@ -71,10 +77,16 @@ const CredentialsEditor: React.FC<CredentialsEditorProps> = (props) => {
       </div>
 
       <div className={s.Footer}>
-        <Button type='regular' text='Cancel' onClick={props.onDone} />
+        <Button
+          type='regular'
+          testId="pulsar-auth-cancel-add-new-credentials-button"
+          text="Cancel"
+          onClick={props.onDone}
+        />
         <Button
           type='primary'
           disabled={credentialsName.length === 0}
+          testId="pulsar-auth-save-new-credentials-button"
           text='Save'
           onClick={async () => {
             const res = await fetch(`${config.publicBaseUrl}/pulsar-auth/add/${encodeURIComponent(credentialsName)}`, {

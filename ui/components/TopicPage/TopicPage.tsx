@@ -18,13 +18,13 @@ import { matchPath, useLocation } from 'react-router-dom';
 export type TopicPageView =
   | { type: "messages" }
   | { type: "overview" }
-  | { type: "producers" }
   | { type: "schema-initial-screen" }
   | { type: "schema-create" }
   | { type: "schema-view"; schemaVersion: number }
   | { type: "policies" }
   | { type: "subscriptions" }
   | { type: "producers" };
+
 export type TopicPageProps = {
   view: TopicPageView;
   tenant: string;

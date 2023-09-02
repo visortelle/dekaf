@@ -1,5 +1,6 @@
 import SvgIcon from '../SvgIcon/SvgIcon';
 import s from './Button.module.css';
+import React from "react";
 
 export type ButtonProps = {
   onClick: () => void,

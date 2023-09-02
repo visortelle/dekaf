@@ -17,6 +17,7 @@ export type SelectProps<V> = {
   list: List<V>;
   placeholder?: string;
   disabled?: boolean;
+  testId?: string;
 }
 
 function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
@@ -37,6 +38,7 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
         onChange={(v) => props.onChange(v.target.value as V)}
         value={props.value}
         disabled={props.disabled}
+        data-testid={props.testId}
       >
         {props.list.map(item => {
           if (item.type === 'empty') {

@@ -41,6 +41,7 @@ const Button: React.FC<ButtonProps> = (props) => {
         title='Edit Pulsar Credentials'
         type='primary'
         svgIcon={icon}
+        testId="pulsar-auth-button"
         onClick={() => modals.push({
           id: 'auth-modal',
           title: `Pulsar Credentials`,

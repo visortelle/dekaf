@@ -55,9 +55,9 @@ given oauth2CredentialsDecoder: Decoder[OAuth2Credentials] = Decoder.instance:
         for
             issuerUrl <- cursor.downField("issuerUrl").as[String]
             _ <- Either.cond(
-                issuerUrl.matches("^https?://.*$"),
+                issuerUrl.matches("^(http://.*|https://.*)$"),
                 (),
-                DecodingFailure("Invalid issuerUrl format", cursor.history)
+                DecodingFailure("Invalid issuer url format", cursor.history)
             )
             privateKey <- cursor.downField("privateKey").as[String]
             audience <- cursor.downField("audience").as[Option[String]]

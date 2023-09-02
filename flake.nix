@@ -58,6 +58,7 @@
               export NODE_OPTIONS=--max-old-space-size=4096
 
               export LD_LIBRARY_PATH="${runtimeLibraryPath}"
+              export PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}"
 
               source ./dev-env.sh
             '';
@@ -73,6 +74,7 @@
               pkgs.scalafix
               pkgs.sbt
               pkgs.maven
+              pkgs.playwright-test
 
               pkgs.protobuf3_20
               pkgs.buf

@@ -49,12 +49,18 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
         <Input
           onChange={v => props.onChange({ ...props.value, issuerUrl: v })}
           value={props.value.issuerUrl}
+          testId="pulsar-auth-credentials-issuer-url-input"
         />
       </FormItem>
 
       <FormItem>
         <FormLabel content='Private Key' isRequired />
-        <UploadZone isDirectory={false} onFiles={(files) => submitKeyFile(files)} isUploadPictureVisible={!isFileLoaded}>
+        <UploadZone
+          isDirectory={false}
+          onFiles={(files) => submitKeyFile(files)}
+          isUploadPictureVisible={!isFileLoaded}
+          testId="pulsar-auth-oauth2-private-key-upload-zone"
+        >
           {!isFileLoaded &&
             <div className={s.UploadZone}>
               <span>Click here or drag'n'drop a .json file</span>
@@ -63,7 +69,7 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
           {isFileLoaded &&
             <div className={s.FileUploaded}>
               <div className={s.UploadZoneIcon}>
-                <SvgIcon svg={uploadCompleteIcon} />
+                <SvgIcon svg={uploadCompleteIcon}/>
               </div>
               <div>File loaded!</div>
             </div>
@@ -76,6 +82,7 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
         <Input
           onChange={v => props.onChange({ ...props.value, audience: v })}
           value={props.value.audience}
+          testId="pulsar-auth-credentials-audience-input"
         />
       </FormItem>
 
@@ -84,6 +91,7 @@ const OAuth2: React.FC<OAuth2Props> = (props) => {
         <Input
           onChange={v => props.onChange({ ...props.value, scope: v })}
           value={props.value.scope}
+          testId="pulsar-auth-credentials-scope-input"
         />
       </FormItem>
     </div>

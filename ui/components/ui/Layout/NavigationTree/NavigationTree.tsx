@@ -337,6 +337,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           <SmallButton
             title="Collapse All"
             svgIcon={collapseAllIcon}
+            testId="navigation-tree-collapse-all-button"
             onClick={() => setExpandedPaths([])}
             type='regular'
           />

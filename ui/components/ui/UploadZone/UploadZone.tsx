@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import React, { useRef } from "react";
 import Upload from 'rc-upload';
 import s from './UploadZone.module.css';
 import SvgIcon from "../SvgIcon/SvgIcon";
@@ -8,6 +8,7 @@ export type UploadZoneProps = {
   children: React.ReactNode,
   onFiles: (files: FileEntry[]) => void,
   isDirectory: boolean,
+  testId?: string,
   isUploadPictureVisible?: boolean,
 }
 export type FileEntry = {
@@ -32,7 +33,7 @@ const UploadZone: React.FC<UploadZoneProps> = (props) => {
         return false;
       }}
     >
-      <div className={s.UploadZone}>
+      <div className={s.UploadZone} data-testid={props.testId}>
         <div className={s.UploadZoneIcon} hidden={!props.isUploadPictureVisible}>
           <SvgIcon svg={uploadIcon} />
         </div>

@@ -20,7 +20,7 @@ export type EditorProps = {
 
 const defaultCredentialsName = 'Default';
 
-type EditorView = "list" | "new";
+type EditorView = 'list' | 'new';
 
 const Editor: React.FC<EditorProps> = (props) => {
   const { config } = AppContext.useContext();
@@ -67,7 +67,7 @@ const Editor: React.FC<EditorProps> = (props) => {
   }
 
   return (
-    <div className={s.Editor}>
+    <div className={s.Editor} data-testid="pulsar-auth-modal">
       {view === 'list' && (
         <div className={s.List}>
           {!maskedCredentials?.length ? null : (
@@ -83,12 +83,12 @@ const Editor: React.FC<EditorProps> = (props) => {
               <tbody>
                 {(maskedCredentials || []).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true })).map((item) => (
                   <tr key={item.name} className={st.Row}>
-                    <td className={st.Cell}>
+                    <td className={st.Cell} data-testid="pulsar-auth-credentials-is-current">
                       {currentCredentials === item.name && (
                         <strong style={{ color: `var(--accent-color-blue)` }}>Current</strong>
                       )}
                     </td>
-                    <td className={st.Cell}>{item.name}</td>
+                    <td className={st.Cell} data-testid="pulsar-auth-credentials-name">{item.name}</td>
                     <td className={st.Cell}>{credentialsTypeToLabel(item.type)}</td>
                     <td className={st.Cell}>
                       <div className={s.CredentialsActions}>
@@ -127,8 +127,18 @@ const Editor: React.FC<EditorProps> = (props) => {
           )}
 
           <div className={s.ListFooter}>
-            <Button type='primary' onClick={() => setView('new')} text='Add' />
-            <Button type='regular' onClick={props.onDone} text='Done' />
+            <Button
+              type='primary'
+              onClick={() => setView('new')}
+              testId="pulsar-auth-add-new-credentials-button"
+              text='Add'
+            />
+            <Button
+              type='regular'
+              onClick={props.onDone}
+              testId="pulsar-auth-done-button"
+              text='Done'
+            />
           </div>
         </div>
       )}
