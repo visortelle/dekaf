@@ -99,11 +99,11 @@ object ProtobufNativeNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"messages-1k-mps",
+                    mkName = _ => s"messages-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => Encoders.toProto(ProtobufNativeDemoMessage.random()),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = _ => List(protobufNativeMessageSchema.getSchemaInfo)
                 )

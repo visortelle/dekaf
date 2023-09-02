@@ -25,11 +25,11 @@ object FloatNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"zeros-1k-mps",
+                    mkName = _ => s"zeros-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => float32ToBytes(0),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -67,12 +67,12 @@ object FloatNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"linear-1k-mps",
+                    mkName = _ => s"linear-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => messageIndex =>
                               float32ToBytes(messageIndex.toFloat / 1000),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -90,12 +90,12 @@ object FloatNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1k-mps",
+                    mkName = _ => s"random-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ =>
                                 _ => float32ToBytes(faker.random().nextFloat()),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 )

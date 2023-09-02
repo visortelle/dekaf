@@ -25,11 +25,11 @@ object Int32Namespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"zeros-1k-mps",
+                    mkName = _ => s"zeros-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => int32ToBytes(0),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -66,11 +66,11 @@ object Int32Namespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"linear-1k-mps",
+                    mkName = _ => s"linear-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => messageIndex => int32ToBytes(messageIndex.toInt),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -88,12 +88,12 @@ object Int32Namespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1k-mps",
+                    mkName = _ => s"random-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ =>
                                 _ => int32ToBytes(faker.number().numberBetween(Int.MinValue, Int.MaxValue)),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 )
