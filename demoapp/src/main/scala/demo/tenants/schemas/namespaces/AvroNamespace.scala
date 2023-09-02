@@ -85,7 +85,7 @@ object AvroNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"records-1k-mps",
+                    mkName = _ => s"records-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ =>
@@ -94,7 +94,7 @@ object AvroNamespace:
                                         avroDemoRecordSchema.getSchemaInfo.getSchema,
                                         AvroDemoRecord.random()
                                     ),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = _ => List(avroDemoRecordSchema.getSchemaInfo)
                 )
