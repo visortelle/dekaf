@@ -1,17 +1,13 @@
 import * as pulumi from "@pulumi/pulumi";
 import { execSync } from "child_process";
 import * as k8s from "@pulumi/kubernetes";
-import { mkIsPublicDemo } from "../shared/shared";
 
 const app = "demoapp";
 const project = pulumi.getProject();
 const stack = pulumi.getStack();
 const appFqn = `${project}-${app}-${stack}`;
 
-const gitRev = execSync('git rev-parse --short=8 HEAD', { encoding: 'utf-8' }).toString().trim();
 const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).toString().trim();
-
-const isPublicDemo = mkIsPublicDemo();
 
 export const createResources = () => {
   const namespace = new k8s.core.v1.Namespace(
@@ -26,8 +22,6 @@ export const createResources = () => {
     }
   );
 
-  const privateKey = `{"type":"sn_service_account","client_id":"bnWOS4I6yvDoHow4AcmMvQjEQGoO4oCY","client_secret":"imVzHo0DKJGjz6AqbBWAYgvecF1PEtZf-qHxLxiApi1lVTHAVHu34HfpC69Ysovj","client_email":"admin@o-xy6ek.auth.streamnative.cloud","issuer_url":"https://auth.streamnative.cloud/"}`;
-
   const demoappConfig = new k8s.core.v1.ConfigMap(
     `${appFqn}-config`,
     {
@@ -40,11 +34,14 @@ export const createResources = () => {
           brokerServiceUrl: "pulsar+ssl://cluster-f.o-xy6ek.snio.cloud:6651",
           webServiceUrl: "https://cluster-f.o-xy6ek.snio.cloud",
           auth: {
-            issuerUrl: "https://auth.streamnative.cloud/",
-            audience: "urn:sn:pulsar:o-xy6ek:instance-f",
-            privateKey: `data:application/json;base64,${btoa(privateKey)}`
+            oauth2: {
+              issuerUrl: "https://auth.streamnative.cloud/",
+              audience: "urn:sn:pulsar:o-xy6ek:instance-f",
+              privateKey: `file:///private-key.json`
+            }
           },
         }, null, 2),
+        "private-key.json": `{"type":"sn_service_account","client_id":"bnWOS4I6yvDoHow4AcmMvQjEQGoO4oCY","client_secret":"imVzHo0DKJGjz6AqbBWAYgvecF1PEtZf-qHxLxiApi1lVTHAVHu34HfpC69Ysovj","client_email":"admin@o-xy6ek.auth.streamnative.cloud","issuer_url":"https://auth.streamnative.cloud/"}`
       }
     }
   );
@@ -73,9 +70,15 @@ export const createResources = () => {
             containers: [{
               name: appFqn,
               image: `tealtools/pulsocat-demoapp:${gitBranch}`,
+              imagePullPolicy: "Always",
               volumeMounts: [{
-                name: `${appFqn}-config`,
-                mountPath: "/workdir/",
+                name: demoappConfig.metadata.name,
+                mountPath: "/workdir/config.yaml",
+                subPath: "config.yaml",
+              }, {
+                name: demoappConfig.metadata.name,
+                mountPath: "/private-key.json",
+                subPath: "private-key.json",
               }],
               resources: {
                 limits: {
@@ -83,8 +86,8 @@ export const createResources = () => {
                   memory: "32Gi"
                 },
                 requests: {
-                  cpu: "4000m",
-                  memory: "32Gi",
+                  cpu: "2000m",
+                  memory: "16Gi",
                 }
               },
             }],
@@ -92,6 +95,13 @@ export const createResources = () => {
               name: `${appFqn}-config`,
               configMap: {
                 name: demoappConfig.metadata.name,
+                items: [{
+                  key: "config.yaml",
+                  path: "config.yaml",
+                }, {
+                  key: "private-key.json",
+                  path: "private-key.json",
+                }]
               }
             }],
           }
@@ -99,7 +109,7 @@ export const createResources = () => {
       }
     },
     {
-      dependsOn: [namespace]
+      dependsOn: [namespace],
     }
   );
 
