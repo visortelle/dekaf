@@ -84,6 +84,22 @@ export const createResources = () => {
   static_configs:
   - targets: [metrics.streamnative.cloud]
 `
+        },
+        prometheus: {
+          extraSpec: {
+            storage: {
+              volumeClaimTemplate: {
+                spec: {
+                  storageClassName: "gp2",
+                  resources: {
+                    requests: {
+                      storage: "100Gi"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

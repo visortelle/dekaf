@@ -97,19 +97,3 @@ monitoring:
     extraLabels: {}
     extraAnnotations: {}
     extraSpec: {}
-
-# alertmanager:
-  # enabled: false
-  # persistence: false
-
-# grafana:
-#   enabled: false
-#   adminUser: ""
-#   adminPassword: ""
-#   resources:
-#     limits:
-#       cpu: 1000m
-#       memory: 1024Mi
-#     requests:
-#       cpu: 100m
-#       memory: 128Mi
