@@ -99,11 +99,11 @@ object BytesNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1B-1k-mps",
+                    mkName = _ => s"random-1B-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => mkRandomBytes(1),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -120,11 +120,11 @@ object BytesNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1KB-1k-mps",
+                    mkName = _ => s"random-1KB-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => mkRandomBytes(KB),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -142,11 +142,11 @@ object BytesNamespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-10KB-1k-mps",
+                    mkName = _ => s"random-10KB-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => mkRandomBytes(TenKB),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -157,7 +157,7 @@ object BytesNamespace:
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => mkRandomBytes(HundredKB),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(100))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),

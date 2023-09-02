@@ -36,4 +36,4 @@ WORKDIR /workdir
 
 COPY --from=builder --chown=pulsocat:pulsocat /demoapp .
 
-ENTRYPOINT [ "/workdir/bin/pulsocat" ]
+ENTRYPOINT [ "/workdir/bin/demoapp" ]
