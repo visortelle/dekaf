@@ -98,6 +98,11 @@ export const createResources = () => {
                   }
                 }
               }
+            },
+            securityContext: {
+              fsGroup: 2000,
+              runAsNonRoot: true,
+              runAsUser: 1000
             }
           }
         }
