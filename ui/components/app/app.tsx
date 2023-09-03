@@ -11,6 +11,7 @@ import Tooltip from "../ui/Tooltip/Tooltip";
 import { HelmetProvider } from "react-helmet-async";
 import InstanceColor from "./instance-color/InstanceColor";
 import * as HealthCheckContext from './contexts/HealthCheckContext/HealthCheckContext';
+import React from "react";
 
 type AppProps = {
   config: AppContext.Config;

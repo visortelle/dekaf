@@ -13,3 +13,4 @@ spec:
       name: http
   selector:
     {{- include "_chart-name.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/name: pulsocat
