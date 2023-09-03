@@ -83,17 +83,18 @@ enum LibraryItemType {
 }
 
 message LibraryItem {
-  string id = 1;
-  string revision = 2;
-  int64 updated_at = 3;
-  bool is_editable = 4;
+  LibraryItemType type = 1;
+  string id = 2;
+  string revision = 3;
+  int64 updated_at = 4;
+  bool is_editable = 5;
 
-  string name = 5;
-  string description_markdown = 6;
-  repeated string tags = 7;
+  string name = 6;
+  string description_markdown = 7;
+  repeated string tags = 8;
 
-  repeated ResourceMatcher resources = 8;
-  string descriptor_json = 9;
+  repeated ResourceMatcher resources = 9;
+  string descriptor_json = 10;
 }
 
 message CreateLibraryItemRequest {

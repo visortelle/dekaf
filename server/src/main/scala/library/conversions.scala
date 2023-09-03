@@ -1,6 +1,7 @@
 package library
 
 import com.tools.teal.pulsar.ui.library.v1.library as pb
+import library.TopicPersistencyType.Any
 
 def exactTenantMatcherFromPb(v: pb.ExactTenantMatcher): ExactTenantMatcher =
     ExactTenantMatcher(`type` = "exact-tenant-matcher", tenant = v.tenant)
@@ -16,14 +17,17 @@ def regexTenantMatcherToPb(v: RegexTenantMatcher): pb.RegexTenantMatcher =
 
 def tenantMatcherFromPb(v: pb.TenantMatcher): TenantMatcher =
     v.matcher match
-        case pb.TenantMatcher.Matcher.Exact(exactTenantMatcher) => TenantMatcher(matcher = exactTenantMatcherFromPb(exactTenantMatcher))
-        case pb.TenantMatcher.Matcher.Regex(regexTenantMatcher) => TenantMatcher(matcher = regexTenantMatcherFromPb(regexTenantMatcher))
+        case pb.TenantMatcher.Matcher.Exact(exactTenantMatcher) => TenantMatcher(exactTenantMatcher = Some(exactTenantMatcherFromPb(exactTenantMatcher)))
+        case pb.TenantMatcher.Matcher.Regex(regexTenantMatcher) => TenantMatcher(regexTenantMatcher = Some(regexTenantMatcherFromPb(regexTenantMatcher)))
         case _                                                  => throw new IllegalArgumentException("Unknown matcher type")
 
 def tenantMatcherToPb(v: TenantMatcher): pb.TenantMatcher =
-    v.matcher match
-        case exactTenantMatcher: ExactTenantMatcher => pb.TenantMatcher(matcher = pb.TenantMatcher.Matcher.Exact(exactTenantMatcherToPb(exactTenantMatcher)))
-        case regexTenantMatcher: RegexTenantMatcher => pb.TenantMatcher(matcher = pb.TenantMatcher.Matcher.Regex(regexTenantMatcherToPb(regexTenantMatcher)))
+    v match
+        case TenantMatcher(Some(exactTenantMatcher), None) =>
+            pb.TenantMatcher(matcher = pb.TenantMatcher.Matcher.Exact(exactTenantMatcherToPb(exactTenantMatcher)))
+        case TenantMatcher(None, Some(regexTenantMatcher)) =>
+            pb.TenantMatcher(matcher = pb.TenantMatcher.Matcher.Regex(regexTenantMatcherToPb(regexTenantMatcher)))
+        case _ => throw new IllegalArgumentException("Unknown matcher type")
 
 def exactNamespaceMatcherFromPb(v: pb.ExactNamespaceMatcher): ExactNamespaceMatcher =
     ExactNamespaceMatcher(`type` = "exact-namespace-matcher", tenant = tenantMatcherFromPb(v.tenant.get), namespace = v.namespace)
@@ -39,29 +43,32 @@ def regexNamespaceMatcherToPb(v: RegexNamespaceMatcher): pb.RegexNamespaceMatche
 
 def namespaceMatcherFromPb(v: pb.NamespaceMatcher): NamespaceMatcher =
     v.matcher match
-        case pb.NamespaceMatcher.Matcher.Exact(exactNamespaceMatcher) => NamespaceMatcher(matcher = exactNamespaceMatcherFromPb(exactNamespaceMatcher))
-        case pb.NamespaceMatcher.Matcher.Regex(regexNamespaceMatcher) => NamespaceMatcher(matcher = regexNamespaceMatcherFromPb(regexNamespaceMatcher))
-        case _                                                        => throw new IllegalArgumentException("Unknown matcher type")
+        case pb.NamespaceMatcher.Matcher.Exact(exactNamespaceMatcher) =>
+            NamespaceMatcher(exactNamespaceMatcher = Some(exactNamespaceMatcherFromPb(exactNamespaceMatcher)))
+        case pb.NamespaceMatcher.Matcher.Regex(regexNamespaceMatcher) =>
+            NamespaceMatcher(regexNamespaceMatcher = Some(regexNamespaceMatcherFromPb(regexNamespaceMatcher)))
+        case _ => throw new IllegalArgumentException("Unknown matcher type")
 
 def namespaceMatcherToPb(v: NamespaceMatcher): pb.NamespaceMatcher =
-    v.matcher match
-        case exactNamespaceMatcher: ExactNamespaceMatcher =>
+    v match
+        case NamespaceMatcher(Some(exactNamespaceMatcher), None) =>
             pb.NamespaceMatcher(matcher = pb.NamespaceMatcher.Matcher.Exact(exactNamespaceMatcherToPb(exactNamespaceMatcher)))
-        case regexNamespaceMatcher: RegexNamespaceMatcher =>
+        case NamespaceMatcher(None, Some(regexNamespaceMatcher)) =>
             pb.NamespaceMatcher(matcher = pb.NamespaceMatcher.Matcher.Regex(regexNamespaceMatcherToPb(regexNamespaceMatcher)))
+        case _ => throw new IllegalArgumentException("Unknown matcher type")
 
 def topicPersistencyTypeFromPb(v: pb.TopicPersistencyType): TopicPersistencyType =
     v match
-        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_NON_PERSISTENT => "non-persistent"
-        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_PERSISTENT     => "persistent"
-        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_ANY            => "any"
+        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_NON_PERSISTENT => TopicPersistencyType.NonPersistent
+        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_PERSISTENT     => TopicPersistencyType.Persistent
+        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_ANY            => TopicPersistencyType.Any
         case _                                                             => throw new IllegalArgumentException("Unknown topic persistency type")
 
 def topicPersistencyTypeToPb(v: TopicPersistencyType): pb.TopicPersistencyType =
     v match
-        case "non-persistent" => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_NON_PERSISTENT
-        case "persistent"     => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_PERSISTENT
-        case "any"            => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_ANY
+        case TopicPersistencyType.NonPersistent => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_NON_PERSISTENT
+        case TopicPersistencyType.Persistent    => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_PERSISTENT
+        case TopicPersistencyType.Any           => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_ANY
 
 def exactTopicMatcherFromPb(v: pb.ExactTopicMatcher): ExactTopicMatcher =
     ExactTopicMatcher(
@@ -99,46 +106,49 @@ def regexTopicMatcherToPb(v: RegexTopicMatcher): pb.RegexTopicMatcher =
 
 def topicMatcherFromPb(v: pb.TopicMatcher): TopicMatcher =
     v.matcher match
-        case pb.TopicMatcher.Matcher.Exact(exactTopicMatcher) => TopicMatcher(matcher = exactTopicMatcherFromPb(exactTopicMatcher))
-        case pb.TopicMatcher.Matcher.Regex(regexTopicMatcher) => TopicMatcher(matcher = regexTopicMatcherFromPb(regexTopicMatcher))
+        case pb.TopicMatcher.Matcher.Exact(exactTopicMatcher) => TopicMatcher(exactTopicMatcher = Some(exactTopicMatcherFromPb(exactTopicMatcher)))
+        case pb.TopicMatcher.Matcher.Regex(regexTopicMatcher) => TopicMatcher(regexTopicMatcher = Some(regexTopicMatcherFromPb(regexTopicMatcher)))
         case _                                                => throw new IllegalArgumentException("Unknown matcher type")
 
 def topicMatcherToPb(v: TopicMatcher): pb.TopicMatcher =
-    v.matcher match
-        case exactTopicMatcher: ExactTopicMatcher => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.Exact(exactTopicMatcherToPb(exactTopicMatcher)))
-        case regexTopicMatcher: RegexTopicMatcher => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.Regex(regexTopicMatcherToPb(regexTopicMatcher)))
+    v match
+        case TopicMatcher(Some(exactTopicMatcher), None) => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.Exact(exactTopicMatcherToPb(exactTopicMatcher)))
+        case TopicMatcher(None, Some(regexTopicMatcher)) => pb.TopicMatcher(matcher = pb.TopicMatcher.Matcher.Regex(regexTopicMatcherToPb(regexTopicMatcher)))
+        case _                                           => throw new IllegalArgumentException("Unknown matcher type")
 
 def resourceMatcherFromPb(v: pb.ResourceMatcher): ResourceMatcher =
     v.matcher match
-        case pb.ResourceMatcher.Matcher.Tenant(tenantMatcher) => ResourceMatcher(matcher = tenantMatcherFromPb(tenantMatcher))
-        case pb.ResourceMatcher.Matcher.Namespace(namespace)  => ResourceMatcher(matcher = namespaceMatcherFromPb(namespace))
-        case pb.ResourceMatcher.Matcher.Topic(topicMatcher)   => ResourceMatcher(matcher = topicMatcherFromPb(topicMatcher))
+        case pb.ResourceMatcher.Matcher.Tenant(tenantMatcher) => ResourceMatcher(tenantMatcher = Some(tenantMatcherFromPb(tenantMatcher)))
+        case pb.ResourceMatcher.Matcher.Namespace(namespace)  => ResourceMatcher(namespaceMatcher = Some(namespaceMatcherFromPb(namespace)))
+        case pb.ResourceMatcher.Matcher.Topic(topicMatcher)   => ResourceMatcher(topicMatcher = Some(topicMatcherFromPb(topicMatcher)))
         case _                                                => throw new IllegalArgumentException("Unknown matcher type")
 
 def resourceMatcherToPb(v: ResourceMatcher): pb.ResourceMatcher =
-    v.matcher match
-        case tenantMatcher: TenantMatcher       => pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Tenant(tenantMatcherToPb(tenantMatcher)))
-        case namespaceMatcher: NamespaceMatcher => pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Namespace(namespaceMatcherToPb(namespaceMatcher)))
-        case topicMatcher: TopicMatcher         => pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Topic(topicMatcherToPb(topicMatcher)))
+    v match
+        case ResourceMatcher(Some(tenantMatcher), None, None) =>
+            pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Tenant(tenantMatcherToPb(tenantMatcher)))
+        case ResourceMatcher(None, Some(namespaceMatcher), None) =>
+            pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Namespace(namespaceMatcherToPb(namespaceMatcher)))
+        case ResourceMatcher(None, None, Some(topicMatcher)) => pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Topic(topicMatcherToPb(topicMatcher)))
 
 def libraryItemTypeFromPb(v: pb.LibraryItemType): LibraryItemType =
     v match
-        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG      => "consumer-session-config"
-        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG      => "producer-session-config"
-        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT            => "markdown-document"
-        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER               => "message-filter"
-        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET    => "data-visualization-widget"
-        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD => "data-visualization-dashboard"
+        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG      => LibraryItemType.ConsumerSessionConfig
+        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG      => LibraryItemType.ProducerSessionConfig
+        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT            => LibraryItemType.MarkdownDocument
+        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER               => LibraryItemType.MessageFilter
+        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET    => LibraryItemType.DataVisualizationWidget
+        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD => LibraryItemType.DataVisualizationDashboard
         case _                                                                 => throw new IllegalArgumentException("Unknown library item type")
 
 def libraryItemTypeToPb(v: LibraryItemType): pb.LibraryItemType =
     v match
-        case "consumer-session-config"      => pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG
-        case "producer-session-config"      => pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG
-        case "markdown-document"            => pb.LibraryItemType.LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT
-        case "message-filter"               => pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER
-        case "data-visualization-widget"    => pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
-        case "data-visualization-dashboard" => pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
+        case LibraryItemType.ConsumerSessionConfig      => pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG
+        case LibraryItemType.ProducerSessionConfig      => pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG
+        case LibraryItemType.MarkdownDocument           => pb.LibraryItemType.LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT
+        case LibraryItemType.MessageFilter              => pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER
+        case LibraryItemType.DataVisualizationWidget    => pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
+        case LibraryItemType.DataVisualizationDashboard => pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
 
 def libraryItemFromPb(v: pb.LibraryItem): LibraryItem =
     LibraryItem(
@@ -150,7 +160,7 @@ def libraryItemFromPb(v: pb.LibraryItem): LibraryItem =
         descriptionMarkdown = v.descriptionMarkdown,
         tags = v.tags.toList,
         resources = v.resources.map(resourceMatcherFromPb).toList,
-        descriptorJson = v.descriptorJson,
+        descriptorJson = v.descriptorJson
     )
 
 def libraryItemToPb(v: LibraryItem): pb.LibraryItem =
@@ -163,5 +173,5 @@ def libraryItemToPb(v: LibraryItem): pb.LibraryItem =
         descriptionMarkdown = v.descriptionMarkdown,
         tags = v.tags,
         resources = v.resources.map(resourceMatcherToPb),
-        descriptorJson = v.descriptorJson,
+        descriptorJson = v.descriptorJson
     )
