@@ -130,6 +130,7 @@ def resourceMatcherToPb(v: ResourceMatcher): pb.ResourceMatcher =
         case ResourceMatcher(None, Some(namespaceMatcher), None) =>
             pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Namespace(namespaceMatcherToPb(namespaceMatcher)))
         case ResourceMatcher(None, None, Some(topicMatcher)) => pb.ResourceMatcher(matcher = pb.ResourceMatcher.Matcher.Topic(topicMatcherToPb(topicMatcher)))
+        case _                                               => throw new IllegalArgumentException("Unknown matcher type")
 
 def libraryItemTypeFromPb(v: pb.LibraryItemType): LibraryItemType =
     v match

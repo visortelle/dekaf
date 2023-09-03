@@ -107,6 +107,7 @@ message CreateLibraryItemResponse {
 
 message DeleteLibraryItemRequest {
   string id = 1;
+  LibraryItemType type = 2;
 }
 
 message DeleteLibraryItemResponse {
@@ -123,6 +124,7 @@ message UpdateLibraryItemResponse {
 
 message GetLibraryItemRequest {
   string id = 1;
+  LibraryItemType type = 2;
 }
 
 message GetLibraryItemResponse {
