@@ -19,7 +19,7 @@ case class Config(
     @describe("Library contains user-defined objects like message filters, visualizations, etc.")
     //
     @describe("Path to the library directory.")
-    libraryPath: Option[String] = Some("./library"),
+    libraryRoot: Option[String] = Some("./library"),
     //
     @describe("License id.")
     licenseId: Option[String] = None,

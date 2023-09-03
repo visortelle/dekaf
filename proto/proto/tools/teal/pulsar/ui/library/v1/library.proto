@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.library.v1;
+
+import "google/rpc/status.proto";
+
+message ExactTenantMatcher {
+  string tenant = 1;
+}
+
+message RegexTenantMatcher {
+  string tenant_regex = 1;
+}
+
+message TenantMatcher {
+  oneof matcher {
+    ExactTenantMatcher exact = 1;
+    RegexTenantMatcher regex = 2;
+  }
+}
+
+message ExactNamespaceMatcher {
+  TenantMatcher tenant = 1;
+  string namespace = 2;
+}
+
+message RegexNamespaceMatcher {
+  TenantMatcher tenant = 1;
+  string namespace_regex = 2;
+}
+
+message NamespaceMatcher {
+  oneof matcher {
+    ExactNamespaceMatcher exact = 1;
+    RegexNamespaceMatcher regex = 2;
+  }
+}
+
+enum TopicPersistencyType {
+  TOPIC_PERSISTENCY_TYPE_UNSPECIFIED = 0;
+  TOPIC_PERSISTENCY_TYPE_NON_PERSISTENT = 1;
+  TOPIC_PERSISTENCY_TYPE_PERSISTENT = 2;
+  TOPIC_PERSISTENCY_TYPE_ANY = 3;
+}
+
+message ExactTopicMatcher {
+  TopicPersistencyType persistency = 1;
+  TenantMatcher tenant = 2;
+  NamespaceMatcher namespace = 3;
+  string topic = 4;
+}
+
+message RegexTopicMatcher {
+  TopicPersistencyType persistency = 1;
+  TenantMatcher tenant = 2;
+  NamespaceMatcher namespace = 3;
+  string topic_regex = 4;
+}
+
+message TopicMatcher {
+  oneof matcher {
+    ExactTopicMatcher exact = 1;
+    RegexTopicMatcher regex = 2;
+  }
+}
+
+message ResourceMatcher {
+  oneof matcher {
+    TenantMatcher tenant = 1;
+    NamespaceMatcher namespace = 2;
+    TopicMatcher topic = 3;
+  }
+}
+
+enum LibraryItemType {
+  LIBRARY_ITEM_TYPE_UNSPECIFIED = 0;
+  LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG = 1;
+  LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
+  LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT = 3;
+  LIBRARY_ITEM_TYPE_MESSAGE_FILTER = 4;
+  LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET = 5;
+  LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD = 6;
+}
+
+message LibraryItem {
+  string id = 1;
+  string revision = 2;
+  int64 updated_at = 3;
+  bool is_editable = 4;
+
+  string name = 5;
+  string description_markdown = 6;
+  repeated string tags = 7;
+
+  repeated ResourceMatcher resources = 8;
+  string descriptor_json = 9;
+}
+
+message CreateLibraryItemRequest {
+  LibraryItem item = 1;
+}
+
+message CreateLibraryItemResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteLibraryItemRequest {
+  string id = 1;
+}
+
+message DeleteLibraryItemResponse {
+  google.rpc.Status status = 1;
+}
+
+message UpdateLibraryItemRequest {
+  LibraryItem item = 1;
+}
+
+message UpdateLibraryItemResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetLibraryItemRequest {
+  string id = 1;
+}
+
+message GetLibraryItemResponse {
+  google.rpc.Status status = 1;
+  LibraryItem item = 2;
+}
+
+message ListLibraryItemsRequest {
+  repeated ResourceMatcher include_resources = 1;
+  repeated ResourceMatcher exclude_resources = 2;
+  repeated string include_tags = 3;
+  repeated string exclude_tags = 4;
+  string fuzzy_name = 5;
+  string fuzzy_description = 6;
+}
+
+message ListLibraryItemsResponse {
+  google.rpc.Status status = 1;
+  repeated LibraryItem items = 2; // resource descriptor is ommited in response to reduce it's size
+}
+
+service LibraryService {
+  rpc CreateLibraryItem(CreateLibraryItemRequest) returns (CreateLibraryItemResponse);
+  rpc DeleteLibraryItem(DeleteLibraryItemRequest) returns (DeleteLibraryItemResponse);
+  rpc UpdateLibraryItem(UpdateLibraryItemRequest) returns (UpdateLibraryItemResponse);
+  rpc GetLibraryItem(GetLibraryItemRequest) returns (GetLibraryItemResponse);
+  rpc ListLibraryItems(ListLibraryItemsRequest) returns (ListLibraryItemsResponse);
+}
