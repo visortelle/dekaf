@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./BreadCrumbs.module.css";
-import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon } from "../Icons/Icons";
+import {TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon, PageNotFoundIcon} from "../Icons/Icons";
 import * as AppContext from '../../app/contexts/AppContext';
 import * as Notifications from "../../app/contexts/Notifications";
 import SvgIcon from "../SvgIcon/SvgIcon";
@@ -13,6 +13,7 @@ import { swrKeys } from "../../swrKeys";
 import Favicons from "./favicons/Favicons";
 import SmallButton from "../SmallButton/SmallButton";
 import { useLocation } from "react-router-dom";
+import PageNotFound from "../PageNotFound/PageNotFound";
 
 export type CrumbType =
   "instance" |
@@ -21,6 +22,7 @@ export type CrumbType =
   "persistent-topic" |
   "non-persistent-topic" |
   "subscription" |
+  "page-not-found" |
   "link";
 
 export type Crumb = {
@@ -62,6 +64,9 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       case "subscription":
         icon = <SubscriptionIcon />;
         break;
+      case "page-not-found":
+        icon = <PageNotFoundIcon isGray={true} />;
+        break;
     }
 
     const isLast = i === total - 1;
@@ -93,6 +98,9 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
           topic,
           topicType: "non-persistent",
         });
+        break;
+      case "page-not-found":
+        href = routes.instance.tenants._.get();
         break;
       case "link":
         href = pathname;
