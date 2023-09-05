@@ -11,8 +11,8 @@ import { localStorageKeys } from "../../../../local-storage-keys";
 import * as Notifications from "../../../../app/contexts/Notifications";
 import { ErrorBoundary } from "react-error-boundary";
 import MessageFieldsConfig from "./MessageFieldsConfig/MessageFieldsConfig";
-import Button from "../../../../ui/Button/Button";
-import exportIcon from "./export.svg";
+import exportIcon from "./icons/export.svg";
+import resetIcon from "./icons/reset.svg";
 import Input from "../../../../ui/Input/Input";
 import { defaultExportConfig } from "./defaults";
 import * as jsonMessagePerEntryExporter from "./exporters/json-message-per-entry";
@@ -37,56 +37,113 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
 
   return (
     <div className={s.MessagesExporter}>
-      <div className={s.ResetSettingsButton}>
-        <SmallButton type='regular' text='Reset export configuration' onClick={() => props.onConfigChange(defaultExportConfig)} />
-      </div>
-
       <FormItem>
-        <div style={{ width: "46ch" }}>
-          <FormLabel content="Export format" />
-          <FormItem>
-            <Select<Format["type"]>
-              list={[
-                { type: "item", value: "json-message-per-entry", title: ".json - message per array entry" },
-                { type: "item", value: "json-value-per-entry", title: ".json - value per array entry" },
-                { type: "item", value: "json-file-per-value", title: ".json - file per value" },
-                { type: "item", value: "file-per-raw-value", title: ".<ext> - file per raw value" },
-              ]}
-              onChange={(v) => {
-                let format: Format;
-                switch (v) {
-                  case "json-message-per-entry":
-                    format = { type: "json-message-per-entry" };
-                    break;
-                  case "json-value-per-entry":
-                    format = { type: "json-value-per-entry" };
-                    break;
-                  case "json-file-per-value":
-                    format = { type: "json-file-per-value" };
-                    break;
-                  case "file-per-raw-value":
-                    format = { type: "file-per-raw-value" };
-                    break;
-                }
-
-                props.onConfigChange({ ...props.config, format });
-              }}
-              value={props.config.format.type}
-            />
-          </FormItem>
-
-          {props.config.format.type === "file-per-raw-value" && (
+        <div className={s.ExporterWrapper}>
+          <div className={s.ExporterLeft}>
+            <FormLabel content="Export format" />
             <FormItem>
-              <FormLabel content="File extension" />
-              <Input
-                value={props.config.filePerRawValueConfig.fileExtension || ""}
-                onChange={(v) => props.onConfigChange({ ...props.config, filePerRawValueConfig: { fileExtension: v } })}
+              <Select<Format["type"]>
+                list={[
+                  { type: "item", value: "json-message-per-entry", title: ".json - message per array entry" },
+                  { type: "item", value: "json-value-per-entry", title: ".json - value per array entry" },
+                  { type: "item", value: "json-file-per-value", title: ".json - file per value" },
+                  { type: "item", value: "file-per-raw-value", title: ".<ext> - file per raw value" },
+                ]}
+                onChange={(v) => {
+                  let format: Format;
+                  switch (v) {
+                    case "json-message-per-entry":
+                      format = { type: "json-message-per-entry" };
+                      break;
+                    case "json-value-per-entry":
+                      format = { type: "json-value-per-entry" };
+                      break;
+                    case "json-file-per-value":
+                      format = { type: "json-file-per-value" };
+                      break;
+                    case "file-per-raw-value":
+                      format = { type: "file-per-raw-value" };
+                      break;
+                  }
+
+                  props.onConfigChange({ ...props.config, format });
+                }}
+                value={props.config.format.type}
               />
             </FormItem>
-          )}
+
+            {props.config.format.type === "file-per-raw-value" && (
+              <FormItem>
+                <FormLabel content="File extension" />
+                <Input
+                  value={props.config.filePerRawValueConfig.fileExtension || ""}
+                  onChange={(v) => props.onConfigChange({ ...props.config, filePerRawValueConfig: { fileExtension: v } })}
+                />
+              </FormItem>
+            )}
+          </div>
+          <div className={s.ExporterRight}>
+            <FormItem>
+              <SmallButton
+                type='primary'
+                text='Export'
+                svgIcon={exportIcon}
+                onClick={() => {
+                  const exportName = `messages-${new Date().toISOString()}`;
+
+                  switch (props.config.format.type) {
+                    case "json-message-per-entry": {
+                      jsonMessagePerEntryExporter.exportMessages({
+                        messages: props.messages,
+                        config: props.config,
+                        exportName,
+                      });
+                      break;
+                    }
+                    case "json-value-per-entry": {
+                      jsonValuePerEntryExporter.exportMessages({
+                        messages: props.messages,
+                        config: props.config,
+                        exportName,
+                      });
+                      break;
+                    }
+                    case "json-file-per-value": {
+                      jsonFilePerValueExporter.exportMessages({
+                        messages: props.messages,
+                        config: props.config,
+                        exportName,
+                      });
+                      break;
+                    }
+                    case "file-per-raw-value": {
+                      filePerRawValueExporter.exportMessages({
+                        messages: props.messages,
+                        config: props.config,
+                        exportName,
+                      });
+                      break;
+                    }
+                  }
+                }}
+              />
+            </FormItem>
+            <FormItem>
+              <SmallButton
+                type='regular'
+                text='Reset'
+                onClick={() => props.onConfigChange(defaultExportConfig)}
+                svgIcon={resetIcon}
+              />
+            </FormItem>
+            {lastProcessedMessageIndex !== undefined && (
+              <div>
+                Messages processed: {lastProcessedMessageIndex + 1} / {props.messages.length}
+              </div>
+            )}
+          </div>
         </div>
       </FormItem>
-
       {isMessageFieldsConfigurable(props.config) && (
         <FormItem>
           <FormLabel
@@ -99,57 +156,6 @@ const _MessagesExporter: React.FC<MessagesExporterProps & { config: ExportConfig
           </div>
         </FormItem>
       )}
-
-      <FormItem>
-        <Button
-          type='primary'
-          text='Export'
-          svgIcon={exportIcon}
-          onClick={() => {
-            const exportName = `messages-${new Date().toISOString()}`;
-
-            switch (props.config.format.type) {
-              case "json-message-per-entry": {
-                jsonMessagePerEntryExporter.exportMessages({
-                  messages: props.messages,
-                  config: props.config,
-                  exportName,
-                });
-                break;
-              }
-              case "json-value-per-entry": {
-                jsonValuePerEntryExporter.exportMessages({
-                  messages: props.messages,
-                  config: props.config,
-                  exportName,
-                });
-                break;
-              }
-              case "json-file-per-value": {
-                jsonFilePerValueExporter.exportMessages({
-                  messages: props.messages,
-                  config: props.config,
-                  exportName,
-                });
-                break;
-              }
-              case "file-per-raw-value": {
-                filePerRawValueExporter.exportMessages({
-                  messages: props.messages,
-                  config: props.config,
-                  exportName,
-                });
-                break;
-              }
-            }
-          }}
-        />
-        {lastProcessedMessageIndex !== undefined && (
-          <div>
-            Messages processed: {lastProcessedMessageIndex + 1} / {props.messages.length}
-          </div>
-        )}
-      </FormItem>
     </div>
   );
 };

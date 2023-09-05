@@ -14,7 +14,7 @@
 }
 
 .Config {
-  margin-left: 180rem;
+  padding: 24rem;
   overflow: auto;
   display: flex;
   flex: 1;

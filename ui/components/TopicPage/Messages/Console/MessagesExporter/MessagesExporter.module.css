@@ -1,9 +1,10 @@
 .MessagesExporter {
   display: flex;
+  flex-direction: column;
   flex: 1;
   overflow: auto;
   padding: 24rem;
-  gap: 24rem;
+  gap: 12rem;
   position: relative;
 }
 
@@ -16,4 +17,20 @@
 
 .MessageFieldsConfig {
   padding-bottom: 24rem;
+}
+
+.ExporterWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 8rem;
+}
+
+.ExporterLeft {
+  min-width: 285rem;
+}
+
+.ExporterRight {
+  display: flex;
+  gap: 8rem;
 }

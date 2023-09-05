@@ -13,6 +13,7 @@ import s from './Console.module.css'
 import DebugLogs from './FilterLogs/FilterLogs';
 import ExpressionInspector from './FilterRepl/FilterRepl';
 import NothingToShow from '../../../ui/NothingToShow/NothingToShow';
+import EnteringFromRightDiv from "../../../ui/animations/EnteringFromRightDiv";
 
 export type ConsoleProps = {
   isShow: boolean;
@@ -33,7 +34,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
   const [activeTab, setActiveTab] = React.useState<TabKey>('export');
 
   return (
-    <EnteringFromBottomDiv
+    <EnteringFromRightDiv
       className={`${s.Console} ${props.isShow ? s.VisibleConsole : ''}`}
       isVisible={props.isShow}
       motionKey='consumer-console'
@@ -108,7 +109,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
           }
         }}
       />
-    </EnteringFromBottomDiv>
+    </EnteringFromRightDiv>
   );
 }
 

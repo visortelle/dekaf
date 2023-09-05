@@ -30,7 +30,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   return (
     <div className={s.FilterChain}>
 
-      <div style={{ marginBottom: '12rem' }}>
+      <div style={{ marginBottom: '12rem', width: '370rem' }}>
         <Select<'all' | 'any'>
           list={[
             { type: 'item', title: 'All filters should match', value: 'all' },

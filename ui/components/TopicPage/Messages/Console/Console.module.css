@@ -4,11 +4,15 @@
   background-color: #fff;
   overflow: auto;
   margin-top: auto;
+  width: 582rem;
+  position: absolute;
+  left: calc(100% - 582rem);
+  box-shadow: 10rem 1rem 15rem 7px #00000045;
+  border-radius: 6rem 6rem 0 0;
 }
 
 .VisibleConsole {
-  border-top: 4px solid var(--border-color);
-  height: 480rem;
+  height: 100%;
 }
 
 .SubscriptionsCursors {
