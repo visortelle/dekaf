@@ -161,4 +161,15 @@ def pulsarAuthToCookie(pulsarAuth: PulsarAuth): String =
             case path => path
     }).getOrElse("/")
 
-    s"$cookieName=$cookieValue; Path=${cookiePath}; HttpOnly; Max-Age=31536000; "
+
+    val cookieSecureValue = config.cookieSecure match
+        case Some(true) => "Secure; "
+        case _ => ""
+
+    val cookieSameSiteValue = (config.cookieSecure, config.cookieSameSite) match
+        case (_, Some("lax")) => "SameSite=Lax; "
+        case (_, Some("strict")) => "SameSite=Strict; "
+        case (Some(true), Some("none")) => "SameSite=None; "
+        case _ => ""
+    
+    s"$cookieName=$cookieValue; Path=${cookiePath}; HttpOnly; Max-Age=31536000; ${cookieSameSiteValue}${cookieSameSiteValue}"
