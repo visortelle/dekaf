@@ -34,6 +34,7 @@ RUN cd ./server && make build
 
 RUN cd ./server/target/universal && unzip ./pulsocat-*.zip && rm ./pulsocat-*.zip && mv ./pulsocat-* /pulsocat
 RUN cp ./server/config.yaml /pulsocat/
+RUN cp -r ./server/library /pulsocat/
 
 ################################################################
 

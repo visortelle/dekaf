@@ -9,15 +9,16 @@ spec:
   selector:
     matchLabels:
       {{- include "_chart-name.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: pulsocat
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print .Template.BasePath "/pulsocat-configmap.yaml") . | sha256sum }}
       {{- with .Values.pulsocat.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "_chart-name.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: pulsocat
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
