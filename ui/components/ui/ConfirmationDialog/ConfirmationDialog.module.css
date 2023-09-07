@@ -4,9 +4,9 @@
 }
 
 .ActionCheckbox {
-  margin: 12rem 0rem;
+  margin: 12rem 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12rem;
 }
 

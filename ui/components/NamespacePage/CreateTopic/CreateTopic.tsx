@@ -37,7 +37,15 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   const [numPartitions, setNumPartitions] = React.useState(2);
   const [properties, setProperties] = React.useState<{ [key: string]: string }>({});
 
-  const topicNameInput = <Input value={topicName} onChange={setTopicName} focusOnMount />
+  const topicNameInput = (
+    <Input
+      value={topicName}
+      onChange={setTopicName}
+      testId={'topic-name-input'}
+      focusOnMount
+    />
+  );
+
   const topicPersistencyInput = (
     <Select<TopicPersistency>
       onChange={setTopicPersistency}
@@ -46,6 +54,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
         { type: 'item', value: 'persistent', title: 'Persistent' },
         { type: 'item', value: 'non-persistent', title: 'Non-persistent' },
       ]}
+      testId={'topic-persistency-select'}
     />
   );
 
@@ -57,10 +66,18 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
         { type: 'item', value: 'partitioned', title: 'Partitioned' },
         { type: 'item', value: 'non-partitioned', title: 'Non-partitioned' },
       ]}
+      testId={'topic-partitioning-select'}
     />
   );
 
-  const numPartitionsInput = <Input type='number' value={numPartitions.toString()} onChange={v => setNumPartitions(parseInt(v))} />
+  const numPartitionsInput = (
+    <Input
+      type={'number'}
+      value={numPartitions.toString()}
+      onChange={v => setNumPartitions(parseInt(v))}
+      testId={'topic-partitions-count-input'}
+    />
+  );
 
   const propertiesEditorInput = (
     <KeyValueEditor
@@ -178,6 +195,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
           }
         }}
         text='Create'
+        testId={'topic-create-button'}
         disabled={!isFormValid}
         buttonProps={{
           type: 'submit'

@@ -69,44 +69,60 @@ const CreateTenantPage: React.FC = () => {
     navigate(routes.instance.tenants._.get());
   }
 
-  const tenantNameInput = <Input value={tenantName} onChange={setTenantName} placeholder="tenant-1" testId="tenant-name" focusOnMount />;
+  const tenantNameInput = (
+    <Input
+      value={tenantName}
+      onChange={setTenantName}
+      placeholder="tenant-1"
+      testId="tenant-name"
+      focusOnMount
+    />
+  );
 
-  const allowedClustersInput = <ListInput<string>
-    testId="clusters-input"
-    value={allowedClusters.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
-    getId={(v) => v}
-    renderItem={(v) => <div>{v}</div>}
-    editor={allClusters?.every(ac => allowedClusters.includes(ac)) ? undefined : {
-      render: (v, onChange) => (
-        <SelectInput<string>
-          list={[
-            { type: 'empty', title: '' },
-            ...(allClusters?.filter(c => !allowedClusters.includes(c)) || []).map<ListItem<string>>(c => ({ type: 'item', value: c, title: c }))
-          ]}
-          value={v}
-          onChange={onChange}
-          placeholder="Select cluster"
-        />),
-      initialValue: '',
-    }}
-    onRemove={(v) => setAllowedClusters(allowedClusters.filter(c => c !== v))}
-    onAdd={(v) => setAllowedClusters([...allowedClusters, v])}
-    validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
-  />
+  const allowedClustersInput = (
+    <ListInput<string>
+      value={allowedClusters.sort((a, b) => a.localeCompare(b, 'en', {numeric: true})) || []}
+      getId={(v) => v}
+      renderItem={(v) => <div>{v}</div>}
+      editor={allClusters?.every(ac => allowedClusters.includes(ac)) ? undefined : {
+        render: (v, onChange) => (
+          <SelectInput<string>
+            list={[
+              {type: 'empty', title: ''},
+              ...(allClusters?.filter(c => !allowedClusters.includes(c)) || []).map<ListItem<string>>(c => ({
+                type: 'item',
+                value: c,
+                title: c
+              }))
+            ]}
+            value={v}
+            onChange={onChange}
+            placeholder="Select cluster"
+          />),
+        initialValue: '',
+      }}
+      onRemove={(v) => setAllowedClusters(allowedClusters.filter(c => c !== v))}
+      onAdd={(v) => setAllowedClusters([...allowedClusters, v])}
+      validate={(v) => v.length > 0 ? Either.right(undefined) : Either.left(new Error('Allowed clusters cannot be empty'))}
+      testId="clusters-input"
+    />
+  );
 
-  const adminRolesInput = <ListInput<string>
-    testId="admin-roles-input"
-    value={adminRoles.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) || []}
-    getId={(v) => v}
-    renderItem={(v) => <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</span>}
-    editor={{
-      render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="tenant-1-admin" />,
-      initialValue: '',
-    }}
-    onRemove={(v) => setAdminRoles(adminRoles.filter(r => r !== v))}
-    onAdd={(v) => setAdminRoles([...adminRoles, v])}
-    validate={() => Either.right(undefined)}
-  />
+  const adminRolesInput = (
+    <ListInput<string>
+      testId="admin-roles-input"
+      value={adminRoles.sort((a, b) => a.localeCompare(b, 'en', {numeric: true})) || []}
+      getId={(v) => v}
+      renderItem={(v) => <span style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>{v}</span>}
+      editor={{
+        render: (v, onChange) => <Input value={v} onChange={onChange} placeholder="tenant-1-admin"/>,
+        initialValue: '',
+      }}
+      onRemove={(v) => setAdminRoles(adminRoles.filter(r => r !== v))}
+      onAdd={(v) => setAdminRoles([...adminRoles, v])}
+      validate={() => Either.right(undefined)}
+    />
+  );
 
   const isFormValid = tenantName.length > 0 && allowedClusters.length > 0;
 

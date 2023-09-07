@@ -30,7 +30,7 @@ const KeyValueEditor = (props: Props) => {
   }
 
   return (
-    <div className={`${s.KeyValueEditor}`}>
+    <div className={`${s.KeyValueEditor}`} data-testid={props.testId}>
       <div className={`${s.Line} ${s.LinkButton} ${!jsonView && s.JsonViewButton}`}>
         <SmallButton
           type="regular"

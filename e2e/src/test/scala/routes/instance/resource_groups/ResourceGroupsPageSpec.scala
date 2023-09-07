@@ -1,6 +1,6 @@
 package routes.instance.resource_groups
 
-import _root_.test_env.{TestEnv, createPulsarStandaloneEnv}
+import _root_.test_env.TestEnv
 import com.microsoft.playwright.Page.WaitForURLOptions
 import net.datafaker.Faker
 import org.apache.pulsar.common.policies.data.ResourceGroup
@@ -13,14 +13,14 @@ import scala.jdk.CollectionConverters.*
 import scala.util.control.Breaks.break
 
 
-val faker = new Faker();
+val faker = new Faker()
 
 object ResourceGroupsPageSpec extends ZIOSpecDefault {
     def spec: Spec[Any, Any] = suite("Resource groups page")(
         test("User can see resource groups") {
-            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val testEnv: TestEnv = TestEnv.createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
-            val adminClient = testEnv.createPulsarAdminClient()
+            val adminClient = TestEnv.createPulsarAdminClient
             val resourceGroupsPage = ResourceGroupsPage(page.locator("body"))
 
             val newResourceGroups: Map[String, ResourceGroup] = List.range(0, 20).map(i => {
@@ -59,9 +59,9 @@ object ResourceGroupsPageSpec extends ZIOSpecDefault {
         },
 
         test("User can open resource-groups/:resource-group/edit") {
-            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val testEnv: TestEnv = TestEnv.createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
-            val adminClient = testEnv.createPulsarAdminClient()
+            val adminClient = TestEnv.createPulsarAdminClient
             val resourceGroupsPage = ResourceGroupsPage(page.locator("body"))
 
             val testResourceGroupName = s"${faker.name.firstName()}-${java.util.Date().getTime}"
@@ -77,7 +77,7 @@ object ResourceGroupsPageSpec extends ZIOSpecDefault {
         },
 
         test("User can open resource-groups/create") {
-            val testEnv: TestEnv = createPulsarStandaloneEnv
+            val testEnv: TestEnv = TestEnv.createPulsarStandaloneEnv
             val page = testEnv.createNewPage()
             val resourceGroupsPage = ResourceGroupsPage(page.locator("body"))
 

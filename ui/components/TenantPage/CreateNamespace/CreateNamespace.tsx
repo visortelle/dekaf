@@ -15,7 +15,7 @@ import { GetClustersRequest } from "../../../grpc-web/tools/teal/pulsar/ui/clust
 import * as Either from "fp-ts/Either";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../routes";
-import { H1, H2 } from "../../ui/H/H";
+import { H2 } from "../../ui/H/H";
 import ConfigurationTable from "../../ui/ConfigurationTable/ConfigurationTable";
 import { CreateNamespaceRequest } from "../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb";
 import { help } from "../Namespaces/help";
@@ -105,6 +105,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
       value={namespaceName}
       onChange={setNamespaceName}
       placeholder="namespace-1"
+      testId="namespace-name-input"
       focusOnMount
     />
   );
@@ -153,6 +154,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
           ? Either.right(undefined)
           : Either.left(new Error("Replication clusters cannot be empty"))
       }
+      testId="replication-clusters-select-input"
     />
   );
 
@@ -162,6 +164,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
       value={numBundles.toString()}
       onChange={(v) => setNumBundles(parseInt(v))}
       placeholder="4"
+      testId="bundles-count-input"
     />
   );
 
@@ -222,6 +225,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
         buttonProps={{
           type: "submit",
         }}
+        testId="create-namespace-button"
       />
     </form>
   );

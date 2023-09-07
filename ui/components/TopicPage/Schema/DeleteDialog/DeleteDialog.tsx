@@ -64,13 +64,14 @@ const DeleteDialog = (props: Props) => {
           <div>
             This action <strong>cannot</strong> be undone.
           </div>
-          <br />
+          <br/>
           <div>All schema versions will be permanently deleted.</div>
         </div>
       }
       onConfirm={deleteSchema}
       onCancel={modals.pop}
       forceDelete={forceDelete}
+      forceDeleteInfo="Delete a schema forcefully by deleting all resources (including metastore and ledger)."
       switchForceDelete={switchForceDelete}
       guard={topicFqn}
       type='danger'

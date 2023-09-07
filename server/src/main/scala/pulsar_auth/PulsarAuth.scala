@@ -29,21 +29,21 @@ case class EmptyCredentials(
 )
 
 case class OAuth2Credentials(
-                                `type`: OAuth2CredentialsType,
-                                issuerUrl: String,
-                                privateKey: String,
-                                audience: Option[String],
-                                scope: Option[String]
+    `type`: OAuth2CredentialsType,
+    issuerUrl: String,
+    privateKey: String,
+    audience: Option[String],
+    scope: Option[String]
 )
 
 case class JwtCredentials(
-                             `type`: JwtCredentialsType,
-                             token: String
+    `type`: JwtCredentialsType,
+    token: String
 )
 
 case class PulsarAuth(
-                         current: Option[String],
-                         credentials: Map[CredentialsName, Credentials]
+    current: Option[String],
+    credentials: Map[CredentialsName, Credentials]
 )
 
 given emptyCredentialsEncoder: Encoder[EmptyCredentials] = deriveEncoder[EmptyCredentials]

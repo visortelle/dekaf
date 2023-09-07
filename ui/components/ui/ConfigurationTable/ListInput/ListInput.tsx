@@ -49,7 +49,10 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
         <div className={s.ListFieldValues}>
           {props.value.map(v => {
             return (
-              <div key={props.getId(v)} className={`${s.ListFieldValue} ${typeof props.onRemove === 'undefined' ? '' : s.RemovableListFieldValue}`}>
+              <div
+                key={props.getId(v)}
+                className={`${s.ListFieldValue} ${typeof props.onRemove === 'undefined' ? '' : s.RemovableListFieldValue}`}
+              >
                 {props.renderItem(v)}
                 {props.onRemove && (
                   <button type="button" className={s.ListFieldRemoveValue} onClick={() => props.onRemove!(props.getId(v))}>

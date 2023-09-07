@@ -1,12 +1,12 @@
-package routes.tenants._tenant_id.namespaces._namespace_id.topics._topic_id.schema
+package routes.tenants._tenant_id.namespaces._namespace_id.topics
 
 import _root_.ui.ListInput
 import com.microsoft.playwright.Locator
 import com.microsoft.playwright.Locator.{GetByPlaceholderOptions, GetByRoleOptions}
 import com.microsoft.playwright.options.AriaRole
 
-case class SchemaPage(root: Locator):
-    val deleteButton: Locator = root.getByTestId("schema-delete-button")
+case class NamespacePage(root: Locator):
+    val deleteButton: Locator = root.getByTestId("namespace-page-delete-button")
     val deleteConfirmButton: Locator = root.getByTestId("confirmation-dialog-confirm-button")
     val deleteGuardInput: Locator = root.getByTestId("confirmation-dialog-guard-input")
     val deleteForceButton: Locator = root.getByTestId("confirm-dialog-force-delete-checkbox")
