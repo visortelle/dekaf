@@ -35,113 +35,102 @@ val libraryRoot = config.libraryRoot.get
 
 class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
     val logger: Logger = Logger(getClass.getName)
+    val library = Library.createAndRefreshDb(libraryRoot)
 
-    override def createLibraryItem(request: CreateLibraryItemRequest): Future[CreateLibraryItemResponse] = ???
-//        logger.debug(s"Creating library item: ${request.item}")
-//
-//        try {
-//            if request.item.isEmpty then
-//                throw new Exception("Library item is empty")
-//
-//            val libraryItemId = uuidV7().generate().toString
-//            val libraryItem = libraryItemFromPb(request.item.get).copy(id = libraryItemId)
-//            val libraryItemJson = libraryItem.asJson.spaces2SortKeys
-//
-//            val fileName = s"${libraryItemId}.json"
-//            val filePath = s"$libraryItemDir/$fileName"
-//
-//            val isExists = os.exists(os.Path(filePath))
-//            if isExists then
-//                throw new Exception(s"Library item already exists: $libraryItemId")
-//
-//            os.write.over(
-//                target = os.Path(fileName),
-//                data = libraryItemJson,
-//                createFolders = true
-//            )
-//
-//            val status: Status = Status(code = Code.OK.index)
-//            Future.successful(pb.CreateLibraryItemResponse(status = Some(status)))
-//        } catch {
-//            case err: Exception =>
-//                logger.warn(s"Failed to create library item: ${err.getMessage}")
-//                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to create library item. ${err.getMessage}")
-//                Future.successful(pb.CreateLibraryItemResponse(status = Some(status)))
-//        }
+    override def createLibraryItem(request: CreateLibraryItemRequest): Future[CreateLibraryItemResponse] =
+        logger.debug(s"Creating library item: ${request.item}")
 
-    override def updateLibraryItem(request: UpdateLibraryItemRequest): Future[UpdateLibraryItemResponse] = ???
-//        logger.debug(s"Updating library item: ${request.item}")
-//
-//        try {
-//            if request.item.isEmpty then
-//                throw new Exception("Library item is empty")
-//
-//            val libraryItem = libraryItemFromPb(request.item.get)
-//            val libraryItemDir = getDefaultLibraryItemDir(libraryItem.`type`)
-//            val fileName = mkFileName(libraryItem)
-//
-//            if !os.exists(os.Path(fileName)) then
-//                throw new Exception(s"Library item does not exist: ${request.item.get.id}")
-//
-//            val libraryItemJson = libraryItem.asJson.spaces2SortKeys
-//
-//            os.write.over(
-//                target = os.Path(fileName),
-//                data = libraryItemJson
-//            )
-//
-//            val status: Status = Status(code = Code.OK.index)
-//            Future.successful(pb.UpdateLibraryItemResponse(status = Some(status)))
-//        } catch {
-//            case err: Exception =>
-//                logger.warn(s"Failed to update library item: ${err.getMessage}")
-//                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to update library item. ${err.getMessage}}")
-//                Future.successful(pb.UpdateLibraryItemResponse(status = Some(status)))
-//        }
+        try {
+            if request.item.isEmpty then throw new Exception("Library item is empty")
 
-    override def deleteLibraryItem(request: DeleteLibraryItemRequest): Future[DeleteLibraryItemResponse] = ???
-//        logger.debug(s"Deleting library item: ${request.id}")
-//
-//        try {
-//            val libraryItemType = libraryItemTypeFromPb(request.`type`)
-//            val libraryItemDir = getDefaultLibraryItemDir(libraryItemType)
-//            val libraryItemFile = s"$libraryItemDir/${request.id}.json"
-//
-//            os.remove(os.Path(libraryItemFile))
-//
-//            val status: Status = Status(code = Code.OK.index)
-//            Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
-//        } catch {
-//            case e: Exception =>
-//                logger.warn(s"Failed to delete library item: ${e.getMessage}")
-//                val status: Status = Status(code = Code.INTERNAL.index, message = "Unable to delete library item")
-//                Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
-//        }
+            val libraryItemId = uuidV7().generate().toString
+            val libraryItem = libraryItemFromPb(request.item.get).copy(id = libraryItemId)
+            library.writeItem(libraryItem)
 
-    override def getLibraryItem(request: GetLibraryItemRequest): Future[GetLibraryItemResponse] = ???
-//        logger.debug(s"Getting library item: ${request.id}")
-//
-//        try {
-//            val libraryItemType = libraryItemTypeFromPb(request.`type`)
-//            val libraryItemDir = getDefaultLibraryItemDir(libraryItemType)
-//            val libraryItemFile = s"$libraryItemDir/${request.id}.json"
-//
-//            val libraryItemJson = os.read(os.Path(libraryItemFile))
-//            val libraryItem = parseJson(libraryItemJson) match
-//                case Right(json) => json.as[LibraryItem] match
-//                    case Right(libraryItem) => libraryItem
-//                    case Left(err) => throw new Exception(err)
-//                case Left(err) => throw new Exception(err)
-//
-//            val libraryItemPb = libraryItemToPb(libraryItem)
-//
-//            val status: Status = Status(code = Code.OK.index)
-//            Future.successful(pb.GetLibraryItemResponse(status = Some(status), item = Some(libraryItemPb)))
-//        } catch {
-//            case e: Exception =>
-//                logger.warn(s"Failed to get library item: ${e.getMessage}")
-//                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to get library item. ${e.getMessage}")
-//                Future.successful(pb.GetLibraryItemResponse(status = Some(status)))
-//        }
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.CreateLibraryItemResponse(status = Some(status)))
+        } catch {
+            case err: Exception =>
+                logger.warn(s"Failed to create library item: ${err.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to create library item. ${err.getMessage}")
+                Future.successful(pb.CreateLibraryItemResponse(status = Some(status)))
+        }
 
-    override def listLibraryItems(request: ListLibraryItemsRequest): Future[ListLibraryItemsResponse] = ???
+    override def updateLibraryItem(request: UpdateLibraryItemRequest): Future[UpdateLibraryItemResponse] =
+        logger.debug(s"Updating library item: ${request.item}")
+
+        try {
+            if request.item.isEmpty then throw new Exception("Library item is empty")
+
+            val libraryItem = libraryItemFromPb(request.item.get)
+            library.writeItem(libraryItem)
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.UpdateLibraryItemResponse(status = Some(status)))
+        } catch {
+            case err: Exception =>
+                logger.warn(s"Failed to update library item: ${err.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to update library item. ${err.getMessage}}")
+                Future.successful(pb.UpdateLibraryItemResponse(status = Some(status)))
+        }
+
+    override def deleteLibraryItem(request: DeleteLibraryItemRequest): Future[DeleteLibraryItemResponse] =
+        logger.debug(s"Deleting library item: ${request.id}")
+
+        try {
+            if request.id.isEmpty then throw new Exception("Library item id is empty")
+
+            library.deleteItem(request.id)
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
+        } catch {
+            case e: Exception =>
+                logger.warn(s"Failed to delete library item: ${e.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.index, message = "Unable to delete library item")
+                Future.successful(pb.DeleteLibraryItemResponse(status = Some(status)))
+        }
+
+    override def getLibraryItem(request: GetLibraryItemRequest): Future[GetLibraryItemResponse] =
+        logger.debug(s"Getting library item: ${request.id}")
+
+        try {
+            if request.id.isEmpty then throw new Exception("Library item id is empty")
+
+            val libraryItem = library.getItemById(request.id)
+
+            if libraryItem.isEmpty then throw new Exception(s"Library item with id ${request.id} not found")
+            val libraryItemPb = libraryItemToPb(libraryItem.get)
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.GetLibraryItemResponse(status = Some(status), item = Some(libraryItemPb)))
+        } catch {
+            case e: Exception =>
+                logger.warn(s"Failed to get library item: ${e.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to get library item. ${e.getMessage}")
+                Future.successful(pb.GetLibraryItemResponse(status = Some(status)))
+        }
+
+    override def listLibraryItems(request: ListLibraryItemsRequest): Future[ListLibraryItemsResponse] =
+        logger.debug(s"Listing library items")
+
+        try {
+            val filter = ListItemsFilter(
+                types = request.types.map(libraryItemTypeFromPb).toList,
+                tags = request.tags.toList,
+                resourceFqns = request.resourceFqns.toList,
+                name = request.name,
+                description = request.description
+            )
+            val libraryItems = library.listItems(filter)
+
+            val libraryItemsPb = libraryItems.map(libraryItemToPb).toList
+
+            val status: Status = Status(code = Code.OK.index)
+            Future.successful(pb.ListLibraryItemsResponse(status = Some(status), items = libraryItemsPb))
+        } catch {
+            case e: Exception =>
+                logger.warn(s"Failed to list library items: ${e.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to list library items. ${e.getMessage}")
+                Future.successful(pb.ListLibraryItemsResponse(status = Some(status)))
+        }

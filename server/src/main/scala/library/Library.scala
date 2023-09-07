@@ -38,6 +38,7 @@ type LibraryScanResultEntry = Either[Throwable, LibraryItem]
 type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 
 case class ListItemsFilter(
+    types: List[LibraryItemType],
     tags: List[TagName],
     resourceFqns: List[String],
     name: String,
@@ -48,8 +49,15 @@ case class LibraryDb(
     itemsById: Map[LibraryItemId, LibraryItem]
 )
 
+object Library:
+    def createAndRefreshDb(rootDir: String): Library =
+        val library = Library()
+        library.rootDir = rootDir
+        library.refreshDb()
+        library
+
 class Library:
-    private val rootDir = "./library"
+    private var rootDir = "./library"
     private var db = LibraryDb(itemsById = Map.empty)
 
     def writeItem(item: LibraryItem): Unit =
@@ -91,10 +99,14 @@ class Library:
             items.filter(item => item.descriptionMarkdown.toLowerCase.contains(subStringLowerCased))
 
         val dbItems = db.itemsById.values.toList
+        val byTypes =
+            if filter.types.isEmpty
+            then dbItems
+            else dbItems.filter(item => filter.types.contains(item.`type`))
         val byResourceFqns =
             if filter.resourceFqns.isEmpty
-            then dbItems
-            else getItemsByResourceFqns(dbItems, filter.resourceFqns)
+            then byTypes
+            else getItemsByResourceFqns(byTypes, filter.resourceFqns)
         val byName =
             if filter.name.isEmpty
             then byResourceFqns

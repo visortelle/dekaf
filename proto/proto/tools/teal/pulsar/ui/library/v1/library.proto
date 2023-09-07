@@ -131,7 +131,8 @@ message GetLibraryItemResponse {
 }
 
 message ListLibraryItemsRequest {
-  repeated string resource_fqns = 1;
+  repeated LibraryItemType types = 1;
+  repeated string resource_fqns = 2;
   repeated string tags = 3;
   string name = 5;
   string description = 6;
