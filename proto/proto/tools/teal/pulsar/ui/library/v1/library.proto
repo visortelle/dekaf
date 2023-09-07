@@ -45,16 +45,14 @@ enum TopicPersistencyType {
 
 message ExactTopicMatcher {
   TopicPersistencyType persistency = 1;
-  TenantMatcher tenant = 2;
-  NamespaceMatcher namespace = 3;
-  string topic = 4;
+  NamespaceMatcher namespace = 2;
+  string topic = 3;
 }
 
 message RegexTopicMatcher {
   TopicPersistencyType persistency = 1;
-  TenantMatcher tenant = 2;
-  NamespaceMatcher namespace = 3;
-  string topic_regex = 4;
+  NamespaceMatcher namespace = 2;
+  string topic_regex = 3;
 }
 
 message TopicMatcher {
@@ -133,12 +131,10 @@ message GetLibraryItemResponse {
 }
 
 message ListLibraryItemsRequest {
-  repeated ResourceMatcher include_resources = 1;
-  repeated ResourceMatcher exclude_resources = 2;
-  repeated string include_tags = 3;
-  repeated string exclude_tags = 4;
-  string fuzzy_name = 5;
-  string fuzzy_description = 6;
+  repeated string resource_fqns = 1;
+  repeated string tags = 3;
+  string name = 5;
+  string description = 6;
 }
 
 message ListLibraryItemsResponse {

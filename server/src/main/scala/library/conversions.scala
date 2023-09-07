@@ -74,7 +74,6 @@ def exactTopicMatcherFromPb(v: pb.ExactTopicMatcher): ExactTopicMatcher =
     ExactTopicMatcher(
         `type` = "exact-topic-matcher",
         persistency = topicPersistencyTypeFromPb(v.persistency),
-        tenant = tenantMatcherFromPb(v.tenant.get),
         namespace = namespaceMatcherFromPb(v.namespace.get),
         topic = v.topic
     )
@@ -82,7 +81,6 @@ def exactTopicMatcherFromPb(v: pb.ExactTopicMatcher): ExactTopicMatcher =
 def exactTopicMatcherToPb(v: ExactTopicMatcher): pb.ExactTopicMatcher =
     pb.ExactTopicMatcher(
         persistency = topicPersistencyTypeToPb(v.persistency),
-        tenant = Some(tenantMatcherToPb(v.tenant)),
         namespace = Some(namespaceMatcherToPb(v.namespace)),
         topic = v.topic
     )
@@ -91,7 +89,6 @@ def regexTopicMatcherFromPb(v: pb.RegexTopicMatcher): RegexTopicMatcher =
     RegexTopicMatcher(
         `type` = "regex-topic-matcher",
         persistency = topicPersistencyTypeFromPb(v.persistency),
-        tenant = tenantMatcherFromPb(v.tenant.get),
         namespace = namespaceMatcherFromPb(v.namespace.get),
         topicRegex = v.topicRegex
     )
@@ -99,7 +96,6 @@ def regexTopicMatcherFromPb(v: pb.RegexTopicMatcher): RegexTopicMatcher =
 def regexTopicMatcherToPb(v: RegexTopicMatcher): pb.RegexTopicMatcher =
     pb.RegexTopicMatcher(
         persistency = topicPersistencyTypeToPb(v.persistency),
-        tenant = Some(tenantMatcherToPb(v.tenant)),
         namespace = Some(namespaceMatcherToPb(v.namespace)),
         topicRegex = v.topicRegex
     )
@@ -154,6 +150,7 @@ def libraryItemTypeToPb(v: LibraryItemType): pb.LibraryItemType =
 def libraryItemFromPb(v: pb.LibraryItem): LibraryItem =
     LibraryItem(
         id = v.id,
+        `type` = libraryItemTypeFromPb(v.`type`),
         revision = v.revision,
         updatedAt = v.updatedAt,
         isEditable = v.isEditable,
@@ -167,6 +164,7 @@ def libraryItemFromPb(v: pb.LibraryItem): LibraryItem =
 def libraryItemToPb(v: LibraryItem): pb.LibraryItem =
     pb.LibraryItem(
         id = v.id,
+        `type` = libraryItemTypeToPb(v.`type`),
         revision = v.revision,
         updatedAt = v.updatedAt,
         isEditable = v.isEditable,
