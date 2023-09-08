@@ -74,8 +74,15 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
           />
           <br />
           <div style={{ display: "flex", gap: "12rem" }}>
-            <Checkbox isInline id="unloadSplitBundles" checked={splitParams.unloadSplitBundles} onChange={() => setSplitParams({ ...splitParams, unloadSplitBundles: !splitParams.unloadSplitBundles })} />
-            <div>Unload split bundles</div>
+            <Checkbox
+              isInline
+              id="unloadSplitBundles"
+              checked={splitParams.unloadSplitBundles}
+              onChange={() => setSplitParams({ ...splitParams, unloadSplitBundles: !splitParams.unloadSplitBundles })}
+            />
+            <label htmlFor="unloadSplitBundles" data-testid="confirm-dialog-unload-split-bundles-checkbox">
+              Unload split bundles
+            </label>
           </div>
           <br />
           <div>This will split the bundle to the reassign them to different brokers to lower the and could lead to severe consequences.</div>

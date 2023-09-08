@@ -157,6 +157,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
             value={Object.fromEntries(properties.entries())}
             height={'110rem'}
             width={'100%'}
+            readonly={true}
           />
         </div>
       </div>

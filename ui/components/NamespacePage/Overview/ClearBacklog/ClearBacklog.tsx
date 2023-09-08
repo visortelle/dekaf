@@ -51,7 +51,7 @@ const ClearBacklog: React.FC<ClearBacklogProps> = ({ namespaceFqn }) => {
       }
       onConfirm={clearBacklog}
       onCancel={modals.pop}
-      guard={"Confirm clear namespace backlog"}
+      guard={"Confirm clearing of namespace backlog"}
       type='danger'
     />
   );

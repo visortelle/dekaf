@@ -140,7 +140,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Namespace FQN</td>
               <Td>
-                <div>{namespaceFqn}</div>
+                <div data-testid={"namespace-fqn"}>{namespaceFqn}</div>
               </Td>
             </tr>
             <tr className={st.Row}>
@@ -202,6 +202,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
             value={topicCounts?.properties}
             height={'130rem'}
             width={'100%'}
+            readonly={true}
           />
         </div>
       </div>
@@ -217,7 +218,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         {
           (!isClustersLoading && clusters) ? (
             <div className={stt.Tabs}>
-              <div className={stt.TabsList}>
+              <div className={stt.TabsList} data-testid={"cluster-tabs"} >
                 {clusters.map(tabKey => {
                   return (
                     <div
@@ -225,7 +226,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                       className={`${stt.Tab} ${tabKey === activeTab ? stt.ActiveTab : ''}`}
                       onClick={() => setActiveTab(tabKey)}
                     >
-                      <div>{tabKey}</div>
+                      <span>{tabKey}</span>
                     </div>
                   );
                 })}
@@ -252,6 +253,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                               });
                             }}
                             text="Unload all"
+                            testId="unload-all-button"
                           />
                           <SmallButton
                             type="danger"
@@ -268,6 +270,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                               });
                             }}
                             text="Clear backlog"
+                            testId="clear-whole-backlog-button"
                           />
                         </div>
                         <div className={s.BundleTableHeaderRight}>
@@ -295,7 +298,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                               bundle: {
                                 title: 'Bundle',
                                 render: (bundleKey) =>
-                                  <div className={s.BundleCell}>{bundleKey}</div>
+                                  <div className={s.BundleCell} data-testid={"bundle-range-name"}>{bundleKey}</div>
                               },
                               actions: {
                                 title: 'Actions',
@@ -317,6 +320,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                                         });
                                       }}
                                       text="Split"
+                                      testId={`split-bundle-button-${bundleKey}`}
                                     />
                                     <SmallButton
                                       type="regular"
@@ -334,6 +338,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                                         });
                                       }}
                                       text="Unload"
+                                      testId={`unload-button-${bundleKey}`}
                                     />
                                     <SmallButton
                                       type="danger"
@@ -351,6 +356,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                                         });
                                       }}
                                       text="Clear backlog"
+                                      testId={`clear-backlog-button-${bundleKey}`}
                                     />
                                   </div>
                               }
