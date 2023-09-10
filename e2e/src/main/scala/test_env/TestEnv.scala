@@ -20,7 +20,7 @@ case class TextEnvConfig(pulsarClusters: List[PulsarCluster])
 
 case class TestEnv(config: TextEnvConfig):
     private val publicBaseUrl = "http://localhost:8090"
-    private val isDebug = false
+    private val isDebug = true
     private val playwright: Playwright = Playwright.create
     private val browser: Browser = playwright.chromium.launch(new BrowserType.LaunchOptions().setHeadless(!isDebug))
 

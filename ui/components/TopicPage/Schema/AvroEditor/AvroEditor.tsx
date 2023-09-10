@@ -43,7 +43,8 @@ const defaultSchemaDefinition = `{
 const AvroEditor: React.FC<AvroEditorProps> = (props) => {
   const [source, setSource] = React.useState<Source>('code-editor');
   const [schemaDefinition, setSchemaDefinition] = React.useState<string | undefined>(props.defaultSchemaDefinition === undefined ? defaultSchemaDefinition : props.defaultSchemaDefinition);
-  const [schemaDefinitionDebounced] = useDebounce(schemaDefinition, 400);
+  const [schemaDefinitionDebounced] = useDebounce(schemaDefinition, 300);
+  const prevSchemaDefinition = React.useRef<string | undefined>(undefined);
 
   const submitSchema = () => {
     if (schemaDefinition === undefined) {
@@ -54,15 +55,14 @@ const AvroEditor: React.FC<AvroEditorProps> = (props) => {
     props.onSchemaDefinition(new TextEncoder().encode(schemaDefinitionDebounced));
   }
 
-  useEffect(submitSchema, []);
   useEffect(submitSchema, [schemaDefinitionDebounced]);
 
   useEffect(() => {
     if (source === 'single-file') {
+      prevSchemaDefinition.current = schemaDefinition;
       setSchemaDefinition(undefined);
-      props.onSchemaDefinition(undefined);
-    } else {
-      submitSchema();
+    } if (source === 'code-editor' && prevSchemaDefinition.current !== undefined) {
+      setSchemaDefinition(prevSchemaDefinition.current);
     }
   }, [source]);
 
@@ -77,12 +77,13 @@ const AvroEditor: React.FC<AvroEditorProps> = (props) => {
           ]}
           value={source}
           onChange={setSource}
+          testId={"schema-source-select"}
         />
       </div>
 
       {source === 'code-editor' && (
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div className={s.CodeEditor}>
+          <div className={s.CodeEditor} data-testid={"schema-editor-input"}>
             <CodeEditor
               height="320rem"
               defaultLanguage="json"
@@ -100,6 +101,7 @@ const AvroEditor: React.FC<AvroEditorProps> = (props) => {
             <UploadZone
               isDirectory={false}
               onFiles={(files) => setSchemaDefinition(files[0].content)}
+              testId={"schema-upload-zone"}
             >
               {source === 'single-file' && "Click here or drag'n'drop a .avsc file"}
             </UploadZone>

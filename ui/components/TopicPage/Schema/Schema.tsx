@@ -44,19 +44,17 @@ const Schema: React.FC<SchemaProps> = (props) => {
 
   const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  const {
-    data: latestSchemaInfo,
-    error: latestSchemaInfoError,
-    isLoading: isLatestSchemaInfoLoading,
-  } = useSWR(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topicFqn), async () => {
-    const req = new GetLatestSchemaInfoRequest();
-    req.setTopic(topicFqn);
+  const {data: latestSchemaInfo, error: latestSchemaInfoError, isLoading: isLatestSchemaInfoLoading} = useSWR(
+    swrKeys.pulsar.schemas.getLatestSchemaInfo._(topicFqn),
+    async () => {
+      const req = new GetLatestSchemaInfoRequest();
+      req.setTopic(topicFqn);
 
-    const res = await schemaServiceClient.getLatestSchemaInfo(req, {});
-    if (res.getStatus()?.getCode() === Code.OK) {
-      return res;
-    }
-  });
+      const res = await schemaServiceClient.getLatestSchemaInfo(req, {});
+      if (res.getStatus()?.getCode() === Code.OK) {
+        return res;
+      }
+    });
 
   if (latestSchemaInfoError !== undefined) {
     notifyError(`Unable to get latest schema info. ${latestSchemaInfoError}`);
@@ -164,7 +162,12 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 topicType: props.topicType,
               })}
             >
-              <SmallButton text='New Schema' type='primary' onClick={() => { }} />
+              <SmallButton
+                text='New Schema'
+                type='primary'
+                onClick={() => { }}
+                testId={'schema-create-button'}
+              />
             </Link>
           </div>
           <div>
@@ -193,7 +196,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
           </div>
         </div>
 
-        <div className={s.SchemaList}>
+        <div className={s.SchemaList} data-testid={'schemas-list'}>
           {schemas?.getSchemasList().length === 0 && <div style={{ padding: "8rem 12rem" }}>No schemas registered for this topic.</div>}
           {schemas
             ?.getSchemasList()
@@ -292,10 +295,12 @@ const SchemaListEntry: React.FC<SchemaListEntryProps> = (props) => {
   return (
     <div className={`${s.SchemaListEntry} ${props.isSelected ? s.SchemaListEntrySelected : ""}`} onClick={props.onClick}>
       <div>
-        <strong>Version:</strong> {props.version}
+        <strong>Version:</strong>&nbsp;
+        <span>{props.version}</span>
       </div>
       <div>
-        <strong>Type:</strong> {schemaTypes[props.schemaInfo.getType()].replace("SCHEMA_TYPE_", "")}
+        <strong>Type:</strong>&nbsp;
+        <span>{schemaTypes[props.schemaInfo.getType()].replace("SCHEMA_TYPE_", "")}</span>
       </div>
     </div>
   );

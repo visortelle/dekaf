@@ -111,22 +111,37 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
             <div style={{ maxWidth: "480rem", color: "var(--accent-color-blue)" }}>
               <span>
                 Consider using <code>PROTOBUF_NATIVE</code> schema type instead of <code>PROTOBUF</code> schema type.&nbsp;
-                <HelpIcon
-                  help={
-                    <ul>
-                      <li>
-                        <code>PROTOBUF</code> schema type uses Avro schema definition format and Protobuf 3 serialization format.
-                        <br />
-                        <code>PROTOBUF_NATIVE</code> schema type uses Protobuf 3 for both - schema definition and serialization.
-                      </li>
-                      <li>
-                        We don't support producing and consuming messages to the topics with PROTOBUF schema because topics with the
-                        <code>PROTOBUF</code> schema don't support <code>AUTO_CONSUME</code> and <code>AUTO_PRODUCE</code> features.
-                      </li>
-                      <br />
-                    </ul>
-                  }
-                />
+                <span className={s.HelpIcon}>
+                  <HelpIcon
+                    help={
+                      <ul>
+                        <li>
+                          <code>PROTOBUF</code> schema type uses Avro schema definition format and Protobuf 3
+                          serialization format.
+                          <br/>
+                          <code>PROTOBUF_NATIVE</code> schema type uses Protobuf 3 for both - schema definition and
+                          serialization.
+                        </li>
+                        <li>
+                          We don't support producing and consuming messages to the topics with PROTOBUF schema because
+                          topics with the
+                          <code>PROTOBUF</code> schema don't
+                          support <code>AUTO_CONSUME</code> and <code>AUTO_PRODUCE</code> features.
+                        </li>
+                        <br/>
+                      </ul>
+                    }
+                  />
+                </span>
+              </span>
+            </div>
+          )}
+
+          {schema.type === "SCHEMA_TYPE_BYTES" && (
+            //https://github.com/apache/pulsar/issues/10271
+            <div style={{ maxWidth: "480rem", color: "var(--accent-color-blue)" }}>
+              <span>
+                As of now, creating the <code>BYTES</code> schema type in Pulsar is the same as creating the <code>NONE</code> schema type.
               </span>
             </div>
           )}
@@ -152,6 +167,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               });
               setSchemaCompatibility(undefined);
             }}
+            testId={'schema-type-select'}
           />
         </div>
 
@@ -198,7 +214,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
 
         {schemaCompatibility !== undefined && (
           <div className={s.FormControl}>
-            <div>
+            <div data-testid={'schema-compatibility'}>
               <strong>Compatibility: </strong>
               {schemaCompatibility.isCompatible ? (
                 <span style={{ color: "var(--accent-color-green)", fontWeight: "bold" }}>Compatible</span>
@@ -260,6 +276,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
                 notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);
               }
             }}
+            testId={'create-schema-button'}
           />
         </div>
       </div>

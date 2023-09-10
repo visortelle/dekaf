@@ -128,12 +128,13 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
           ]}
           value={source}
           onChange={setSource}
+          testId={"schema-source-select"}
         />
       </div>
 
       {source === 'code-editor' && (
         <div className={s.CodeEditorContainer}>
-          <div className={s.CodeEditor}>
+          <div className={s.CodeEditor} data-testid={"schema-editor-input"}>
             <CodeEditor
               height="320rem"
               defaultLanguage="proto"
@@ -149,6 +150,7 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
               onClick={() => {
                 submitFiles([{ relativePath: 'schema.proto', content: codeEditorValue }]);
               }}
+              testId={"protobuf-editor-input-upload-button"}
             />
             <A isExternalLink href="https://developers.google.com/protocol-buffers/docs/proto3">Protobuf reference</A>
           </div>
@@ -157,7 +159,11 @@ const ProtobufNativeEditor: React.FC<ProtobufNativeEditorProps> = (props) => {
 
       {(source === 'single-file' || source === 'directory') && (
         <div className={s.FormControl}>
-          <UploadZone isDirectory={source === 'directory'} onFiles={(files) => submitFiles(files)}>
+          <UploadZone
+            isDirectory={source === 'directory'}
+            onFiles={(files) => submitFiles(files)}
+            testId={"schema-upload-zone"}
+          >
             {source === 'single-file' && "Click here or drag'n'drop a .proto file"}
             {source === 'directory' && "Click here or drag'n'drop a directory with .proto files"}
           </UploadZone>

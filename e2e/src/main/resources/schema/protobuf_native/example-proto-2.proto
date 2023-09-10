@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+message ExampleSchema2 {
+  string name = 1;
+  int32 age = 2;
+  int32 id = 3;
+  bool items = 4;
+}

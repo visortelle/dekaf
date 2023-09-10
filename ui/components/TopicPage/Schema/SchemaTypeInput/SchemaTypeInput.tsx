@@ -7,6 +7,7 @@ import { SchemaTypeT } from '../types';
 export type SchemaTypeInputProps = {
   onChange: (schemaType: SchemaTypeT) => void
   value: SchemaTypeT
+  testId?: string
 };
 
 const SchemaTypeInput: React.FC<SchemaTypeInputProps> = (props) => {
@@ -50,6 +51,7 @@ const SchemaTypeInput: React.FC<SchemaTypeInputProps> = (props) => {
         ]}
         onChange={props.onChange}
         value={props.value}
+        testId={props.testId}
       />
     </div>
   );

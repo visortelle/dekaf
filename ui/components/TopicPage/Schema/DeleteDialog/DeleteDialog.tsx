@@ -35,13 +35,14 @@ const DeleteDialog = (props: Props) => {
       return;
     }
 
+    await props.refetchData();
+
     if (res.getStatus()?.getCode() === Code.OK) {
       notifySuccess("Successfully deleted the topic schema");
     } else {
       notifyError(res.getStatus()?.getMessage());
-    }
 
-    await props.refetchData();
+    }
 
     navigate(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({
       tenant: props.tenant,

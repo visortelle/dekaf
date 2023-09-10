@@ -10,3 +10,7 @@
   margin-bottom: 8rem;
   max-width: 480rem;
 }
+
+.HelpIcon > div{
+  display: inline;
+}

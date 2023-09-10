@@ -27,7 +27,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
 
   let register: monaco.IDisposable | null = null
 
-  const addAutoComplition = (monaco: Monaco) => {
+  const addAutoCompilation = (monaco: Monaco) => {
     if (!autoCompleteConfig) {
       return
     }
@@ -89,7 +89,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
   return (
     <div className={s.CodeEditor}>
       <Editor
-        beforeMount={(monaco) => addAutoComplition(monaco)}
+        beforeMount={(monaco) => addAutoCompilation(monaco)}
         options={{
           minimap: { enabled: false },
           scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false },
