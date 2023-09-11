@@ -14,17 +14,21 @@ def buildConsumer(
     consumerName: ConsumerName,
     request: CreateConsumerRequest,
     logger: Logger,
-    listener: MessageListener[Array[Byte]]
+    streamDataHandler: StreamDataHandler
 ): Either[String, ConsumerBuilder[Array[Byte]]] =
+    val listener: MessageListener[Array[Byte]] = (consumer, msg) =>
+        logger.debug(s"Listener received a message. Consumer: $consumerName")
+        streamDataHandler.onNext(msg)
+
+        if consumer.isConnected then consumer.acknowledgeAsync(msg)
+
     var consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
         .receiverQueueSize(1000) // Too big queue causes long time messages loading after consumer pause.
-        .autoScaledReceiverQueueSizeEnabled(true)
         .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)
         .expireTimeOfIncompleteChunkedMessage(1, java.util.concurrent.TimeUnit.MINUTES)
-        .negativeAckRedeliveryDelay(0, java.util.concurrent.TimeUnit.SECONDS)
         .messageListener(listener)
         .startPaused(request.startPaused.getOrElse(true))
         .subscriptionName(request.subscriptionName.getOrElse(consumerName))
