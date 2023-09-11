@@ -4,7 +4,7 @@ import Select from '../../../../Select/Select';
 import ExactTopicMatcher, { ExactTopicMatcherValue } from './ExactTopicMatcher/ExactTopicMatcher';
 import RegexTopicMatcher, { RegexTopicMatcherValue } from './RegexTopicMatcher/RegexTopicMatcher';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../ConfigurationTable/FormLabel/FormLabel';
+import ResourceFormLabel from '../ResourceFormLabel/ResourceFormLabel';
 
 export type TopicMatcherValue = {
   type: 'topic-matcher',
@@ -22,7 +22,7 @@ const TopicMatcher: React.FC<TopicMatcherProps> = (props) => {
   return (
     <div className={s.TopicMatcher}>
       <FormItem>
-        <FormLabel content="Topic Matcher Type" />
+        <ResourceFormLabel type='topic' />
         <Select<TopicMatcherType>
           value={props.value.value.type}
           onChange={(v) => {

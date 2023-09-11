@@ -4,7 +4,7 @@ import Select from '../../../../Select/Select';
 import ExactNamespaceMatcher, { ExactNamespaceMatcherValue } from './ExactNamespaceMatcher/ExactNamespaceMatcher';
 import RegexNamespaceMatcher, { RegexNamespaceMatcherValue } from './RegexNamespaceMatcher/RegexNamespaceMatcher';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../ConfigurationTable/FormLabel/FormLabel';
+import ResourceFormLabel from '../ResourceFormLabel/ResourceFormLabel';
 
 export type NamespaceMatcherValue = {
   type: 'namespace-matcher',
@@ -21,7 +21,7 @@ const NamespaceMatcher: React.FC<NamespaceMatcherProps> = (props) => {
   return (
     <div className={s.NamespaceMatcher}>
       <FormItem>
-        <FormLabel content="Namespace Matcher Type" />
+        <ResourceFormLabel type='namespace' />
         <Select<NamespaceMatcherType>
           value={props.value.value.type}
           onChange={(v) => {

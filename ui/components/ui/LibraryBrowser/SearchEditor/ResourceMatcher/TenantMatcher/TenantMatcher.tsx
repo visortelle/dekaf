@@ -4,7 +4,7 @@ import Select from '../../../../Select/Select';
 import ExactTenantMatcher, { ExactTenantMatcherValue } from './ExactTenantMatcher/ExactTenantMatcher';
 import RegexTenantMatcher, { RegexTenantMatcherValue } from './RegexTenantMatcher/RegexTenantMatcher';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../ConfigurationTable/FormLabel/FormLabel';
+import ResourceFormLabel from '../ResourceFormLabel/ResourceFormLabel';
 
 export type TenantMatcherValue = {
   type: 'tenant-matcher',
@@ -22,7 +22,7 @@ const TenantMatcher: React.FC<TenantMatcherProps> = (props) => {
   return (
     <div className={s.TenantMatcher}>
       <FormItem>
-        <FormLabel content="Tenant Matcher Type" />
+        <ResourceFormLabel type='tenant' />
         <Select<TenantMatcherType>
           value={props.value.value.type}
           onChange={(v) => {

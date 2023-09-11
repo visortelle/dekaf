@@ -27,6 +27,7 @@ const RegexTopicMatcher: React.FC<RegexTopicMatcherProps> = (props) => {
           placeholder='.*'
         />
       </FormItem>
+
       <FormItem>
         <NamespaceMatcher value={props.value.namespace} onChange={(v) => props.onChange({ ...props.value, namespace: v })} />
       </FormItem>

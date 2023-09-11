@@ -23,6 +23,7 @@ const ExactTopicMatcher: React.FC<ExactTopicMatcherProps> = (props) => {
         <FormLabel content="Topic Name" />
         <Input value={props.value.topic} onChange={(v) => props.onChange({ ...props.value, topic: v })} />
       </FormItem>
+      
       <FormItem>
         <NamespaceMatcher value={props.value.namespace} onChange={(v) => props.onChange({ ...props.value, namespace: v })} />
       </FormItem>
