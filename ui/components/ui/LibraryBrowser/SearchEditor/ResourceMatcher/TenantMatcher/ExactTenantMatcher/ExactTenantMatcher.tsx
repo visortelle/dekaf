@@ -1,6 +1,8 @@
 import React from 'react';
 import s from './ExactTenantMatcher.module.css'
-import Input from '../../../../Input/Input';
+import Input from '../../../../../Input/Input';
+import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
 
 export type ExactTenantMatcherValue = {
   type: 'exact-tenant-matcher',
@@ -15,7 +17,10 @@ export type ExactTenantMatcherProps = {
 const ExactTenantMatcher: React.FC<ExactTenantMatcherProps> = (props) => {
   return (
     <div className={s.ExactTenantMatcher}>
-      <Input value={props.value.tenant} onChange={(v) => props.onChange({ tenant: v })} />
+      <FormItem>
+        <FormLabel content="Tenant Name" />
+        <Input value={props.value.tenant} onChange={(v) => props.onChange({ ...props.value, tenant: v })} />
+      </FormItem>
     </div>
   );
 }

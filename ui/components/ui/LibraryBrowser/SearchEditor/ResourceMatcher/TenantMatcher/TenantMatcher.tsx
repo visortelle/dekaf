@@ -1,8 +1,10 @@
 import React from 'react';
 import s from './TenantMatcher.module.css';
-import Select from '../../../Select/Select';
+import Select from '../../../../Select/Select';
 import ExactTenantMatcher, { ExactTenantMatcherValue } from './ExactTenantMatcher/ExactTenantMatcher';
 import RegexTenantMatcher, { RegexTenantMatcherValue } from './RegexTenantMatcher/RegexTenantMatcher';
+import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../ConfigurationTable/FormLabel/FormLabel';
 
 export type TenantMatcherValue = {
   type: 'tenant-matcher',
@@ -19,20 +21,24 @@ export type TenantMatcherProps = {
 const TenantMatcher: React.FC<TenantMatcherProps> = (props) => {
   return (
     <div className={s.TenantMatcher}>
-      <Select<TenantMatcherType>
-        value={props.value.type}
-        onChange={(v) => {
-          if (v === 'exact-tenant-matcher') {
-            props.onChange({ type: 'tenant-matcher', value: { type: 'exact-tenant-matcher', tenant: '' } })
-          } else {
-            props.onChange({ type: 'tenant-matcher', value: { type: 'regex-tenant-matcher', tenantRegex: '' } })
-          }
-        }}
-        list={[
-          { type: 'item', value: 'exact-tenant-matcher', title: 'Exact' },
-          { type: 'item', value: 'regex-tenant-matcher', title: 'Regex' },
-        ]}
-      />
+      <FormItem>
+        <FormLabel content="Tenant Matcher Type" />
+        <Select<TenantMatcherType>
+          value={props.value.value.type}
+          onChange={(v) => {
+            if (v === 'exact-tenant-matcher') {
+              props.onChange({ type: 'tenant-matcher', value: { type: 'exact-tenant-matcher', tenant: '' } })
+            } else {
+              props.onChange({ type: 'tenant-matcher', value: { type: 'regex-tenant-matcher', tenantRegex: '' } })
+            }
+          }}
+          list={[
+            { type: 'item', value: 'exact-tenant-matcher', title: 'Exact' },
+            { type: 'item', value: 'regex-tenant-matcher', title: 'Regex' },
+          ]}
+        />
+      </FormItem>
+
       {props.value.value.type === 'exact-tenant-matcher' && (
         <ExactTenantMatcher
           value={props.value.value}

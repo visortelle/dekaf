@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { v4 as uuid } from 'uuid';
 
 import Button from '../../../../ui/Button/Button';
@@ -24,6 +24,20 @@ export type FilterChainProps = {
 const FilterChain: React.FC<FilterChainProps> = (props) => {
   const modals = Modals.useContext();
 
+  const openLibraryBrowser = () => {
+    modals.push({
+      id: 'filter-editor',
+      title: `Library Browser`,
+      content:
+        <LibraryBrowser />,
+      styleMode: 'no-content-padding'
+    })
+  }
+
+  useEffect(() => {
+    openLibraryBrowser();
+  }, []);
+
   return (
     <div className={s.FilterChain}>
 
@@ -45,7 +59,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
             <div className={s.EntryFilter}>
               <Filter
                 value={entry.filter}
-                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: {filter: f}  } })}
+                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { filter: f } } })}
                 autoCompleteConfig={index === 0}
               />
             </div>
@@ -78,13 +92,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           type='primary'
         />
         <SmallButton
-          onClick={() => modals.push({
-            id: 'filter-editor',
-            title: `Library Browser`,
-            content:
-              <LibraryBrowser />,
-            styleMode: 'no-content-padding'
-          })}
+          onClick={openLibraryBrowser}
 
           text="Browse filters"
           type='primary'

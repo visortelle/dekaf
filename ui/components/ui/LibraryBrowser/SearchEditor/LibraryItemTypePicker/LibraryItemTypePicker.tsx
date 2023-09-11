@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './LibraryItemTypePicker.module.css'
-import Select from '../../Select/Select';
-import { LibraryItemType } from '../types';
+import Select from '../../../Select/Select';
+import { LibraryItemType } from '../../types';
 
 export type LibraryItemTypePickerProps = {
   value: LibraryItemType;

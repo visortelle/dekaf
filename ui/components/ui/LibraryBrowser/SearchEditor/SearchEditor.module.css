@@ -1,0 +1,8 @@
+.LeftColumn {
+  max-width: 320rem;
+}
+
+.RightColumn {
+  max-width: 320rem;
+  background-color: #f5f5f5;
+}

@@ -1,3 +1,3 @@
 export type LibraryItemType =
-  "consumer-session-config" | "message-filter" | "producer-session-config";
+  "any" | "consumer-session-config" | "message-filter" | "producer-session-config";
 

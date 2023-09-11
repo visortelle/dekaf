@@ -1,0 +1,26 @@
+.Content {
+  display: flex;
+}
+
+.SearchEditor {
+  width: 640rem;
+  border-right: 1px solid #ddd;
+  padding: 12rem 24rem;
+}
+
+.SearchResults {
+  width: 480rem;
+  background: #f5f5f5;
+  border-right: 1px solid #ddd;
+}
+
+.ItemEditor {
+  width: 480rem;
+  background: #f5f5f5;
+}
+
+.Footer {
+  height: 64rem;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+}

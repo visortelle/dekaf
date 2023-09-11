@@ -1,8 +1,10 @@
 import React from 'react';
 import s from './NamespaceMatcher.module.css';
-import Select from '../../../Select/Select';
+import Select from '../../../../Select/Select';
 import ExactNamespaceMatcher, { ExactNamespaceMatcherValue } from './ExactNamespaceMatcher/ExactNamespaceMatcher';
 import RegexNamespaceMatcher, { RegexNamespaceMatcherValue } from './RegexNamespaceMatcher/RegexNamespaceMatcher';
+import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../ConfigurationTable/FormLabel/FormLabel';
 
 export type NamespaceMatcherValue = {
   type: 'namespace-matcher',
@@ -18,33 +20,37 @@ export type NamespaceMatcherProps = {
 const NamespaceMatcher: React.FC<NamespaceMatcherProps> = (props) => {
   return (
     <div className={s.NamespaceMatcher}>
-      <Select<NamespaceMatcherType>
-        value={props.value.type}
-        onChange={(v) => {
-          if (v === 'exact-namespace-matcher') {
-            props.onChange({
-              type: 'namespace-matcher',
-              value: {
-                type: 'exact-namespace-matcher',
-                tenant: props.value.value.tenant, namespace: ''
-              }
-            });
-          } else if (v === 'regex-namespace-matcher') {
-            props.onChange({
-              type: 'namespace-matcher',
-              value: {
-                type: 'regex-namespace-matcher',
-                tenant: props.value.value.tenant,
-                namespaceRegex: ''
-              }
-            });
-          }
-        }}
-        list={[
-          { type: 'item', value: 'exact-namespace-matcher', title: 'Exact' },
-          { type: 'item', value: 'regex-namespace-matcher', title: 'Regex' },
-        ]}
-      />
+      <FormItem>
+        <FormLabel content="Namespace Matcher Type" />
+        <Select<NamespaceMatcherType>
+          value={props.value.value.type}
+          onChange={(v) => {
+            if (v === 'exact-namespace-matcher') {
+              props.onChange({
+                type: 'namespace-matcher',
+                value: {
+                  type: 'exact-namespace-matcher',
+                  tenant: props.value.value.tenant, namespace: ''
+                }
+              });
+            } else if (v === 'regex-namespace-matcher') {
+              props.onChange({
+                type: 'namespace-matcher',
+                value: {
+                  type: 'regex-namespace-matcher',
+                  tenant: props.value.value.tenant,
+                  namespaceRegex: ''
+                }
+              });
+            }
+          }}
+          list={[
+            { type: 'item', value: 'exact-namespace-matcher', title: 'Exact' },
+            { type: 'item', value: 'regex-namespace-matcher', title: 'Regex' },
+          ]}
+        />
+      </FormItem>
+
       {props.value.value.type === 'exact-namespace-matcher' && (
         <ExactNamespaceMatcher
           value={props.value.value}
