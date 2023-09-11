@@ -9,7 +9,7 @@ type BuildInfo = {
   builtAtMillis: number
 }
 export type Config = {
-  publicUrl: string,
+  publicBaseUrl: string,
   pulsarName: string,
   pulsarColor: string,
   pulsarBrokerUrl: string,
@@ -33,7 +33,7 @@ export type Value = {
 
 const defaultValue: Value = {
   config: {
-    publicUrl: '',
+    publicBaseUrl: '',
     pulsarName: '',
     pulsarColor: '',
     pulsarBrokerUrl: '',

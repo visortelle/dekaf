@@ -11,6 +11,7 @@ import Tooltip from "../ui/Tooltip/Tooltip";
 import { HelmetProvider } from "react-helmet-async";
 import InstanceColor from "./instance-color/InstanceColor";
 import * as HealthCheckContext from './contexts/HealthCheckContext/HealthCheckContext';
+import React from "react";
 
 type AppProps = {
   config: AppContext.Config;
@@ -42,12 +43,12 @@ const _App: React.FC<AppProps> = (props) => {
         revalidateIfStale: true,
       }}
     >
-      <GrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicUrl.replace(/\/$/, "")}/api`}>
+      <GrpcClient.DefaultProvider grpcWebUrl={`${props.config.publicBaseUrl.replace(/\/$/, "")}/api`}>
         <HealthCheckContext.DefaultProvider>
           <Notifications.DefaultProvider>
             <BrokerConfig.DefaultProvider>
               <HelmetProvider>
-                <Router />
+                <Router basename={new URL(props.config.publicBaseUrl).pathname} />
                 <Tooltip />
               </HelmetProvider>
             </BrokerConfig.DefaultProvider>

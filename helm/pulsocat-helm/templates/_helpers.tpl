@@ -46,6 +46,5 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "_chart-name.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "_chart-name.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

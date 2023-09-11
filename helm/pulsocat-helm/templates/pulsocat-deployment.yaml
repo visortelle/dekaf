@@ -9,14 +9,16 @@ spec:
   selector:
     matchLabels:
       {{- include "_chart-name.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: pulsocat
   template:
     metadata:
-      {{- with .Values.pulsocat.podAnnotations }}
       annotations:
+      {{- with .Values.pulsocat.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "_chart-name.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: pulsocat
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -36,18 +38,19 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /health
+              {{ $base_path_without_trailing_slash := trimSuffix "/" .Values.pulsocat.basePath }}
+              path: {{ $base_path_without_trailing_slash }}/health
               port: http
           readinessProbe:
             httpGet:
-              path: /health
+              path: {{ $base_path_without_trailing_slash }}/health
               port: http
           resources:
             {{- toYaml .Values.pulsocat.resources | nindent 12 }}
-          {{- with .Values.pulsocat.env }}
           env:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            - name: PULSOCAT_BASE_PATH
+              value: {{ .Values.pulsocat.basePath }}
+          {{- toYaml .Values.pulsocat.env | nindent 12 }}
           volumeMounts:
             - name: pulsocat-config
               mountPath: "/pulsocat/config.yaml"

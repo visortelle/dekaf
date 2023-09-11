@@ -89,7 +89,7 @@ class PulsarAuthInterceptor extends ServerInterceptor:
             .flatMap(java.net.HttpCookie.parse(_).asScala)
             .find(_.getName == "pulsar_auth")
             .map(_.getValue)
-        val pulsarAuth = parsePulsarAuthJson(pulsarAuthCookie).getOrElse(defaultPulsarAuth)
+        val pulsarAuth = parsePulsarAuthCookie(pulsarAuthCookie).getOrElse(defaultPulsarAuth)
 
         var ctx = Context.current().withValue(RequestContext.pulsarAuth, pulsarAuth)
 
@@ -106,7 +106,11 @@ class PulsarAuthInterceptor extends ServerInterceptor:
         Contexts.interceptCall(ctx, call, metadata, next)
 
     private def cancelWithCredentials(context: Context, pulsarAuth: PulsarAuth) =
-        context.withCancellation().withValue(
-            RequestContext.pulsarAuth,
-            pulsarAuth
-        )
+        context
+            .withCancellation()
+            .cancel(
+                Status.UNAUTHENTICATED
+                    .withDescription(s"Invalid credentials: ${pulsarAuth.current.getOrElse("")}")
+                    .asRuntimeException()
+            )
+
