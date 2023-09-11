@@ -25,11 +25,11 @@ object Int64Namespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"zeros-1k-mps",
+                    mkName = _ => s"zeros-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => _ => int64ToBytes(0),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -66,11 +66,11 @@ object Int64Namespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"linear-1k-mps",
+                    mkName = _ => s"linear-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ => messageIndex => int64ToBytes(messageIndex),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
@@ -88,12 +88,12 @@ object Int64Namespace:
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1k-mps",
+                    mkName = _ => s"random-100-mps",
                     mkProducerGenerator = _ =>
                         ProducerPlanGenerator.make(
                             mkPayload = _ =>
                                 _ => int64ToBytes(faker.random.nextLong(Long.MinValue, Long.MaxValue)),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
+                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 )
