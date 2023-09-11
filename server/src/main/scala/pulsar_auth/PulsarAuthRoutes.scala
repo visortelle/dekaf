@@ -45,7 +45,7 @@ object PulsarAuthRoutes:
                                     case Right(credentials) =>
                                         if pulsarAuth.credentials.contains(credentialsName) then
                                             ctx.status(400)
-                                            ctx.result(s"Credentials with name $credentialsName already exists")
+                                            ctx.result(s"Credentials with this name already exist")
                                         else
                                             val newPulsarAuth = pulsarAuth.copy(
                                                 current = Some(credentialsName),
