@@ -1,19 +1,16 @@
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { cloneDeep } from 'lodash';
 
 import Button from '../../../../ui/Button/Button';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from './types';
 import Filter from './Filter';
-import FiltersEditor from './FiltersEditor/FiltersEditor';
 import * as Modals from '../../../../app/contexts/Modals/Modals';
-import deleteIcon from './icons/delete.svg';
 import enableIcon from './icons/enable.svg';
-import saveIcon from './icons/save.svg';
 
 import s from './FilterChain.module.css';
+import LibraryBrowser from '../../../../ui/LibraryBrowser/LibraryBrowser';
 
 const defaultFilter = `({ key, value, accum }) => {
   return true;
@@ -66,38 +63,6 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                   type={isDisabled ? 'regular' : 'primary'}
                 />
               </div>
-
-              <div className={s.EntryButton}>
-                <Button
-                  svgIcon={saveIcon}
-                  onClick={() => modals.push({
-                    id: 'edit-filter',
-                    title: `Message filter browser`,
-                    content:
-                      <FiltersEditor
-                        filters={props.value.filters}
-                        onChange={(f) => props.onChange({ ...props.value, filters: f })}
-                        entry={entry.filter.value }
-                      />,
-                    styleMode: 'no-content-padding'
-                  })}
-                  title="save filter"
-                  type='primary'
-                />
-              </div>
-
-              <div className={s.EntryButton} style={{ marginTop: 'auto' }}>
-                <Button
-                  svgIcon={deleteIcon}
-                  onClick={() => {
-                    const newFilters = cloneDeep(props.value.filters);
-                    delete newFilters[entryId];
-                    props.onChange({ ...props.value, filters: newFilters });
-                  }}
-                  type="danger"
-                  title="Delete filter"
-                />
-              </div>
             </div>
           </div>
         );
@@ -115,16 +80,13 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         <SmallButton
           onClick={() => modals.push({
             id: 'filter-editor',
-            title: `Message filter browser`,
+            title: `Library Browser`,
             content:
-              <FiltersEditor
-                filters={props.value.filters}
-                onChange={(f) => (props.onChange({ ...props.value, filters: f }))}
-              />,
+              <LibraryBrowser />,
             styleMode: 'no-content-padding'
           })}
 
-          text="Choose filter"
+          text="Browse filters"
           type='primary'
         />
       </div>
