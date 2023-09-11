@@ -24,7 +24,7 @@ def buildConsumer(
 
     var consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
-        .receiverQueueSize(1000) // Too big queue causes long time messages loading after consumer pause.
+        .receiverQueueSize(50) // Too big queue causes long time messages loading after consumer pause.
         .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)
