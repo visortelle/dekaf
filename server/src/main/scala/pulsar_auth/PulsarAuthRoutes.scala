@@ -36,16 +36,22 @@ object PulsarAuthRoutes:
                                 ctx.status(400)
                                 ctx.result(s"Can't add credentials with name $DefaultCredentialsName")
                             case validCredentialsName() =>
+                                val credentialsName = ctx.pathParam("credentialsName")
+
                                 credentials match
                                     case Left(err) =>
                                         ctx.status(400)
                                         ctx.result(s"Unable to parse credentials JSON.\n ${err.getMessage}")
                                     case Right(credentials) =>
-                                        val newPulsarAuth = pulsarAuth.copy(
-                                            current = Some(ctx.pathParam("credentialsName")),
-                                            credentials = pulsarAuth.credentials + (ctx.pathParam("credentialsName") -> credentials)
-                                        )
-                                        setCookieAndSuccess(ctx, newPulsarAuth)
+                                        if pulsarAuth.credentials.contains(credentialsName) then
+                                            ctx.status(400)
+                                            ctx.result(s"Credentials with name $credentialsName already exists")
+                                        else
+                                            val newPulsarAuth = pulsarAuth.copy(
+                                                current = Some(credentialsName),
+                                                credentials = pulsarAuth.credentials + (credentialsName -> credentials)
+                                            )
+                                            setCookieAndSuccess(ctx, newPulsarAuth)
                             case _ =>
                                 ctx.status(400)
                                 ctx.result("Credentials name contains illegal characters. Only alphanumerics, underscores(_) and dashes(-) are allowed.")
