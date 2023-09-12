@@ -159,7 +159,10 @@ function Table<CK extends ColumnKey, DE, LD>(props: TableProps<CK, DE, LD>): Rea
     setLazyData(lazyData => ({ ...lazyData, ...lazyDataChunk }));
 
     const loadedIds = Object.keys(lazyDataChunk ?? {});
-    setLazyDataLoading(loadingItems => Object.fromEntries(Object.entries(loadingItems).filter(([id]) => !loadedIds.includes(id))));
+    setLazyDataLoading(loadingItems =>
+      Object.fromEntries(
+        Object.entries(loadingItems).filter(([id]) => !loadedIds.includes(id)))
+    );
   }, [lazyDataChunk]);
 
   type ThProps = {

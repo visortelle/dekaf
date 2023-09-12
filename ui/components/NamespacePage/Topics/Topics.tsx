@@ -85,10 +85,9 @@ const Topics: React.FC<TopicsProps> = (props) => {
     }));
 
   const dataLoader = async () => {
-    const fetchPersistentTopics = async () => {
+    const fetchTopics = async () => {
       const req = new pb.ListTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-      req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT);
 
       const res = await topicServiceClient.listTopics(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
@@ -99,27 +98,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
       return res.getTopicsList();
     }
 
-    const fetchNonPersistentTopics = async () => {
-      const req = new pb.ListTopicsRequest();
-      req.setNamespace(`${props.tenant}/${props.namespace}`);
-      req.setTopicDomain(pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT);
+    const allTopics = await fetchTopics() ?? [];
 
-      const res = await topicServiceClient.listTopics(req, {});
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get non persistent topics: ${res.getStatus()?.getMessage()}`);
-        return;
-      }
-
-      return res.getTopicsList();
-    }
-
-    const [persistentTopics, nonPersistentTopics] = await Promise.all([
-      fetchPersistentTopics(),
-      fetchNonPersistentTopics(),
-    ]);
-
-    const allTopics = (persistentTopics?.concat(nonPersistentTopics || []) || []);
-    return makeTopicDataEntries(detectPartitionedTopics(allTopics || []));
+    return makeTopicDataEntries(
+      detectPartitionedTopics(allTopics)
+    );
   };
 
   const lazyDataLoader = async (entries: DataEntry[]) => {
@@ -257,7 +240,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'singleOption') {
                       return true
-                    };
+                    }
 
                     let result = true;
                     switch (filterValue.value) {
@@ -286,7 +269,7 @@ const Topics: React.FC<TopicsProps> = (props) => {
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'singleOption') {
                       return true
-                    };
+                    }
 
                     let result = true;
                     switch (filterValue.value) {
@@ -514,11 +497,13 @@ type DetectPartitionedTopicsResult = {
 };
 
 function detectPartitionedTopics(topics: string[]): DetectPartitionedTopicsResult {
-  let [allPartitions, nonPartitionedTopicFqns] = partition(topics, (topic) => topic.match(/^(.*)(-partition-)(\d+)$/));
+  let [allPartitions, topicFqns] = partition(topics, (topic) => topic.match(/^(.*)(-partition-)(\d+)$/));
 
-  const nonPartitionedTopics = nonPartitionedTopicFqns.map((topicFqn) => ({ topicFqn }));
+  const topicsRaw = topicFqns.map((topicFqn) => ({ topicFqn }));
 
   const partitionedTopicFqns = uniq(allPartitions.map((partition) => partition.replace(/^(.*)(-partition-)(\d+)$/, '$1')));
+
+  const topicsCleaned = topicsRaw.filter((topic) => !partitionedTopicFqns.includes(topic.topicFqn));
   const partitionedTopics = partitionedTopicFqns.map((topicFqn) => {
     const regexp = new RegExp(`^${topicFqn}-partition-\\d+$`);
     const partitions = allPartitions.filter(p => regexp.test(p));
@@ -526,7 +511,7 @@ function detectPartitionedTopics(topics: string[]): DetectPartitionedTopicsResul
   });
 
 
-  return { partitionedTopics, nonPartitionedTopics };
+  return { partitionedTopics, nonPartitionedTopics: topicsCleaned };
 }
 
 function detectPersistenceType(topicFqn: string): 'persistent' | 'non-persistent' {

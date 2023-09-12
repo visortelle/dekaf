@@ -50,6 +50,48 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
     return dataEntriesFromPb(res);
   }
 
+  const lazyDataLoader = async (dataEntries: DataEntry[]) => {
+    const topicsCountReq = new pb.GetTopicsCountRequest();
+    topicsCountReq.setNamespacesList(dataEntries.map(dataEntry => `${props.tenant}/${dataEntry.namespaceName}`));
+    topicsCountReq.setIsIncludeSystemTopics(false);
+    topicsCountReq.setIsIncludePersistedAndNonPersistedTopics(false);
+
+    const topicsCountRes = await namespaceServiceClient.getTopicsCount(topicsCountReq, null)
+      .catch((err) => notifyError(`Unable to get topics count. ${err}`));
+
+    if (topicsCountRes?.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to get topics count. ${topicsCountRes?.getStatus()?.getMessage()}`);
+    }
+
+    const topicsCountMap = topicsCountRes === undefined ?
+      {} :
+      pbUtils.mapToObject(topicsCountRes.getTopicsCountMap());
+
+    const topicsCountExcludingPartitionsMap = topicsCountRes === undefined ?
+      {} :
+      pbUtils.mapToObject(topicsCountRes.getTopicsCountExcludingPartitionsMap());
+
+    const propertiesReq = new pb.GetPropertiesRequest();
+    propertiesReq.setNamespacesList(dataEntries.map(d => `${props.tenant}/${d.namespaceName}`));
+    const propertiesRes = await namespaceServiceClient.getProperties(propertiesReq, null)
+      .catch((err) => notifyError(`Unable to get namespace properties. ${err}`));
+
+    const lazyData: Record<string, LazyDataEntry> = dataEntries.reduce((acc, de) => {
+      const namespaceFqn = `${props.tenant}/${de.namespaceName}`;
+      const propertiesPb = propertiesRes?.getPropertiesMap()?.get(namespaceFqn)?.getPropertiesMap();
+      const properties = propertiesPb === undefined ? undefined : pbUtils.mapToObject(propertiesPb);
+
+      const ld: LazyDataEntry = {
+        topicsCount: topicsCountMap[namespaceFqn],
+        topicsCountExcludingPartitions: topicsCountExcludingPartitionsMap[namespaceFqn],
+        properties
+      };
+      return { ...acc, [de.namespaceName]: ld };
+    }, {});
+
+    return lazyData;
+  }
+
   return (
     <div className={s.Page}>
       <Table<ColumnKey, DataEntry, LazyDataEntry>
@@ -73,7 +115,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
                 testFn: (de, _, filterValue) => {
                   if (filterValue.type !== 'string') {
                     return true
-                  };
+                  }
 
                   return de.namespaceName.toLowerCase().includes(filterValue.value.toLowerCase());
                 },
@@ -117,47 +159,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
           loader: dataLoader
         }}
         lazyDataLoader={{
-          loader: async (des) => {
-            const topicsCountReq = new pb.GetTopicsCountRequest();
-            topicsCountReq.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
-            topicsCountReq.setIsIncludeSystemTopics(false);
-            topicsCountReq.setIsIncludePersistedAndNonPersistedTopics(false);
-
-            const topicsCountRes = await namespaceServiceClient.getTopicsCount(topicsCountReq, null)
-              .catch((err) => notifyError(`Unable to get topics count. ${err}`));
-
-            if (topicsCountRes?.getStatus()?.getCode() !== Code.OK) {
-              notifyError(`Unable to get topics count. ${topicsCountRes?.getStatus()?.getMessage()}`);
-            }
-
-            const topicsCountMap = topicsCountRes === undefined ?
-              {} :
-              pbUtils.mapToObject(topicsCountRes.getTopicsCountMap());
-
-            const topicsCountExcludingPartitionsMap = topicsCountRes === undefined ?
-              {} :
-              pbUtils.mapToObject(topicsCountRes.getTopicsCountExcludingPartitionsMap());
-
-            const propertiesReq = new pb.GetPropertiesRequest();
-            propertiesReq.setNamespacesList(des.map(d => `${props.tenant}/${d.namespaceName}`));
-            const propertiesRes = await namespaceServiceClient.getProperties(propertiesReq, null)
-              .catch((err) => notifyError(`Unable to get namespace properties. ${err}`));
-
-            const lazyData: Record<string, LazyDataEntry> = des.reduce((acc, de) => {
-              const namespaceFqn = `${props.tenant}/${de.namespaceName}`;
-              const propertiesPb = propertiesRes?.getPropertiesMap()?.get(namespaceFqn)?.getPropertiesMap();
-              const properties = propertiesPb === undefined ? undefined : pbUtils.mapToObject(propertiesPb);
-
-              const ld: LazyDataEntry = {
-                topicsCount: topicsCountMap[namespaceFqn],
-                topicsCountExcludingPartitions: topicsCountExcludingPartitionsMap[namespaceFqn],
-                properties
-              };
-              return { ...acc, [de.namespaceName]: ld };
-            }, {});
-
-            return lazyData;
-          }
+          loader: lazyDataLoader
         }}
         autoRefresh={{
           intervalMs: 5000

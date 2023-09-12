@@ -146,7 +146,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
 
             if request.isIncludePersistedAndNonPersistedTopics then
                 val topicsAndPartitionsCountsPerNamespace = topicsPerNamespace.map { topics =>
-                    val partitionsAndNonPartitionedTopicsCount = topics.size
+                    val partitionsCount = topics.count(_.matches(".*-partition-\\d+$"))
                     val partitionedAndNonPartitionedTopicsExcludingPartitions = topics
                         .map {
                             case partitionRegex(topicFqn, _, _) => topicFqn
@@ -155,7 +155,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                         .distinct
                         .size
 
-                    (partitionsAndNonPartitionedTopicsCount, partitionedAndNonPartitionedTopicsExcludingPartitions)
+                    (partitionsCount, partitionedAndNonPartitionedTopicsExcludingPartitions)
                 }
 
                 val topicsCountPerNamespace = topicsAndPartitionsCountsPerNamespace.map((x, y) => x + y)
@@ -187,7 +187,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                 )
             else
                 val topicsAndPartitionsCountsPerNamespace = topicsPerNamespace.map { topics =>
-                    val partitionsAndNonPartitionedTopicsCount = topics.size
+                    val partitionsCount = topics.count(_.matches(".*-partition-\\d+$"))
                     val partitionedAndNonPartitionedTopicsExcludingPartitions = topics
                         .map {
                             case partitionRegex(topicFqn, _, _) => topicFqn
@@ -196,7 +196,7 @@ class NamespaceServiceImpl extends NamespaceServiceGrpc.NamespaceService:
                         .distinct
                         .size
 
-                    (partitionsAndNonPartitionedTopicsCount, partitionedAndNonPartitionedTopicsExcludingPartitions)
+                    (partitionsCount, partitionedAndNonPartitionedTopicsExcludingPartitions)
                 }
 
                 val topicsCountPerNamespace = topicsAndPartitionsCountsPerNamespace.map((x, y) => x + y)

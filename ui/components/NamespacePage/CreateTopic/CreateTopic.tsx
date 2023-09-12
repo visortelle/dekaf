@@ -154,7 +154,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
             ),
             input: topicPersistencyInput,
           },
-          ...topicPersistency === 'persistent' ? [{
+          ...topicPersistency === 'persistent' || topicPersistency === 'non-persistent'? [{
             id: "partitioning",
             title: "Partitioning",
             description: (
@@ -164,7 +164,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
             ),
             input: topicPartitioningInput,
           }] : [],
-          ...topicPartitioning === 'partitioned' && topicPersistency === 'persistent' ? [
+          ...topicPartitioning === 'partitioned' ? [
             {
               id: "numPartitions",
               title: "Partitions count",
@@ -177,11 +177,11 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
             title: "Properties",
             description: help["properties"],
             input: propertiesEditorInput,
-          }: {
+          } : {
             id: "properties",
             title: "Properties",
             description: help["properties"],
-            input: <div>Properties are not supported for non-persistent topics.</div>,
+            input: propertiesEditorInput,
           },
         ]}
       />
@@ -190,8 +190,12 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
         type='primary'
         onClick={() => {
           switch (topicPartitioning) {
-            case 'partitioned': createPartitionedTopic(); break;
-            case 'non-partitioned': createNonPartitionedTopic(); break;
+            case 'partitioned':
+              createPartitionedTopic();
+              break;
+            case 'non-partitioned':
+              createNonPartitionedTopic();
+              break;
           }
         }}
         text='Create'
