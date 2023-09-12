@@ -436,7 +436,9 @@ const Topics: React.FC<TopicsProps> = (props) => {
               properties: {
                 title: 'Properties',
                 isLazy: true,
-                render: (_, ld) => ld?.properties?.getPropertiesMap() && i18n.withVoidDefault(pbUtils.mapToObject(ld?.properties?.getPropertiesMap()), v => JSON.stringify(v)),
+                render: (de, ld) => de.persistency === "non-persistent" ?
+                  "-"
+                  : ld?.properties?.getPropertiesMap() && i18n.withVoidDefault(pbUtils.mapToObject(ld?.properties?.getPropertiesMap()), v => JSON.stringify(v)),
               },
             },
             defaultConfig: [

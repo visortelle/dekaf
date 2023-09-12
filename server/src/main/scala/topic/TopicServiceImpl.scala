@@ -195,16 +195,21 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         given ExecutionContext = ExecutionContext.global
 
         try {
-            val getTopicsPropertiesFutures = request.topics.map(adminClient.topics.getPropertiesAsync(_).asScala)
+            val getTopicsPropertiesFutures = request.topics.map(
+                adminClient.topics.getPropertiesAsync(_)
+                    .asScala
+                    .map(_.asScala.toMap)
+                    .recover { case e => Map.empty[String, String]}
+            )
+
             val topicsProperties = Await
                 .result(Future.sequence(getTopicsPropertiesFutures), Duration(1, TimeUnit.MINUTES))
-                .map(properties => Option(properties.asScala).map(_.toMap))
 
             val prop = request.topics
                 .zip(topicsProperties)
                 .toMap
                 .view
-                .mapValues(map => TopicProperties(map.getOrElse(Map())))
+                .mapValues(map => TopicProperties(map))
                 .toMap
 
             val status: Status = Status(code = Code.OK.index)
