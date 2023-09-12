@@ -359,7 +359,7 @@ message TestOpStringStartsWith {
 
 message TestOpStringEndsWith {
   string ends_with = 1;
-  bool is_case_insensitive = 3;
+  bool is_case_insensitive = 2;
 }
 
 message TestOpStringMatchesRegex {
@@ -385,12 +385,13 @@ message TestOpObjectSize {
   BasicMessageFilterOp test_size_op = 1;
 }
 
-message TestOpMatchesJSON {
+message TestOpMatchesJson {
   string matches_json = 1;
 }
 
-message TestOpContainsJSON {
+message TestOpContainsJson {
   string contains_json = 1;
+  bool is_case_insensitive = 2;
 }
 
 message AnyTestOp {
@@ -415,8 +416,8 @@ message AnyTestOp {
     TestOpArrayAny op_array_any = 17; // done
     TestOpArrayAll op_array_all = 18; // done
     TestOpObjectSize op_object_size = 19;
-    TestOpMatchesJSON op_matches_json = 20;
-    TestOpContainsJSON op_contains_json = 21;
+    TestOpMatchesJson op_matches_json = 20;
+    TestOpContainsJson op_contains_json = 21;
   }
 }
 
@@ -440,11 +441,11 @@ message BasicMessageFilterOp {
   }
 }
 
-message BasicMessageFilterCurrentMessageKeyTarget {
+message BasicMessageFilterKeyTarget {
   google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
-message BasicMessageFilterCurrentMessageValueTarget {
+message BasicMessageFilterValueTarget {
   google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
@@ -476,8 +477,8 @@ message JsonModifier {
 
 message BasicMessageFilterTarget {
   oneof target {
-    BasicMessageFilterCurrentMessageKeyTarget target_key = 1;
-    BasicMessageFilterCurrentMessageValueTarget target_value = 2;
+    BasicMessageFilterKeyTarget target_key = 1;
+    BasicMessageFilterValueTarget target_value = 2;
     BasicMessageFilterPropertyTarget target_property = 3;
     BasicMessageFilterSessionContextStateTarget target_session_context_state = 4;
   }

@@ -5,7 +5,6 @@ import consumer.message_filter.MessageFilter
 import consumer.message_filter.basic_message_filter.BasicMessageFilterTest.suite
 import consumer.message_filter.basic_message_filter.targets.*
 import consumer.json_modifier.{JsJsonModifier, JsonModifier}
-import consumer.message_filter.basic_message_filter.targets.impl.BasicMessageFilterCurrentMessageValueTarget
 import consumer.session_runner.{ConsumerSessionContextConfig, ConsumerSessionContextPool, ConsumerSessionMessage}
 import consumer.session_runner
 import zio.*
@@ -45,7 +44,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
         test(JsMessageFilter.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 jsCode = """v => v === ''""",
                 messageValueAsJson =
                     """
@@ -55,7 +54,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
         },
         test(JsMessageFilter.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 jsCode = """v => v === 'hello world'""",
                 messageValueAsJson =
                     """
@@ -65,7 +64,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
         },
         test(JsMessageFilter.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(
+                targetField = BasicMessageFilterValueTarget(
                     jsonFieldSelector = Some("a")
                 ),
                 jsCode = """v => v === 2""",
@@ -77,7 +76,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
         },
         test(JsMessageFilter.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(
+                targetField = BasicMessageFilterValueTarget(
                     jsonFieldSelector = Some("a")
                 ),
                 jsCode = """v => v === 2""",
@@ -94,7 +93,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
          */
         test(JsMessageFilter.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 targetJsonModifier = Some(
                     JsonModifier(
                         modifier = JsJsonModifier(
@@ -111,7 +110,7 @@ object JsMessageFilterTest extends ZIOSpecDefault:
         },
         test(JsMessageFilter.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(
+                targetField = BasicMessageFilterValueTarget(
                     jsonFieldSelector = Some("a")
                 ),
                 targetJsonModifier = Some(

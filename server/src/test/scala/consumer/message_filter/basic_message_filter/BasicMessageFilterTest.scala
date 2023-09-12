@@ -5,7 +5,6 @@ import consumer.message_filter.MessageFilter
 import consumer.message_filter.basic_message_filter.logic.*
 import consumer.message_filter.basic_message_filter.operations.*
 import consumer.message_filter.basic_message_filter.targets.*
-import consumer.message_filter.basic_message_filter.targets.impl.{BasicMessageFilterArrayFieldTarget, BasicMessageFilterCurrentMessageValueTarget}
 import consumer.session_runner
 import consumer.session_runner.ConsumerSessionContextPool
 import org.apache.commons.text.StringEscapeUtils
@@ -21,7 +20,6 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         messageAsJsonOmittingValue: String = "{}",
         messageValueAsJson: String = "null",
         isShouldFail: Boolean = false,
-        isFilterNegated: Boolean = false,
     )
 
     def runTestSpec(spec: TestSpec): Boolean =
@@ -29,7 +27,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         val basicMessageFilter = BasicMessageFilter(op = spec.op)
         val filter = MessageFilter(
             isEnabled = true,
-            isNegated = spec.isFilterNegated,
+            isNegated = false,
             targetField = BasicMessageFilterTarget(
                 target = spec.targetField,
                 jsonModifier = spec.targetJsonModifier
@@ -50,43 +48,73 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         ========================
          */
         test(BasicMessageFilter.getClass.toString) {
-            assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(
-                    op = AnyTestOp(
-                        op = TestOpBoolIsTrue()
+            assertTrue {
+                val sessionContextPool = ConsumerSessionContextPool()
+                val sessionContext = sessionContextPool.getNextContext
+
+                val basicMessageFilter = BasicMessageFilter(
+                    op = BasicMessageFilterOp(
+                        op = AnyTestOp(
+                            op = TestOpBoolIsTrue()
+                        )
                     )
-                ),
-                messageValueAsJson =
+                )
+                val filter = MessageFilter(
+                    isEnabled = true,
+                    isNegated = false,
+                    targetField = BasicMessageFilterTarget(target = BasicMessageFilterValueTarget()),
+                    filter = basicMessageFilter
+                )
+
+                val messageValueAsJson =
                     """
                       |true
                       |""".stripMargin
-            )))
+
+                sessionContext.setCurrentMessage("{}", Right(messageValueAsJson.trim))
+
+                sessionContext.testMessageFilter(filter = filter).isOk
+            }
         },
         test(BasicMessageFilter.getClass.toString) {
-            assertTrue(runTestSpec(TestSpec(
-                isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(
-                    op = AnyTestOp(
-                        op = TestOpBoolIsTrue()
+            assertTrue {
+                val sessionContextPool = ConsumerSessionContextPool()
+                val sessionContext = sessionContextPool.getNextContext
+
+                val basicMessageFilter = BasicMessageFilter(
+                    op = BasicMessageFilterOp(
+                        op = AnyTestOp(
+                            op = TestOpBoolIsTrue()
+                        )
                     )
-                ),
-                isFilterNegated = true,
-                messageValueAsJson =
+                )
+                val filter = MessageFilter(
+                    isEnabled = true,
+                    isNegated = true,
+                    targetField = BasicMessageFilterTarget(target = BasicMessageFilterValueTarget()),
+                    filter = basicMessageFilter
+                )
+
+                val messageValueAsJson =
                     """
                       |true
                       |""".stripMargin
-            )))
+
+                sessionContext.setCurrentMessage("{}", Right(messageValueAsJson.trim))
+
+                val isOk = sessionContext.testMessageFilter(filter = filter).isOk
+
+                !isOk
+            }
         },
         /*
         ==================
          * JsonModifier *
         ==================
          */
-        test(BasicMessageFilterCurrentMessageValueTarget.getClass.toString) {
+        test(BasicMessageFilterValueTarget.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 targetJsonModifier = Some(
                     JsonModifier(
                         modifier = JsJsonModifier(
@@ -105,9 +133,9 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         },
-        test(BasicMessageFilterCurrentMessageValueTarget.getClass.toString) {
+        test(BasicMessageFilterValueTarget.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(
+                targetField = BasicMessageFilterValueTarget(
                     jsonFieldSelector = Some("a")
                 ),
                 targetJsonModifier = Some(
@@ -139,7 +167,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(BasicMessageFilterOp.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     isNegated = true,
                     op = AnyTestOp(
@@ -154,7 +182,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(BasicMessageFilterOp.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(op =
                     AnyTestOp(
                         op = TestOpBoolIsTrue()
@@ -169,7 +197,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(BasicMessageFilterOp.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(op =
                     BasicMessageFilterBraces(
                         mode = BasicMessageFilterBracesMode.All,
@@ -200,7 +228,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(BasicMessageFilterOp.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     isNegated = true,
                     op = BasicMessageFilterBraces(
@@ -232,7 +260,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(BasicMessageFilterOp.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(op =
                     BasicMessageFilterBraces(
                         mode = BasicMessageFilterBracesMode.All,
@@ -264,7 +292,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(BasicMessageFilterOp.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     isNegated = true,
                     op = BasicMessageFilterBraces(
@@ -296,7 +324,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(BasicMessageFilterOp.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(op =
                     BasicMessageFilterBraces(
                         mode = BasicMessageFilterBracesMode.Any,
@@ -327,7 +355,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(BasicMessageFilterOp.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -370,7 +398,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
          */
         test(TestOpIsDefined.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(jsonFieldSelector = Some("a")),
+                targetField = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
                 op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpIsDefined())),
                 messageValueAsJson =
                     """
@@ -381,7 +409,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpIsDefined.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(jsonFieldSelector = Some("a")),
+                targetField = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpIsDefined()
@@ -395,7 +423,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpIsDefined.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(jsonFieldSelector = Some("a")),
+                targetField = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpIsDefined()
@@ -414,7 +442,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
          */
         test(TestOpIsNull.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(jsonFieldSelector = Some("a")),
+                targetField = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpIsNull()
@@ -429,7 +457,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpIsNull.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(jsonFieldSelector = Some("a")),
+                targetField = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpIsNull()
@@ -448,7 +476,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
          */
         test(TestOpBoolIsTrue.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(op =
                     AnyTestOp(
                         op = TestOpBoolIsTrue()
@@ -463,7 +491,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpBoolIsTrue.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpBoolIsTrue()
@@ -477,7 +505,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpBoolIsFalse.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(op =
                     AnyTestOp(
                         op = TestOpBoolIsFalse()
@@ -492,7 +520,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpBoolIsFalse.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpBoolIsFalse()
@@ -507,7 +535,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpBoolIsFalse.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpBoolIsFalse()
@@ -522,7 +550,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpBoolIsFalse.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpBoolIsFalse()
@@ -537,7 +565,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpBoolIsTrue.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpBoolIsTrue()
@@ -557,7 +585,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("0")
@@ -571,7 +599,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("0")
@@ -586,7 +614,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("0")
@@ -600,7 +628,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("9000")
@@ -614,7 +642,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("9000.1")
@@ -628,7 +656,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("218446744073709551615")
@@ -643,7 +671,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("218446744073709551615")
@@ -657,7 +685,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("2.18446744073709551615")
@@ -672,7 +700,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberEq.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberEq("2.18446744073709551615")
@@ -692,7 +720,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberLt.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberLt("0")
@@ -706,7 +734,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberLt.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberLt("3")
@@ -721,7 +749,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberLt.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberLt("3")
@@ -741,7 +769,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberLte.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberLte("0")
@@ -755,7 +783,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberLte.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberLte("3")
@@ -769,7 +797,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberLt.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberLte("3")
@@ -789,7 +817,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberGt.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberGt("0")
@@ -803,7 +831,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberGt.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberGt("2")
@@ -818,7 +846,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberGt.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberGt("3")
@@ -838,7 +866,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpNumberLte.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberGte("0")
@@ -852,7 +880,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberGte.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberGte("2")
@@ -866,7 +894,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpNumberGte.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpNumberGte("3")
@@ -886,7 +914,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringEquals.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEquals(equals = "hello")
@@ -900,7 +928,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEquals.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEquals(equals = "hello")
@@ -915,7 +943,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringEquals.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEquals(equals = "hello")
@@ -929,7 +957,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEquals.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEquals(equals = "hello", isCaseInsensitive = true)
@@ -943,7 +971,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEquals.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEquals(equals = """he"llo""")
@@ -957,7 +985,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEquals.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEquals(equals = """he`llo""")
@@ -971,7 +999,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEquals.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEquals(equals = """he'llo""")
@@ -991,7 +1019,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                     "\"" ++
                     s"${'\\'}"
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEquals(equals = str)
@@ -1011,7 +1039,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringStartsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringStartsWith(startsWith = "hello")
@@ -1025,7 +1053,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringStartsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringStartsWith(startsWith = "hello")
@@ -1040,7 +1068,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringStartsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringStartsWith(startsWith = "hello")
@@ -1054,7 +1082,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringStartsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringStartsWith(startsWith = "hello", isCaseInsensitive = true)
@@ -1068,7 +1096,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringStartsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringStartsWith(startsWith = """he"llo""")
@@ -1082,7 +1110,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringStartsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringStartsWith(startsWith = """he`llo""")
@@ -1096,7 +1124,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringStartsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringStartsWith(startsWith = """he'llo""")
@@ -1116,7 +1144,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                     "\"" ++
                     s"${'\\'}"
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringStartsWith(startsWith = str)
@@ -1136,7 +1164,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringEndsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEndsWith(endsWith = "hello")
@@ -1150,7 +1178,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEndsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEndsWith(endsWith = "World")
@@ -1165,7 +1193,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringEndsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEndsWith(endsWith = "world")
@@ -1179,7 +1207,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEndsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEndsWith(endsWith = "world", isCaseInsensitive = true)
@@ -1193,7 +1221,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEndsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEndsWith(endsWith = """e"lloWorld""")
@@ -1207,7 +1235,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEndsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEndsWith(endsWith = """e`lloWorld""")
@@ -1221,7 +1249,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringEndsWith.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEndsWith(endsWith = """e'lloWorld""")
@@ -1241,7 +1269,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                     s"${'\\'}" ++
                     """芸座八取ホवेबजालЛорем"""
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringEndsWith(endsWith = str)
@@ -1261,7 +1289,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringIncludes.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringIncludes(includes = "hello")
@@ -1275,7 +1303,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringIncludes.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringIncludes(includes = "oWorl")
@@ -1290,7 +1318,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringIncludes.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringIncludes(includes = "oworl")
@@ -1304,7 +1332,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringIncludes.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringIncludes(includes = "oworl", isCaseInsensitive = true)
@@ -1318,7 +1346,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringIncludes.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringIncludes(includes = """e"lloWorl""")
@@ -1332,7 +1360,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringIncludes.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringIncludes(includes = """e`lloWorl""")
@@ -1346,7 +1374,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringIncludes.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringIncludes(includes = """e'lloWorl""")
@@ -1366,7 +1394,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                     s"${'\\'}" ++
                     """芸座八取ホवेबजालЛорем"""
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringIncludes(includes = str.substring(1, str.length - 2))
@@ -1380,31 +1408,64 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         /*
         ========================
-         * TestOpContainsJSON *
+         * TestOpContainsJson *
         ========================
          */
-        test(TestOpContainsJSON.getClass.toString) {
+        test(TestOpContainsJson.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
-                        op = TestOpContainsJSON(
+                        op = TestOpContainsJson(
                             containsJson = """{ "c": 4, "d": 6 }"""
                         )
                     )
                 ),
                 messageValueAsJson =
                     """
-                      |"{ \"a\": 1, \"b\": 3, \"c\": 4, \"d\": 6 }"
+                      |"{ \"a\": 1, \"b\": { \"c\": 4, \"d\": 6 } }"
                       |""".stripMargin
             )))
         },
-        test(TestOpContainsJSON.getClass.toString) {
+        test(TestOpContainsJson.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
-                        op = TestOpContainsJSON(
+                        op = TestOpContainsJson(
+                            containsJson = """sfFDSfsdfsd8fsdfsd8f7sdf"""
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"{ \"a\": 1, \"b\": { \"veryImportantUUID\": \"sfFDSfsdfsd8fsdfsd8f7sdf\", \"d\": 6 } }"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpContainsJson.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpContainsJson(
+                            containsJson = """"c": 4"""
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"{ \"a\": 1, \"b\": { \"c\": 4, \"d\": 6 } }"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpContainsJson.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpContainsJson(
                             containsJson = """{ "b": { "c": 4 }}"""
                         )
                     )
@@ -1415,12 +1476,13 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         },
-        test(TestOpContainsJSON.getClass.toString) {
+        test(TestOpContainsJson.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                isShouldFail = true,
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
-                        op = TestOpContainsJSON(
+                        op = TestOpContainsJson(
                             containsJson = """{}"""
                         )
                     )
@@ -1431,12 +1493,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         },
-        test(TestOpContainsJSON.getClass.toString) {
+        test(TestOpContainsJson.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
-                        op = TestOpContainsJSON(
+                        op = TestOpContainsJson(
                             containsJson = """{}"""
                         )
                     )
@@ -1447,13 +1509,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         },
-        test(TestOpContainsJSON.getClass.toString) {
+        test(TestOpContainsJson.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
-                        op = TestOpContainsJSON(
+                        op = TestOpContainsJson(
                             containsJson = """"""
                         )
                     )
@@ -1464,13 +1525,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         },
-        test(TestOpContainsJSON.getClass.toString) {
+        test(TestOpContainsJson.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
-                        op = TestOpContainsJSON(
+                        op = TestOpContainsJson(
                             containsJson = """"""
                         )
                     )
@@ -1481,30 +1541,13 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |""".stripMargin
             )))
         },
-        test(TestOpContainsJSON.getClass.toString) {
+        test(TestOpContainsJson.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
-                        op = TestOpContainsJSON(
-                            containsJson = """{ "c": 4, "d": 6 }"""
-                        )
-                    )
-                ),
-                messageValueAsJson =
-                    """
-                      |"{ \"a\": 1, \"b\": { \"c\": 4, \"d\": 6 } }"
-                      |""".stripMargin
-            )))
-        },
-        test(TestOpContainsJSON.getClass.toString) {
-            assertTrue(runTestSpec(TestSpec(
-                isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(
-                    op = AnyTestOp(
-                        op = TestOpContainsJSON(
+                        op = TestOpContainsJson(
                             containsJson = """{ "b": { "c": 4 }}"""
                         )
                     )
@@ -1517,84 +1560,84 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         /*
         ========================
-         * TestOpMatchesJSON *
+         * TestOpMatchesJson *
         ========================
          */
-        test(TestOpMatchesJSON.getClass.toString) {
+        test(TestOpMatchesJson.getClass.toString) {
             val str = """{ "a": 1, "b": { "c": 4, "d": 6 } }"""
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJSON(matchesJson = str))),
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(matchesJson = str))),
                 messageValueAsJson =
                     s"""
                        |"${StringEscapeUtils.escapeJson(str)}"
                        |""".stripMargin
             )))
         },
-        test(TestOpMatchesJSON.getClass.toString) {
+        test(TestOpMatchesJson.getClass.toString) {
             val str = """{ "a": 1, "b": { "c": 4, "d": 6 } }"""
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJSON(matchesJson = str))),
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(matchesJson = str))),
                 messageValueAsJson =
                     s"""
                        |"${str.replace("\"", "\\\"")}"
                        |""".stripMargin
             )))
         },
-        test(TestOpMatchesJSON.getClass.toString) {
+        test(TestOpMatchesJson.getClass.toString) {
             val str = """{}"""
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJSON(str))),
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(str))),
                 messageValueAsJson =
                     """
                       |"{}"
                       |""".stripMargin
             )))
         },
-        test(TestOpMatchesJSON.getClass.toString) {
+        test(TestOpMatchesJson.getClass.toString) {
             val str = """"""
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJSON(str))),
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(str))),
                 messageValueAsJson =
                     """
                       |"{}"
                       |""".stripMargin
             )))
         },
-        test(TestOpMatchesJSON.getClass.toString) {
+        test(TestOpMatchesJson.getClass.toString) {
             val str = """"""
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJSON(str))),
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(str))),
                 messageValueAsJson =
                     """
                       |""
                       |""".stripMargin
             )))
         },
-        test(TestOpMatchesJSON.getClass.toString) {
+        test(TestOpMatchesJson.getClass.toString) {
             val str = """{ "a": 1, "b": { "c": 4, "d": 6 } }"""
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJSON(matchesJson = str))),
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(matchesJson = str))),
                 messageValueAsJson =
                     s"""
                        |"${str.replace("\"b\"", "\"f\"").replace("\"", "\\\"")}"
                        |""".stripMargin
             )))
         },
-        test(TestOpMatchesJSON.getClass.toString) {
+        test(TestOpMatchesJson.getClass.toString) {
             val str = """{ "a": 1, "b": { "c": 4, "d": 6 } }"""
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
-                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJSON(str))),
+                targetField = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op = AnyTestOp(op = TestOpMatchesJson(str))),
                 messageValueAsJson =
                     """
                       |"{ \"a\": 1, \"b\": {} }"
@@ -1608,7 +1651,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
          */
         test(TestOpStringMatchesRegex.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringMatchesRegex(pattern = "")
@@ -1623,7 +1666,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringMatchesRegex.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringMatchesRegex(pattern = "^.*-xyz-$")
@@ -1637,7 +1680,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringMatchesRegex.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringMatchesRegex(pattern = "^.*-xyz-\\d+$")
@@ -1652,7 +1695,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringMatchesRegex.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringMatchesRegex(pattern = "^second")
@@ -1666,7 +1709,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringMatchesRegex.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringMatchesRegex(pattern = "^second", flags = "m")
@@ -1681,7 +1724,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpStringMatchesRegex.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringMatchesRegex(pattern = "^secOnd")
@@ -1695,7 +1738,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpStringMatchesRegex.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpStringMatchesRegex(pattern = "^secOnd", flags = "i")
@@ -1715,7 +1758,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1736,7 +1779,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1756,7 +1799,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1776,7 +1819,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1797,7 +1840,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1823,7 +1866,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1849,7 +1892,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1876,12 +1919,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
                             itemFieldTarget = Some(
-                                BasicMessageFilterArrayFieldTarget(
+                                BasicMessageFilterFieldTarget(
                                     jsonFieldSelector = Some("a")
                                 )
                             ),
@@ -1901,12 +1944,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
                             itemFieldTarget = Some(
-                                BasicMessageFilterArrayFieldTarget(
+                                BasicMessageFilterFieldTarget(
                                     jsonFieldSelector = Some("a")
                                 )
                             ),
@@ -1926,12 +1969,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
                             itemFieldTarget = Some(
-                                BasicMessageFilterArrayFieldTarget(
+                                BasicMessageFilterFieldTarget(
                                     jsonFieldSelector = Some("a")
                                 )
                             ),
@@ -1952,7 +1995,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1960,7 +2003,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                                 op = AnyTestOp(
                                     op = TestOpArrayAny(
                                         itemFieldTarget = Some(
-                                            BasicMessageFilterArrayFieldTarget(
+                                            BasicMessageFilterFieldTarget(
                                                 jsonFieldSelector = Some("a")
                                             )
                                         ),
@@ -1986,7 +2029,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
@@ -1994,7 +2037,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                                 op = AnyTestOp(
                                     op = TestOpArrayAny(
                                         itemFieldTarget = Some(
-                                            BasicMessageFilterArrayFieldTarget(
+                                            BasicMessageFilterFieldTarget(
                                                 jsonFieldSelector = Some("a")
                                             )
                                         ),
@@ -2026,7 +2069,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAll.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2046,7 +2089,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAll.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2066,7 +2109,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAll.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2087,7 +2130,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAll.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2107,7 +2150,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAll.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2128,7 +2171,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAll.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2154,7 +2197,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAll.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2181,12 +2224,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
                             itemFieldTarget = Some(
-                                BasicMessageFilterArrayFieldTarget(
+                                BasicMessageFilterFieldTarget(
                                     jsonFieldSelector = Some("a")
                                 )
                             ),
@@ -2206,12 +2249,12 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
                             itemFieldTarget = Some(
-                                BasicMessageFilterArrayFieldTarget(
+                                BasicMessageFilterFieldTarget(
                                     jsonFieldSelector = Some("a")
                                 )
                             ),
@@ -2232,7 +2275,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
                 isShouldFail = true,
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2240,7 +2283,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                                 op = AnyTestOp(
                                     op = TestOpArrayAll(
                                         itemFieldTarget = Some(
-                                            BasicMessageFilterArrayFieldTarget(
+                                            BasicMessageFilterFieldTarget(
                                                 jsonFieldSelector = Some("a")
                                             )
                                         ),
@@ -2266,7 +2309,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         },
         test(TestOpArrayAny.getClass.toString) {
             assertTrue(runTestSpec(TestSpec(
-                targetField = BasicMessageFilterCurrentMessageValueTarget(),
+                targetField = BasicMessageFilterValueTarget(),
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
@@ -2274,7 +2317,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                                 op = AnyTestOp(
                                     op = TestOpArrayAll(
                                         itemFieldTarget = Some(
-                                            BasicMessageFilterArrayFieldTarget(
+                                            BasicMessageFilterFieldTarget(
                                                 jsonFieldSelector = Some("a")
                                             )
                                         ),

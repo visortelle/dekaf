@@ -165,7 +165,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 target: {
                   type: "BasicMessageFilterTarget",
                   target: {
-                    type: "BasicMessageFilterCurrentMessageValueTarget"
+                    type: "BasicMessageFilterValueTarget"
                   }
                 }
               }
