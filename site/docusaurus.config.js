@@ -1,8 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+// const lightCodeTheme = require('prism-react-renderer/themes/github');
+// const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -82,51 +82,37 @@ const config = {
         style: 'dark',
         links: [
           {
+            title: 'Product',
+            items: [],
+          },
+          {
+            title: 'Pricing',
+            items: [],
+          },
+          {
             title: 'Docs',
-            items: [
-              {
-                label: 'Tutorial',
-                to: '/docs/intro',
-              },
-            ],
+            items: [],
           },
           {
             title: 'Community',
-            items: [
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-              },
-              {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
-              },
-            ],
+            items: [],
           },
           {
-            title: 'More',
+            title: 'Company',
             items: [
               {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
-                label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                label: 'Teal Tools Inc. on GitHub',
+                href: 'https://github.com/tealtools',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Teal Tools, Inc. Built with Docusaurus.`,
       },
-      prism: {
+      /* prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
-      },
+      }, */
       /* algolia: {
         appId: '',
         apiKey: '',
