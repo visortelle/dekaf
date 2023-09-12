@@ -1,10 +1,11 @@
-package consumer.message_filter.basic_message_filter.targets.impl
+package consumer.message_filter.basic_message_filter.targets
 
 import _root_.consumer.session_runner.{CurrentMessageVarName, JsLibsVarName}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTargetTrait
+import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterKeyTarget
 
-case class BasicMessageFilterCurrentMessageKeyTarget(
+case class BasicMessageFilterKeyTarget(
     jsonFieldSelector: Option[String]
 ) extends BasicMessageFilterTargetTrait:
     override def resolveVarName(): String =
@@ -14,9 +15,9 @@ case class BasicMessageFilterCurrentMessageKeyTarget(
             case None =>
                 s"$CurrentMessageVarName.key"
 
-object BasicMessageFilterCurrentMessageKeyTarget:
-    def fromPb(v: pb.BasicMessageFilterCurrentMessageKeyTarget): BasicMessageFilterCurrentMessageKeyTarget =
-        BasicMessageFilterCurrentMessageKeyTarget(jsonFieldSelector = v.jsonFieldSelector)
+object BasicMessageFilterKeyTarget:
+    def fromPb(v: pb.BasicMessageFilterKeyTarget): BasicMessageFilterKeyTarget =
+        BasicMessageFilterKeyTarget(jsonFieldSelector = v.jsonFieldSelector)
 
-    def toPb(v: BasicMessageFilterCurrentMessageKeyTarget): pb.BasicMessageFilterCurrentMessageKeyTarget =
-        pb.BasicMessageFilterCurrentMessageKeyTarget(jsonFieldSelector = v.jsonFieldSelector)
+    def toPb(v: BasicMessageFilterKeyTarget): pb.BasicMessageFilterKeyTarget =
+        pb.BasicMessageFilterKeyTarget(jsonFieldSelector = v.jsonFieldSelector)

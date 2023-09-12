@@ -53,7 +53,6 @@ object conversions:
     def proxyProtocolToPb(proxyProtocol: ProxyProtocol): pb.ProxyProtocol =
         proxyProtocol match
             case ProxyProtocol.SNI => pb.ProxyProtocol.PROXY_PROTOCOL_SNI
-            case null              => pb.ProxyProtocol.PROXY_PROTOCOL_UNSPECIFIED
 
     def proxyProtocolFromPb(proxyProtocol: pb.ProxyProtocol): Option[ProxyProtocol] =
         proxyProtocol match
@@ -83,7 +82,6 @@ object conversions:
     def autoFailoverPolicyTypeToPb(autoFailoverPolicyType: AutoFailoverPolicyType): pb.AutoFailoverPolicyType =
         autoFailoverPolicyType match
             case AutoFailoverPolicyType.min_available => pb.AutoFailoverPolicyType.AUTO_FAILOVER_POLICY_TYPE_MIN_AVAILABLE
-            case null                                 => pb.AutoFailoverPolicyType.AUTO_FAILOVER_POLICY_TYPE_UNSPECIFIED
 
     def autoFailoverPolicyTypeFromPb(autoFailoverPolicyTypePb: pb.AutoFailoverPolicyType): Option[AutoFailoverPolicyType] =
         autoFailoverPolicyTypePb match

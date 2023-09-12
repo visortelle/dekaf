@@ -2,7 +2,6 @@ package consumer.message_filter.basic_message_filter.targets
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import _root_.consumer.json_modifier.JsonModifier
-import consumer.message_filter.basic_message_filter.targets.impl.{BasicMessageFilterCurrentMessageKeyTarget, BasicMessageFilterCurrentMessageValueTarget}
 
 case class BasicMessageFilterTarget(
     target: BasicMessageFilterTargetTrait,
@@ -19,12 +18,12 @@ object BasicMessageFilterTarget:
         v.target match
             case pb.BasicMessageFilterTarget.Target.TargetKey(target) =>
                 BasicMessageFilterTarget(
-                    target = BasicMessageFilterCurrentMessageKeyTarget.fromPb(target),
+                    target = BasicMessageFilterKeyTarget.fromPb(target),
                     jsonModifier = jsonModifier
                 )
             case pb.BasicMessageFilterTarget.Target.TargetValue(target) =>
                 BasicMessageFilterTarget(
-                    target = BasicMessageFilterCurrentMessageValueTarget.fromPb(target),
+                    target = BasicMessageFilterValueTarget.fromPb(target),
                     jsonModifier = jsonModifier
                 )
             case _ => throw new Exception("Failed to convert BasicMessageFilterTarget. Unknown type")
@@ -33,13 +32,13 @@ object BasicMessageFilterTarget:
         val jsonModifier = v.jsonModifier.map(JsonModifier.toPb)
 
         v.target match
-            case target: BasicMessageFilterCurrentMessageKeyTarget =>
+            case target: BasicMessageFilterKeyTarget =>
                 pb.BasicMessageFilterTarget(
-                    target = pb.BasicMessageFilterTarget.Target.TargetKey(BasicMessageFilterCurrentMessageKeyTarget.toPb(target)),
+                    target = pb.BasicMessageFilterTarget.Target.TargetKey(BasicMessageFilterKeyTarget.toPb(target)),
                     jsonModifier = jsonModifier
                 )
-            case target: BasicMessageFilterCurrentMessageValueTarget =>
+            case target: BasicMessageFilterValueTarget =>
                 pb.BasicMessageFilterTarget(
-                    target = pb.BasicMessageFilterTarget.Target.TargetValue(BasicMessageFilterCurrentMessageValueTarget.toPb(target)),
+                    target = pb.BasicMessageFilterTarget.Target.TargetValue(BasicMessageFilterValueTarget.toPb(target)),
                     jsonModifier = jsonModifier
                 )

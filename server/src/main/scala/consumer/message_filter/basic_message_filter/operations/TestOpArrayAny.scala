@@ -1,12 +1,11 @@
 package consumer.message_filter.basic_message_filter.operations
 
 import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
-import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTargetTrait
+import consumer.message_filter.basic_message_filter.targets.{BasicMessageFilterFieldTarget, BasicMessageFilterTargetTrait, BasicMessageFilterVarTarget}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
-import consumer.message_filter.basic_message_filter.targets.impl.{BasicMessageFilterArrayFieldTarget, BasicMessageFilterVarTarget}
 
 case class TestOpArrayAny(
-                             itemFieldTarget: Option[BasicMessageFilterArrayFieldTarget] = None,
+                             itemFieldTarget: Option[BasicMessageFilterFieldTarget] = None,
                              testItemOp: BasicMessageFilterOp
 ) extends TestOpTrait:
     override def genJsCode(target: BasicMessageFilterTargetTrait): String =
@@ -16,12 +15,12 @@ case class TestOpArrayAny(
             case None => "const f = v"
 
         s"""(() => {
-           |    if (!Array.isArray(${varName})) {
+           |    if (!Array.isArray($varName)) {
            |        return false;
            |    }
            |
-           |    return ${varName}.some(v => {
-           |        ${fieldVarCode}
+           |    return $varName.some(v => {
+           |        $fieldVarCode
            |        return ${testItemOp.genJsFnCode(target = BasicMessageFilterVarTarget("f"))}();
            |    });
            |    })();""".stripMargin
@@ -29,12 +28,12 @@ case class TestOpArrayAny(
 object TestOpArrayAny:
     def fromPb(v: pb.TestOpArrayAny): TestOpArrayAny =
         TestOpArrayAny(
-            itemFieldTarget = v.itemFieldTarget.map(BasicMessageFilterArrayFieldTarget.fromPb),
+            itemFieldTarget = v.itemFieldTarget.map(BasicMessageFilterFieldTarget.fromPb),
             testItemOp = BasicMessageFilterOp.fromPb(v.testItemOp.get)
         )
 
     def toPb(v: TestOpArrayAny): pb.TestOpArrayAny =
         pb.TestOpArrayAny(
-            itemFieldTarget = v.itemFieldTarget.map(BasicMessageFilterArrayFieldTarget.toPb),
+            itemFieldTarget = v.itemFieldTarget.map(BasicMessageFilterFieldTarget.toPb),
             testItemOp = Some(BasicMessageFilterOp.toPb(v.testItemOp))
         )
