@@ -15,10 +15,8 @@ const TagsPicker: React.FC<TagsPickerProps> = (props) => {
         value={[]}
         renderItem={(v) => <div>{v}</div>}
         onAdd={(v) => props.onChange([...props.value, v])}
-        onRemove={
-
-}
-
+        onRemove={(v) => props.onChange(props.value.filter((vv) => vv !== v))}
+        getId={(v) => v}
       />
     </div>
   );

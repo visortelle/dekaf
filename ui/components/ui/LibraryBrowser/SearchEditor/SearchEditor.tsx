@@ -6,6 +6,7 @@ import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import ResourceMatcher, { ResourceMatcherValue } from './ResourceMatcher/ResourceMatcher';
 import { H2, H3 } from '../../H/H';
+import TagsPicker from './TagsPicker/TagsPicker';
 
 type SearchEditorMode = {
   type: 'edit';
@@ -28,13 +29,13 @@ export type MatchEditorProps = {
 const MatchEditor: React.FC<MatchEditorProps> = (props) => {
   return (
     <div className={s.SearchEditor}>
-      <H2>Search</H2>
-      <br />
-
-      <div>
+      <div className={s.Content}>
         <div className={s.LeftColumn}>
           <FormItem>
-            <FormLabel content={<H3>Library Item Type</H3>} />
+            <FormLabel
+              content={<H3>Type</H3>}
+              help={"Library item type."}
+            />
             <LibraryItemTypePicker
               value={props.mode.value.itemType}
               onChange={(v) => {
@@ -50,7 +51,44 @@ const MatchEditor: React.FC<MatchEditorProps> = (props) => {
           <br />
 
           <FormItem>
-            <FormLabel content={<H3>Pulsar Resources</H3>} />
+            <FormLabel
+              content={<H3>Tags</H3>}
+              help={(
+                <>
+                  Each library item can be tagged with one or more tags. Tags are used to organize library items into different groups.
+                  <br />
+                  <br />
+                  Examples:
+                  <ul>
+                    <li><code>PROJ-X Infographic</code></li>
+                    <li><code>PROJ-X Debug</code></li>
+                    <li><code>Test</code></li>
+                    <li><code>Elon Musk's Personal Collection</code></li>
+                  </ul>
+                </>
+              )}
+            />
+
+            <TagsPicker
+              mode='edit'
+              onChange={() => { }}
+              value={[]}
+            />
+          </FormItem>
+        </div>
+        <div className={s.RightColumn}>
+          <FormItem>
+            <FormLabel
+              content={<H3>Pulsar Resources</H3>}
+              help={
+                <>
+                  Pulsar resources to match.
+                  <br />
+                  <br />
+                  For example, a message filter may work well for topics <code>A</code> and <code>B</code>, but it may not make sense at all for topic <code>C</code> due to schema differences.
+                </>
+              }
+            />
             <ResourceMatcher
               value={props.mode.value.resourceMatcher}
               onChange={(v) => {
@@ -61,9 +99,6 @@ const MatchEditor: React.FC<MatchEditorProps> = (props) => {
               }}
             />
           </FormItem>
-        </div>
-        <div className={s.RightColumn}>
-
         </div>
       </div>
     </div>

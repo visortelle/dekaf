@@ -11,6 +11,7 @@ import enableIcon from './icons/enable.svg';
 
 import s from './FilterChain.module.css';
 import LibraryBrowser from '../../../../ui/LibraryBrowser/LibraryBrowser';
+import { mkLibraryBrowserModal } from '../../../../ui/LibraryBrowser/modals';
 
 const defaultFilter = `({ key, value, accum }) => {
   return true;
@@ -25,13 +26,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   const modals = Modals.useContext();
 
   const openLibraryBrowser = () => {
-    modals.push({
-      id: 'filter-editor',
-      title: `Library Browser`,
-      content:
-        <LibraryBrowser />,
-      styleMode: 'no-content-padding'
-    })
+    modals.push(mkLibraryBrowserModal());
   }
 
   useEffect(() => {

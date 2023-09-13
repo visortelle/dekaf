@@ -9,14 +9,14 @@ import closeIcon from './close.svg';
 
 import s from './Modals.module.css'
 
-type ModalStackEntry = {
+export type ModalStackEntry = {
   id: string,
   title: string,
   content: ReactNode,
   styleMode?: 'no-content-padding',
 }
 
-type ModalStack = ModalStackEntry[];
+export type ModalStack = ModalStackEntry[];
 
 export type Value = {
   stack: ModalStack,

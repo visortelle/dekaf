@@ -3,6 +3,7 @@ import SvgIcon from '../../SvgIcon/SvgIcon';
 import removeIcon from './remove.svg';
 import { useEffect, useState } from "react";
 import * as Either from 'fp-ts/Either';
+import NothingToShow from '../../NothingToShow/NothingToShow';
 
 type Id = string;
 type EditorValue<T> = T | undefined;
@@ -17,7 +18,7 @@ export type ListValue<T> = {
   renderItem: (value: T) => React.ReactElement;
   editor?: Editor<T>;
   getId: (value: T) => Id;
-  validate: (value: T) => Either.Either<Error, void>;
+  validate?: (value: T) => Either.Either<Error, void>;
   onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
   testId?: string;
@@ -31,9 +32,10 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
     setEditorValue(props.editor?.initialValue);
   }, [props.editor?.initialValue])
 
-  const validationResult: Either.Either<Error, void> = typeof editorValue === 'undefined' ?
-    Either.left(new Error('The value is undefined')) :
-    props.validate(editorValue);
+  let validationResult: Either.Either<Error, void> = Either.right(undefined);
+  if (props.validate !== undefined) {
+    typeof editorValue === 'undefined' ? Either.left(new Error('The value is undefined')) : props.validate(editorValue);
+  }
 
   const add = () => {
     if (Either.isLeft(validationResult)) {
@@ -45,6 +47,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
 
   return (
     <div className={s.ListField} data-testid={props.testId}>
+      {props.value.length === 0 && <NothingToShow />}
       {props.value.length !== 0 && (
         <div className={s.ListFieldValues}>
           {props.value.map(v => {
