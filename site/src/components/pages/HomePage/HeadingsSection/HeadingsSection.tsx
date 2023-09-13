@@ -9,8 +9,8 @@ const HeadingsSection: React.FC = () => {
     <section className={style.headingsSection}>
       <div className={style.headingsContainer}>
         <Heading level={1} align="center">
-          <span className={style.headingColored}>Apache Pulsar</span> made
-          simple
+          <span className={style.headingColored}>Apache Pulsar</span>
+          <br className={style.headingBreak} /> made simple
         </Heading>
 
         <Heading level={3} align="center">

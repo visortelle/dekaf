@@ -29,23 +29,21 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          // editUrl: '',
         },
         blog: {
           showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          // editUrl: '',
         },
         theme: {
           customCss: [
             require.resolve('./src/css/fonts.css'),
             require.resolve('./src/css/custom.css'),
             require.resolve('./src/css/navbar.css'),
+            require.resolve('./src/css/footer.css'),
+            require.resolve('./src/css/navbarSidebar.css'),
+            require.resolve('./src/css/navbarCustomLink.css'),
+            require.resolve('./src/css/navbarSidebarCustomLink.css'),
           ],
         },
       }),
@@ -73,9 +71,13 @@ const config = {
           { to: '/company', label: 'Company', position: 'left' },
 
           /* Right----------------------------------------------------------- */
-          // { type: 'search', position: 'right' },
-          { type: 'custom-NavbarButton', variant: 'search', position: 'right' },
-          { type: 'custom-NavbarButton', variant: 'login', position: 'right' },
+          { type: 'search', position: 'right' },
+          {
+            to: '/login',
+            label: 'Login',
+            position: 'right',
+            className: 'loginLink',
+          },
         ],
       },
       footer: {

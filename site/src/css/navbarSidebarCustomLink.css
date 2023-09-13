@@ -1,0 +1,19 @@
+.menu__link.loginLink {
+  justify-content: center;
+  max-width: 6rem;
+  margin-left: var(--ifm-menu-link-padding-horizontal);
+  border: 2px solid #6e79d6;
+  border-radius: 0.25rem;
+}
+.menu__link.loginLink:active {
+  background-color: #6e79d6;
+
+  color: #ffffff;
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .menu__link.loginLink {
+    margin: 0 auto;
+  }
+}

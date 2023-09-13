@@ -1,0 +1,15 @@
+/* Infima style overrides for Navbar in sidebar mode */
+:root {
+  --ifm-navbar-sidebar-width: 50vw;
+}
+
+.navbar-sidebar {
+  min-width: 6rem !important;
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 480px) {
+  :root {
+    --ifm-navbar-sidebar-width: 100vw;
+  }
+}

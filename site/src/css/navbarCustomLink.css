@@ -1,0 +1,15 @@
+.navbar__link.loginLink {
+  width: 2rem;
+  height: 2rem;
+  background-image: url('/img/icon_login.svg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+
+  font-size: 0;
+
+  transition: 0.2s ease-in-out;
+}
+.navbar__link.loginLink:hover {
+  filter: drop-shadow(0 0 10px #6e79d6);
+}

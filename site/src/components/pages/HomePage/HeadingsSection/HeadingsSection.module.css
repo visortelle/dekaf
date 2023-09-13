@@ -14,3 +14,26 @@
 .headingColored {
   color: #6e79d6;
 }
+
+.headingBreak {
+  display: none;
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 1600px) {
+}
+
+@media (max-width: 1200px) {
+}
+
+@media (max-width: 1024px) {
+}
+
+@media (max-width: 768px) {
+}
+
+@media (max-width: 480px) {
+  .headingBreak {
+    display: initial;
+  }
+}

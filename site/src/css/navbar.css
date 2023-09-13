@@ -1,12 +1,13 @@
 /* Infima style overrides for Navbar */
 :root {
-  --ifm-navbar-height: 8rem;
+  --ifm-navbar-height: 7rem;
   --ifm-navbar-shadow: none;
   --ifm-navbar-link-color: var(--primary-color);
   --ifm-navbar-background-color: #f0f0f4;
   --ifm-navbar-item-padding-horizontal: 2rem;
 }
 
+/* Containers---------------------------------------------------------------- */
 .navbar {
   border-bottom: 1px solid #dddddd;
   justify-content: center;
@@ -17,12 +18,10 @@
   padding: 0 4rem;
 }
 
-/* Items--------------------------------------------------------------------- */
 .navbar__items {
 }
 
 .navbar__items--right {
-  justify-content: space-between !important;
   gap: 1rem;
 }
 
@@ -32,8 +31,18 @@
 }
 
 .navbar__logo {
-  width: 222px;
-  height: 89px !important;
+  width: auto;
+  height: 89px;
+  margin: 0;
+
+  transition: 0.2s ease-in-out;
+}
+.navbar__logo:hover {
+  filter: drop-shadow(0 0 10px #6e79d65f);
+}
+
+.navbar__title {
+  display: none;
 }
 
 /* Link---------------------------------------------------------------------- */
@@ -42,11 +51,7 @@
   font-weight: var(--ifm-font-weight-bold);
 }
 
-/* Built in earch item override---------------------------------------------- */
-.navbar__items--right > :last-child {
-  display: none;
-}
-
+/* Responsive---------------------------------------------------------------- */
 @media (max-width: 1200px) {
   :root {
     --ifm-navbar-item-padding-horizontal: 1rem;
@@ -64,6 +69,25 @@
 
   .navbar__inner {
     padding: 0 1rem;
+  }
+}
+
+@media (max-width: 996px) {
+  :root {
+    --ifm-navbar-height: 4rem;
+  }
+
+  .navbar {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .navbar__inner {
+    padding: 0;
+  }
+
+  .navbar__logo {
+    height: 52px;
   }
 }
 

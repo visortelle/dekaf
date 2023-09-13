@@ -1,0 +1,26 @@
+/* Infima style overrides for Footer */
+.footer {
+}
+
+/* Responsive---------------------------------------------------------------- */
+@media (max-width: 1200px) {
+}
+
+@media (max-width: 1024px) {
+}
+
+@media (max-width: 996px) {
+  .footer__item {
+    font-size: 0.83rem;
+  }
+
+  .footer__copyright {
+    font-size: 0.67rem;
+  }
+}
+
+@media (max-width: 768px) {
+}
+
+@media (max-width: 480px) {
+}
