@@ -1,6 +1,6 @@
 import { MessageDescriptor } from '../types';
 import * as I18n from '../../../app/contexts/I18n/I18n';
-import Field from './Field/Field';
+import CopyField from '../../../ui/CopyField/CopyField';
 import { routes } from '../../../routes';
 import { parseTopic } from '../../../pulsar/parse-topic';
 
@@ -71,17 +71,17 @@ type FieldProps = {
 export const PublishTimeField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
   const date = props.message.publishTime === null ? undefined : new Date(props.message.publishTime);
-  return <Field isShowTooltips={props.isShowTooltips} title="Publish time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.publishTime} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Publish time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.publishTime} />
 }
 
 export const KeyField: React.FC<FieldProps> = (props) => {
   const key = props.message.key === null ? undefined : props.message.key;
-  return <Field isShowTooltips={props.isShowTooltips} title="Key" value={key} rawValue={key} tooltip={help.key} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Key" value={key} rawValue={key} tooltip={help.key} />
 }
 
 export const ValueField: React.FC<FieldProps> = (props) => {
   const value = props.message.value === null ? undefined : limitString(props.message.value, 100);
-  return <Field isShowTooltips={props.isShowTooltips} title="Value" value={value} rawValue={value} tooltip={help.value} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Value" value={value} rawValue={value} tooltip={help.value} />
 }
 
 export const TopicField: React.FC<FieldProps> = (props) => {
@@ -91,62 +91,62 @@ export const TopicField: React.FC<FieldProps> = (props) => {
     undefined :
     routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
 
-  return <Field isShowTooltips={props.isShowTooltips} value={topic} valueHref={topicHref} tooltip={help.topic} />
+  return <CopyField isShowTooltips={props.isShowTooltips} value={topic} valueHref={topicHref} tooltip={help.topic} />
 }
 
 export const ProducerNameField: React.FC<FieldProps> = (props) => {
   const producerName = props.message.producerName === null ? undefined : props.message.producerName;
-  return <Field isShowTooltips={props.isShowTooltips} title="Producer" value={producerName} rawValue={producerName} tooltip={help.producerName} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Producer" value={producerName} rawValue={producerName} tooltip={help.producerName} />
 }
 
 export const SchemaVersionField: React.FC<FieldProps> = (props) => {
   const schemaVersion = props.message.schemaVersion?.toString();
-  return <Field isShowTooltips={props.isShowTooltips} title="Schema version" value={schemaVersion} rawValue={schemaVersion} tooltip={help.schemaVersion} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Schema version" value={schemaVersion} rawValue={schemaVersion} tooltip={help.schemaVersion} />
 }
 
 export const SizeField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
-  return <Field isShowTooltips={props.isShowTooltips} title="Size" value={props.message.size === null ? undefined : i18n.formatBytes(props.message.size)} rawValue={props.message.size === null ? undefined : String(props.message.size)} tooltip={help.size} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Size" value={props.message.size === null ? undefined : i18n.formatBytes(props.message.size)} rawValue={props.message.size === null ? undefined : String(props.message.size)} tooltip={help.size} />
 }
 
 export const PropertiesField: React.FC<FieldProps> = (props) => {
-  return <Field isShowTooltips={props.isShowTooltips} title="Properties" value={JSON.stringify(props.message.properties)} rawValue={JSON.stringify(props.message.properties)} tooltip={help.propertiesMap} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Properties" value={JSON.stringify(props.message.properties)} rawValue={JSON.stringify(props.message.properties)} tooltip={help.propertiesMap} />
 }
 
 export const EventTimeField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
   const date = props.message.eventTime === null ? undefined : new Date(props.message.eventTime);
-  return <Field isShowTooltips={props.isShowTooltips} title="Event time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.eventTime} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Event time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.eventTime} />
 }
 
 export const BrokerPublishTimeField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
   const date = props.message.brokerPublishTime === null ? undefined : new Date(props.message.brokerPublishTime);
-  return <Field isShowTooltips={props.isShowTooltips} title="Broker pub. time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.brokerPublishTime} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Broker pub. time" value={date === undefined ? undefined : i18n.formatDateTime(date)} rawValue={date === undefined ? undefined : date.toISOString()} tooltip={help.brokerPublishTime} />
 }
 
 export const MessageIdField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
-  return <Field isShowTooltips={props.isShowTooltips} title="Message Id" value={props.message.messageId === null ? undefined : i18n.bytesToHexString(props.message.messageId, 'hex-with-space')} rawValue={props.message.messageId === null ? undefined : i18n.bytesToHexString(props.message.messageId, 'hex-no-space')} tooltip={help.messageId} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Message Id" value={props.message.messageId === null ? undefined : i18n.bytesToHexString(props.message.messageId, 'hex-with-space')} rawValue={props.message.messageId === null ? undefined : i18n.bytesToHexString(props.message.messageId, 'hex-no-space')} tooltip={help.messageId} />
 }
 
 export const SequenceIdField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
-  return <Field isShowTooltips={props.isShowTooltips} title="Sequence Id" value={props.message.sequenceId === null ? undefined : i18n.formatLongNumber(props.message.sequenceId)} rawValue={props.message.sequenceId === null ? undefined : String(props.message.sequenceId)} tooltip={help.sequenceId} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Sequence Id" value={props.message.sequenceId === null ? undefined : i18n.formatLongNumber(props.message.sequenceId)} rawValue={props.message.sequenceId === null ? undefined : String(props.message.sequenceId)} tooltip={help.sequenceId} />
 }
 
 export const OrderingKeyField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
-  return <Field isShowTooltips={props.isShowTooltips} title="Ordering key" value={props.message.orderingKey === null ? undefined : i18n.bytesToHexString(props.message.orderingKey, 'hex-with-space')} rawValue={props.message.orderingKey === null ? undefined : i18n.bytesToHexString(props.message.orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Ordering key" value={props.message.orderingKey === null ? undefined : i18n.bytesToHexString(props.message.orderingKey, 'hex-with-space')} rawValue={props.message.orderingKey === null ? undefined : i18n.bytesToHexString(props.message.orderingKey, 'hex-no-space')} tooltip={help.orderingKey} />
 }
 
 export const RedeliveryCountField: React.FC<FieldProps> = (props) => {
   const i18n = I18n.useContext();
-  return <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={props.message.redeliveryCount === null ? undefined : i18n.formatLongNumber(props.message.redeliveryCount)} rawValue={props.message.redeliveryCount === null ? undefined : String(props.message.redeliveryCount)} tooltip={help.redeliveryCount} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Redelivery count" value={props.message.redeliveryCount === null ? undefined : i18n.formatLongNumber(props.message.redeliveryCount)} rawValue={props.message.redeliveryCount === null ? undefined : String(props.message.redeliveryCount)} tooltip={help.redeliveryCount} />
 }
 
 export const AccumulatorField: React.FC<FieldProps> = (props) => {
-  return <Field isShowTooltips={props.isShowTooltips} title="Accumulator" value={props.message.accum === null ? undefined : props.message.accum} rawValue={props.message.accum === null ? undefined : props.message.accum} tooltip={help.accumulator} />
+  return <CopyField isShowTooltips={props.isShowTooltips} title="Accumulator" value={props.message.accum === null ? undefined : props.message.accum} rawValue={props.message.accum === null ? undefined : props.message.accum} tooltip={help.accumulator} />
 }
 
 function limitString(str: string, limit: number): string {

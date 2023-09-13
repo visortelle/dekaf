@@ -68,3 +68,10 @@
 
 .Table {
 }
+
+.Properties {
+  margin-bottom: 24rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12rem;
+}

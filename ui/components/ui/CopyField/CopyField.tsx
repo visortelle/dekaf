@@ -1,16 +1,18 @@
-import * as Notifications from '../../../../app/contexts/Notifications';
-import s from './Field.module.css';
-import { tooltipId } from '../../../../ui/Tooltip/Tooltip';
+import * as Notifications from '../../app/contexts/Notifications';
+import s from './CopyField.module.css';
+import { tooltipId } from '../Tooltip/Tooltip';
+import React from "react";
 
-export type FieldProps = {
+export type FieldProps = React.HTMLAttributes<HTMLDivElement> & {
   value?: string | React.ReactElement,
   tooltip: React.ReactElement | undefined,
   isShowTooltips: boolean,
   rawValue?: string,
   title?: string,
+  isTitleVisible?: boolean,
   valueHref?: string,
 }
-const Field: React.FC<FieldProps> = (props) => {
+const CopyField: React.FC<FieldProps> = (props) => {
   const { notifySuccess } = Notifications.useContext();
   const valueContent = props.value === undefined ? <div className={s.NoData}>-</div> : props.value;
 
@@ -20,13 +22,13 @@ const Field: React.FC<FieldProps> = (props) => {
     }
 
     navigator.clipboard.writeText(props.rawValue);
-    notifySuccess(`${props.title} value copied to clipboard.`);
+    notifySuccess(`${props.title ?? props.value} value copied to clipboard.`);
   }
 
   let valueElement = (
     <div
       className={`${s.FieldValue} ${props.rawValue === undefined ? '' : s.ClickableFieldValue}`}
-      title={props.rawValue}
+      title={props.isTitleVisible ? props.rawValue : undefined}
       onClick={copyRawValue}
     >
       {valueContent}
@@ -34,12 +36,12 @@ const Field: React.FC<FieldProps> = (props) => {
   );
 
   if (props.valueHref !== undefined) {
-    valueElement = <a href={props.valueHref} className={`${s.FieldValue} ${s.FieldValueLink}`} title={props.rawValue}>{valueContent}</a>;
+    valueElement = <a href={props.valueHref} className={`${s.FieldValue} ${s.FieldValueLink}`} title={props.isTitleVisible ? props.rawValue : undefined}>{valueContent}</a>;
   }
 
   return (
     <div
-      className={s.Field}
+      className={`${s.Field} ${props.className ?? ''}`}
       data-tooltip-id={tooltipId}
       data-tooltip-html={(!props.isShowTooltips || props.rawValue === undefined) ? undefined : "Click to copy"}
     >
@@ -48,4 +50,4 @@ const Field: React.FC<FieldProps> = (props) => {
   );
 }
 
-export default Field;
+export default CopyField;

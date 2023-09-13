@@ -14,6 +14,7 @@ import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
 import JsonView from "../../ui/JsonView/JsonView";
+import CopyField from "../../ui/CopyField/CopyField";
 
 export type OverviewProps = {
   tenant: string;
@@ -118,11 +119,15 @@ const Overview: React.FC<OverviewProps> = (props) => {
           <tbody>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Topic Name</td>
-              <Td>{props.topic}</Td>
+              <Td>
+                <CopyField className={s.TopicNameCopyField} isShowTooltips={true} tooltip={<span />} value={props.topic} rawValue={props.topic} isTitleVisible={false} />
+              </Td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Topic FQN</td>
-              <Td>{topicFqn}</Td>
+              <Td>
+                <CopyField isShowTooltips={true} tooltip={<span />} value={topicFqn} rawValue={topicFqn} isTitleVisible={false} />
+              </Td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Persistency</td>
@@ -150,7 +155,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </table>
       </div>
 
-      <div style={{ marginBottom: '24rem' }}>
+      <div className={s.Properties}>
         <strong>Properties</strong>
         <div className={s.JsonViewer}>
           <JsonView

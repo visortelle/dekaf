@@ -23,6 +23,7 @@ import UnloadAll from "./UnloadAll/UnloadAll";
 import ClearBacklog from "./ClearBacklog/ClearBacklog";
 import JsonView from "../../ui/JsonView/JsonView";
 import SmallButton from '../../ui/SmallButton/SmallButton';
+import CopyField from "../../ui/CopyField/CopyField";
 
 export type BundleKey = string
 
@@ -140,7 +141,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Namespace FQN</td>
               <Td>
-                <div>{namespaceFqn}</div>
+                <CopyField isShowTooltips={true} tooltip={<span />} value={namespaceFqn} rawValue={namespaceFqn} isTitleVisible={false} />
               </Td>
             </tr>
             <tr className={st.Row}>
@@ -195,7 +196,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </table>
       </div>
 
-      <div style={{ marginBottom: '24rem' }}>
+      <div className={s.Properties}>
         <strong>Properties</strong>
         <div className={s.JsonViewer}>
           <JsonView
