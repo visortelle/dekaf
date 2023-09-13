@@ -30,16 +30,16 @@ class StreamDataHandler:
     var onNext: (msg: Message[Array[Byte]]) => Unit = _ => ()
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
-    val logger: Logger = Logger(getClass.getName)
+    private val logger: Logger = Logger(getClass.getName)
 
-    var topics: Map[ConsumerName, Vector[String]] = Map.empty
-    var schemasByTopic: SchemasByTopic = Map.empty
+    private var topics: Map[ConsumerName, Vector[String]] = Map.empty
+    private var schemasByTopic: SchemasByTopic = Map.empty
     private var messageFilters: Map[ConsumerName, MessageFilter] = Map.empty
     private var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
     private var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
     private var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
     private var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
-    var listener: TopicMessageListener = _
+    private var listeners: Map[ConsumerName, TopicMessageListener] = Map.empty
 
 
     override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
@@ -57,6 +57,11 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(PauseResponse(status = Some(status)))
 
         val streamDataHandler = streamDataHandlers.get(consumerName)
+        val listener = listeners.get(consumerName) match
+            case Some(listener) => listener
+            case _ =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Listener isn't found for consumer: $consumerName")
+                return Future.successful(PauseResponse(status = Some(status)))
         val messageFilter = messageFilters.get(consumerName) match
             case Some(f) => f
             case _ =>
@@ -120,6 +125,11 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
 
+        val listener = listeners.get(consumerName) match
+            case Some(listener) => listener
+            case _ =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Listener isn't found for consumer: $consumerName")
+                return Future.successful(PauseResponse(status = Some(status)))
         consumer.pause()
         listener.stopAcceptingNewMessages()
 
@@ -134,14 +144,15 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
         val streamDataHandler = StreamDataHandler()
         streamDataHandler.onNext = _ => ()
-        streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
-        processedMessagesCount = processedMessagesCount + (consumerName -> 0)
+        streamDataHandlers += consumerName -> streamDataHandler
+        processedMessagesCount += consumerName -> 0
 
         messageFilters = messageFilters + (consumerName -> MessageFilter(
             MessageFilterConfig(stdout = new ByteArrayOutputStream())
         ))
 
-        listener = TopicMessageListener(streamDataHandler)
+        val listener = TopicMessageListener(streamDataHandler)
+        listeners += consumerName -> listener
 
         val topicsToConsume = request.topicsSelector match
             case Some(ts) =>
@@ -182,7 +193,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     catch
                         // Unsubscribe fails on partitioned topics in most cases.
                         // Anyway we can't handle it meaningfully.
-                        _ => ()
+                        case _ => ()
                     finally ()
                 case _ => ()
 
