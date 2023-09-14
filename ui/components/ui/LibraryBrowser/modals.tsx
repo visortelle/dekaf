@@ -3,7 +3,14 @@ import LibraryBrowser from "./LibraryBrowser";
 
 const ModalContent: React.FC<{ children: React.ReactNode }> = (props) => {
   return (
-    <div style={{ maxWidth: 'calc(100vw - 48rem)' }}>
+    <div
+      style={{
+        maxWidth: 'calc(100vw - 48rem)',
+        maxHeight: 'inherit',
+        overflow: 'hidden',
+        display: 'flex',
+      }}
+    >
       {props.children}
     </div>
   );

@@ -5,15 +5,4 @@
 }
 
 .Content {
-  display: flex;
-  gap: 24rem;
-}
-
-.LeftColumn {
-  flex: 0 0 50%;
-}
-
-.RightColumn {
-  flex: 0 0 50%;
-  padding-right: 12rem;
 }

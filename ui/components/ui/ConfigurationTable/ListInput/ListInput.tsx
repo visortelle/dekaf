@@ -22,6 +22,7 @@ export type ListValue<T> = {
   onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
   testId?: string;
+  nothingToShowContent?: React.ReactNode;
 };
 
 function ListInput<T>(props: ListValue<T>): React.ReactElement {
@@ -47,7 +48,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
 
   return (
     <div className={s.ListField} data-testid={props.testId}>
-      {props.value.length === 0 && <NothingToShow />}
+      {props.value.length === 0 && <NothingToShow content={props.nothingToShowContent} />}
       {props.value.length !== 0 && (
         <div className={s.ListFieldValues}>
           {props.value.map(v => {

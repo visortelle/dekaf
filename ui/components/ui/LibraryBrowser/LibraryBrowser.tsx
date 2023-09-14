@@ -2,6 +2,7 @@ import React from 'react';
 import s from './LibraryBrowser.module.css'
 import { LibraryItemType } from './types';
 import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
+import SearchResults, { ItemProps } from './SearchResults/SearchResults';
 
 export type LibraryBrowserMode = {
   type: 'editor';
@@ -42,6 +43,13 @@ const initialSearchEditorValue: SearchEditorValue = {
   }
 }
 
+const fakeItems: ItemProps[] = Array.from({ length: 100 }).map((_, index) => ({
+  id: `${index}`,
+  title: `Item ${index}`.repeat(20),
+  descriptionMarkdown: `This is item ${index}`.repeat(20),
+  onClick: () => {}
+}));
+
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [searchEditorValue, setSearchEditorValue] = React.useState<SearchEditorValue>(initialSearchEditorValue);
 
@@ -59,7 +67,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         </div>
 
         <div className={s.SearchResults}>
-
+          <SearchResults
+            items={fakeItems}
+          />
         </div>
 
         <div className={s.ItemEditor}>

@@ -1,17 +1,26 @@
+.LibraryBrowser {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .Content {
   display: flex;
+  overflow: hidden;
 }
 
 .SearchEditor {
-  width: 640rem;
+  width: 360rem;
   border-right: 1px solid #ddd;
-  padding: 12rem 24rem;
+  padding: 12rem 24rem 48rem 24rem;
+  overflow: auto;
 }
 
 .SearchResults {
   width: 480rem;
-  background: #f5f5f5;
   border-right: 1px solid #ddd;
+  overflow: hidden;
+  display: flex;
 }
 
 .ItemEditor {
@@ -23,4 +32,5 @@
   height: 64rem;
   background-color: #f5f5f5;
   border-top: 1px solid #ddd;
+  flex: 1 0 auto;
 }
