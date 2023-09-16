@@ -3,6 +3,7 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.library.v1;
 
 import "google/rpc/status.proto";
+import "tools/teal/pulsar/ui/api/v1/consumer.proto";
 
 message ExactTenantMatcher {
   string tenant = 1;
@@ -76,8 +77,18 @@ enum LibraryItemType {
   LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
   LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT = 3;
   LIBRARY_ITEM_TYPE_MESSAGE_FILTER = 4;
-  LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET = 5;
-  LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD = 6;
+  LIBRARY_ITEM_TYPE_MESSAGE_FILTER_CHAIN = 5;
+  LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET = 6;
+  LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD = 7;
+}
+
+message LibraryItemDescriptor {
+  LibraryItemType type = 1;
+  oneof value {
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionConfig consumer_session_config = 10;
+    tools.teal.pulsar.ui.api.v1.MessageFilter message_filter = 11;
+    tools.teal.pulsar.ui.api.v1.MessageFilterChain message_filter_chain = 12;
+  }
 }
 
 message LibraryItem {
@@ -92,7 +103,7 @@ message LibraryItem {
   repeated string tags = 8;
 
   repeated ResourceMatcher resources = 9;
-  string descriptor_json = 10;
+  LibraryItemDescriptor descriptor = 10;
 }
 
 message CreateLibraryItemRequest {

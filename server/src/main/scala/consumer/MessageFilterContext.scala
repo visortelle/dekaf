@@ -20,11 +20,11 @@ val JsonAccumulatorVarName = "accum"
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.libraryRoot.get, os.pwd) / "js" / "dist" / "libs.js")
 
-case class MessageFilterConfig(
+case class MessageFilterContextConfig(
     stdout: java.io.ByteArrayOutputStream
 )
 
-class MessageFilter(config: MessageFilterConfig):
+class MessageFilterContext(config: MessageFilterContextConfig):
     private val context = Context
         .newBuilder("js")
         .out(config.stdout)
@@ -40,8 +40,8 @@ class MessageFilter(config: MessageFilterConfig):
 
     // Provide better console output for debugging on client side.
     context.eval(
-      "js",
-      """
+        "js",
+        """
       |globalThis._consoleLog = console.log;
       |globalThis._consoleInfo = console.info;
       |globalThis._consoleWarn = console.warn;
@@ -105,33 +105,41 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
 
     (testResult, cumulativeJsonState)
 
-def getFilterTestResult(filter: pb.MessageFilter, messageFilter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-    messageFilter.test(filter.value, jsonMessage, jsonValue)
-
-def getFilterChainTestResult(
-    filterChain: Option[pb.MessageFilterChain],
-    messageFilter: MessageFilter,
+def getFilterTestResult(
+    filter: MessageFilter,
+    messageFilterContext: MessageFilterContext,
     jsonMessage: JsonMessage,
     jsonValue: MessageValueToJsonResult
 ): FilterTestResult =
-    var chain = filterChain.getOrElse(pb.MessageFilterChain(filters = Map.empty, mode = pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL))
+    messageFilterContext.test(filter.value, jsonMessage, jsonValue)
+
+def getFilterChainTestResult(
+    filterChain: MessageFilterChain,
+    messageFilterContext: MessageFilterContext,
+    jsonMessage: JsonMessage,
+    jsonValue: MessageValueToJsonResult
+): FilterTestResult =
+    var chain = filterChain
 
     // Each message filters mutate global state.
     // For example: it stores the last message in the global variable `lastMessage`.
     // To make it work properly, at least one filter should always present.
-    if (chain.filters.size == 0)
-        chain = chain.withFilters(chain.filters + ("dummy" -> pb.MessageFilter(value = "() => true")))
+    if (chain.filters.isEmpty)
+        chain = MessageFilterChain(
+            mode = MessageFilterChainMode.All,
+            filters = Map("dummy" -> MessageFilter(value = "() => true"))
+        )
 
-    val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilter, jsonMessage, jsonValue))
+    val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilterContext, jsonMessage, jsonValue))
 
     val maybeErr = filterResults.find(fr => fr._1.isLeft)
     val filterChainResult = maybeErr match
         case Some(Left(err), _) => Left(err)
         case _ =>
             chain.mode match
-                case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL =>
+                case MessageFilterChainMode.All =>
                     Right(filterResults.forall(fr => fr._1.getOrElse(false)))
-                case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY =>
+                case MessageFilterChainMode.Any =>
                     Right(filterResults.exists(fr => fr._1.getOrElse(false)))
 
     if filterResults.nonEmpty then

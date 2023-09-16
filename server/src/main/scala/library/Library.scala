@@ -1,7 +1,18 @@
 package library
 
+import consumer.{
+    given_Decoder_ConsumerSessionConfig,
+    given_Encoder_ConsumerSessionConfig,
+    given_Decoder_MessageFilter,
+    given_Encoder_MessageFilter,
+    given_Decoder_MessageFilterChain,
+    given_Encoder_MessageFilterChain,
+    ConsumerSessionConfig,
+    MessageFilter,
+    MessageFilterChain
+}
 import io.circe.*
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.generic.semiauto.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
@@ -11,14 +22,45 @@ enum LibraryItemType:
     case ProducerSessionConfig
     case MarkdownDocument
     case MessageFilter
+    case MessageFilterChain
     case DataVisualizationWidget
     case DataVisualizationDashboard
 given Decoder[LibraryItemType] = deriveDecoder[LibraryItemType]
 given Encoder[LibraryItemType] = deriveEncoder[LibraryItemType]
 
+case class LibraryItemDescriptor(
+    `type`: LibraryItemType,
+    value: ConsumerSessionConfig | MessageFilter | MessageFilterChain
+)
+given Decoder[LibraryItemDescriptor] = new Decoder[LibraryItemDescriptor] {
+    final def apply(c: HCursor): Decoder.Result[LibraryItemDescriptor] =
+        for {
+            itemType <- c.downField("type").as[LibraryItemType]
+            value <- itemType match {
+                case LibraryItemType.ConsumerSessionConfig => c.downField("value").as[ConsumerSessionConfig]
+                case LibraryItemType.MessageFilter         => c.downField("value").as[MessageFilter]
+                case LibraryItemType.MessageFilterChain    => c.downField("value").as[MessageFilterChain]
+                // ... add other cases
+            }
+        } yield LibraryItemDescriptor(itemType, value)
+}
+
+given Encoder[LibraryItemDescriptor] = new Encoder[LibraryItemDescriptor] {
+    final def apply(a: LibraryItemDescriptor): Json = Json.obj(
+        ("type", a.`type`.asJson),
+        (
+            "value",
+            a.value match {
+                case v: ConsumerSessionConfig => v.asJson
+                case v: MessageFilter         => v.asJson
+                case v: MessageFilterChain    => v.asJson
+            }
+        )
+    )
+}
+
 case class LibraryItem(
     id: String,
-    `type`: LibraryItemType,
     revision: String,
     updatedAt: Long,
     isEditable: Boolean,
@@ -26,7 +68,7 @@ case class LibraryItem(
     descriptionMarkdown: String,
     tags: List[String],
     resources: List[ResourceMatcher],
-    descriptorJson: String
+    descriptor: LibraryItemDescriptor
 )
 given Decoder[LibraryItem] = deriveDecoder[LibraryItem]
 given Encoder[LibraryItem] = deriveEncoder[LibraryItem]
@@ -102,7 +144,7 @@ class Library:
         val byTypes =
             if filter.types.isEmpty
             then dbItems
-            else dbItems.filter(item => filter.types.contains(item.`type`))
+            else dbItems.filter(item => filter.types.contains(item.descriptor.`type`))
         val byResourceFqns =
             if filter.resourceFqns.isEmpty
             then byTypes

@@ -47,7 +47,7 @@ def buildConsumer(
         case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED) => consumer.subscriptionType(SubscriptionType.Key_Shared)
         case _                                                              => consumer
 
-    consumer = request.subscriptionInitialPosition match
+    consumer = request.consumerSessionConfig.get.subscriptionInitialPosition match
         case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST) =>
             consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
         case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST) =>

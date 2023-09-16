@@ -1,7 +1,17 @@
 package library
 
 import com.tools.teal.pulsar.ui.library.v1.library as pb
-import library.TopicPersistencyType.Any
+import consumer.{
+    consumerSessionConfigFromPb,
+    consumerSessionConfigToPb,
+    messageFilterChainFromPb,
+    messageFilterChainToPb,
+    messageFilterFromPb,
+    messageFilterToPb,
+    ConsumerSessionConfig,
+    MessageFilter,
+    MessageFilterChain
+}
 
 def exactTenantMatcherFromPb(v: pb.ExactTenantMatcher): ExactTenantMatcher =
     ExactTenantMatcher(`type` = "exact-tenant-matcher", tenant = v.tenant)
@@ -134,6 +144,7 @@ def libraryItemTypeFromPb(v: pb.LibraryItemType): LibraryItemType =
         case pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG      => LibraryItemType.ProducerSessionConfig
         case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT            => LibraryItemType.MarkdownDocument
         case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER               => LibraryItemType.MessageFilter
+        case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER_CHAIN         => LibraryItemType.MessageFilterChain
         case pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET    => LibraryItemType.DataVisualizationWidget
         case pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD => LibraryItemType.DataVisualizationDashboard
         case _                                                                 => throw new IllegalArgumentException("Unknown library item type")
@@ -144,13 +155,13 @@ def libraryItemTypeToPb(v: LibraryItemType): pb.LibraryItemType =
         case LibraryItemType.ProducerSessionConfig      => pb.LibraryItemType.LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG
         case LibraryItemType.MarkdownDocument           => pb.LibraryItemType.LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT
         case LibraryItemType.MessageFilter              => pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER
+        case LibraryItemType.MessageFilterChain         => pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER_CHAIN
         case LibraryItemType.DataVisualizationWidget    => pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
         case LibraryItemType.DataVisualizationDashboard => pb.LibraryItemType.LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
 
 def libraryItemFromPb(v: pb.LibraryItem): LibraryItem =
     LibraryItem(
         id = v.id,
-        `type` = libraryItemTypeFromPb(v.`type`),
         revision = v.revision,
         updatedAt = v.updatedAt,
         isEditable = v.isEditable,
@@ -158,13 +169,12 @@ def libraryItemFromPb(v: pb.LibraryItem): LibraryItem =
         descriptionMarkdown = v.descriptionMarkdown,
         tags = v.tags.toList,
         resources = v.resources.map(resourceMatcherFromPb).toList,
-        descriptorJson = v.descriptorJson
+        descriptor = libraryItemDescriptorFromPb(v.descriptor.get)
     )
 
 def libraryItemToPb(v: LibraryItem): pb.LibraryItem =
     pb.LibraryItem(
         id = v.id,
-        `type` = libraryItemTypeToPb(v.`type`),
         revision = v.revision,
         updatedAt = v.updatedAt,
         isEditable = v.isEditable,
@@ -172,5 +182,41 @@ def libraryItemToPb(v: LibraryItem): pb.LibraryItem =
         descriptionMarkdown = v.descriptionMarkdown,
         tags = v.tags,
         resources = v.resources.map(resourceMatcherToPb),
-        descriptorJson = v.descriptorJson
+        descriptor = Some(libraryItemDescriptorToPb(v.descriptor))
     )
+
+def libraryItemDescriptorFromPb(descriptor: pb.LibraryItemDescriptor): LibraryItemDescriptor = descriptor.`type` match
+    case pb.LibraryItemType.LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG =>
+        LibraryItemDescriptor(
+            `type` = LibraryItemType.ConsumerSessionConfig,
+            value = consumerSessionConfigFromPb(descriptor.value.consumerSessionConfig.get)
+        )
+    case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER =>
+        LibraryItemDescriptor(
+            `type` = LibraryItemType.MessageFilter,
+            value = messageFilterFromPb(descriptor.value.messageFilter.get)
+        )
+    case pb.LibraryItemType.LIBRARY_ITEM_TYPE_MESSAGE_FILTER_CHAIN =>
+        LibraryItemDescriptor(
+            `type` = LibraryItemType.MessageFilterChain,
+            value = messageFilterChainFromPb(descriptor.value.messageFilterChain.get)
+        )
+    case _ => throw new IllegalArgumentException(s"Unknown library item type: ${descriptor.`type`}")
+
+def libraryItemDescriptorToPb(descriptor: LibraryItemDescriptor): pb.LibraryItemDescriptor =
+    descriptor.value match
+        case v: ConsumerSessionConfig =>
+            pb.LibraryItemDescriptor(
+                `type` = libraryItemTypeToPb(LibraryItemType.ConsumerSessionConfig),
+                value = pb.LibraryItemDescriptor.Value.ConsumerSessionConfig(consumerSessionConfigToPb(v))
+            )
+        case v: MessageFilter =>
+            pb.LibraryItemDescriptor(
+                `type` = libraryItemTypeToPb(LibraryItemType.MessageFilter),
+                value = pb.LibraryItemDescriptor.Value.MessageFilter(messageFilterToPb(v))
+            )
+        case v: MessageFilterChain =>
+            pb.LibraryItemDescriptor(
+                `type` = libraryItemTypeToPb(LibraryItemType.MessageFilterChain),
+                value = pb.LibraryItemDescriptor.Value.MessageFilterChain(messageFilterChainToPb(v))
+            )

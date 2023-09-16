@@ -88,7 +88,6 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         />
         <SmallButton
           onClick={openLibraryBrowser}
-
           text="Browse filters"
           type='primary'
         />
