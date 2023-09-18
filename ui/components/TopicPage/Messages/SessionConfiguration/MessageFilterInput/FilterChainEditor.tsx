@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { v4 as uuid } from 'uuid';
 
 import Button from '../../../../ui/Button/Button';
@@ -6,11 +6,9 @@ import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from './types';
 import Filter from './FilterEditor';
-import * as Modals from '../../../../app/contexts/Modals/Modals';
 import enableIcon from './icons/enable.svg';
 
 import s from './FilterChainEditor.module.css';
-import { mkLibraryBrowserModal } from '../../../../ui/LibraryBrowser/modals';
 
 const defaultFilter = `({ key, value, accum }) => {
   return true;
@@ -22,19 +20,8 @@ export type FilterChainProps = {
 };
 
 const FilterChain: React.FC<FilterChainProps> = (props) => {
-  const modals = Modals.useContext();
-
-  const openLibraryBrowser = () => {
-    modals.push(mkLibraryBrowserModal());
-  }
-
-  useEffect(() => {
-    openLibraryBrowser();
-  }, []);
-
   return (
     <div className={s.FilterChainEditor}>
-
       <div style={{ marginBottom: '12rem' }}>
         <Select<'all' | 'any'>
           list={[
@@ -83,11 +70,6 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
             props.onChange(newChain);
           }}
           text="Add filter"
-          type='primary'
-        />
-        <SmallButton
-          onClick={openLibraryBrowser}
-          text="Browse filters"
           type='primary'
         />
       </div>

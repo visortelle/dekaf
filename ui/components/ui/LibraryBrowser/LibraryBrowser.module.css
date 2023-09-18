@@ -29,8 +29,12 @@
 }
 
 .Footer {
+  display: flex;
   height: 64rem;
+  padding: 12rem;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: flex-end;
   background-color: #f5f5f5;
   border-top: 1px solid #ddd;
-  flex: 1 0 auto;
 }

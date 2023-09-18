@@ -1,5 +1,5 @@
 import React from 'react';
-import s from './RegexTopicMatcher.module.css'
+import s from './RegexTopicMatcherInput.module.css'
 import Input from '../../../../../Input/Input';
 import NamespaceMatcherInput from '../../NamespaceMatcherInput/NamespaceMatcherInput';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';

@@ -1,31 +1,37 @@
 import React from 'react';
 import s from './LibraryBrowserPickButton.module.css'
-import SmallButton from '../../SmallButton/SmallButton';
-import * as Modals from '../../../app/contexts/Modals/Modals';
-import { mkLibraryBrowserModal } from '../modals';
-import { LibraryItemDescriptor, LibraryItemType } from '../types';
+import SmallButton from '../../../SmallButton/SmallButton';
+import * as Modals from '../../../../app/contexts/Modals/Modals';
+import { mkLibraryBrowserModal } from '../../modals';
+import { LibraryItem, LibraryItemType } from '../../types';
+import pickIcon from './pick.svg';
 
 export type LibraryBrowserPickButtonProps = {
   itemType: LibraryItemType;
-  onPick: (descriptor: LibraryItemDescriptor) => void;
+  onPick: (item: LibraryItem) => void;
 };
 
 const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props) => {
-  const { push } = Modals.useContext();
+  const modals = Modals.useContext();
 
   return (
     <div className={s.LibraryBrowserPickButton}>
       <SmallButton
         text='Pick'
+        type='regular'
+        svgIcon={pickIcon}
         onClick={() => {
-          mkLibraryBrowserModal({
+          const modal = mkLibraryBrowserModal({
             libraryBrowserProps: {
               mode: {
-                type: 'picker',
+                type: 'pick',
                 itemType: props.itemType,
+                onPick: props.onPick
               }
             }
           });
+
+          modals.push(modal);
         }}
       />
     </div>

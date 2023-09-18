@@ -23,7 +23,7 @@
   background-color: #f5f5f5;
 }
 
-.ItemTitle {
+.ItemName {
   font-weight: 500;
   padding: 12rem 12rem;
   white-space: nowrap;
@@ -35,4 +35,8 @@
   padding: 2rem 12rem 12rem 12rem;
   margin-top: -12rem;
   font-size: 12rem;
+}
+
+.NothingToShow {
+  padding: 12rem;
 }

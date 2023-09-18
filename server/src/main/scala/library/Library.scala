@@ -61,7 +61,7 @@ given Encoder[LibraryItemDescriptor] = new Encoder[LibraryItemDescriptor] {
 case class LibraryItem(
     id: String,
     revision: String,
-    updatedAt: Long,
+    updatedAt: String,
     isEditable: Boolean,
     name: String,
     descriptionMarkdown: String,

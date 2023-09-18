@@ -94,7 +94,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         <div className={s.Control}>
           <div className={s.ConfigParamName}>Filters</div>
           <div style={{ display: 'flex' }}>
-            <div>{Object.keys(props.config.messageFilter.filters).length - props.config.messageFilter.disabledFilters.length}</div>
+            <div>{Object.keys(props.config.messageFilterChain.filters).length - props.config.messageFilterChain.disabledFilters.length}</div>
             <div>&nbsp;</div>
           </div>
         </div>

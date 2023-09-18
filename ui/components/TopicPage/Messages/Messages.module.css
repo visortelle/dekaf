@@ -7,6 +7,12 @@
   position: relative;
 }
 
+.SessionConfiguration {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 12rem;
+}
+
 .NoDataToShow {
   background-color: var(--surface-color);
   display: flex;

@@ -1,19 +1,19 @@
 import React from 'react';
 import s from './LibraryBrowser.module.css'
-import { LibraryItemDescriptor, LibraryItemType } from './types';
+import { LibraryItem, LibraryItemType } from './types';
 import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
 import SearchResults, { ItemProps } from './SearchResults/SearchResults';
 import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
 import Button from '../Button/Button';
+import { set } from 'lodash';
 
 export type LibraryBrowserMode = {
-  type: 'editor';
-  itemType: LibraryItemType;
-  itemId: string;
+  type: 'save';
+  item: LibraryItem;
 } | {
-  type: 'picker';
+  type: 'pick';
   itemType: LibraryItemType;
-  onPick: (descriptor: LibraryItemDescriptor) => void;
+  onPick: (item: LibraryItem) => void;
 };
 
 export type LibraryBrowserProps = {
@@ -45,16 +45,12 @@ const initialSearchEditorValue: SearchEditorValue = {
   }
 }
 
-const fakeItems: ItemProps[] = Array.from({ length: 100 }).map((_, index) => ({
-  id: `${index}`,
-  title: `Item ${index}`.repeat(20),
-  descriptionMarkdown: `This is item ${index}`.repeat(20),
-  onClick: () => {}
-}));
-
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [searchEditorValue, setSearchEditorValue] = React.useState<SearchEditorValue>(initialSearchEditorValue);
-  const [selectedItem, setSelectedItem] = React.useState<ItemProps | undefined>(undefined);
+  const [searchResults, setSearchResults] = React.useState<LibraryItem[]>([]);
+  const [selectedItem, setSelectedItem] = React.useState<LibraryItem | undefined>(undefined);
+
+  const saveLibraryItem = async (item: LibraryItem) => { };
 
   return (
     <div className={s.LibraryBrowser}>
@@ -71,25 +67,53 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
         <div className={s.SearchResults}>
           <SearchResults
-            items={fakeItems}
+            items={[]}
+            onSelect={(itemId) => {
+              const item = searchResults.find(item => item.id === itemId);
+              if (item === undefined) {
+                console.error(`Could not find library item with id ${itemId}`);
+                return;
+              }
+
+              setSelectedItem(item);
+            }}
           />
         </div>
 
         <div className={s.LibraryItemViewer}>
-            <LibraryItemEditor
-              mode={props.mode.type === 'editor' ? 'editor' : 'viewer'}
-            />
+          {/* <LibraryItemEditor
+            mode={props.mode.type === 'editor' ? 'editor' : 'viewer'}
+          /> */}
         </div>
       </div>
 
       <div className={s.Footer}>
-       {props.mode.type === 'picker' && (
-        <Button
-         onClick={() => props.mode.onPick({})}
-         type='primary'
+        {props.mode.type === 'pick' && (
+          <Button
+            disabled={!selectedItem}
+            onClick={() => {
+              if (props.mode.type !== 'pick') return;
+              if (selectedItem === undefined) return;
 
-        />
-       )}
+              props.mode.onPick(selectedItem)
+            }}
+            type='primary'
+            text='Select'
+          />
+        )}
+        {props.mode.type === 'save' && (
+          <Button
+            disabled={!selectedItem}
+            onClick={async () => {
+              if (props.mode.type !== 'save') return;
+              if (selectedItem === undefined) return;
+
+              await saveLibraryItem(selectedItem);
+            }}
+            type='primary'
+            text='Save'
+          />
+        )}
       </div>
     </div>
   );

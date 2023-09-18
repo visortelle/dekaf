@@ -38,7 +38,7 @@ export type StartFrom =
 export type ConsumerSessionConfig = {
   startFrom: StartFrom;
   topicsSelector: SessionTopicsSelector;
-  messageFilter: messageFilter.MessageFilterChain;
+  messageFilterChain: messageFilter.MessageFilterChain;
 };
 
 type Nullable<T> = T | null;

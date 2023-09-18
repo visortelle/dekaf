@@ -1,12 +1,17 @@
 .SessionConfiguration {
   flex: 1 1 auto;
   overflow: auto;
-  display: flex;
 }
 
-.LeftColumn,
-.RightColumn {
-  padding: 12rem;
+.Title {
+  margin-bottom: 24rem;
+  display: flex;
+  gap: 12rem;
+}
+
+.Content {
+  display: flex;
+  gap: 24rem;
 }
 
 .LeftColumn {
@@ -15,9 +20,4 @@
 
 .RightColumn {
   width: 66.66666666666%;
-}
-
-.ControlLabel {
-  font-weight: var(--font-weight-bold);
-  margin-bottom: 4rem;
 }

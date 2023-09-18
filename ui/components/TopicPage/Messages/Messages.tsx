@@ -371,10 +371,10 @@ const Session: React.FC<SessionProps> = (props) => {
       console.info(`%cRunning session: ${props.sessionKey}`, consoleCss);
 
       const messageFilterChain = new MessageFilterChain();
-      messageFilterChain.setMode(props.config.messageFilter.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
+      messageFilterChain.setMode(props.config.messageFilterChain.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
 
-      Object.entries(props.config.messageFilter.filters)
-        .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
+      Object.entries(props.config.messageFilterChain.filters)
+        .filter(([filterId]) => !props.config.messageFilterChain.disabledFilters.includes(filterId))
         .forEach(([filterId, filter]) => {
           const filterPb = new MessageFilter();
           filterPb.setValue(filter.filter.value || '');
@@ -526,11 +526,13 @@ const Session: React.FC<SessionProps> = (props) => {
       )}
 
       {currentView === 'configuration' && (
-        <SessionConfiguration
-          config={props.config}
-          onConfigChange={props.onConfigChange}
-          topicsInternalStats={topicsInternalStats}
-        />
+        <div className={s.SessionConfiguration}>
+          <SessionConfiguration
+            config={props.config}
+            onConfigChange={props.onConfigChange}
+            topicsInternalStats={topicsInternalStats}
+          />
+        </div>
       )}
 
       <Console
@@ -555,7 +557,7 @@ type SessionControllerProps = {
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
   const [config, setConfig] = useState<ConsumerSessionConfig>(props.config);
-  const [isShowConsole, setIsShowConsole] = useState<boolean>(true);
+  const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
   return (
     <Session
