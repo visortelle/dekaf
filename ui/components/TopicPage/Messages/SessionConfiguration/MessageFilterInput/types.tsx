@@ -1,15 +1,11 @@
 export type JsonType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null';
 
-export type Filter = {
+export type MessageFilter = {
   value: string | undefined;
 }
 
-export type ChainEntry = {
-  filter: Filter;
-}
-
-export type Chain = {
-  filters: Record<string, ChainEntry>;
+export type MessageFilterChain = {
+  filters: Record<string, MessageFilter>;
   disabledFilters: string[];
   mode: 'all' | 'any';
 }

@@ -5,7 +5,7 @@ import resumeIcon from './icons/resume.svg';
 import resetIcon from './icons/reset.svg';
 import consoleIcon from './icons/console.svg';
 import * as I18n from '../../app/contexts/I18n/I18n';
-import { SessionState, SessionConfig } from './types';
+import { SessionState, ConsumerSessionConfig } from './types';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
 import SmallButton from '../../ui/SmallButton/SmallButton';
@@ -13,7 +13,7 @@ import Input from '../../ui/Input/Input';
 
 export type ToolbarProps = {
   sessionState: SessionState;
-  config: SessionConfig;
+  config: ConsumerSessionConfig;
   onSessionStateChange: (state: SessionState) => void;
   onStopSession: () => void;
   messagesLoaded: number;

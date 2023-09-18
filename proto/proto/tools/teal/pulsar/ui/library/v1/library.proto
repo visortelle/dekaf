@@ -92,10 +92,9 @@ message LibraryItemDescriptor {
 }
 
 message LibraryItem {
-  LibraryItemType type = 1;
   string id = 2;
   string revision = 3;
-  int64 updated_at = 4;
+  string updated_at = 4;
   bool is_editable = 5;
 
   string name = 6;
@@ -116,7 +115,6 @@ message CreateLibraryItemResponse {
 
 message DeleteLibraryItemRequest {
   string id = 1;
-  LibraryItemType type = 2;
 }
 
 message DeleteLibraryItemResponse {
@@ -133,7 +131,6 @@ message UpdateLibraryItemResponse {
 
 message GetLibraryItemRequest {
   string id = 1;
-  LibraryItemType type = 2;
 }
 
 message GetLibraryItemResponse {

@@ -1,16 +1,14 @@
 import React from 'react';
 
-import { EditorFilter } from './FiltersEditor/FiltersEditor';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
-import dependencies from './dependecies';
+import * as autocomplete from './autocomplete';
 import * as t from './types';
 
-import s from './Filter.module.css'
-
+import s from './FilterEditor.module.css'
 
 export type FilterProps = {
-  value: t.Filter;
-  onChange: (value: t.Filter) => void;
+  value: t.MessageFilter;
+  onChange: (value: t.MessageFilter) => void;
   autoCompleteConfig?: boolean;
 };
 
@@ -19,7 +17,6 @@ export const defaultJsValue = `({ value, accum }) => {
 }`;
 
 const Filter: React.FC<FilterProps> = (props) => {
-
   return (
     <div className={s.Filter}>
       <div className={s.FormControl}>
@@ -29,7 +26,7 @@ const Filter: React.FC<FilterProps> = (props) => {
           height="180rem"
           language="javascript"
           // TODO remove the autocomplete configuration, when it will be possible to select\configure it directly in the codeEditor.
-          autoCompleteConfig={props.autoCompleteConfig ? { language: 'javascript', match: /msg\./, dependencies: dependencies, kind: 'Function' } : undefined}
+          autoCompleteConfig={props.autoCompleteConfig ? { language: 'javascript', match: /msg\./, dependencies: autocomplete.dependencies, kind: 'Function' } : undefined}
         />
       </div>
     </div>

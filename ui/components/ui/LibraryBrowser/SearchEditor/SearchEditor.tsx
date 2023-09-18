@@ -4,7 +4,7 @@ import LibraryItemTypePicker from './LibraryItemTypePicker/LibraryItemTypePicker
 import { LibraryItemType } from '../types';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
-import ResourceMatcher, { ResourceMatcherValue } from './ResourceMatcher/ResourceMatcher';
+import ResourceMatcherInput, { ResourceMatcherValue } from './ResourceMatcherInput/ResourceMatcherInput';
 import { H2, H3 } from '../../H/H';
 import TagsPicker from './TagsPicker/TagsPicker';
 
@@ -89,7 +89,7 @@ const MatchEditor: React.FC<MatchEditorProps> = (props) => {
               </>
             }
           />
-          <ResourceMatcher
+          <ResourceMatcherInput
             value={props.mode.value.resourceMatcher}
             onChange={(v) => {
               if (props.mode.type === 'readonly') {

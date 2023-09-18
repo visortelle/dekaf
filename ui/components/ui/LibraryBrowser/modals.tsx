@@ -1,5 +1,5 @@
 import { ModalStackEntry } from "../../app/contexts/Modals/Modals";
-import LibraryBrowser from "./LibraryBrowser";
+import LibraryBrowser, {LibraryBrowserProps} from "./LibraryBrowser";
 
 const ModalContent: React.FC<{ children: React.ReactNode }> = (props) => {
   return (
@@ -16,12 +16,16 @@ const ModalContent: React.FC<{ children: React.ReactNode }> = (props) => {
   );
 }
 
-export const mkLibraryBrowserModal: () => ModalStackEntry = () => {
+export type MkLibraryBrowserModalProps = {
+  libraryBrowserProps: LibraryBrowserProps
+};
+
+export const mkLibraryBrowserModal: (props: MkLibraryBrowserModalProps) => ModalStackEntry = (props) => {
   return {
     id: 'library-browser',
     content: (
       <ModalContent>
-        <LibraryBrowser />
+        <LibraryBrowser {...props.libraryBrowserProps} />
       </ModalContent>
     ),
     title: 'Library Browser',

@@ -1,25 +1,20 @@
 import React from 'react';
-import s from './NamespaceMatcher.module.css';
+import s from './NamespaceMatcherInput.module.css';
 import Select from '../../../../Select/Select';
-import ExactNamespaceMatcher, { ExactNamespaceMatcherValue } from './ExactNamespaceMatcher/ExactNamespaceMatcher';
-import RegexNamespaceMatcher, { RegexNamespaceMatcherValue } from './RegexNamespaceMatcher/RegexNamespaceMatcher';
+import ExactNamespaceMatcherInput from './ExactNamespaceMatcherInput/ExactNamespaceMatcherInput';
+import RegexNamespaceMatcherInput from './RegexNamespaceMatcherInput/RegexNamespaceMatcherInput';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
-import ResourceFormLabel from '../ResourceFormLabel/ResourceFormLabel';
+import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
+import { NamespaceMatcherType, NamespaceMatcher } from '../../../types';
 
-export type NamespaceMatcherValue = {
-  type: 'namespace-matcher',
-  value: ExactNamespaceMatcherValue | RegexNamespaceMatcherValue
-};
-export type NamespaceMatcherType = NamespaceMatcherValue['value']['type'];
-
-export type NamespaceMatcherProps = {
-  value: NamespaceMatcherValue;
-  onChange: (value: NamespaceMatcherValue) => void;
+export type NamespaceMatcherInputProps = {
+  value: NamespaceMatcher;
+  onChange: (value: NamespaceMatcher) => void;
 };
 
-const NamespaceMatcher: React.FC<NamespaceMatcherProps> = (props) => {
+const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
   return (
-    <div className={s.NamespaceMatcher}>
+    <div className={s.NamespaceMatcherInput}>
       <FormItem>
         <ResourceFormLabel type='namespace' />
         <Select<NamespaceMatcherType>
@@ -52,13 +47,13 @@ const NamespaceMatcher: React.FC<NamespaceMatcherProps> = (props) => {
       </FormItem>
 
       {props.value.value.type === 'exact-namespace-matcher' && (
-        <ExactNamespaceMatcher
+        <ExactNamespaceMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
         />
       )}
       {props.value.value.type === 'regex-namespace-matcher' && (
-        <RegexNamespaceMatcher
+        <RegexNamespaceMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
         />
@@ -67,4 +62,4 @@ const NamespaceMatcher: React.FC<NamespaceMatcherProps> = (props) => {
   );
 }
 
-export default NamespaceMatcher;
+export default NamespaceMatcherInput;

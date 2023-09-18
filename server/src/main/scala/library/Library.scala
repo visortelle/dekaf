@@ -40,7 +40,6 @@ given Decoder[LibraryItemDescriptor] = new Decoder[LibraryItemDescriptor] {
                 case LibraryItemType.ConsumerSessionConfig => c.downField("value").as[ConsumerSessionConfig]
                 case LibraryItemType.MessageFilter         => c.downField("value").as[MessageFilter]
                 case LibraryItemType.MessageFilterChain    => c.downField("value").as[MessageFilterChain]
-                // ... add other cases
             }
         } yield LibraryItemDescriptor(itemType, value)
 }

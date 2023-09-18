@@ -1,4 +1,4 @@
-const dependencies = [
+export const dependencies = [
   {
     label: 'properties',
     documentation: 'More about ...',
@@ -75,5 +75,3 @@ const dependencies = [
     insertText: 'replicatedFrom()',
   },
 ];
-
-export default dependencies;

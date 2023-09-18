@@ -5,12 +5,11 @@ import Button from '../../../../ui/Button/Button';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from './types';
-import Filter from './Filter';
+import Filter from './FilterEditor';
 import * as Modals from '../../../../app/contexts/Modals/Modals';
 import enableIcon from './icons/enable.svg';
 
-import s from './FilterChain.module.css';
-import LibraryBrowser from '../../../../ui/LibraryBrowser/LibraryBrowser';
+import s from './FilterChainEditor.module.css';
 import { mkLibraryBrowserModal } from '../../../../ui/LibraryBrowser/modals';
 
 const defaultFilter = `({ key, value, accum }) => {
@@ -18,8 +17,8 @@ const defaultFilter = `({ key, value, accum }) => {
 }`;
 
 export type FilterChainProps = {
-  value: t.Chain;
-  onChange: (value: t.Chain) => void;
+  value: t.MessageFilterChain;
+  onChange: (value: t.MessageFilterChain) => void;
 };
 
 const FilterChain: React.FC<FilterChainProps> = (props) => {
@@ -34,7 +33,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   }, []);
 
   return (
-    <div className={s.FilterChain}>
+    <div className={s.FilterChainEditor}>
 
       <div style={{ marginBottom: '12rem' }}>
         <Select<'all' | 'any'>
@@ -47,14 +46,14 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         />
       </div>
 
-      {props.value.filters && Object.entries(props.value.filters).map(([entryId, entry], index) => {
-        const isDisabled = props.value.disabledFilters.includes(entryId);
+      {props.value.filters && Object.entries(props.value.filters).map(([filterId, filter], index) => {
+        const isDisabled = props.value.disabledFilters.includes(filterId);
         return (
-          <div key={entryId} className={s.Entry}>
+          <div key={filterId} className={s.Entry}>
             <div className={s.EntryFilter}>
               <Filter
-                value={entry.filter}
-                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [entryId]: { filter: f } } })}
+                value={filter}
+                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: f } })}
                 autoCompleteConfig={index === 0}
               />
             </div>
@@ -63,9 +62,9 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                 <Button
                   svgIcon={enableIcon}
                   onClick={() => {
-                    const newDisabledFilters = props.value.disabledFilters.includes(entryId) ?
-                      props.value.disabledFilters.filter(id => id !== entryId) :
-                      [...props.value.disabledFilters, entryId];
+                    const newDisabledFilters = props.value.disabledFilters.includes(filterId) ?
+                      props.value.disabledFilters.filter(id => id !== filterId) :
+                      [...props.value.disabledFilters, filterId];
                     props.onChange({ ...props.value, disabledFilters: newDisabledFilters });
                   }}
                   title={isDisabled ? 'Enable filter' : 'Disable filter'}
@@ -79,8 +78,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       <div className={`${s.Buttons}`}>
         <SmallButton
           onClick={() => {
-            const newFilter: t.Filter = { value: defaultFilter };
-            const newChain: t.Chain = { ...props.value, filters: { ...props.value.filters, [uuid()]: { filter: newFilter } } };
+            const newFilter: t.MessageFilter = { value: defaultFilter };
+            const newChain: t.MessageFilterChain = { ...props.value, filters: { ...props.value.filters, [uuid()]: newFilter } };
             props.onChange(newChain);
           }}
           text="Add filter"

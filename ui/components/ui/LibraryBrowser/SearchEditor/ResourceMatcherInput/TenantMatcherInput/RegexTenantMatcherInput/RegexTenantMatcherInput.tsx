@@ -1,0 +1,28 @@
+import React from 'react';
+import s from './RegexTenantMatcherInput.module.css'
+import Input from '../../../../../Input/Input';
+import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
+import { RegexTenantMatcher } from '../../../../types';
+
+export type RegexTenantMatcherInputProps = {
+  value: RegexTenantMatcher;
+  onChange: (value: RegexTenantMatcher) => void;
+};
+
+const RegexTenantMatcherInput: React.FC<RegexTenantMatcherInputProps> = (props) => {
+  return (
+    <div className={s.RegexTenantMatcherInput}>
+      <FormItem>
+        <FormLabel content="Tenant Name Regex" />
+        <Input
+          value={props.value.tenantRegex}
+          onChange={(v) => props.onChange({ type: 'regex-tenant-matcher', tenantRegex: v })}
+          placeholder='.*'
+        />
+      </FormItem>
+    </div>
+  );
+}
+
+export default RegexTenantMatcherInput;

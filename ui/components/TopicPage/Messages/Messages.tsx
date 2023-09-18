@@ -36,7 +36,7 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
-import { SessionState, SessionConfig, MessageDescriptor } from './types';
+import { SessionState, ConsumerSessionConfig, MessageDescriptor } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
 import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
@@ -57,8 +57,8 @@ const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
 export type SessionProps = {
   sessionKey: number;
-  config: SessionConfig;
-  onConfigChange: (config: SessionConfig) => void;
+  config: ConsumerSessionConfig;
+  onConfigChange: (config: ConsumerSessionConfig) => void;
   onStopSession: () => void;
   isShowConsole: boolean;
   onSetIsShowConsole: (v: boolean) => void;
@@ -550,11 +550,11 @@ const Session: React.FC<SessionProps> = (props) => {
 }
 
 type SessionControllerProps = {
-  config: SessionConfig;
+  config: ConsumerSessionConfig;
 };
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
-  const [config, setConfig] = useState<SessionConfig>(props.config);
+  const [config, setConfig] = useState<ConsumerSessionConfig>(props.config);
   const [isShowConsole, setIsShowConsole] = useState<boolean>(true);
 
   return (

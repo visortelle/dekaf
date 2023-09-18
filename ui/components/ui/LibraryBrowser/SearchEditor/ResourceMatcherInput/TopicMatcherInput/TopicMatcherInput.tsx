@@ -1,26 +1,20 @@
 import React from 'react';
-import s from './TopicMatcher.module.css';
+import s from './TopicMatcherInput.module.css';
 import Select from '../../../../Select/Select';
-import ExactTopicMatcher, { ExactTopicMatcherValue } from './ExactTopicMatcher/ExactTopicMatcher';
-import RegexTopicMatcher, { RegexTopicMatcherValue } from './RegexTopicMatcher/RegexTopicMatcher';
+import ExactTopicMatcherInput from './ExactTopicMatcherInput/ExactTopicMatcherInput';
+import RegexTopicMatcherInput from './RegexTopicMatcherInput/RegexTopicMatcherInput';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
-import ResourceFormLabel from '../ResourceFormLabel/ResourceFormLabel';
+import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
+import { TopicMatcherType, TopicMatcher } from '../../../types';
 
-export type TopicMatcherValue = {
-  type: 'topic-matcher',
-  value: ExactTopicMatcherValue | RegexTopicMatcherValue
-};
-export type TopicMatcherType = TopicMatcherValue['value']['type'];
-
-export type TopicMatcherProps = {
-  value: TopicMatcherValue;
-  onChange: (value: TopicMatcherValue) => void;
+export type TopicMatcherInputProps = {
+  value: TopicMatcher;
+  onChange: (value: TopicMatcher) => void;
 };
 
-const TopicMatcher: React.FC<TopicMatcherProps> = (props) => {
-  console.log('TopicMatcher', props.value.value.type);
+const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
   return (
-    <div className={s.TopicMatcher}>
+    <div className={s.TopicMatcherInput}>
       <FormItem>
         <ResourceFormLabel type='topic' />
         <Select<TopicMatcherType>
@@ -52,13 +46,13 @@ const TopicMatcher: React.FC<TopicMatcherProps> = (props) => {
       </FormItem>
 
       {props.value.value.type === 'exact-topic-matcher' && (
-        <ExactTopicMatcher
+        <ExactTopicMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
         />
       )}
       {props.value.value.type === 'regex-topic-matcher' && (
-        <RegexTopicMatcher
+        <RegexTopicMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
         />
@@ -67,4 +61,4 @@ const TopicMatcher: React.FC<TopicMatcherProps> = (props) => {
   );
 }
 
-export default TopicMatcher;
+export default TopicMatcherInput;

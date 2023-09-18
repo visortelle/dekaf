@@ -1,8 +1,10 @@
 import React from 'react';
 import s from './LibraryBrowser.module.css'
-import { LibraryItemType } from './types';
+import { LibraryItemDescriptor, LibraryItemType } from './types';
 import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
 import SearchResults, { ItemProps } from './SearchResults/SearchResults';
+import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
+import Button from '../Button/Button';
 
 export type LibraryBrowserMode = {
   type: 'editor';
@@ -11,7 +13,7 @@ export type LibraryBrowserMode = {
 } | {
   type: 'picker';
   itemType: LibraryItemType;
-  onChange: (itemId: string) => void;
+  onPick: (descriptor: LibraryItemDescriptor) => void;
 };
 
 export type LibraryBrowserProps = {
@@ -52,6 +54,7 @@ const fakeItems: ItemProps[] = Array.from({ length: 100 }).map((_, index) => ({
 
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [searchEditorValue, setSearchEditorValue] = React.useState<SearchEditorValue>(initialSearchEditorValue);
+  const [selectedItem, setSelectedItem] = React.useState<ItemProps | undefined>(undefined);
 
   return (
     <div className={s.LibraryBrowser}>
@@ -72,13 +75,21 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           />
         </div>
 
-        <div className={s.ItemEditor}>
-
+        <div className={s.LibraryItemViewer}>
+            <LibraryItemEditor
+              mode={props.mode.type === 'editor' ? 'editor' : 'viewer'}
+            />
         </div>
       </div>
 
       <div className={s.Footer}>
+       {props.mode.type === 'picker' && (
+        <Button
+         onClick={() => props.mode.onPick({})}
+         type='primary'
 
+        />
+       )}
       </div>
     </div>
   );

@@ -1,26 +1,20 @@
 import React from 'react';
-import s from './TenantMatcher.module.css';
+import s from './TenantMatcherInput.module.css';
 import Select from '../../../../Select/Select';
-import ExactTenantMatcher, { ExactTenantMatcherValue } from './ExactTenantMatcher/ExactTenantMatcher';
-import RegexTenantMatcher, { RegexTenantMatcherValue } from './RegexTenantMatcher/RegexTenantMatcher';
+import ExactTenantMatcherInput from './ExactTenantMatcherInput/ExactTenantMatcherInput';
+import RegexTenantMatcherInput from './RegexTenantMatcherInput/RegexTenantMatcherInput';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
-import ResourceFormLabel from '../ResourceFormLabel/ResourceFormLabel';
+import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
+import { TenantMatcherType, TenantMatcher } from '../../../types';
 
-export type TenantMatcherValue = {
-  type: 'tenant-matcher',
-  value: ExactTenantMatcherValue | RegexTenantMatcherValue
+export type TenantMatcherInputProps = {
+  value: TenantMatcher;
+  onChange: (value: TenantMatcher) => void;
 };
 
-export type TenantMatcherType = TenantMatcherValue['value']['type'];
-
-export type TenantMatcherProps = {
-  value: TenantMatcherValue;
-  onChange: (value: TenantMatcherValue) => void;
-};
-
-const TenantMatcher: React.FC<TenantMatcherProps> = (props) => {
+const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
   return (
-    <div className={s.TenantMatcher}>
+    <div className={s.TenantMatcherInput}>
       <FormItem>
         <ResourceFormLabel type='tenant' />
         <Select<TenantMatcherType>
@@ -40,13 +34,13 @@ const TenantMatcher: React.FC<TenantMatcherProps> = (props) => {
       </FormItem>
 
       {props.value.value.type === 'exact-tenant-matcher' && (
-        <ExactTenantMatcher
+        <ExactTenantMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
         />
       )}
       {props.value.value.type === 'regex-tenant-matcher' && (
-        <RegexTenantMatcher
+        <RegexTenantMatcherInput
           value={props.value.value}
           onChange={(v) => props.onChange({ ...props.value, value: v })}
         />
@@ -55,4 +49,4 @@ const TenantMatcher: React.FC<TenantMatcherProps> = (props) => {
   );
 }
 
-export default TenantMatcher;
+export default TenantMatcherInput;

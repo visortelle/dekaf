@@ -3,15 +3,11 @@ import s from './RegexTenantMatcher.module.css'
 import Input from '../../../../../Input/Input';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-
-export type RegexTenantMatcherValue = {
-  type: 'regex-tenant-matcher',
-  tenantRegex: string;
-};
+import { RegexTenantMatcher } from '../../../../types';
 
 export type RegexTenantMatcherProps = {
-  value: RegexTenantMatcherValue;
-  onChange: (value: RegexTenantMatcherValue) => void;
+  value: RegexTenantMatcher;
+  onChange: (value: RegexTenantMatcher) => void;
 };
 
 const RegexTenantMatcher: React.FC<RegexTenantMatcherProps> = (props) => {

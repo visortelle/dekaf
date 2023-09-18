@@ -18,14 +18,14 @@ type RegexSubMode =
 
 export type SessionTopicsSelector =
   | {
-      type: "by-names";
-      topics: string[];
-    }
+    type: "by-names";
+    topics: string[];
+  }
   | {
-      type: "by-regex";
-      pattern: string;
-      regexSubscriptionMode: RegexSubMode;
-    };
+    type: "by-regex";
+    pattern: string;
+    regexSubscriptionMode: RegexSubMode;
+  };
 
 export type StartFrom =
   | { type: "date"; date: Date }
@@ -35,10 +35,10 @@ export type StartFrom =
   | { type: "earliest" }
   | { type: "latest" };
 
-export type SessionConfig = {
+export type ConsumerSessionConfig = {
   startFrom: StartFrom;
   topicsSelector: SessionTopicsSelector;
-  messageFilter: messageFilter.Chain;
+  messageFilter: messageFilter.MessageFilterChain;
 };
 
 type Nullable<T> = T | null;

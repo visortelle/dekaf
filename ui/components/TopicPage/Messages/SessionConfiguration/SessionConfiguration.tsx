@@ -1,15 +1,15 @@
 import React from 'react';
 
 import StartFromInput from './StartFromInput/StartFromInput';
-import FilterChain from './MessageFilterInput/FilterChain';
-import { SessionConfig } from '../types';
+import FilterChain from './MessageFilterInput/FilterChainEditor';
+import { ConsumerSessionConfig } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 
 import s from './SessionConfiguration.module.css'
 
 export type SessionConfigurationProps = {
-  config: SessionConfig;
-  onConfigChange: (config: SessionConfig) => void;
+  config: ConsumerSessionConfig;
+  onConfigChange: (config: ConsumerSessionConfig) => void;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
 };
 
@@ -28,7 +28,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
       </div>
       <div className={s.RightColumn}>
         <div>
-          <div className={s.ControlLabel}>Filters</div>
+          <div className={s.ControlLabel}>Filter Chain</div>
           <FilterChain
             value={props.config.messageFilter}
             onChange={(v) => (props.onConfigChange({ ...props.config, messageFilter: v }))}

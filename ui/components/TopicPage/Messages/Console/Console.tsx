@@ -4,7 +4,7 @@ import SubscriptionsCursors from './SubscriptionsCursors/SubscriptionsCursors';
 import Producer from './Producer/Producer';
 import Visualization from './Visualization/Visualization';
 import MessagesExporter from './MessagesExporter/MessagesExporter';
-import { MessageDescriptor, SessionConfig, SessionState } from '../types';
+import { MessageDescriptor, ConsumerSessionConfig, SessionState } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import EnteringFromBottomDiv from '../../../ui/animations/EnteringFromBottomDiv';
 import Tabs from '../../../ui/Tabs/Tabs';
@@ -19,7 +19,7 @@ export type ConsoleProps = {
   onClose: () => void;
   sessionKey: number;
   sessionSubscriptionName: string;
-  sessionConfig: SessionConfig;
+  sessionConfig: ConsumerSessionConfig;
   sessionState: SessionState;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   onSessionStateChange: (state: SessionState) => void;
