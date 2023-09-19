@@ -1,9 +1,9 @@
 import React from 'react';
 import s from './LibraryBrowserSaveButton.module.css'
-import SmallButton from '../../../SmallButton/SmallButton';
-import * as Modals from '../../../../app/contexts/Modals/Modals';
-import { mkLibraryBrowserModal } from '../../modals';
-import { LibraryItem } from '../../types';
+import SmallButton from '../../../../SmallButton/SmallButton';
+import * as Modals from '../../../../../app/contexts/Modals/Modals';
+import { mkLibraryBrowserModal } from '../../../modals';
+import { LibraryItem } from '../../../types';
 import saveIcon from './save.svg';
 
 

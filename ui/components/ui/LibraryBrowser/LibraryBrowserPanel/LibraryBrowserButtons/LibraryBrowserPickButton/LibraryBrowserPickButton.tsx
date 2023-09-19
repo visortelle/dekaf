@@ -1,9 +1,9 @@
 import React from 'react';
 import s from './LibraryBrowserPickButton.module.css'
-import SmallButton from '../../../SmallButton/SmallButton';
-import * as Modals from '../../../../app/contexts/Modals/Modals';
-import { mkLibraryBrowserModal } from '../../modals';
-import { LibraryItem, LibraryItemType } from '../../types';
+import SmallButton from '../../../../SmallButton/SmallButton';
+import * as Modals from '../../../../../app/contexts/Modals/Modals';
+import { mkLibraryBrowserModal } from '../../../modals';
+import { LibraryItem, LibraryItemType } from '../../../types';
 import pickIcon from './pick.svg';
 
 export type LibraryBrowserPickButtonProps = {

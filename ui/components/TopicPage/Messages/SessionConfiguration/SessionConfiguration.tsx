@@ -6,10 +6,11 @@ import { ConsumerSessionConfig } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 
 import s from './SessionConfiguration.module.css'
-import LibraryBrowserButtons from '../../../ui/LibraryBrowser/LibraryBrowserButtons/LibraryBrowserButtons';
+import LibraryBrowserButtons from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/LibraryBrowserButtons';
 import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import { H3 } from '../../../ui/H/H';
+import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 
 export type SessionConfigurationProps = {
   config: ConsumerSessionConfig;
@@ -21,8 +22,16 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   return (
     <div className={s.SessionConfiguration}>
       <div className={s.Title}>
-        <H3>Consumer Session Config</H3>
-        <LibraryBrowserButtons />
+        <LibraryBrowserPanel
+          itemType='consumer-session-config'
+          onPick={(item) => {
+            if (item.descriptor.type !== 'consumer-session-config') {
+              return;
+            }
+
+            props.onConfigChange(item.descriptor.value)
+          }}
+        />
       </div>
 
       <div className={s.Content}>
@@ -37,30 +46,10 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           </FormItem>
         </div>
         <div className={s.RightColumn}>
-          <div>
-            <FormItem>
-              <div style={{ display: 'flex', gap: '12rem', alignItems: 'flex-end' }}>
-                <FormLabel
-                  content='Filter Chain'
-                  help={(
-                    <div>
-                      Filter chain is a list of filters that are sequentially applied to each message.
-                    </div>
-                  )}
-                />
-                <LibraryBrowserButtons
-
-                />
-              </div>
-
-            </FormItem>
-
-
-            <FilterChain
-              value={props.config.messageFilterChain}
-              onChange={(v) => (props.onConfigChange({ ...props.config, messageFilterChain: v }))}
-            />
-          </div>
+          <FilterChain
+            value={props.config.messageFilterChain}
+            onChange={(v) => (props.onConfigChange({ ...props.config, messageFilterChain: v }))}
+          />
         </div>
       </div>
 

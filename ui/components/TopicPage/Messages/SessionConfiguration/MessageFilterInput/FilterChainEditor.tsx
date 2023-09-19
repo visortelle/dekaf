@@ -9,6 +9,7 @@ import Filter from './FilterEditor';
 import enableIcon from './icons/enable.svg';
 
 import s from './FilterChainEditor.module.css';
+import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 
 const defaultFilter = `({ key, value, accum }) => {
   return true;
@@ -22,6 +23,16 @@ export type FilterChainProps = {
 const FilterChain: React.FC<FilterChainProps> = (props) => {
   return (
     <div className={s.FilterChainEditor}>
+      <LibraryBrowserPanel
+        itemType='message-filter-chain'
+        onPick={(item) => {
+          if (item.descriptor.type !== 'message-filter-chain') {
+            return;
+          }
+
+          props.onChange(item.descriptor.value)
+        }}
+      />
       <div style={{ marginBottom: '12rem' }}>
         <Select<'all' | 'any'>
           list={[
@@ -38,6 +49,16 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         return (
           <div key={filterId} className={s.Entry}>
             <div className={s.EntryFilter}>
+              <LibraryBrowserPanel
+                itemType='message-filter'
+                onPick={(item) => {
+                  if (item.descriptor.type !== 'message-filter') {
+                    return;
+                  }
+
+                  props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: item.descriptor.value } })
+                }}
+              />
               <Filter
                 value={filter}
                 onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: f } })}
