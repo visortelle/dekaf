@@ -1,11 +1,31 @@
 .LibraryBrowserPanel {
-  /* border-radius: 8rem; */
-  padding: 8rem 0;
-  /* border: 1px solid #ddd; */
   min-height: 48rem;
   min-width: 240rem;
+  margin-bottom: 12rem;
+  position: relative;
 }
 
 .ItemName {
 
 }
+
+.Buttons {
+  position: absolute;
+  display: inline-flex;
+  right: -12rem;
+  top: 0rem;
+  transform: translate(100%, 0);
+  background-color: #fff;
+  z-index: 10;
+  animation: fade-in 0.2s ease-in-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+

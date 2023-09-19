@@ -11,13 +11,14 @@
 
 .Content {
   display: flex;
-  gap: 24rem;
+  gap: 48rem;
+  max-width: 1000rem;
 }
 
 .LeftColumn {
-  width: 33.33333333333%;
+  width: 40%;
 }
 
 .RightColumn {
-  width: 66.66666666666%;
+  width: 60%;
 }

@@ -17,7 +17,7 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
   return (
     <div className={s.LibraryBrowserPickButton}>
       <SmallButton
-        text='Pick'
+        text='Select'
         type='regular'
         svgIcon={pickIcon}
         onClick={() => {

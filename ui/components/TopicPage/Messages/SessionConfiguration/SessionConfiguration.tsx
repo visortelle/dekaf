@@ -6,10 +6,8 @@ import { ConsumerSessionConfig } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 
 import s from './SessionConfiguration.module.css'
-import LibraryBrowserButtons from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserButtons/LibraryBrowserButtons';
 import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
-import { H3 } from '../../../ui/H/H';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 
 export type SessionConfigurationProps = {

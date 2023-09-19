@@ -18,7 +18,7 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
     <div className={s.LibraryBrowserSaveButton}>
       <SmallButton
         text='Save'
-        type='regular'
+        type='primary'
         svgIcon={saveIcon}
         onClick={() => {
           const modal = mkLibraryBrowserModal({
