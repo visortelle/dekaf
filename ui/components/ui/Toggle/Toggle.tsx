@@ -5,6 +5,7 @@ export type ToggleProps = {
   value: boolean;
   onChange: (value: boolean) => void;
   label?: string;
+  title?: string;
 };
 
 const Toggle: React.FC<ToggleProps> = (props) => {
@@ -19,6 +20,7 @@ const Toggle: React.FC<ToggleProps> = (props) => {
         bodyRef.current?.focus();
         toggle();
       }}
+      title={props.title}
     >
       <div
         ref={bodyRef}

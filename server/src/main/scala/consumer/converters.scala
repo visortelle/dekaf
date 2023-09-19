@@ -4,10 +4,18 @@ import org.apache.pulsar.client.api.SubscriptionInitialPosition as PulsarSubscri
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
 def messageFilterFromPb(filter: pb.MessageFilter): MessageFilter =
-    MessageFilter(value = filter.value)
+    filter.value.js
+        .map(js => MessageFilter(`type` = MessageFilterType.JsMessageFilter, value = JsMessageFilter(js.jsCode)))
+        .getOrElse(
+            filter.value.basic
+                .map(_ => MessageFilter(`type` = MessageFilterType.BasicMessageFilter, value = BasicMessageFilter()))
+                .getOrElse(throw new IllegalArgumentException("Invalid message filter"))
+        )
 
 def messageFilterToPb(filter: MessageFilter): pb.MessageFilter =
-    pb.MessageFilter(value = filter.value)
+    filter match
+        case MessageFilter(_, JsMessageFilter(jsCode))  => pb.MessageFilter(value = pb.MessageFilter.Value.Js(pb.JsMessageFilter(jsCode)))
+        case MessageFilter(_, BasicMessageFilter()) => pb.MessageFilter(value = pb.MessageFilter.Value.Basic(pb.BasicMessageFilter()))
 
 def messageFilterChainModeFromPb(mode: pb.MessageFilterChainMode): MessageFilterChainMode =
     mode match

@@ -43,7 +43,6 @@ given Decoder[LibraryItemDescriptor] = new Decoder[LibraryItemDescriptor] {
             }
         } yield LibraryItemDescriptor(itemType, value)
 }
-
 given Encoder[LibraryItemDescriptor] = new Encoder[LibraryItemDescriptor] {
     final def apply(a: LibraryItemDescriptor): Json = Json.obj(
         ("type", a.`type`.asJson),

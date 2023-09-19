@@ -125,8 +125,19 @@ message DeleteConsumerResponse {
   google.rpc.Status status = 1;
 }
 
+message JsMessageFilter {
+  string js_code = 1;
+}
+
+message BasicMessageFilter {
+
+}
+
 message MessageFilter {
-  string value = 1;
+  oneof value {
+    JsMessageFilter js = 1;
+    BasicMessageFilter basic = 2;
+  }
 }
 
 enum MessageFilterChainMode {

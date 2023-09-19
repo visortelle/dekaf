@@ -70,8 +70,11 @@ class MessageFilterContext(config: MessageFilterContextConfig):
         config.stdout.reset()
         logs
 
-    def test(filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-        testUsingJs(context, filterCode, jsonMessage, jsonValue)
+    def test(filter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
+        filter.value match
+            case f: BasicMessageFilter => testBasicFilter(context, f, jsonMessage, jsonValue)
+            case f: JsMessageFilter    => testJsFilter(context, f, jsonMessage, jsonValue)
+            case _                     => throw new Exception("Unsupported filter type.")
 
     def runCode(code: String): String =
         try
@@ -80,7 +83,31 @@ class MessageFilterContext(config: MessageFilterContextConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
-def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
+def testBasicFilter(context: Context, filter: BasicMessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
+    val evalCode =
+        s"""
+           | (() => {
+           |    const message = ${jsonMessage.asJson};
+           |    message.value = ${jsonValue.getOrElse("undefined")};
+           |    message.accum = globalThis.$JsonAccumulatorVarName;
+           |
+           |    globalThis.lastMessage = message; // For debug on the client side.
+           |
+           |    return true // replace with actual BasicMessageFilter implementation.
+           | })();
+           |""".stripMargin
+
+    val testResult =
+        try
+            Right(context.eval("js", evalCode).asBoolean)
+        catch {
+            case err => Left(s"BasicMessageFilter error: ${err.getMessage}")
+        }
+
+    val cumulativeJsonState = context.eval("js", s"stringify(globalThis.$JsonAccumulatorVarName)").asString
+    (testResult, cumulativeJsonState)
+
+def testJsFilter(context: Context, filter: JsMessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
     val evalCode =
         s"""
           | (() => {
@@ -90,7 +117,7 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
           |
           |    globalThis.lastMessage = message; // For debug on the client side.
           |
-          |    return ($filterCode)(message);
+          |    return (${filter.jsCode})(message);
           | })();
           |""".stripMargin
 
@@ -98,11 +125,10 @@ def testUsingJs(context: Context, filterCode: String, jsonMessage: JsonMessage, 
         try
             Right(context.eval("js", evalCode).asBoolean)
         catch {
-            case err => Left(s"Message filter JS error: ${err.getMessage}")
+            case err => Left(s"JsMessageFilter error: ${err.getMessage}")
         }
 
     val cumulativeJsonState = context.eval("js", s"stringify(globalThis.$JsonAccumulatorVarName)").asString
-
     (testResult, cumulativeJsonState)
 
 def getFilterTestResult(
@@ -111,7 +137,7 @@ def getFilterTestResult(
     jsonMessage: JsonMessage,
     jsonValue: MessageValueToJsonResult
 ): FilterTestResult =
-    messageFilterContext.test(filter.value, jsonMessage, jsonValue)
+    messageFilterContext.test(filter, jsonMessage, jsonValue)
 
 def getFilterChainTestResult(
     filterChain: MessageFilterChain,
@@ -127,7 +153,12 @@ def getFilterChainTestResult(
     if (chain.filters.isEmpty)
         chain = MessageFilterChain(
             mode = MessageFilterChainMode.All,
-            filters = Map("dummy" -> MessageFilter(value = "() => true"))
+            filters = Map(
+                "dummy" -> MessageFilter(
+                    `type` = MessageFilterType.JsMessageFilter,
+                    value = JsMessageFilter(jsCode = "() => true")
+                )
+            )
         )
 
     val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilterContext, jsonMessage, jsonValue))

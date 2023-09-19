@@ -6,10 +6,10 @@ import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from './types';
 import Filter from './FilterEditor';
-import enableIcon from './icons/enable.svg';
 
 import s from './FilterChainEditor.module.css';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import Toggle from '../../../../ui/Toggle/Toggle';
 
 const defaultFilter = `({ key, value, accum }) => {
   return true;
@@ -67,16 +67,15 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
             </div>
             <div className={s.EntryButtons}>
               <div className={s.EntryButton}>
-                <Button
-                  svgIcon={enableIcon}
-                  onClick={() => {
+                <Toggle
+                  value={isDisabled}
+                  onChange={() => {
                     const newDisabledFilters = props.value.disabledFilters.includes(filterId) ?
                       props.value.disabledFilters.filter(id => id !== filterId) :
                       [...props.value.disabledFilters, filterId];
                     props.onChange({ ...props.value, disabledFilters: newDisabledFilters });
                   }}
-                  title={isDisabled ? 'Enable filter' : 'Disable filter'}
-                  type={isDisabled ? 'regular' : 'primary'}
+                  title='Toggle this filter'
                 />
               </div>
             </div>
