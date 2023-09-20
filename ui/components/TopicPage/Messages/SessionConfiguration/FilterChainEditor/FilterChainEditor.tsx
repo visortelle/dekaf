@@ -1,11 +1,9 @@
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-
-import Button from '../../../../ui/Button/Button';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
-import * as t from './types';
-import Filter from './FilterEditor';
+import * as t from '../../types';
+import FilterEditor from './FilterEditor/FilterEditor';
 
 import s from './FilterChainEditor.module.css';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
@@ -59,10 +57,9 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                   props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: item.descriptor.value } })
                 }}
               />
-              <Filter
+              <FilterEditor
                 value={filter}
                 onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: f } })}
-                autoCompleteConfig={index === 0}
               />
             </div>
             <div className={s.EntryButtons}>

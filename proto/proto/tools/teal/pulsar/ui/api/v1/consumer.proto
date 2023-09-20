@@ -63,12 +63,6 @@ enum SubscriptionType {
   SUBSCRIPTION_TYPE_KEY_SHARED = 4;
 }
 
-enum SubscriptionInitialPosition {
-  SUBSCRIPTION_INITIAL_POSITION_UNSPECIFIED = 0;
-  SUBSCRIPTION_INITIAL_POSITION_EARLIEST = 1;
-  SUBSCRIPTION_INITIAL_POSITION_LATEST = 2;
-}
-
 enum RegexSubscriptionMode {
   REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
   REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
@@ -92,9 +86,51 @@ message TopicsSelector {
   }
 }
 
+enum DateTimeUnit {
+  DATE_TIME_UNIT_UNSPECIFIED = 0;
+  DATE_TIME_UNIT_YEAR = 1;
+  DATE_TIME_UNIT_MONTH = 2;
+  DATE_TIME_UNIT_DAY = 3;
+  DATE_TIME_UNIT_HOUR = 4;
+  DATE_TIME_UNIT_MINUTE = 5;
+  DATE_TIME_UNIT_SECOND = 6;
+}
+
+message StartFromEarliestMessage {}
+message StartFromLatestMessage {}
+
+message StartFromMessageId {
+  bytes message_id = 1;
+}
+
+message StartFromSpecificDateTime {
+  google.protobuf.Timestamp timestamp = 1;
+}
+
+message StartFromNDateTimeUnitsAgo {
+  int32 n = 1;
+  DateTimeUnit unit = 2;
+}
+
+message StartFromLastNDateTimeUnits {
+  int32 n = 1;
+  DateTimeUnit unit = 2;
+}
+
+message StartFrom {
+  oneof value {
+    StartFromEarliestMessage earliest = 1;
+    StartFromLatestMessage latest = 2;
+    StartFromMessageId message_id = 3;
+    StartFromSpecificDateTime specific_date_time = 4;
+    StartFromNDateTimeUnitsAgo n_units_ago = 5;
+    StartFromLastNDateTimeUnits last_n_units = 6;
+  }
+}
+
 message ConsumerSessionConfig {
-  optional SubscriptionInitialPosition subscription_initial_position = 1;
-  optional MessageFilterChain message_filter_chain = 2;
+  StartFrom start_from = 1;
+  MessageFilterChain message_filter_chain = 2;
 }
 
 message CreateConsumerRequest {

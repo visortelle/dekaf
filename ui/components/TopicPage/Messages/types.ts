@@ -1,5 +1,4 @@
 import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
-import * as messageFilter from "../Messages/SessionConfiguration/MessageFilterInput/types";
 
 export type SessionState =
   | "paused"
@@ -38,7 +37,7 @@ export type StartFrom =
 export type ConsumerSessionConfig = {
   startFrom: StartFrom;
   topicsSelector: SessionTopicsSelector;
-  messageFilterChain: messageFilter.MessageFilterChain;
+  messageFilterChain: MessageFilterChain;
 };
 
 type Nullable<T> = T | null;
@@ -67,3 +66,25 @@ export type MessageDescriptor = {
 };
 
 export type PartialMessageDescriptor = Partial<MessageDescriptor>;
+
+export type JsMessageFilter = {
+  jsCode: string;
+};
+
+export type BasicMessageFilter = {
+
+};
+
+export type MessageFilter = {
+  type: "js-message-filter";
+  value: JsMessageFilter;
+} | {
+  type: "basic-message-filter";
+  value: BasicMessageFilter;
+}
+
+export type MessageFilterChain = {
+  filters: Record<string, MessageFilter>;
+  disabledFilters: string[];
+  mode: 'all' | 'any';
+}

@@ -1,5 +1,5 @@
 import { ConsumerSessionConfig } from "../../TopicPage/Messages/types";
-import { MessageFilter, MessageFilterChain } from "../../TopicPage/Messages/SessionConfiguration/MessageFilterInput/types";
+import { MessageFilter, MessageFilterChain } from "../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/types";
 
 export type LibraryItemType =
   "consumer-session-config" | "message-filter" | "message-filter-chain";

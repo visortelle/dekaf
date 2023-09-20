@@ -46,12 +46,13 @@ import useSWR from 'swr';
 import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import { messageDescriptorFromPb } from './conversions';
+import { consumerSessionConfigToPb, messageDescriptorFromPb, messageFilterChainToPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { cons } from 'fp-ts/lib/ReadonlyNonEmptyArray';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
@@ -287,7 +288,10 @@ const Session: React.FC<SessionProps> = (props) => {
       req.setSubscriptionName(subscriptionName.current);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
       req.setSubscriptionMode(SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE);
-      req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
+
+      const consumerSessionConfigPb = consumerSessionConfigToPb(props.config);
+      req.setConsumerSessionConfig(consumerSessionConfigPb);
+
       req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
@@ -370,20 +374,8 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState === 'running') {
       console.info(`%cRunning session: ${props.sessionKey}`, consoleCss);
 
-      const messageFilterChain = new MessageFilterChain();
-      messageFilterChain.setMode(props.config.messageFilterChain.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
-
-      Object.entries(props.config.messageFilterChain.filters)
-        .filter(([filterId]) => !props.config.messageFilterChain.disabledFilters.includes(filterId))
-        .forEach(([filterId, filter]) => {
-          const filterPb = new MessageFilter();
-          filterPb.setValue(filter.filter.value || '');
-          messageFilterChain.getFiltersMap().set(filterId, filterPb);
-        });
-
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName.current);
-      resumeReq.setMessageFilterChain(messageFilterChain);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler);
       const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });
@@ -566,13 +558,9 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       isShowConsole={isShowConsole}
       onSetIsShowConsole={() => setIsShowConsole(!isShowConsole)}
       {...props}
-      onStopSession={() => {
-        setSessionKey(n => n + 1);
-      }}
+      onStopSession={() => setSessionKey(n => n + 1)}
       config={config}
-      onConfigChange={(v) => {
-        setConfig(v);
-      }}
+      onConfigChange={(v) => setConfig(v)}
     />
   );
 }

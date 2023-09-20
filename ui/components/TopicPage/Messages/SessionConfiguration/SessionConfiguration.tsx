@@ -1,7 +1,7 @@
 import React from 'react';
 
 import StartFromInput from './StartFromInput/StartFromInput';
-import FilterChain from './MessageFilterInput/FilterChainEditor';
+import FilterChain from './FilterChainEditor/FilterChainEditor';
 import { ConsumerSessionConfig } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 

@@ -74,7 +74,6 @@ class MessageFilterContext(config: MessageFilterContextConfig):
         filter.value match
             case f: BasicMessageFilter => testBasicFilter(context, f, jsonMessage, jsonValue)
             case f: JsMessageFilter    => testJsFilter(context, f, jsonMessage, jsonValue)
-            case _                     => throw new Exception("Unsupported filter type.")
 
     def runCode(code: String): String =
         try

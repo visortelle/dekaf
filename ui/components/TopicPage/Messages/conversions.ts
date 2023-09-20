@@ -1,7 +1,15 @@
-import { Message } from "../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { MessageDescriptor, PartialMessageDescriptor } from "./types";
+import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
+import {
+  MessageDescriptor,
+  PartialMessageDescriptor,
+  ConsumerSessionConfig,
+  BasicMessageFilter,
+  JsMessageFilter,
+  MessageFilter,
+  MessageFilterChain,
+} from "./types";
 
-export function messageDescriptorFromPb(message: Message): MessageDescriptor {
+export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
 
   return {
@@ -88,4 +96,37 @@ export function partialMessageDescriptorToSerializable(message: PartialMessageDe
     topic: message.topic,
     accum,
   };
+}
+
+export function subscriptionInitialPositionToPb(position: "earliest" | "latest"): pb.SubscriptionInitialPosition {
+
+}
+
+
+export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.ConsumerSessionConfig {
+  // req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
+  const configPb = new pb.ConsumerSessionConfig();
+}
+
+export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
+  switch (filter.type) {
+    case "js-message-filter":
+      return new pb.MessageFilter().setJs(new pb.JsMessageFilter().setJsCode(filter.value.jsCode));
+    case "basic-message-filter":
+      return new pb.MessageFilter().setBasic(new pb.BasicMessageFilter());
+  }
+}
+
+export function messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFilterChain {
+  const chainPb = new pb.MessageFilterChain();
+  chainPb.setMode(chain.mode === 'all' ? pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
+
+  Object.entries(chain.filters)
+    .filter(([filterId]) => !chain.disabledFilters.includes(filterId))
+    .forEach(([filterId, filter]) => {
+      const filterPb = messageFilterToPb(filter);
+      chainPb.getFiltersMap().set(filterId, filterPb);
+    });
+
+  return chainPb;
 }
