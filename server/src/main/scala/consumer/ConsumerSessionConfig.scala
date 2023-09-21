@@ -117,7 +117,7 @@ given Encoder[StartFromMessageId] = deriveEncoder[StartFromMessageId]
 
 case class StartFrom(
     `type`: StartFromType,
-    value: StartFromEarliestMessage | StartFromLatestMessage | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime
+    value: StartFromEarliestMessage | StartFromLatestMessage | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
 )
 given Decoder[StartFrom] = new Decoder[StartFrom] {
     final def apply(c: HCursor): Decoder.Result[StartFrom] =

@@ -158,7 +158,9 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         messageFilterContexts = messageFilterContexts + (consumerName -> MessageFilterContext(
             MessageFilterContextConfig(stdout = new ByteArrayOutputStream())
         ))
-        consumerSessionConfigs = consumerSessionConfigs + (consumerName -> consumerSessionConfigFromPb(request.consumerSessionConfig.get))
+
+        val consumerSessionConfig = consumerSessionConfigFromPb(request.consumerSessionConfig.get)
+        consumerSessionConfigs = consumerSessionConfigs + (consumerName -> consumerSessionConfig)
 
         val topicsToConsume = request.topicsSelector match
             case Some(ts) =>
@@ -182,6 +184,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
 
         val consumer = consumerBuilder.subscribe
+        handleStartFrom(startFrom = consumerSessionConfig.startFrom, consumer = consumer)
         consumers = consumers + (consumerName -> consumer)
 
         val status: Status = Status(code = Code.OK.index)
