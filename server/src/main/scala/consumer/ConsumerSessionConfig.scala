@@ -65,17 +65,92 @@ case class MessageFilterChain(
 given Decoder[MessageFilterChain] = deriveDecoder[MessageFilterChain]
 given Encoder[MessageFilterChain] = deriveEncoder[MessageFilterChain]
 
-enum SubscriptionInitialPosition:
-    case Earliest
-    case Latest
+enum StartFromType {
+    case EarliestMessage
+    case LatestMessage
+    case MessageId
+    case DateTime
+    case RelativeDateTime
+}
+given Decoder[StartFromType] = deriveDecoder[StartFromType]
+given Encoder[StartFromType] = deriveEncoder[StartFromType]
 
-given Decoder[SubscriptionInitialPosition] = deriveDecoder[SubscriptionInitialPosition]
-given Encoder[SubscriptionInitialPosition] = deriveEncoder[SubscriptionInitialPosition]
+case class StartFromEarliestMessage()
+given Decoder[StartFromEarliestMessage] = deriveDecoder[StartFromEarliestMessage]
+given Encoder[StartFromEarliestMessage] = deriveEncoder[StartFromEarliestMessage]
+
+case class StartFromLatestMessage()
+given Decoder[StartFromLatestMessage] = deriveDecoder[StartFromLatestMessage]
+given Encoder[StartFromLatestMessage] = deriveEncoder[StartFromLatestMessage]
+
+enum DateTimeUnit {
+    case Second
+    case Minute
+    case Hour
+    case Day
+    case Week
+    case Month
+    case Year
+}
+given Decoder[DateTimeUnit] = deriveDecoder[DateTimeUnit]
+given Encoder[DateTimeUnit] = deriveEncoder[DateTimeUnit]
+
+case class StartFromDateTime(
+    dateTime: java.time.Instant
+)
+given Decoder[StartFromDateTime] = deriveDecoder[StartFromDateTime]
+given Encoder[StartFromDateTime] = deriveEncoder[StartFromDateTime]
+
+case class StartFromRelativeDateTime(
+    value: Int,
+    unit: DateTimeUnit,
+    isRoundToUnitStart: Boolean
+)
+given Decoder[StartFromRelativeDateTime] = deriveDecoder[StartFromRelativeDateTime]
+given Encoder[StartFromRelativeDateTime] = deriveEncoder[StartFromRelativeDateTime]
+
+case class StartFromMessageId(
+    messageId: Array[Byte]
+)
+given Decoder[StartFromMessageId] = deriveDecoder[StartFromMessageId]
+given Encoder[StartFromMessageId] = deriveEncoder[StartFromMessageId]
+
+case class StartFrom(
+    `type`: StartFromType,
+    value: StartFromEarliestMessage | StartFromLatestMessage | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime
+)
+given Decoder[StartFrom] = new Decoder[StartFrom] {
+    final def apply(c: HCursor): Decoder.Result[StartFrom] =
+        for {
+            `type` <- c.downField("type").as[StartFromType]
+            value <- `type` match {
+                case StartFromType.EarliestMessage  => c.downField("value").as[StartFromEarliestMessage]
+                case StartFromType.LatestMessage    => c.downField("value").as[StartFromLatestMessage]
+                case StartFromType.MessageId        => c.downField("value").as[StartFromMessageId]
+                case StartFromType.DateTime         => c.downField("value").as[StartFromDateTime]
+                case StartFromType.RelativeDateTime => c.downField("value").as[StartFromRelativeDateTime]
+            }
+        } yield StartFrom(`type`, value)
+}
+given Encoder[StartFrom] = new Encoder[StartFrom] {
+    final def apply(a: StartFrom): Json = Json.obj(
+        ("type", a.`type`.asJson),
+        (
+            "value",
+            a.value match {
+                case v: StartFromEarliestMessage => v.asJson
+                case v: StartFromLatestMessage   => v.asJson
+                case v: StartFromMessageId       => v.asJson
+                case v: StartFromDateTime        => v.asJson
+                case v: StartFromRelativeDateTime => v.asJson
+            }
+        )
+    )
+}
 
 case class ConsumerSessionConfig(
-    subscriptionInitialPosition: SubscriptionInitialPosition,
+    startFrom: StartFrom,
     messageFilterChain: MessageFilterChain
 )
-
 given Decoder[ConsumerSessionConfig] = deriveDecoder[ConsumerSessionConfig]
 given Encoder[ConsumerSessionConfig] = deriveEncoder[ConsumerSessionConfig]

@@ -90,10 +90,11 @@ enum DateTimeUnit {
   DATE_TIME_UNIT_UNSPECIFIED = 0;
   DATE_TIME_UNIT_YEAR = 1;
   DATE_TIME_UNIT_MONTH = 2;
-  DATE_TIME_UNIT_DAY = 3;
-  DATE_TIME_UNIT_HOUR = 4;
-  DATE_TIME_UNIT_MINUTE = 5;
-  DATE_TIME_UNIT_SECOND = 6;
+  DATE_TIME_UNIT_WEEK = 3;
+  DATE_TIME_UNIT_DAY = 4;
+  DATE_TIME_UNIT_HOUR = 5;
+  DATE_TIME_UNIT_MINUTE = 6;
+  DATE_TIME_UNIT_SECOND = 7;
 }
 
 message StartFromEarliestMessage {}
@@ -103,34 +104,41 @@ message StartFromMessageId {
   bytes message_id = 1;
 }
 
-message StartFromSpecificDateTime {
-  google.protobuf.Timestamp timestamp = 1;
+message StartFromDateTime {
+  google.protobuf.Timestamp date_time = 1;
 }
 
-message StartFromNDateTimeUnitsAgo {
-  int32 n = 1;
+message StartFromRelativeDateTime {
+  int32 value = 1;
   DateTimeUnit unit = 2;
-}
-
-message StartFromLastNDateTimeUnits {
-  int32 n = 1;
-  DateTimeUnit unit = 2;
+  bool is_round_to_unit_start = 3;
 }
 
 message StartFrom {
   oneof value {
-    StartFromEarliestMessage earliest = 1;
-    StartFromLatestMessage latest = 2;
+    StartFromEarliestMessage earliest_message = 1;
+    StartFromLatestMessage latest_message = 2;
     StartFromMessageId message_id = 3;
-    StartFromSpecificDateTime specific_date_time = 4;
-    StartFromNDateTimeUnitsAgo n_units_ago = 5;
-    StartFromLastNDateTimeUnits last_n_units = 6;
+    StartFromDateTime date_time = 4;
+    StartFromRelativeDateTime relative_date_time = 5;
   }
+}
+
+message ConsumerSessionPauseTrigger {
+  int64 on_messages_processed = 1;
+  int64 on_messages_delivered = 2;
+  int64 on_bytes_processed = 3;
+  int64 on_bytes_delivered = 4;
+  int64 on_elapsed_time_ms = 5;
+  bool on_topic_end_reached = 6;
+  bool on_message_decode_fail = 7;
+  // TODO - on message value or accumulator match. For example if pricing sum of orders is greater than 1000.
 }
 
 message ConsumerSessionConfig {
   StartFrom start_from = 1;
   MessageFilterChain message_filter_chain = 2;
+  ConsumerSessionPauseTrigger pause_trigger = 3;
 }
 
 message CreateConsumerRequest {
