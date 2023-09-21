@@ -112,6 +112,6 @@ def consumerSessionConfigFromPb(config: pb.ConsumerSessionConfig): ConsumerSessi
 
 def consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.ConsumerSessionConfig =
     pb.ConsumerSessionConfig(
-        startFrom = Some(startFromToPb(config.subscriptionInitialPosition)),
+        startFrom = Some(startFromToPb(config.startFrom)),
         messageFilterChain = Some(messageFilterChainToPb(config.messageFilterChain))
     )
