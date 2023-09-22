@@ -178,6 +178,8 @@ message BasicMessageFilter {
 }
 
 message MessageFilter {
+  bool is_enabled = 10;
+  bool is_negated = 11;
   oneof value {
     JsMessageFilter js = 1;
     BasicMessageFilter basic = 2;
@@ -191,6 +193,8 @@ enum MessageFilterChainMode {
 }
 
 message MessageFilterChain {
+  bool is_enabled = 10;
+  bool is_negated = 11;
   map<string, MessageFilter> filters = 1;
   MessageFilterChainMode mode = 2;
 }

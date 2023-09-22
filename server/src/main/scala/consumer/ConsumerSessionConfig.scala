@@ -24,21 +24,27 @@ given Decoder[JsMessageFilter] = deriveDecoder[JsMessageFilter]
 given Encoder[JsMessageFilter] = deriveEncoder[JsMessageFilter]
 
 case class MessageFilter(
+    isEnabled: Boolean,
+    isNegated: Boolean,
     `type`: MessageFilterType,
     value: BasicMessageFilter | JsMessageFilter
 )
 given Decoder[MessageFilter] = new Decoder[MessageFilter] {
     final def apply(c: HCursor): Decoder.Result[MessageFilter] =
         for {
+            isEnabled <- c.downField("isEnabled").as[Boolean]
+            isNegated <- c.downField("isNegated").as[Boolean]
             filterType <- c.downField("type").as[MessageFilterType]
             value <- filterType match {
                 case MessageFilterType.JsMessageFilter    => c.downField("value").as[JsMessageFilter]
                 case MessageFilterType.BasicMessageFilter => c.downField("value").as[BasicMessageFilter]
             }
-        } yield MessageFilter(filterType, value)
+        } yield MessageFilter(isEnabled, isNegated, filterType, value)
 }
 given Encoder[MessageFilter] = new Encoder[MessageFilter] {
     final def apply(a: MessageFilter): Json = Json.obj(
+        ("isEnabled", a.isEnabled.asJson),
+        ("isNegated", a.isNegated.asJson),
         ("type", a.`type`.asJson),
         (
             "value",
@@ -58,6 +64,8 @@ given Decoder[MessageFilterChainMode] = deriveDecoder[MessageFilterChainMode]
 given Encoder[MessageFilterChainMode] = deriveEncoder[MessageFilterChainMode]
 
 case class MessageFilterChain(
+    isEnabled: Boolean,
+    isNegated: Boolean,
     mode: MessageFilterChainMode,
     filters: Map[String, MessageFilter]
 )

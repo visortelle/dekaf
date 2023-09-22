@@ -42,6 +42,19 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               topicsInternalStats={props.topicsInternalStats}
             />
           </FormItem>
+
+          <FormItem>
+            <FormLabel
+              content="Pause Trigger"
+              help={(
+                <div>
+                  The consumer will automatically pause when the specified condition is met.
+                  It useful when you want to find some specific messages in large topics.
+                </div>
+              )}
+            />
+            <div>TODO</div>
+          </FormItem>
         </div>
         <div className={s.RightColumn}>
           <FilterChain

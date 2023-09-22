@@ -71,9 +71,17 @@ class MessageFilterContext(config: MessageFilterContextConfig):
         logs
 
     def test(filter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
-        filter.value match
+        val result = filter.value match
             case f: BasicMessageFilter => testBasicFilter(context, f, jsonMessage, jsonValue)
             case f: JsMessageFilter    => testJsFilter(context, f, jsonMessage, jsonValue)
+
+        (
+            result._1.fold(
+                err => Left(err),
+                bool => Right(if filter.isNegated then !bool else bool)
+            ),
+            result._2
+        )
 
     def runCode(code: String): String =
         try
@@ -149,28 +157,39 @@ def getFilterChainTestResult(
     // Each message filters mutate global state.
     // For example: it stores the last message in the global variable `lastMessage`.
     // To make it work properly, at least one filter should always present.
-    if (chain.filters.isEmpty)
+    if (chain.filters.isEmpty || !chain.isEnabled)
         chain = MessageFilterChain(
+            isEnabled = true,
+            isNegated = false,
             mode = MessageFilterChainMode.All,
             filters = Map(
                 "dummy" -> MessageFilter(
+                    isEnabled = true,
+                    isNegated = false,
                     `type` = MessageFilterType.JsMessageFilter,
                     value = JsMessageFilter(jsCode = "() => true")
                 )
             )
         )
 
-    val filterResults = chain.filters.map(f => getFilterTestResult(f._2, messageFilterContext, jsonMessage, jsonValue))
+    val filterResults = chain.filters
+        .filter(f => f._2.isEnabled)
+        .map(f => getFilterTestResult(f._2, messageFilterContext, jsonMessage, jsonValue))
 
     val maybeErr = filterResults.find(fr => fr._1.isLeft)
-    val filterChainResult = maybeErr match
-        case Some(Left(err), _) => Left(err)
-        case _ =>
-            chain.mode match
-                case MessageFilterChainMode.All =>
-                    Right(filterResults.forall(fr => fr._1.getOrElse(false)))
-                case MessageFilterChainMode.Any =>
-                    Right(filterResults.exists(fr => fr._1.getOrElse(false)))
+    val filterChainResult = {
+        maybeErr match
+            case Some(Left(err), _) => Left(err)
+            case _ =>
+                chain.mode match
+                    case MessageFilterChainMode.All =>
+                        Right(filterResults.forall(fr => fr._1.getOrElse(false)))
+                    case MessageFilterChainMode.Any =>
+                        Right(filterResults.exists(fr => fr._1.getOrElse(false)))
+    }.fold(
+        err => Left(err),
+        bool => Right(if chain.isNegated then !bool else bool)
+    )
 
     if filterResults.nonEmpty then
         val (_, jsonAggregate) = filterResults.last

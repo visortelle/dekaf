@@ -84,15 +84,17 @@ export type BasicMessageFilter = {
 };
 
 export type MessageFilter = {
+  isEnabled: boolean;
+  isNegated: boolean;
+} & ({
   type: "js-message-filter";
   value: JsMessageFilter;
 } | {
   type: "basic-message-filter";
   value: BasicMessageFilter;
-}
+})
 
 export type MessageFilterChain = {
   filters: Record<string, MessageFilter>;
-  disabledFilters: string[];
   mode: 'all' | 'any';
 }

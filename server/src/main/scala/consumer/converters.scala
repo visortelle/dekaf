@@ -9,17 +9,34 @@ import java.time.Instant
 
 def messageFilterFromPb(filter: pb.MessageFilter): MessageFilter =
     filter.value.js
-        .map(js => MessageFilter(`type` = MessageFilterType.JsMessageFilter, value = JsMessageFilter(js.jsCode)))
+        .map(js => MessageFilter(
+            isEnabled = filter.isEnabled,
+            isNegated = filter.isNegated,
+            `type` = MessageFilterType.JsMessageFilter, 
+            value = JsMessageFilter(js.jsCode)
+        ))
         .getOrElse(
             filter.value.basic
-                .map(_ => MessageFilter(`type` = MessageFilterType.BasicMessageFilter, value = BasicMessageFilter()))
+                .map(_ => MessageFilter(
+                    isEnabled = filter.isEnabled,
+                    isNegated = filter.isNegated,
+                    `type` = MessageFilterType.BasicMessageFilter, 
+                    value = BasicMessageFilter()
+                ))
                 .getOrElse(throw new IllegalArgumentException("Invalid message filter"))
         )
 
 def messageFilterToPb(filter: MessageFilter): pb.MessageFilter =
     filter match
-        case MessageFilter(_, JsMessageFilter(jsCode)) => pb.MessageFilter(value = pb.MessageFilter.Value.Js(pb.JsMessageFilter(jsCode)))
-        case MessageFilter(_, BasicMessageFilter())    => pb.MessageFilter(value = pb.MessageFilter.Value.Basic(pb.BasicMessageFilter()))
+        case MessageFilter(isEnabled, isNegated, _, JsMessageFilter(jsCode)) => pb.MessageFilter(
+            isEnabled = isEnabled,
+            isNegated = isNegated,
+            value = pb.MessageFilter.Value.Js(pb.JsMessageFilter(jsCode)))
+        case MessageFilter(isEnabled, isNegated, _, BasicMessageFilter())    => pb.MessageFilter(
+            isEnabled = isEnabled,
+            isNegated = isNegated,
+            value = pb.MessageFilter.Value.Basic(pb.BasicMessageFilter())
+        )
 
 def messageFilterChainModeFromPb(mode: pb.MessageFilterChainMode): MessageFilterChainMode =
     mode match
@@ -94,12 +111,16 @@ def startFromToPb(startFrom: StartFrom): pb.StartFrom =
 
 def messageFilterChainFromPb(chain: pb.MessageFilterChain): MessageFilterChain =
     MessageFilterChain(
+        isEnabled = chain.isEnabled,
+        isNegated = chain.isNegated,
         filters = chain.filters.map(kv => kv._1 -> messageFilterFromPb(kv._2)),
         mode = messageFilterChainModeFromPb(chain.mode)
     )
 
 def messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFilterChain =
     pb.MessageFilterChain(
+        isEnabled = chain.isEnabled,
+        isNegated = chain.isNegated,
         filters = chain.filters.map(kv => kv._1 -> messageFilterToPb(kv._2)),
         mode = messageFilterChainModeToPb(chain.mode)
     )

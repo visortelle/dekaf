@@ -9,10 +9,6 @@ import s from './FilterChainEditor.module.css';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import Toggle from '../../../../ui/Toggle/Toggle';
 
-const defaultFilter = `({ key, value, accum }) => {
-  return true;
-}`;
-
 export type FilterChainProps = {
   value: t.MessageFilterChain;
   onChange: (value: t.MessageFilterChain) => void;
@@ -42,7 +38,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         />
       </div>
 
-      {props.value.filters && Object.entries(props.value.filters).map(([filterId, filter], index) => {
+      {props.value.filters && Object.entries(props.value.filters).map(([filterId, filter], _) => {
         const isDisabled = props.value.disabledFilters.includes(filterId);
         return (
           <div key={filterId} className={s.Entry}>
@@ -82,7 +78,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       <div className={`${s.Buttons}`}>
         <SmallButton
           onClick={() => {
-            const newFilter: t.MessageFilter = { value: defaultFilter };
+            const newFilter: t.MessageFilter = { type: 'basic-message-filter', value: { filter: '' } };
             const newChain: t.MessageFilterChain = { ...props.value, filters: { ...props.value.filters, [uuid()]: newFilter } };
             props.onChange(newChain);
           }}
