@@ -58,27 +58,18 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                 onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: f } })}
               />
             </div>
-            <div className={s.EntryButtons}>
-              <div className={s.EntryButton}>
-                <Toggle
-                  value={isDisabled}
-                  onChange={() => {
-                    const newDisabledFilters = props.value.disabledFilters.includes(filterId) ?
-                      props.value.disabledFilters.filter(id => id !== filterId) :
-                      [...props.value.disabledFilters, filterId];
-                    props.onChange({ ...props.value, disabledFilters: newDisabledFilters });
-                  }}
-                  title='Toggle this filter'
-                />
-              </div>
-            </div>
           </div>
         );
       })}
       <div className={`${s.Buttons}`}>
         <SmallButton
           onClick={() => {
-            const newFilter: t.MessageFilter = { type: 'basic-message-filter', value: { filter: '' } };
+            const newFilter: t.MessageFilter = {
+              isEnabled: true,
+              isNegated: false,
+              type: 'basic-message-filter',
+              value: {}
+            };
             const newChain: t.MessageFilterChain = { ...props.value, filters: { ...props.value.filters, [uuid()]: newFilter } };
             props.onChange(newChain);
           }}

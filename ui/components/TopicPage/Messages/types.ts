@@ -92,7 +92,7 @@ export type MessageFilter = {
 } | {
   type: "basic-message-filter";
   value: BasicMessageFilter;
-})
+});
 
 export type MessageFilterChain = {
   filters: Record<string, MessageFilter>;
