@@ -35,7 +35,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
       <div className={s.Content}>
         <div className={s.LeftColumn}>
           <FormItem>
-            <FormLabel content="Start from" />
+            <FormLabel content="Start From" />
             <StartFromInput
               value={props.config.startFrom}
               onChange={(v) => props.onConfigChange({ ...props.config, startFrom: v })}

@@ -24,8 +24,8 @@ const list: List<StartFromType> = [
     title: 'Message with specific ID',
     value: 'messageId'
   },
-  { type: 'item', title: 'Date and time', value: 'dateTime' },
-  { type: 'item', title: 'Relative date and time', value: 'relativeDateTime' },
+  { type: 'item', title: 'Specific time', value: 'dateTime' },
+  { type: 'item', title: 'Relative time ago', value: 'relativeDateTime' },
 ];
 
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {
