@@ -6,8 +6,6 @@ import resetIcon from './icons/reset.svg';
 import consoleIcon from './icons/console.svg';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { SessionState, ConsumerSessionConfig } from './types';
-import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
-import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Input from '../../ui/Input/Input';
 
@@ -53,6 +51,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             disabled={props.sessionState !== 'new' && props.sessionState !== 'paused' && props.sessionState !== 'running'}
           />
         </div>
+
         <div className={s.Control}>
           <SmallButton
             title={"Stop and empty current session"}
@@ -62,6 +61,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             disabled={props.sessionState === 'new'}
           />
         </div>
+
         <div className={s.Control}>
           <SmallButton
             title={"Show tools"}
@@ -71,26 +71,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             type={'primary'}
           />
         </div>
-        <div className={s.Control}>
-          <div className={s.ConfigParamName}>Started from</div>
-          <div>
-            {props.config.startFrom.type === 'earliest' && <div>Earliest</div>}
-            {props.config.startFrom.type === 'latest' && <div>Latest</div>}
-            {(props.config.startFrom.type === 'messageId') && (() => {
-              const str = i18n.bytesToHexString(i18n.hexStringToBytes(props.config.startFrom.hexString), 'hex-with-space');
-              return (
-                props.config.startFrom.hexString.length === 0 ?
-                  <div className={s.NoData}>-</div> :
-                  <div style={{ maxWidth: '48ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={str}>
-                    {str}
-                  </div>
-              )
-            })()}
-            {(props.config.startFrom.type === 'date') && <div>{i18n.formatDateTime(props.config.startFrom.date)}</div>}
-            {(props.config.startFrom.type === 'timestamp') && <div>{i18n.formatDateTime(timestampToDate(props.config.startFrom.ts))}</div>}
-            {props.config.startFrom.type === 'quickDate' && <div>{i18n.formatDateTime(quickDateToDate(props.config.startFrom.quickDate, props.config.startFrom.relativeTo))}</div>}
-          </div>
-        </div>
+
         <div className={s.Control}>
           <div className={s.ConfigParamName}>Filters</div>
           <div style={{ display: 'flex' }}>

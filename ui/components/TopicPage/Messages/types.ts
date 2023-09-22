@@ -1,5 +1,3 @@
-import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
-
 export type SessionState =
   | "paused"
   | "pausing"
@@ -26,13 +24,23 @@ export type SessionTopicsSelector =
     regexSubscriptionMode: RegexSubMode;
   };
 
+export type DateTimeUnit = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
+
+export type RelativeDateTime = {
+  value: number,
+  unit: DateTimeUnit
+  isRoundToUnitStart: boolean
+};
+
 export type StartFrom =
-  | { type: "date"; date: Date }
-  | { type: "quickDate"; quickDate: QuickDate; relativeTo: Date }
-  | { type: "timestamp"; ts: string }
-  | { type: "messageId"; hexString: string }
-  | { type: "earliest" }
-  | { type: "latest" };
+  { type: "earliestMessage" } |
+  { type: "latestMessage" } |
+  { type: "messageId"; hexString: string } |
+  { type: "dateTime"; dateTime: Date } |
+  {
+    type: "relativeDateTime",
+    value: RelativeDateTime
+  };
 
 export type ConsumerSessionConfig = {
   startFrom: StartFrom;

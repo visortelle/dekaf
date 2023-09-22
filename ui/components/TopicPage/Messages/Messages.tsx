@@ -11,8 +11,6 @@ import {
   TopicsSelector,
   DeleteConsumerRequest,
   PauseRequest,
-  SubscriptionInitialPosition,
-  SeekRequest,
   RegexSubscriptionMode,
   TopicsSelectorByNames,
   TopicsSelectorByRegex,
@@ -24,7 +22,6 @@ import {
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
-import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -38,8 +35,6 @@ import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
 import { SessionState, ConsumerSessionConfig, MessageDescriptor } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
-import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
-import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
 import Console from './Console/Console';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
@@ -52,7 +47,6 @@ import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { cons } from 'fp-ts/lib/ReadonlyNonEmptyArray';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
@@ -156,53 +150,6 @@ const Session: React.FC<SessionProps> = (props) => {
     });
   }, messagesLoadedPerSecond.now > 0 ? 500 : false);
 
-  const applyConfig = async () => {
-    if (startFrom.type === 'messageId') {
-      const seekReq = new SeekRequest();
-      seekReq.setConsumerName(consumerName.current);
-      seekReq.setMessageId(i18n.hexStringToBytes(startFrom.hexString));
-      const res = await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by messageId. Consumer: ${consumerName.current}. ${err}`));
-
-      if (res !== undefined) {
-        const status = res.getStatus();
-        const code = status?.getCode();
-        if (code === Code.INVALID_ARGUMENT) {
-          notifyError(
-            <div>
-              Unable to seek by messageId. Consumer: {consumerName.current}.<br /><br />
-              Possible reasons:<br />
-              - Message with such id doesn&apos;t exist specified.<br />
-              - Some of the topics are partitioned.
-            </div>
-          );
-          props.onStopSession();
-          return;
-        }
-      }
-    }
-
-    if (startFrom.type === 'date' || startFrom.type === 'timestamp' || startFrom.type === 'quickDate') {
-      let fromDate;
-      switch (startFrom.type) {
-        case 'date': fromDate = dayjs(startFrom.date).millisecond(0).toDate(); break;
-        case 'timestamp': fromDate = dayjs(timestampToDate(startFrom.ts)).millisecond(0).toDate(); break;
-        case 'quickDate': fromDate = dayjs(quickDateToDate(startFrom.quickDate, startFrom.relativeTo)).millisecond(0).toDate(); break;
-      }
-
-      if (fromDate === undefined) {
-        return;
-      }
-
-      const seekReq = new SeekRequest();
-      const timestamp = Timestamp.fromDate(fromDate);
-      seekReq.setConsumerName(consumerName.current);
-      seekReq.setTimestamp(timestamp);
-      await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
-    }
-  }
-
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList();
     setMessagesLoaded(messagesCount => messagesCount + newMessages.length);
@@ -225,7 +172,6 @@ const Session: React.FC<SessionProps> = (props) => {
         return;
       }
 
-      await applyConfig();
       stream.removeListener('data', streamDataHandler);
       stream.on('data', streamDataHandler);
     })()
@@ -566,15 +512,3 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
 }
 
 export default SessionController;
-
-export function hexStringToByteArray(hexString: string): Uint8Array {
-  if (hexString.length % 2 !== 0) {
-    throw "Must have an even number of hex digits to convert to bytes";
-  }
-  var numBytes = hexString.length / 2;
-  var byteArray = new Uint8Array(numBytes);
-  for (var i = 0; i < numBytes; i++) {
-    byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
-  }
-  return byteArray;
-}
