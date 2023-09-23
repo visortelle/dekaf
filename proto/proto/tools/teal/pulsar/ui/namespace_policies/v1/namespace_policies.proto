@@ -1093,7 +1093,7 @@ message CopyNamespacePoliciesRequest {
 message CopyNamespacePoliciesResponse {
   google.rpc.Status status = 1;
   string policies_clipboard_id = 2;
-  repeated string errors = 3;
+  map<string, string> errors = 3;
 }
 
 message PasteNamespacePoliciesRequest {
@@ -1103,7 +1103,7 @@ message PasteNamespacePoliciesRequest {
 
 message PasteNamespacePoliciesResponse {
   google.rpc.Status status = 1;
-  repeated string errors = 3;
+  map<string, string> errors = 3;
 }
 
 service NamespacePoliciesService {
