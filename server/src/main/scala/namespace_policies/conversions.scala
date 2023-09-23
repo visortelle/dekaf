@@ -1,6 +1,6 @@
 package namespace_policies
 
-import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.{SchemaCompatibilityStrategy as SchemaCompatibilityStrategyPb }
+import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.SchemaCompatibilityStrategy as SchemaCompatibilityStrategyPb
 import org.apache.pulsar.common.policies.data.SchemaCompatibilityStrategy
 
 def schemaCompatibilityStrategyToPb(strategy: SchemaCompatibilityStrategy): SchemaCompatibilityStrategyPb =

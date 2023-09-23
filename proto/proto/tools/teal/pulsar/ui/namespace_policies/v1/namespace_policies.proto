@@ -1085,6 +1085,27 @@ message RemoveResourceGroupResponse {
   google.rpc.Status status = 1;
 }
 
+message CopyNamespacePoliciesRequest {
+  string namespace_fqn = 1;
+  optional string policies_clipboard_id = 2;
+}
+
+message CopyNamespacePoliciesResponse {
+  google.rpc.Status status = 1;
+  string policies_clipboard_id = 2;
+  repeated string errors = 3;
+}
+
+message PasteNamespacePoliciesRequest {
+  string namespace_fqn = 1;
+  optional string policies_clipboard_id = 2;
+}
+
+message PasteNamespacePoliciesResponse {
+  google.rpc.Status status = 1;
+  repeated string errors = 3;
+}
+
 service NamespacePoliciesService {
   rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
   rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);
@@ -1227,4 +1248,7 @@ service NamespacePoliciesService {
   rpc GetResourceGroup(GetResourceGroupRequest) returns (GetResourceGroupResponse);
   rpc SetResourceGroup(SetResourceGroupRequest) returns (SetResourceGroupResponse);
   rpc RemoveResourceGroup(RemoveResourceGroupRequest) returns (RemoveResourceGroupResponse);
+
+  rpc CopyNamespacePolicies(CopyNamespacePoliciesRequest) returns (CopyNamespacePoliciesResponse);
+  rpc PasteNamespacePolicies(PasteNamespacePoliciesRequest) returns (PasteNamespacePoliciesResponse);
 }

@@ -10,3 +10,13 @@
 .Tabs {
   padding: 12rem;
 }
+
+.ClipboardControls {
+  position: absolute;
+  justify-content: flex-end;
+  right: 0;
+  padding: 12rem;
+  gap: 6rem;
+  display: flex;
+  z-index: 2;
+}

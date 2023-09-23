@@ -40,6 +40,15 @@ import propertiesField from './fields/properties';
 import Tabs from '../../ui/Tabs/Tabs';
 
 import s from './Policies.module.css'
+import SmallButton from "../../ui/SmallButton/SmallButton";
+import * as GrpcClient from "../../app/contexts/GrpcClient/GrpcClient";
+import * as Notifications from "../../app/contexts/Notifications";
+import {Code} from "../../../grpc-web/google/rpc/code_pb";
+import {mutate} from "swr";
+import {swrKeys} from "../../swrKeys";
+import {
+  CopyNamespacePoliciesRequest, PasteNamespacePoliciesRequest
+} from "../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
 
 export type PoliciesProps = {
   tenant: string;
@@ -59,10 +68,85 @@ type TabsKey =
   'tiered-storage';
 
 const Policies: React.FC<PoliciesProps> = (props) => {
+  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
+  const { notifySuccess, notifyError, notifyInfo } = Notifications.useContext();
   const [activeTab, setActiveTab] = React.useState<TabsKey>('namespace-config');
+
+  const copyPoliciesToClipboard = async () => {
+    const req = new CopyNamespacePoliciesRequest()
+    req.setNamespaceFqn(`${props.tenant}/${props.namespace}`);
+
+    if (sessionStorage.getItem('pulsocat-namespace-policies-clipboard')) {
+      req.setPoliciesClipboardId(sessionStorage.getItem('pulsocat-namespace-policies-clipboard') ?? '');
+    }
+
+    const res = await namespacePoliciesServiceClient.copyNamespacePolicies(req, {})
+      .catch(err => notifyError(`Failed to copy namespace policies: ${err.message}`));
+
+    if (res === undefined) {
+      return;
+    }
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Failed to copy namespace policies: ${res.getStatus()?.getMessage()}`);
+      return;
+    }
+
+    sessionStorage.setItem('pulsocat-namespace-policies-clipboard', res.getPoliciesClipboardId());
+
+    if (res.getErrorsList().length > 0) {
+      notifyError(`Failed to copy some namespace policies: ${res.getErrorsList().join(',\n\n')}`);
+    }
+
+    notifySuccess('Namespace policies copied.');
+  }
+
+  const pastePoliciesFromClipboard = React.useCallback(async () => {
+    const req = new PasteNamespacePoliciesRequest();
+    req.setNamespaceFqn(`${props.tenant}/${props.namespace}`);
+
+    if (!sessionStorage.getItem('pulsocat-namespace-policies-clipboard')) {
+      notifyInfo("Copy namespace policies first.");
+      return;
+    }
+
+    req.setPoliciesClipboardId(sessionStorage.getItem('pulsocat-namespace-policies-clipboard') ?? '');
+
+    const res = await namespacePoliciesServiceClient.pasteNamespacePolicies(req, {})
+      .catch(err => notifyError(`Failed to paste some namespace policies: ${err.message}`));
+
+    if (res === undefined) {
+      return;
+    }
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Failed to paste namespace policies: ${res.getStatus()?.getMessage()}`);
+      return;
+    }
+
+    if (res.getErrorsList().length > 0) {
+      notifyError(
+        <>
+          <span>Failed to paste some policies:</span>
+          <div>
+            {res.getErrorsList().map((error, index) => (
+              <div key={index}>{index}. {error}</div>
+            ))}
+          </div>
+        </>
+      );
+    }
+
+    await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "maxTopicsPerNamespace" }))
+    notifySuccess('Namespace policies pasted.');
+  }, [props.namespace]);
 
   return (
     <div className={s.Policies}>
+      <div className={s.ClipboardControls}>
+        <SmallButton onClick={copyPoliciesToClipboard} type={"regular"} text={"Copy"}/>
+        <SmallButton onClick={pastePoliciesFromClipboard} type={"primary"} text={"Paste"}/>
+      </div>
       <div className={s.Tabs}>
         <Tabs<TabsKey>
           activeTab={activeTab}
@@ -227,7 +311,6 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           }}
         />
       </div>
-
     </div>
   );
 }

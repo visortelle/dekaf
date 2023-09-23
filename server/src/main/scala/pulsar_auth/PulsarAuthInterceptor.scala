@@ -30,8 +30,8 @@ object ClientsCache:
     private val updateTtlTimerTask: TimerTask = new TimerTask:
         override def run(): Unit =
             val now = Instant.now()
-            pulsarAdmin = pulsarAdmin.filter(_._2.expiresAt.isAfter(now))
-            pulsarClient = pulsarClient.filter(_._2.expiresAt.isAfter(now))
+            pulsarAdmin = pulsarAdmin.filter { case (_, entry) => entry.expiresAt.isAfter(now) }
+            pulsarClient = pulsarClient.filter { case (_, entry) => entry.expiresAt.isAfter(now) }
 
     ttlTimer.scheduleAtFixedRate(updateTtlTimerTask, 0, 1000L)
 

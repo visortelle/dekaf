@@ -3,15 +3,19 @@ package namespace_policies
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies as pb
-import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.*
+import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.GetMessageTtlResponse.MessageTtl
+import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.GetSubscriptionExpirationTimeResponse.SubscriptionExpirationTime
+import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.Policies.NamespaceAntiAffinityGroup
+import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.{Policies as PbPolicies, SchemaCompatibilityStrategy as PbSchemaCompatibilityStrategy, *}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AuthAction, AutoTopicCreationOverride, BookieAffinityGroupData, OffloadedReadPriority, SubscriptionAuthMode, *}
+import org.apache.pulsar.common.policies.data.{AuthAction, AutoTopicCreationOverride, BookieAffinityGroupData, OffloadedReadPriority, SubscriptionAuthMode, Policies as PulsarPolicies, *}
 import pulsar_auth.RequestContext
 
+import java.util.UUID
 import java.util.concurrent.{CompletableFuture, TimeUnit}
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, MINUTES}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.jdk.CollectionConverters.*
 import scala.jdk.FutureConverters.*
@@ -2004,3 +2008,194 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveResourceGroupResponse(status = Some(status)))
         }
+
+    override def copyNamespacePolicies(request: CopyNamespacePoliciesRequest): Future[CopyNamespacePoliciesResponse] =
+        val namespaceFqn = request.namespaceFqn
+
+        val pulsarAdmin = RequestContext.pulsarAdmin.get()
+
+        given ExecutionContext = ExecutionContext.global
+
+        var errors: List[Throwable] = List.empty
+
+        def recoverAsOption[T](f: CompletableFuture[T]): Future[Option[T]] =
+            f.asScala.map(Some(_)).recover {
+                case err: Throwable =>
+                    errors = err :: errors
+                    None
+            }
+
+        val newIdFuture = for {
+            pulsarPolicies <- recoverAsOption(pulsarAdmin.namespaces().getPoliciesAsync(namespaceFqn))
+            namespaceAntiAffinityGroup <- recoverAsOption(pulsarAdmin.namespaces().getNamespaceAntiAffinityGroupAsync(namespaceFqn))
+            bookieAffinityGroupData <- recoverAsOption(pulsarAdmin.namespaces().getBookieAffinityGroupAsync(namespaceFqn))
+            publishRate <- recoverAsOption(pulsarAdmin.namespaces().getPublishRateAsync(namespaceFqn))
+            dispatchRate <- recoverAsOption(pulsarAdmin.namespaces().getDispatchRateAsync(namespaceFqn))
+            subscribeRate <- recoverAsOption(pulsarAdmin.namespaces().getSubscribeRateAsync(namespaceFqn))
+            subscriptionDispatchRate <- recoverAsOption(pulsarAdmin.namespaces().getSubscriptionDispatchRateAsync(namespaceFqn))
+            replicatorDispatchRate <- recoverAsOption(pulsarAdmin.namespaces().getReplicatorDispatchRateAsync(namespaceFqn))
+        } yield NamespacePoliciesClipboardCache.add(
+            namespaceFqn = namespaceFqn,
+            pulsarPolicies = pulsarPolicies,
+            namespaceAntiAffinityGroup = namespaceAntiAffinityGroup,
+            bookieAffinityGroupData = bookieAffinityGroupData,
+            publishRate = publishRate,
+            dispatchRate = dispatchRate,
+            subscribeRate = subscribeRate,
+            subscriptionDispatchRate = subscriptionDispatchRate,
+            replicatorDispatchRate = replicatorDispatchRate
+        )
+        val newId = Await.result(newIdFuture, Duration(1, MINUTES))
+
+        val existingClipboardPoliciesId = request.policiesClipboardId
+
+        existingClipboardPoliciesId match
+            case Some(id) =>
+                NamespacePoliciesClipboardCache.delete(UUID.fromString(id))
+            case None =>
+                ()
+
+        Future.successful(CopyNamespacePoliciesResponse(
+            status = Some(Status(code = Code.OK.index)),
+            policiesClipboardId = newId.toString,
+            errors = errors.map(_.getMessage)
+        ))
+
+    override def pasteNamespacePolicies(request: PasteNamespacePoliciesRequest): Future[PasteNamespacePoliciesResponse] =
+        val clipboardPoliciesId = request.policiesClipboardId
+
+        clipboardPoliciesId match
+            case Some(id) =>
+                val maybeClipboardCacheEntry = NamespacePoliciesClipboardCache.get(UUID.fromString(id))
+
+                maybeClipboardCacheEntry match
+                    case Some(clipboardCacheEntry) =>
+                        val pulsarAdmin = RequestContext.pulsarAdmin.get()
+
+                        given ExecutionContext = ExecutionContext.global
+
+                        var errors: List[Throwable] = List.empty
+
+                        def failWithSaveError(f: CompletableFuture[Void]): Future[Unit] = {
+                            f.asScala.map(_ => ()).recover {
+                                case err: Throwable =>
+                                    errors = err :: errors
+                                    ()
+                            }
+                        }
+
+                        def setPublishRateFromCache(namespaceFqn: String, publishRate: Option[PublishRate]): Future[Unit] =
+                            publishRate match
+                                case Some(publishRate) =>
+                                    failWithSaveError(pulsarAdmin.namespaces().setPublishRateAsync(namespaceFqn, publishRate))
+                                case None =>
+                                    Future.successful(())
+
+                        def setDispatchRateFromCache(namespaceFqn: String, dispatchRate: Option[DispatchRate]): Future[Unit] =
+                            dispatchRate match
+                                case Some(dispatchRate) =>
+                                    failWithSaveError(pulsarAdmin.namespaces().setDispatchRateAsync(namespaceFqn, dispatchRate))
+                                case None =>
+                                    Future.successful(())
+
+                        def setSubscribeRateFromCache(namespaceFqn: String, subscribeRate: Option[SubscribeRate]): Future[Unit] =
+                            subscribeRate match
+                                case Some(subscribeRate) =>
+                                    failWithSaveError(pulsarAdmin.namespaces().setSubscribeRateAsync(namespaceFqn, subscribeRate))
+                                case None =>
+                                    Future.successful(())
+
+                        def setSubscriptionDispatchRateFromCache(namespaceFqn: String, subscriptionDispatchRate: Option[DispatchRate]): Future[Unit] =
+                            subscriptionDispatchRate match
+                                case Some(subscriptionDispatchRate) =>
+                                    failWithSaveError(pulsarAdmin.namespaces().setSubscriptionDispatchRateAsync(namespaceFqn, subscriptionDispatchRate))
+                                case None =>
+                                    Future.successful(())
+
+                        def setReplicatorDispatchRateFromCache(namespaceFqn: String, replicatorDispatchRate: Option[DispatchRate]): Future[Unit] =
+                            replicatorDispatchRate match
+                                case Some(replicatorDispatchRate) =>
+                                    failWithSaveError(pulsarAdmin.namespaces().setReplicatorDispatchRateAsync(namespaceFqn, replicatorDispatchRate))
+                                case None =>
+                                    Future.successful(())
+
+                        def setBookieAffinityGroupFromCache(namespaceFqn: String, bookieAffinityGroupData: Option[BookieAffinityGroupData]): Future[Unit] =
+                            bookieAffinityGroupData match
+                                case Some(bookieAffinityGroupData) =>
+                                    failWithSaveError(pulsarAdmin.namespaces().setBookieAffinityGroupAsync(namespaceFqn, bookieAffinityGroupData))
+                                case None =>
+                                    Future.successful(())
+
+                        def setPulsarPoliciesFromCache(namespaceFqn: String, pulsarPolicies: Option[PulsarPolicies]): Future[Seq[Unit]] =
+                            pulsarPolicies match
+                                case Some(policies) =>
+                                    def setResourceGroup(policies: PulsarPolicies): Future[Unit] =
+                                        Option(policies.resource_group_name) match
+                                            case Some(resourceGroup) =>
+                                                failWithSaveError(pulsarAdmin.namespaces().setNamespaceResourceGroupAsync(namespaceFqn, resourceGroup))
+                                            case None =>
+                                                Future.successful(())
+
+                                    Future.sequence(
+                                        Seq(
+                                            failWithSaveError(pulsarAdmin.namespaces().setNamespaceReplicationClustersAsync(namespaceFqn, policies.replication_clusters)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setNamespaceMessageTTLAsync(namespaceFqn, policies.message_ttl_in_seconds)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setSubscriptionExpirationTimeAsync(namespaceFqn, policies.subscription_expiration_time_minutes)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setDeduplicationStatusAsync(namespaceFqn, policies.deduplicationEnabled)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setAutoTopicCreationAsync(namespaceFqn, policies.autoTopicCreationOverride)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setAutoSubscriptionCreationAsync(namespaceFqn, policies.autoSubscriptionCreationOverride)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setRetentionAsync(namespaceFqn, policies.retention_policies)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setSubscriptionTypesEnabledAsync(namespaceFqn, policies.subscription_types_enabled.asScala.map(SubscriptionType.valueOf).toSet.asJava)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setPersistenceAsync(namespaceFqn, policies.persistence)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setEncryptionRequiredStatusAsync(namespaceFqn, policies.encryption_required)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setDelayedDeliveryMessagesAsync(namespaceFqn, policies.delayed_delivery_policies)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setInactiveTopicPoliciesAsync(namespaceFqn, policies.inactive_topic_policies)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setSubscriptionAuthModeAsync(namespaceFqn, policies.subscription_auth_mode)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setDeduplicationSnapshotIntervalAsync(namespaceFqn, policies.deduplicationSnapshotIntervalSeconds)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setMaxSubscriptionsPerTopicAsync(namespaceFqn, policies.max_subscriptions_per_topic)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setMaxProducersPerTopicAsync(namespaceFqn, policies.max_producers_per_topic)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setMaxConsumersPerTopicAsync(namespaceFqn, policies.max_consumers_per_topic)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setMaxConsumersPerSubscriptionAsync(namespaceFqn, policies.max_consumers_per_subscription)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setMaxUnackedMessagesPerConsumerAsync(namespaceFqn, policies.max_unacked_messages_per_consumer)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setMaxUnackedMessagesPerSubscriptionAsync(namespaceFqn, policies.max_unacked_messages_per_subscription)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setCompactionThresholdAsync(namespaceFqn, policies.compaction_threshold)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setOffloadThresholdAsync(namespaceFqn, policies.offload_threshold)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setOffloadThresholdInSecondsAsync(namespaceFqn, policies.offload_threshold_in_seconds)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setOffloadDeleteLagAsync(namespaceFqn, policies.offload_deletion_lag_ms, TimeUnit.MILLISECONDS)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setSchemaValidationEnforcedAsync(namespaceFqn, policies.schema_validation_enforced)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setSchemaCompatibilityStrategyAsync(namespaceFqn, policies.schema_compatibility_strategy)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setIsAllowAutoUpdateSchemaAsync(namespaceFqn, policies.is_allow_auto_update_schema)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setOffloadPoliciesAsync(namespaceFqn, policies.offload_policies)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setMaxTopicsPerNamespaceAsync(namespaceFqn, policies.max_topics_per_namespace)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setPropertiesAsync(namespaceFqn, policies.properties)),
+                                            failWithSaveError(pulsarAdmin.namespaces().setNamespaceEntryFiltersAsync(namespaceFqn, policies.entryFilters)),
+                                            setResourceGroup(policies)
+                                        )
+                                    )
+                                case None =>
+                                    Future.successful(Seq.empty)
+
+
+                        val setClipboardPoliciesFuture = Future.sequence(Seq(
+                            setPulsarPoliciesFromCache(request.namespaceFqn, clipboardCacheEntry.pulsarPolicies),
+                            setBookieAffinityGroupFromCache(request.namespaceFqn, clipboardCacheEntry.bookieAffinityGroupData),
+                            setPublishRateFromCache(request.namespaceFqn, clipboardCacheEntry.publishRate),
+                            setDispatchRateFromCache(request.namespaceFqn, clipboardCacheEntry.dispatchRate),
+                            setSubscribeRateFromCache(request.namespaceFqn, clipboardCacheEntry.subscribeRate),
+                            setSubscriptionDispatchRateFromCache(request.namespaceFqn, clipboardCacheEntry.subscriptionDispatchRate),
+                            setReplicatorDispatchRateFromCache(request.namespaceFqn, clipboardCacheEntry.replicatorDispatchRate),
+                        ))
+
+                        Await.result(setClipboardPoliciesFuture, Duration(1, MINUTES))
+
+                        val status = Status(code = Code.OK.index)
+                        Future.successful(PasteNamespacePoliciesResponse(
+                            status = Some(status),
+                            errors = errors.map(_.getMessage))
+                        )
+                    case None =>
+                        val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies id wasn't found")
+                        Future.successful(PasteNamespacePoliciesResponse(status = Some(status)))
+            case None =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies id should be specified")
+                Future.successful(PasteNamespacePoliciesResponse(status = Some(status)))
