@@ -1,7 +1,5 @@
 .LibraryBrowserPanel {
-  min-height: 48rem;
   min-width: 240rem;
-  margin-bottom: 12rem;
   position: relative;
 }
 
@@ -13,7 +11,7 @@
   position: absolute;
   display: inline-flex;
   right: -12rem;
-  top: 0rem;
+  top: -7rem;
   transform: translate(100%, 0);
   background-color: #fff;
   z-index: 10;

@@ -9,18 +9,30 @@ import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import Toggle from '../../../../../ui/Toggle/Toggle';
 import SmallButton from '../../../../../ui/SmallButton/SmallButton';
 import deleteIcon from '../icons/delete.svg';
+import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 
 type MessageFilterType = MessageFilter['type'];
 
 export type FilterEditorProps = {
   value: t.MessageFilter;
   onChange: (value: t.MessageFilter) => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 };
 
 const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   return (
     <div className={s.FilterEditor}>
+      <LibraryBrowserPanel
+        itemDescriptorToSave={{ type: 'message-filter', value: props.value }}
+        itemType='message-filter'
+        onPick={(item) => {
+          if (item.descriptor.type === 'message-filter') {
+            return;
+          }
+
+          props.onChange(item.descriptor.value);
+        }}
+      />
       <FormItem>
         <div className={s.Controls}>
           <Toggle
@@ -65,12 +77,14 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
             }}
           />
 
-          <SmallButton
-            onClick={() => { }}
-            type='danger'
-            svgIcon={deleteIcon}
-            title='Delete this filter'
-          />
+          {props.onDelete && (
+            <SmallButton
+              onClick={props.onDelete}
+              type='danger'
+              svgIcon={deleteIcon}
+              title='Delete this filter'
+            />
+          )}
         </div>
       </FormItem>
 

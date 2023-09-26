@@ -4,10 +4,10 @@ import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from '../../types';
 import FilterEditor from './FilterEditor/FilterEditor';
+import createIcon from './icons/create.svg';
 
 import s from './FilterChainEditor.module.css';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
-import Toggle from '../../../../ui/Toggle/Toggle';
 
 export type FilterChainProps = {
   value: t.MessageFilterChain;
@@ -19,6 +19,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
     <div className={s.FilterChainEditor}>
       <LibraryBrowserPanel
         itemType='message-filter-chain'
+        itemDescriptorToSave={{ type: 'message-filter-chain', value: props.value }}
         onPick={(item) => {
           if (item.descriptor.type !== 'message-filter-chain') {
             return;
@@ -39,23 +40,17 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       </div>
 
       {props.value.filters && Object.entries(props.value.filters).map(([filterId, filter], _) => {
-        const isDisabled = props.value.disabledFilters.includes(filterId);
         return (
           <div key={filterId} className={s.Entry}>
             <div className={s.EntryFilter}>
-              <LibraryBrowserPanel
-                itemType='message-filter'
-                onPick={(item) => {
-                  if (item.descriptor.type !== 'message-filter') {
-                    return;
-                  }
-
-                  props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: item.descriptor.value } })
-                }}
-              />
               <FilterEditor
                 value={filter}
                 onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: f } })}
+                onDelete={() => {
+                  const newFilters = { ...props.value.filters };
+                  delete newFilters[filterId];
+                  props.onChange({ ...props.value, filters: newFilters });
+                }}
               />
             </div>
           </div>
@@ -73,8 +68,9 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
             const newChain: t.MessageFilterChain = { ...props.value, filters: { ...props.value.filters, [uuid()]: newFilter } };
             props.onChange(newChain);
           }}
-          text="Add filter"
+          text="Add Message Filter"
           type='primary'
+          svgIcon={createIcon}
         />
       </div>
     </div>

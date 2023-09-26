@@ -251,7 +251,6 @@ export function messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFil
   chainPb.setMode(chain.mode === 'all' ? pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
 
   Object.entries(chain.filters)
-    .filter(([filterId]) => !chain.disabledFilters.includes(filterId))
     .forEach(([filterId, filter]) => {
       const filterPb = messageFilterToPb(filter);
       chainPb.getFiltersMap().set(filterId, filterPb);

@@ -8,7 +8,7 @@ import saveIcon from './save.svg';
 
 
 export type LibraryBrowserSaveButtonProps = {
-  item: LibraryItem;
+  itemToSave: LibraryItem | undefined;
 };
 
 const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props) => {
@@ -20,13 +20,19 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
         text='Save'
         type='primary'
         svgIcon={saveIcon}
+        disabled={props.itemToSave === undefined}
         onClick={() => {
+          if (props.itemToSave === undefined) {
+            return;
+          }
+
           const modal = mkLibraryBrowserModal({
             libraryBrowserProps: {
               mode: {
                 type: 'save',
-                item: props.item,
-              }
+                itemToSave: props.itemToSave,
+              },
+              onPick: () => { }
             }
           });
 

@@ -5,8 +5,8 @@ import LibraryBrowserPickButton from './LibraryBrowserPickButton/LibraryBrowserP
 import { LibraryItem, LibraryItemType } from '../../types';
 
 export type LibraryBrowserButtonsProps = {
-  currentItem: LibraryItem | undefined;
   itemType: LibraryItemType;
+  itemToSave: LibraryItem | undefined;
   onPick: (item: LibraryItem) => void;
 };
 
@@ -19,9 +19,8 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
       />
 
       <LibraryBrowserSaveButton
-        item={props.currentItem}
+        itemToSave={props.itemToSave}
       />
-
     </div>
   );
 }

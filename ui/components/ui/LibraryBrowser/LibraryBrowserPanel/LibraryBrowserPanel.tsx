@@ -8,13 +8,21 @@ import { help } from './help';
 
 export type LibraryBrowserPanelProps = {
   itemType: LibraryItemType;
+  itemDescriptorToSave: LibraryItem['descriptor'] | undefined;
   onPick: (item: LibraryItem) => void;
 };
 
+type LibraryItemWithoutDescriptor = Omit<LibraryItem, 'descriptor'>;
+
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
-  const [currentItem, setCurrentItem] = React.useState<LibraryItem | undefined>(undefined);
   const [isShowButtons, setIsShowButtons] = React.useState(false);
+  const [itemToSaveWithoutDescriptor, setItemToSaveWithoutDescriptor] = React.useState<LibraryItemWithoutDescriptor | undefined>(undefined);
   const rootRef = React.useRef<HTMLDivElement>(null);
+
+  const itemToSave = props.itemDescriptorToSave === undefined ? undefined : {
+    ...itemToSaveWithoutDescriptor,
+    descriptor: props.itemDescriptorToSave
+  } as LibraryItem;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -38,6 +46,8 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
       root.removeEventListener('pointerleave', onPointerLeave);
     };
   }, []);
+  console.log('itemDescriptorToSave', props.itemDescriptorToSave);
+  console.log('itemToSave', itemToSave);
 
   return (
     <div className={s.LibraryBrowserPanel} ref={rootRef}>
@@ -61,19 +71,28 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
         {isShowButtons && (
           <div className={s.Buttons}>
             <LibraryBrowserButtons
-              currentItem={currentItem}
               itemType={props.itemType}
-              onPick={props.onPick}
+              itemToSave={itemToSave}
+              onPick={(item) => {
+                setItemToSaveWithoutDescriptor(item);
+                props.onPick(item);
+              }}
             />
           </div>
         )}
       </div>
-      <div className={s.ItemName}>
-        <H3>
-          {currentItem === undefined ? 'Unnamed' : currentItem.name}
-        </H3>
-      </div>
-      <div className={s.ItemDescription}>{currentItem === undefined ? 'Empty description' : currentItem.descriptionMarkdown}</div>
+      {itemToSave?.name && (
+        <div className={s.ItemName}>
+          <H3>
+            {itemToSave === undefined ? 'Unnamed' : itemToSave.name}
+          </H3>
+        </div>
+      )}
+      {itemToSave?.descriptionMarkdown && (
+        <div className={s.ItemDescription}>
+          {itemToSave === undefined ? 'Empty description' : itemToSave.descriptionMarkdown}
+        </div>
+      )}
     </div>
   );
 }

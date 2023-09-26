@@ -23,9 +23,8 @@
   display: flex;
 }
 
-.ItemEditor {
-  width: 480rem;
-  background: #f5f5f5;
+.LibraryItemEditor {
+  overflow: auto;
 }
 
 .Footer {

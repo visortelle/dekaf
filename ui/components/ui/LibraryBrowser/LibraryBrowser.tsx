@@ -2,22 +2,22 @@ import React from 'react';
 import s from './LibraryBrowser.module.css'
 import { LibraryItem, LibraryItemType } from './types';
 import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
-import SearchResults, { ItemProps } from './SearchResults/SearchResults';
+import SearchResults from './SearchResults/SearchResults';
 import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
 import Button from '../Button/Button';
-import { set } from 'lodash';
 
 export type LibraryBrowserMode = {
   type: 'save';
-  item: LibraryItem;
+  itemToSave: LibraryItem;
 } | {
   type: 'pick';
-  itemType: LibraryItemType;
+  itemTypeToPick: LibraryItemType;
   onPick: (item: LibraryItem) => void;
 };
 
 export type LibraryBrowserProps = {
   mode: LibraryBrowserMode;
+  onPick: (value: LibraryItem) => void;
 };
 
 const initialSearchEditorValue: SearchEditorValue = {
@@ -48,7 +48,7 @@ const initialSearchEditorValue: SearchEditorValue = {
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [searchEditorValue, setSearchEditorValue] = React.useState<SearchEditorValue>(initialSearchEditorValue);
   const [searchResults, setSearchResults] = React.useState<LibraryItem[]>([]);
-  const [selectedItem, setSelectedItem] = React.useState<LibraryItem | undefined>(undefined);
+  const [selectedItem, setSelectedItem] = React.useState<LibraryItem | undefined>(props.mode.type === 'save' ? props.mode.itemToSave : undefined);
 
   const saveLibraryItem = async (item: LibraryItem) => { };
 
@@ -80,10 +80,12 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           />
         </div>
 
-        <div className={s.LibraryItemViewer}>
-          {/* <LibraryItemEditor
-            mode={props.mode.type === 'editor' ? 'editor' : 'viewer'}
-          /> */}
+        <div className={s.LibraryItemEditor}>
+          <LibraryItemEditor
+            mode={props.mode.type === 'save' ? 'editor' : 'viewer'}
+            value={selectedItem}
+            onChange={setSelectedItem}
+          />
         </div>
       </div>
 
