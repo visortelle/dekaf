@@ -1,5 +1,5 @@
 import { ConsumerSessionConfig } from "../../TopicPage/Messages/types";
-import { MessageFilter, MessageFilterChain } from "../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/types";
+import { MessageFilter, MessageFilterChain } from "../../TopicPage/Messages/types";
 
 export type LibraryItemType =
   "consumer-session-config" | "message-filter" | "message-filter-chain";
@@ -61,14 +61,18 @@ export type NamespaceMatcher = {
 };
 export type NamespaceMatcherType = NamespaceMatcher['value']['type'];
 
+export type TopicPersistency = 'persistent' | 'non-persistent' | 'any';
+
 export type ExactTopicMatcher = {
   type: 'exact-topic-matcher',
+  persistency: TopicPersistency;
   namespace: NamespaceMatcher;
   topic: string;
 };
 
 export type RegexTopicMatcher = {
   type: 'regex-topic-matcher',
+  persistency: TopicPersistency;
   namespace: NamespaceMatcher;
   topicRegex: string;
 };

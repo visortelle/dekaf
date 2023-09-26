@@ -37,21 +37,21 @@ message NamespaceMatcher {
   }
 }
 
-enum TopicPersistencyType {
-  TOPIC_PERSISTENCY_TYPE_UNSPECIFIED = 0;
-  TOPIC_PERSISTENCY_TYPE_NON_PERSISTENT = 1;
-  TOPIC_PERSISTENCY_TYPE_PERSISTENT = 2;
-  TOPIC_PERSISTENCY_TYPE_ANY = 3;
+enum TopicPersistency {
+  TOPIC_PERSISTENCY_UNSPECIFIED = 0;
+  TOPIC_PERSISTENCY_NON_PERSISTENT = 1;
+  TOPIC_PERSISTENCY_PERSISTENT = 2;
+  TOPIC_PERSISTENCY_ANY = 3;
 }
 
 message ExactTopicMatcher {
-  TopicPersistencyType persistency = 1;
+  TopicPersistency persistency = 1;
   NamespaceMatcher namespace = 2;
   string topic = 3;
 }
 
 message RegexTopicMatcher {
-  TopicPersistencyType persistency = 1;
+  TopicPersistency persistency = 1;
   NamespaceMatcher namespace = 2;
   string topic_regex = 3;
 }
@@ -105,14 +105,6 @@ message LibraryItem {
   LibraryItemDescriptor descriptor = 10;
 }
 
-message CreateLibraryItemRequest {
-  LibraryItem item = 1;
-}
-
-message CreateLibraryItemResponse {
-  google.rpc.Status status = 1;
-}
-
 message DeleteLibraryItemRequest {
   string id = 1;
 }
@@ -121,11 +113,11 @@ message DeleteLibraryItemResponse {
   google.rpc.Status status = 1;
 }
 
-message UpdateLibraryItemRequest {
+message SaveLibraryItemRequest {
   LibraryItem item = 1;
 }
 
-message UpdateLibraryItemResponse {
+message SaveLibraryItemResponse {
   google.rpc.Status status = 1;
 }
 
@@ -152,9 +144,8 @@ message ListLibraryItemsResponse {
 }
 
 service LibraryService {
-  rpc CreateLibraryItem(CreateLibraryItemRequest) returns (CreateLibraryItemResponse);
+  rpc SaveLibraryItem(SaveLibraryItemRequest) returns (SaveLibraryItemResponse);
   rpc DeleteLibraryItem(DeleteLibraryItemRequest) returns (DeleteLibraryItemResponse);
-  rpc UpdateLibraryItem(UpdateLibraryItemRequest) returns (UpdateLibraryItemResponse);
   rpc GetLibraryItem(GetLibraryItemRequest) returns (GetLibraryItemResponse);
   rpc ListLibraryItems(ListLibraryItemsRequest) returns (ListLibraryItemsResponse);
 }

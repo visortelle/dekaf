@@ -56,7 +56,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
     <div className={s.LibraryItemEditor}>
       <div className={s.Info}>
         <FormItem>
-          <FormLabel content="Name" />
+          <FormLabel content="Name" isRequired />
           {props.mode === 'editor' && (
             <Input
               value={value.name}

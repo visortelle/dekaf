@@ -32,7 +32,7 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
                 type: 'save',
                 itemToSave: props.itemToSave,
               },
-              onPick: () => { }
+              onCancel: modals.pop,
             }
           });
 

@@ -5,6 +5,7 @@ import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
 import SearchResults from './SearchResults/SearchResults';
 import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
 import Button from '../Button/Button';
+import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 
 export type LibraryBrowserMode = {
   type: 'save';
@@ -17,7 +18,7 @@ export type LibraryBrowserMode = {
 
 export type LibraryBrowserProps = {
   mode: LibraryBrowserMode;
-  onPick: (value: LibraryItem) => void;
+  onCancel: () => void;
 };
 
 const initialSearchEditorValue: SearchEditorValue = {
@@ -50,7 +51,11 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [searchResults, setSearchResults] = React.useState<LibraryItem[]>([]);
   const [selectedItem, setSelectedItem] = React.useState<LibraryItem | undefined>(props.mode.type === 'save' ? props.mode.itemToSave : undefined);
 
-  const saveLibraryItem = async (item: LibraryItem) => { };
+  const saveLibraryItem = async (item: LibraryItem) => {
+    const req = new pb.SaveLibraryItemRequest();
+    const itemPb =
+    req.setItem(itemPb);
+   };
 
   return (
     <div className={s.LibraryBrowser}>
@@ -90,6 +95,11 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
       </div>
 
       <div className={s.Footer}>
+        <Button
+          type='regular'
+          onClick={props.onCancel}
+          text='Cancel'
+        />
         {props.mode.type === 'pick' && (
           <Button
             disabled={!selectedItem}
@@ -105,7 +115,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         )}
         {props.mode.type === 'save' && (
           <Button
-            disabled={!selectedItem}
+            disabled={!selectedItem || !selectedItem.name}
             onClick={async () => {
               if (props.mode.type !== 'save') return;
               if (selectedItem === undefined) return;

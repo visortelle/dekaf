@@ -12,6 +12,7 @@ import { useHover } from '../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
+import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 
 export type FilterChainProps = {
   value: t.MessageFilterChain;
@@ -51,6 +52,11 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         </div>
       </div>
 
+      {Object.entries(props.value.filters).length === 0 && (
+        <div style={{ marginBottom: '12rem' }}>
+          <NothingToShow content={<div>Click the button below to add a first filter.</div>} />
+        </div>
+      )}
       {props.value.filters && Object.entries(props.value.filters).map(([filterId, filter], _) => {
         return (
           <div key={filterId} className={s.Entry}>

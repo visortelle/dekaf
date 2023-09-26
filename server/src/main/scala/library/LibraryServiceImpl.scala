@@ -5,16 +5,14 @@ import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.library.v1.library.{
-    CreateLibraryItemRequest,
-    CreateLibraryItemResponse,
     DeleteLibraryItemRequest,
     DeleteLibraryItemResponse,
     GetLibraryItemRequest,
     GetLibraryItemResponse,
     ListLibraryItemsRequest,
     ListLibraryItemsResponse,
-    UpdateLibraryItemRequest,
-    UpdateLibraryItemResponse
+    SaveLibraryItemRequest,
+    SaveLibraryItemResponse
 }
 import pulsar_auth.RequestContext
 import _root_.config.{readConfigAsync, Config}
@@ -35,28 +33,9 @@ val libraryRoot = config.libraryRoot.get
 
 class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
     val logger: Logger = Logger(getClass.getName)
-    val library = Library.createAndRefreshDb(libraryRoot)
+    val library: Library = Library.createAndRefreshDb(libraryRoot)
 
-    override def createLibraryItem(request: CreateLibraryItemRequest): Future[CreateLibraryItemResponse] =
-        logger.debug(s"Creating library item: ${request.item}")
-
-        try {
-            if request.item.isEmpty then throw new Exception("Library item is empty")
-
-            val libraryItemId = uuidV7().generate().toString
-            val libraryItem = libraryItemFromPb(request.item.get).copy(id = libraryItemId)
-            library.writeItem(libraryItem)
-
-            val status: Status = Status(code = Code.OK.index)
-            Future.successful(pb.CreateLibraryItemResponse(status = Some(status)))
-        } catch {
-            case err: Exception =>
-                logger.warn(s"Failed to create library item: ${err.getMessage}")
-                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to create library item. ${err.getMessage}")
-                Future.successful(pb.CreateLibraryItemResponse(status = Some(status)))
-        }
-
-    override def updateLibraryItem(request: UpdateLibraryItemRequest): Future[UpdateLibraryItemResponse] =
+    override def saveLibraryItem(request: SaveLibraryItemRequest): Future[SaveLibraryItemResponse] =
         logger.debug(s"Updating library item: ${request.item}")
 
         try {
@@ -66,12 +45,12 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
             library.writeItem(libraryItem)
 
             val status: Status = Status(code = Code.OK.index)
-            Future.successful(pb.UpdateLibraryItemResponse(status = Some(status)))
+            Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
         } catch {
             case err: Exception =>
-                logger.warn(s"Failed to update library item: ${err.getMessage}")
-                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to update library item. ${err.getMessage}}")
-                Future.successful(pb.UpdateLibraryItemResponse(status = Some(status)))
+                logger.warn(s"Failed to save library item: ${err.getMessage}")
+                val status: Status = Status(code = Code.INTERNAL.index, message = s"Unable to save library item. ${err.getMessage}}")
+                Future.successful(pb.SaveLibraryItemResponse(status = Some(status)))
         }
 
     override def deleteLibraryItem(request: DeleteLibraryItemRequest): Future[DeleteLibraryItemResponse] =
