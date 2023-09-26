@@ -82,6 +82,11 @@ export const swrKeys = {
           ],
         }
       },
+      clipboard: {
+        clipboardPoliciesSource: {
+          _: () => ["customApi", "clipboard", "clipboardPoliciesSource"],
+        }
+      }
     },
     batch: {
       getTenantsNamespacesCount: {

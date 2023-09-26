@@ -14,6 +14,7 @@ type Props = {
   switchForceDelete?: () => void;
   forceDelete?: boolean;
   forceDeleteInfo?: React.ReactNode;
+  disabled?: boolean;
   guard?: string;
   type?: 'normal' | 'danger',
 }
@@ -56,7 +57,7 @@ const ConfirmationDialog = (props: Props) => {
             type={props.type === 'danger' ? 'danger': 'primary'}
             text={`Confirm`}
             onClick={() => props.onConfirm()}
-            disabled={props.guard !== undefined && props.guard !== guard}
+            disabled={(props.guard !== undefined && props.guard !== guard) || props.disabled}
             testId="confirmation-dialog-confirm-button"
           />
         </div>

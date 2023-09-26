@@ -1106,6 +1106,23 @@ message PasteNamespacePoliciesResponse {
   map<string, string> errors = 3;
 }
 
+message GetClipboardPoliciesSourceRequest {
+  string policies_clipboard_id = 1;
+}
+
+message ClipboardPoliciesSourceUnspecified {}
+message ClipboardPoliciesSourceSpecified {
+  string source_namespace_fqn = 1;
+}
+message GetClipboardPoliciesSourceResponse {
+  google.rpc.Status status = 1;
+  
+  oneof clipboard_policies_source {
+    ClipboardPoliciesSourceUnspecified unspecified = 2;
+    ClipboardPoliciesSourceSpecified specified = 3;
+  }
+}
+
 service NamespacePoliciesService {
   rpc GetSchemaCompatibilityStrategy(GetSchemaCompatibilityStrategyRequest) returns (GetSchemaCompatibilityStrategyResponse);
   rpc SetSchemaCompatibilityStrategy(SetSchemaCompatibilityStrategyRequest) returns (SetSchemaCompatibilityStrategyResponse);
@@ -1251,4 +1268,6 @@ service NamespacePoliciesService {
 
   rpc CopyNamespacePolicies(CopyNamespacePoliciesRequest) returns (CopyNamespacePoliciesResponse);
   rpc PasteNamespacePolicies(PasteNamespacePoliciesRequest) returns (PasteNamespacePoliciesResponse);
+
+  rpc GetClipboardPoliciesSource(GetClipboardPoliciesSourceRequest) returns (GetClipboardPoliciesSourceResponse);
 }

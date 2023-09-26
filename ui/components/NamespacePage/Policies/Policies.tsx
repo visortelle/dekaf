@@ -40,15 +40,9 @@ import propertiesField from './fields/properties';
 import Tabs from '../../ui/Tabs/Tabs';
 
 import s from './Policies.module.css'
-import SmallButton from "../../ui/SmallButton/SmallButton";
-import * as GrpcClient from "../../app/contexts/GrpcClient/GrpcClient";
-import * as Notifications from "../../app/contexts/Notifications";
-import {Code} from "../../../grpc-web/google/rpc/code_pb";
-import {
-  CopyNamespacePoliciesRequest, PasteNamespacePoliciesRequest
-} from "../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
-import {swrKeys} from "../../swrKeys";
-import {mutate} from "swr";
+import {sessionStorageKeys} from "../../session-storage-keys";
+import PastePoliciesButton from "./ClipboardButtons/PastePoliciesButton";
+import CopyPoliciesButton from "./ClipboardButtons/CopyPoliciesButton";
 
 export type PoliciesProps = {
   tenant: string;
@@ -68,139 +62,15 @@ type TabsKey =
   'tiered-storage';
 
 const Policies: React.FC<PoliciesProps> = (props) => {
-  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
-  const { notifySuccess, notifyError, notifyInfo, notifyWarn } = Notifications.useContext();
   const [activeTab, setActiveTab] = React.useState<TabsKey>('namespace-config');
   const [reloadKey, setReloadKey] = React.useState<number>(0);
-
-  const copyPoliciesToClipboard = async () => {
-    const req = new CopyNamespacePoliciesRequest()
-    req.setNamespaceFqn(`${props.tenant}/${props.namespace}`);
-
-    if (sessionStorage.getItem('pulsocat-namespace-policies-clipboard')) {
-      req.setPoliciesClipboardId(sessionStorage.getItem('pulsocat-namespace-policies-clipboard') ?? '');
-    }
-
-    const res = await namespacePoliciesServiceClient.copyNamespacePolicies(req, {})
-      .catch(err => notifyError(`Failed to copy namespace policies: ${err.message}`));
-
-    if (res === undefined) {
-      return;
-    }
-
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Failed to copy namespace policies: ${res.getStatus()?.getMessage()}`);
-      return;
-    }
-
-    sessionStorage.setItem('pulsocat-namespace-policies-clipboard', res.getPoliciesClipboardId());
-
-    if (res.getErrorsMap().getEntryList().length > 0) {
-      notifyWarn(
-        <>
-          <span>Failed to copy some policies:</span>
-          <div>
-            {res.getErrorsMap().getEntryList().map(([errorKey, errorDescription], index) => (
-              <div key={index}><strong>{index + 1})</strong> {errorKey}: {errorDescription}</div>
-            ))}
-          </div>
-        </>
-      );
-    }
-
-    notifySuccess('Namespace policies copied.');
-  }
-
-  const pastePoliciesFromClipboard = React.useCallback(async () => {
-    notifyInfo('Pasting namespace policies...');
-
-    const req = new PasteNamespacePoliciesRequest();
-    req.setNamespaceFqn(`${props.tenant}/${props.namespace}`);
-
-    if (!sessionStorage.getItem('pulsocat-namespace-policies-clipboard')) {
-      notifyInfo("Copy namespace policies first.");
-      return;
-    }
-
-    req.setPoliciesClipboardId(sessionStorage.getItem('pulsocat-namespace-policies-clipboard') ?? '');
-
-    const res = await namespacePoliciesServiceClient.pasteNamespacePolicies(req, {})
-      .catch(err => notifyError(`Failed to paste some namespace policies: ${err.message}`));
-
-    if (res === undefined) {
-      return;
-    }
-
-    if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Failed to paste namespace policies: ${res.getStatus()?.getMessage()}`);
-      return;
-    }
-
-    if (res.getErrorsMap().toArray().length > 0) {
-      notifyWarn(
-        <>
-          <span>Failed to paste some policies:</span>
-          <div>
-            {res.getErrorsMap().getEntryList().map(([errorKey, errorDescription], index) => (
-              <div key={index}><strong>{index + 1})</strong> {errorKey}: {errorDescription}</div>
-            ))}
-          </div>
-        </>
-      );
-    }
-
-    await Promise.all(
-      [
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "isAllowAutoUpdateSchema" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "antiAffinityGroup" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "autoSubscriptionCreation" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "autoTopicCreation" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "offloadPolicies" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "backlogQuota" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "bookieAffinityGroup" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "compactionThreshold" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "deduplication" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "deduplicationSnapshotInterval" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "delayedDelivery" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "dispatchRate" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "encryptionRequired" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "inactiveTopicPolicies" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "maxConsumersPerSubscription" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "maxConsumersPerTopic" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "maxProducersPerTopic" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "maxSubscriptionsPerTopic" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: "maxTopicsPerNamespace" })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: 'maxUnackedMessagesPerConsumer' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,  policy: 'maxUnackedMessagesPerSubscription' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,policy: 'messageTtl' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,policy: 'persistence' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,policy: 'properties' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,policy: 'publishRate' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,policy: 'replicationClusters' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,policy: 'replicatorDispatchRate' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy: 'resourceGroup' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy:'retention' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy:'schemaCompatibilityStrategy' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,  policy:'schemaValidationEnforce' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,  policy:'subscribeRate' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,  policy:'subscriptionAuthMode' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,  policy:'subscriptionDispatchRate' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,  policy:'subscriptionExpirationTime' })),
-        mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.policies.policy({ tenant: props.tenant, namespace: props.namespace,  policy:'subscriptionTypesEnabled' })),
-      ]
-    )
-
-    setReloadKey(value => value + 1);
-
-    notifySuccess('Namespace policies pasted.');
-  }, [props.namespace]);
+  const [sessionId, setSessionId] = React.useState<string | null>(sessionStorage.getItem(sessionStorageKeys.pulsocatBrowserSessionId));
 
   return (
     <div className={s.Policies}>
       <div className={s.ClipboardControls}>
-        <SmallButton onClick={copyPoliciesToClipboard} type={"regular"} text={"Copy"}/>
-        <SmallButton onClick={pastePoliciesFromClipboard} type={"primary"} text={"Paste"}/>
-        <SmallButton onClick={() => setReloadKey(value => value + 1)} type={"primary"} text={"reload"}/>
+        <CopyPoliciesButton tenant={props.tenant} namespace={props.namespace} sessionId={sessionId} setSessionId={setSessionId} />
+        <PastePoliciesButton tenant={props.tenant} namespace={props.namespace} sessionId={sessionId} setReloadKey={setReloadKey} />
       </div>
       <div className={s.Tabs} key={reloadKey}>
         <Tabs<TabsKey>
