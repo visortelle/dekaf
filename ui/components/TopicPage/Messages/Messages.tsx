@@ -15,9 +15,6 @@ import {
   TopicsSelectorByNames,
   TopicsSelectorByRegex,
   SubscriptionMode,
-  MessageFilterChain,
-  MessageFilterChainMode,
-  MessageFilter,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
@@ -36,12 +33,11 @@ import Toolbar from './Toolbar';
 import { SessionState, ConsumerSessionConfig, MessageDescriptor } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
-import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import { consumerSessionConfigToPb, messageDescriptorFromPb, messageFilterChainToPb } from './conversions';
+import { consumerSessionConfigToPb, messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
@@ -86,7 +82,7 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
-  const { startFrom, topicsSelector } = props.config;
+  const { topicsSelector } = props.config;
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._(

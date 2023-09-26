@@ -8,6 +8,10 @@ import createIcon from './icons/create.svg';
 
 import s from './FilterChainEditor.module.css';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import { useHover } from '../../../../app/hooks/use-hover';
+import useLocalStorage from "use-local-storage-state";
+import { localStorageKeys } from '../../../../local-storage-keys';
+import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
 
 export type FilterChainProps = {
   value: t.MessageFilterChain;
@@ -15,28 +19,36 @@ export type FilterChainProps = {
 };
 
 const FilterChain: React.FC<FilterChainProps> = (props) => {
+  const [hoverRef, isHovered] = useHover();
+  const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
+    defaultValue: 'basic-message-filter',
+  });
+
   return (
     <div className={s.FilterChainEditor}>
-      <LibraryBrowserPanel
-        itemType='message-filter-chain'
-        itemDescriptorToSave={{ type: 'message-filter-chain', value: props.value }}
-        onPick={(item) => {
-          if (item.descriptor.type !== 'message-filter-chain') {
-            return;
-          }
+      <div ref={hoverRef}>
+        <LibraryBrowserPanel
+          itemType='message-filter-chain'
+          itemDescriptorToSave={{ type: 'message-filter-chain', value: props.value }}
+          onPick={(item) => {
+            if (item.descriptor.type !== 'message-filter-chain') {
+              return;
+            }
 
-          props.onChange(item.descriptor.value)
-        }}
-      />
-      <div style={{ marginBottom: '12rem' }}>
-        <Select<'all' | 'any'>
-          list={[
-            { type: 'item', title: 'All filters should match', value: 'all' },
-            { type: 'item', title: 'At least one filter should match', value: 'any' },
-          ]}
-          value={props.value.mode}
-          onChange={v => props.onChange({ ...props.value, mode: v })}
+            props.onChange(item.descriptor.value)
+          }}
+          isForceShowButtons={isHovered}
         />
+        <div style={{ marginBottom: '12rem' }}>
+          <Select<'all' | 'any'>
+            list={[
+              { type: 'item', title: 'All filters should match', value: 'all' },
+              { type: 'item', title: 'At least one filter should match', value: 'any' },
+            ]}
+            value={props.value.mode}
+            onChange={v => props.onChange({ ...props.value, mode: v })}
+          />
+        </div>
       </div>
 
       {props.value.filters && Object.entries(props.value.filters).map(([filterId, filter], _) => {
@@ -59,12 +71,27 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       <div className={`${s.Buttons}`}>
         <SmallButton
           onClick={() => {
-            const newFilter: t.MessageFilter = {
-              isEnabled: true,
-              isNegated: false,
-              type: 'basic-message-filter',
-              value: {}
-            };
+            let newFilter: t.MessageFilter;
+
+            switch (defaultMessageFilterType) {
+              case 'basic-message-filter':
+                newFilter = {
+                  isEnabled: true,
+                  isNegated: false,
+                  type: 'basic-message-filter',
+                  value: {}
+                };
+                break;
+              case 'js-message-filter':
+                newFilter = {
+                  isEnabled: true,
+                  isNegated: false,
+                  type: 'js-message-filter',
+                  value: defaultJsFilterValue
+                };
+                break;
+            }
+
             const newChain: t.MessageFilterChain = { ...props.value, filters: { ...props.value.filters, [uuid()]: newFilter } };
             props.onChange(newChain);
           }}

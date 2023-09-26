@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './FilterEditor.module.css'
 import * as t from '../../../types';
-import JsFilterEditor, { defaultJsFilterCode } from './JsFilterEditor/JsFilterEditor';
+import JsFilterEditor, { defaultJsFilterValue } from './JsFilterEditor/JsFilterEditor';
 import BasicFilterEditor from './BasicFilterEditor/BasicFilterEditor';
 import { MessageFilter } from '../../../types';
 import Select from '../../../../../ui/Select/Select';
@@ -10,8 +10,9 @@ import Toggle from '../../../../../ui/Toggle/Toggle';
 import SmallButton from '../../../../../ui/SmallButton/SmallButton';
 import deleteIcon from '../icons/delete.svg';
 import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
-
-type MessageFilterType = MessageFilter['type'];
+import { useHover } from '../../../../../app/hooks/use-hover';
+import useLocalStorage from "use-local-storage-state";
+import { localStorageKeys } from '../../../../../local-storage-keys';
 
 export type FilterEditorProps = {
   value: t.MessageFilter;
@@ -20,8 +21,13 @@ export type FilterEditorProps = {
 };
 
 const FilterEditor: React.FC<FilterEditorProps> = (props) => {
+  const [hoverRef, isHovered] = useHover();
+  const [_, setDefaultMessageFilterType] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
+    defaultValue: 'basic-message-filter',
+  });
+
   return (
-    <div className={s.FilterEditor}>
+    <div className={s.FilterEditor} ref={hoverRef}>
       <LibraryBrowserPanel
         itemDescriptorToSave={{ type: 'message-filter', value: props.value }}
         itemType='message-filter'
@@ -32,6 +38,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
 
           props.onChange(item.descriptor.value);
         }}
+        isForceShowButtons={isHovered}
       />
       <FormItem>
         <div className={s.Controls}>
@@ -49,13 +56,15 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
             label='Negated'
           />
 
-          <Select<MessageFilterType>
+          <Select<t.MessageFilterType>
             list={[
               { type: 'item', title: 'Basic Filter', value: 'basic-message-filter' },
               { type: 'item', title: 'JS Filter', value: 'js-message-filter' },
             ]}
             value={props.value.type}
             onChange={v => {
+              setDefaultMessageFilterType(v);
+
               switch (v) {
                 case 'basic-message-filter':
                   props.onChange({
@@ -68,7 +77,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
                 case 'js-message-filter':
                   props.onChange({
                     type: 'js-message-filter',
-                    value: { jsCode: defaultJsFilterCode },
+                    value: defaultJsFilterValue,
                     isEnabled: true,
                     isNegated: false,
                   });

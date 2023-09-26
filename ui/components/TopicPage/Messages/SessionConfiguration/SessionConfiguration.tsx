@@ -9,6 +9,7 @@ import s from './SessionConfiguration.module.css'
 import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import { useHover } from '../../../app/hooks/use-hover';
 
 export type SessionConfigurationProps = {
   config: ConsumerSessionConfig;
@@ -17,9 +18,11 @@ export type SessionConfigurationProps = {
 };
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
+  const [hoverRef, isHovered] = useHover();
+
   return (
     <div className={s.SessionConfiguration}>
-      <div className={s.Title}>
+      <div className={s.Title} ref={hoverRef}>
         <LibraryBrowserPanel
           itemDescriptorToSave={{ type: 'consumer-session-config', value: props.config }}
           itemType='consumer-session-config'
@@ -30,6 +33,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
 
             props.onConfigChange(item.descriptor.value)
           }}
+          isForceShowButtons={isHovered}
         />
       </div>
 

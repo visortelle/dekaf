@@ -98,3 +98,5 @@ export type MessageFilterChain = {
   filters: Record<string, MessageFilter>;
   mode: 'all' | 'any';
 }
+
+export type MessageFilterType = MessageFilter['type'];

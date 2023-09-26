@@ -5,52 +5,28 @@ import { LibraryItem, LibraryItemType } from '../types';
 import { H3 } from '../../H/H';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
+import { useHover } from '../../../app/hooks/use-hover';
 
 export type LibraryBrowserPanelProps = {
   itemType: LibraryItemType;
   itemDescriptorToSave: LibraryItem['descriptor'] | undefined;
   onPick: (item: LibraryItem) => void;
+  isForceShowButtons?: boolean;
 };
 
 type LibraryItemWithoutDescriptor = Omit<LibraryItem, 'descriptor'>;
 
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
-  const [isShowButtons, setIsShowButtons] = React.useState(false);
   const [itemToSaveWithoutDescriptor, setItemToSaveWithoutDescriptor] = React.useState<LibraryItemWithoutDescriptor | undefined>(undefined);
-  const rootRef = React.useRef<HTMLDivElement>(null);
+  const [hoverRef, isHovered] = useHover();
 
   const itemToSave = props.itemDescriptorToSave === undefined ? undefined : {
     ...itemToSaveWithoutDescriptor,
     descriptor: props.itemDescriptorToSave
   } as LibraryItem;
 
-  useEffect(() => {
-    const root = rootRef.current;
-    if (root === null) {
-      return;
-    }
-
-    const onPointerEnter = () => {
-      setIsShowButtons(true);
-    };
-
-    const onPointerLeave = () => {
-      setIsShowButtons(false);
-    };
-
-    root.addEventListener('pointerenter', onPointerEnter);
-    root.addEventListener('pointerleave', onPointerLeave);
-
-    return () => {
-      root.removeEventListener('pointerenter', onPointerEnter);
-      root.removeEventListener('pointerleave', onPointerLeave);
-    };
-  }, []);
-  console.log('itemDescriptorToSave', props.itemDescriptorToSave);
-  console.log('itemToSave', itemToSave);
-
   return (
-    <div className={s.LibraryBrowserPanel} ref={rootRef}>
+    <div className={s.LibraryBrowserPanel} ref={hoverRef}>
       <div style={{ display: 'inline-flex', position: 'relative' }}>
         <FormLabel
           content={(
@@ -68,7 +44,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             </div>
           )}
         />
-        {isShowButtons && (
+        {(isHovered || props.isForceShowButtons) && (
           <div className={s.Buttons}>
             <LibraryBrowserButtons
               itemType={props.itemType}

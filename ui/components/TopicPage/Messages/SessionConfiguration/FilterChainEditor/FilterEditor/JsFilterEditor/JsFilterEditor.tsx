@@ -6,18 +6,16 @@ import * as t from '../../../../types';
 
 import s from './JsFilterEditor.module.css'
 
-export const defaultJsFilterCode = `({ key, value, accum }) => {
+export const defaultJsFilterValue: t.JsMessageFilter = {
+  jsCode: `({ key, value, accum }) => {
   return true;
-}`;
+}`
+};
 
 export type JsFilterEditorProps = {
   value: t.JsMessageFilter;
   onChange: (value: t.JsMessageFilter) => void;
 };
-
-export const defaultJsValue = `({ value, accum }) => {
-  return true
-}`;
 
 const JsFilterEditor: React.FC<JsFilterEditorProps> = (props) => {
   return (
