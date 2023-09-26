@@ -5,7 +5,7 @@ import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies as pb
 import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.GetMessageTtlResponse.MessageTtl
 import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.GetSubscriptionExpirationTimeResponse.SubscriptionExpirationTime
-import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.{Policies as PbPolicies, SchemaCompatibilityStrategy as PbSchemaCompatibilityStrategy, *}
+import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies.{SchemaCompatibilityStrategy as PbSchemaCompatibilityStrategy, *}
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}

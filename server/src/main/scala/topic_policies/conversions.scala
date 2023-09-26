@@ -1,6 +1,6 @@
-package topicpolicies
+package topic_policies
 
-import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.{SchemaCompatibilityStrategy as SchemaCompatibilityStrategyPb }
+import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.SchemaCompatibilityStrategy as SchemaCompatibilityStrategyPb
 import org.apache.pulsar.common.policies.data.SchemaCompatibilityStrategy
 
 def schemaCompatibilityStrategyToPb(strategy: SchemaCompatibilityStrategy): SchemaCompatibilityStrategyPb =

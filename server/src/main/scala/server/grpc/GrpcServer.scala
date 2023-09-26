@@ -20,7 +20,7 @@ import com.tools.teal.pulsar.ui.topic.v1.topic.TopicServiceGrpc
 import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
 import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
 import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats.BrokerStatsServiceGrpc
-import com.tools.teal.pulsar.ui.topicpolicies.v1.topicpolicies.TopicpoliciesServiceGrpc
+import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.TopicPoliciesServiceGrpc
 
 import _root_.pulsar_auth.PulsarAuthServiceImpl
 import _root_.consumer.ConsumerServiceImpl
@@ -34,7 +34,7 @@ import _root_.clusters.ClustersServiceImpl
 import _root_.metrics.MetricsServiceImpl
 import _root_.brokers.BrokersServiceImpl
 import _root_.brokerstats.BrokerStatsServiceImpl
-import _root_.topicpolicies.TopicpoliciesServiceImpl
+import _root_.topic_policies.TopicPoliciesServiceImpl
 import _root_.pulsar_auth.PulsarAuthInterceptor
 
 object GrpcServer:
@@ -47,7 +47,7 @@ object GrpcServer:
         .addService(ProducerServiceGrpc.bindService(ProducerServiceImpl(), ExecutionContext.global))
         .addService(ConsumerServiceGrpc.bindService(ConsumerServiceImpl(), ExecutionContext.global))
         .addService(TopicServiceGrpc.bindService(TopicServiceImpl(), ExecutionContext.global))
-        .addService(TopicpoliciesServiceGrpc.bindService(TopicpoliciesServiceImpl(), ExecutionContext.global))
+        .addService(TopicPoliciesServiceGrpc.bindService(TopicPoliciesServiceImpl(), ExecutionContext.global))
         .addService(SchemaServiceGrpc.bindService(SchemaServiceImpl(), ExecutionContext.global))
         .addService(TenantServiceGrpc.bindService(TenantServiceImpl(), ExecutionContext.global))
         .addService(NamespaceServiceGrpc.bindService(NamespaceServiceImpl(), ExecutionContext.global))
