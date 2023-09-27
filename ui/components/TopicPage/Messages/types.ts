@@ -95,6 +95,8 @@ export type MessageFilter = {
 });
 
 export type MessageFilterChain = {
+  isEnabled: boolean;
+  isNegated: boolean;
   filters: Record<string, MessageFilter>;
   mode: 'all' | 'any';
 }

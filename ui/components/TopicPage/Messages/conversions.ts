@@ -239,10 +239,53 @@ export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.Con
 
 export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
   switch (filter.type) {
-    case "js-message-filter":
-      return new pb.MessageFilter().setJs(new pb.JsMessageFilter().setJsCode(filter.value.jsCode));
-    case "basic-message-filter":
-      return new pb.MessageFilter().setBasic(new pb.BasicMessageFilter());
+    case "js-message-filter": {
+      const jsMessageFilterPb = new pb.JsMessageFilter();
+      jsMessageFilterPb.setJsCode(filter.value.jsCode);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setJs(jsMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+
+    case "basic-message-filter": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+
+    }
+  }
+}
+
+export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
+  switch (filter.getValueCase()) {
+    case pb.MessageFilter.ValueCase.JS:
+      return {
+        type: 'js-message-filter',
+        value: { jsCode: filter.getJs()?.getJsCode() ?? '' },
+        isEnabled: filter.getIsEnabled(),
+        isNegated: filter.getIsNegated(),
+      };
+    case pb.MessageFilter.ValueCase.BASIC: {
+      return {
+        type: 'basic-message-filter',
+        value: {},
+        isEnabled: filter.getIsEnabled(),
+        isNegated: filter.getIsNegated(),
+      };
+    }
+    default:
+      throw new Error(`Unknown MessageFilter value case. ${filter.getValueCase()}`);
   }
 }
 
@@ -255,6 +298,9 @@ export function messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFil
       const filterPb = messageFilterToPb(filter);
       chainPb.getFiltersMap().set(filterId, filterPb);
     });
+
+  chainPb.setIsEnabled(chain.isEnabled);
+
 
   return chainPb;
 }

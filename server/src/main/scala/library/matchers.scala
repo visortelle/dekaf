@@ -61,24 +61,24 @@ object NamespaceMatcher:
         matcher.exactNamespaceMatcher.exists(ExactNamespaceMatcher.test(_, namespaceFqn)) ||
             matcher.regexNamespaceMatcher.exists(RegexNamespaceMatcher.test(_, namespaceFqn))
 
-enum TopicPersistencyType:
+enum TopicPersistency:
     case NonPersistent
     case Persistent
     case Any
-given Decoder[TopicPersistencyType] = deriveDecoder[TopicPersistencyType]
-given Encoder[TopicPersistencyType] = deriveEncoder[TopicPersistencyType]
+given Decoder[TopicPersistency] = deriveDecoder[TopicPersistency]
+given Encoder[TopicPersistency] = deriveEncoder[TopicPersistency]
 
-object TopicPersistencyType:
-    def testTopicFqn(want: TopicPersistencyType, topicFqn: String): Boolean =
+object TopicPersistency:
+    def testTopicFqn(want: TopicPersistency, topicFqn: String): Boolean =
         val Array(persistencyType, _) = topicFqn.split("://")
         want match
-            case TopicPersistencyType.Any => true
-            case TopicPersistencyType.NonPersistent => persistencyType == "non-persistent"
-            case TopicPersistencyType.Persistent => persistencyType == "persistent"
+            case TopicPersistency.Any => true
+            case TopicPersistency.NonPersistent => persistencyType == "non-persistent"
+            case TopicPersistency.Persistent => persistencyType == "persistent"
 
 case class ExactTopicMatcher(
     `type`: "exact-topic-matcher",
-    persistency: TopicPersistencyType,
+    persistency: TopicPersistency,
     namespace: NamespaceMatcher,
     topic: String
 )
@@ -92,12 +92,12 @@ object ExactTopicMatcher:
         val namespaceFqn = s"$tenant/$namespace"
 
         NamespaceMatcher.test(matcher.namespace, namespaceFqn) &&
-            TopicPersistencyType.testTopicFqn(matcher.persistency, topicFqn) &&
+            TopicPersistency.testTopicFqn(matcher.persistency, topicFqn) &&
             matcher.topic == topic
 
 case class RegexTopicMatcher(
     `type`: "regex-topic-matcher",
-    persistency: TopicPersistencyType,
+    persistency: TopicPersistency,
     namespace: NamespaceMatcher,
     topicRegex: String
 )
@@ -111,7 +111,7 @@ object RegexTopicMatcher:
         val namespaceFqn = s"$tenant/$namespace"
 
         NamespaceMatcher.test(matcher.namespace, namespaceFqn) &&
-            TopicPersistencyType.testTopicFqn(matcher.persistency, topicFqn) &&
+            TopicPersistency.testTopicFqn(matcher.persistency, topicFqn) &&
             topic.matches(matcher.topicRegex)
 
 case class TopicMatcher(

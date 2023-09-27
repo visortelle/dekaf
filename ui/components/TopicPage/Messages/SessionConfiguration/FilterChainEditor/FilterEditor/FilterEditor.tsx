@@ -3,7 +3,6 @@ import s from './FilterEditor.module.css'
 import * as t from '../../../types';
 import JsFilterEditor, { defaultJsFilterValue } from './JsFilterEditor/JsFilterEditor';
 import BasicFilterEditor from './BasicFilterEditor/BasicFilterEditor';
-import { MessageFilter } from '../../../types';
 import Select from '../../../../../ui/Select/Select';
 import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import Toggle from '../../../../../ui/Toggle/Toggle';
@@ -32,7 +31,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
         itemDescriptorToSave={{ type: 'message-filter', value: props.value }}
         itemType='message-filter'
         onPick={(item) => {
-          if (item.descriptor.type === 'message-filter') {
+          if (item.descriptor.type !== 'message-filter') {
             return;
           }
 
@@ -45,14 +44,14 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
           <Toggle
             value={props.value.isEnabled}
             onChange={() => props.onChange({ ...props.value, isEnabled: !props.value.isEnabled })}
-            title='Toggle this filter'
             label='Enabled'
+            help="This filter will be disabled if this toggle is off."
           />
 
           <Toggle
             value={props.value.isNegated}
             onChange={() => props.onChange({ ...props.value, isNegated: !props.value.isNegated })}
-            title='Toggle negate this filter'
+            help='This filter results will be reversed. Filtered messages will be passed and vice versa.'
             label='Negated'
           />
 

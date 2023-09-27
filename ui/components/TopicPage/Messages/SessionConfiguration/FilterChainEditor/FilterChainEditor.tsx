@@ -13,6 +13,7 @@ import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
+import Toggle from '../../../../ui/Toggle/Toggle';
 
 export type FilterChainProps = {
   value: t.MessageFilterChain;
@@ -40,7 +41,19 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           }}
           isForceShowButtons={isHovered}
         />
-        <div style={{ marginBottom: '12rem' }}>
+        <div style={{ marginBottom: '12rem', display: 'flex', alignItems: 'center', gap: '8rem' }}>
+          <Toggle
+            label="Enabled"
+            value={props.value.isEnabled}
+            onChange={v => props.onChange({ ...props.value, isEnabled: v })}
+            help="The whole filter chain will be disabled if this toggle is off."
+          />
+          <Toggle
+            label="Negated"
+            value={props.value.isNegated}
+            onChange={v => props.onChange({ ...props.value, isNegated: v })}
+            help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
+          />
           <Select<'all' | 'any'>
             list={[
               { type: 'item', title: 'All filters should match', value: 'all' },

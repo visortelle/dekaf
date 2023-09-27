@@ -67,30 +67,30 @@ def namespaceMatcherToPb(v: NamespaceMatcher): pb.NamespaceMatcher =
             pb.NamespaceMatcher(matcher = pb.NamespaceMatcher.Matcher.Regex(regexNamespaceMatcherToPb(regexNamespaceMatcher)))
         case _ => throw new IllegalArgumentException("Unknown matcher type")
 
-def topicPersistencyTypeFromPb(v: pb.TopicPersistencyType): TopicPersistencyType =
+def topicPersistencyFromPb(v: pb.TopicPersistency): TopicPersistency =
     v match
-        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_NON_PERSISTENT => TopicPersistencyType.NonPersistent
-        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_PERSISTENT     => TopicPersistencyType.Persistent
-        case pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_ANY            => TopicPersistencyType.Any
-        case _                                                             => throw new IllegalArgumentException("Unknown topic persistency type")
+        case pb.TopicPersistency.TOPIC_PERSISTENCY_NON_PERSISTENT => TopicPersistency.NonPersistent
+        case pb.TopicPersistency.TOPIC_PERSISTENCY_PERSISTENT     => TopicPersistency.Persistent
+        case pb.TopicPersistency.TOPIC_PERSISTENCY_ANY            => TopicPersistency.Any
+        case _                                                    => throw new IllegalArgumentException("Unknown topic persistency type")
 
-def topicPersistencyTypeToPb(v: TopicPersistencyType): pb.TopicPersistencyType =
+def topicPersistencyToPb(v: TopicPersistency): pb.TopicPersistency =
     v match
-        case TopicPersistencyType.NonPersistent => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_NON_PERSISTENT
-        case TopicPersistencyType.Persistent    => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_PERSISTENT
-        case TopicPersistencyType.Any           => pb.TopicPersistencyType.TOPIC_PERSISTENCY_TYPE_ANY
+        case TopicPersistency.NonPersistent => pb.TopicPersistency.TOPIC_PERSISTENCY_NON_PERSISTENT
+        case TopicPersistency.Persistent    => pb.TopicPersistency.TOPIC_PERSISTENCY_PERSISTENT
+        case TopicPersistency.Any           => pb.TopicPersistency.TOPIC_PERSISTENCY_ANY
 
 def exactTopicMatcherFromPb(v: pb.ExactTopicMatcher): ExactTopicMatcher =
     ExactTopicMatcher(
         `type` = "exact-topic-matcher",
-        persistency = topicPersistencyTypeFromPb(v.persistency),
+        persistency = topicPersistencyFromPb(v.persistency),
         namespace = namespaceMatcherFromPb(v.namespace.get),
         topic = v.topic
     )
 
 def exactTopicMatcherToPb(v: ExactTopicMatcher): pb.ExactTopicMatcher =
     pb.ExactTopicMatcher(
-        persistency = topicPersistencyTypeToPb(v.persistency),
+        persistency = topicPersistencyToPb(v.persistency),
         namespace = Some(namespaceMatcherToPb(v.namespace)),
         topic = v.topic
     )
@@ -98,14 +98,14 @@ def exactTopicMatcherToPb(v: ExactTopicMatcher): pb.ExactTopicMatcher =
 def regexTopicMatcherFromPb(v: pb.RegexTopicMatcher): RegexTopicMatcher =
     RegexTopicMatcher(
         `type` = "regex-topic-matcher",
-        persistency = topicPersistencyTypeFromPb(v.persistency),
+        persistency = topicPersistencyFromPb(v.persistency),
         namespace = namespaceMatcherFromPb(v.namespace.get),
         topicRegex = v.topicRegex
     )
 
 def regexTopicMatcherToPb(v: RegexTopicMatcher): pb.RegexTopicMatcher =
     pb.RegexTopicMatcher(
-        persistency = topicPersistencyTypeToPb(v.persistency),
+        persistency = topicPersistencyToPb(v.persistency),
         namespace = Some(namespaceMatcherToPb(v.namespace)),
         topicRegex = v.topicRegex
     )

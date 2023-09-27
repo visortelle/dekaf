@@ -1,3 +1,4 @@
+import { consumerSessionConfigToPb, messageFilterToPb, messageFilterChainToPb } from "../../TopicPage/Messages/conversions";
 import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import * as t from "./types";
 
@@ -310,6 +311,26 @@ export function resourceMatcherFromPb(matcherPb: pb.ResourceMatcher): t.Resource
     }
 
     default: throw new Error(`Unknown matcher case: ${matcherPb.getMatcherCase()}`);
+  }
+}
+
+export function libraryItemDescriptorToPb(descriptor: t.LibraryItemDescriptor): pb.LibraryItemDescriptor {
+  switch (descriptor.type) {
+    case 'consumer-session-config': {
+      const descriptorPb = new pb.LibraryItemDescriptor();
+      descriptorPb.setConsumerSessionConfig(consumerSessionConfigToPb(descriptor.value));
+      return descriptorPb;
+    }
+    case 'message-filter': {
+      const descriptorPb = new pb.LibraryItemDescriptor();
+      descriptorPb.setMessageFilter(messageFilterToPb(descriptor.value));
+      return descriptorPb;
+    }
+    case 'message-filter-chain': {
+      const descriptorPb = new pb.LibraryItemDescriptor();
+      descriptorPb.setMessageFilterChain(messageFilterChainToPb(descriptor.value));
+      return descriptorPb;
+    }
   }
 }
 
