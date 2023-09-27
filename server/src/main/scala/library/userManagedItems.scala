@@ -99,4 +99,4 @@ case class UserManagedConsumerSessionConfigPauseTrigger(
 given Decoder[UserManagedConsumerSessionConfigPauseTrigger] = deriveDecoder[UserManagedConsumerSessionConfigPauseTrigger]
 given Encoder[UserManagedConsumerSessionConfigPauseTrigger] = deriveEncoder[UserManagedConsumerSessionConfigPauseTrigger]
 
-case class UserManagedMessageFilter
+//case class UserManagedMessageFilter

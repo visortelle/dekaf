@@ -16,12 +16,7 @@ message LibraryItemMetadata {
 
 message LibraryItem {
   LibraryItemMetadata metadata = 1;
-
-  oneof spec {
-    UserManagedConsumerSessionConfig consumer_session_config = 10;
-    UserManagedMessageFilter message_filter = 11;
-    UserManagedMessageFilterChain message_filter_chain = 12;
-  }
+  UserManagedItem spec = 2;
 }
 
 message DeleteLibraryItemRequest {

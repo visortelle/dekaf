@@ -192,7 +192,7 @@ enum MessageFilterChainMode {
 message MessageFilterChain {
   bool is_enabled = 10;
   bool is_negated = 11;
-  map<string, MessageFilter> filters = 1;
+  repeated MessageFilter filters = 1;
   MessageFilterChainMode mode = 2;
 }
 

@@ -146,9 +146,18 @@ message UserManagedConsumerSessionConfigPauseTriggerValueOrReference {
   }
 }
 
+message UserManagedMessageFilterSpec {
+  bool is_enabled = 10;
+  bool is_negated = 11;
+  oneof value {
+   tools.teal.pulsar.ui.api.v1.JsMessageFilter js = 1;
+   tools.teal.pulsar.ui.api.v1.BasicMessageFilter basic = 2;
+  }
+}
+
 message UserManagedMessageFilter {
   UserManagedItemMetadata metadata = 1;
-  tools.teal.pulsar.ui.api.v1.MessageFilter spec = 2;
+  UserManagedMessageFilterSpec spec = 2;
 }
 
 message UserManagedMessageFilterValueOrReference {
@@ -158,9 +167,16 @@ message UserManagedMessageFilterValueOrReference {
   }
 }
 
+message UserManagedMessageFilterChainSpec {
+  bool is_enabled = 1;
+  bool is_negated = 2;
+  repeated UserManagedMessageFilterValueOrReference message_filters = 3;
+  tools.teal.pulsar.ui.api.v1.MessageFilterChainMode mode = 4;
+}
+
 message UserManagedMessageFilterChain {
   UserManagedItemMetadata metadata = 1;
-  tools.teal.pulsar.ui.api.v1.MessageFilterChain spec = 2;
+  UserManagedMessageFilterChainSpec spec = 2;
 }
 
 message UserManagedMessageFilterChainValueOrReference {
