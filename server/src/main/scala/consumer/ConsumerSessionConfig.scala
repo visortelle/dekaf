@@ -5,7 +5,7 @@ import io.circe.generic.semiauto.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
-import library.{LibraryItemDescriptor, LibraryItemType}
+import library.{LibraryItemDescriptor, UserManagedItemType}
 
 enum MessageFilterType:
     case BasicMessageFilter
@@ -73,23 +73,23 @@ case class MessageFilterChain(
 given Decoder[MessageFilterChain] = deriveDecoder[MessageFilterChain]
 given Encoder[MessageFilterChain] = deriveEncoder[MessageFilterChain]
 
-enum StartFromType {
+enum ConsumerSessionConfigStartFromType {
     case EarliestMessage
     case LatestMessage
     case MessageId
     case DateTime
     case RelativeDateTime
 }
-given Decoder[StartFromType] = deriveDecoder[StartFromType]
-given Encoder[StartFromType] = deriveEncoder[StartFromType]
+given Decoder[ConsumerSessionConfigStartFromType] = deriveDecoder[ConsumerSessionConfigStartFromType]
+given Encoder[ConsumerSessionConfigStartFromType] = deriveEncoder[ConsumerSessionConfigStartFromType]
 
-case class StartFromEarliestMessage()
-given Decoder[StartFromEarliestMessage] = deriveDecoder[StartFromEarliestMessage]
-given Encoder[StartFromEarliestMessage] = deriveEncoder[StartFromEarliestMessage]
+case class EarliestMessage()
+given Decoder[EarliestMessage] = deriveDecoder[EarliestMessage]
+given Encoder[EarliestMessage] = deriveEncoder[EarliestMessage]
 
-case class StartFromLatestMessage()
-given Decoder[StartFromLatestMessage] = deriveDecoder[StartFromLatestMessage]
-given Encoder[StartFromLatestMessage] = deriveEncoder[StartFromLatestMessage]
+case class LatestMessage()
+given Decoder[LatestMessage] = deriveDecoder[LatestMessage]
+given Encoder[LatestMessage] = deriveEncoder[LatestMessage]
 
 enum DateTimeUnit {
     case Second
@@ -103,62 +103,67 @@ enum DateTimeUnit {
 given Decoder[DateTimeUnit] = deriveDecoder[DateTimeUnit]
 given Encoder[DateTimeUnit] = deriveEncoder[DateTimeUnit]
 
-case class StartFromDateTime(
+case class DateTime(
     dateTime: java.time.Instant
 )
-given Decoder[StartFromDateTime] = deriveDecoder[StartFromDateTime]
-given Encoder[StartFromDateTime] = deriveEncoder[StartFromDateTime]
+given Decoder[DateTime] = deriveDecoder[DateTime]
+given Encoder[DateTime] = deriveEncoder[DateTime]
 
-case class StartFromRelativeDateTime(
+case class RelativeDateTime(
     value: Int,
     unit: DateTimeUnit,
     isRoundToUnitStart: Boolean
 )
-given Decoder[StartFromRelativeDateTime] = deriveDecoder[StartFromRelativeDateTime]
-given Encoder[StartFromRelativeDateTime] = deriveEncoder[StartFromRelativeDateTime]
+given Decoder[RelativeDateTime] = deriveDecoder[RelativeDateTime]
+given Encoder[RelativeDateTime] = deriveEncoder[RelativeDateTime]
 
-case class StartFromMessageId(
+case class MessageId(
     messageId: Array[Byte]
 )
-given Decoder[StartFromMessageId] = deriveDecoder[StartFromMessageId]
-given Encoder[StartFromMessageId] = deriveEncoder[StartFromMessageId]
+given Decoder[MessageId] = deriveDecoder[MessageId]
+given Encoder[MessageId] = deriveEncoder[MessageId]
 
-case class StartFrom(
-    `type`: StartFromType,
-    value: StartFromEarliestMessage | StartFromLatestMessage | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime
+case class ConsumerSessionConfigStartFrom(
+    `type`: ConsumerSessionConfigStartFromType,
+    value: EarliestMessage | LatestMessage | MessageId | DateTime | RelativeDateTime
 )
-given Decoder[StartFrom] = new Decoder[StartFrom] {
-    final def apply(c: HCursor): Decoder.Result[StartFrom] =
+given Decoder[ConsumerSessionConfigStartFrom] = new Decoder[ConsumerSessionConfigStartFrom] {
+    final def apply(c: HCursor): Decoder.Result[ConsumerSessionConfigStartFrom] =
         for {
-            `type` <- c.downField("type").as[StartFromType]
+            `type` <- c.downField("type").as[ConsumerSessionConfigStartFromType]
             value <- `type` match {
-                case StartFromType.EarliestMessage  => c.downField("value").as[StartFromEarliestMessage]
-                case StartFromType.LatestMessage    => c.downField("value").as[StartFromLatestMessage]
-                case StartFromType.MessageId        => c.downField("value").as[StartFromMessageId]
-                case StartFromType.DateTime         => c.downField("value").as[StartFromDateTime]
-                case StartFromType.RelativeDateTime => c.downField("value").as[StartFromRelativeDateTime]
+                case ConsumerSessionConfigStartFromType.EarliestMessage  => c.downField("value").as[EarliestMessage]
+                case ConsumerSessionConfigStartFromType.LatestMessage    => c.downField("value").as[LatestMessage]
+                case ConsumerSessionConfigStartFromType.MessageId        => c.downField("value").as[MessageId]
+                case ConsumerSessionConfigStartFromType.DateTime         => c.downField("value").as[DateTime]
+                case ConsumerSessionConfigStartFromType.RelativeDateTime => c.downField("value").as[RelativeDateTime]
             }
-        } yield StartFrom(`type`, value)
+        } yield ConsumerSessionConfigStartFrom(`type`, value)
 }
-given Encoder[StartFrom] = new Encoder[StartFrom] {
-    final def apply(a: StartFrom): Json = Json.obj(
+given Encoder[ConsumerSessionConfigStartFrom] = new Encoder[ConsumerSessionConfigStartFrom] {
+    final def apply(a: ConsumerSessionConfigStartFrom): Json = Json.obj(
         ("type", a.`type`.asJson),
         (
             "value",
             a.value match {
-                case v: StartFromEarliestMessage  => v.asJson
-                case v: StartFromLatestMessage    => v.asJson
-                case v: StartFromMessageId        => v.asJson
-                case v: StartFromDateTime         => v.asJson
-                case v: StartFromRelativeDateTime => v.asJson
+                case v: EarliestMessage  => v.asJson
+                case v: LatestMessage    => v.asJson
+                case v: MessageId        => v.asJson
+                case v: DateTime         => v.asJson
+                case v: RelativeDateTime => v.asJson
             }
         )
     )
 }
 
+case class ConsumerSessionConfigPauseTrigger()
+given Decoder[ConsumerSessionConfigPauseTrigger] = deriveDecoder[ConsumerSessionConfigPauseTrigger]
+given Encoder[ConsumerSessionConfigPauseTrigger] = deriveEncoder[ConsumerSessionConfigPauseTrigger]
+
 case class ConsumerSessionConfig(
-    startFrom: StartFrom,
-    messageFilterChain: MessageFilterChain
+    startFrom: ConsumerSessionConfigStartFrom,
+    messageFilterChain: MessageFilterChain,
+    pauseTriggers: List[ConsumerSessionConfigPauseTrigger]
 )
 given Decoder[ConsumerSessionConfig] = deriveDecoder[ConsumerSessionConfig]
 given Encoder[ConsumerSessionConfig] = deriveEncoder[ConsumerSessionConfig]

@@ -68,37 +68,37 @@ def dateTimeUnitToPb(dateTimeUnit: DateTimeUnit): pb.DateTimeUnit =
         case DateTimeUnit.Minute => pb.DateTimeUnit.DATE_TIME_UNIT_MINUTE
         case DateTimeUnit.Second => pb.DateTimeUnit.DATE_TIME_UNIT_SECOND
 
-def startFromFromPb(startFrom: pb.StartFrom): StartFrom =
+def startFromFromPb(startFrom: pb.StartFrom): ConsumerSessionConfigStartFrom =
     startFrom.value match
-        case pb.StartFrom.Value.EarliestMessage(_) => StartFrom(`type` = StartFromType.EarliestMessage, value = StartFromEarliestMessage())
-        case pb.StartFrom.Value.LatestMessage(_)   => StartFrom(`type` = StartFromType.LatestMessage, value = StartFromLatestMessage())
-        case pb.StartFrom.Value.MessageId(v) => StartFrom(`type` = StartFromType.MessageId, value = StartFromMessageId(messageId = v.messageId.toByteArray))
+        case pb.StartFrom.Value.EarliestMessage(_) => ConsumerSessionConfigStartFrom(`type` = ConsumerSessionConfigStartFromType.EarliestMessage, value = EarliestMessage())
+        case pb.StartFrom.Value.LatestMessage(_)   => ConsumerSessionConfigStartFrom(`type` = ConsumerSessionConfigStartFromType.LatestMessage, value = LatestMessage())
+        case pb.StartFrom.Value.MessageId(v) => ConsumerSessionConfigStartFrom(`type` = ConsumerSessionConfigStartFromType.MessageId, value = MessageId(messageId = v.messageId.toByteArray))
         case pb.StartFrom.Value.DateTime(v) =>
-            StartFrom(
-                `type` = StartFromType.DateTime,
-                value = StartFromDateTime(dateTime = Instant.ofEpochSecond(v.dateTime.get.seconds, v.dateTime.get.nanos))
+            ConsumerSessionConfigStartFrom(
+                `type` = ConsumerSessionConfigStartFromType.DateTime,
+                value = DateTime(dateTime = Instant.ofEpochSecond(v.dateTime.get.seconds, v.dateTime.get.nanos))
             )
         case pb.StartFrom.Value.RelativeDateTime(v) =>
-            val relativeDateTime = StartFromRelativeDateTime(
+            val relativeDateTime = RelativeDateTime(
                 value = v.value,
                 unit = dateTimeUnitFromPb(v.unit),
                 isRoundToUnitStart = v.isRoundToUnitStart
             )
-            StartFrom(`type` = StartFromType.RelativeDateTime, value = relativeDateTime)
+            ConsumerSessionConfigStartFrom(`type` = ConsumerSessionConfigStartFromType.RelativeDateTime, value = relativeDateTime)
 
-def startFromToPb(startFrom: StartFrom): pb.StartFrom =
+def startFromToPb(startFrom: ConsumerSessionConfigStartFrom): pb.StartFrom =
     startFrom match
-        case StartFrom(_, StartFromEarliestMessage()) => pb.StartFrom(value = pb.StartFrom.Value.EarliestMessage(pb.StartFromEarliestMessage()))
-        case StartFrom(_, StartFromLatestMessage())   => pb.StartFrom(value = pb.StartFrom.Value.LatestMessage(pb.StartFromLatestMessage()))
-        case StartFrom(_, StartFromMessageId(messageId)) =>
+        case ConsumerSessionConfigStartFrom(_, EarliestMessage()) => pb.StartFrom(value = pb.StartFrom.Value.EarliestMessage(pb.StartFromEarliestMessage()))
+        case ConsumerSessionConfigStartFrom(_, LatestMessage())   => pb.StartFrom(value = pb.StartFrom.Value.LatestMessage(pb.StartFromLatestMessage()))
+        case ConsumerSessionConfigStartFrom(_, MessageId(messageId)) =>
             pb.StartFrom(value = pb.StartFrom.Value.MessageId(pb.StartFromMessageId(messageId = ByteString.copyFrom(messageId))))
-        case StartFrom(_, StartFromDateTime(dateTime)) =>
+        case ConsumerSessionConfigStartFrom(_, DateTime(dateTime)) =>
             pb.StartFrom(
                 value = pb.StartFrom.Value.DateTime(
                     pb.StartFromDateTime(dateTime = Some(Timestamp(seconds = dateTime.getEpochSecond, nanos = dateTime.getNano)))
                 )
             )
-        case StartFrom(_, StartFromRelativeDateTime(value, unit, isRoundToUnitStart)) =>
+        case ConsumerSessionConfigStartFrom(_, RelativeDateTime(value, unit, isRoundToUnitStart)) =>
             pb.StartFrom(
                 value = pb.StartFrom.Value.RelativeDateTime(
                     pb.StartFromRelativeDateTime(

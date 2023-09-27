@@ -3,18 +3,11 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.api.v1;
 
 import "google/protobuf/timestamp.proto";
-import "google/rpc/status.proto";
 import "google/protobuf/wrappers.proto";
-
-message MessageId {
-  int64 ledger_id = 1;
-  int64 entry_id = 2;
-  int32 batch_id = 3;
-  int32 partition_idx = 4;
-}
+import "google/rpc/status.proto";
 
 message Message {
-   // Message value as raw bytes.
+  // Message value as raw bytes.
   google.protobuf.BytesValue raw_value = 4;
 
   // Message value serialized as JSON.
@@ -71,7 +64,7 @@ enum RegexSubscriptionMode {
 }
 
 message TopicsSelectorByNames {
-    repeated string topics = 1;
+  repeated string topics = 1;
 }
 
 message TopicsSelectorByRegex {
@@ -97,18 +90,18 @@ enum DateTimeUnit {
   DATE_TIME_UNIT_SECOND = 7;
 }
 
-message StartFromEarliestMessage {}
-message StartFromLatestMessage {}
+message EarliestMessage {}
+message LatestMessage {}
 
-message StartFromMessageId {
+message MessageId {
   bytes message_id = 1;
 }
 
-message StartFromDateTime {
+message DateTime {
   google.protobuf.Timestamp date_time = 1;
 }
 
-message StartFromRelativeDateTime {
+message RelativeDateTime {
   int32 value = 1;
   DateTimeUnit unit = 2;
   bool is_round_to_unit_start = 3;
@@ -116,29 +109,35 @@ message StartFromRelativeDateTime {
 
 message ConsumerSessionConfigStartFrom {
   oneof value {
-    StartFromEarliestMessage earliest_message = 1;
-    StartFromLatestMessage latest_message = 2;
-    StartFromMessageId message_id = 3;
-    StartFromDateTime date_time = 4;
-    StartFromRelativeDateTime relative_date_time = 5;
+    EarliestMessage earliest_message = 1;
+    LatestMessage latest_message = 2;
+    MessageId message_id = 3;
+    DateTime date_time = 4;
+    RelativeDateTime relative_date_time = 5;
   }
 }
 
 message ConsumerSessionConfigPauseTrigger {
-  int64 on_messages_processed = 1;
-  int64 on_messages_delivered = 2;
-  int64 on_bytes_processed = 3;
-  int64 on_bytes_delivered = 4;
-  int64 on_elapsed_time_ms = 5;
-  bool on_topic_end_reached = 6;
-  bool on_message_decode_fail = 7;
-  // TODO - on message value or accumulator match. For example if pricing sum of orders is greater than 1000.
+  oneof trigger {
+    int64 on_messages_processed = 1;
+    int64 on_messages_delivered = 2;
+    int64 on_bytes_processed = 3;
+    int64 on_bytes_delivered = 4;
+    int64 on_message_decode_fails = 7;
+    int64 on_elapsed_time_ms = 5;
+    bool on_topic_end_reached = 6;
+    DateTime on_date_time = 8;
+    RelativeDateTime on_relative_date_time = 9;
+    MessageId on_message_id = 10;
+    MessageFilter on_message_filter_pass = 11;
+    MessageFilterChain on_message_filter_chain_pass = 12;
+  }
 }
 
 message ConsumerSessionConfig {
   ConsumerSessionConfigStartFrom start_from = 1;
   MessageFilterChain message_filter_chain = 2;
-  ConsumerSessionConfigPauseTrigger pause_trigger = 3;
+  repeated ConsumerSessionConfigPauseTrigger pause_triggers = 3;
 }
 
 message CreateConsumerRequest {
@@ -173,9 +172,7 @@ message JsMessageFilter {
   string js_code = 1;
 }
 
-message BasicMessageFilter {
-
-}
+message BasicMessageFilter {}
 
 message MessageFilter {
   bool is_enabled = 10;
@@ -204,8 +201,7 @@ message ResumeRequest {
   bool include_consumer_stats = 2;
 }
 
-message ConsumerStats {
-}
+message ConsumerStats {}
 
 message ResumeResponse {
   optional google.rpc.Status status = 1;

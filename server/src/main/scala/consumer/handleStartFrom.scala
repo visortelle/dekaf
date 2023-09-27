@@ -3,17 +3,17 @@ package consumer
 import java.time.{Instant, ZonedDateTime}
 import org.apache.pulsar.client.api.{Consumer, MessageId}
 
-def handleStartFrom(startFrom: StartFrom, consumer: Consumer[Array[Byte]]): Unit =
+def handleStartFrom(startFrom: ConsumerSessionConfigStartFrom, consumer: Consumer[Array[Byte]]): Unit =
     startFrom.value match
-        case _: StartFromEarliestMessage => // Do nothing here. It's handled on the consumer creation.
-        case _: StartFromLatestMessage   => // Do nothing here. It's handled on the consumer creation.
-        case v: StartFromMessageId =>
+        case _: EarliestMessage => // Do nothing here. It's handled on the consumer creation.
+        case _: LatestMessage   => // Do nothing here. It's handled on the consumer creation.
+        case v: MessageId =>
             val messageId = MessageId.fromByteArray(v.messageId)
             consumer.seek(messageId)
-        case v: StartFromDateTime =>
+        case v: DateTime =>
             val timestamp = v.dateTime.toEpochMilli
             consumer.seek(timestamp)
-        case v: StartFromRelativeDateTime =>
+        case v: RelativeDateTime =>
             val now = ZonedDateTime.now()
             val dateTime = v.unit match
                 case DateTimeUnit.Year =>

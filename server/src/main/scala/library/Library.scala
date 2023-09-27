@@ -2,10 +2,10 @@ package library
 
 import consumer.{
     given_Decoder_ConsumerSessionConfig,
-    given_Encoder_ConsumerSessionConfig,
     given_Decoder_MessageFilter,
-    given_Encoder_MessageFilter,
     given_Decoder_MessageFilterChain,
+    given_Encoder_ConsumerSessionConfig,
+    given_Encoder_MessageFilter,
     given_Encoder_MessageFilterChain,
     ConsumerSessionConfig,
     MessageFilter,
@@ -17,29 +17,18 @@ import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
 
-enum LibraryItemType:
-    case ConsumerSessionConfig
-    case ProducerSessionConfig
-    case MarkdownDocument
-    case MessageFilter
-    case MessageFilterChain
-    case DataVisualizationWidget
-    case DataVisualizationDashboard
-given Decoder[LibraryItemType] = deriveDecoder[LibraryItemType]
-given Encoder[LibraryItemType] = deriveEncoder[LibraryItemType]
-
 case class LibraryItemDescriptor(
-    `type`: LibraryItemType,
+    `type`: UserManagedItemType,
     value: ConsumerSessionConfig | MessageFilter | MessageFilterChain
 )
 given Decoder[LibraryItemDescriptor] = new Decoder[LibraryItemDescriptor] {
     final def apply(c: HCursor): Decoder.Result[LibraryItemDescriptor] =
         for {
-            itemType <- c.downField("type").as[LibraryItemType]
+            itemType <- c.downField("type").as[UserManagedItemType]
             value <- itemType match {
-                case LibraryItemType.ConsumerSessionConfig => c.downField("value").as[ConsumerSessionConfig]
-                case LibraryItemType.MessageFilter         => c.downField("value").as[MessageFilter]
-                case LibraryItemType.MessageFilterChain    => c.downField("value").as[MessageFilterChain]
+                case UserManagedItemType.ConsumerSessionConfig => c.downField("value").as[ConsumerSessionConfig]
+                case UserManagedItemType.MessageFilter         => c.downField("value").as[MessageFilter]
+                case UserManagedItemType.MessageFilterChain    => c.downField("value").as[MessageFilterChain]
             }
         } yield LibraryItemDescriptor(itemType, value)
 }
@@ -58,12 +47,9 @@ given Encoder[LibraryItemDescriptor] = new Encoder[LibraryItemDescriptor] {
 }
 
 case class LibraryItem(
-    id: String,
     revision: String,
     updatedAt: String,
     isEditable: Boolean,
-    name: String,
-    descriptionMarkdown: String,
     tags: List[String],
     resources: List[ResourceMatcher],
     descriptor: LibraryItemDescriptor
@@ -78,7 +64,7 @@ type LibraryScanResultEntry = Either[Throwable, LibraryItem]
 type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 
 case class ListItemsFilter(
-    types: List[LibraryItemType],
+    types: List[UserManagedItemType],
     tags: List[TagName],
     resourceFqns: List[String],
     name: String,
