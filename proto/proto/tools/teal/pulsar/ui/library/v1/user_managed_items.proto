@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.library.v1;
+
+import "tools/teal/pulsar/ui/api/v1/consumer.proto";
+
+enum UserManagedItemType {
+  USER_MANAGED_ITEM_TYPE_UNSPECIFIED = 0;
+  USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG = 1;
+  USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM = 11;
+  USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER = 12;
+  USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
+  USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT = 3;
+  USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER = 4;
+  USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN = 5;
+  USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET = 6;
+  USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD = 7;
+}
+
+message UserManagedItemMetadata {
+  UserManagedItemType type = 1;
+  string id = 2;
+  string name = 6;
+  string description_markdown = 7;
+}
+
+message UserManagedConsumerSessionConfig {
+  UserManagedItemMetadata metadata = 12;
+
+  oneof start_from {
+    UserManagedConsumerSessionConfigStartFrom start_from_value = 1;
+    string start_from_reference = 2;
+  }
+  oneof message_filter_chain {
+    UserManagedMessageFilterChain message_filter_chain_value = 10;
+    string message_filter_chain_reference = 5;
+  }
+  oneof pause_trigger {
+    UserManagedConsumerSessionConfigPauseTrigger pause_trigger_value = 11;
+    string pause_trigger_reference = 6;
+  }
+}
+
+message UserManagedConsumerSessionConfigStartFrom {
+  UserManagedItemMetadata metadata = 1;
+
+  oneof start_from {
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionConfigStartFrom start_from_value = 2;
+    string start_from_reference = 3;
+  }
+}
+
+message UserManagedConsumerSessionConfigPauseTrigger {
+  UserManagedItemMetadata metadata = 1;
+
+  oneof pause_trigger {
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionConfigPauseTrigger pause_trigger_value = 2;
+    string pause_trigger_reference = 3;
+  }
+}
+
+message UserManagedMessageFilter {
+  UserManagedItemMetadata metadata = 1;
+
+  oneof message_filter {
+    tools.teal.pulsar.ui.api.v1.MessageFilter message_filter_value = 2;
+    string message_filter_reference = 3;
+  }
+}
+
+message UserManagedMessageFilterChain {
+  UserManagedItemMetadata metadata = 1;
+
+  oneof message_filter_chain {
+    tools.teal.pulsar.ui.api.v1.MessageFilterChain message_filter_chain_value = 2;
+    string message_filter_chain_reference = 3;
+  }
+}
+
+message UserManagedItem {
+  oneof user_managed_item {
+    UserManagedConsumerSessionConfig consumer_session_config = 2;
+    UserManagedConsumerSessionConfigStartFrom consumer_session_config_start_from = 3;
+    UserManagedConsumerSessionConfigPauseTrigger consumer_session_config_pause_trigger = 4;
+    UserManagedMessageFilter message_filter = 7;
+    UserManagedMessageFilterChain message_filter_chain = 8;
+  }
+}

@@ -67,18 +67,16 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
               switch (v) {
                 case 'basic-message-filter':
                   props.onChange({
+                    ...props.value,
                     type: 'basic-message-filter',
                     value: {},
-                    isEnabled: true,
-                    isNegated: false,
                   });
                   return;
                 case 'js-message-filter':
                   props.onChange({
+                    ...props.value,
                     type: 'js-message-filter',
                     value: defaultJsFilterValue,
-                    isEnabled: true,
-                    isNegated: false,
                   });
                   return;
               }

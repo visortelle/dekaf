@@ -3,106 +3,25 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.library.v1;
 
 import "google/rpc/status.proto";
-import "tools/teal/pulsar/ui/api/v1/consumer.proto";
+import "tools/teal/pulsar/ui/library/v1/resource_matchers.proto";
+import "tools/teal/pulsar/ui/library/v1/user_managed_items.proto";
 
-message ExactTenantMatcher {
-  string tenant = 1;
-}
-
-message RegexTenantMatcher {
-  string tenant_regex = 1;
-}
-
-message TenantMatcher {
-  oneof matcher {
-    ExactTenantMatcher exact = 1;
-    RegexTenantMatcher regex = 2;
-  }
-}
-
-message ExactNamespaceMatcher {
-  TenantMatcher tenant = 1;
-  string namespace = 2;
-}
-
-message RegexNamespaceMatcher {
-  TenantMatcher tenant = 1;
-  string namespace_regex = 2;
-}
-
-message NamespaceMatcher {
-  oneof matcher {
-    ExactNamespaceMatcher exact = 1;
-    RegexNamespaceMatcher regex = 2;
-  }
-}
-
-enum TopicPersistency {
-  TOPIC_PERSISTENCY_UNSPECIFIED = 0;
-  TOPIC_PERSISTENCY_NON_PERSISTENT = 1;
-  TOPIC_PERSISTENCY_PERSISTENT = 2;
-  TOPIC_PERSISTENCY_ANY = 3;
-}
-
-message ExactTopicMatcher {
-  TopicPersistency persistency = 1;
-  NamespaceMatcher namespace = 2;
-  string topic = 3;
-}
-
-message RegexTopicMatcher {
-  TopicPersistency persistency = 1;
-  NamespaceMatcher namespace = 2;
-  string topic_regex = 3;
-}
-
-message TopicMatcher {
-  oneof matcher {
-    ExactTopicMatcher exact = 1;
-    RegexTopicMatcher regex = 2;
-  }
-}
-
-message ResourceMatcher {
-  oneof matcher {
-    TenantMatcher tenant = 1;
-    NamespaceMatcher namespace = 2;
-    TopicMatcher topic = 3;
-  }
-}
-
-enum LibraryItemType {
-  LIBRARY_ITEM_TYPE_UNSPECIFIED = 0;
-  LIBRARY_ITEM_TYPE_CONSUMER_SESSION_CONFIG = 1;
-  LIBRARY_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
-  LIBRARY_ITEM_TYPE_MARKDOWN_DOCUMENT = 3;
-  LIBRARY_ITEM_TYPE_MESSAGE_FILTER = 4;
-  LIBRARY_ITEM_TYPE_MESSAGE_FILTER_CHAIN = 5;
-  LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_WIDGET = 6;
-  LIBRARY_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD = 7;
-}
-
-message LibraryItemDescriptor {
-  LibraryItemType type = 1;
-  oneof value {
-    tools.teal.pulsar.ui.api.v1.ConsumerSessionConfig consumer_session_config = 10;
-    tools.teal.pulsar.ui.api.v1.MessageFilter message_filter = 11;
-    tools.teal.pulsar.ui.api.v1.MessageFilterChain message_filter_chain = 12;
-  }
-}
-
-message LibraryItem {
-  string id = 2;
+message LibraryItemMetadata {
   string revision = 3;
   string updated_at = 4;
   bool is_editable = 5;
-
-  string name = 6;
-  string description_markdown = 7;
   repeated string tags = 8;
-
   repeated ResourceMatcher resources = 9;
-  LibraryItemDescriptor descriptor = 10;
+}
+
+message LibraryItem {
+  LibraryItemMetadata metadata = 1;
+
+  oneof user_managed_item {
+    UserManagedConsumerSessionConfig consumer_session_config = 10;
+    UserManagedMessageFilter message_filter = 11;
+    UserManagedMessageFilterChain message_filter_chain = 12;
+  }
 }
 
 message DeleteLibraryItemRequest {
@@ -131,7 +50,7 @@ message GetLibraryItemResponse {
 }
 
 message ListLibraryItemsRequest {
-  repeated LibraryItemType types = 1;
+  repeated UserManagedItemType types = 1;
   repeated string resource_fqns = 2;
   repeated string tags = 3;
   string name = 5;
@@ -140,7 +59,7 @@ message ListLibraryItemsRequest {
 
 message ListLibraryItemsResponse {
   google.rpc.Status status = 1;
-  repeated LibraryItem items = 2; // resource descriptor is ommited in response to reduce it's size
+  repeated LibraryItem items = 2; // resource spec is ommited in response to reduce it's size
 }
 
 service LibraryService {

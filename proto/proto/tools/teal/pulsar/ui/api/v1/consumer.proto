@@ -114,7 +114,7 @@ message StartFromRelativeDateTime {
   bool is_round_to_unit_start = 3;
 }
 
-message StartFrom {
+message ConsumerSessionConfigStartFrom {
   oneof value {
     StartFromEarliestMessage earliest_message = 1;
     StartFromLatestMessage latest_message = 2;
@@ -124,7 +124,7 @@ message StartFrom {
   }
 }
 
-message ConsumerSessionPauseTrigger {
+message ConsumerSessionConfigPauseTrigger {
   int64 on_messages_processed = 1;
   int64 on_messages_delivered = 2;
   int64 on_bytes_processed = 3;
@@ -136,9 +136,9 @@ message ConsumerSessionPauseTrigger {
 }
 
 message ConsumerSessionConfig {
-  StartFrom start_from = 1;
+  ConsumerSessionConfigStartFrom start_from = 1;
   MessageFilterChain message_filter_chain = 2;
-  ConsumerSessionPauseTrigger pause_trigger = 3;
+  ConsumerSessionConfigPauseTrigger pause_trigger = 3;
 }
 
 message CreateConsumerRequest {
