@@ -7,21 +7,31 @@ import com.google.protobuf.timestamp.Timestamp
 
 import java.time.Instant
 
+def jsMessageFilterFromPb(filter: pb.JsMessageFilter): JsMessageFilter =
+    JsMessageFilter(jsCode = filter.jsCode)
+def jsMessageFilterToPb(filter: JsMessageFilter): pb.JsMessageFilter =
+    pb.JsMessageFilter(jsCode = filter.jsCode)
+
+def basicMessageFilterFromPb(filter: pb.BasicMessageFilter): BasicMessageFilter =
+    BasicMessageFilter()
+def basicMessageFilterToPb(filter: BasicMessageFilter): pb.BasicMessageFilter =
+    pb.BasicMessageFilter()
+
 def messageFilterFromPb(filter: pb.MessageFilter): MessageFilter =
     filter.value.js
-        .map(js => MessageFilter(
+        .map(jsFilter => MessageFilter(
             isEnabled = filter.isEnabled,
             isNegated = filter.isNegated,
-            `type` = MessageFilterType.JsMessageFilter, 
-            value = JsMessageFilter(js.jsCode)
+            `type` = MessageFilterType.JsMessageFilter,
+            value = jsMessageFilterFromPb(jsFilter)
         ))
         .getOrElse(
             filter.value.basic
-                .map(_ => MessageFilter(
+                .map(basicFilter => MessageFilter(
                     isEnabled = filter.isEnabled,
                     isNegated = filter.isNegated,
-                    `type` = MessageFilterType.BasicMessageFilter, 
-                    value = BasicMessageFilter()
+                    `type` = MessageFilterType.BasicMessageFilter,
+                    value = basicMessageFilterFromPb(basicFilter)
                 ))
                 .getOrElse(throw new IllegalArgumentException("Invalid message filter"))
         )

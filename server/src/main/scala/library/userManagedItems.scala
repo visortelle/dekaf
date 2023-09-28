@@ -21,6 +21,7 @@ import _root_.consumer.{
     MessageId,
     RelativeDateTime
 }
+import java.time.Instant
 
 enum UserManagedItemType:
     case ConsumerSessionConfig
@@ -109,11 +110,11 @@ given Decoder[UserManagedRelativeDateTimeValueOrReference] = deriveDecoder[UserM
 given Encoder[UserManagedRelativeDateTimeValueOrReference] = deriveEncoder[UserManagedRelativeDateTimeValueOrReference]
 
 case class UserManagedConsumerSessionConfigStartFromSpec(
-    earliestMessage: Option[EarliestMessage],
-    latestMessage: Option[LatestMessage],
-    messageId: Option[UserManagedMessageIdValueOrReference],
-    dateTime: Option[UserManagedDateTimeValueOrReference],
-    relativeDateTime: Option[UserManagedRelativeDateTimeValueOrReference]
+    earliestMessage: Option[EarliestMessage] = None,
+    latestMessage: Option[LatestMessage] = None,
+    messageId: Option[UserManagedMessageIdValueOrReference] = None,
+    dateTime: Option[UserManagedDateTimeValueOrReference] = None,
+    relativeDateTime: Option[UserManagedRelativeDateTimeValueOrReference] = None
 )
 given Decoder[UserManagedConsumerSessionConfigStartFromSpec] = deriveDecoder[UserManagedConsumerSessionConfigStartFromSpec]
 given Encoder[UserManagedConsumerSessionConfigStartFromSpec] = deriveEncoder[UserManagedConsumerSessionConfigStartFromSpec]
@@ -133,18 +134,18 @@ given Decoder[UserManagedConsumerSessionConfigStartFromValueOrReference] = deriv
 given Encoder[UserManagedConsumerSessionConfigStartFromValueOrReference] = deriveEncoder[UserManagedConsumerSessionConfigStartFromValueOrReference]
 
 case class UserManagedConsumerSessionConfigPauseTriggerSpec(
-    onMessagesProcessed: Option[Long],
-    onMessagesDelivered: Option[Long],
-    onBytesProcessed: Option[Long],
-    onBytesDelivered: Option[Long],
-    onMessageDecodeFails: Option[Long],
-    onElapsedTimeMs: Option[Long],
-    onTopicEndReached: Option[Boolean],
-    onDateTime: Option[UserManagedDateTimeValueOrReference],
-    onRelativeDateTime: Option[UserManagedRelativeDateTimeValueOrReference],
-    onMessageId: Option[UserManagedMessageIdValueOrReference]
-    onMessageFilterPass: Option[UserManagedMessageFilterChainValueOrReference],
-    onMessageFilterChainPass: Option[UserManagedMessageFilterChainValueOrReference]
+    onMessagesProcessed: Option[Long] = None,
+    onMessagesDelivered: Option[Long] = None,
+    onBytesProcessed: Option[Long] = None,
+    onBytesDelivered: Option[Long] = None,
+    onMessageDecodeFails: Option[Long] = None,
+    onElapsedTimeMs: Option[Long] = None,
+    onTopicEndReached: Option[Boolean] = None,
+    onDateTime: Option[UserManagedDateTimeValueOrReference] = None,
+    onRelativeDateTime: Option[UserManagedRelativeDateTimeValueOrReference] = None,
+    onMessageId: Option[UserManagedMessageIdValueOrReference] = None,
+    onMessageFilterPass: Option[UserManagedMessageFilterChainValueOrReference] = None,
+    onMessageFilterChainPass: Option[UserManagedMessageFilterChainValueOrReference] = None
 )
 given Decoder[UserManagedConsumerSessionConfigPauseTriggerSpec] = deriveDecoder[UserManagedConsumerSessionConfigPauseTriggerSpec]
 given Encoder[UserManagedConsumerSessionConfigPauseTriggerSpec] = deriveEncoder[UserManagedConsumerSessionConfigPauseTriggerSpec]
@@ -210,9 +211,9 @@ given Decoder[UserManagedMessageFilterChainValueOrReference] = deriveDecoder[Use
 given Encoder[UserManagedMessageFilterChainValueOrReference] = deriveEncoder[UserManagedMessageFilterChainValueOrReference]
 
 case class UserManagedConsumerSessionConfigSpec(
-    startFrom: Option[UserManagedConsumerSessionConfigStartFromValueOrReference],
-    messageFilterChain: Option[UserManagedMessageFilterChainValueOrReference],
-    pauseTrigger: Option[UserManagedConsumerSessionConfigPauseTriggerValueOrReference]
+    startFrom: UserManagedConsumerSessionConfigStartFromValueOrReference,
+    messageFilterChain: UserManagedMessageFilterChainValueOrReference,
+    pauseTrigger: UserManagedConsumerSessionConfigPauseTriggerValueOrReference
 )
 given Decoder[UserManagedConsumerSessionConfigSpec] = deriveDecoder[UserManagedConsumerSessionConfigSpec]
 given Encoder[UserManagedConsumerSessionConfigSpec] = deriveEncoder[UserManagedConsumerSessionConfigSpec]

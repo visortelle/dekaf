@@ -43,7 +43,7 @@ message UserManagedMessageId {
   UserManagedMessageIdSpec spec = 2;
 }
 
-message UserManaggedMessageIdValueOrReference {
+message UserManagedMessageIdValueOrReference {
   oneof message_id {
     UserManagedMessageId message_id_value = 1;
     string message_id_reference = 2;
@@ -88,8 +88,8 @@ message UserManagedConsumerSessionConfigStartFromSpec {
   oneof start_from {
     tools.teal.pulsar.ui.api.v1.EarliestMessage earliest_message = 1;
     tools.teal.pulsar.ui.api.v1.LatestMessage latest_message = 2;
-    UserManaggedMessageIdValueOrReference message_id = 3;
-    UserManagedRelativeDateTimeValueOrReference date_time = 4;
+    UserManagedMessageIdValueOrReference message_id = 3;
+    UserManagedDateTimeValueOrReference date_time = 4;
     UserManagedRelativeDateTimeValueOrReference relative_date_time = 5;
   }
 }
@@ -187,7 +187,7 @@ message UserManagedConsumerSessionConfig {
 }
 
 message UserManagedItem {
-  oneof spec {
+  oneof item {
     UserManagedConsumerSessionConfig consumer_session_config = 2;
     UserManagedConsumerSessionConfigStartFrom consumer_session_config_start_from = 3;
     UserManagedConsumerSessionConfigPauseTrigger consumer_session_config_pause_trigger = 4;
