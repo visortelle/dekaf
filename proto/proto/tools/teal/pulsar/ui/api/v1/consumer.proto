@@ -104,7 +104,7 @@ message DateTime {
 message RelativeDateTime {
   int32 value = 1;
   DateTimeUnit unit = 2;
-  bool is_round_to_unit_start = 3;
+  bool is_rounded_to_unit_start = 3;
 }
 
 message ConsumerSessionConfigStartFrom {

@@ -34,19 +34,8 @@ message UserManagedItemMetadata {
   string description_markdown = 7;
 }
 
-message UserManagedConsumerSessionConfigSpec {
-  UserManagedConsumerSessionConfigStartFromValueOrReference start_from = 1;
-  UserManagedMessageFilterChainValueOrReference message_filter_chain = 2;
-  UserManagedConsumerSessionConfigPauseTriggerValueOrReference pause_trigger = 3;
-}
-
-message UserManagedConsumerSessionConfig {
-  UserManagedItemMetadata metadata = 1;
-  UserManagedConsumerSessionConfigSpec spec = 2;
-}
-
 message UserManagedMessageIdSpec {
-  tools.teal.pulsar.ui.api.v1.MessageId message_id = 2;
+  bytes message_id = 2;
 }
 
 message UserManagedMessageId {
@@ -80,7 +69,7 @@ message UserManagedDateTimeValueOrReference {
 message UserManagedRelativeDateTimeSpec {
   int32 value = 2;
   tools.teal.pulsar.ui.api.v1.DateTimeUnit unit = 3;
-  bool is_round_to_unit_start = 4;
+  bool is_rounded_to_unit_start = 4;
 }
 
 message UserManagedRelativeDateTime {
@@ -150,8 +139,8 @@ message UserManagedMessageFilterSpec {
   bool is_enabled = 10;
   bool is_negated = 11;
   oneof value {
-   tools.teal.pulsar.ui.api.v1.JsMessageFilter js = 1;
-   tools.teal.pulsar.ui.api.v1.BasicMessageFilter basic = 2;
+   tools.teal.pulsar.ui.api.v1.JsMessageFilter js_filter = 1;
+   tools.teal.pulsar.ui.api.v1.BasicMessageFilter basic_filter = 2;
   }
 }
 
@@ -184,6 +173,17 @@ message UserManagedMessageFilterChainValueOrReference {
     UserManagedMessageFilterChain message_filter_chain_value = 1;
     string message_filter_chain_reference = 2;
   }
+}
+
+message UserManagedConsumerSessionConfigSpec {
+  UserManagedConsumerSessionConfigStartFromValueOrReference start_from = 1;
+  UserManagedMessageFilterChainValueOrReference message_filter_chain = 2;
+  UserManagedConsumerSessionConfigPauseTriggerValueOrReference pause_trigger = 3;
+}
+
+message UserManagedConsumerSessionConfig {
+  UserManagedItemMetadata metadata = 1;
+  UserManagedConsumerSessionConfigSpec spec = 2;
 }
 
 message UserManagedItem {

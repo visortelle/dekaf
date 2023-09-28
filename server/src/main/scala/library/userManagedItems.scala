@@ -6,14 +6,18 @@ import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
 import _root_.consumer.{
+    BasicMessageFilter,
     ConsumerSessionConfig,
     ConsumerSessionConfigPauseTrigger,
     ConsumerSessionConfigStartFrom,
+    DateTime,
+    DateTimeUnit,
+    EarliestMessage,
+    JsMessageFilter,
+    LatestMessage,
     MessageFilter,
     MessageFilterChain,
-    DateTime,
-    EarliestMessage,
-    LatestMessage,
+    MessageFilterChainMode,
     MessageId,
     RelativeDateTime
 }
@@ -31,7 +35,10 @@ enum UserManagedItemType:
 given Decoder[UserManagedItemType] = deriveDecoder[UserManagedItemType]
 given Encoder[UserManagedItemType] = deriveEncoder[UserManagedItemType]
 
+type UserManagedItemReference = String
+
 case class UserManagedItemMetadata(
+    `type`: UserManagedItemType,
     id: String,
     name: String,
     descriptionMarkdown: String
@@ -39,36 +46,74 @@ case class UserManagedItemMetadata(
 given Decoder[UserManagedItemMetadata] = deriveDecoder[UserManagedItemMetadata]
 given Encoder[UserManagedItemMetadata] = deriveEncoder[UserManagedItemMetadata]
 
-type UserManagedItemReference = String
+case class UserManagedMessageIdSpec(
+    messageId: Array[Byte]
+)
+given Decoder[UserManagedMessageIdSpec] = deriveDecoder[UserManagedMessageIdSpec]
+given Encoder[UserManagedMessageIdSpec] = deriveEncoder[UserManagedMessageIdSpec]
 
-case class ValueOrReference[ValueT](
-    value: Option[ValueT],
+case class UserManagedMessageId(
+    metadata: UserManagedItemMetadata,
+    spec: UserManagedMessageIdSpec
+)
+given Decoder[UserManagedMessageId] = deriveDecoder[UserManagedMessageId]
+given Encoder[UserManagedMessageId] = deriveEncoder[UserManagedMessageId]
+
+case class UserManagedMessageIdValueOrReference(
+    value: Option[UserManagedMessageId],
     reference: Option[UserManagedItemReference]
 )
-given Decoder[ValueOrReference[_]] = deriveDecoder[ValueOrReference[_]]
-given Encoder[ValueOrReference[_]] = deriveEncoder[ValueOrReference[_]]
+given Decoder[UserManagedMessageIdValueOrReference] = deriveDecoder[UserManagedMessageIdValueOrReference]
+given Encoder[UserManagedMessageIdValueOrReference] = deriveEncoder[UserManagedMessageIdValueOrReference]
 
-case class UserManagedConsumerSessionConfigSpec(
-    startFrom: ValueOrReference[ConsumerSessionConfigStartFrom],
-    messageFilterChain: ValueOrReference[MessageFilterChain],
-    pauseTriggers: List[ValueOrReference[ConsumerSessionConfigPauseTrigger]]
+case class UserManagedDateTimeSpec(
+    dateTime: java.time.Instant
 )
-given Decoder[UserManagedConsumerSessionConfigSpec] = deriveDecoder[UserManagedConsumerSessionConfigSpec]
-given Encoder[UserManagedConsumerSessionConfigSpec] = deriveEncoder[UserManagedConsumerSessionConfigSpec]
+given Decoder[UserManagedDateTimeSpec] = deriveDecoder[UserManagedDateTimeSpec]
+given Encoder[UserManagedDateTimeSpec] = deriveEncoder[UserManagedDateTimeSpec]
 
-case class UserManagedConsumerSessionConfig(
+case class UserManagedDateTime(
     metadata: UserManagedItemMetadata,
-    spec: UserManagedConsumerSessionConfigSpec
+    spec: UserManagedDateTimeSpec
 )
-given Decoder[UserManagedConsumerSessionConfig] = deriveDecoder[UserManagedConsumerSessionConfig]
-given Encoder[UserManagedConsumerSessionConfig] = deriveEncoder[UserManagedConsumerSessionConfig]
+given Decoder[UserManagedDateTime] = deriveDecoder[UserManagedDateTime]
+given Encoder[UserManagedDateTime] = deriveEncoder[UserManagedDateTime]
+
+case class UserManagedDateTimeValueOrReference(
+    value: Option[UserManagedDateTime],
+    reference: Option[UserManagedItemReference]
+)
+given Decoder[UserManagedDateTimeValueOrReference] = deriveDecoder[UserManagedDateTimeValueOrReference]
+given Encoder[UserManagedDateTimeValueOrReference] = deriveEncoder[UserManagedDateTimeValueOrReference]
+
+case class UserManagedRelativeDateTimeSpec(
+    value: Int,
+    unit: DateTimeUnit,
+    isRoundedToUnitStart: Boolean
+)
+given Decoder[UserManagedRelativeDateTimeSpec] = deriveDecoder[UserManagedRelativeDateTimeSpec]
+given Encoder[UserManagedRelativeDateTimeSpec] = deriveEncoder[UserManagedRelativeDateTimeSpec]
+
+case class UserManagedRelativeDateTime(
+    metadata: UserManagedItemMetadata,
+    spec: UserManagedRelativeDateTimeSpec
+)
+given Decoder[UserManagedRelativeDateTime] = deriveDecoder[UserManagedRelativeDateTime]
+given Encoder[UserManagedRelativeDateTime] = deriveEncoder[UserManagedRelativeDateTime]
+
+case class UserManagedRelativeDateTimeValueOrReference(
+    value: Option[UserManagedRelativeDateTime],
+    reference: Option[UserManagedItemReference]
+)
+given Decoder[UserManagedRelativeDateTimeValueOrReference] = deriveDecoder[UserManagedRelativeDateTimeValueOrReference]
+given Encoder[UserManagedRelativeDateTimeValueOrReference] = deriveEncoder[UserManagedRelativeDateTimeValueOrReference]
 
 case class UserManagedConsumerSessionConfigStartFromSpec(
-                                                            earliestMessage: Option[EarliestMessage],
-                                                            latestMessage: Option[LatestMessage],
-                                                            messageId: Option[MessageId],
-                                                            dateTime: Option[DateTime],
-                                                            relativeDateTime: Option[RelativeDateTime]
+    earliestMessage: Option[EarliestMessage],
+    latestMessage: Option[LatestMessage],
+    messageId: Option[UserManagedMessageIdValueOrReference],
+    dateTime: Option[UserManagedDateTimeValueOrReference],
+    relativeDateTime: Option[UserManagedRelativeDateTimeValueOrReference]
 )
 given Decoder[UserManagedConsumerSessionConfigStartFromSpec] = deriveDecoder[UserManagedConsumerSessionConfigStartFromSpec]
 given Encoder[UserManagedConsumerSessionConfigStartFromSpec] = deriveEncoder[UserManagedConsumerSessionConfigStartFromSpec]
@@ -80,14 +125,26 @@ case class UserManagedConsumerSessionConfigStartFrom(
 given Decoder[UserManagedConsumerSessionConfigStartFrom] = deriveDecoder[UserManagedConsumerSessionConfigStartFrom]
 given Encoder[UserManagedConsumerSessionConfigStartFrom] = deriveEncoder[UserManagedConsumerSessionConfigStartFrom]
 
+case class UserManagedConsumerSessionConfigStartFromValueOrReference(
+    value: Option[UserManagedConsumerSessionConfigStartFrom],
+    reference: Option[UserManagedItemReference]
+)
+given Decoder[UserManagedConsumerSessionConfigStartFromValueOrReference] = deriveDecoder[UserManagedConsumerSessionConfigStartFromValueOrReference]
+given Encoder[UserManagedConsumerSessionConfigStartFromValueOrReference] = deriveEncoder[UserManagedConsumerSessionConfigStartFromValueOrReference]
+
 case class UserManagedConsumerSessionConfigPauseTriggerSpec(
-   onMessagesProcessed: Option[Long],
-   onMessagesDelivered: Option[Long],
-   onBytesProcessed: Option[Long],
-   onBytesDelivered: Option[Long],
-   onMessageDecodeFails: Option[Long],
-   onElapsedTimeMs: Option[Long],
-   onTopicEndReached: Option[Boolean]
+    onMessagesProcessed: Option[Long],
+    onMessagesDelivered: Option[Long],
+    onBytesProcessed: Option[Long],
+    onBytesDelivered: Option[Long],
+    onMessageDecodeFails: Option[Long],
+    onElapsedTimeMs: Option[Long],
+    onTopicEndReached: Option[Boolean],
+    onDateTime: Option[UserManagedDateTimeValueOrReference],
+    onRelativeDateTime: Option[UserManagedRelativeDateTimeValueOrReference],
+    onMessageId: Option[UserManagedMessageIdValueOrReference]
+    onMessageFilterPass: Option[UserManagedMessageFilterChainValueOrReference],
+    onMessageFilterChainPass: Option[UserManagedMessageFilterChainValueOrReference]
 )
 given Decoder[UserManagedConsumerSessionConfigPauseTriggerSpec] = deriveDecoder[UserManagedConsumerSessionConfigPauseTriggerSpec]
 given Encoder[UserManagedConsumerSessionConfigPauseTriggerSpec] = deriveEncoder[UserManagedConsumerSessionConfigPauseTriggerSpec]
@@ -99,4 +156,83 @@ case class UserManagedConsumerSessionConfigPauseTrigger(
 given Decoder[UserManagedConsumerSessionConfigPauseTrigger] = deriveDecoder[UserManagedConsumerSessionConfigPauseTrigger]
 given Encoder[UserManagedConsumerSessionConfigPauseTrigger] = deriveEncoder[UserManagedConsumerSessionConfigPauseTrigger]
 
-//case class UserManagedMessageFilter
+case class UserManagedConsumerSessionConfigPauseTriggerValueOrReference(
+    value: Option[UserManagedConsumerSessionConfigPauseTrigger],
+    reference: Option[UserManagedItemReference]
+)
+given Decoder[UserManagedConsumerSessionConfigPauseTriggerValueOrReference] = deriveDecoder[UserManagedConsumerSessionConfigPauseTriggerValueOrReference]
+given Encoder[UserManagedConsumerSessionConfigPauseTriggerValueOrReference] = deriveEncoder[UserManagedConsumerSessionConfigPauseTriggerValueOrReference]
+
+case class UserManagedMessageFilterSpec(
+    isEnabled: Boolean,
+    isNegated: Boolean,
+    jsFilter: Option[JsMessageFilter],
+    basicFilter: Option[BasicMessageFilter]
+)
+given Decoder[UserManagedMessageFilterSpec] = deriveDecoder[UserManagedMessageFilterSpec]
+given Encoder[UserManagedMessageFilterSpec] = deriveEncoder[UserManagedMessageFilterSpec]
+
+case class UserManagedMessageFilter(
+    metadata: UserManagedItemMetadata,
+    spec: UserManagedMessageFilterSpec
+)
+given Decoder[UserManagedMessageFilter] = deriveDecoder[UserManagedMessageFilter]
+given Encoder[UserManagedMessageFilter] = deriveEncoder[UserManagedMessageFilter]
+
+case class UserManagedMessageFilterValueOrReference(
+    value: Option[UserManagedMessageFilter],
+    reference: Option[UserManagedItemReference]
+)
+given Decoder[UserManagedMessageFilterValueOrReference] = deriveDecoder[UserManagedMessageFilterValueOrReference]
+given Encoder[UserManagedMessageFilterValueOrReference] = deriveEncoder[UserManagedMessageFilterValueOrReference]
+
+case class UserManagedMessageFilterChainSpec(
+    isEnabled: Boolean,
+    isNegated: Boolean,
+    filters: List[UserManagedMessageFilterValueOrReference],
+    mode: MessageFilterChainMode
+)
+given Decoder[UserManagedMessageFilterChainSpec] = deriveDecoder[UserManagedMessageFilterChainSpec]
+given Encoder[UserManagedMessageFilterChainSpec] = deriveEncoder[UserManagedMessageFilterChainSpec]
+
+case class UserManagedMessageFilterChain(
+    metadata: UserManagedItemMetadata,
+    spec: UserManagedMessageFilterChainSpec
+)
+given Decoder[UserManagedMessageFilterChain] = deriveDecoder[UserManagedMessageFilterChain]
+given Encoder[UserManagedMessageFilterChain] = deriveEncoder[UserManagedMessageFilterChain]
+
+case class UserManagedMessageFilterChainValueOrReference(
+    value: Option[UserManagedMessageFilterChain],
+    reference: Option[UserManagedItemReference]
+)
+given Decoder[UserManagedMessageFilterChainValueOrReference] = deriveDecoder[UserManagedMessageFilterChainValueOrReference]
+given Encoder[UserManagedMessageFilterChainValueOrReference] = deriveEncoder[UserManagedMessageFilterChainValueOrReference]
+
+case class UserManagedConsumerSessionConfigSpec(
+    startFrom: Option[UserManagedConsumerSessionConfigStartFromValueOrReference],
+    messageFilterChain: Option[UserManagedMessageFilterChainValueOrReference],
+    pauseTrigger: Option[UserManagedConsumerSessionConfigPauseTriggerValueOrReference]
+)
+given Decoder[UserManagedConsumerSessionConfigSpec] = deriveDecoder[UserManagedConsumerSessionConfigSpec]
+given Encoder[UserManagedConsumerSessionConfigSpec] = deriveEncoder[UserManagedConsumerSessionConfigSpec]
+
+case class UserManagedConsumerSessionConfig(
+    metadata: UserManagedItemMetadata,
+    spec: UserManagedConsumerSessionConfigSpec
+)
+given Decoder[UserManagedConsumerSessionConfig] = deriveDecoder[UserManagedConsumerSessionConfig]
+given Encoder[UserManagedConsumerSessionConfig] = deriveEncoder[UserManagedConsumerSessionConfig]
+
+case class UserManagedItem(
+    consumerSessionConfig: Option[UserManagedConsumerSessionConfig],
+    consumerSessionConfigStartFrom: Option[UserManagedConsumerSessionConfigStartFrom],
+    consumerSessionConfigPauseTrigger: Option[UserManagedConsumerSessionConfigPauseTrigger],
+    messageId: Option[UserManagedMessageId],
+    dateTime: Option[UserManagedDateTime],
+    relativeDateTime: Option[UserManagedRelativeDateTime],
+    messageFilter: Option[UserManagedMessageFilter],
+    messageFilterChain: Option[UserManagedMessageFilterChain]
+)
+given Decoder[UserManagedItem] = deriveDecoder[UserManagedItem]
+given Encoder[UserManagedItem] = deriveEncoder[UserManagedItem]
