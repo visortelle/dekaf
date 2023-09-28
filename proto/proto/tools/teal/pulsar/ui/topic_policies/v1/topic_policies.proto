@@ -797,6 +797,46 @@ message RemoveMaxMessageSizeResponse {
   google.rpc.Status status = 1;
 }
 
+message CopyPoliciesRequest {
+  string topic_fqn = 1;
+  bool is_global = 2;
+  optional string policies_clipboard_id = 3;
+}
+
+message CopyPoliciesResponse {
+  google.rpc.Status status = 1;
+  string policies_clipboard_id = 2;
+  map<string, string> errors = 3;
+}
+
+message PastePoliciesRequest {
+  string topic_fqn = 1;
+  optional string policies_clipboard_id = 2;
+}
+
+message PastePoliciesResponse {
+  google.rpc.Status status = 1;
+  map<string, string> errors = 3;
+}
+
+message GetClipboardPoliciesSourceRequest {
+  string policies_clipboard_id = 1;
+}
+
+message ClipboardPoliciesSourceUnspecified {}
+message ClipboardPoliciesSourceSpecified {
+  string source_topic_fqn = 1;
+  bool is_source_global = 2;
+}
+message GetClipboardPoliciesSourceResponse {
+  google.rpc.Status status = 1;
+  
+  oneof clipboard_policies_source {
+    ClipboardPoliciesSourceUnspecified unspecified = 2;
+    ClipboardPoliciesSourceSpecified specified = 3;
+  }
+}
+
 service TopicPoliciesService {
 
   rpc GetBacklogQuotas(GetBacklogQuotasRequest) returns (GetBacklogQuotasResponse);
@@ -890,4 +930,9 @@ service TopicPoliciesService {
   rpc GetMaxMessageSize(GetMaxMessageSizeRequest) returns (GetMaxMessageSizeResponse);
   rpc SetMaxMessageSize(SetMaxMessageSizeRequest) returns (SetMaxMessageSizeResponse);
   rpc RemoveMaxMessageSize(RemoveMaxMessageSizeRequest) returns (RemoveMaxMessageSizeResponse);
+
+  rpc CopyPolicies(CopyPoliciesRequest) returns (CopyPoliciesResponse);
+  rpc PastePolicies(PastePoliciesRequest) returns (PastePoliciesResponse);
+
+  rpc GetClipboardPoliciesSource(GetClipboardPoliciesSourceRequest) returns (GetClipboardPoliciesSourceResponse);
 }

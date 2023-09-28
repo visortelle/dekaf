@@ -8,7 +8,7 @@ import Select from '../../../ui/Select/Select';
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import MemorySizeInput from '../../../ui/ConfigurationTable/MemorySizeInput/MemorySizeInput';
 import { swrKeys } from '../../../swrKeys';
-import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
+import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topic_policies/v1/topic_policies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 
@@ -35,8 +35,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
 
   const swrKey = props.topicType === 'persistent' ?
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
-    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy, isGlobal: props.isGlobal }) :
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy, isGlobal: props.isGlobal });
 
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,

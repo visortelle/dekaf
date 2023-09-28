@@ -1,5 +1,6 @@
 package namespace_policies
 
+import cache.{NamespacePolicies, PoliciesCacheEntry, PoliciesClipboardCache}
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.namespace_policies.v1.namespace_policies as pb
@@ -2015,7 +2016,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
     private type ErrorDescription = String
 
-    override def copyNamespacePolicies(request: CopyNamespacePoliciesRequest): Future[CopyNamespacePoliciesResponse] =
+    override def copyPolicies(request: CopyPoliciesRequest): Future[CopyPoliciesResponse] =
         val namespaceFqn = request.namespaceFqn
 
         val pulsarAdmin = RequestContext.pulsarAdmin.get()
@@ -2031,7 +2032,8 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                     None
             }
 
-        val newIdFuture = for {
+
+        val clipboardIdFuture = for {
             pulsarPolicies <- recoverAsOption(pulsarAdmin.namespaces().getPoliciesAsync(namespaceFqn), "Pulsar Policies")
             namespaceAntiAffinityGroup <- recoverAsOption(pulsarAdmin.namespaces().getNamespaceAntiAffinityGroupAsync(namespaceFqn), "Namespace Anti Affinity Group")
             bookieAffinityGroupData <- recoverAsOption(pulsarAdmin.namespaces().getBookieAffinityGroupAsync(namespaceFqn), "Bookie Affinity Group")
@@ -2040,220 +2042,439 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
             subscribeRate <- recoverAsOption(pulsarAdmin.namespaces().getSubscribeRateAsync(namespaceFqn), "Subscribe Rate")
             subscriptionDispatchRate <- recoverAsOption(pulsarAdmin.namespaces().getSubscriptionDispatchRateAsync(namespaceFqn), "Subscription Dispatch Rate")
             replicatorDispatchRate <- recoverAsOption(pulsarAdmin.namespaces().getReplicatorDispatchRateAsync(namespaceFqn), "Replicator Dispatch Rate")
-        } yield NamespacePoliciesClipboardCache.add(
-            namespaceFqn = namespaceFqn,
-            pulsarPolicies = pulsarPolicies,
-            namespaceAntiAffinityGroup = namespaceAntiAffinityGroup,
-            bookieAffinityGroupData = bookieAffinityGroupData,
-            publishRate = publishRate,
-            dispatchRate = dispatchRate,
-            subscribeRate = subscribeRate,
-            subscriptionDispatchRate = subscriptionDispatchRate,
-            replicatorDispatchRate = replicatorDispatchRate
-        )
-        val newId = Await.result(newIdFuture, Duration(1, MINUTES))
+        } yield {
+            def createNamespaceCachedPolicies: UUID =
+                PoliciesClipboardCache.add(
+                    namespacePolicies = Some(
+                        NamespacePolicies(
+                            namespaceFqn,
+                            pulsarPolicies,
+                            namespaceAntiAffinityGroup,
+                            bookieAffinityGroupData,
+                            publishRate,
+                            dispatchRate,
+                            subscribeRate,
+                            subscriptionDispatchRate,
+                            replicatorDispatchRate
+                        )
+                    )
+                )
 
-        val existingClipboardPoliciesId = request.policiesClipboardId
+            def updateNamespaceCachedPolicies(id: UUID): Option[PoliciesCacheEntry] =
+                PoliciesClipboardCache.update(
+                    id = id,
+                    namespacePolicies = Some(
+                        NamespacePolicies(
+                            namespaceFqn,
+                            pulsarPolicies,
+                            namespaceAntiAffinityGroup,
+                            bookieAffinityGroupData,
+                            publishRate,
+                            dispatchRate,
+                            subscribeRate,
+                            subscriptionDispatchRate,
+                            replicatorDispatchRate
+                        )
+                    )
+                )
 
-        existingClipboardPoliciesId match
-            case Some(id) =>
-                NamespacePoliciesClipboardCache.delete(UUID.fromString(id))
-            case None =>
-                ()
+            val existingClipboardPoliciesId = request.policiesClipboardId
 
-        Future.successful(CopyNamespacePoliciesResponse(
+            existingClipboardPoliciesId match
+                case Some(rawExistingId) =>
+                    val existingId = UUID.fromString(rawExistingId)
+
+                    PoliciesClipboardCache.get(existingId) match
+                        case Some(_) =>
+                            updateNamespaceCachedPolicies(existingId) match
+                                case Some(_) =>
+                                    existingId
+                                case None =>
+                                    createNamespaceCachedPolicies
+                        case None =>
+                            createNamespaceCachedPolicies
+                case None =>
+                    createNamespaceCachedPolicies
+        }
+
+        val clipboardId = Await.result(clipboardIdFuture, Duration(1, MINUTES))
+
+        Future.successful(CopyPoliciesResponse(
             status = Some(Status(code = Code.OK.index)),
-            policiesClipboardId = newId.toString,
+            policiesClipboardId = clipboardId.toString,
             errors = errorsDescriptions
         ))
 
-    override def pasteNamespacePolicies(request: PasteNamespacePoliciesRequest): Future[PasteNamespacePoliciesResponse] =
+    override def pastePolicies(request: PastePoliciesRequest): Future[PastePoliciesResponse] =
         val clipboardPoliciesId = request.policiesClipboardId
 
         clipboardPoliciesId match
             case Some(id) =>
-                val maybeClipboardCacheEntry = NamespacePoliciesClipboardCache.get(UUID.fromString(id))
+                val maybeCacheEntry = PoliciesClipboardCache.get(UUID.fromString(id))
 
-                maybeClipboardCacheEntry match
-                    case Some(clipboardCacheEntry) =>
-                        val pulsarAdmin = RequestContext.pulsarAdmin.get()
+                maybeCacheEntry match
+                    case Some(cachedEntry) =>
+                        cachedEntry.namespacePolicies match
+                            case Some(cachedNamespacePolicies) =>
+                                val pulsarAdmin = RequestContext.pulsarAdmin.get()
 
-                        given ExecutionContext = ExecutionContext.global
+                                given ExecutionContext = ExecutionContext.global
 
-                        var errorsDescriptions: Map[OperationName, ErrorDescription] = Map.empty
+                                var errorsDescriptions: Map[OperationName, ErrorDescription] = Map.empty
 
-                        def executeAndHandleError(operationName: OperationName, operation: Operation): Unit =
-                            Try(
-                                operation()
-                            ).recover {
-                                case err: Throwable =>
-                                    errorsDescriptions += (operationName -> err.getMessage)
-                            }
+                                def executeAndHandleError(operationName: OperationName, operation: Operation): Unit =
+                                    Try(
+                                        operation()
+                                    ).recover {
+                                        case err: Throwable =>
+                                            errorsDescriptions += (operationName -> err.getMessage)
+                                    }
 
-                            ()
+                                    ()
 
-                        def setPulsarPoliciesOperations(namespaceFqn: String, pulsarPolicies: Option[PulsarPolicies]): Seq[NamedOperation] =
-                            pulsarPolicies match
-                                case Some(policies) =>
-                                    val existingPulsarPolicies = pulsarAdmin.namespaces().getPolicies(namespaceFqn)
+                                def setPulsarPoliciesOperations(namespaceFqn: String, pulsarPolicies: Option[PulsarPolicies]): Seq[NamedOperation] =
+                                    pulsarPolicies match
+                                        case Some(policies) =>
+                                            val existingPulsarPolicies = pulsarAdmin.namespaces().getPolicies(namespaceFqn)
 
-                                    def setReplicationClustersOperation(policies: PulsarPolicies): NamedOperation =
-                                        if existingPulsarPolicies.replication_clusters != policies.replication_clusters then
-                                            "Replication Clusters" -> (() => pulsarAdmin.namespaces().setNamespaceReplicationClusters(namespaceFqn, policies.replication_clusters))
-                                        else
-                                            "Replication Clusters" -> (() => ())
-
-
-                                    def setResourceGroupOperation(policies: PulsarPolicies): NamedOperation =
-                                        if existingPulsarPolicies.resource_group_name != policies.resource_group_name then
-                                            "Resource Group" -> (() => pulsarAdmin.namespaces().setNamespaceResourceGroup(namespaceFqn, policies.resource_group_name))
-                                        else
-                                            "Resource Group" -> (() => ())
-
-                                    def setPersistenceOperation(policies: PulsarPolicies): NamedOperation =
-                                        Option(policies.persistence) match
-                                            case Some(persistencePolicies) =>
-                                                if existingPulsarPolicies.persistence != persistencePolicies then
-                                                    "Persistence" -> (() => pulsarAdmin.namespaces().setPersistence(namespaceFqn, persistencePolicies))
+                                            def setReplicationClustersOperation(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.replication_clusters != policies.replication_clusters then
+                                                    "Replication Clusters" -> (() => pulsarAdmin.namespaces().setNamespaceReplicationClusters(namespaceFqn, policies.replication_clusters))
                                                 else
-                                                    "Persistence" -> (() => ())
-                                            case None =>
-                                                "Persistence" -> (() => ())
+                                                    "Replication Clusters" -> (() => ())
 
-                                    def setPropertiesOperation(policies: PulsarPolicies): NamedOperation =
-                                        if existingPulsarPolicies.properties != policies.properties then
-                                            existingPulsarPolicies.properties.asScala.map((key, _) =>
-                                                if policies.properties.get(key) == null then
-                                                    pulsarAdmin.namespaces.removeProperty(namespaceFqn, key)
+                                            def setMessageTTL(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.message_ttl_in_seconds != policies.message_ttl_in_seconds then
+                                                    "Message TTL" -> (() => pulsarAdmin.namespaces().setNamespaceMessageTTL(namespaceFqn, policies.message_ttl_in_seconds))
+                                                else
+                                                    "Message TTL" -> (() => ())
+
+                                            def setSubscriptionExpirationTime(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.subscription_expiration_time_minutes != policies.subscription_expiration_time_minutes then
+                                                    "Subscription Expiration Time" -> (() => pulsarAdmin.namespaces().setSubscriptionExpirationTime(namespaceFqn, policies.subscription_expiration_time_minutes))
+                                                else
+                                                    "Subscription Expiration Time" -> (() => ())
+
+                                            def setDeduplicationEnabled(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.deduplicationEnabled != policies.deduplicationEnabled then
+                                                    "Deduplication Enabled" -> (() => pulsarAdmin.namespaces().setDeduplicationStatus(namespaceFqn, policies.deduplicationEnabled))
+                                                else
+                                                    "Deduplication Enabled" -> (() => ())
+
+                                            def setAutoTopicCreation(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.autoTopicCreationOverride != policies.autoTopicCreationOverride then
+                                                    "Auto Topic Creation" -> (() => pulsarAdmin.namespaces().setAutoTopicCreation(namespaceFqn, policies.autoTopicCreationOverride))
+                                                else
+                                                    "Auto Topic Creation" -> (() => ())
+
+                                            def setAutoSubscriptionCreation(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.autoSubscriptionCreationOverride != policies.autoSubscriptionCreationOverride then
+                                                    "Auto Subscription Creation" -> (() => pulsarAdmin.namespaces().setAutoSubscriptionCreation(namespaceFqn, policies.autoSubscriptionCreationOverride))
+                                                else
+                                                    "Auto Subscription Creation" -> (() => ())
+
+                                            def setRetentionPolicies(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.retention_policies != policies.retention_policies then
+                                                    "Retention Policies" -> (() => pulsarAdmin.namespaces().setRetention(namespaceFqn, policies.retention_policies))
+                                                else
+                                                    "Retention Policies" -> (() => ())
+
+                                            def setSubscriptionTypesEnabled(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.subscription_types_enabled != policies.subscription_types_enabled then
+                                                    "Subscription Types Enabled" -> (() => pulsarAdmin.namespaces().setSubscriptionTypesEnabled(namespaceFqn, policies.subscription_types_enabled.asScala.map(SubscriptionType.valueOf).toSet.asJava))
+                                                else
+                                                    "Subscription Types Enabled" -> (() => ())
+
+                                            def setEncryptionRequired(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.encryption_required != policies.encryption_required then
+                                                    "Encryption Required" -> (() => pulsarAdmin.namespaces().setEncryptionRequiredStatus(namespaceFqn, policies.encryption_required))
+                                                else
+                                                    "Encryption Required" -> (() => ())
+
+                                            def setDelayedDeliveryPolicies(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.delayed_delivery_policies != policies.delayed_delivery_policies then
+                                                    "Delayed Delivery Policies" -> (() => pulsarAdmin.namespaces().setDelayedDeliveryMessages(namespaceFqn, policies.delayed_delivery_policies))
+                                                else
+                                                    "Delayed Delivery Policies" -> (() => ())
+
+                                            def setInactiveTopicPolicies(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.inactive_topic_policies != policies.inactive_topic_policies then
+                                                    "Inactive Topic Policies" -> (() => pulsarAdmin.namespaces().setInactiveTopicPolicies(namespaceFqn, policies.inactive_topic_policies))
+                                                else
+                                                    "Inactive Topic Policies" -> (() => ())
+
+                                            def setSubscriptionAuthMode(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.subscription_auth_mode != policies.subscription_auth_mode then
+                                                    "Subscription Auth Mode" -> (() => pulsarAdmin.namespaces().setSubscriptionAuthMode(namespaceFqn, policies.subscription_auth_mode))
+                                                else
+                                                    "Subscription Auth Mode" -> (() => ())
+
+                                            def setDeduplicationSnapshotInterval(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.deduplicationSnapshotIntervalSeconds != policies.deduplicationSnapshotIntervalSeconds then
+                                                    "Deduplication Snapshot Interval" -> (() => pulsarAdmin.namespaces().setDeduplicationSnapshotInterval(namespaceFqn, policies.deduplicationSnapshotIntervalSeconds))
+                                                else
+                                                    "Deduplication Snapshot Interval" -> (() => ())
+
+                                            def setMaxSubscriptionsPerTopic(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.max_subscriptions_per_topic != policies.max_subscriptions_per_topic then
+                                                    "Max Subscriptions Per Topic" -> (() => pulsarAdmin.namespaces().setMaxSubscriptionsPerTopic(namespaceFqn, policies.max_subscriptions_per_topic))
+                                                else
+                                                    "Max Subscriptions Per Topic" -> (() => ())
+
+                                            def setMaxProducersPerTopic(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.max_producers_per_topic != policies.max_producers_per_topic then
+                                                    "Max Producers Per Topic" -> (() => pulsarAdmin.namespaces().setMaxProducersPerTopic(namespaceFqn, policies.max_producers_per_topic))
+                                                else
+                                                    "Max Producers Per Topic" -> (() => ())
+
+                                            def setMaxConsumersPerTopic(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.max_consumers_per_topic != policies.max_consumers_per_topic then
+                                                    "Max Consumers Per Topic" -> (() => pulsarAdmin.namespaces().setMaxConsumersPerTopic(namespaceFqn, policies.max_consumers_per_topic))
+                                                else
+                                                    "Max Consumers Per Topic" -> (() => ())
+
+                                            def setMaxConsumersPerSubscription(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.max_consumers_per_subscription != policies.max_consumers_per_subscription then
+                                                    "Max Consumers Per Subscription" -> (() => pulsarAdmin.namespaces().setMaxConsumersPerSubscription(namespaceFqn, policies.max_consumers_per_subscription))
+                                                else
+                                                    "Max Consumers Per Subscription" -> (() => ())
+
+                                            def setMaxUnackedMessagesPerConsumer(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.max_unacked_messages_per_consumer != policies.max_unacked_messages_per_consumer then
+                                                    "Max Unacked Messages Per Consumer" -> (() => pulsarAdmin.namespaces().setMaxUnackedMessagesPerConsumer(namespaceFqn, policies.max_unacked_messages_per_consumer))
+                                                else
+                                                    "Max Unacked Messages Per Consumer" -> (() => ())
+
+                                            def setMaxUnackedMessagesPerSubscription(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.max_unacked_messages_per_subscription != policies.max_unacked_messages_per_subscription then
+                                                    "Max Unacked Messages Per Subscription" -> (() => pulsarAdmin.namespaces().setMaxUnackedMessagesPerSubscription(namespaceFqn, policies.max_unacked_messages_per_subscription))
+                                                else
+                                                    "Max Unacked Messages Per Subscription" -> (() => ())
+
+                                            def setCompactionThreshold(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.compaction_threshold != policies.compaction_threshold then
+                                                    "Compaction Threshold" -> (() => pulsarAdmin.namespaces().setCompactionThreshold(namespaceFqn, policies.compaction_threshold))
+                                                else
+                                                    "Compaction Threshold" -> (() => ())
+
+                                            def setOffloadThreshold(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.offload_threshold != policies.offload_threshold then
+                                                    "Offload Threshold" -> (() => pulsarAdmin.namespaces().setOffloadThreshold(namespaceFqn, policies.offload_threshold))
+                                                else
+                                                    "Offload Threshold" -> (() => ())
+
+                                            def setOffloadThresholdInSeconds(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.offload_threshold_in_seconds != policies.offload_threshold_in_seconds then
+                                                    "Offload Threshold In Seconds" -> (() => pulsarAdmin.namespaces().setOffloadThresholdInSeconds(namespaceFqn, policies.offload_threshold_in_seconds))
+                                                else
+                                                    "Offload Threshold In Seconds" -> (() => ())
+
+                                            def setOffloadDeletionLag(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.offload_deletion_lag_ms != policies.offload_deletion_lag_ms then
+                                                    "Offload Deletion Lag" -> (() => pulsarAdmin.namespaces().setOffloadDeleteLag(namespaceFqn, policies.offload_deletion_lag_ms, TimeUnit.MILLISECONDS))
+                                                else
+                                                    "Offload Deletion Lag" -> (() => ())
+
+                                            def setSchemaValidationEnforced(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.schema_validation_enforced != policies.schema_validation_enforced then
+                                                    "Schema Validation Enforced" -> (() => pulsarAdmin.namespaces().setSchemaValidationEnforced(namespaceFqn, policies.schema_validation_enforced))
+                                                else
+                                                    "Schema Validation Enforced" -> (() => ())
+
+                                            def setSchemaCompatibilityStrategy(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.schema_compatibility_strategy != policies.schema_compatibility_strategy then
+                                                    "Schema Compatibility Strategy" -> (() => pulsarAdmin.namespaces().setSchemaCompatibilityStrategy(namespaceFqn, policies.schema_compatibility_strategy))
+                                                else
+                                                    "Schema Compatibility Strategy" -> (() => ())
+
+                                            def setIsAllowAutoUpdateSchema(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.is_allow_auto_update_schema != policies.is_allow_auto_update_schema then
+                                                    "Is Allow Auto Update Schema" -> (() => pulsarAdmin.namespaces().setIsAllowAutoUpdateSchema(namespaceFqn, policies.is_allow_auto_update_schema))
+                                                else
+                                                    "Is Allow Auto Update Schema" -> (() => ())
+
+                                            def setOffloadPolicies(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.offload_policies != policies.offload_policies then
+                                                    "Offload Policies" -> (() => pulsarAdmin.namespaces().setOffloadPolicies(namespaceFqn, policies.offload_policies))
+                                                else
+                                                    "Offload Policies" -> (() => ())
+
+                                            def setMaxTopicsPerNamespace(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.max_topics_per_namespace != policies.max_topics_per_namespace then
+                                                    "Max Topics Per Namespace" -> (() => pulsarAdmin.namespaces().setMaxTopicsPerNamespace(namespaceFqn, policies.max_topics_per_namespace))
+                                                else
+                                                    "Max Topics Per Namespace" -> (() => ())
+
+                                            def setNamespaceEntryFilters(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.entryFilters != policies.entryFilters then
+                                                    "Entry Filters" -> (() => pulsarAdmin.namespaces().setNamespaceEntryFilters(namespaceFqn, policies.entryFilters))
+                                                else
+                                                    "Entry Filters" -> (() => ())
+
+                                            def setResourceGroupOperation(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.resource_group_name != policies.resource_group_name then
+                                                    "Resource Group" -> (() => pulsarAdmin.namespaces().setNamespaceResourceGroup(namespaceFqn, policies.resource_group_name))
+                                                else
+                                                    "Resource Group" -> (() => ())
+
+                                            def setPersistenceOperation(policies: PulsarPolicies): NamedOperation =
+                                                Option(policies.persistence) match
+                                                    case Some(persistencePolicies) =>
+                                                        if existingPulsarPolicies.persistence != persistencePolicies then
+                                                            "Persistence" -> (() => pulsarAdmin.namespaces().setPersistence(namespaceFqn, persistencePolicies))
+                                                        else
+                                                            "Persistence" -> (() => ())
+                                                    case None =>
+                                                        "Persistence" -> (() => ())
+
+                                            def setPropertiesOperation(policies: PulsarPolicies): NamedOperation =
+                                                if existingPulsarPolicies.properties != policies.properties then
+                                                    existingPulsarPolicies.properties.asScala.map((key, _) =>
+                                                        if policies.properties.get(key) == null then
+                                                            pulsarAdmin.namespaces.removeProperty(namespaceFqn, key)
+                                                    )
+
+                                                    "Properties" -> (() => pulsarAdmin.namespaces().setProperties(namespaceFqn, policies.properties))
+                                                else
+                                                    "Properties" -> (() => ())
+
+
+                                            val policiesSetOperations: Seq[NamedOperation] = Seq(
+                                                setReplicationClustersOperation(policies),
+                                                setMessageTTL(policies),
+                                                setSubscriptionExpirationTime(policies),
+                                                setDeduplicationEnabled(policies),
+                                                setAutoTopicCreation(policies),
+                                                setAutoSubscriptionCreation(policies),
+                                                setRetentionPolicies(policies),
+                                                setSubscriptionTypesEnabled(policies),
+                                                setEncryptionRequired(policies),
+                                                setDelayedDeliveryPolicies(policies),
+                                                setInactiveTopicPolicies(policies),
+                                                setSubscriptionAuthMode(policies),
+                                                setDeduplicationSnapshotInterval(policies),
+                                                setMaxSubscriptionsPerTopic(policies),
+                                                setMaxProducersPerTopic(policies),
+                                                setMaxConsumersPerTopic(policies),
+                                                setMaxConsumersPerSubscription(policies),
+                                                setMaxUnackedMessagesPerConsumer(policies),
+                                                setMaxUnackedMessagesPerSubscription(policies),
+                                                setCompactionThreshold(policies),
+                                                setOffloadThreshold(policies),
+                                                setOffloadThresholdInSeconds(policies),
+                                                setOffloadDeletionLag(policies),
+                                                setSchemaValidationEnforced(policies),
+                                                setSchemaCompatibilityStrategy(policies),
+                                                setIsAllowAutoUpdateSchema(policies),
+                                                setOffloadPolicies(policies),
+                                                setMaxTopicsPerNamespace(policies),
+                                                setNamespaceEntryFilters(policies),
+                                                setResourceGroupOperation(policies),
+                                                setPersistenceOperation(policies),
+                                                setPropertiesOperation(policies)
                                             )
 
-                                            "Properties" -> (() => pulsarAdmin.namespaces().setProperties(namespaceFqn, policies.properties))
-                                        else
-                                            "Properties" -> (() => ())
+                                            policiesSetOperations
+                                        case None =>
+                                            Seq.empty
+
+                                def setPublishRateOperation(namespaceFqn: String, publishRate: Option[PublishRate]): NamedOperation =
+                                    publishRate match
+                                        case Some(publishRate) =>
+                                            "Publish Rate" -> (() => pulsarAdmin.namespaces().setPublishRate(namespaceFqn, publishRate))
+                                        case None =>
+                                            "Publish Rate" -> (() => ())
+
+                                def setDispatchRateOperation(namespaceFqn: String, dispatchRate: Option[DispatchRate]): NamedOperation =
+                                    dispatchRate match
+                                        case Some(dispatchRate) =>
+                                            "Dispatch Rate" -> (() => pulsarAdmin.namespaces().setDispatchRate(namespaceFqn, dispatchRate))
+                                        case None =>
+                                            "Dispatch Rate" -> (() => ())
+
+                                def setSubscribeRateOperation(namespaceFqn: String, subscribeRate: Option[SubscribeRate]): NamedOperation =
+                                    subscribeRate match
+                                        case Some(subscribeRate) =>
+                                            "Subscribe Rate" -> (() => pulsarAdmin.namespaces().setSubscribeRate(namespaceFqn, subscribeRate))
+                                        case None =>
+                                            "Subscribe Rate" -> (() => ())
+
+                                def setSubscriptionDispatchRateOperation(namespaceFqn: String, subscriptionDispatchRate: Option[DispatchRate]): NamedOperation =
+                                    subscriptionDispatchRate match
+                                        case Some(subscriptionDispatchRate) =>
+                                            "Subscription Dispatch Rate" -> (() => pulsarAdmin.namespaces().setSubscriptionDispatchRate(namespaceFqn, subscriptionDispatchRate))
+                                        case None =>
+                                            "Subscription Dispatch Rate" -> (() => ())
+
+                                def setReplicatorDispatchRateOperation(namespaceFqn: String, replicatorDispatchRate: Option[DispatchRate]): NamedOperation =
+                                    replicatorDispatchRate match
+                                        case Some(replicatorDispatchRate) =>
+                                            "Replicator Dispatch Rate" -> (() => pulsarAdmin.namespaces().setReplicatorDispatchRate(namespaceFqn, replicatorDispatchRate))
+                                        case None =>
+                                            "Replicator Dispatch Rate" -> (() => ())
+
+                                def setBookieAffinityGroupOperation(namespaceFqn: String, bookieAffinityGroupData: Option[BookieAffinityGroupData]): NamedOperation =
+                                    bookieAffinityGroupData match
+                                        case Some(bookieAffinityGroupData) =>
+                                            "Bookie Affinity Group" -> (() => pulsarAdmin.namespaces().setBookieAffinityGroup(namespaceFqn, bookieAffinityGroupData))
+                                        case None =>
+                                            "Bookie Affinity Group" -> (() => ())
+
+                                val setPoliciesOperations =
+                                    setPulsarPoliciesOperations(request.namespaceFqn, cachedNamespacePolicies.pulsarPolicies) :+
+                                        setPublishRateOperation(request.namespaceFqn, cachedNamespacePolicies.publishRate) :+
+                                        setDispatchRateOperation(request.namespaceFqn, cachedNamespacePolicies.dispatchRate) :+
+                                        setSubscribeRateOperation(request.namespaceFqn, cachedNamespacePolicies.subscribeRate) :+
+                                        setSubscriptionDispatchRateOperation(request.namespaceFqn, cachedNamespacePolicies.subscriptionDispatchRate) :+
+                                        setReplicatorDispatchRateOperation(request.namespaceFqn, cachedNamespacePolicies.replicatorDispatchRate) :+
+                                        setBookieAffinityGroupOperation(request.namespaceFqn, cachedNamespacePolicies.bookieAffinityGroupData)
 
 
-                                    val policiesSetOperations: Seq[NamedOperation] = Seq(
-                                        "Replication Clusters" -> (() => pulsarAdmin.namespaces().setNamespaceReplicationClusters(namespaceFqn, policies.replication_clusters)),
-                                        "Message TTL" -> (() => pulsarAdmin.namespaces().setNamespaceMessageTTL(namespaceFqn, policies.message_ttl_in_seconds)),
-                                        "Subscription Expiration Time" -> (() => pulsarAdmin.namespaces().setSubscriptionExpirationTime(namespaceFqn, policies.subscription_expiration_time_minutes)),
-                                        "Deduplication Enabled" -> (() => pulsarAdmin.namespaces().setDeduplicationStatus(namespaceFqn, policies.deduplicationEnabled)),
-                                        "Auto Topic Creation" -> (() => pulsarAdmin.namespaces().setAutoTopicCreation(namespaceFqn, policies.autoTopicCreationOverride)),
-                                        "Auto Subscription Creation" -> (() => pulsarAdmin.namespaces().setAutoSubscriptionCreation(namespaceFqn, policies.autoSubscriptionCreationOverride)),
-                                        "Retention Policies" -> (() => pulsarAdmin.namespaces().setRetention(namespaceFqn, policies.retention_policies)),
-                                        "Subscription Types Enabled" -> (() => pulsarAdmin.namespaces().setSubscriptionTypesEnabled(namespaceFqn, policies.subscription_types_enabled.asScala.map(SubscriptionType.valueOf).toSet.asJava)),
-                                        "Encryption Required" -> (() => pulsarAdmin.namespaces().setEncryptionRequiredStatus(namespaceFqn, policies.encryption_required)),
-                                        "Delayed Delivery Policies" -> (() => pulsarAdmin.namespaces().setDelayedDeliveryMessages(namespaceFqn, policies.delayed_delivery_policies)),
-                                        "Inactive Topic Policies" -> (() => pulsarAdmin.namespaces().setInactiveTopicPolicies(namespaceFqn, policies.inactive_topic_policies)),
-                                        "Subscription Auth Mode" -> (() => pulsarAdmin.namespaces().setSubscriptionAuthMode(namespaceFqn, policies.subscription_auth_mode)),
-                                        "Deduplication Snapshot Interval" -> (() => pulsarAdmin.namespaces().setDeduplicationSnapshotInterval(namespaceFqn, policies.deduplicationSnapshotIntervalSeconds)),
-                                        "Max Subscriptions Per Topic" -> (() => pulsarAdmin.namespaces().setMaxSubscriptionsPerTopic(namespaceFqn, policies.max_subscriptions_per_topic)),
-                                        "Max Producers Per Topic" -> (() => pulsarAdmin.namespaces().setMaxProducersPerTopic(namespaceFqn, policies.max_producers_per_topic)),
-                                        "Max Consumers Per Topic" -> (() => pulsarAdmin.namespaces().setMaxConsumersPerTopic(namespaceFqn, policies.max_consumers_per_topic)),
-                                        "Max Consumers Per Subscription" -> (() => pulsarAdmin.namespaces().setMaxConsumersPerSubscription(namespaceFqn, policies.max_consumers_per_subscription)),
-                                        "Max Unacked Messages Per Consumer" -> (() => pulsarAdmin.namespaces().setMaxUnackedMessagesPerConsumer(namespaceFqn, policies.max_unacked_messages_per_consumer)),
-                                        "Max Unacked Messages Per Subscription" -> (() => pulsarAdmin.namespaces().setMaxUnackedMessagesPerSubscription(namespaceFqn, policies.max_unacked_messages_per_subscription)),
-                                        "Compaction Threshold" -> (() => pulsarAdmin.namespaces().setCompactionThreshold(namespaceFqn, policies.compaction_threshold)),
-                                        "Offload Threshold" -> (() => pulsarAdmin.namespaces().setOffloadThreshold(namespaceFqn, policies.offload_threshold)),
-                                        "Offload Threshold In Seconds" -> (() => pulsarAdmin.namespaces().setOffloadThresholdInSeconds(namespaceFqn, policies.offload_threshold_in_seconds)),
-                                        "Offload Deletion Lag" -> (() => pulsarAdmin.namespaces().setOffloadDeleteLag(namespaceFqn, policies.offload_deletion_lag_ms, TimeUnit.MILLISECONDS)),
-                                        "Schema Validation Enforced" -> (() => pulsarAdmin.namespaces().setSchemaValidationEnforced(namespaceFqn, policies.schema_validation_enforced)),
-                                        "Schema Compatibility Strategy" -> (() => pulsarAdmin.namespaces().setSchemaCompatibilityStrategy(namespaceFqn, policies.schema_compatibility_strategy)),
-                                        "Is Allow Auto Update Schema" -> (() => pulsarAdmin.namespaces().setIsAllowAutoUpdateSchema(namespaceFqn, policies.is_allow_auto_update_schema)),
-                                        "Offload Policies" -> (() => pulsarAdmin.namespaces().setOffloadPolicies(namespaceFqn, policies.offload_policies)),
-                                        "Max Topics Per Namespace" -> (() => pulsarAdmin.namespaces().setMaxTopicsPerNamespace(namespaceFqn, policies.max_topics_per_namespace)),
-                                        "Entry Filters" -> (() => pulsarAdmin.namespaces().setNamespaceEntryFilters(namespaceFqn, policies.entryFilters)),
-                                    )
+                                setPoliciesOperations.foreach((name, operation) =>
+                                    executeAndHandleError(name, operation)
+                                )
 
-                                    policiesSetOperations ++ Seq(
-                                        setResourceGroupOperation(policies),
-                                        setPersistenceOperation(policies),
-                                        setPropertiesOperation(policies)
-                                    )
-                                case None =>
-                                    Seq.empty
-
-                        def setPublishRateOperation(namespaceFqn: String, publishRate: Option[PublishRate]): NamedOperation =
-                            publishRate match
-                                case Some(publishRate) =>
-                                    "Publish Rate" -> (() => pulsarAdmin.namespaces().setPublishRate(namespaceFqn, publishRate))
-                                case None =>
-                                    "Publish Rate" -> (() => ())
-
-                        def setDispatchRateOperation(namespaceFqn: String, dispatchRate: Option[DispatchRate]): NamedOperation =
-                            dispatchRate match
-                                case Some(dispatchRate) =>
-                                    "Dispatch Rate" -> (() => pulsarAdmin.namespaces().setDispatchRate(namespaceFqn, dispatchRate))
-                                case None =>
-                                    "Dispatch Rate" -> (() => ())
-
-                        def setSubscribeRateOperation(namespaceFqn: String, subscribeRate: Option[SubscribeRate]): NamedOperation =
-                            subscribeRate match
-                                case Some(subscribeRate) =>
-                                    "Subscribe Rate" -> (() => pulsarAdmin.namespaces().setSubscribeRate(namespaceFqn, subscribeRate))
-                                case None =>
-                                    "Subscribe Rate" -> (() => ())
-
-                        def setSubscriptionDispatchRateOperation(namespaceFqn: String, subscriptionDispatchRate: Option[DispatchRate]): NamedOperation =
-                            subscriptionDispatchRate match
-                                case Some(subscriptionDispatchRate) =>
-                                    "Subscription Dispatch Rate" -> (() => pulsarAdmin.namespaces().setSubscriptionDispatchRate(namespaceFqn, subscriptionDispatchRate))
-                                case None =>
-                                    "Subscription Dispatch Rate" -> (() => ())
-
-                        def setReplicatorDispatchRateOperation(namespaceFqn: String, replicatorDispatchRate: Option[DispatchRate]): NamedOperation =
-                            replicatorDispatchRate match
-                                case Some(replicatorDispatchRate) =>
-                                    "Replicator Dispatch Rate" -> (() => pulsarAdmin.namespaces().setReplicatorDispatchRate(namespaceFqn, replicatorDispatchRate))
-                                case None =>
-                                    "Replicator Dispatch Rate" -> (() => ())
-
-                        def setBookieAffinityGroupOperation(namespaceFqn: String, bookieAffinityGroupData: Option[BookieAffinityGroupData]): NamedOperation =
-                            bookieAffinityGroupData match
-                                case Some(bookieAffinityGroupData) =>
-                                    "Bookie Affinity Group" -> (() => pulsarAdmin.namespaces().setBookieAffinityGroup(namespaceFqn, bookieAffinityGroupData))
-                                case None =>
-                                    "Bookie Affinity Group" -> (() => ())
-
-                        val setPoliciesOperations =
-                            setPulsarPoliciesOperations(request.namespaceFqn, clipboardCacheEntry.pulsarPolicies) :+
-                                setPublishRateOperation(request.namespaceFqn, clipboardCacheEntry.publishRate) :+
-                                setDispatchRateOperation(request.namespaceFqn, clipboardCacheEntry.dispatchRate) :+
-                                setSubscribeRateOperation(request.namespaceFqn, clipboardCacheEntry.subscribeRate) :+
-                                setSubscriptionDispatchRateOperation(request.namespaceFqn, clipboardCacheEntry.subscriptionDispatchRate) :+
-                                setReplicatorDispatchRateOperation(request.namespaceFqn, clipboardCacheEntry.replicatorDispatchRate) :+
-                                setBookieAffinityGroupOperation(request.namespaceFqn, clipboardCacheEntry.bookieAffinityGroupData)
-
-
-                        setPoliciesOperations.foreach((name, operation) =>
-                            executeAndHandleError(name, operation)
-                        )
-
-                        val status = Status(code = Code.OK.index)
-                        Future.successful(PasteNamespacePoliciesResponse(
-                            status = Some(status),
-                            errors = errorsDescriptions
-                        ))
+                                val status = Status(code = Code.OK.index)
+                                Future.successful(PastePoliciesResponse(
+                                    status = Some(status),
+                                    errors = errorsDescriptions
+                                ))
+                            case None =>
+                                Future.successful(PastePoliciesResponse(
+                                    status = Some(Status(code = Code.FAILED_PRECONDITION.index)),
+                                    errors = Map("Policies" -> "No policies found in clipboard")
+                                ))
                     case None =>
                         val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies wasn't found. They either expired or were removed.")
-                        Future.successful(PasteNamespacePoliciesResponse(status = Some(status)))
+                        Future.successful(PastePoliciesResponse(status = Some(status)))
             case None =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies wasn't found. Please copy them first.")
-                Future.successful(PasteNamespacePoliciesResponse(status = Some(status)))
+                Future.successful(PastePoliciesResponse(status = Some(status)))
 
     override def getClipboardPoliciesSource(request: GetClipboardPoliciesSourceRequest): Future[GetClipboardPoliciesSourceResponse] =
         val requestUUID = UUID.fromString(request.policiesClipboardId)
 
-        NamespacePoliciesClipboardCache.get(requestUUID) match
+        PoliciesClipboardCache.get(requestUUID) match
             case Some(clipboardCacheEntry) =>
-                val status = Status(code = Code.OK.index)
-                Future.successful(GetClipboardPoliciesSourceResponse(
-                    status = Some(status),
-                    clipboardPoliciesSource = GetClipboardPoliciesSourceResponse.ClipboardPoliciesSource.Specified(
-                        ClipboardPoliciesSourceSpecified(
-                            sourceNamespaceFqn = clipboardCacheEntry.namespaceFqn
-                        )
-                    )
-                ))
+                clipboardCacheEntry.namespacePolicies match
+                    case Some(namespacePolicies) =>
+                        val status = Status(code = Code.OK.index)
+                        Future.successful(GetClipboardPoliciesSourceResponse(
+                            status = Some(status),
+                            clipboardPoliciesSource = GetClipboardPoliciesSourceResponse.ClipboardPoliciesSource.Specified(
+                                ClipboardPoliciesSourceSpecified(
+                                    sourceNamespaceFqn = namespacePolicies.namespaceFqn
+                                )
+                            )
+                        ))
+                    case None =>
+                        val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies wasn't found. They either expired or were removed.")
+                        Future.successful(GetClipboardPoliciesSourceResponse(
+                            status = Some(status),
+                            clipboardPoliciesSource = GetClipboardPoliciesSourceResponse.ClipboardPoliciesSource.Unspecified(
+                                ClipboardPoliciesSourceUnspecified()
+                            )
+                        ))
             case None =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies wasn't found. They either expired or were removed.")
                 Future.successful(GetClipboardPoliciesSourceResponse(

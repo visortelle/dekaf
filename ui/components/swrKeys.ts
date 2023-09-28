@@ -203,6 +203,7 @@ export const swrKeys = {
                 policy: (props: {
                   tenant: string;
                   namespace: string;
+                  topic: string;
                   policy: string;
                   isGlobal: boolean;
                 }) => [
@@ -212,6 +213,7 @@ export const swrKeys = {
                     "namespaces",
                     props.namespace,
                     "nonPersistentTopics",
+                    props.topic,
                     "policies",
                     props.policy,
                     props.isGlobal,
@@ -231,6 +233,7 @@ export const swrKeys = {
                 policy: (props: {
                   tenant: string;
                   namespace: string;
+                  topic: string;
                   policy: string;
                   isGlobal: boolean;
                 }) => [
@@ -240,6 +243,7 @@ export const swrKeys = {
                     "namespaces",
                     props.namespace,
                     "persistentTopics",
+                    props.topic,
                     "policies",
                     props.policy,
                     props.isGlobal,

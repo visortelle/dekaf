@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  PasteNamespacePoliciesRequest
+  PastePoliciesRequest
 } from "../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
 import {sessionStorageKeys} from "../../../session-storage-keys";
 import {Code} from "../../../../grpc-web/google/rpc/code_pb";
@@ -10,7 +10,7 @@ import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as Modals from "../../../app/contexts/Modals/Modals";
 import * as Notifications from "../../../app/contexts/Notifications";
 import SmallButton from "../../../ui/SmallButton/SmallButton";
-import pasteIcon from "../icons/paste.svg";
+import pasteIcon from "./icons/paste.svg";
 import PastePoliciesDialog from "./PastePoliciesDialog";
 
 type PastePoliciesButtonProps = {
@@ -28,7 +28,7 @@ const PastePoliciesButton: React.FC<PastePoliciesButtonProps> = (props) => {
   const pastePoliciesFromClipboard = React.useCallback(async () => {
     notifyInfo('Pasting namespace policies...');
 
-    const req = new PasteNamespacePoliciesRequest();
+    const req = new PastePoliciesRequest();
     req.setNamespaceFqn(`${props.tenant}/${props.namespace}`);
 
     if (!sessionStorage.getItem(sessionStorageKeys.pulsocatBrowserSessionId)) {
@@ -38,7 +38,7 @@ const PastePoliciesButton: React.FC<PastePoliciesButtonProps> = (props) => {
 
     req.setPoliciesClipboardId(sessionStorage.getItem(sessionStorageKeys.pulsocatBrowserSessionId) ?? '');
 
-    const res = await namespacePoliciesServiceClient.pasteNamespacePolicies(req, {})
+    const res = await namespacePoliciesServiceClient.pastePolicies(req, {})
       .catch(err => notifyError(`Failed to paste some namespace policies: ${err.message}`));
 
     if (res === undefined) {

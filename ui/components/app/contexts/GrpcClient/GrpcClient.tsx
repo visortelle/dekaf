@@ -12,14 +12,14 @@ import * as _clustersServiceClient from '../../../../grpc-web/tools/teal/pulsar/
 import * as _metricsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/metrics/v1/MetricsServiceClientPb';
 import * as _brokersServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/BrokersServiceClientPb';
 import * as _brokerstatsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokerstats/v1/BrokerstatsServiceClientPb';
-import * as _topicpoliciesServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/TopicpoliciesServiceClientPb';
+import * as _topicPoliciesServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topic_policies/v1/Topic_policiesServiceClientPb';
 
 export type Value = {
   pulsarAuthServiceClient: _pulsarAuthServiceClient.PulsarAuthServiceClient,
   producerServiceClient: _producerServiceClient.ProducerServiceClient,
   consumerServiceClient: _consumerServiceClient.ConsumerServiceClient,
   topicServiceClient: _topicServiceClient.TopicServiceClient,
-  topicPoliciesServiceClient: _topicpoliciesServiceClient.TopicpoliciesServiceClient,
+  topicPoliciesServiceClient: _topicPoliciesServiceClient.TopicPoliciesServiceClient,
   schemaServiceClient: _schemaServiceClient.SchemaServiceClient,
   namespaceServiceClient: _namespaceServiceClient.NamespaceServiceClient,
   namespacePoliciesServiceClient: _namespacePoliciesServiceClient.NamespacePoliciesServiceClient,
@@ -35,7 +35,7 @@ const defaultValue: Value = {
   producerServiceClient: new _producerServiceClient.ProducerServiceClient(''),
   consumerServiceClient: new _consumerServiceClient.ConsumerServiceClient(''),
   topicServiceClient: new _topicServiceClient.TopicServiceClient(''),
-  topicPoliciesServiceClient: new _topicpoliciesServiceClient.TopicpoliciesServiceClient(''),
+  topicPoliciesServiceClient: new _topicPoliciesServiceClient.TopicPoliciesServiceClient(''),
   schemaServiceClient: new _schemaServiceClient.SchemaServiceClient(''),
   namespaceServiceClient: new _namespaceServiceClient.NamespaceServiceClient(''),
   namespacePoliciesServiceClient: new _namespacePoliciesServiceClient.NamespacePoliciesServiceClient(''),
@@ -57,7 +57,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const [producerServiceClient] = useState(new _producerServiceClient.ProducerServiceClient(props.grpcWebUrl));
   const [consumerServiceClient] = useState(new _consumerServiceClient.ConsumerServiceClient(props.grpcWebUrl));
   const [topicServiceClient] = useState(new _topicServiceClient.TopicServiceClient(props.grpcWebUrl));
-  const [topicpoliciesServiceClient] = useState(new _topicpoliciesServiceClient.TopicpoliciesServiceClient(props.grpcWebUrl));
+  const [topicpoliciesServiceClient] = useState(new _topicPoliciesServiceClient.TopicPoliciesServiceClient(props.grpcWebUrl));
   const [schemaServiceClient] = useState(new _schemaServiceClient.SchemaServiceClient(props.grpcWebUrl));
   const [namespaceServiceClient] = useState(new _namespaceServiceClient.NamespaceServiceClient(props.grpcWebUrl));
   const [namespacePoliciesServiceClient] = useState(new _namespacePoliciesServiceClient.NamespacePoliciesServiceClient(props.grpcWebUrl));

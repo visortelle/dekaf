@@ -32,6 +32,9 @@ import maxMessageSizeField from './fields/max-message-size';
 
 import s from './Policies.module.css'
 import Tabs from "../../ui/Tabs/Tabs";
+import CopyPoliciesButton from "./ClipboardButtons/CopyPoliciesButton";
+import PastePoliciesButton from "./ClipboardButtons/PastePoliciesButton";
+import {sessionStorageKeys} from "../../session-storage-keys";
 
 export type PoliciesProps = {
   tenant: string;
@@ -51,6 +54,8 @@ type TabsKey =
 const Policies: React.FC<PoliciesProps> = (props) => {
   const [isGlobal, setIsGlobal] = useQueryParam('isGlobal', withDefault(BooleanParam, false));
   const [activeTab, setActiveTab] = React.useState<TabsKey>('topic-config');
+  const [reloadKey, setReloadKey] = React.useState<number>(0);
+  const [sessionId, setSessionId] = React.useState<string | null>(sessionStorage.getItem(sessionStorageKeys.pulsocatBrowserSessionId));
 
   const brokersConfig = BrokersConfig.useContext();
   const isTopicLevelPoliciesEnabled = brokersConfig.get('topicLevelPoliciesEnabled')?.value;
@@ -76,7 +81,28 @@ const Policies: React.FC<PoliciesProps> = (props) => {
         <span>Is global</span>
       </div>
 
-      <div className={s.Tabs}>
+      <div className={s.ClipboardControls}>
+        <CopyPoliciesButton
+          tenant={props.tenant}
+          namespace={props.namespace}
+          topic={props.topic}
+          topicType={props.topicType}
+          sessionId={sessionId}
+          setSessionId={setSessionId}
+          isGlobal={isGlobal}
+        />
+        <PastePoliciesButton
+          tenant={props.tenant}
+          namespace={props.namespace}
+          topic={props.topic}
+          topicType={props.topicType}
+          sessionId={sessionId}
+          setReloadKey={setReloadKey}
+          isGlobal={isGlobal}
+        />
+      </div>
+
+      <div className={s.Tabs} key={reloadKey}>
         <Tabs<TabsKey>
           activeTab={activeTab}
           onActiveTabChange={setActiveTab}

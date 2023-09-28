@@ -1085,23 +1085,23 @@ message RemoveResourceGroupResponse {
   google.rpc.Status status = 1;
 }
 
-message CopyNamespacePoliciesRequest {
+message CopyPoliciesRequest {
   string namespace_fqn = 1;
   optional string policies_clipboard_id = 2;
 }
 
-message CopyNamespacePoliciesResponse {
+message CopyPoliciesResponse {
   google.rpc.Status status = 1;
   string policies_clipboard_id = 2;
   map<string, string> errors = 3;
 }
 
-message PasteNamespacePoliciesRequest {
+message PastePoliciesRequest {
   string namespace_fqn = 1;
   optional string policies_clipboard_id = 2;
 }
 
-message PasteNamespacePoliciesResponse {
+message PastePoliciesResponse {
   google.rpc.Status status = 1;
   map<string, string> errors = 3;
 }
@@ -1266,8 +1266,8 @@ service NamespacePoliciesService {
   rpc SetResourceGroup(SetResourceGroupRequest) returns (SetResourceGroupResponse);
   rpc RemoveResourceGroup(RemoveResourceGroupRequest) returns (RemoveResourceGroupResponse);
 
-  rpc CopyNamespacePolicies(CopyNamespacePoliciesRequest) returns (CopyNamespacePoliciesResponse);
-  rpc PasteNamespacePolicies(PasteNamespacePoliciesRequest) returns (PasteNamespacePoliciesResponse);
+  rpc CopyPolicies(CopyPoliciesRequest) returns (CopyPoliciesResponse);
+  rpc PastePolicies(PastePoliciesRequest) returns (PastePoliciesResponse);
 
   rpc GetClipboardPoliciesSource(GetClipboardPoliciesSourceRequest) returns (GetClipboardPoliciesSourceResponse);
 }

@@ -16,7 +16,17 @@
   justify-content: flex-end;
   align-items: end;
   gap: 6rem;
-  margin: 20rem 0 20rem 70%;
+  margin: 16rem 0 20rem 65%;
   display: flex;
   position: absolute;
+}
+
+.ClipboardControls {
+  position: absolute;
+  justify-content: flex-end;
+  right: 0;
+  padding: 12rem;
+  gap: 6rem;
+  display: flex;
+  z-index: 2;
 }

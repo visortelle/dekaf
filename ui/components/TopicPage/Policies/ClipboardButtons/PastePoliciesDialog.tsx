@@ -1,9 +1,5 @@
 import useSWR from "swr";
 import {swrKeys} from "../../../swrKeys";
-import {
-  GetClipboardPoliciesSourceRequest,
-  GetClipboardPoliciesSourceResponse
-} from "../../../../grpc-web/tools/teal/pulsar/ui/namespace_policies/v1/namespace_policies_pb";
 import {sessionStorageKeys} from "../../../session-storage-keys";
 import {Code} from "../../../../grpc-web/google/rpc/code_pb";
 import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
@@ -12,15 +8,18 @@ import * as Notifications from "../../../app/contexts/Notifications";
 import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialog";
 import s from "./PastePoliciesButton.module.css"
 import React from "react";
+import {
+  GetClipboardPoliciesSourceRequest, GetClipboardPoliciesSourceResponse
+} from "../../../../grpc-web/tools/teal/pulsar/ui/topic_policies/v1/topic_policies_pb";
 
 type PastePoliciesDialogProps = {
-  tenant: string;
-  namespace: string;
+  topicFqn: string,
+  isGlobal: boolean,
   pastePoliciesFromClipboard: () => Promise<void>
 }
 
 const PastePoliciesDialog: React.FC<PastePoliciesDialogProps> = (props) => {
-  const { namespacePoliciesServiceClient } = GrpcClient.useContext();
+  const { topicPoliciesServiceClient } = GrpcClient.useContext();
   const modals = Modals.useContext();
   const {notifyError} = Notifications.useContext();
 
@@ -30,7 +29,7 @@ const PastePoliciesDialog: React.FC<PastePoliciesDialogProps> = (props) => {
       const req = new GetClipboardPoliciesSourceRequest();
       req.setPoliciesClipboardId(sessionStorage.getItem(sessionStorageKeys.pulsocatBrowserSessionId) ?? '');
 
-      const res = await namespacePoliciesServiceClient.getClipboardPoliciesSource(req, {})
+      const res = await topicPoliciesServiceClient.getClipboardPoliciesSource(req, {})
         .catch(err => notifyError(`Failed to get clipboard policies source: ${err.message}`));
 
       if (res === undefined) {
@@ -44,7 +43,10 @@ const PastePoliciesDialog: React.FC<PastePoliciesDialogProps> = (props) => {
 
       switch (res.getClipboardPoliciesSourceCase()) {
         case GetClipboardPoliciesSourceResponse.ClipboardPoliciesSourceCase.SPECIFIED:
-          return res.getSpecified()?.getSourceNamespaceFqn();
+          return {
+            sourceTopicFqn: res.getSpecified()?.getSourceTopicFqn(),
+            isSourceGlobal: res.getSpecified()?.getIsSourceGlobal()
+          };
         case GetClipboardPoliciesSourceResponse.ClipboardPoliciesSourceCase.UNSPECIFIED:
           return undefined;
       }
@@ -55,19 +57,22 @@ const PastePoliciesDialog: React.FC<PastePoliciesDialogProps> = (props) => {
     <ConfirmationDialog
       description={
         <div className={s.DialogContents}>
-          <div>You're going to paste namespace policies.</div>
+          <div>You're going to paste {props.isGlobal && <strong>global</strong>} topic policies.</div>
           <div>
             <div><strong>Source: </strong>
               {!clipboardPoliciesSource ? (
                 <span style={{color: "red"}}>undefined</span>
               ) : (
-                <span>{clipboardPoliciesSource}</span>
+                <span>{clipboardPoliciesSource.sourceTopicFqn}</span>
               )}
+              {clipboardPoliciesSource && clipboardPoliciesSource.isSourceGlobal &&
+                <span>(<strong>global</strong>)</span>
+              }
             </div>
-            <div><strong>Target: </strong>{`${props.tenant}/${props.namespace}`}</div>
+            <div><strong>Target: </strong>{props.topicFqn} {props.isGlobal && <span>(<strong>global</strong>)</span>}</div>
           </div>
           <div>
-            <div>This action may lead to losing data in the target namespace as a result of wrong policies.</div>
+            <div>This action may lead to losing data in the target topic as a result of wrong policies.</div>
             <div>Be sure you know what you're doing.</div>
           </div>
         </div>

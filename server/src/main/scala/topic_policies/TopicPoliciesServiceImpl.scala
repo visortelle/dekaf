@@ -3,15 +3,32 @@ package topic_policies
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies as pb
-import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.*
+import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.{SchemaCompatibilityStrategy as SchemaCompatibilityStrategyPb, *}
+import org.apache.pulsar.common.policies.data.SchemaCompatibilityStrategy
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
 import org.apache.pulsar.common.policies.data.*
 import pulsar_auth.RequestContext
+import com.google.rpc.code.Code
+import com.google.rpc.status.Status
+import com.typesafe.scalalogging.Logger
+import org.apache.pulsar.client.api.SubscriptionType
+import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
+import org.apache.pulsar.common.policies.data.{AuthAction, AutoTopicCreationOverride, BookieAffinityGroupData, OffloadedReadPriority, SubscriptionAuthMode, InactiveTopicPolicies, Policies as PulsarPolicies, *}
+import pulsar_auth.RequestContext
+import cache.{PoliciesClipboardCache, TopicPolicies, PoliciesCacheEntry}
 
-import scala.concurrent.Future
+import java.util.concurrent.CompletableFuture
+import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters.*
+import java.util.UUID
+import java.util.concurrent.{CompletableFuture, TimeUnit}
+import scala.concurrent.duration.{Duration, MINUTES}
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.jdk.CollectionConverters.*
+import scala.jdk.FutureConverters.*
+import scala.util.Try
 
 class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesService:
     val logger: Logger = Logger(getClass.getName)
@@ -380,9 +397,9 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                             InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_NO_SUBSCRIPTIONS
                         case InactiveTopicDeleteMode.delete_when_subscriptions_caught_up =>
                             InactiveTopicPoliciesDeleteMode.INACTIVE_TOPIC_POLICIES_DELETE_MODE_DELETE_WHEN_SUBSCRIPTIONS_CAUGHT_UP
-                            
+
                     pb.GetInactiveTopicPoliciesResponse.InactiveTopicPolicies.Specified(InactiveTopicPoliciesSpecified(
-                        inactiveTopicDeleteMode = inactiveTopicDeleteMode, 
+                        inactiveTopicDeleteMode = inactiveTopicDeleteMode,
                         maxInactiveDurationSeconds = v.getMaxInactiveDurationSeconds,
                         deleteWhileInactive = v.isDeleteWhileInactive
                     ))
@@ -1195,3 +1212,414 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(RemoveMaxMessageSizeResponse(status = Some(status)))
         }
+
+    private type OperationName = String
+    private type Operation = () => Unit
+    private type NamedOperation = (OperationName, Operation)
+
+    private type ErrorDescription = String
+
+    override def copyPolicies(request: CopyPoliciesRequest): Future[CopyPoliciesResponse] =
+        val topicFqn = request.topicFqn
+        val isGlobal = request.isGlobal
+
+        val pulsarAdmin = RequestContext.pulsarAdmin.get()
+
+        given ExecutionContext = ExecutionContext.global
+
+        var errorsDescriptions: Map[OperationName, ErrorDescription] = Map.empty
+
+        def recoverAsOption[T](f: CompletableFuture[T], errorKey: OperationName): Future[Option[T]] =
+            f.asScala.map(Some(_)).recover {
+                case err: Throwable =>
+                    errorsDescriptions += (errorKey -> err.getMessage)
+                    None
+            }
+
+        val clipboardIdFuture = for {
+            delayedDeliveryPolicy
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getDelayedDeliveryPolicyAsync(topicFqn, false), "DelayedDeliveryPolicy")
+            retention
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getRetentionAsync(topicFqn, false), "Retention")
+            maxUnackedMessagesOnConsumer
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxUnackedMessagesOnConsumerAsync(topicFqn, false), "Max Unacked Messages On Consumer")
+            inactiveTopicPolicies
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getInactiveTopicPoliciesAsync(topicFqn, false), "Inactive Topic Policies")
+            offloadPolicies
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getOffloadPoliciesAsync(topicFqn, false), "Offload Policies")
+            maxUnackedMessagesOnSubscription
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxUnackedMessagesOnSubscriptionAsync(topicFqn, false), "Max Unacked Messages On Subscription")
+            persistence
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getPersistenceAsync(topicFqn, false), "Persistence")
+            deduplicationStatus
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getDeduplicationStatusAsync(topicFqn, false), "Deduplication Status")
+            dispatchRate
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getDispatchRateAsync(topicFqn, false), "Dispatch Rate")
+            subscriptionDispatchRate
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getSubscriptionDispatchRateAsync(topicFqn, false), "Subscription Dispatch Rate")
+            replicatorDispatchRate
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getReplicatorDispatchRateAsync(topicFqn, false), "Replicator Dispatch Rate")
+            compactionThreshold
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getCompactionThresholdAsync(topicFqn, false), "Compaction Threshold")
+            publishRate
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getPublishRateAsync(topicFqn), "Publish Rate")
+            maxConsumersPerSubscription
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxConsumersPerSubscriptionAsync(topicFqn), "Max Consumers Per Subscription")
+            maxProducers
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxProducersAsync(topicFqn, false), "Max Producers")
+            maxSubscriptionsPerTopic
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxSubscriptionsPerTopicAsync(topicFqn), "Max Subscriptions Per Topic")
+            maxMessageSize
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxMessageSizeAsync(topicFqn), "Max Message Size")
+            maxConsumers
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxConsumersAsync(topicFqn, false), "Max Consumers")
+            deduplicationSnapshotInterval
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getDeduplicationSnapshotIntervalAsync(topicFqn), "Deduplication Snapshot Interval")
+            subscriptionTypesEnabled
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getSubscriptionTypesEnabledAsync(topicFqn), "Subscription Types Enabled")
+            subscribeRate
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getSubscribeRateAsync(topicFqn, false), "Subscribe Rate")
+            schemaCompatibilityStrategy
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getSchemaCompatibilityStrategyAsync(topicFqn, false), "Schema Compatibility Strategy")
+            entryFiltersPerTopic
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getEntryFiltersPerTopicAsync(topicFqn, false), "Entry Filters Per Topic")
+            autoSubscriptionCreation
+                <- recoverAsOption(pulsarAdmin.topicPolicies().getAutoSubscriptionCreationAsync(topicFqn, false), "Auto Subscription Creation")
+        } yield {
+            val topicPolicies = TopicPolicies(
+                topicFqn = topicFqn,
+                isGlobal = isGlobal,
+                delayedDeliveryPolicy = delayedDeliveryPolicy,
+                retention = retention,
+                maxUnackedMessagesOnConsumer = maxUnackedMessagesOnConsumer,
+                inactiveTopicPolicies = inactiveTopicPolicies,
+                offloadPolicies = offloadPolicies,
+                maxUnackedMessagesOnSubscription = maxUnackedMessagesOnSubscription,
+                persistence = persistence,
+                deduplicationStatus = deduplicationStatus,
+                dispatchRate = dispatchRate,
+                subscriptionDispatchRate = subscriptionDispatchRate,
+                replicatorDispatchRate = replicatorDispatchRate,
+                compactionThreshold = compactionThreshold,
+                publishRate = publishRate,
+                maxConsumersPerSubscription = maxConsumersPerSubscription,
+                maxProducers = maxProducers,
+                maxSubscriptionsPerTopic = maxSubscriptionsPerTopic,
+                maxMessageSize = maxMessageSize,
+                maxConsumers = maxConsumers,
+                deduplicationSnapshotInterval = deduplicationSnapshotInterval,
+                subscriptionTypesEnabled = subscriptionTypesEnabled,
+                subscribeRate = subscribeRate,
+                schemaCompatibilityStrategy = schemaCompatibilityStrategy,
+                entryFiltersPerTopic = entryFiltersPerTopic,
+                autoSubscriptionCreation = autoSubscriptionCreation
+            )
+
+            def createTopicCachedPolicies: UUID =
+                PoliciesClipboardCache.add(
+                    topicPolicies = Some(topicPolicies)
+                )
+
+            def updateTopicCachedPolicies(id: UUID): Option[PoliciesCacheEntry] =
+                PoliciesClipboardCache.update(
+                    id = id,
+                    topicPolicies = Some(topicPolicies)
+                )
+
+            val existingClipboardPoliciesId = request.policiesClipboardId
+
+            existingClipboardPoliciesId match
+                case Some(rawExistingId) =>
+                    val existingId = UUID.fromString(rawExistingId)
+
+                    PoliciesClipboardCache.get(existingId) match
+                        case Some(_) =>
+                            updateTopicCachedPolicies(existingId) match
+                                case Some(_) =>
+                                    existingId
+                                case None =>
+                                    createTopicCachedPolicies
+                        case None =>
+                            createTopicCachedPolicies
+                case None =>
+                    createTopicCachedPolicies
+        }
+
+        val clipboardId = Await.result(clipboardIdFuture, Duration(1, MINUTES))
+
+        Future.successful(CopyPoliciesResponse(
+            status = Some(Status(code = Code.OK.index)),
+            policiesClipboardId = clipboardId.toString,
+            errors = errorsDescriptions
+        ))
+
+    override def pastePolicies(request: PastePoliciesRequest): Future[PastePoliciesResponse] =
+        val topicFqn = request.topicFqn
+        val clipboardPoliciesId = request.policiesClipboardId
+
+        clipboardPoliciesId match
+            case Some(id) =>
+                val maybeCacheEntry = PoliciesClipboardCache.get(UUID.fromString(id))
+
+                maybeCacheEntry match
+                    case Some(cachedEntry) =>
+                        cachedEntry.topicPolicies match
+                            case Some(cachedTopicPolicies) =>
+                                val pulsarAdmin = RequestContext.pulsarAdmin.get()
+                                val isGlobal = cachedTopicPolicies.isGlobal
+
+                                given ExecutionContext = ExecutionContext.global
+
+                                var errorsDescriptions: Map[OperationName, ErrorDescription] = Map.empty
+
+                                def executeAndHandleError(operationName: OperationName, operation: Operation): Unit =
+                                    Try(
+                                        operation()
+                                    ).recover {
+                                        case err: Throwable =>
+                                            errorsDescriptions += (operationName -> err.getMessage)
+                                    }
+
+                                    ()
+
+                                def setDelayedDeliveryPolicy(delayedDeliveryPolicy: Option[DelayedDeliveryPolicies]): NamedOperation =
+                                    delayedDeliveryPolicy match
+                                        case Some(delayedDeliveryPolicy) =>
+                                            "Delayed Delivery Policy" -> (() => pulsarAdmin.topicPolicies(isGlobal).setDelayedDeliveryPolicy(topicFqn, delayedDeliveryPolicy))
+                                        case None =>
+                                            "Delayed Delivery Policy" -> (() => ())
+
+                                def setRetention(retention: Option[RetentionPolicies]): NamedOperation =
+                                    retention match
+                                        case Some(retention) =>
+                                            "Retention" -> (() => pulsarAdmin.topicPolicies(isGlobal).setRetention(topicFqn, retention))
+                                        case None =>
+                                            "Retention" -> (() => ())
+
+                                def setMaxUnackedMessagesOnConsumer(maxUnackedMessagesOnConsumer: Option[Integer]): NamedOperation =
+                                    maxUnackedMessagesOnConsumer match
+                                        case Some(maxUnackedMessagesOnConsumer) =>
+                                            "Max Unacked Messages On Consumer" -> (() => pulsarAdmin.topicPolicies(isGlobal).setMaxUnackedMessagesOnConsumer(topicFqn, maxUnackedMessagesOnConsumer))
+                                        case None =>
+                                            "Max Unacked Messages On Consumer" -> (() => ())
+
+                                def setInactiveTopicPolicies(inactiveTopicPolicies: Option[InactiveTopicPolicies]): NamedOperation =
+                                    inactiveTopicPolicies match
+                                        case Some(inactiveTopicPolicies) =>
+                                            "Inactive Topic Policies" -> (() => pulsarAdmin.topicPolicies(isGlobal).setInactiveTopicPolicies(topicFqn, inactiveTopicPolicies))
+                                        case None =>
+                                            "Inactive Topic Policies" -> (() => ())
+
+                                def setOffloadPolicies(offloadPolicies: Option[OffloadPolicies]): NamedOperation =
+                                    offloadPolicies match
+                                        case Some(offloadPolicies) =>
+                                            "Offload Policies" -> (() => pulsarAdmin.topicPolicies(isGlobal).setOffloadPolicies(topicFqn, offloadPolicies))
+                                        case None =>
+                                            "Offload Policies" -> (() => ())
+
+                                def setUnackedMessagesOnSubscription(maxUnackedMessagesOnSubscription: Option[Integer]): NamedOperation =
+                                    maxUnackedMessagesOnSubscription match
+                                        case Some(maxUnackedMessagesOnSubscription) =>
+                                            "Max Unacked Messages On Subscription" -> (() => pulsarAdmin.topicPolicies(isGlobal).setMaxUnackedMessagesOnSubscription(topicFqn, maxUnackedMessagesOnSubscription))
+                                        case None =>
+                                            "Max Unacked Messages On Subscription" -> (() => ())
+
+                                def setPersistence(persistence: Option[PersistencePolicies]): NamedOperation =
+                                    persistence match
+                                        case Some(persistence) =>
+                                            "Persistence" -> (() => pulsarAdmin.topicPolicies(isGlobal).setPersistence(topicFqn, persistence))
+                                        case None =>
+                                            "Persistence" -> (() => ())
+
+                                def setDeduplicationStatus(deduplicationStatus: Option[java.lang.Boolean]): NamedOperation =
+                                    deduplicationStatus match
+                                        case Some(deduplicationStatus) =>
+                                            "Deduplication Status" -> (() => pulsarAdmin.topicPolicies(isGlobal).setDeduplicationStatus(topicFqn, deduplicationStatus))
+                                        case None =>
+                                            "Deduplication Status" -> (() => ())
+
+                                def setDispatchRate(dispatchRate: Option[DispatchRate]): NamedOperation =
+                                    dispatchRate match
+                                        case Some(dispatchRate) =>
+                                            "Dispatch Rate" -> (() => pulsarAdmin.topicPolicies(isGlobal).setDispatchRate(topicFqn, dispatchRate))
+                                        case None =>
+                                            "Dispatch Rate" -> (() => ())
+
+                                def setSubscriptionDispatchRate(subscriptionDispatchRate: Option[DispatchRate]): NamedOperation =
+                                    subscriptionDispatchRate match
+                                        case Some(subscriptionDispatchRate) =>
+                                            "Subscription Dispatch Rate" -> (() => pulsarAdmin.topicPolicies(isGlobal).setSubscriptionDispatchRate(topicFqn, subscriptionDispatchRate))
+                                        case None =>
+                                            "Subscription Dispatch Rate" -> (() => ())
+
+                                def setReplicatorDispatchRate(replicatorDispatchRate: Option[DispatchRate]): NamedOperation =
+                                    replicatorDispatchRate match
+                                        case Some(replicatorDispatchRate) =>
+                                            "Replicator Dispatch Rate" -> (() => pulsarAdmin.topicPolicies(isGlobal).setReplicatorDispatchRate(topicFqn, replicatorDispatchRate))
+                                        case None =>
+                                            "Replicator Dispatch Rate" -> (() => ())
+
+                                def setCompactionThreshold(compactionThreshold: Option[java.lang.Long]): NamedOperation =
+                                    compactionThreshold match
+                                        case Some(compactionThreshold) =>
+                                            "Compaction Threshold" -> (() => pulsarAdmin.topicPolicies(isGlobal).setCompactionThreshold(topicFqn, compactionThreshold))
+                                        case None =>
+                                            "Compaction Threshold" -> (() => ())
+
+                                def setPublishRate(publishRate: Option[PublishRate]): NamedOperation =
+                                    publishRate match
+                                        case Some(publishRate) =>
+                                            "Publish Rate" -> (() => pulsarAdmin.topicPolicies(isGlobal).setPublishRate(topicFqn, publishRate))
+                                        case None =>
+                                            "Publish Rate" -> (() => ())
+
+                                def setMaxConsumersPerSubscription(maxConsumersPerSubscription: Option[Integer]): NamedOperation =
+                                    maxConsumersPerSubscription match
+                                        case Some(maxConsumersPerSubscription) =>
+                                            "Max Consumers Per Subscription" -> (() => pulsarAdmin.topicPolicies(isGlobal).setMaxConsumersPerSubscription(topicFqn, maxConsumersPerSubscription))
+                                        case None =>
+                                            "Max Consumers Per Subscription" -> (() => ())
+
+                                def setMaxProducers(maxProducers: Option[Integer]): NamedOperation =
+                                    maxProducers match
+                                        case Some(maxProducers) =>
+                                            "Max Producers" -> (() => pulsarAdmin.topicPolicies(isGlobal).setMaxProducers(topicFqn, maxProducers))
+                                        case None =>
+                                            "Max Producers" -> (() => ())
+
+                                def setMaxSubscriptionsPerTopic(maxSubscriptionsPerTopic: Option[Integer]): NamedOperation =
+                                    maxSubscriptionsPerTopic match
+                                        case Some(maxSubscriptionsPerTopic) =>
+                                            "Max Subscriptions Per Topic" -> (() => pulsarAdmin.topicPolicies(isGlobal).setMaxSubscriptionsPerTopic(topicFqn, maxSubscriptionsPerTopic))
+                                        case None =>
+                                            "Max Subscriptions Per Topic" -> (() => ())
+
+                                def setMaxMessageSize(maxMessageSize: Option[Integer]): NamedOperation =
+                                    maxMessageSize match
+                                        case Some(maxMessageSize) =>
+                                            "Max Message Size" -> (() => pulsarAdmin.topicPolicies(isGlobal).setMaxMessageSize(topicFqn, maxMessageSize))
+                                        case None =>
+                                            "Max Message Size" -> (() => ())
+
+                                def setMaxConsumers(maxConsumers: Option[Integer]): NamedOperation =
+                                    maxConsumers match
+                                        case Some(maxConsumers) =>
+                                            "Max Consumers" -> (() => pulsarAdmin.topicPolicies(isGlobal).setMaxConsumers(topicFqn, maxConsumers))
+                                        case None =>
+                                            "Max Consumers" -> (() => ())
+
+                                def setDeduplicationSnapshotInterval(deduplicationSnapshotInterval: Option[Integer]): NamedOperation =
+                                    deduplicationSnapshotInterval match
+                                        case Some(deduplicationSnapshotInterval) =>
+                                            "Deduplication Snapshot Interval" -> (() => pulsarAdmin.topicPolicies(isGlobal).setDeduplicationSnapshotInterval(topicFqn, deduplicationSnapshotInterval))
+                                        case None =>
+                                            "Deduplication Snapshot Interval" -> (() => ())
+
+                                def setSubscriptionTypesEnabled(subscriptionTypesEnabled: Option[java.util.Set[SubscriptionType]]): NamedOperation =
+                                    subscriptionTypesEnabled match
+                                        case Some(subscriptionTypesEnabled) =>
+                                            "Subscription Types Enabled" -> (() => pulsarAdmin.topicPolicies(isGlobal).setSubscriptionTypesEnabled(topicFqn, subscriptionTypesEnabled))
+                                        case None =>
+                                            "Subscription Types Enabled" -> (() => ())
+
+                                def setSubscribeRate(subscribeRate: Option[SubscribeRate]): NamedOperation =
+                                    subscribeRate match
+                                        case Some(subscribeRate) =>
+                                            "Subscribe Rate" -> (() => pulsarAdmin.topicPolicies(isGlobal).setSubscribeRate(topicFqn, subscribeRate))
+                                        case None =>
+                                            "Subscribe Rate" -> (() => ())
+
+                                def setSchemaCompatibilityStrategy(schemaCompatibilityStrategy: Option[SchemaCompatibilityStrategy]): NamedOperation =
+                                    schemaCompatibilityStrategy match
+                                        case Some(schemaCompatibilityStrategy) =>
+                                            "Schema Compatibility Strategy" -> (() => pulsarAdmin.topicPolicies(isGlobal).setSchemaCompatibilityStrategy(topicFqn, schemaCompatibilityStrategy))
+                                        case None =>
+                                            "Schema Compatibility Strategy" -> (() => ())
+
+                                def setEntryFiltersPerTopic(entryFiltersPerTopic: Option[EntryFilters]): NamedOperation =
+                                    entryFiltersPerTopic match
+                                        case Some(entryFiltersPerTopic) =>
+                                            "Entry Filters Per Topic" -> (() => pulsarAdmin.topicPolicies(isGlobal).setEntryFiltersPerTopic(topicFqn, entryFiltersPerTopic))
+                                        case None =>
+                                            "Entry Filters Per Topic" -> (() => ())
+
+                                val setPoliciesOperations: Seq[NamedOperation] = Seq(
+                                    setDelayedDeliveryPolicy(cachedTopicPolicies.delayedDeliveryPolicy),
+                                    setRetention(cachedTopicPolicies.retention),
+                                    setMaxUnackedMessagesOnConsumer(cachedTopicPolicies.maxUnackedMessagesOnConsumer),
+                                    setInactiveTopicPolicies(cachedTopicPolicies.inactiveTopicPolicies),
+                                    setOffloadPolicies(cachedTopicPolicies.offloadPolicies),
+                                    setUnackedMessagesOnSubscription(cachedTopicPolicies.maxUnackedMessagesOnSubscription),
+                                    setPersistence(cachedTopicPolicies.persistence),
+                                    setDeduplicationStatus(cachedTopicPolicies.deduplicationStatus),
+                                    setDispatchRate(cachedTopicPolicies.dispatchRate),
+                                    setSubscriptionDispatchRate(cachedTopicPolicies.subscriptionDispatchRate),
+                                    setReplicatorDispatchRate(cachedTopicPolicies.replicatorDispatchRate),
+                                    setCompactionThreshold(cachedTopicPolicies.compactionThreshold),
+                                    setPublishRate(cachedTopicPolicies.publishRate),
+                                    setMaxConsumersPerSubscription(cachedTopicPolicies.maxConsumersPerSubscription),
+                                    setMaxProducers(cachedTopicPolicies.maxProducers),
+                                    setMaxSubscriptionsPerTopic(cachedTopicPolicies.maxSubscriptionsPerTopic),
+                                    setMaxMessageSize(cachedTopicPolicies.maxMessageSize),
+                                    setMaxConsumers(cachedTopicPolicies.maxConsumers),
+                                    setDeduplicationSnapshotInterval(cachedTopicPolicies.deduplicationSnapshotInterval),
+                                    setSubscriptionTypesEnabled(cachedTopicPolicies.subscriptionTypesEnabled),
+                                    setSubscribeRate(cachedTopicPolicies.subscribeRate),
+                                    setSchemaCompatibilityStrategy(cachedTopicPolicies.schemaCompatibilityStrategy),
+                                    setEntryFiltersPerTopic(cachedTopicPolicies.entryFiltersPerTopic)
+                                )
+
+                                setPoliciesOperations.foreach((name, operation) =>
+                                    executeAndHandleError(name, operation)
+                                )
+
+                                val status = Status(code = Code.OK.index)
+                                Future.successful(PastePoliciesResponse(
+                                    status = Some(status),
+                                    errors = errorsDescriptions
+                                ))
+                            case None =>
+                                Future.successful(PastePoliciesResponse(
+                                    status = Some(Status(code = Code.FAILED_PRECONDITION.index)),
+                                    errors = Map("Policies" -> "No policies found in clipboard")
+                                ))
+                    case None =>
+                        val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies wasn't found. They either expired or were removed.")
+                        Future.successful(PastePoliciesResponse(status = Some(status)))
+            case None =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies wasn't found. Please copy them first.")
+                Future.successful(PastePoliciesResponse(status = Some(status)))
+
+    override def getClipboardPoliciesSource(request: GetClipboardPoliciesSourceRequest): Future[GetClipboardPoliciesSourceResponse] =
+        val requestUUID = UUID.fromString(request.policiesClipboardId)
+
+        PoliciesClipboardCache.get(requestUUID) match
+            case Some(clipboardCacheEntry) =>
+                clipboardCacheEntry.topicPolicies match
+                    case Some(topicPolicies) =>
+                        val status = Status(code = Code.OK.index)
+                        Future.successful(GetClipboardPoliciesSourceResponse(
+                            status = Some(status),
+                            clipboardPoliciesSource = GetClipboardPoliciesSourceResponse.ClipboardPoliciesSource.Specified(
+                                ClipboardPoliciesSourceSpecified(
+                                    sourceTopicFqn = topicPolicies.topicFqn,
+                                    isSourceGlobal = topicPolicies.isGlobal,
+                                )
+                            )
+                        ))
+                    case None =>
+                        val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies wasn't found. They either expired or were removed.")
+                        Future.successful(GetClipboardPoliciesSourceResponse(
+                            status = Some(status),
+                            clipboardPoliciesSource = GetClipboardPoliciesSourceResponse.ClipboardPoliciesSource.Unspecified(
+                                ClipboardPoliciesSourceUnspecified()
+                            )
+                        ))
+            case None =>
+                val status = Status(code = Code.FAILED_PRECONDITION.index, "Clipboard policies wasn't found. They either expired or were removed.")
+                Future.successful(GetClipboardPoliciesSourceResponse(
+                    status = Some(status),
+                    clipboardPoliciesSource = GetClipboardPoliciesSourceResponse.ClipboardPoliciesSource.Unspecified(
+                        ClipboardPoliciesSourceUnspecified()
+                    )
+                ))
