@@ -9,9 +9,8 @@ import "tools/teal/pulsar/ui/library/v1/user_managed_items.proto";
 message LibraryItemMetadata {
   string revision = 3;
   string updated_at = 4;
-  bool is_editable = 5;
   repeated string tags = 8;
-  repeated ResourceMatcher resources = 9;
+  repeated ResourceMatcher available_for_contexts = 9;
 }
 
 message LibraryItem {
@@ -46,7 +45,7 @@ message GetLibraryItemResponse {
 
 message ListLibraryItemsRequest {
   repeated UserManagedItemType types = 1;
-  repeated string resource_fqns = 2;
+  repeated string context_fqns = 2;
   repeated string tags = 3;
   string name = 5;
   string description = 6;

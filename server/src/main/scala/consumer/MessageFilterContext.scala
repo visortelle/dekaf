@@ -162,8 +162,8 @@ def getFilterChainTestResult(
             isEnabled = true,
             isNegated = false,
             mode = MessageFilterChainMode.All,
-            filters = Map(
-                "dummy" -> MessageFilter(
+            filters = List(
+                MessageFilter(
                     isEnabled = true,
                     isNegated = false,
                     `type` = MessageFilterType.JsMessageFilter,
@@ -173,8 +173,8 @@ def getFilterChainTestResult(
         )
 
     val filterResults = chain.filters
-        .filter(f => f._2.isEnabled)
-        .map(f => getFilterTestResult(f._2, messageFilterContext, jsonMessage, jsonValue))
+        .filter(_.isEnabled)
+        .map(f => getFilterTestResult(f, messageFilterContext, jsonMessage, jsonValue))
 
     val maybeErr = filterResults.find(fr => fr._1.isLeft)
     val filterChainResult = {

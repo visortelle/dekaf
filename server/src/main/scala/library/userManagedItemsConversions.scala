@@ -3,7 +3,18 @@ package library
 import com.google.protobuf.ByteString
 import com.tools.teal.pulsar.ui.library.v1.user_managed_items as pb
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import consumer.{EarliestMessage, LatestMessage}
+import consumer.{
+    dateTimeUnitToPb,
+    dateTimeUnitFromPb,
+    jsMessageFilterFromPb,
+    jsMessageFilterToPb,
+    basicMessageFilterFromPb,
+    basicMessageFilterToPb,
+    messageFilterChainModeToPb,
+    messageFilterChainModeFromPb,
+    EarliestMessage,
+    LatestMessage
+}
 
 import java.time.Instant
 

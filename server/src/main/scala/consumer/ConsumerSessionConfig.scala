@@ -5,7 +5,7 @@ import io.circe.generic.semiauto.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
-import library.{LibraryItemDescriptor, UserManagedItemType}
+import library.UserManagedItemType
 
 enum MessageFilterType:
     case BasicMessageFilter
@@ -67,7 +67,7 @@ case class MessageFilterChain(
     isEnabled: Boolean,
     isNegated: Boolean,
     mode: MessageFilterChainMode,
-    filters: Map[String, MessageFilter]
+    filters: List[MessageFilter]
 )
 
 given Decoder[MessageFilterChain] = deriveDecoder[MessageFilterChain]
@@ -112,7 +112,7 @@ given Encoder[DateTime] = deriveEncoder[DateTime]
 case class RelativeDateTime(
     value: Int,
     unit: DateTimeUnit,
-    isRoundToUnitStart: Boolean
+    isRoundedToUnitStart: Boolean
 )
 given Decoder[RelativeDateTime] = deriveDecoder[RelativeDateTime]
 given Encoder[RelativeDateTime] = deriveEncoder[RelativeDateTime]

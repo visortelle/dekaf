@@ -117,7 +117,7 @@ message UserManagedConsumerSessionConfigPauseTriggerSpec {
     bool on_topic_end_reached = 6;
     UserManagedDateTimeValueOrReference on_date_time = 8;
     UserManagedRelativeDateTimeValueOrReference on_relative_date_time = 9;
-    UserManagedMessageId on_message_id = 10;
+    UserManagedMessageIdValueOrReference on_message_id = 10;
     UserManagedMessageFilterValueOrReference on_message_filter_pass = 11;
     UserManagedMessageFilterChainValueOrReference on_message_filter_chain_pass = 12;
   }
@@ -159,7 +159,7 @@ message UserManagedMessageFilterValueOrReference {
 message UserManagedMessageFilterChainSpec {
   bool is_enabled = 1;
   bool is_negated = 2;
-  repeated UserManagedMessageFilterValueOrReference message_filters = 3;
+  repeated UserManagedMessageFilterValueOrReference filters = 3;
   tools.teal.pulsar.ui.api.v1.MessageFilterChainMode mode = 4;
 }
 

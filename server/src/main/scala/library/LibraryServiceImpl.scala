@@ -97,7 +97,7 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
             val filter = ListItemsFilter(
                 types = request.types.map(userManagedItemTypeFromPb).toList,
                 tags = request.tags.toList,
-                resourceFqns = request.resourceFqns.toList,
+                contextFqns = request.contextFqns.toList,
                 name = request.name,
                 description = request.description
             )

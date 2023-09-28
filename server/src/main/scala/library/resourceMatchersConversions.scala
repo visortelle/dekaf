@@ -1,6 +1,6 @@
 package library
 
-import com.tools.teal.pulsar.ui.library.v1.library as pb
+import com.tools.teal.pulsar.ui.library.v1.resource_matchers as pb
 
 def exactTenantMatcherFromPb(v: pb.ExactTenantMatcher): ExactTenantMatcher =
     ExactTenantMatcher(`type` = "exact-tenant-matcher", tenant = v.tenant)

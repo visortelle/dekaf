@@ -1,58 +1,21 @@
 package library
 
-import consumer.{
-    given_Decoder_ConsumerSessionConfig,
-    given_Decoder_MessageFilter,
-    given_Decoder_MessageFilterChain,
-    given_Encoder_ConsumerSessionConfig,
-    given_Encoder_MessageFilter,
-    given_Encoder_MessageFilterChain,
-    ConsumerSessionConfig,
-    MessageFilter,
-    MessageFilterChain
-}
 import io.circe.*
 import io.circe.generic.semiauto.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
 
-case class LibraryItemDescriptor(
-    `type`: UserManagedItemType,
-    value: ConsumerSessionConfig | MessageFilter | MessageFilterChain
-)
-given Decoder[LibraryItemDescriptor] = new Decoder[LibraryItemDescriptor] {
-    final def apply(c: HCursor): Decoder.Result[LibraryItemDescriptor] =
-        for {
-            itemType <- c.downField("type").as[UserManagedItemType]
-            value <- itemType match {
-                case UserManagedItemType.ConsumerSessionConfig => c.downField("value").as[ConsumerSessionConfig]
-                case UserManagedItemType.MessageFilter         => c.downField("value").as[MessageFilter]
-                case UserManagedItemType.MessageFilterChain    => c.downField("value").as[MessageFilterChain]
-            }
-        } yield LibraryItemDescriptor(itemType, value)
-}
-given Encoder[LibraryItemDescriptor] = new Encoder[LibraryItemDescriptor] {
-    final def apply(a: LibraryItemDescriptor): Json = Json.obj(
-        ("type", a.`type`.asJson),
-        (
-            "value",
-            a.value match {
-                case v: ConsumerSessionConfig => v.asJson
-                case v: MessageFilter         => v.asJson
-                case v: MessageFilterChain    => v.asJson
-            }
-        )
-    )
-}
-
-case class LibraryItem(
+case class LibraryItemMetadata(
     revision: String,
     updatedAt: String,
-    isEditable: Boolean,
     tags: List[String],
-    resources: List[ResourceMatcher],
-    descriptor: LibraryItemDescriptor
+    availableForContexts: List[ResourceMatcher]
+)
+
+case class LibraryItem(
+    metadata: LibraryItemMetadata,
+    spec: UserManagedItem
 )
 given Decoder[LibraryItem] = deriveDecoder[LibraryItem]
 given Encoder[LibraryItem] = deriveEncoder[LibraryItem]
@@ -66,9 +29,9 @@ type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 case class ListItemsFilter(
     types: List[UserManagedItemType],
     tags: List[TagName],
-    resourceFqns: List[String],
     name: String,
-    description: String
+    description: String,
+    contextFqns: List[String]
 )
 
 case class LibraryDb(
@@ -87,7 +50,7 @@ class Library:
     private var db = LibraryDb(itemsById = Map.empty)
 
     def writeItem(item: LibraryItem): Unit =
-        val fileName = s"${item.id}.json"
+        val fileName = s"${item.spec}.json"
         val filePath = os.Path(fileName, os.Path(rootDir))
         val itemAsJson = item.asJson.spaces2SortKeys
 
@@ -111,32 +74,42 @@ class Library:
 
     def listItems(filter: ListItemsFilter): List[LibraryItem] =
         def getItemsByTags(items: List[LibraryItem], tags: List[TagName]): List[LibraryItem] =
-            items.filter(item => item.tags.exists(tag => tags.contains(tag)))
+            items.filter(item => item.metadata.tags.exists(tag => tags.contains(tag)))
 
-        def getItemsByResourceFqns(items: List[LibraryItem], fqns: List[String]): List[LibraryItem] =
-            items.filter(item => item.resources.exists(resource => fqns.exists(fqn => ResourceMatcher.test(resource, fqn)))).toList
+        def getItemsByContextFqns(items: List[LibraryItem], contextFqns: List[String]): List[LibraryItem] =
+            items.filter(item => item.metadata.availableForContexts.exists(resource => contextFqns.exists(fqn => ResourceMatcher.test(resource, fqn))))
 
         def getItemsByName(items: List[LibraryItem], name: String): List[LibraryItem] =
             val subStringLowerCased = name.toLowerCase
-            items.filter(item => item.name.toLowerCase.contains(subStringLowerCased))
+            items.filter(item =>
+                val metadata = getUserManagedItemMetadata(item.spec)
+                metadata.name.toLowerCase.contains(subStringLowerCased)
+            )
 
         def getItemsByDescription(items: List[LibraryItem], description: String): List[LibraryItem] =
             val subStringLowerCased = description.toLowerCase
-            items.filter(item => item.descriptionMarkdown.toLowerCase.contains(subStringLowerCased))
+            items.filter(item =>
+                val metadata = getUserManagedItemMetadata(item.spec)
+                metadata.descriptionMarkdown.toLowerCase.contains(subStringLowerCased)
+            )
 
         val dbItems = db.itemsById.values.toList
         val byTypes =
             if filter.types.isEmpty
             then dbItems
-            else dbItems.filter(item => filter.types.contains(item.descriptor.`type`))
-        val byResourceFqns =
-            if filter.resourceFqns.isEmpty
+            else
+                dbItems.filter(item =>
+                    val metadata = getUserManagedItemMetadata(item.spec)
+                    filter.types.contains(metadata.`type`)
+                )
+        val byContextFqns =
+            if filter.contextFqns.isEmpty
             then byTypes
-            else getItemsByResourceFqns(byTypes, filter.resourceFqns)
+            else getItemsByContextFqns(byTypes, filter.contextFqns)
         val byName =
             if filter.name.isEmpty
-            then byResourceFqns
-            else getItemsByName(byResourceFqns, filter.name)
+            then byContextFqns
+            else getItemsByName(byContextFqns, filter.name)
         val byDescription =
             if filter.description.isEmpty
             then byName
@@ -161,10 +134,11 @@ class Library:
                     case Left(_) =>
                         fileName -> scanResultEntry
                     case Right(item) =>
-                        if item.id != libraryItemIdFromFileName then
+                        val itemId = getUserManagedItemMetadata(item.spec).id
+                        if itemId != libraryItemIdFromFileName then
                             fileName -> Left(
                                 new Exception(
-                                    s"File name $fileName does not match library item id ${item.id}"
+                                    s"File name $fileName does not match library item id ${itemId}"
                                 )
                             )
                         else fileName -> scanResultEntry
@@ -173,5 +147,8 @@ class Library:
 
     private def refreshDb(): Unit =
         val scanResult = scan()
-        val itemsById = scanResult.collect { case (_, Right(item)) => item.id -> item }
+        val itemsById = scanResult.collect { case (_, Right(item)) =>
+            val itemId = getUserManagedItemMetadata(item.spec).id
+            itemId -> item
+        }
         db = LibraryDb(itemsById = itemsById)
