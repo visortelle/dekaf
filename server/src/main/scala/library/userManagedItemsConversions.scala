@@ -20,27 +20,27 @@ import java.time.Instant
 
 def userManagedItemTypeFromPb(v: pb.UserManagedItemType): UserManagedItemType =
     v match
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG               => UserManagedItemType.ConsumerSessionConfig
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM    => UserManagedItemType.ConsumerSessionConfigStartFrom
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER => UserManagedItemType.ConsumerSessionConfigPauseTrigger
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG               => UserManagedItemType.ProducerSessionConfig
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT                     => UserManagedItemType.MarkdownDocument
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER                        => UserManagedItemType.MessageFilter
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN                  => UserManagedItemType.MessageFilterChain
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET             => UserManagedItemType.DataVisualizationWidget
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD          => UserManagedItemType.DataVisualizationDashboard
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG               => UserManagedItemTypeL.ConsumerSessionConfig()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM    => UserManagedItemTypeL.ConsumerSessionConfigStartFrom()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER => UserManagedItemTypeL.ConsumerSessionConfigPauseTrigger()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG               => UserManagedItemTypeL.ProducerSessionConfig()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT                     => UserManagedItemTypeL.MarkdownDocument()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER                        => UserManagedItemTypeL.MessageFilter()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN                  => UserManagedItemTypeL.MessageFilterChain()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET             => UserManagedItemTypeL.DataVisualizationWidget()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD          => UserManagedItemTypeL.DataVisualizationDashboard()
         case _ => throw new IllegalArgumentException("Unknown user managed item type")
 def userManagedItemTypeToPb(v: UserManagedItemType): pb.UserManagedItemType =
     v match
-        case UserManagedItemType.ConsumerSessionConfig             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG
-        case UserManagedItemType.ConsumerSessionConfigStartFrom    => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM
-        case UserManagedItemType.ConsumerSessionConfigPauseTrigger => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER
-        case UserManagedItemType.ProducerSessionConfig             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG
-        case UserManagedItemType.MarkdownDocument                  => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
-        case UserManagedItemType.MessageFilter                     => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER
-        case UserManagedItemType.MessageFilterChain                => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN
-        case UserManagedItemType.DataVisualizationWidget           => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
-        case UserManagedItemType.DataVisualizationDashboard        => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
+        case UserManagedItemTypeL.ConsumerSessionConfig()             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG
+        case UserManagedItemTypeL.ConsumerSessionConfigStartFrom()   => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM
+        case UserManagedItemTypeL.ConsumerSessionConfigPauseTrigger() => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER
+        case UserManagedItemTypeL.ProducerSessionConfig()             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG
+        case UserManagedItemTypeL.MarkdownDocument()                  => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
+        case UserManagedItemTypeL.MessageFilter()                     => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER
+        case UserManagedItemTypeL.MessageFilterChain()                => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN
+        case UserManagedItemTypeL.DataVisualizationWidget()           => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
+        case UserManagedItemTypeL.DataVisualizationDashboard()        => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
 
 def userManagedItemMetadataFromPb(v: pb.UserManagedItemMetadata): UserManagedItemMetadata =
     UserManagedItemMetadata(

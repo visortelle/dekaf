@@ -23,18 +23,53 @@ import _root_.consumer.{
 }
 import java.time.Instant
 
-enum UserManagedItemType:
-    case ConsumerSessionConfig
-    case ConsumerSessionConfigStartFrom
-    case ConsumerSessionConfigPauseTrigger
-    case ProducerSessionConfig
-    case MarkdownDocument
-    case MessageFilter
-    case MessageFilterChain
-    case DataVisualizationWidget
-    case DataVisualizationDashboard
-given Decoder[UserManagedItemType] = deriveDecoder[UserManagedItemType]
-given Encoder[UserManagedItemType] = deriveEncoder[UserManagedItemType]
+object UserManagedItemTypeL:
+    case class ConsumerSessionConfig()
+    case class ConsumerSessionConfigStartFrom()
+    case class ConsumerSessionConfigPauseTrigger()
+    case class ProducerSessionConfig()
+    case class MarkdownDocument()
+    case class MessageFilter()
+    case class MessageFilterChain()
+    case class DataVisualizationWidget()
+    case class DataVisualizationDashboard()
+
+type UserManagedItemType =
+    UserManagedItemTypeL.ConsumerSessionConfig |
+    UserManagedItemTypeL.ConsumerSessionConfigStartFrom |
+    UserManagedItemTypeL.ConsumerSessionConfigPauseTrigger |
+    UserManagedItemTypeL.ProducerSessionConfig |
+    UserManagedItemTypeL.MarkdownDocument |
+    UserManagedItemTypeL.MessageFilter |
+    UserManagedItemTypeL.MessageFilterChain |
+    UserManagedItemTypeL.DataVisualizationWidget |
+    UserManagedItemTypeL.DataVisualizationDashboard
+given Encoder[UserManagedItemType] = Encoder.instance {
+    case _: UserManagedItemTypeL.ConsumerSessionConfig => Json.obj("type" -> "ConsumerSessionConfig".asJson)
+    case _: UserManagedItemTypeL.ConsumerSessionConfigStartFrom => Json.obj("type" -> "ConsumerSessionConfigStartFrom".asJson)
+    case _: UserManagedItemTypeL.ConsumerSessionConfigPauseTrigger => Json.obj("type" -> "ConsumerSessionConfigPauseTrigger".asJson)
+    case _: UserManagedItemTypeL.ProducerSessionConfig => Json.obj("type" -> "ProducerSessionConfig".asJson)
+    case _: UserManagedItemTypeL.MarkdownDocument => Json.obj("type" -> "MarkdownDocument".asJson)
+    case _: UserManagedItemTypeL.MessageFilter => Json.obj("type" -> "MessageFilter".asJson)
+    case _: UserManagedItemTypeL.MessageFilterChain => Json.obj("type" -> "MessageFilterChain".asJson)
+    case _: UserManagedItemTypeL.DataVisualizationWidget => Json.obj("type" -> "DataVisualizationWidget".asJson)
+    case _: UserManagedItemTypeL.DataVisualizationDashboard => Json.obj("type" -> "DataVisualizationDashboard".asJson)
+}
+
+given Decoder[UserManagedItemType] = Decoder.instance { cursor =>
+    cursor.downField("type").as[String].flatMap {
+        case "ConsumerSessionConfig" => Right(UserManagedItemTypeL.ConsumerSessionConfig())
+        case "ConsumerSessionConfigStartFrom" => Right(UserManagedItemTypeL.ConsumerSessionConfigStartFrom())
+        case "ConsumerSessionConfigPauseTrigger" => Right(UserManagedItemTypeL.ConsumerSessionConfigPauseTrigger())
+        case "ProducerSessionConfig" => Right(UserManagedItemTypeL.ProducerSessionConfig())
+        case "MarkdownDocument" => Right(UserManagedItemTypeL.MarkdownDocument())
+        case "MessageFilter" => Right(UserManagedItemTypeL.MessageFilter())
+        case "MessageFilterChain" => Right(UserManagedItemTypeL.MessageFilterChain())
+        case "DataVisualizationWidget" => Right(UserManagedItemTypeL.DataVisualizationWidget())
+        case "DataVisualizationDashboard" => Right(UserManagedItemTypeL.DataVisualizationDashboard())
+        case other => Left(DecodingFailure(s"Unknown type: $other", cursor.history))
+    }
+}
 
 type UserManagedItemReference = String
 
