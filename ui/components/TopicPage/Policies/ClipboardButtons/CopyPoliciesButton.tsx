@@ -27,6 +27,7 @@ const CopyPoliciesButton: React.FC<CopyPoliciesButtonProps> = (props) => {
     const req = new CopyPoliciesRequest()
     req.setTopicFqn(topicFqn);
     req.setIsGlobal(props.isGlobal);
+    props.sessionId && req.setPoliciesClipboardId(props.sessionId);
 
     if (sessionStorage.getItem(sessionStorageKeys.pulsocatBrowserSessionId)) {
       req.setPoliciesClipboardId(sessionStorage.getItem(sessionStorageKeys.pulsocatBrowserSessionId) ?? '');
@@ -61,7 +62,7 @@ const CopyPoliciesButton: React.FC<CopyPoliciesButtonProps> = (props) => {
     }
 
     notifySuccess(props.isGlobal ? 'Global topic policies copied.' : 'Topic policies copied.');
-  }, [topicFqn]);
+  }, [topicFqn, props.isGlobal, props.sessionId, props.setSessionId]);
 
   return (
     <SmallButton onClick={copyPoliciesToClipboard} type={"regular"} text={"Copy"} svgIcon={copyIcon}/>

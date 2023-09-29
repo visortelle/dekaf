@@ -811,7 +811,8 @@ message CopyPoliciesResponse {
 
 message PastePoliciesRequest {
   string topic_fqn = 1;
-  optional string policies_clipboard_id = 2;
+  bool is_global = 2;
+  optional string policies_clipboard_id = 3;
 }
 
 message PastePoliciesResponse {

@@ -200,12 +200,11 @@ export const swrKeys = {
                 "nonPersistentTopics",
               ],
               policies: {
-                policy: (props: {
+                localPolicy: (props: {
                   tenant: string;
                   namespace: string;
                   topic: string;
                   policy: string;
-                  isGlobal: boolean;
                 }) => [
                     "pulsar",
                     "tenants",
@@ -216,8 +215,21 @@ export const swrKeys = {
                     props.topic,
                     "policies",
                     props.policy,
-                    props.isGlobal,
                   ],
+                globalPolicy: (props: {
+                  tenant: string;
+                  namespace: string;
+                  policy: string;
+                }) => [
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "nonPersistentTopics",
+                  "policies",
+                  props.policy,
+                ],
               },
             },
             persistentTopics: {
@@ -230,24 +242,36 @@ export const swrKeys = {
                 "persistentTopics",
               ],
               policies: {
-                policy: (props: {
+                localPolicy: (props: {
                   tenant: string;
                   namespace: string;
                   topic: string;
                   policy: string;
-                  isGlobal: boolean;
                 }) => [
-                    "pulsar",
-                    "tenants",
-                    props.tenant,
-                    "namespaces",
-                    props.namespace,
-                    "persistentTopics",
-                    props.topic,
-                    "policies",
-                    props.policy,
-                    props.isGlobal,
-                  ],
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "persistentTopics",
+                  props.topic,
+                  "policies",
+                  props.policy,
+                ],
+                globalPolicy: (props: {
+                  tenant: string;
+                  namespace: string;
+                  policy: string;
+                }) => [
+                  "pulsar",
+                  "tenants",
+                  props.tenant,
+                  "namespaces",
+                  props.namespace,
+                  "persistentTopics",
+                  "policies",
+                  props.policy,
+                ],
               },
             },
             policies: {

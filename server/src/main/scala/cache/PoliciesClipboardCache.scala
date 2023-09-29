@@ -102,6 +102,6 @@ case class TopicPolicies(
     subscriptionTypesEnabled: Option[java.util.Set[SubscriptionType]],
     subscribeRate: Option[SubscribeRate],
     schemaCompatibilityStrategy: Option[SchemaCompatibilityStrategy],
-    entryFiltersPerTopic: Option[EntryFilters],
-    autoSubscriptionCreation: Option[AutoSubscriptionCreationOverride],
+/*    entryFiltersPerTopic: Option[EntryFilters],
+    autoSubscriptionCreation: Option[AutoSubscriptionCreationOverride],*/
 )

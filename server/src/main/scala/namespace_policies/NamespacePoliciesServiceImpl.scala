@@ -2018,6 +2018,7 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
 
     override def copyPolicies(request: CopyPoliciesRequest): Future[CopyPoliciesResponse] =
         val namespaceFqn = request.namespaceFqn
+        val existingClipboardPoliciesId = request.policiesClipboardId
 
         val pulsarAdmin = RequestContext.pulsarAdmin.get()
 
@@ -2077,8 +2078,6 @@ class NamespacePoliciesServiceImpl extends NamespacePoliciesServiceGrpc.Namespac
                         )
                     )
                 )
-
-            val existingClipboardPoliciesId = request.policiesClipboardId
 
             existingClipboardPoliciesId match
                 case Some(rawExistingId) =>

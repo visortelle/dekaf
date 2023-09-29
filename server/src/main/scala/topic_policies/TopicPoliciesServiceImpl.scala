@@ -1,29 +1,18 @@
 package topic_policies
 
+import cache.{PoliciesCacheEntry, PoliciesClipboardCache, TopicPolicies}
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies as pb
 import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.{SchemaCompatibilityStrategy as SchemaCompatibilityStrategyPb, *}
-import org.apache.pulsar.common.policies.data.SchemaCompatibilityStrategy
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.SubscriptionType
 import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.*
+import org.apache.pulsar.common.policies.data.{AuthAction, AutoTopicCreationOverride, BookieAffinityGroupData, InactiveTopicPolicies, OffloadedReadPriority, SchemaCompatibilityStrategy, SubscriptionAuthMode, Policies as PulsarPolicies, *}
 import pulsar_auth.RequestContext
-import com.google.rpc.code.Code
-import com.google.rpc.status.Status
-import com.typesafe.scalalogging.Logger
-import org.apache.pulsar.client.api.SubscriptionType
-import org.apache.pulsar.common.policies.data.BacklogQuota.{BacklogQuotaType, RetentionPolicy, builder as BacklogQuotaBuilder}
-import org.apache.pulsar.common.policies.data.{AuthAction, AutoTopicCreationOverride, BookieAffinityGroupData, OffloadedReadPriority, SubscriptionAuthMode, InactiveTopicPolicies, Policies as PulsarPolicies, *}
-import pulsar_auth.RequestContext
-import cache.{PoliciesClipboardCache, TopicPolicies, PoliciesCacheEntry}
 
-import java.util.concurrent.CompletableFuture
-import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters.*
 import java.util.UUID
-import java.util.concurrent.{CompletableFuture, TimeUnit}
+import java.util.concurrent.CompletableFuture
 import scala.concurrent.duration.{Duration, MINUTES}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.jdk.CollectionConverters.*
@@ -1221,6 +1210,7 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
 
     override def copyPolicies(request: CopyPoliciesRequest): Future[CopyPoliciesResponse] =
         val topicFqn = request.topicFqn
+        val existingClipboardPoliciesId = request.policiesClipboardId
         val isGlobal = request.isGlobal
 
         val pulsarAdmin = RequestContext.pulsarAdmin.get()
@@ -1238,53 +1228,54 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
 
         val clipboardIdFuture = for {
             delayedDeliveryPolicy
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getDelayedDeliveryPolicyAsync(topicFqn, false), "DelayedDeliveryPolicy")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getDelayedDeliveryPolicyAsync(topicFqn, false), "DelayedDeliveryPolicy")
             retention
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getRetentionAsync(topicFqn, false), "Retention")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getRetentionAsync(topicFqn, false), "Retention")
             maxUnackedMessagesOnConsumer
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxUnackedMessagesOnConsumerAsync(topicFqn, false), "Max Unacked Messages On Consumer")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getMaxUnackedMessagesOnConsumerAsync(topicFqn, false), "Max Unacked Messages On Consumer")
             inactiveTopicPolicies
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getInactiveTopicPoliciesAsync(topicFqn, false), "Inactive Topic Policies")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getInactiveTopicPoliciesAsync(topicFqn, false), "Inactive Topic Policies")
             offloadPolicies
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getOffloadPoliciesAsync(topicFqn, false), "Offload Policies")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getOffloadPoliciesAsync(topicFqn, false), "Offload Policies")
             maxUnackedMessagesOnSubscription
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxUnackedMessagesOnSubscriptionAsync(topicFqn, false), "Max Unacked Messages On Subscription")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getMaxUnackedMessagesOnSubscriptionAsync(topicFqn, false), "Max Unacked Messages On Subscription")
             persistence
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getPersistenceAsync(topicFqn, false), "Persistence")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getPersistenceAsync(topicFqn, false), "Persistence")
             deduplicationStatus
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getDeduplicationStatusAsync(topicFqn, false), "Deduplication Status")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getDeduplicationStatusAsync(topicFqn, false), "Deduplication Status")
             dispatchRate
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getDispatchRateAsync(topicFqn, false), "Dispatch Rate")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getDispatchRateAsync(topicFqn, false), "Dispatch Rate")
             subscriptionDispatchRate
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getSubscriptionDispatchRateAsync(topicFqn, false), "Subscription Dispatch Rate")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getSubscriptionDispatchRateAsync(topicFqn, false), "Subscription Dispatch Rate")
             replicatorDispatchRate
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getReplicatorDispatchRateAsync(topicFqn, false), "Replicator Dispatch Rate")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getReplicatorDispatchRateAsync(topicFqn, false), "Replicator Dispatch Rate")
             compactionThreshold
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getCompactionThresholdAsync(topicFqn, false), "Compaction Threshold")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getCompactionThresholdAsync(topicFqn, false), "Compaction Threshold")
             publishRate
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getPublishRateAsync(topicFqn), "Publish Rate")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getPublishRateAsync(topicFqn), "Publish Rate")
             maxConsumersPerSubscription
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxConsumersPerSubscriptionAsync(topicFqn), "Max Consumers Per Subscription")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getMaxConsumersPerSubscriptionAsync(topicFqn), "Max Consumers Per Subscription")
             maxProducers
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxProducersAsync(topicFqn, false), "Max Producers")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getMaxProducersAsync(topicFqn, false), "Max Producers")
             maxSubscriptionsPerTopic
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxSubscriptionsPerTopicAsync(topicFqn), "Max Subscriptions Per Topic")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getMaxSubscriptionsPerTopicAsync(topicFqn), "Max Subscriptions Per Topic")
             maxMessageSize
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxMessageSizeAsync(topicFqn), "Max Message Size")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getMaxMessageSizeAsync(topicFqn), "Max Message Size")
             maxConsumers
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getMaxConsumersAsync(topicFqn, false), "Max Consumers")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getMaxConsumersAsync(topicFqn, false), "Max Consumers")
             deduplicationSnapshotInterval
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getDeduplicationSnapshotIntervalAsync(topicFqn), "Deduplication Snapshot Interval")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getDeduplicationSnapshotIntervalAsync(topicFqn), "Deduplication Snapshot Interval")
             subscriptionTypesEnabled
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getSubscriptionTypesEnabledAsync(topicFqn), "Subscription Types Enabled")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getSubscriptionTypesEnabledAsync(topicFqn), "Subscription Types Enabled")
             subscribeRate
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getSubscribeRateAsync(topicFqn, false), "Subscribe Rate")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getSubscribeRateAsync(topicFqn, false), "Subscribe Rate")
             schemaCompatibilityStrategy
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getSchemaCompatibilityStrategyAsync(topicFqn, false), "Schema Compatibility Strategy")
-            entryFiltersPerTopic
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getEntryFiltersPerTopicAsync(topicFqn, false), "Entry Filters Per Topic")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getSchemaCompatibilityStrategyAsync(topicFqn, false), "Schema Compatibility Strategy")
+            // TODO: uncomment when entry filters and autoSubscriptionCreation are supported
+            /*entryFiltersPerTopic
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getEntryFiltersPerTopicAsync(topicFqn, false), "Entry Filters Per Topic")
             autoSubscriptionCreation
-                <- recoverAsOption(pulsarAdmin.topicPolicies().getAutoSubscriptionCreationAsync(topicFqn, false), "Auto Subscription Creation")
+                <- recoverAsOption(pulsarAdmin.topicPolicies(isGlobal).getAutoSubscriptionCreationAsync(topicFqn, false), "Auto Subscription Creation")*/
         } yield {
             val topicPolicies = TopicPolicies(
                 topicFqn = topicFqn,
@@ -1311,8 +1302,9 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                 subscriptionTypesEnabled = subscriptionTypesEnabled,
                 subscribeRate = subscribeRate,
                 schemaCompatibilityStrategy = schemaCompatibilityStrategy,
-                entryFiltersPerTopic = entryFiltersPerTopic,
-                autoSubscriptionCreation = autoSubscriptionCreation
+                // TODO: uncomment when entry filters and autoSubscriptionCreation are supported
+                //entryFiltersPerTopic = entryFiltersPerTopic,
+                //autoSubscriptionCreation = autoSubscriptionCreation
             )
 
             def createTopicCachedPolicies: UUID =
@@ -1325,8 +1317,6 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                     id = id,
                     topicPolicies = Some(topicPolicies)
                 )
-
-            val existingClipboardPoliciesId = request.policiesClipboardId
 
             existingClipboardPoliciesId match
                 case Some(rawExistingId) =>
@@ -1366,7 +1356,7 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                         cachedEntry.topicPolicies match
                             case Some(cachedTopicPolicies) =>
                                 val pulsarAdmin = RequestContext.pulsarAdmin.get()
-                                val isGlobal = cachedTopicPolicies.isGlobal
+                                val isGlobal = request.isGlobal
 
                                 given ExecutionContext = ExecutionContext.global
 
@@ -1427,9 +1417,14 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                                 def setPersistence(persistence: Option[PersistencePolicies]): NamedOperation =
                                     persistence match
                                         case Some(persistence) =>
-                                            "Persistence" -> (() => pulsarAdmin.topicPolicies(isGlobal).setPersistence(topicFqn, persistence))
+                                            Option(persistence) match
+                                                case Some(persistencePolicies) =>
+                                                    "Persistence" -> (() => pulsarAdmin.topicPolicies(isGlobal).setPersistence(topicFqn, persistence))
+                                                case None =>
+                                                    "Persistence" -> (() => ())
                                         case None =>
                                             "Persistence" -> (() => ())
+
 
                                 def setDeduplicationStatus(deduplicationStatus: Option[java.lang.Boolean]): NamedOperation =
                                     deduplicationStatus match
@@ -1518,7 +1513,11 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                                 def setSubscriptionTypesEnabled(subscriptionTypesEnabled: Option[java.util.Set[SubscriptionType]]): NamedOperation =
                                     subscriptionTypesEnabled match
                                         case Some(subscriptionTypesEnabled) =>
-                                            "Subscription Types Enabled" -> (() => pulsarAdmin.topicPolicies(isGlobal).setSubscriptionTypesEnabled(topicFqn, subscriptionTypesEnabled))
+                                            Option(subscriptionTypesEnabled) match
+                                                case Some(_) =>
+                                                    "Subscription Types Enabled" -> (() => pulsarAdmin.topicPolicies(isGlobal).setSubscriptionTypesEnabled(topicFqn, subscriptionTypesEnabled))
+                                                case None =>
+                                                    "Subscription Types Enabled" -> (() => ())
                                         case None =>
                                             "Subscription Types Enabled" -> (() => ())
 
@@ -1532,16 +1531,21 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                                 def setSchemaCompatibilityStrategy(schemaCompatibilityStrategy: Option[SchemaCompatibilityStrategy]): NamedOperation =
                                     schemaCompatibilityStrategy match
                                         case Some(schemaCompatibilityStrategy) =>
-                                            "Schema Compatibility Strategy" -> (() => pulsarAdmin.topicPolicies(isGlobal).setSchemaCompatibilityStrategy(topicFqn, schemaCompatibilityStrategy))
+                                            Option(schemaCompatibilityStrategy) match
+                                                case Some(_) =>
+                                                    "Schema Compatibility Strategy" -> (() => pulsarAdmin.topicPolicies(isGlobal).setSchemaCompatibilityStrategy(topicFqn, schemaCompatibilityStrategy))
+                                                case None =>
+                                                    "Schema Compatibility Strategy" -> (() => ())
                                         case None =>
                                             "Schema Compatibility Strategy" -> (() => ())
 
-                                def setEntryFiltersPerTopic(entryFiltersPerTopic: Option[EntryFilters]): NamedOperation =
+                                // TODO: uncomment when entry filters and autoSubscriptionCreation are supported
+/*                                def setEntryFiltersPerTopic(entryFiltersPerTopic: Option[EntryFilters]): NamedOperation =
                                     entryFiltersPerTopic match
                                         case Some(entryFiltersPerTopic) =>
                                             "Entry Filters Per Topic" -> (() => pulsarAdmin.topicPolicies(isGlobal).setEntryFiltersPerTopic(topicFqn, entryFiltersPerTopic))
                                         case None =>
-                                            "Entry Filters Per Topic" -> (() => ())
+                                            "Entry Filters Per Topic" -> (() => ())*/
 
                                 val setPoliciesOperations: Seq[NamedOperation] = Seq(
                                     setDelayedDeliveryPolicy(cachedTopicPolicies.delayedDeliveryPolicy),
@@ -1566,7 +1570,8 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                                     setSubscriptionTypesEnabled(cachedTopicPolicies.subscriptionTypesEnabled),
                                     setSubscribeRate(cachedTopicPolicies.subscribeRate),
                                     setSchemaCompatibilityStrategy(cachedTopicPolicies.schemaCompatibilityStrategy),
-                                    setEntryFiltersPerTopic(cachedTopicPolicies.entryFiltersPerTopic)
+                                    // TODO: uncomment when entry filters and autoSubscriptionCreation are supported
+                                    //setEntryFiltersPerTopic(cachedTopicPolicies.entryFiltersPerTopic)
                                 )
 
                                 setPoliciesOperations.foreach((name, operation) =>
