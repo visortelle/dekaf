@@ -3,7 +3,7 @@ import s from './ResourceMatcherInput.module.css'
 import TenantMatcherInput from './TenantMatcherInput/TenantMatcherInput';
 import NamespaceMatcherInput from './NamespaceMatcherInput/NamespaceMatcherInput';
 import TopicMatcherInput from './TopicMatcherInput/TopicMatcherInput';
-import { ResourceMatcher } from '../../types';
+import { ResourceMatcher } from '../../model/library';
 
 export type ResourceMatcherInputProps = {
   value: ResourceMatcher;

@@ -33,11 +33,11 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           itemType='message-filter-chain'
           itemDescriptorToSave={{ type: 'message-filter-chain', value: props.value }}
           onPick={(item) => {
-            if (item.descriptor.type !== 'message-filter-chain') {
+            if (item.spec.metadata.type !== 'message-filter-chain') {
               return;
             }
 
-            props.onChange(item.descriptor.value)
+            props.onChange(item.spec.spec)
           }}
           isForceShowButtons={isHovered}
         />

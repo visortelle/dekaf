@@ -4,7 +4,7 @@ import Input from '../../../../../Input/Input';
 import TenantMatcherInput from '../../TenantMatcherInput/TenantMatcherInput';
 import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
-import { RegexNamespaceMatcher } from '../../../../types';
+import { RegexNamespaceMatcher } from '../../../../model/library';
 
 export type RegexNamespaceMatcherInputProps = {
   value: RegexNamespaceMatcher;

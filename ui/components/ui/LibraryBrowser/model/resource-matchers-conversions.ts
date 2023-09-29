@@ -1,4 +1,4 @@
-import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/resource_matchers_pb";
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/resource_matchers_pb";
 import * as t from "./resource-matchers";
 
 export function exactTenantMatcherToPb(matcher: t.ExactTenantMatcher): pb.ExactTenantMatcher {

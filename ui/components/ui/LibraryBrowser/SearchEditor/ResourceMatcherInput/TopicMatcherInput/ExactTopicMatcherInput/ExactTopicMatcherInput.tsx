@@ -4,7 +4,7 @@ import Input from '../../../../../Input/Input';
 import NamespaceMatcherInput from '../../NamespaceMatcherInput/NamespaceMatcherInput';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-import { ExactTopicMatcher } from '../../../../types';
+import { ExactTopicMatcher } from '../../../../model/library';
 
 export type ExactTopicMatcherInputProps = {
   value: ExactTopicMatcher;

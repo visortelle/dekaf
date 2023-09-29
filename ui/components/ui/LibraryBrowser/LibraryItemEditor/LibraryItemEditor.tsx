@@ -3,7 +3,7 @@ import s from './LibraryItemEditor.module.css'
 import Input from '../../Input/Input';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
-import { LibraryItem } from '../types';
+import { LibraryItem } from '../model/library';
 import FilterEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterChainEditor';
 import NothingToShow from '../../NothingToShow/NothingToShow';

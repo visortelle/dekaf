@@ -9,6 +9,7 @@ import {
   JsMessageFilter,
   MessageFilter,
   MessageFilterChain,
+  MessageFilterChainMode,
   StartFrom,
   DateTimeUnit,
 } from "./types";
@@ -145,15 +146,15 @@ export function dateTimeUnitToPb(unit: DateTimeUnit): pb.DateTimeUnit {
 }
 
 
-export function startFromFromPb(startFrom: pb.StartFrom): StartFrom {
+export function startFromFromPb(startFrom: pb.ConsumerSessionConfigStartFrom): StartFrom {
   switch (startFrom.getValueCase()) {
-    case pb.StartFrom.ValueCase.EARLIEST_MESSAGE:
+    case pb.ConsumerSessionConfigStartFrom.ValueCase.EARLIEST_MESSAGE:
       return { type: 'earliestMessage' };
 
-    case pb.StartFrom.ValueCase.LATEST_MESSAGE:
+    case pb.ConsumerSessionConfigStartFrom.ValueCase.LATEST_MESSAGE:
       return { type: 'latestMessage' };
 
-    case pb.StartFrom.ValueCase.MESSAGE_ID: {
+    case pb.ConsumerSessionConfigStartFrom.ValueCase.MESSAGE_ID: {
       const byteArray = startFrom.getMessageId()?.getMessageId_asU8();
       if (byteArray === undefined) {
         throw new Error('Message Id should be defined.');
@@ -162,7 +163,7 @@ export function startFromFromPb(startFrom: pb.StartFrom): StartFrom {
       return { type: 'messageId', hexString: hexStringFromByteArray(byteArray) };
     }
 
-    case pb.StartFrom.ValueCase.DATE_TIME: {
+    case pb.ConsumerSessionConfigStartFrom.ValueCase.DATE_TIME: {
       const dateTimePb = startFrom.getDateTime()?.getDateTime();
       if (dateTimePb === undefined) {
         throw new Error('DateTime should be defined.');
@@ -171,7 +172,7 @@ export function startFromFromPb(startFrom: pb.StartFrom): StartFrom {
 
     }
 
-    case pb.StartFrom.ValueCase.RELATIVE_DATE_TIME: {
+    case pb.ConsumerSessionConfigStartFrom.ValueCase.RELATIVE_DATE_TIME: {
       const relativeDateTimePb = startFrom.getRelativeDateTime();
       if (relativeDateTimePb === undefined) {
         throw new Error('Relative date-time should be defined.');
@@ -182,7 +183,7 @@ export function startFromFromPb(startFrom: pb.StartFrom): StartFrom {
         value: {
           unit: dateTimeUnitFromPb(relativeDateTimePb.getUnit()),
           value: relativeDateTimePb.getValue(),
-          isRoundToUnitStart: relativeDateTimePb.getIsRoundToUnitStart(),
+          isRoundedToUnitStart: relativeDateTimePb.getIsRoundedToUnitStart(),
         }
       };
     }
@@ -192,30 +193,30 @@ export function startFromFromPb(startFrom: pb.StartFrom): StartFrom {
   }
 }
 
-function startFromToPb(startFrom: StartFrom): pb.StartFrom {
-  const startFromPb = new pb.StartFrom();
+function startFromToPb(startFrom: StartFrom): pb.ConsumerSessionConfigStartFrom {
+  const startFromPb = new pb.ConsumerSessionConfigStartFrom();
 
   switch (startFrom.type) {
     case 'earliestMessage':
-      startFromPb.setEarliestMessage(new pb.StartFromEarliestMessage());
+      startFromPb.setEarliestMessage(new pb.EarliestMessage());
       break;
     case 'latestMessage':
-      startFromPb.setLatestMessage(new pb.StartFromLatestMessage());
+      startFromPb.setLatestMessage(new pb.LatestMessage());
       break;
     case 'messageId':
-      startFromPb.setMessageId(new pb.StartFromMessageId().setMessageId(hexStringToByteArray(startFrom.hexString)));
+      startFromPb.setMessageId(new pb.MessageId().setMessageId(hexStringToByteArray(startFrom.hexString)));
       break;
     case 'dateTime':
       const epochSeconds = Math.floor(startFrom.dateTime.getTime() / 1000);
       const timestampPb = new Timestamp();
       timestampPb.setSeconds(epochSeconds);
-      startFromPb.setDateTime(new pb.StartFromDateTime().setDateTime(timestampPb));
+      startFromPb.setDateTime(new pb.DateTime().setDateTime(timestampPb));
       break;
     case 'relativeDateTime':
-      const relativeDateTimePb = new pb.StartFromRelativeDateTime();
+      const relativeDateTimePb = new pb.RelativeDateTime();
       relativeDateTimePb.setUnit(dateTimeUnitToPb(startFrom.value.unit))
       relativeDateTimePb.setValue(startFrom.value.value)
-      relativeDateTimePb.setIsRoundToUnitStart(startFrom.value.isRoundToUnitStart)
+      relativeDateTimePb.setIsRoundedToUnitStart(startFrom.value.isRoundedToUnitStart)
 
       startFromPb.setRelativeDateTime(relativeDateTimePb);
       break;
@@ -267,6 +268,28 @@ export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
   }
 }
 
+export function messageFilterChainModeFromPb(mode: pb.MessageFilterChainMode): MessageFilterChainMode {
+  switch (mode) {
+    case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL:
+      return 'all';
+    case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY:
+      return 'any';
+    default:
+      throw new Error(`Unknown MessageFilterChainMode: ${mode}`);
+  }
+}
+
+export function messageFilterChainModeToPb(mode: MessageFilterChainMode): pb.MessageFilterChainMode {
+  switch (mode) {
+    case 'all':
+      return pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL;
+    case 'any':
+      return pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY;
+    default:
+      throw new Error(`Unknown MessageFilterChainMode: ${mode}`);
+  }
+}
+
 export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
   switch (filter.getValueCase()) {
     case pb.MessageFilter.ValueCase.JS:
@@ -289,18 +312,24 @@ export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
   }
 }
 
+export function messageFilterChainFromPb(filterChain: pb.MessageFilterChain): MessageFilterChain {
+  return {
+    mode: messageFilterChainModeFromPb(filterChain.getMode()),
+    isEnabled: filterChain.getIsEnabled(),
+    isNegated: filterChain.getIsNegated(),
+    filters: filterChain.getFiltersList().map(messageFilterFromPb),
+  };
+}
+
 export function messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFilterChain {
   const chainPb = new pb.MessageFilterChain();
-  chainPb.setMode(chain.mode === 'all' ? pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
-
-  Object.entries(chain.filters)
-    .forEach(([filterId, filter]) => {
-      const filterPb = messageFilterToPb(filter);
-      chainPb.getFiltersMap().set(filterId, filterPb);
-    });
+  chainPb.setMode(messageFilterChainModeToPb(chain.mode));
 
   chainPb.setIsEnabled(chain.isEnabled);
+  chainPb.setIsNegated(chain.isNegated);
 
+  const messageFiltersPb = chain.filters.map(messageFilterToPb);
+  chainPb.setFiltersList(messageFiltersPb);
 
   return chainPb;
 }

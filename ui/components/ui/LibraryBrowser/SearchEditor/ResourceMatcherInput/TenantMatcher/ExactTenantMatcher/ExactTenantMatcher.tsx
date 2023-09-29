@@ -3,7 +3,7 @@ import s from './ExactTenantMatcher.module.css'
 import Input from '../../../../../Input/Input';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-import { ExactTenantMatcher } from '../../../../types';
+import { ExactTenantMatcher } from '../../../../model/library';
 
 export type ExactTenantMatcherProps = {
   value: ExactTenantMatcher;

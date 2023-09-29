@@ -4,14 +4,16 @@ import com.google.protobuf.ByteString
 import com.tools.teal.pulsar.ui.library.v1.user_managed_items as pb
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import consumer.{
-    dateTimeUnitToPb,
-    dateTimeUnitFromPb,
-    jsMessageFilterFromPb,
-    jsMessageFilterToPb,
     basicMessageFilterFromPb,
     basicMessageFilterToPb,
-    messageFilterChainModeToPb,
+    dateTimeUnitFromPb,
+    dateTimeUnitToPb,
+    jsMessageFilterFromPb,
+    jsMessageFilterToPb,
     messageFilterChainModeFromPb,
+    messageFilterChainModeToPb,
+    messageFilterFromPb,
+    messageFilterToPb,
     EarliestMessage,
     LatestMessage
 }
@@ -20,27 +22,27 @@ import java.time.Instant
 
 def userManagedItemTypeFromPb(v: pb.UserManagedItemType): UserManagedItemType =
     v match
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG               => UserManagedItemTypeL.ConsumerSessionConfig()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM    => UserManagedItemTypeL.ConsumerSessionConfigStartFrom()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER => UserManagedItemTypeL.ConsumerSessionConfigPauseTrigger()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG               => UserManagedItemTypeL.ProducerSessionConfig()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT                     => UserManagedItemTypeL.MarkdownDocument()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER                        => UserManagedItemTypeL.MessageFilter()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN                  => UserManagedItemTypeL.MessageFilterChain()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET             => UserManagedItemTypeL.DataVisualizationWidget()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD          => UserManagedItemTypeL.DataVisualizationDashboard()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG               => UserManagedItemType.ConsumerSessionConfig()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM    => UserManagedItemType.ConsumerSessionConfigStartFrom()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER => UserManagedItemType.ConsumerSessionConfigPauseTrigger()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG               => UserManagedItemType.ProducerSessionConfig()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT                     => UserManagedItemType.MarkdownDocument()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER                        => UserManagedItemType.MessageFilter()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN                  => UserManagedItemType.MessageFilterChain()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET             => UserManagedItemType.DataVisualizationWidget()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD          => UserManagedItemType.DataVisualizationDashboard()
         case _ => throw new IllegalArgumentException("Unknown user managed item type")
 def userManagedItemTypeToPb(v: UserManagedItemType): pb.UserManagedItemType =
     v match
-        case UserManagedItemTypeL.ConsumerSessionConfig()             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG
-        case UserManagedItemTypeL.ConsumerSessionConfigStartFrom()   => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM
-        case UserManagedItemTypeL.ConsumerSessionConfigPauseTrigger() => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER
-        case UserManagedItemTypeL.ProducerSessionConfig()             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG
-        case UserManagedItemTypeL.MarkdownDocument()                  => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
-        case UserManagedItemTypeL.MessageFilter()                     => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER
-        case UserManagedItemTypeL.MessageFilterChain()                => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN
-        case UserManagedItemTypeL.DataVisualizationWidget()           => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
-        case UserManagedItemTypeL.DataVisualizationDashboard()        => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
+        case UserManagedItemType.ConsumerSessionConfig()             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG
+        case UserManagedItemType.ConsumerSessionConfigStartFrom()    => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM
+        case UserManagedItemType.ConsumerSessionConfigPauseTrigger() => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER
+        case UserManagedItemType.ProducerSessionConfig()             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG
+        case UserManagedItemType.MarkdownDocument()                  => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
+        case UserManagedItemType.MessageFilter()                     => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER
+        case UserManagedItemType.MessageFilterChain()                => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN
+        case UserManagedItemType.DataVisualizationWidget()           => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
+        case UserManagedItemType.DataVisualizationDashboard()        => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
 
 def userManagedItemMetadataFromPb(v: pb.UserManagedItemMetadata): UserManagedItemMetadata =
     UserManagedItemMetadata(
@@ -384,28 +386,11 @@ def userManagedConsumerSessionConfigPauseTriggerValueOrReferenceToPb(
 
 def userManagedMessageFilterSpecFromPb(v: pb.UserManagedMessageFilterSpec): UserManagedMessageFilterSpec =
     UserManagedMessageFilterSpec(
-        isEnabled = v.isEnabled,
-        isNegated = v.isNegated,
-        jsFilter = v.value match
-            case pb.UserManagedMessageFilterSpec.Value.JsFilter(v) =>
-                Some(jsMessageFilterFromPb(v))
-            case _ => None
-        ,
-        basicFilter = v.value match
-            case pb.UserManagedMessageFilterSpec.Value.BasicFilter(v) =>
-                Some(basicMessageFilterFromPb(v))
-            case _ => None
+        messageFilter = messageFilterFromPb(v.messageFilter.get)
     )
 def userManagedMessageFilterSpecToPb(v: UserManagedMessageFilterSpec): pb.UserManagedMessageFilterSpec =
     pb.UserManagedMessageFilterSpec(
-        isEnabled = v.isEnabled,
-        isNegated = v.isNegated,
-        value = v.jsFilter match
-            case Some(v) => pb.UserManagedMessageFilterSpec.Value.JsFilter(jsMessageFilterToPb(v))
-            case None =>
-                v.basicFilter match
-                    case Some(v) => pb.UserManagedMessageFilterSpec.Value.BasicFilter(basicMessageFilterToPb(v))
-                    case None    => throw new Exception("Invalid UserManagedMessageFilterSpec")
+        messageFilter = Some(messageFilterToPb(v.messageFilter))
     )
 
 def userManagedMessageFilterFromPb(v: pb.UserManagedMessageFilter): UserManagedMessageFilter =
@@ -518,88 +503,40 @@ def userManagedConsumerSessionConfigToPb(v: UserManagedConsumerSessionConfig): p
     )
 
 def userManagedItemFromPb(v: pb.UserManagedItem): UserManagedItem =
-    UserManagedItem(
-        consumerSessionConfig = v.item match
-            case pb.UserManagedItem.Item.ConsumerSessionConfig(v) =>
-                Some(userManagedConsumerSessionConfigFromPb(v))
-            case _ => None
-        ,
-        consumerSessionConfigStartFrom = v.item match
-            case pb.UserManagedItem.Item.ConsumerSessionConfigStartFrom(v) =>
-                Some(userManagedConsumerSessionConfigStartFromFromPb(v))
-            case _ => None
-        ,
-        consumerSessionConfigPauseTrigger = v.item match
-            case pb.UserManagedItem.Item.ConsumerSessionConfigPauseTrigger(v) =>
-                Some(userManagedConsumerSessionConfigPauseTriggerFromPb(v))
-            case _ => None
-        ,
-        messageId = v.item match
-            case pb.UserManagedItem.Item.MessageId(v) =>
-                Some(userManagedMessageIdFromPb(v))
-            case _ => None
-        ,
-        dateTime = v.item match
-            case pb.UserManagedItem.Item.DateTime(v) =>
-                Some(userManagedDateTimeFromPb(v))
-            case _ => None
-        ,
-        relativeDateTime = v.item match
-            case pb.UserManagedItem.Item.RelativeDateTime(v) =>
-                Some(userManagedRelativeDateTimeFromPb(v))
-            case _ => None
-        ,
-        messageFilter = v.item match
-            case pb.UserManagedItem.Item.MessageFilter(v) =>
-                Some(userManagedMessageFilterFromPb(v))
-            case _ => None
-        ,
-        messageFilterChain = v.item match
-            case pb.UserManagedItem.Item.MessageFilterChain(v) =>
-                Some(userManagedMessageFilterChainFromPb(v))
-            case _ => None
-    )
+    v.item match
+        case it: pb.UserManagedItem.Item.ConsumerSessionConfig             => userManagedConsumerSessionConfigFromPb(it.value)
+        case it: pb.UserManagedItem.Item.ConsumerSessionConfigStartFrom    => userManagedConsumerSessionConfigStartFromFromPb(it.value)
+        case it: pb.UserManagedItem.Item.ConsumerSessionConfigPauseTrigger => userManagedConsumerSessionConfigPauseTriggerFromPb(it.value)
+        case it: pb.UserManagedItem.Item.MessageId                         => userManagedMessageIdFromPb(it.value)
+        case it: pb.UserManagedItem.Item.DateTime                          => userManagedDateTimeFromPb(it.value)
+        case it: pb.UserManagedItem.Item.RelativeDateTime                  => userManagedRelativeDateTimeFromPb(it.value)
+        case it: pb.UserManagedItem.Item.MessageFilter                     => userManagedMessageFilterFromPb(it.value)
+        case it: pb.UserManagedItem.Item.MessageFilterChain                => userManagedMessageFilterChainFromPb(it.value)
+        case _                                                             => throw new IllegalArgumentException("Unknown user managed item type")
 
 def userManagedItemToPb(v: UserManagedItem): pb.UserManagedItem =
-    pb.UserManagedItem(
-        item = v.consumerSessionConfig match
-            case Some(v) =>
-                pb.UserManagedItem.Item.ConsumerSessionConfig(userManagedConsumerSessionConfigToPb(v))
-            case None =>
-                v.consumerSessionConfigStartFrom match
-                    case Some(v) =>
-                        pb.UserManagedItem.Item.ConsumerSessionConfigStartFrom(userManagedConsumerSessionConfigStartFromToPb(v))
-                    case None =>
-                        v.consumerSessionConfigPauseTrigger match
-                            case Some(v) =>
-                                pb.UserManagedItem.Item.ConsumerSessionConfigPauseTrigger(
-                                    userManagedConsumerSessionConfigPauseTriggerToPb(v)
-                                )
-                            case None =>
-                                v.messageId match
-                                    case Some(v) =>
-                                        pb.UserManagedItem.Item.MessageId(userManagedMessageIdToPb(v))
-                                    case None =>
-                                        v.dateTime match
-                                            case Some(v) =>
-                                                pb.UserManagedItem.Item.DateTime(userManagedDateTimeToPb(v))
-                                            case None =>
-                                                v.relativeDateTime match
-                                                    case Some(v) =>
-                                                        pb.UserManagedItem.Item.RelativeDateTime(
-                                                            userManagedRelativeDateTimeToPb(v)
-                                                        )
-                                                    case None =>
-                                                        v.messageFilter match
-                                                            case Some(v) =>
-                                                                pb.UserManagedItem.Item.MessageFilter(
-                                                                    userManagedMessageFilterToPb(v)
-                                                                )
-                                                            case None =>
-                                                                v.messageFilterChain match
-                                                                    case Some(v) =>
-                                                                        pb.UserManagedItem.Item.MessageFilterChain(
-                                                                            userManagedMessageFilterChainToPb(v)
-                                                                        )
-                                                                    case None => throw new Exception("Invalid UserManagedItem")
-    )
+    v match
+        case it: UserManagedConsumerSessionConfig =>
+            val itPb = userManagedConsumerSessionConfigToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.ConsumerSessionConfig(itPb))
+        case it: UserManagedConsumerSessionConfigStartFrom =>
+            val itPb = userManagedConsumerSessionConfigStartFromToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.ConsumerSessionConfigStartFrom(itPb))
+        case it: UserManagedConsumerSessionConfigPauseTrigger =>
+            val itPb = userManagedConsumerSessionConfigPauseTriggerToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.ConsumerSessionConfigPauseTrigger(itPb))
+        case it: UserManagedMessageId =>
+            val itPb = userManagedMessageIdToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.MessageId(itPb))
+        case it: UserManagedDateTime =>
+            val itPb = userManagedDateTimeToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.DateTime(itPb))
+        case it: UserManagedRelativeDateTime =>
+            val itPb = userManagedRelativeDateTimeToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.RelativeDateTime(itPb))
+        case it: UserManagedMessageFilter =>
+            val itPb = userManagedMessageFilterToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.MessageFilter(itPb))
+        case it: UserManagedMessageFilterChain =>
+            val itPb = userManagedMessageFilterChainToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.MessageFilterChain(itPb))

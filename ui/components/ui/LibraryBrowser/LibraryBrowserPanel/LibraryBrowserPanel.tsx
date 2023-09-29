@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
-import { LibraryItem, LibraryItemType } from '../types';
+import { LibraryItem, LibraryItemType } from '../model/library';
 import { H3 } from '../../H/H';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';

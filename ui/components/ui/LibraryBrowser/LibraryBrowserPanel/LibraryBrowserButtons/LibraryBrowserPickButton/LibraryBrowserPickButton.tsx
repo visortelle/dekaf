@@ -3,7 +3,7 @@ import s from './LibraryBrowserPickButton.module.css'
 import SmallButton from '../../../../SmallButton/SmallButton';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../modals';
-import { LibraryItem, LibraryItemType } from '../../../types';
+import { LibraryItem, LibraryItemType } from '../../../model/library';
 import pickIcon from './pick.svg';
 
 export type LibraryBrowserPickButtonProps = {

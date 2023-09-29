@@ -4,7 +4,7 @@ import Input from '../../../../../Input/Input';
 import TenantMatcherInput from '../../TenantMatcherInput/TenantMatcherInput';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-import { ExactNamespaceMatcher } from '../../../../types';
+import { ExactNamespaceMatcher } from '../../../../model/library';
 
 export type ExactNamespaceMatcherInputProps = {
   value: ExactNamespaceMatcher;

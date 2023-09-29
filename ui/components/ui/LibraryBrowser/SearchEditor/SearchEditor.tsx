@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './SearchEditor.module.css'
 import LibraryItemTypePicker from './LibraryItemTypePicker/LibraryItemTypePicker';
-import { LibraryItemType } from '../types';
+import { LibraryItemType } from '../model/library';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import ResourceMatcherInput, { ResourceMatcherValue } from './ResourceMatcherInput/ResourceMatcherInput';

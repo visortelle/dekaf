@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './SearchResults.module.css'
 import Input from '../../Input/Input';
-import { LibraryItem } from '../types';
+import { LibraryItem } from '../model/library';
 import NothingToShow from '../../NothingToShow/NothingToShow';
 
 export type SearchResultsProps = {

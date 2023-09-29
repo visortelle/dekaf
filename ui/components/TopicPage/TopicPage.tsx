@@ -189,7 +189,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           config={{
             topicsSelector: { type: "by-names", topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] },
             startFrom: { type: "latestMessage" },
-            messageFilterChain: { filters: {}, mode: "all", isEnabled: true, isNegated: false },
+            messageFilterChain: { filters: [], mode: "all", isEnabled: true, isNegated: false },
           }}
         />
       )}

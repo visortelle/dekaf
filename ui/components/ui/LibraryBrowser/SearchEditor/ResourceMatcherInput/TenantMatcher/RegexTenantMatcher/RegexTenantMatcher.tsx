@@ -3,7 +3,7 @@ import s from './RegexTenantMatcher.module.css'
 import Input from '../../../../../Input/Input';
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-import { RegexTenantMatcher } from '../../../../types';
+import { RegexTenantMatcher } from '../../../../model/library';
 
 export type RegexTenantMatcherProps = {
   value: RegexTenantMatcher;

@@ -136,12 +136,7 @@ message UserManagedConsumerSessionConfigPauseTriggerValueOrReference {
 }
 
 message UserManagedMessageFilterSpec {
-  bool is_enabled = 10;
-  bool is_negated = 11;
-  oneof value {
-   tools.teal.pulsar.ui.api.v1.JsMessageFilter js_filter = 1;
-   tools.teal.pulsar.ui.api.v1.BasicMessageFilter basic_filter = 2;
-  }
+  tools.teal.pulsar.ui.api.v1.MessageFilter message_filter = 1;
 }
 
 message UserManagedMessageFilter {

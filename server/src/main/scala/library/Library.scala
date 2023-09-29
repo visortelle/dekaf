@@ -82,14 +82,14 @@ class Library:
         def getItemsByName(items: List[LibraryItem], name: String): List[LibraryItem] =
             val subStringLowerCased = name.toLowerCase
             items.filter(item =>
-                val metadata = getUserManagedItemMetadata(item.spec)
+                val metadata = item.spec.metadata
                 metadata.name.toLowerCase.contains(subStringLowerCased)
             )
 
         def getItemsByDescription(items: List[LibraryItem], description: String): List[LibraryItem] =
             val subStringLowerCased = description.toLowerCase
             items.filter(item =>
-                val metadata = getUserManagedItemMetadata(item.spec)
+                val metadata = item.spec.metadata
                 metadata.descriptionMarkdown.toLowerCase.contains(subStringLowerCased)
             )
 
@@ -99,7 +99,7 @@ class Library:
             then dbItems
             else
                 dbItems.filter(item =>
-                    val metadata = getUserManagedItemMetadata(item.spec)
+                    val metadata = item.spec.metadata
                     filter.types.contains(metadata.`type`)
                 )
         val byContextFqns =
@@ -134,11 +134,11 @@ class Library:
                     case Left(_) =>
                         fileName -> scanResultEntry
                     case Right(item) =>
-                        val itemId = getUserManagedItemMetadata(item.spec).id
+                        val itemId = item.spec.metadata.id
                         if itemId != libraryItemIdFromFileName then
                             fileName -> Left(
                                 new Exception(
-                                    s"File name $fileName does not match library item id ${itemId}"
+                                    s"File name $fileName does not match library item id $itemId"
                                 )
                             )
                         else fileName -> scanResultEntry
@@ -148,7 +148,7 @@ class Library:
     private def refreshDb(): Unit =
         val scanResult = scan()
         val itemsById = scanResult.collect { case (_, Right(item)) =>
-            val itemId = getUserManagedItemMetadata(item.spec).id
+            val itemId = item.spec.metadata.id
             itemId -> item
         }
         db = LibraryDb(itemsById = itemsById)

@@ -49,8 +49,8 @@ const RelativeDateTimePicker: React.FC<RelativeDateTimePickerProps> = (props) =>
 
       <div className={s.Checkbox}>
         <Checkbox
-          checked={props.value.isRoundToUnitStart}
-          onChange={(v) => props.onChange({ ...props.value, isRoundToUnitStart: v })}
+          checked={props.value.isRoundedToUnitStart}
+          onChange={(v) => props.onChange({ ...props.value, isRoundedToUnitStart: v })}
         />
         <strong>Round to beginning of the {props.value.unit}</strong>
       </div>

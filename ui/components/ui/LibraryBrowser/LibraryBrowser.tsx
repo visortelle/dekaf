@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './LibraryBrowser.module.css'
-import { LibraryItem, LibraryItemType } from './types';
+import { LibraryItem, LibraryItemType } from './model/library';
 import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
 import SearchResults from './SearchResults/SearchResults';
 import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
@@ -54,8 +54,8 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const saveLibraryItem = async (item: LibraryItem) => {
     const req = new pb.SaveLibraryItemRequest();
     const itemPb =
-    req.setItem(itemPb);
-   };
+      req.setItem(itemPb);
+  };
 
   return (
     <div className={s.LibraryBrowser}>

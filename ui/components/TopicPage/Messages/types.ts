@@ -29,7 +29,7 @@ export type DateTimeUnit = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute'
 export type RelativeDateTime = {
   value: number,
   unit: DateTimeUnit
-  isRoundToUnitStart: boolean
+  isRoundedToUnitStart: boolean
 };
 
 export type StartFrom =
@@ -94,11 +94,13 @@ export type MessageFilter = {
   value: BasicMessageFilter;
 });
 
+export type MessageFilterChainMode = 'all' | 'any';
+
 export type MessageFilterChain = {
   isEnabled: boolean;
   isNegated: boolean;
-  filters: Record<string, MessageFilter>;
-  mode: 'all' | 'any';
+  filters: MessageFilter[];
+  mode: MessageFilterChainMode;
 }
 
 export type MessageFilterType = MessageFilter['type'];

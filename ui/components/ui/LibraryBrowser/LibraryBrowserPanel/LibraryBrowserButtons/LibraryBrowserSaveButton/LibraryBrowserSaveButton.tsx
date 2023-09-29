@@ -3,7 +3,7 @@ import s from './LibraryBrowserSaveButton.module.css'
 import SmallButton from '../../../../SmallButton/SmallButton';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../modals';
-import { LibraryItem } from '../../../types';
+import { LibraryItem } from '../../../model/library';
 import saveIcon from './save.svg';
 
 

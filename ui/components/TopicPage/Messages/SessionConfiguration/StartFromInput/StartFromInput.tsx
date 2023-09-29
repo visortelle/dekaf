@@ -48,7 +48,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 value: {
                   unit: 'hour',
                   value: 24,
-                  isRoundToUnitStart: false
+                  isRoundedToUnitStart: false
                 }
               }); return;
             }

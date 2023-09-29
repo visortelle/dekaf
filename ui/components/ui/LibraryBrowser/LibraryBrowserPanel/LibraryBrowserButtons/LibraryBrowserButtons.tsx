@@ -2,7 +2,7 @@ import React from 'react';
 import s from './LibraryBrowserButtons.module.css'
 import LibraryBrowserSaveButton from './LibraryBrowserSaveButton/LibraryBrowserSaveButton';
 import LibraryBrowserPickButton from './LibraryBrowserPickButton/LibraryBrowserPickButton';
-import { LibraryItem, LibraryItemType } from '../../types';
+import { LibraryItem, LibraryItemType } from '../../model/library';
 
 export type LibraryBrowserButtonsProps = {
   itemType: LibraryItemType;
