@@ -12,10 +12,11 @@ import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowser
 import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
+import { UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
 
 export type FilterEditorProps = {
-  value: t.MessageFilter;
-  onChange: (value: t.MessageFilter) => void;
+  value: UserManagedMessageFilterValueOrReference;
+  onChange: (value: UserManagedMessageFilterValueOrReference) => void;
   onDelete?: () => void;
 };
 
@@ -28,7 +29,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   return (
     <div className={s.FilterEditor} ref={hoverRef}>
       <LibraryBrowserPanel
-        itemDescriptorToSave={{ type: 'message-filter', value: props.value }}
+        itemToSave={{ type: 'message-filter', value: props.value }}
         itemType='message-filter'
         onPick={(item) => {
           if (item.descriptor.type !== 'message-filter') {

@@ -5,7 +5,7 @@ import ExactTenantMatcherInput from './ExactTenantMatcherInput/ExactTenantMatche
 import RegexTenantMatcherInput from './RegexTenantMatcherInput/RegexTenantMatcherInput';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
-import { TenantMatcherType, TenantMatcher } from '../../../model/library';
+import { TenantMatcherType, TenantMatcher } from '../../../model/resource-matchers';
 
 export type TenantMatcherInputProps = {
   value: TenantMatcher;

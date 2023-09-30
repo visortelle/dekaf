@@ -15,9 +15,7 @@ export type UserManagedItemMetadata = {
   descriptionMarkdown: string,
 };
 
-export type UserManagedMessageFilterSpec = {
-  messageFilter: MessageFilter
-};
+export type UserManagedMessageFilterSpec = MessageFilter;
 
 export type UserManagedMessageFilter = {
   metadata: UserManagedItemMetadata,

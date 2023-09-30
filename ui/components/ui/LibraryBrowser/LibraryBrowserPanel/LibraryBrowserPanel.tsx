@@ -1,29 +1,21 @@
 import React, { useEffect } from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
-import { LibraryItem, LibraryItemType } from '../model/library';
+import { UserManagedItem, UserManagedItemType } from '../model/user-managed-items';
 import { H3 } from '../../H/H';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
 import { useHover } from '../../../app/hooks/use-hover';
 
 export type LibraryBrowserPanelProps = {
-  itemType: LibraryItemType;
-  itemDescriptorToSave: LibraryItem['descriptor'] | undefined;
-  onPick: (item: LibraryItem) => void;
+  itemType: UserManagedItemType;
+  itemToSave: UserManagedItem | undefined;
+  onPick: (item: UserManagedItem) => void;
   isForceShowButtons?: boolean;
 };
 
-type LibraryItemWithoutDescriptor = Omit<LibraryItem, 'descriptor'>;
-
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
-  const [itemToSaveWithoutDescriptor, setItemToSaveWithoutDescriptor] = React.useState<LibraryItemWithoutDescriptor | undefined>(undefined);
   const [hoverRef, isHovered] = useHover();
-
-  const itemToSave = props.itemDescriptorToSave === undefined ? undefined : {
-    ...itemToSaveWithoutDescriptor,
-    descriptor: props.itemDescriptorToSave
-  } as LibraryItem;
 
   return (
     <div className={s.LibraryBrowserPanel} ref={hoverRef}>
@@ -48,25 +40,24 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           <div className={s.Buttons}>
             <LibraryBrowserButtons
               itemType={props.itemType}
-              itemToSave={itemToSave}
+              itemToSave={props.itemToSave}
               onPick={(item) => {
-                setItemToSaveWithoutDescriptor(item);
                 props.onPick(item);
               }}
             />
           </div>
         )}
       </div>
-      {itemToSave?.name && (
+      {props.itemToSave?.metadata.name && (
         <div className={s.ItemName}>
           <H3>
-            {itemToSave === undefined ? 'Unnamed' : itemToSave.name}
+            {props.itemToSave === undefined ? 'Unnamed' : props.itemToSave.metadata.name}
           </H3>
         </div>
       )}
-      {itemToSave?.descriptionMarkdown && (
+      {props.itemToSave?.metadata.descriptionMarkdown && (
         <div className={s.ItemDescription}>
-          {itemToSave === undefined ? 'Empty description' : itemToSave.descriptionMarkdown}
+          {props.itemToSave === undefined ? 'Empty description' : props.itemToSave.metadata.descriptionMarkdown}
         </div>
       )}
     </div>

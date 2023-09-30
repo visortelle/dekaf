@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from '../../types';
+import { UserManagedItemMetadata, UserManagedMessageFilter, UserManagedMessageFilterChain, UserManagedMessageFilterChainSpec, UserManagedMessageFilterChainValueOrReference } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import FilterEditor from './FilterEditor/FilterEditor';
 import createIcon from './icons/create.svg';
 
@@ -14,10 +15,11 @@ import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
+import { useResolvedUserManagedItemValueOrReference } from '../../../../ui/LibraryBrowser/use-resolved-user-managed-item-value-or-reference';
 
 export type FilterChainProps = {
-  value: t.MessageFilterChain;
-  onChange: (value: t.MessageFilterChain) => void;
+  value: UserManagedMessageFilterChainValueOrReference;
+  onChange: (value: UserManagedMessageFilterChainValueOrReference) => void;
 };
 
 const FilterChain: React.FC<FilterChainProps> = (props) => {
@@ -25,33 +27,58 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
     defaultValue: 'basic-message-filter',
   });
+  const value = useResolvedUserManagedItemValueOrReference<UserManagedMessageFilterChain>(props.value);
+
+  if (value === undefined) {
+    if (props.value.type === 'reference') {
+      return (
+        <NothingToShow
+          reason='error'
+          content={(
+            <div>
+              Unable to resolve Message Filter Chain by reference.
+              <br /><br />
+              Probably it was deleted. Ensure that the Message Filter Chain with id <strong>{props.value.reference}</strong> exists in the Library and try again.
+            </div>
+          )}
+        />
+      );
+    }
+
+    return null;
+  }
+
+  const spec = value.spec;
+  const onSpecChange = (spec: UserManagedMessageFilterChainSpec) => {
+
+  };
 
   return (
     <div className={s.FilterChainEditor}>
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'
-          itemDescriptorToSave={{ type: 'message-filter-chain', value: props.value }}
+          itemToSave={value}
           onPick={(item) => {
-            if (item.spec.metadata.type !== 'message-filter-chain') {
+            if (item.metadata.type !== 'message-filter-chain') {
               return;
             }
 
-            props.onChange(item.spec.spec)
+            props.onChange({ type: 'reference', reference: item.metadata.id })
           }}
           isForceShowButtons={isHovered}
         />
         <div style={{ marginBottom: '12rem', display: 'flex', alignItems: 'center', gap: '8rem' }}>
           <Toggle
             label="Enabled"
-            value={props.value.isEnabled}
-            onChange={v => props.onChange({ ...props.value, isEnabled: v })}
+            value={spec.isEnabled}
+            onChange={v => onSpecChange({ ...spec, isEnabled: v })}
             help="The whole filter chain will be disabled if this toggle is off."
           />
           <Toggle
             label="Negated"
-            value={props.value.isNegated}
-            onChange={v => props.onChange({ ...props.value, isNegated: v })}
+            value={spec.isNegated}
+            onChange={v => onSpecChange({ ...spec, isNegated: v })}
             help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
           />
           <Select<'all' | 'any'>
@@ -59,28 +86,41 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
               { type: 'item', title: 'All filters should match', value: 'all' },
               { type: 'item', title: 'At least one filter should match', value: 'any' },
             ]}
-            value={props.value.mode}
-            onChange={v => props.onChange({ ...props.value, mode: v })}
+            value={spec.mode}
+            onChange={v => onSpecChange({ ...spec, mode: v })}
           />
         </div>
       </div>
 
-      {Object.entries(props.value.filters).length === 0 && (
+      {spec.filters.length === 0 && (
         <div style={{ marginBottom: '12rem' }}>
           <NothingToShow content={<div>Click the button below to add a first filter.</div>} />
         </div>
       )}
-      {props.value.filters && Object.entries(props.value.filters).map(([filterId, filter], _) => {
+
+      {spec.filters.length && spec.filters.map((filter) => {
+        const filterId = filter.type === 'reference' ? filter.reference : filter.value.metadata.id;
         return (
           <div key={filterId} className={s.Entry}>
             <div className={s.EntryFilter}>
               <FilterEditor
                 value={filter}
-                onChange={(f) => props.onChange({ ...props.value, filters: { ...props.value.filters, [filterId]: f } })}
+                onChange={(updatedFilter) => {
+                  const newFilters = spec.filters.map((f) => {
+                    const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
+                    if (fId === filterId) {
+                      return updatedFilter;
+                    }
+                    return f;
+                  });
+                  onSpecChange({ ...spec, filters: newFilters });
+                }}
                 onDelete={() => {
-                  const newFilters = { ...props.value.filters };
-                  delete newFilters[filterId];
-                  props.onChange({ ...props.value, filters: newFilters });
+                  const newFilters = spec.filters.filter((f) => {
+                    const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
+                    return fId !== filterId;
+                  });
+                  onSpecChange({ ...spec, filters: newFilters });
                 }}
               />
             </div>
@@ -90,29 +130,42 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       <div className={`${s.Buttons}`}>
         <SmallButton
           onClick={() => {
-            let newFilter: t.MessageFilter;
+            const metadata: UserManagedItemMetadata = {
+              id: uuid(),
+              name: 'Unnamed',
+              descriptionMarkdown: '',
+              type: 'message-filter'
+            };
+
+            let newFilter: UserManagedMessageFilter;
 
             switch (defaultMessageFilterType) {
               case 'basic-message-filter':
                 newFilter = {
-                  isEnabled: true,
-                  isNegated: false,
-                  type: 'basic-message-filter',
-                  value: {}
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter',
+                    value: {}
+                  }
                 };
                 break;
               case 'js-message-filter':
                 newFilter = {
-                  isEnabled: true,
-                  isNegated: false,
-                  type: 'js-message-filter',
-                  value: defaultJsFilterValue
-                };
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'js-message-filter',
+                    value: defaultJsFilterValue
+                  }
+                }
                 break;
             }
 
-            const newChain: t.MessageFilterChain = { ...props.value, filters: { ...props.value.filters, [uuid()]: newFilter } };
-            props.onChange(newChain);
+            const newChain = spec.filters.concat([{ type: 'value', value: newFilter }]);
+            onSpecChange({ ...spec, filters: newChain });
           }}
           text="Add Message Filter"
           type='primary'

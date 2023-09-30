@@ -5,7 +5,7 @@ import ExactNamespaceMatcherInput from './ExactNamespaceMatcherInput/ExactNamesp
 import RegexNamespaceMatcherInput from './RegexNamespaceMatcherInput/RegexNamespaceMatcherInput';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
-import { NamespaceMatcherType, NamespaceMatcher } from '../../../model/library';
+import { NamespaceMatcherType, NamespaceMatcher } from '../../../model/resource-matchers';
 
 export type NamespaceMatcherInputProps = {
   value: NamespaceMatcher;

@@ -5,7 +5,7 @@ import ExactTopicMatcherInput from './ExactTopicMatcherInput/ExactTopicMatcherIn
 import RegexTopicMatcherInput from './RegexTopicMatcherInput/RegexTopicMatcherInput';
 import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
-import { TopicMatcherType, TopicMatcher } from '../../../model/library';
+import { TopicMatcherType, TopicMatcher } from '../../../model/resource-matchers';
 
 export type TopicMatcherInputProps = {
   value: TopicMatcher;

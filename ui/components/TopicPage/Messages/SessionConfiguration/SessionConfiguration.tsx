@@ -24,7 +24,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
     <div className={s.SessionConfiguration}>
       <div className={s.Title} ref={hoverRef}>
         <LibraryBrowserPanel
-          itemDescriptorToSave={{ type: 'consumer-session-config', value: props.config }}
+          itemToSave={{ type: 'consumer-session-config', value: props.config }}
           itemType='consumer-session-config'
           onPick={(item) => {
             if (item.descriptor.type !== 'consumer-session-config') {
