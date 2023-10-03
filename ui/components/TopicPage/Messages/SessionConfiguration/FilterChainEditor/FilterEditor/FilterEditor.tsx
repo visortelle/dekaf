@@ -12,7 +12,9 @@ import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowser
 import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
-import { UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
+import { UserManagedMessageFilter, UserManagedMessageFilterSpec, UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
+import { useResolvedUserManagedItemValueOrReference } from '../../../../../ui/LibraryBrowser/use-resolved-user-managed-item-value-or-reference';
+import NothingToShow from '../../../../../ui/NothingToShow/NothingToShow';
 
 export type FilterEditorProps = {
   value: UserManagedMessageFilterValueOrReference;
@@ -26,32 +28,69 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
     defaultValue: 'basic-message-filter',
   });
 
+  const value = useResolvedUserManagedItemValueOrReference<UserManagedMessageFilter>(props.value);
+
+  if (value === undefined) {
+    if (props.value.type === 'reference') {
+      return (
+        <NothingToShow
+          reason='error'
+          content={(
+            <div>
+              Unable to resolve Message Filter by reference.
+              <br /><br />
+              Probably it was deleted. Ensure that the Message Filter with id <strong>{props.value.reference}</strong> exists in the Library and try again.
+            </div>
+          )}
+        />
+      );
+    }
+
+    return null;
+  }
+
+  const spec = value.spec;
+
+  const onSpecChange = (spec: UserManagedMessageFilterSpec) => {
+    if (props.value.type === 'value') {
+      const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
+      props.onChange(newValue);
+      return;
+    }
+
+    if (props.value.type === 'reference' && props.value.localValue !== undefined) {
+      const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, localValue: { ...props.value.localValue, spec } };
+      props.onChange(newValue);
+      return;
+    }
+  };
+
   return (
     <div className={s.FilterEditor} ref={hoverRef}>
       <LibraryBrowserPanel
-        itemToSave={{ type: 'message-filter', value: props.value }}
+        itemToSave={value}
         itemType='message-filter'
         onPick={(item) => {
-          if (item.descriptor.type !== 'message-filter') {
+          if (item.metadata.type !== 'message-filter-chain') {
             return;
           }
 
-          props.onChange(item.descriptor.value);
+          props.onChange({ type: 'reference', reference: item.metadata.id })
         }}
         isForceShowButtons={isHovered}
       />
       <FormItem>
         <div className={s.Controls}>
           <Toggle
-            value={props.value.isEnabled}
-            onChange={() => props.onChange({ ...props.value, isEnabled: !props.value.isEnabled })}
+            value={spec.isEnabled}
+            onChange={() => onSpecChange({ ...spec, isEnabled: !spec.isEnabled })}
             label='Enabled'
             help="This filter will be disabled if this toggle is off."
           />
 
           <Toggle
-            value={props.value.isNegated}
-            onChange={() => props.onChange({ ...props.value, isNegated: !props.value.isNegated })}
+            value={spec.isNegated}
+            onChange={() => onSpecChange({ ...spec, isNegated: !spec.isNegated })}
             help='This filter results will be reversed. Filtered messages will be passed and vice versa.'
             label='Negated'
           />
@@ -67,15 +106,15 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
 
               switch (v) {
                 case 'basic-message-filter':
-                  props.onChange({
-                    ...props.value,
+                  onSpecChange({
+                    ...spec,
                     type: 'basic-message-filter',
                     value: {},
                   });
                   return;
                 case 'js-message-filter':
-                  props.onChange({
-                    ...props.value,
+                  onSpecChange({
+                    ...spec,
                     type: 'js-message-filter',
                     value: defaultJsFilterValue,
                   });
@@ -96,13 +135,13 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
       </FormItem>
 
       <div>
-        {props.value.type === 'basic-message-filter' && (
+        {spec.type === 'basic-message-filter' && (
           <BasicFilterEditor />
         )}
-        {props.value.type === 'js-message-filter' && (
+        {spec.type === 'js-message-filter' && (
           <JsFilterEditor
-            value={props.value.value}
-            onChange={v => props.onChange({
+            value={spec.value}
+            onChange={(v) => onSpecChange({
               type: 'js-message-filter',
               value: v,
               isEnabled: true,

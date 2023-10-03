@@ -1,11 +1,12 @@
 import React from 'react';
 import s from './SearchEditor.module.css'
-import LibraryItemTypePicker from './LibraryItemTypePicker/LibraryItemTypePicker';
-import { LibraryItemType } from '../model/library';
+import UserManagedItemTypePicker from './UserManagedItemTypePicker/UserManagedItemTypePicker';
+import { UserManagedItemType } from '../model/user-managed-items';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
-import ResourceMatcherInput, { ResourceMatcherValue } from './ResourceMatcherInput/ResourceMatcherInput';
-import { H2, H3 } from '../../H/H';
+import ResourceMatcherInput from './ResourceMatcherInput/ResourceMatcherInput';
+import { ResourceMatcher } from '../model/resource-matchers';
+import { H3 } from '../../H/H';
 import TagsPicker from './TagsPicker/TagsPicker';
 
 type SearchEditorMode = {
@@ -18,8 +19,8 @@ type SearchEditorMode = {
 }
 
 export type SearchEditorValue = {
-  itemType: LibraryItemType;
-  resourceMatcher: ResourceMatcherValue;
+  itemType: UserManagedItemType;
+  resourceMatcher: ResourceMatcher;
 }
 
 export type MatchEditorProps = {
@@ -35,7 +36,7 @@ const MatchEditor: React.FC<MatchEditorProps> = (props) => {
             content={<H3>Type</H3>}
             help={"Library item type."}
           />
-          <LibraryItemTypePicker
+          <UserManagedItemTypePicker
             value={props.mode.value.itemType}
             onChange={(v) => {
               if (props.mode.type === 'readonly') {

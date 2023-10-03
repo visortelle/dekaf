@@ -3,12 +3,12 @@ import s from './LibraryBrowserSaveButton.module.css'
 import SmallButton from '../../../../SmallButton/SmallButton';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../modals';
-import { LibraryItem } from '../../../model/library';
 import saveIcon from './save.svg';
+import { UserManagedItem } from '../../../model/user-managed-items';
 
 
 export type LibraryBrowserSaveButtonProps = {
-  itemToSave: LibraryItem | undefined;
+  itemToSave: UserManagedItem | undefined;
 };
 
 const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props) => {

@@ -2,13 +2,11 @@ import * as t from "./user-managed-items";
 import { MessageFilter, MessageFilterChain } from "../../../TopicPage/Messages/types";
 
 export function userManagedMessageFilterSpecToMessageFilter(v: t.UserManagedMessageFilterSpec): MessageFilter {
-  return v.messageFilter;
+  return v;
 }
 
 export function userManagedMessageFilterSpecFromMessageFilter(v: MessageFilter): t.UserManagedMessageFilterSpec {
-  return {
-    messageFilter: v
-  };
+  return v;
 }
 
 export function userManagedMessageFilterChainSpecToMessageFilterChain(v: t.UserManagedMessageFilterChainSpec): MessageFilterChain {

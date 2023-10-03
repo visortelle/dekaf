@@ -186,7 +186,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       {props.view.type === "messages" && (
         <Session
           key={key}
-          config={{
+          initialConfig={{
             topicsSelector: { type: "by-names", topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] },
             startFrom: { type: "latestMessage" },
             messageFilterChain: { filters: [], mode: "all", isEnabled: true, isNegated: false },

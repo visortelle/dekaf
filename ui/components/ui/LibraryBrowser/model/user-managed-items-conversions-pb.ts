@@ -50,14 +50,12 @@ export function userManagedItemMetadataToPb(v: t.UserManagedItemMetadata): pb.Us
 }
 
 export function userMangedMessageFilterSpecFromPb(v: pb.UserManagedMessageFilterSpec): t.UserManagedMessageFilterSpec {
-  return {
-    messageFilter: messageFilterFromPb(v.getMessageFilter()!)
-  };
+  return messageFilterFromPb(v.getMessageFilter()!)
 }
 
 export function userMangedMessageFilterSpecToPb(v: t.UserManagedMessageFilterSpec): pb.UserManagedMessageFilterSpec {
   const specPb = new pb.UserManagedMessageFilterSpec();
-  specPb.setMessageFilter(messageFilterToPb(v.messageFilter));
+  specPb.setMessageFilter(messageFilterToPb(v));
   return specPb;
 }
 
@@ -186,12 +184,14 @@ export function userManagedItemFromPb(v: pb.UserManagedItem): t.UserManagedItem 
 export function userManagedItemToPb(v: t.UserManagedItem): pb.UserManagedItem {
   const itemPb = new pb.UserManagedItem();
   switch (v.metadata.type) {
-    case "message-filter":
-      itemPb.setMessageFilter(userManagedMessageFilterToPb(v));
+    case "message-filter": {
+      itemPb.setMessageFilter(userManagedMessageFilterToPb(v as t.UserManagedMessageFilter));
       break;
-    case "message-filter-chain":
-      itemPb.setMessageFilterChain(userManagedMessageFilterChainToPb(v));
+    }
+    case "message-filter-chain": {
+      itemPb.setMessageFilterChain(userManagedMessageFilterChainToPb(v as t.UserManagedMessageFilterChain));
       break;
+    }
     default:
       throw new Error(`Unknown UserManagedItem: ${v}`);
   }

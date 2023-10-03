@@ -43,13 +43,15 @@ import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../ui/LibraryBrowser/model/user-managed-items';
+import { consumerSessionConfigFromValueOrReference } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
 export type SessionProps = {
   sessionKey: number;
-  config: ConsumerSessionConfig;
-  onConfigChange: (config: ConsumerSessionConfig) => void;
+  config: UserManagedConsumerSessionConfigValueOrReference;
+  onConfigChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
   onStopSession: () => void;
   isShowConsole: boolean;
   onSetIsShowConsole: (v: boolean) => void;
@@ -82,19 +84,21 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
-  const { topicsSelector } = props.config;
+
+  const config = consumerSessionConfigFromValueOrReference(props.config);
+  const { topicsSelector } = config;
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
-      props.config.topicsSelector.type === 'by-names' ? props.config.topicsSelector.topics : []
+      config.topicsSelector.type === 'by-names' ? config.topicsSelector.topics : []
     ).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
     async () => {
-      if (props.config.topicsSelector.type !== 'by-names') {
+      if (config.topicsSelector.type !== 'by-names') {
         return undefined;
       }
 
       const req = new GetTopicsInternalStatsRequest();
-      req.setTopicsList(props.config.topicsSelector.topics);
+      req.setTopicsList(config.topicsSelector.topics);
       const res = await topicServiceClient.getTopicsInternalStats(req, {})
         .catch((err) => notifyError(`Unable to get topics internal stats. ${err}`));
 
@@ -231,7 +235,7 @@ const Session: React.FC<SessionProps> = (props) => {
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
       req.setSubscriptionMode(SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE);
 
-      const consumerSessionConfigPb = consumerSessionConfigToPb(props.config);
+      const consumerSessionConfigPb = consumerSessionConfigToPb(config);
       req.setConsumerSessionConfig(consumerSessionConfigPb);
 
       req.setPriorityLevel(1000);
@@ -394,7 +398,7 @@ const Session: React.FC<SessionProps> = (props) => {
   return (
     <div className={s.Messages}>
       <Toolbar
-        config={props.config}
+        config={config}
         sessionState={sessionState}
         onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded}
@@ -462,8 +466,8 @@ const Session: React.FC<SessionProps> = (props) => {
       {currentView === 'configuration' && (
         <div className={s.SessionConfiguration}>
           <SessionConfiguration
-            config={props.config}
-            onConfigChange={props.onConfigChange}
+            value={props.config}
+            onChange={props.onConfigChange}
             topicsInternalStats={topicsInternalStats}
           />
         </div>
@@ -475,7 +479,7 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionKey={props.sessionKey}
         sessionState={sessionState}
         onSessionStateChange={setSessionState}
-        sessionConfig={props.config}
+        sessionConfig={config}
         sessionSubscriptionName={subscriptionName.current}
         topicsInternalStats={topicsInternalStats}
         messages={messages}
@@ -486,11 +490,11 @@ const Session: React.FC<SessionProps> = (props) => {
 }
 
 type SessionControllerProps = {
-  config: ConsumerSessionConfig;
+  initialConfig: UserManagedConsumerSessionConfigValueOrReference;
 };
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
-  const [config, setConfig] = useState<ConsumerSessionConfig>(props.config);
+  const [config, setConfig] = useState<UserManagedConsumerSessionConfigValueOrReference>(props.initialConfig);
   const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
   return (
@@ -502,7 +506,7 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       {...props}
       onStopSession={() => setSessionKey(n => n + 1)}
       config={config}
-      onConfigChange={(v) => setConfig(v)}
+      onConfigChange={setConfig}
     />
   );
 }

@@ -14,8 +14,9 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
 
   const filteredItems = React.useMemo(() => {
     return props.items.filter((item) => {
-      return item.name.toLowerCase().includes(nameAndDescriptionFilter.toLowerCase()) ||
-        item.descriptionMarkdown.toLowerCase().includes(nameAndDescriptionFilter.toLowerCase())
+      const { name, descriptionMarkdown } = item.spec.metadata;
+      return name.toLowerCase().includes(nameAndDescriptionFilter.toLowerCase()) ||
+        descriptionMarkdown.toLowerCase().includes(nameAndDescriptionFilter.toLowerCase())
     })
   }, [props.items, nameAndDescriptionFilter]);
 
@@ -37,15 +38,18 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
             />
           </div>
           <div className={s.Items}>
-            {filteredItems.map((item) => (
-              <Item
-                key={item.id}
-                id={item.id}
-                name={item.name}
-                descriptionMarkdown={item.descriptionMarkdown.slice(0, 140)}
-                onClick={() => props.onSelect(item.id)}
-              />
-            ))}
+            {filteredItems.map((item) => {
+              const { id, name, descriptionMarkdown } = item.spec.metadata;
+              return (
+                <Item
+                  key={id}
+                  id={id}
+                  name={name}
+                  descriptionMarkdown={descriptionMarkdown.slice(0, 140)}
+                  onClick={() => props.onSelect(id)}
+                />
+              )
+            })}
           </div>
         </>
       )}

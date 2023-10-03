@@ -27,7 +27,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
     defaultValue: 'basic-message-filter',
   });
-  const value = useResolvedUserManagedItemValueOrReference<UserManagedMessageFilterChain>(props.value);
+const value = useResolvedUserManagedItemValueOrReference<UserManagedMessageFilterChain>(props.value);
 
   if (value === undefined) {
     if (props.value.type === 'reference') {
@@ -49,8 +49,19 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   }
 
   const spec = value.spec;
-  const onSpecChange = (spec: UserManagedMessageFilterChainSpec) => {
 
+  const onSpecChange = (spec: UserManagedMessageFilterChainSpec) => {
+    if (props.value.type === 'value') {
+      const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
+      props.onChange(newValue);
+      return;
+    }
+
+    if (props.value.type === 'reference' && props.value.localValue !== undefined) {
+      const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, localValue: { ...props.value.localValue, spec } };
+      props.onChange(newValue);
+      return;
+    }
   };
 
   return (

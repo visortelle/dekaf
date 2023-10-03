@@ -1,8 +1,6 @@
 import React from 'react';
 
-import StartFromInput from './StartFromInput/StartFromInput';
 import FilterChain from './FilterChainEditor/FilterChainEditor';
-import { ConsumerSessionConfig } from '../types';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 
 import s from './SessionConfiguration.module.css'
@@ -10,28 +8,67 @@ import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
+import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { useResolvedUserManagedItemValueOrReference } from '../../../ui/LibraryBrowser/use-resolved-user-managed-item-value-or-reference';
+import NothingToShow from '../../../ui/NothingToShow/NothingToShow';
 
 export type SessionConfigurationProps = {
-  config: ConsumerSessionConfig;
-  onConfigChange: (config: ConsumerSessionConfig) => void;
+  value: UserManagedConsumerSessionConfigValueOrReference;
+  onChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
 };
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
+  const value = useResolvedUserManagedItemValueOrReference<UserManagedConsumerSessionConfig>(props.value);
+
+  if (value === undefined) {
+    if (props.value.type === 'reference') {
+      return (
+        <NothingToShow
+          reason='error'
+          content={(
+            <div>
+              Unable to resolve Consumer Session Config by reference.
+              <br /><br />
+              Probably it was deleted. Ensure that the Consumer Session Config with id <strong>{props.value.reference}</strong> exists in the Library and try again.
+            </div>
+          )}
+        />
+      );
+    }
+
+    return null;
+  }
+
+  const spec = value.spec;
+
+  const onSpecChange = (spec: UserManagedConsumerSessionConfigSpec) => {
+    if (props.value.type === 'value') {
+      const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
+      props.onChange(newValue);
+      return;
+    }
+
+    if (props.value.type === 'reference' && props.value.localValue !== undefined) {
+      const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, localValue: { ...props.value.localValue, spec } };
+      props.onChange(newValue);
+      return;
+    }
+  };
 
   return (
     <div className={s.SessionConfiguration}>
       <div className={s.Title} ref={hoverRef}>
         <LibraryBrowserPanel
-          itemToSave={{ type: 'consumer-session-config', value: props.config }}
+          itemToSave={value}
           itemType='consumer-session-config'
           onPick={(item) => {
-            if (item.descriptor.type !== 'consumer-session-config') {
+            if (item.metadata.type !== 'message-filter-chain') {
               return;
             }
 
-            props.onConfigChange(item.descriptor.value)
+            props.onChange({ type: 'reference', reference: item.metadata.id })
           }}
           isForceShowButtons={isHovered}
         />
@@ -41,11 +78,11 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         <div className={s.LeftColumn}>
           <FormItem>
             <FormLabel content="Start From" />
-            <StartFromInput
-              value={props.config.startFrom}
-              onChange={(v) => props.onConfigChange({ ...props.config, startFrom: v })}
+            {/* <StartFromInput
+              value={props.value.startFrom}
+              onChange={(v) => props.onChange({ ...props.value, startFrom: v })}
               topicsInternalStats={props.topicsInternalStats}
-            />
+            /> */}
           </FormItem>
 
           <FormItem>
@@ -63,8 +100,8 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         </div>
         <div className={s.RightColumn}>
           <FilterChain
-            value={props.config.messageFilterChain}
-            onChange={(v) => (props.onConfigChange({ ...props.config, messageFilterChain: v }))}
+            value={spec.messageFilterChain}
+            onChange={(v) => onSpecChange({ ...spec, messageFilterChain: v })}
           />
         </div>
       </div>

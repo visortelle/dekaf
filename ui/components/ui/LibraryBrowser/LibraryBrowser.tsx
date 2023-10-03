@@ -1,19 +1,20 @@
 import React from 'react';
 import s from './LibraryBrowser.module.css'
-import { LibraryItem, LibraryItemType } from './model/library';
+import { LibraryItem } from './model/library';
 import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
 import SearchResults from './SearchResults/SearchResults';
 import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
 import Button from '../Button/Button';
 import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
+import { UserManagedItem, UserManagedItemType } from './model/user-managed-items';
 
 export type LibraryBrowserMode = {
   type: 'save';
-  itemToSave: LibraryItem;
+  itemToSave: UserManagedItem;
 } | {
   type: 'pick';
-  itemTypeToPick: LibraryItemType;
-  onPick: (item: LibraryItem) => void;
+  itemTypeToPick: UserManagedItemType;
+  onPick: (item: UserManagedItem) => void;
 };
 
 export type LibraryBrowserProps = {

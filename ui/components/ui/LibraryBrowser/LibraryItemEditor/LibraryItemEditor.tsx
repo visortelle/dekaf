@@ -6,31 +6,32 @@ import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterChainEditor';
-import NothingToShow from '../../NothingToShow/NothingToShow';
+import { UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
 
 export type LibraryItemEditorProps = {
-  value: LibraryItem | undefined;
+  value: LibraryItem;
   onChange: (value: LibraryItem) => void;
   mode: 'editor' | 'viewer';
 };
 
 const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
-  if (props.value === undefined) {
-    return <NothingToShow />;
-  }
   const value = props.value;
 
   let descriptorEditor: ReactElement = <></>;
-  switch (value.descriptor.type) {
+  switch (value.spec.metadata.type) {
     case 'message-filter': {
       descriptorEditor = (
         <FilterEditor
-          value={value.descriptor.value}
+          value={{
+            type: 'value',
+            value: value.spec as UserManagedMessageFilter
+          }}
           onChange={v => {
-            props.onChange({
-              ...value,
-              descriptor: { type: 'message-filter', value: v }
-            })
+            if (v.type === 'reference') {
+              throw new Error('Item value shouldn\'t be a reference');
+            }
+
+            props.onChange({ ...props.value, spec: v.value });
           }}
         />
       );
@@ -39,12 +40,16 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
     case 'message-filter-chain': {
       descriptorEditor = (
         <FilterChainEditor
-          value={value.descriptor.value}
+          value={{
+            type: 'value',
+            value: value.spec as UserManagedMessageFilterChain
+          }}
           onChange={v => {
-            props.onChange({
-              ...value,
-              descriptor: { type: 'message-filter-chain', value: v }
-            })
+            if (v.type === 'reference') {
+              throw new Error('Item value shouldn\'t be a reference');
+            }
+
+            props.onChange({ ...props.value, spec: v.value });
           }}
         />
       );
@@ -59,29 +64,35 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
           <FormLabel content="Name" isRequired />
           {props.mode === 'editor' && (
             <Input
-              value={value.name}
-              onChange={v => props.onChange({ ...value, name: v })}
+              value={value.spec.metadata.name}
+              onChange={v => {
+                const newMetadata = { ...value.spec.metadata, name: v };
+                props.onChange({ ...value, spec: { ...value.spec, metadata: newMetadata } });
+              }}
             />
           )}
-          {props.mode === 'viewer' && (<div>{value.name}</div>)}
+          {props.mode === 'viewer' && (<div>{value.spec.metadata.name}</div>)}
         </FormItem>
 
         <FormItem>
           <FormLabel content="Description" />
           {props.mode === 'editor' && (
             <Input
-              value={value.descriptionMarkdown}
-              onChange={v => props.onChange({ ...value, descriptionMarkdown: v })}
+              value={value.spec.metadata.descriptionMarkdown}
+              onChange={v => {
+                const newMetadata = { ...value.spec.metadata, descriptionMarkdown: v };
+                props.onChange({ ...value, spec: { ...value.spec, metadata: newMetadata } });
+              }}
             />
           )}
-          {props.mode === 'viewer' && (<div>{value.descriptionMarkdown}</div>)}
+          {props.mode === 'viewer' && (<div>{value.spec.metadata.descriptionMarkdown}</div>)}
         </FormItem>
 
         {props.mode === 'viewer' && (
           <FormItem>
             <FormLabel content="Tags" />
             <div>
-              {value.tags.map((tag) => (
+              {value.metadata.tags.map((tag) => (
                 <div key={tag}>{tag}</div>
               ))}
             </div>

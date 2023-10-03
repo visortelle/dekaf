@@ -1,13 +1,5 @@
-import { LibraryItem } from "./model/library";
+import { ValueOrReference } from "./model/user-managed-items";
 
-type ValueOrReference<ValueT> = {
-  type: 'value',
-  value: ValueT
-} | {
-  type: 'reference',
-  reference: string
-};
-
-export function useResolvedUserManagedItemValueOrReference<ValueT>(ValueOrReference: ValueOrReference<ValueT>): ValueT | undefined {
-
+export function useResolvedUserManagedItemValueOrReference<ValueT>(valueOrReference: ValueOrReference<ValueT>): ValueT | undefined {
+  return undefined;
 }

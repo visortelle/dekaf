@@ -3,12 +3,12 @@ import s from './LibraryBrowserPickButton.module.css'
 import SmallButton from '../../../../SmallButton/SmallButton';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../modals';
-import { LibraryItem, LibraryItemType } from '../../../model/library';
 import pickIcon from './pick.svg';
+import { UserManagedItem, UserManagedItemType } from '../../../model/user-managed-items';
 
 export type LibraryBrowserPickButtonProps = {
-  itemType: LibraryItemType;
-  onPick: (item: LibraryItem) => void;
+  itemType: UserManagedItemType;
+  onPick: (item: UserManagedItem) => void;
 };
 
 const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props) => {

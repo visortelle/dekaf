@@ -25,7 +25,9 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
                 type: 'topic-matcher',
                 value: {
                   type: 'exact-topic-matcher',
-                  namespace: props.value.value.namespace, topic: ''
+                  namespace: props.value.value.namespace,
+                  persistency: 'any',
+                  topic: ''
                 }
               });
             } else if (v === 'regex-topic-matcher') {
@@ -33,7 +35,9 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
                 type: 'topic-matcher',
                 value: {
                   type: 'regex-topic-matcher',
-                  namespace: props.value.value.namespace, topicRegex: ''
+                  namespace: props.value.value.namespace,
+                  persistency: 'any',
+                  topicRegex: ''
                 }
               });
             }

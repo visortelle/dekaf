@@ -1,18 +1,18 @@
 import React from 'react';
-import s from './LibraryItemTypePicker.module.css'
+import s from './UserManagedItemTypePicker.module.css'
 import Select from '../../../Select/Select';
-import { LibraryItemType } from '../../model/library';
+import { UserManagedItemType } from '../../model/user-managed-items';
 
-export type LibraryItemTypePickerProps = {
-  value: LibraryItemType;
-  onChange: (value: LibraryItemType) => void;
+export type UserManagedItemTypePickerProps = {
+  value: UserManagedItemType;
+  onChange: (value: UserManagedItemType) => void;
   disabled?: boolean;
 };
 
-const LibraryItemTypePicker: React.FC<LibraryItemTypePickerProps> = (props) => {
+const UserManagedItemTypePicker: React.FC<UserManagedItemTypePickerProps> = (props) => {
   return (
-    <div className={s.LibraryItemTypePicker}>
-      <Select<LibraryItemType>
+    <div className={s.UserManagedItemTypePicker}>
+      <Select<UserManagedItemType>
         value={props.value}
         onChange={props.onChange}
         list={[
@@ -26,4 +26,4 @@ const LibraryItemTypePicker: React.FC<LibraryItemTypePickerProps> = (props) => {
   );
 }
 
-export default LibraryItemTypePicker;
+export default UserManagedItemTypePicker;

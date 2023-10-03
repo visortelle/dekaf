@@ -1,5 +1,19 @@
 import { MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
 
+export type ValueOrReference<ValueT> = {
+  type: 'value',
+  value: ValueT
+} | {
+  type: 'reference',
+  reference: string,
+
+  /* Value stored only in browser memory.
+    Imagine a situation where you loaded two message filters with same id from library,
+    and for one of them you made some changes without saving.
+    */
+  localValue?: ValueT
+};
+
 export type UserManagedItemType =
   "consumer-session-config" |
   "consumer-session-config-start-from" |
@@ -22,13 +36,7 @@ export type UserManagedMessageFilter = {
   spec: UserManagedMessageFilterSpec,
 };
 
-export type UserManagedMessageFilterValueOrReference = {
-  type: 'value',
-  value: UserManagedMessageFilter
-} | {
-  type: 'reference',
-  reference: string
-};
+export type UserManagedMessageFilterValueOrReference = ValueOrReference<UserManagedMessageFilter>;
 
 export type UserManagedMessageFilterChainSpec = {
   isEnabled: boolean,
@@ -42,12 +50,17 @@ export type UserManagedMessageFilterChain = {
   spec: UserManagedMessageFilterChainSpec,
 };
 
-export type UserManagedMessageFilterChainValueOrReference = {
-  type: 'value',
-  value: UserManagedMessageFilterChain
-} | {
-  type: 'reference',
-  reference: string
+export type UserManagedMessageFilterChainValueOrReference = ValueOrReference<UserManagedMessageFilterChain>;
+
+export type UserManagedConsumerSessionConfigSpec = {
+  messageFilterChain: UserManagedMessageFilterChainValueOrReference
 };
 
-export type UserManagedItem = UserManagedMessageFilter | UserManagedMessageFilterChain;
+export type UserManagedConsumerSessionConfig = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedConsumerSessionConfigSpec,
+};
+
+export type UserManagedConsumerSessionConfigValueOrReference = ValueOrReference<UserManagedConsumerSessionConfig>;
+
+export type UserManagedItem = UserManagedConsumerSessionConfig | UserManagedMessageFilter | UserManagedMessageFilterChain;
