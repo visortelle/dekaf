@@ -2,6 +2,7 @@ import React from "react";
 
 import * as Modals from "../app/contexts/Modals/Modals";
 import { BreadCrumbsAtPageTop, Crumb } from "../ui/BreadCrumbs/BreadCrumbs";
+import { v4 as uuid } from 'uuid';
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import Session from "./Messages/Messages";
@@ -187,9 +188,32 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         <Session
           key={key}
           initialConfig={{
-            topicsSelector: { type: "by-names", topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] },
-            startFrom: { type: "latestMessage" },
-            messageFilterChain: { filters: [], mode: "all", isEnabled: true, isNegated: false },
+            type: 'value',
+            value: {
+              metadata: {
+                id: uuid(),
+                name: '',
+                descriptionMarkdown: '',
+                type: 'consumer-session-config'
+              },
+              spec: {
+                topicsSelector: { type: "by-names", topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] },
+                messageFilterChain: {
+                  type: 'value',
+                  value: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'message-filter-chain'
+                    },
+                    spec: {
+                      filters: [], mode: "all", isEnabled: true, isNegated: false
+                    }
+                  }
+                },
+              },
+            }
           }}
         />
       )}

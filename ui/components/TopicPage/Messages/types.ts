@@ -8,12 +8,11 @@ export type SessionState =
   | "new";
 
 type RegexSubMode =
-  | "unspecified"
   | "all-topics"
   | "persistent-only"
   | "non-persistent-only";
 
-export type SessionTopicsSelector =
+export type ConsumerSessionTopicsSelector =
   | {
     type: "by-names";
     topics: string[];
@@ -44,7 +43,7 @@ export type StartFrom =
 
 export type ConsumerSessionConfig = {
   startFrom: StartFrom;
-  topicsSelector: SessionTopicsSelector;
+  topicsSelector: ConsumerSessionTopicsSelector;
   messageFilterChain: MessageFilterChain;
 };
 

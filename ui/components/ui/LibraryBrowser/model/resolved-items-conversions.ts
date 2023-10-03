@@ -30,6 +30,6 @@ export function consumerSessionConfigFromValueOrReference(v: UserManagedConsumer
   return {
     startFrom: { type: 'earliestMessage' },
     messageFilterChain: messageFilterChainFromValueOrReference(v.value.spec.messageFilterChain),
-    topicsSelector: { type: 'by-names', topics: ['persistent://a/b/c'] }
+    topicsSelector: v.value.spec.topicsSelector
   }
 }

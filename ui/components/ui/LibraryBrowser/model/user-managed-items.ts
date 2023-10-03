@@ -1,4 +1,4 @@
-import { MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
+import { ConsumerSessionTopicsSelector, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
 
 export type ValueOrReference<ValueT> = {
   type: 'value',
@@ -52,8 +52,18 @@ export type UserManagedMessageFilterChain = {
 
 export type UserManagedMessageFilterChainValueOrReference = ValueOrReference<UserManagedMessageFilterChain>;
 
+export type UserManagedConsumerSessionTopicSelectorSpec = ConsumerSessionTopicsSelector;
+
+export type UserManagedConsumerSessionTopicSelector = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedConsumerSessionTopicSelectorSpec,
+};
+
+export type UserManagedConsumerSessionTopicSelectorValueOrReference = ValueOrReference<UserManagedConsumerSessionTopicSelector>;
+
 export type UserManagedConsumerSessionConfigSpec = {
-  messageFilterChain: UserManagedMessageFilterChainValueOrReference
+  messageFilterChain: UserManagedMessageFilterChainValueOrReference,
+  topicsSelector: ConsumerSessionTopicsSelector,
 };
 
 export type UserManagedConsumerSessionConfig = {

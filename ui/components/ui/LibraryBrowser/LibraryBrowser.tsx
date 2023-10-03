@@ -7,6 +7,8 @@ import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
 import Button from '../Button/Button';
 import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import { UserManagedItem, UserManagedItemType } from './model/user-managed-items';
+import NothingToShow from '../NothingToShow/NothingToShow';
+import { libraryItemToPb } from './model/library-conversions';
 
 export type LibraryBrowserMode = {
   type: 'save';
@@ -27,6 +29,7 @@ const initialSearchEditorValue: SearchEditorValue = {
   resourceMatcher: {
     type: 'topic-matcher',
     value: {
+      persistency: 'any',
       type: 'exact-topic-matcher',
       topic: '',
       namespace: {
@@ -50,12 +53,12 @@ const initialSearchEditorValue: SearchEditorValue = {
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [searchEditorValue, setSearchEditorValue] = React.useState<SearchEditorValue>(initialSearchEditorValue);
   const [searchResults, setSearchResults] = React.useState<LibraryItem[]>([]);
-  const [selectedItem, setSelectedItem] = React.useState<LibraryItem | undefined>(props.mode.type === 'save' ? props.mode.itemToSave : undefined);
+  const [selectedItem, setSelectedItem] = React.useState<LibraryItem | undefined>(undefined);
 
   const saveLibraryItem = async (item: LibraryItem) => {
     const req = new pb.SaveLibraryItemRequest();
-    const itemPb =
-      req.setItem(itemPb);
+    const itemPb = libraryItemToPb(item);
+    req.setItem(itemPb);
   };
 
   return (
@@ -75,7 +78,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           <SearchResults
             items={[]}
             onSelect={(itemId) => {
-              const item = searchResults.find(item => item.id === itemId);
+              const item = searchResults.find(item => item.spec.metadata.id === itemId);
               if (item === undefined) {
                 console.error(`Could not find library item with id ${itemId}`);
                 return;
@@ -87,11 +90,16 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         </div>
 
         <div className={s.LibraryItemEditor}>
-          <LibraryItemEditor
-            mode={props.mode.type === 'save' ? 'editor' : 'viewer'}
-            value={selectedItem}
-            onChange={setSelectedItem}
-          />
+          {selectedItem && (
+            <LibraryItemEditor
+              mode={props.mode.type === 'save' ? 'editor' : 'viewer'}
+              value={selectedItem}
+              onChange={setSelectedItem}
+            />
+          )}
+          {!selectedItem && (
+            <NothingToShow content='Select an item to view or edit it.' />
+          )}
         </div>
       </div>
 
@@ -108,7 +116,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
               if (props.mode.type !== 'pick') return;
               if (selectedItem === undefined) return;
 
-              props.mode.onPick(selectedItem)
+              props.mode.onPick(selectedItem.spec)
             }}
             type='primary'
             text='Select'
@@ -116,7 +124,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         )}
         {props.mode.type === 'save' && (
           <Button
-            disabled={!selectedItem || !selectedItem.name}
+            disabled={!selectedItem || !selectedItem.spec.metadata.name}
             onClick={async () => {
               if (props.mode.type !== 'save') return;
               if (selectedItem === undefined) return;

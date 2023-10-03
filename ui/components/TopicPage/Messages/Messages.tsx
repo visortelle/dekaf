@@ -30,7 +30,7 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
-import { SessionState, ConsumerSessionConfig, MessageDescriptor } from './types';
+import { SessionState, MessageDescriptor } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
 import useSWR from 'swr';
@@ -218,7 +218,6 @@ const Session: React.FC<SessionProps> = (props) => {
 
         let regexSubscriptionMode: RegexSubscriptionMode;
         switch (topicsSelector.regexSubscriptionMode) {
-          case 'unspecified': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_UNSPECIFIED; break;
           case 'persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY; break;
           case 'non-persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY; break;
           case 'all-topics': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS; break;
