@@ -29,7 +29,7 @@ import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.{Duration, SECONDS}
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
-val libraryRoot = config.libraryRoot.get
+val libraryRoot = s"${config.dataDir.get}/library"
 
 class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
     val logger: Logger = Logger(getClass.getName)

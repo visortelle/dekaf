@@ -46,16 +46,17 @@ object Library:
         library
 
 class Library:
-    private var rootDir = "./library"
+    private var rootDir = "./data"
     private var db = LibraryDb(itemsById = Map.empty)
 
     def writeItem(item: LibraryItem): Unit =
-        val fileName = s"${item.spec}.json"
-        val filePath = os.Path(fileName, os.Path(rootDir))
+        val itemId = item.spec.metadata.id
+        val fileName = s"${itemId}.json"
+        val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
         val itemAsJson = item.asJson.spaces2SortKeys
 
         os.write.over(
-            target = os.Path(filePath, os.pwd),
+            target = filePath,
             data = itemAsJson
         )
 
@@ -63,7 +64,7 @@ class Library:
 
     def deleteItem(itemId: LibraryItemId): Unit =
         val fileName = s"$itemId.json"
-        val filePath = os.Path(fileName, os.Path(rootDir))
+        val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
 
         os.remove(filePath)
 

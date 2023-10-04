@@ -6,11 +6,14 @@ import SearchResults from './SearchResults/SearchResults';
 import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
 import Button from '../Button/Button';
 import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
+import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
+import * as Notifications from '../../app/contexts/Notifications';
 import { UserManagedItem, UserManagedItemType } from './model/user-managed-items';
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemToPb } from './model/library-conversions';
 import { useResolveLibraryItem } from './useResolveLibraryItem';
 import { LibraryItemContext } from './model/library-item-context';
+import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
 export type LibraryBrowserMode = {
   type: 'save';
@@ -58,6 +61,8 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const resolvedLibraryItem = useResolveLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
+  const { notifyError } = Notifications.useContext();
+  const { libraryServiceClient } = GrpcClient.useContext();
 
   useEffect(() => {
     if (resolvedLibraryItem.type === 'not-found' && props.mode.type === 'save') {
@@ -88,6 +93,19 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     const req = new pb.SaveLibraryItemRequest();
     const itemPb = libraryItemToPb(item);
     req.setItem(itemPb);
+
+    const res = await libraryServiceClient.saveLibraryItem(req, null).catch(err => {
+      notifyError(`Unable to save library item. ${err}`);
+    });
+
+    if (res === undefined) {
+      return;
+    }
+
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to save library item. ${res.getStatus()?.getMessage()}`);
+      return;
+    }
   };
 
   return (

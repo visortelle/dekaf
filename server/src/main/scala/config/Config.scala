@@ -18,8 +18,8 @@ case class Config(
     basePath: Option[String] = Some("/"),
     @describe("Library contains user-defined objects like message filters, visualizations, etc.")
     //
-    @describe("Path to the library directory.")
-    libraryRoot: Option[String] = Some("./library"),
+    @describe("Path to the persistent data directory.")
+    dataDir: Option[String] = Some("./data"),
     //
     @describe("License id.")
     licenseId: Option[String] = None,
@@ -86,7 +86,6 @@ case class Config(
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on.")
     internalGrpcPort: Option[Int] = None,
-
     @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
     defaultPulsarAuth: Option[String] = None
 )
@@ -106,10 +105,10 @@ def readConfig =
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
         defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
 
-        config <- ZIO.succeed({
+        config <- ZIO.succeed {
             val mergedConfig = mergeConfigs(defaultConfig, mergeConfigs(envConfig, yamlConfig))
             normalizeConfig(mergedConfig)
-        })
+        }
     yield config
 
 def readConfigAsync = Unsafe.unsafe(implicit unsafe => Runtime.default.unsafe.runToFuture(readConfig))

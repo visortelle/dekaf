@@ -4,3 +4,5 @@
 **/.bloop
 .bsp
 target
+
+/data/library/*.json
