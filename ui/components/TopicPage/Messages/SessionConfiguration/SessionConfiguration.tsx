@@ -9,7 +9,7 @@ import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
 import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
-import { UserManagedItemResolverSpinner, useResolvedUserManagedItem } from '../../../ui/LibraryBrowser/use-resolved-user-managed-item';
+import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
 
 export type SessionConfigurationProps = {
   value: UserManagedConsumerSessionConfigValueOrReference;
@@ -19,10 +19,10 @@ export type SessionConfigurationProps = {
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
-  const resolveResult = useResolvedUserManagedItem<UserManagedConsumerSessionConfig>(props.value);
+  const resolveResult = useResolveUserManagedItemValOrRef<UserManagedConsumerSessionConfig>(props.value);
 
   if (resolveResult.type !== 'success') {
-    return <UserManagedItemResolverSpinner item={props.value} result={resolveResult} />
+    return <UseUserManagedItemValOrRefSpinner item={props.value} result={resolveResult} />
   }
 
   const value = resolveResult.value;

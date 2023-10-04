@@ -15,7 +15,7 @@ import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
-import { UserManagedItemResolverSpinner, useResolvedUserManagedItem } from '../../../../ui/LibraryBrowser/use-resolved-user-managed-item';
+import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
 
 export type FilterChainProps = {
   value: UserManagedMessageFilterChainValueOrReference;
@@ -27,10 +27,10 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
     defaultValue: 'basic-message-filter',
   });
-  const resolveResult = useResolvedUserManagedItem<UserManagedMessageFilterChain>(props.value);
+  const resolveResult = useResolveUserManagedItemValOrRef<UserManagedMessageFilterChain>(props.value);
 
   if (resolveResult.type !== 'success') {
-    return <UserManagedItemResolverSpinner item={props.value} result={resolveResult} />
+    return <UseUserManagedItemValOrRefSpinner item={props.value} result={resolveResult} />
   }
 
   const value = resolveResult.value;
@@ -95,7 +95,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         </div>
       )}
 
-      {spec.filters.length && spec.filters.map((filter) => {
+      {spec.filters.length !== 0 && spec.filters.map((filter) => {
         const filterId = filter.type === 'reference' ? filter.reference : filter.value.metadata.id;
         return (
           <div key={filterId} className={s.Entry}>
@@ -124,6 +124,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           </div>
         );
       })}
+
       <div className={`${s.Buttons}`}>
         <SmallButton
           onClick={() => {

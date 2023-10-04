@@ -25,7 +25,7 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
             libraryBrowserProps: {
               mode: {
                 type: 'pick',
-                itemTypeToPick: props.itemType,
+                itemType: props.itemType,
                 onPick: props.onPick,
               },
               onCancel: modals.pop,

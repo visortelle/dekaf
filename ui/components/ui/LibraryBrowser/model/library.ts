@@ -12,4 +12,3 @@ export type LibraryItem = {
   metadata: LibraryItemMetadata,
   spec: UserManagedItem,
 };
-

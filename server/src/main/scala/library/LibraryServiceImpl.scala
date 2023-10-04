@@ -78,7 +78,10 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
 
             val libraryItem = library.getItemById(request.id)
 
-            if libraryItem.isEmpty then throw new Exception(s"Library item with id ${request.id} not found")
+            if libraryItem.isEmpty then
+                val status: Status = Status(code = Code.NOT_FOUND.index)
+                return Future.successful(pb.GetLibraryItemResponse(status = Some(status)))
+
             val libraryItemPb = libraryItemToPb(libraryItem.get)
 
             val status: Status = Status(code = Code.OK.index)

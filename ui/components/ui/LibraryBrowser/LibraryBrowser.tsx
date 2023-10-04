@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import s from './LibraryBrowser.module.css'
-import { LibraryItem } from './model/library';
+import { LibraryItem, LibraryItemMetadata } from './model/library';
 import SearchEditor, { SearchEditorValue } from './SearchEditor/SearchEditor';
 import SearchResults from './SearchResults/SearchResults';
 import LibraryItemEditor from './LibraryItemEditor/LibraryItemEditor';
@@ -9,13 +9,16 @@ import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_p
 import { UserManagedItem, UserManagedItemType } from './model/user-managed-items';
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemToPb } from './model/library-conversions';
+import { useResolveLibraryItem } from './useResolveLibraryItem';
+import { LibraryItemContext } from './model/library-item-context';
 
 export type LibraryBrowserMode = {
   type: 'save';
-  itemToSave: UserManagedItem;
+  item: UserManagedItem;
+  context: LibraryItemContext;
 } | {
   type: 'pick';
-  itemTypeToPick: UserManagedItemType;
+  itemType: UserManagedItemType;
   onPick: (item: UserManagedItem) => void;
 };
 
@@ -51,9 +54,35 @@ const initialSearchEditorValue: SearchEditorValue = {
 }
 
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
-  const [searchEditorValue, setSearchEditorValue] = React.useState<SearchEditorValue>(initialSearchEditorValue);
-  const [searchResults, setSearchResults] = React.useState<LibraryItem[]>([]);
-  const [selectedItem, setSelectedItem] = React.useState<LibraryItem | undefined>(undefined);
+  const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>(initialSearchEditorValue);
+  const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
+  const resolvedLibraryItem = useResolveLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
+  const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
+
+  useEffect(() => {
+    if (resolvedLibraryItem.type === 'not-found' && props.mode.type === 'save') {
+      const metadata = mkLibraryItemMetadata(props.mode.context, props.mode.item);
+      const libraryItem: LibraryItem = {
+        metadata,
+        spec: props.mode.item
+      };
+
+      setSelectedItem(libraryItem);
+    }
+
+    if (resolvedLibraryItem.type === 'success') {
+      setSelectedItem(resolvedLibraryItem.value);
+    }
+  }, [resolvedLibraryItem, props.mode]);
+
+  function mkLibraryItemMetadata(context: LibraryItemContext, userManagedItem: UserManagedItem): LibraryItemMetadata {
+    return {
+      availableForContexts: [],
+      revision: '',
+      tags: [],
+      updatedAt: new Date().toISOString()
+    };
+  }
 
   const saveLibraryItem = async (item: LibraryItem) => {
     const req = new pb.SaveLibraryItemRequest();

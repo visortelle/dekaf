@@ -7,7 +7,7 @@ import { Code } from "../../../grpc-web/google/rpc/code_pb";
 import { libraryItemFromPb } from "./model/library-conversions";
 import NothingToShow from "../NothingToShow/NothingToShow";
 
-export type ResolveUserManagedItemResult<ValueT> = {
+export type UseResolveUserManagedItemValOrRefResult<ValueT> = {
   type: 'success',
   value: ValueT
 } | {
@@ -17,13 +17,13 @@ export type ResolveUserManagedItemResult<ValueT> = {
   reason: string
 };
 
-export function useResolvedUserManagedItem<ValueT>(item: ValueOrReference<ValueT>): ResolveUserManagedItemResult<ValueT> {
+export function useResolveUserManagedItemValOrRef<ValueT>(valOrRef: ValueOrReference<ValueT>): UseResolveUserManagedItemValOrRefResult<ValueT> {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const [result, setResult] = useState<ResolveUserManagedItemResult<ValueT>>({ type: 'pending' });
+  const [result, setResult] = useState<UseResolveUserManagedItemValOrRefResult<ValueT>>({ type: 'pending' });
 
 
-  const resolve = async (itemId: string) => {
+  const fetchItem = async (itemId: string) => {
     const req = new pb.GetLibraryItemRequest();
     req.setId(itemId);
 
@@ -36,34 +36,34 @@ export function useResolvedUserManagedItem<ValueT>(item: ValueOrReference<ValueT
     const itemPb = res.getItem()!;
     const item = libraryItemFromPb(itemPb);
 
-    setResult({ type: 'success', value: item as ValueT });
+    setResult({ type: 'success', value: item.spec as ValueT });
   };
 
   useEffect(() => {
-    if (item.type === 'value') {
-      setResult({ type: 'success', value: item.value });
+    if (valOrRef.type === 'value') {
+      setResult({ type: 'success', value: valOrRef.value });
       return;
     }
 
-    if (item.type === 'reference') {
-      resolve(item.reference);
+    if (valOrRef.type === 'reference') {
+      fetchItem(valOrRef.reference);
       return;
     }
-  }, [item]);
+  }, [valOrRef]);
 
   return result;
 }
 
-export type UserManagedItemResolverSpinnerProps = {
+export type UseUserManagedItemValOrRefSpinnerProps = {
   item: ValueOrReference<any>;
-  result: ResolveUserManagedItemResult<any>;
+  result: UseResolveUserManagedItemValOrRefResult<any>;
 };
-export const UserManagedItemResolverSpinner: React.FC<UserManagedItemResolverSpinnerProps> = (props) => {
+export const UseUserManagedItemValOrRefSpinner: React.FC<UseUserManagedItemValOrRefSpinnerProps> = (props) => {
   if (props.result.type === 'failure') {
     return (
       <NothingToShow reason="error" content={(
         <div>
-          Unable to resolve item with id: ${props.item.type === 'reference' ? props.item.reference : props.item.value.metadata.id}.
+          Unable to fetch item with id: ${props.item.type === 'reference' ? props.item.reference : props.item.value.metadata.id}.
           <br />
           {props.result.reason}
         </div>

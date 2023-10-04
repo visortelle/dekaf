@@ -12,7 +12,7 @@ export type ListItem<V> = {
 export type List<V> = ListItem<V>[]
 
 export type SelectProps<V> = {
-  value: string;
+  value: V;
   onChange: (value: V) => void;
   list: List<V>;
   placeholder?: string;
