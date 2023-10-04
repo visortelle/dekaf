@@ -15,7 +15,7 @@ import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
-import { useResolvedUserManagedItemValueOrReference } from '../../../../ui/LibraryBrowser/use-resolved-user-managed-item-value-or-reference';
+import { UserManagedItemResolverSpinner, useResolvedUserManagedItem } from '../../../../ui/LibraryBrowser/use-resolved-user-managed-item';
 
 export type FilterChainProps = {
   value: UserManagedMessageFilterChainValueOrReference;
@@ -27,27 +27,13 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
     defaultValue: 'basic-message-filter',
   });
-const value = useResolvedUserManagedItemValueOrReference<UserManagedMessageFilterChain>(props.value);
+  const resolveResult = useResolvedUserManagedItem<UserManagedMessageFilterChain>(props.value);
 
-  if (value === undefined) {
-    if (props.value.type === 'reference') {
-      return (
-        <NothingToShow
-          reason='error'
-          content={(
-            <div>
-              Unable to resolve Message Filter Chain by reference.
-              <br /><br />
-              Probably it was deleted. Ensure that the Message Filter Chain with id <strong>{props.value.reference}</strong> exists in the Library and try again.
-            </div>
-          )}
-        />
-      );
-    }
-
-    return null;
+  if (resolveResult.type !== 'success') {
+    return <UserManagedItemResolverSpinner item={props.value} result={resolveResult} />
   }
 
+  const value = resolveResult.value;
   const spec = value.spec;
 
   const onSpecChange = (spec: UserManagedMessageFilterChainSpec) => {

@@ -9,8 +9,7 @@ import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
 import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
-import { useResolvedUserManagedItemValueOrReference } from '../../../ui/LibraryBrowser/use-resolved-user-managed-item-value-or-reference';
-import NothingToShow from '../../../ui/NothingToShow/NothingToShow';
+import { UserManagedItemResolverSpinner, useResolvedUserManagedItem } from '../../../ui/LibraryBrowser/use-resolved-user-managed-item';
 
 export type SessionConfigurationProps = {
   value: UserManagedConsumerSessionConfigValueOrReference;
@@ -20,27 +19,13 @@ export type SessionConfigurationProps = {
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
-  const value = useResolvedUserManagedItemValueOrReference<UserManagedConsumerSessionConfig>(props.value);
+  const resolveResult = useResolvedUserManagedItem<UserManagedConsumerSessionConfig>(props.value);
 
-  if (value === undefined) {
-    if (props.value.type === 'reference') {
-      return (
-        <NothingToShow
-          reason='error'
-          content={(
-            <div>
-              Unable to resolve Consumer Session Config by reference.
-              <br /><br />
-              Probably it was deleted. Ensure that the Consumer Session Config with id <strong>{props.value.reference}</strong> exists in the Library and try again.
-            </div>
-          )}
-        />
-      );
-    }
-
-    return null;
+  if (resolveResult.type !== 'success') {
+    return <UserManagedItemResolverSpinner item={props.value} result={resolveResult} />
   }
 
+  const value = resolveResult.value;
   const spec = value.spec;
 
   const onSpecChange = (spec: UserManagedConsumerSessionConfigSpec) => {

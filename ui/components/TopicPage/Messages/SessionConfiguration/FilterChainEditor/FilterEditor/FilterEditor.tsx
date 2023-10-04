@@ -13,8 +13,7 @@ import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
 import { UserManagedMessageFilter, UserManagedMessageFilterSpec, UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
-import { useResolvedUserManagedItemValueOrReference } from '../../../../../ui/LibraryBrowser/use-resolved-user-managed-item-value-or-reference';
-import NothingToShow from '../../../../../ui/NothingToShow/NothingToShow';
+import { UserManagedItemResolverSpinner, useResolvedUserManagedItem } from '../../../../../ui/LibraryBrowser/use-resolved-user-managed-item';
 
 export type FilterEditorProps = {
   value: UserManagedMessageFilterValueOrReference;
@@ -28,27 +27,12 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
     defaultValue: 'basic-message-filter',
   });
 
-  const value = useResolvedUserManagedItemValueOrReference<UserManagedMessageFilter>(props.value);
-
-  if (value === undefined) {
-    if (props.value.type === 'reference') {
-      return (
-        <NothingToShow
-          reason='error'
-          content={(
-            <div>
-              Unable to resolve Message Filter by reference.
-              <br /><br />
-              Probably it was deleted. Ensure that the Message Filter with id <strong>{props.value.reference}</strong> exists in the Library and try again.
-            </div>
-          )}
-        />
-      );
-    }
-
-    return null;
+  const resolveResult = useResolvedUserManagedItem<UserManagedMessageFilter>(props.value);
+  if (resolveResult.type !== 'success') {
+    return <UserManagedItemResolverSpinner item={props.value} result={resolveResult} />
   }
 
+  const value = resolveResult.value;
   const spec = value.spec;
 
   const onSpecChange = (spec: UserManagedMessageFilterSpec) => {
