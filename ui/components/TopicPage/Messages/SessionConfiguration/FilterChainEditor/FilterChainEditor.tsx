@@ -16,10 +16,12 @@ import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEdit
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
 import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
+import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 
 export type FilterChainProps = {
   value: UserManagedMessageFilterChainValueOrReference;
   onChange: (value: UserManagedMessageFilterChainValueOrReference) => void;
+  libraryContext: LibraryContext;
 };
 
 const FilterChain: React.FC<FilterChainProps> = (props) => {
@@ -64,6 +66,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
             props.onChange({ type: 'reference', reference: item.metadata.id })
           }}
           isForceShowButtons={isHovered}
+          libraryContext={props.libraryContext}
         />
         <div style={{ marginBottom: '12rem', display: 'flex', alignItems: 'center', gap: '8rem' }}>
           <Toggle
@@ -119,6 +122,7 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                   });
                   onSpecChange({ ...spec, filters: newFilters });
                 }}
+                libraryContext={props.libraryContext}
               />
             </div>
           </div>

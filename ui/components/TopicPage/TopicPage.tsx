@@ -188,6 +188,15 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       {props.view.type === "messages" && (
         <Session
           key={key}
+          libraryContext={{
+            pulsarResource: {
+              type: 'topic',
+              topicPersistency: props.topicPersistency,
+              tenant: props.tenant,
+              namespace: props.namespace,
+              topic: props.topic,
+            }
+          }}
           initialConfig={{
             type: 'value',
             value: {

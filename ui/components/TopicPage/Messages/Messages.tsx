@@ -25,7 +25,7 @@ import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { ItemContent, TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
-import { createDeadline } from '../../../pbUtils/pbUtils';
+import { createDeadline } from '../../../proto-utils/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
@@ -43,8 +43,9 @@ import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../ui/LibraryBrowser/model/user-managed-items';
+import { UserManagedConsumerSessionConfigValueOrReference } from '../../ui/LibraryBrowser/model/user-managed-items';
 import { consumerSessionConfigFromValueOrReference } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
+import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
@@ -55,6 +56,7 @@ export type SessionProps = {
   onStopSession: () => void;
   isShowConsole: boolean;
   onSetIsShowConsole: (v: boolean) => void;
+  libraryContext: LibraryContext;
 };
 
 type View = 'messages' | 'configuration';
@@ -468,6 +470,7 @@ const Session: React.FC<SessionProps> = (props) => {
             value={props.config}
             onChange={props.onConfigChange}
             topicsInternalStats={topicsInternalStats}
+            libraryContext={props.libraryContext}
           />
         </div>
       )}
@@ -490,6 +493,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
 type SessionControllerProps = {
   initialConfig: UserManagedConsumerSessionConfigValueOrReference;
+  libraryContext: LibraryContext;
 };
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
@@ -506,6 +510,7 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       onStopSession={() => setSessionKey(n => n + 1)}
       config={config}
       onConfigChange={setConfig}
+      libraryContext={props.libraryContext}
     />
   );
 }

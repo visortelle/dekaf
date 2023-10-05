@@ -7,7 +7,6 @@ import "tools/teal/pulsar/ui/library/v1/resource_matchers.proto";
 import "tools/teal/pulsar/ui/library/v1/user_managed_items.proto";
 
 message LibraryItemMetadata {
-  string revision = 3;
   string updated_at = 4;
   repeated string tags = 8;
   repeated ResourceMatcher available_for_contexts = 9;

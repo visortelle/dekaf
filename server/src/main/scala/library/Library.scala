@@ -7,7 +7,6 @@ import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
 
 case class LibraryItemMetadata(
-    revision: String,
     updatedAt: String,
     tags: List[String],
     availableForContexts: List[ResourceMatcher]

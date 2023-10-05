@@ -15,7 +15,6 @@ import consumer.{
 
 def libraryItemMetadataFromPb(v: libraryPb.LibraryItemMetadata): LibraryItemMetadata =
     LibraryItemMetadata(
-        revision = v.revision,
         updatedAt = v.updatedAt,
         tags = v.tags.toList,
         availableForContexts = v.availableForContexts.map(resourceMatcherFromPb).toList
@@ -23,7 +22,6 @@ def libraryItemMetadataFromPb(v: libraryPb.LibraryItemMetadata): LibraryItemMeta
 
 def libraryItemMetadataToPb(v: LibraryItemMetadata): libraryPb.LibraryItemMetadata =
     libraryPb.LibraryItemMetadata(
-        revision = v.revision,
         updatedAt = v.updatedAt,
         tags = v.tags,
         availableForContexts = v.availableForContexts.map(resourceMatcherToPb)

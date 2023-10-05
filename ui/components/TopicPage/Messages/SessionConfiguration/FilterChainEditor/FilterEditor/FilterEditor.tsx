@@ -14,11 +14,13 @@ import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
 import { UserManagedMessageFilter, UserManagedMessageFilterSpec, UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
+import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 
 export type FilterEditorProps = {
   value: UserManagedMessageFilterValueOrReference;
   onChange: (value: UserManagedMessageFilterValueOrReference) => void;
   onDelete?: () => void;
+  libraryContext: LibraryContext;
 };
 
 const FilterEditor: React.FC<FilterEditorProps> = (props) => {
@@ -62,6 +64,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
           props.onChange({ type: 'reference', reference: item.metadata.id })
         }}
         isForceShowButtons={isHovered}
+        libraryContext={props.libraryContext}
       />
       <FormItem>
         <div className={s.Controls}>

@@ -12,8 +12,10 @@ import { UserManagedItem, UserManagedItemType } from './model/user-managed-items
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemToPb } from './model/library-conversions';
 import { useResolveLibraryItem } from './useResolveLibraryItem';
-import { LibraryContext } from './model/library-context';
+import { LibraryContext, resourceMatcherFromContext } from './model/library-context';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
+import { sha256 } from '../../../crypto/sha256';
+import stringify from 'safe-stable-stringify';
 
 export type LibraryBrowserMode = {
   type: 'save';
@@ -27,7 +29,7 @@ export type LibraryBrowserMode = {
 export type LibraryBrowserProps = {
   mode: LibraryBrowserMode;
   onCancel: () => void;
-  context: LibraryContext;
+  libraryContext: LibraryContext;
 };
 
 const initialSearchEditorValue: SearchEditorValue = {
@@ -65,29 +67,33 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const { libraryServiceClient } = GrpcClient.useContext();
 
   useEffect(() => {
-    if (resolvedLibraryItem.type === 'not-found' && props.mode.type === 'save') {
-      const metadata = mkLibraryItemMetadata(props.context, props.mode.item);
-      const libraryItem: LibraryItem = {
-        metadata,
-        spec: props.mode.item
-      };
+    async function selectItem() {
+      async function mkLibraryItemMetadata(context: LibraryContext, userManagedItem: UserManagedItem): Promise<LibraryItemMetadata> {
+        return {
+          availableForContexts: [resourceMatcherFromContext(context)],
+          tags: [],
+          updatedAt: new Date().toISOString()
+        };
+      }
 
-      setSelectedItem(libraryItem);
+      if (resolvedLibraryItem.type === 'not-found' && props.mode.type === 'save') {
+        const metadata = await mkLibraryItemMetadata(props.libraryContext, props.mode.item);
+        const libraryItem: LibraryItem = {
+          metadata,
+          spec: props.mode.item
+        };
+
+        setSelectedItem(libraryItem);
+        setSearchEditorValue((v) => ({ ...v, resourceMatcher: resourceMatcherFromContext(props.libraryContext) }));
+      }
+
+      if (resolvedLibraryItem.type === 'success') {
+        setSelectedItem(resolvedLibraryItem.value);
+      }
     }
 
-    if (resolvedLibraryItem.type === 'success') {
-      setSelectedItem(resolvedLibraryItem.value);
-    }
+    selectItem();
   }, [resolvedLibraryItem, props.mode]);
-
-  function mkLibraryItemMetadata(context: LibraryContext, userManagedItem: UserManagedItem): LibraryItemMetadata {
-    return {
-      availableForContexts: [],
-      revision: '',
-      tags: [],
-      updatedAt: new Date().toISOString()
-    };
-  }
 
   const saveLibraryItem = async (item: LibraryItem) => {
     const req = new pb.SaveLibraryItemRequest();

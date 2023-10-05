@@ -5,10 +5,12 @@ import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../modals';
 import saveIcon from './save.svg';
 import { UserManagedItem } from '../../../model/user-managed-items';
+import { LibraryContext } from '../../../model/library-context';
 
 
 export type LibraryBrowserSaveButtonProps = {
   itemToSave: UserManagedItem | undefined;
+  libraryContext: LibraryContext;
 };
 
 const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props) => {
@@ -33,6 +35,7 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
                 item: props.itemToSave,
               },
               onCancel: modals.pop,
+              libraryContext: props.libraryContext,
             }
           });
 

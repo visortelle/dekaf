@@ -6,12 +6,14 @@ import { H3 } from '../../H/H';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
 import { useHover } from '../../../app/hooks/use-hover';
+import { LibraryContext } from '../model/library-context';
 
 export type LibraryBrowserPanelProps = {
   itemType: UserManagedItemType;
   itemToSave: UserManagedItem | undefined;
   onPick: (item: UserManagedItem) => void;
   isForceShowButtons?: boolean;
+  libraryContext: LibraryContext;
 };
 
 const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
@@ -44,6 +46,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               onPick={(item) => {
                 props.onPick(item);
               }}
+              libraryContext={props.libraryContext}
             />
           </div>
         )}

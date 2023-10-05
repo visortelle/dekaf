@@ -2,7 +2,7 @@ import * as I18n from '../../../../../../app/contexts/I18n/I18n';
 import * as pb from '../../../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { useMemo } from 'react';
 import Table from '../../../../../../ui/Table/Table';
-import * as pbUtils from '../../../../../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../../../../../proto-utils/proto-utils';
 import { routes } from '../../../../../../routes';
 import Link from '../../../../../../ui/Link/Link';
 import { PulsarTopicPersistency } from '../../../../../../pulsar/pulsar-resources';

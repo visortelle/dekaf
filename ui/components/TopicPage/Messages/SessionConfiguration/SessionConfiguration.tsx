@@ -10,11 +10,13 @@ import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/
 import { useHover } from '../../../app/hooks/use-hover';
 import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
+import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 
 export type SessionConfigurationProps = {
   value: UserManagedConsumerSessionConfigValueOrReference;
   onChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
+  libraryContext: LibraryContext;
 };
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
@@ -56,6 +58,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             props.onChange({ type: 'reference', reference: item.metadata.id })
           }}
           isForceShowButtons={isHovered}
+          libraryContext={props.libraryContext}
         />
       </div>
 
@@ -87,6 +90,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           <FilterChain
             value={spec.messageFilterChain}
             onChange={(v) => onSpecChange({ ...spec, messageFilterChain: v })}
+            libraryContext={props.libraryContext}
           />
         </div>
       </div>

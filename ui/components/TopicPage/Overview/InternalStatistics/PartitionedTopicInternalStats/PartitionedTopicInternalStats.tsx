@@ -2,7 +2,7 @@ import React from 'react';
 import s from './PartitionedTopicInternalStats.module.css'
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Select from '../../../../ui/Select/Select';
-import * as pbUtils from '../../../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../../../proto-utils/proto-utils';
 import PersistentTopicInternalStats from '../PersistentTopicInternalStats/PersistentTopicInternalStats';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import { PulsarTopicPersistency } from '../../../../pulsar/pulsar-resources';

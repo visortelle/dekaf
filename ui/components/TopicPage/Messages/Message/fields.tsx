@@ -2,7 +2,7 @@ import { MessageDescriptor } from '../types';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import Field from './Field/Field';
 import { routes } from '../../../routes';
-import { PulsarTopicResource, parsePulsarResourceFqn } from '../../../pulsar/pulsar-resources';
+import { PulsarTopicResource, pulsarResourceFromFqn } from '../../../pulsar/pulsar-resources';
 
 export type FieldName =
   'messageId' |
@@ -86,7 +86,7 @@ export const ValueField: React.FC<FieldProps> = (props) => {
 
 export const TopicField: React.FC<FieldProps> = (props) => {
   const topic = props.message.topic === null ? undefined : props.message.topic;
-  const topicResource = props.message.topic === null ? undefined : parsePulsarResourceFqn<PulsarTopicResource>(props.message.topic);
+  const topicResource = props.message.topic === null ? undefined : pulsarResourceFromFqn<PulsarTopicResource>(props.message.topic);
   const topicHref = topicResource === undefined ?
     undefined :
     routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({ tenant: topicResource.tenant, namespace: topicResource.namespace, topic: topicResource.topic, topicPersistency: topicResource.topicPersistency });

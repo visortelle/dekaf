@@ -31,20 +31,31 @@ Resource FQN examples:
 - namespace: tenant-a/namespace-a
 - topic: persistent://tenant-a/namespace-a/topic-a or non-persistent://tenant-a/namespace-a/topic-a
 */
-export function parsePulsarResourceFqn<V extends PulsarResource>(fqn: string): V {
+export function pulsarResourceFromFqn<T extends PulsarResource>(fqn: string): T {
   const parts = fqn.split('/');
   if (parts.length === 1) {
-    return { type: 'tenant', tenant: parts[0] } as V;
+    return { type: 'tenant', tenant: parts[0] } as T;
   } else if (parts.length === 2) {
-    return { type: 'namespace', tenant: parts[0], namespace: parts[1] } as V;
+    return { type: 'namespace', tenant: parts[0], namespace: parts[1] } as T;
   } else if (parts.length === 5) {
-      return {
-        type: 'topic',
-        tenant: parts[2],
-        namespace: parts[3],
-        topicPersistency: parts[0].replace(/:$/, '') as PulsarTopicPersistency,
-        topic: parts[4]
-      } as V;
+    return {
+      type: 'topic',
+      tenant: parts[2],
+      namespace: parts[3],
+      topicPersistency: parts[0].replace(/:$/, '') as PulsarTopicPersistency,
+      topic: parts[4]
+    } as T;
   }
   throw new Error(`Invalid Pulsar resource FQN: ${fqn}`);
+}
+
+export function pulsarResourceToFqn(resource: PulsarResource): string {
+  switch (resource.type) {
+    case 'tenant':
+      return resource.tenant;
+    case 'namespace':
+      return `${resource.tenant}/${resource.namespace}`;
+    case 'topic':
+      return `${resource.topicPersistency}://${resource.tenant}/${resource.namespace}/${resource.topic}`;
+  }
 }

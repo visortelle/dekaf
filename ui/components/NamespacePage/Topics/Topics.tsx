@@ -11,7 +11,7 @@ import { partition, uniq } from 'lodash';
 import { help } from './help';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
-import * as pbUtils from '../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../proto-utils/proto-utils';
 import {
   GetTopicPropertiesResponse,
   GetTopicsStatsResponse,

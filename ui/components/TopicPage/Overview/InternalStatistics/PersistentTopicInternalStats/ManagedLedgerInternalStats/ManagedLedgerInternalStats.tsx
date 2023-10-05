@@ -6,7 +6,7 @@ import Td from '../../../../../ui/SimpleTable/Td';
 import { H3 } from '../../../../../ui/H/H';
 import Ledgers from './Ledgers/Ledgers';
 import Cursors from './Cursors/Cursors';
-import * as pbUtils from '../../../../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../../../../proto-utils/proto-utils';
 import { useMemo } from 'react';
 import { PulsarTopicPersistency } from '../../../../../pulsar/pulsar-resources';
 
