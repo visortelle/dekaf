@@ -5,13 +5,14 @@ import Select from '../../../../ui/Select/Select';
 import * as pbUtils from '../../../../../pbUtils/pbUtils';
 import PersistentTopicInternalStats from '../PersistentTopicInternalStats/PersistentTopicInternalStats';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import { PulsarTopicPersistency } from '../../../../pulsar/pulsar-resources';
 
 export type PartitionedTopicInternalStatsProps = {
   stats: pb.PartitionedTopicInternalStats;
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
 };
 
 const PartitionedTopicInternalStats: React.FC<PartitionedTopicInternalStatsProps> = (props) => {
@@ -44,7 +45,7 @@ const PartitionedTopicInternalStats: React.FC<PartitionedTopicInternalStatsProps
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicPersistency={props.topicPersistency}
         />
       </div>
     </div>

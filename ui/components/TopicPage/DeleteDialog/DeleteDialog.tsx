@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import {mutate, useSWRConfig} from 'swr';
+import { mutate, useSWRConfig } from 'swr';
 
 import * as Notifications from '../../app/contexts/Notifications';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
@@ -10,12 +10,13 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import ConfirmationDialog from '../../ui/ConfirmationDialog/ConfirmationDialog';
 import { swrKeys } from '../../swrKeys';
 import { routes } from '../../routes';
+import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
 export type DeleteTopicProps = {
   tenant: string,
   namespace: string,
   topic: string,
-  topicType: 'persistent' | 'non-persistent',
+  topicPersistency: PulsarTopicPersistency,
   navigate: NavigateFunction,
 };
 
@@ -26,7 +27,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
   const { topicServiceClient } = GrpcClient.useContext();
   const [forceDelete, setForceDelete] = React.useState(false);
 
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const deleteTopic = async () => {
     try {
@@ -40,9 +41,9 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
         return;
       }
 
-      notifySuccess(`${props.topicType === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${topicFqn} has been successfully deleted.`);
+      notifySuccess(`${props.topicPersistency === 'persistent' ? 'Persistent' : 'Non-persistent'} topic ${topicFqn} has been successfully deleted.`);
 
-      const mutatePersistentTopics =  mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
+      const mutatePersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
       const mutateNonPersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
 
       await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics]);

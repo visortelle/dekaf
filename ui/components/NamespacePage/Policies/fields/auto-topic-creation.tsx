@@ -14,15 +14,15 @@ import { swrKeys } from '../../../swrKeys';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import React from "react";
 import { help } from "../../../ui/help";
+import { PulsarTopicPartitioning } from "../../../pulsar/pulsar-resources";
 
 const policy = 'autoTopicCreation';
 
-type TopicType = 'partitioned' | 'non-partitioned';
 export type PolicyValue = { type: 'inherited-from-broker-config' } | {
   type: 'specified',
   isAllowAutoTopicCreation: boolean;
   defaultNumPartitions: number;
-  topicType: TopicType;
+  topicPartitioning: PulsarTopicPartitioning;
 }
 
 type IsAllowAutoTopicCreation = 'true' | 'false'
@@ -61,11 +61,11 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             break;
           }
 
-          let topicType: TopicType = 'non-partitioned';
+          let topicPartitioning: PulsarTopicPartitioning = 'non-partitioned';
           switch (autoTopicCreationOverride.getTopicType()) {
-            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED: topicType = 'partitioned';
+            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED: topicPartitioning = 'partitioned';
               break;
-            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED: topicType = 'non-partitioned';
+            case pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_NON_PARTITIONED: topicPartitioning = 'non-partitioned';
               break;
           }
 
@@ -73,7 +73,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             type: 'specified',
             isAllowAutoTopicCreation: autoTopicCreationOverride.getIsAllowTopicCreation(),
             defaultNumPartitions: autoTopicCreationOverride.getDefaultNumPartitions() || defaultNumPartitions,
-            topicType
+            topicPartitioning: topicPartitioning
           }
         } break;
       }
@@ -112,7 +112,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           const autoTopicCreationOverride = new pb.AutoTopicCreationOverride();
           autoTopicCreationOverride.setIsAllowTopicCreation(v.isAllowAutoTopicCreation);
 
-          switch (v.topicType) {
+          switch (v.topicPartitioning) {
             case 'partitioned': {
               autoTopicCreationOverride.setTopicType(pb.AutoTopicCreationTopicType.AUTO_TOPIC_CREATION_TOPIC_TYPE_PARTITIONED)
               autoTopicCreationOverride.setDefaultNumPartitions(v.defaultNumPartitions);
@@ -148,7 +148,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
                       type: 'specified',
                       isAllowAutoTopicCreation: false,
                       defaultNumPartitions: 4,
-                      topicType: 'non-partitioned'
+                      topicPartitioning: 'non-partitioned'
                     });
                   }
                 }}
@@ -174,15 +174,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
             {value.type === 'specified' && value.isAllowAutoTopicCreation && (
               <FormItem>
                 <FormLabel content="Topic type" />
-                <Select<TopicType>
-                  onChange={(v) => onChange({ ...value, topicType: v, defaultNumPartitions: defaultNumPartitions })}
-                  value={value.topicType}
+                <Select<PulsarTopicPartitioning>
+                  onChange={(v) => onChange({ ...value, topicPartitioning: v, defaultNumPartitions: defaultNumPartitions })}
+                  value={value.topicPartitioning}
                   list={[{ type: 'item', value: 'non-partitioned', title: 'Non-partitioned' }, { type: 'item', value: 'partitioned', title: 'Partitioned' }]}
                 />
               </FormItem>
             )}
 
-            {value.type === 'specified' && value.isAllowAutoTopicCreation && value.topicType === 'partitioned' && (
+            {value.type === 'specified' && value.isAllowAutoTopicCreation && value.topicPartitioning === 'partitioned' && (
               <FormItem>
                 <FormLabel content="Num partitions" />
                 <Input

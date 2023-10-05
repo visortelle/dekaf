@@ -12,13 +12,12 @@ import { UserManagedItem, UserManagedItemType } from './model/user-managed-items
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemToPb } from './model/library-conversions';
 import { useResolveLibraryItem } from './useResolveLibraryItem';
-import { LibraryItemContext } from './model/library-item-context';
+import { LibraryContext } from './model/library-context';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 
 export type LibraryBrowserMode = {
   type: 'save';
   item: UserManagedItem;
-  context: LibraryItemContext;
 } | {
   type: 'pick';
   itemType: UserManagedItemType;
@@ -28,6 +27,7 @@ export type LibraryBrowserMode = {
 export type LibraryBrowserProps = {
   mode: LibraryBrowserMode;
   onCancel: () => void;
+  context: LibraryContext;
 };
 
 const initialSearchEditorValue: SearchEditorValue = {
@@ -66,7 +66,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   useEffect(() => {
     if (resolvedLibraryItem.type === 'not-found' && props.mode.type === 'save') {
-      const metadata = mkLibraryItemMetadata(props.mode.context, props.mode.item);
+      const metadata = mkLibraryItemMetadata(props.context, props.mode.item);
       const libraryItem: LibraryItem = {
         metadata,
         spec: props.mode.item
@@ -80,7 +80,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     }
   }, [resolvedLibraryItem, props.mode]);
 
-  function mkLibraryItemMetadata(context: LibraryItemContext, userManagedItem: UserManagedItem): LibraryItemMetadata {
+  function mkLibraryItemMetadata(context: LibraryContext, userManagedItem: UserManagedItem): LibraryItemMetadata {
     return {
       availableForContexts: [],
       revision: '',

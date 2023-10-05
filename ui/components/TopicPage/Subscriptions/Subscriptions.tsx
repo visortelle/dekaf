@@ -9,6 +9,7 @@ import Table from '../../ui/Table/Table';
 import { help } from './help';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
+import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
 export type ColumnKey =
   'subscriptionName' |
@@ -95,7 +96,7 @@ export type SubscriptionsProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
 };
 
 const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
@@ -103,7 +104,7 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const i18n = I18n.useContext();
 
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const dataLoaderCacheKey = [`subscriptions-${topicFqn}`];
   const dataLoader = async () => {
@@ -168,11 +169,11 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
               title: 'Consumers',
               render: (de) => i18n.withVoidDefault(de.consumersCount, v =>
                 <Link
-                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.get({
+                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.consumers._.get({
                     tenant: props.tenant,
                     namespace: props.namespace,
                     topic: props.topic,
-                    topicType: props.topicType,
+                    topicPersistency: props.topicPersistency,
                     subscription: de.subscriptionName,
                   })}
                 >
@@ -319,11 +320,11 @@ const Subscriptions: React.FC<SubscriptionsProps> = (props) => {
             subscriptionName: {
               title: 'Name',
               render: (de) => (
-                <Link to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.get({
+                <Link to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.consumers._.get({
                   tenant: props.tenant,
                   namespace: props.namespace,
                   topic: props.topic,
-                  topicType: props.topicType,
+                  topicPersistency: props.topicPersistency,
                   subscription: de.subscriptionName,
                 })}>
                   {de.subscriptionName}

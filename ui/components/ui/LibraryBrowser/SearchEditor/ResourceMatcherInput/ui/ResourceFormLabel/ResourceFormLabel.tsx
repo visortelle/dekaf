@@ -13,7 +13,7 @@ const ResourceFormLabel: React.FC<ResourceFormLabelProps> = (props) => {
       <div>
         {props.type === 'tenant' && <TenantIcon />}
         {props.type === 'namespace' && <NamespaceIcon />}
-        {props.type === 'topic' && <TopicIcon topicType='persistent' />}
+        {props.type === 'topic' && <TopicIcon topicPersistency='persistent' />}
       </div>
       <div>
         {props.type === 'tenant' && "Tenant Selector"}

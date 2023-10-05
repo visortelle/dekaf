@@ -54,10 +54,10 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         icon = <NamespaceIcon />;
         break;
       case "persistent-topic":
-        icon = <TopicIcon topicType='persistent' />;
+        icon = <TopicIcon topicPersistency='persistent' />;
         break;
       case "non-persistent-topic":
-        icon = <TopicIcon topicType='non-persistent' />;
+        icon = <TopicIcon topicPersistency='non-persistent' />;
         break;
       case "subscription":
         icon = <SubscriptionIcon />;
@@ -79,19 +79,19 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         href = routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant, namespace });
         break;
       case "persistent-topic":
-        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
           tenant,
           namespace,
           topic,
-          topicType: "persistent",
+          topicPersistency: "persistent",
         });
         break;
       case "non-persistent-topic":
-        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
           tenant,
           namespace,
           topic,
-          topicType: "non-persistent",
+          topicPersistency: "non-persistent",
         });
         break;
       case "link":

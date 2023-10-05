@@ -7,6 +7,7 @@ import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import * as pbUtils from '../../../pbUtils/pbUtils';
 import Table from '../../ui/Table/Table';
 import { help } from './help';
+import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
 export type ColumnKey =
   'msgRateOut' |
@@ -59,7 +60,7 @@ export type ConsumersProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
   subscription: string;
 };
 const Consumers: React.FC<ConsumersProps> = (props) => {
@@ -67,7 +68,7 @@ const Consumers: React.FC<ConsumersProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const i18n = I18n.useContext();
 
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const dataLoaderCacheKey = [`consumers-${topicFqn}`];
   const dataLoader = async () => {
