@@ -45,8 +45,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       return;
     }
 
-    if (props.value.type === 'reference' && props.value.localValue !== undefined) {
-      const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, localValue: { ...props.value.localValue, spec } };
+    if (props.value.type === 'reference' && props.value.value !== undefined) {
+      const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
       props.onChange(newValue);
       return;
     }

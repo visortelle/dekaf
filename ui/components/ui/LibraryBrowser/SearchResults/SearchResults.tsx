@@ -7,6 +7,7 @@ import NothingToShow from '../../NothingToShow/NothingToShow';
 export type SearchResultsProps = {
   items: LibraryItem[];
   onSelect: (id: string) => void;
+  selectedItemId?: string;
 };
 
 const SearchResults: React.FC<SearchResultsProps> = (props) => {
@@ -22,12 +23,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
 
   return (
     <div className={s.SearchResults}>
-      {filteredItems.length === 0 && (
-        <div className={s.NothingToShow}>
-          <NothingToShow />
-        </div>
-      )}
-      {filteredItems.length > 0 && (
+      {(
         <>
           <div className={s.Filters}>
             <Input
@@ -37,20 +33,28 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
               appearance='no-borders'
             />
           </div>
-          <div className={s.Items}>
-            {filteredItems.map((item) => {
-              const { id, name, descriptionMarkdown } = item.spec.metadata;
-              return (
-                <Item
-                  key={id}
-                  id={id}
-                  name={name}
-                  descriptionMarkdown={descriptionMarkdown.slice(0, 140)}
-                  onClick={() => props.onSelect(id)}
-                />
-              )
-            })}
-          </div>
+          {filteredItems.length === 0 && (
+            <div className={s.NothingToShow}>
+              <NothingToShow />
+            </div>
+          )}
+          {filteredItems.length !== 0 && (
+            <div className={s.Items}>
+              {filteredItems.map((item) => {
+                const { id, name, descriptionMarkdown } = item.spec.metadata;
+                return (
+                  <Item
+                    key={id}
+                    id={id}
+                    name={name}
+                    descriptionMarkdown={descriptionMarkdown.slice(0, 140)}
+                    onClick={() => props.onSelect(id)}
+                    selectedItemId={props.selectedItemId}
+                  />
+                )
+              })}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -62,11 +66,14 @@ export type ItemProps = {
   name: string;
   descriptionMarkdown: string;
   onClick: () => void;
+  selectedItemId?: string;
 };
 
 const Item: React.FC<ItemProps> = (props) => {
+  const className = `${s.Item} ${props.selectedItemId === props.id ? s.ActiveItem : ''}`;
+
   return (
-    <div className={s.Item}>
+    <div className={className} onClick={props.onClick}>
       <div className={s.ItemName}>
         {props.name}
       </div>

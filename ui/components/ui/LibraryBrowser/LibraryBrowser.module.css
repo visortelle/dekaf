@@ -11,14 +11,14 @@
 
 .SearchEditor {
   width: 360rem;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border-color);
   padding: 12rem 24rem 48rem 24rem;
   overflow: auto;
 }
 
 .SearchResults {
   width: 480rem;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border-color);
   overflow: hidden;
   display: flex;
 }
@@ -34,7 +34,7 @@
   flex: 1 0 auto;
   align-items: center;
   justify-content: flex-end;
-  background-color: #f5f5f5;
-  border-top: 1px solid #ddd;
+  background-color: var(--surface-color);
+  border-top: 1px solid var(--border-color);
   gap: 8rem;
 }

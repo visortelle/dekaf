@@ -37,8 +37,8 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
       return;
     }
 
-    if (props.value.type === 'reference' && props.value.localValue !== undefined) {
-      const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, localValue: { ...props.value.localValue, spec } };
+    if (props.value.type === 'reference' && props.value.value !== undefined) {
+      const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
       props.onChange(newValue);
       return;
     }

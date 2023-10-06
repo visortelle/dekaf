@@ -37,18 +37,13 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   const value = resolveResult.value;
   const spec = value.spec;
 
-  const onSpecChange = (spec: UserManagedMessageFilterSpec) => {
-    if (props.value.type === 'value') {
-      const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
-      props.onChange(newValue);
-      return;
-    }
+  console.log('props.value', props.value);
+  console.log('value', value);
+  console.log('spec', spec);
 
-    if (props.value.type === 'reference' && props.value.localValue !== undefined) {
-      const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, localValue: { ...props.value.localValue, spec } };
-      props.onChange(newValue);
-      return;
-    }
+  const onSpecChange = (spec: UserManagedMessageFilterSpec) => {
+    const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, value: { ...value, spec } };
+    props.onChange(newValue);
   };
 
   return (
@@ -56,13 +51,11 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
       <LibraryBrowserPanel
         itemToSave={value}
         itemType='message-filter'
-        onPick={(item) => {
-          if (item.metadata.type !== 'message-filter-chain') {
-            return;
-          }
-
-          props.onChange({ type: 'reference', reference: item.metadata.id })
-        }}
+        onPick={(item) => props.onChange({
+          type: 'reference',
+          reference: item.metadata.id,
+          value: item as UserManagedMessageFilter
+        })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
       />

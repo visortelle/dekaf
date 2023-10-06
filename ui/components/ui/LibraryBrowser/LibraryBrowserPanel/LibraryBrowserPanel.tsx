@@ -43,9 +43,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
             <LibraryBrowserButtons
               itemType={props.itemType}
               itemToSave={props.itemToSave}
-              onPick={(item) => {
-                props.onPick(item);
-              }}
+              onPick={props.onPick}
               libraryContext={props.libraryContext}
             />
           </div>

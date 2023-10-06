@@ -11,7 +11,7 @@ export type ValueOrReference<ValueT> = {
     Imagine a situation where you loaded two message filters with same id from library,
     and for one of them you made some changes without saving.
     */
-  localValue?: ValueT
+  value?: ValueT
 };
 
 export type UserManagedItemType =

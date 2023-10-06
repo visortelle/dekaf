@@ -2,7 +2,7 @@ import { UserManagedConsumerSessionConfigValueOrReference, UserManagedMessageFil
 import { ConsumerSessionConfig, MessageFilter, MessageFilterChain } from "../../../TopicPage/Messages/types";
 
 export function messageFilterFromValueOrReference(v: UserManagedMessageFilterValueOrReference): MessageFilter {
-  if (v.type !== 'value') {
+  if (v.value === undefined) {
     throw new Error('Message filter reference can\'t be converted to message filter');
   }
 
@@ -10,7 +10,7 @@ export function messageFilterFromValueOrReference(v: UserManagedMessageFilterVal
 }
 
 export function messageFilterChainFromValueOrReference(v: UserManagedMessageFilterChainValueOrReference): MessageFilterChain {
-  if (v.type !== 'value') {
+  if (v.value === undefined) {
     throw new Error('Message filter chain reference can\'t be converted to message filter chain');
   }
 
@@ -23,7 +23,7 @@ export function messageFilterChainFromValueOrReference(v: UserManagedMessageFilt
 }
 
 export function consumerSessionConfigFromValueOrReference(v: UserManagedConsumerSessionConfigValueOrReference): ConsumerSessionConfig {
-  if (v.type !== 'value') {
+  if (v.value === undefined) {
     throw new Error('Consumer session config reference can\'t be converted to consumer session config');
   }
 

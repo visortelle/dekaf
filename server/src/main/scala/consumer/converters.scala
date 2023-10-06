@@ -53,13 +53,13 @@ def messageFilterToPb(filter: MessageFilter): pb.MessageFilter =
 
 def messageFilterChainModeFromPb(mode: pb.MessageFilterChainMode): MessageFilterChainMode =
     mode match
-        case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL => MessageFilterChainMode.All
-        case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY => MessageFilterChainMode.Any
+        case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL => MessageFilterChainMode.All()
+        case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY => MessageFilterChainMode.Any()
 
 def messageFilterChainModeToPb(mode: MessageFilterChainMode): pb.MessageFilterChainMode =
     mode match
-        case MessageFilterChainMode.All => pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL
-        case MessageFilterChainMode.Any => pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY
+        case MessageFilterChainMode.All() => pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL
+        case MessageFilterChainMode.Any() => pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY
 
 def dateTimeUnitFromPb(dateTimeUnit: pb.DateTimeUnit): DateTimeUnit =
     dateTimeUnit match

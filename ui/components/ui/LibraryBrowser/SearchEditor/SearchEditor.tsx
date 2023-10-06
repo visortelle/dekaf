@@ -21,6 +21,7 @@ type SearchEditorMode = {
 export type SearchEditorValue = {
   itemType: UserManagedItemType;
   resourceMatcher: ResourceMatcher;
+  tags: string[];
 }
 
 export type MatchEditorProps = {
@@ -71,8 +72,14 @@ const MatchEditor: React.FC<MatchEditorProps> = (props) => {
 
           <TagsPicker
             mode='edit'
-            onChange={() => { }}
-            value={[]}
+            onChange={(v) => {
+              if (props.mode.type === 'readonly') {
+                return;
+              }
+
+              props.mode.onChange({ ...props.mode.value, tags: v });
+            }}
+            value={props.mode.value.tags}
           />
         </FormItem>
 

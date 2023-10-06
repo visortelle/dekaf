@@ -21,7 +21,9 @@ import _root_.consumer.{
     MessageId,
     RelativeDateTime,
     given_Decoder_MessageFilter,
-    given_Encoder_MessageFilter
+    given_Encoder_MessageFilter,
+    given_Decoder_MessageFilterChainMode,
+    given_Encoder_MessageFilterChainMode
 }
 import java.time.Instant
 
@@ -45,21 +47,21 @@ type UserManagedItemType =
         UserManagedItemType.MessageFilterChain | UserManagedItemType.DataVisualizationWidget | UserManagedItemType.DataVisualizationDashboard |
         UserManagedItemType.MessageId | UserManagedItemType.DateTime | UserManagedItemType.RelativeDateTime
 given Encoder[UserManagedItemType] = Encoder.instance {
-    case _: UserManagedItemType.ConsumerSessionConfig             => Json.obj("type" -> "ConsumerSessionConfig".asJson)
-    case _: UserManagedItemType.ConsumerSessionConfigStartFrom    => Json.obj("type" -> "ConsumerSessionConfigStartFrom".asJson)
-    case _: UserManagedItemType.ConsumerSessionConfigPauseTrigger => Json.obj("type" -> "ConsumerSessionConfigPauseTrigger".asJson)
-    case _: UserManagedItemType.ProducerSessionConfig             => Json.obj("type" -> "ProducerSessionConfig".asJson)
-    case _: UserManagedItemType.MarkdownDocument                  => Json.obj("type" -> "MarkdownDocument".asJson)
-    case _: UserManagedItemType.MessageFilter                     => Json.obj("type" -> "MessageFilter".asJson)
-    case _: UserManagedItemType.MessageFilterChain                => Json.obj("type" -> "MessageFilterChain".asJson)
-    case _: UserManagedItemType.DataVisualizationWidget           => Json.obj("type" -> "DataVisualizationWidget".asJson)
-    case _: UserManagedItemType.DataVisualizationDashboard        => Json.obj("type" -> "DataVisualizationDashboard".asJson)
-    case _: UserManagedItemType.MessageId                         => Json.obj("type" -> "MessageId".asJson)
-    case _: UserManagedItemType.DateTime                          => Json.obj("type" -> "DateTime".asJson)
-    case _: UserManagedItemType.RelativeDateTime                  => Json.obj("type" -> "RelativeDateTime".asJson)
+    case _: UserManagedItemType.ConsumerSessionConfig             => "ConsumerSessionConfig".asJson
+    case _: UserManagedItemType.ConsumerSessionConfigStartFrom    => "ConsumerSessionConfigStartFrom".asJson
+    case _: UserManagedItemType.ConsumerSessionConfigPauseTrigger => "ConsumerSessionConfigPauseTrigger".asJson
+    case _: UserManagedItemType.ProducerSessionConfig             => "ProducerSessionConfig".asJson
+    case _: UserManagedItemType.MarkdownDocument                  => "MarkdownDocument".asJson
+    case _: UserManagedItemType.MessageFilter                     => "MessageFilter".asJson
+    case _: UserManagedItemType.MessageFilterChain                => "MessageFilterChain".asJson
+    case _: UserManagedItemType.DataVisualizationWidget           => "DataVisualizationWidget".asJson
+    case _: UserManagedItemType.DataVisualizationDashboard        => "DataVisualizationDashboard".asJson
+    case _: UserManagedItemType.MessageId                         => "MessageId".asJson
+    case _: UserManagedItemType.DateTime                          => "DateTime".asJson
+    case _: UserManagedItemType.RelativeDateTime                  => "RelativeDateTime".asJson
 }
 given Decoder[UserManagedItemType] = Decoder.instance { cursor =>
-    cursor.downField("type").as[String].flatMap {
+    cursor.as[String].flatMap {
         case "ConsumerSessionConfig"             => Right(UserManagedItemType.ConsumerSessionConfig())
         case "ConsumerSessionConfigStartFrom"    => Right(UserManagedItemType.ConsumerSessionConfigStartFrom())
         case "ConsumerSessionConfigPauseTrigger" => Right(UserManagedItemType.ConsumerSessionConfigPauseTrigger())

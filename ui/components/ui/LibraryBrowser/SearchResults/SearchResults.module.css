@@ -6,21 +6,26 @@
 }
 
 .Filters {
-  border-bottom: 1px solid #ddd;
-  flex: 1 0 auto;
+  border-bottom: 1px solid var(--border-color);
+  /* flex: 0 0 auto; */
 }
 
 .Items {
   overflow: auto;
+  flex: 1 0 auto;
 }
 
-.Item:not(:last-child) {
-  border-bottom: 1px solid #ddd;
+.Item {
+  border-bottom: 1px solid var(--border-color);
 }
 
 .Item:hover {
   cursor: pointer;
-  background-color: #f5f5f5;
+  background-color: var(--surface-color);
+}
+
+.ActiveItem {
+  background-color: var(--surface-color);
 }
 
 .ItemName {

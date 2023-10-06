@@ -10,16 +10,17 @@ import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import { UserManagedItem, UserManagedItemType } from './model/user-managed-items';
 import NothingToShow from '../NothingToShow/NothingToShow';
-import { libraryItemToPb } from './model/library-conversions';
+import { libraryItemFromPb, libraryItemToPb } from './model/library-conversions';
 import { useResolveLibraryItem } from './useResolveLibraryItem';
 import { LibraryContext, resourceMatcherFromContext } from './model/library-context';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import { sha256 } from '../../../crypto/sha256';
-import stringify from 'safe-stable-stringify';
+import { pulsarResourceToFqn } from '../../pulsar/pulsar-resources';
+import { userManagedItemTypeToPb } from './model/user-managed-items-conversions-pb';
 
 export type LibraryBrowserMode = {
   type: 'save';
   item: UserManagedItem;
+  onSave: () => void;
 } | {
   type: 'pick';
   itemType: UserManagedItemType;
@@ -34,6 +35,7 @@ export type LibraryBrowserProps = {
 
 const initialSearchEditorValue: SearchEditorValue = {
   itemType: 'message-filter',
+  tags: [],
   resourceMatcher: {
     type: 'topic-matcher',
     value: {
@@ -63,12 +65,12 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const resolvedLibraryItem = useResolveLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
-  const { notifyError } = Notifications.useContext();
+  const { notifyError, notifySuccess } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
 
   useEffect(() => {
     async function selectItem() {
-      async function mkLibraryItemMetadata(context: LibraryContext, userManagedItem: UserManagedItem): Promise<LibraryItemMetadata> {
+      async function mkLibraryItemMetadata(context: LibraryContext): Promise<LibraryItemMetadata> {
         return {
           availableForContexts: [resourceMatcherFromContext(context)],
           tags: [],
@@ -77,7 +79,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
       }
 
       if (resolvedLibraryItem.type === 'not-found' && props.mode.type === 'save') {
-        const metadata = await mkLibraryItemMetadata(props.libraryContext, props.mode.item);
+        const metadata = await mkLibraryItemMetadata(props.libraryContext);
         const libraryItem: LibraryItem = {
           metadata,
           spec: props.mode.item
@@ -94,6 +96,32 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
     selectItem();
   }, [resolvedLibraryItem, props.mode]);
+
+  useEffect(() => {
+    async function fetchSearchResults() {
+      const req = new pb.ListLibraryItemsRequest();
+      req.setContextFqnsList([pulsarResourceToFqn(props.libraryContext.pulsarResource)]);
+      req.setTypesList([userManagedItemTypeToPb(searchEditorValue.itemType)]);
+      req.setTagsList(searchEditorValue.tags);
+
+      const res = await libraryServiceClient.listLibraryItems(req, null)
+        .catch(err => notifyError(`Unable to fetch library items. ${err}`));
+
+      if (res === undefined) {
+        return;
+      }
+
+      if (res.getStatus()?.getCode() !== Code.OK) {
+        notifyError(`Unable to fetch library items. ${res.getStatus()?.getMessage()}`);
+        return;
+      }
+
+      const items = res.getItemsList().map(libraryItemFromPb);
+      setSearchResults(items);
+    }
+
+    fetchSearchResults();
+  }, [searchEditorValue, props.libraryContext]);
 
   const saveLibraryItem = async (item: LibraryItem) => {
     const req = new pb.SaveLibraryItemRequest();
@@ -112,6 +140,20 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
       notifyError(`Unable to save library item. ${res.getStatus()?.getMessage()}`);
       return;
     }
+
+    if (props.mode.type === 'save') {
+      notifySuccess(
+        <div>
+          Library item successfully saved.
+
+          <ul>
+            <li><strong>Name:</strong> {item.spec.metadata.name}</li>
+            <li><strong>Id:</strong> {item.spec.metadata.id}</li>
+          </ul>
+        </div>
+      );
+      props.mode.onSave();
+    }
   };
 
   return (
@@ -129,7 +171,8 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
         <div className={s.SearchResults}>
           <SearchResults
-            items={[]}
+            items={searchResults}
+            selectedItemId={selectedItem?.spec.metadata.id}
             onSelect={(itemId) => {
               const item = searchResults.find(item => item.spec.metadata.id === itemId);
               if (item === undefined) {

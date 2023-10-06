@@ -5,6 +5,7 @@ import io.circe.generic.semiauto.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
+import com.typesafe.scalalogging.Logger
 
 case class LibraryItemMetadata(
     updatedAt: String,
@@ -28,8 +29,6 @@ type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 case class ListItemsFilter(
     types: List[UserManagedItemType],
     tags: List[TagName],
-    name: String,
-    description: String,
     contextFqns: List[String]
 )
 
@@ -47,6 +46,7 @@ object Library:
 class Library:
     private var rootDir = "./data"
     private var db = LibraryDb(itemsById = Map.empty)
+    private val logger: Logger = Logger(getClass.getName)
 
     def writeItem(item: LibraryItem): Unit =
         val itemId = item.spec.metadata.id
@@ -79,20 +79,6 @@ class Library:
         def getItemsByContextFqns(items: List[LibraryItem], contextFqns: List[String]): List[LibraryItem] =
             items.filter(item => item.metadata.availableForContexts.exists(resource => contextFqns.exists(fqn => ResourceMatcher.test(resource, fqn))))
 
-        def getItemsByName(items: List[LibraryItem], name: String): List[LibraryItem] =
-            val subStringLowerCased = name.toLowerCase
-            items.filter(item =>
-                val metadata = item.spec.metadata
-                metadata.name.toLowerCase.contains(subStringLowerCased)
-            )
-
-        def getItemsByDescription(items: List[LibraryItem], description: String): List[LibraryItem] =
-            val subStringLowerCased = description.toLowerCase
-            items.filter(item =>
-                val metadata = item.spec.metadata
-                metadata.descriptionMarkdown.toLowerCase.contains(subStringLowerCased)
-            )
-
         val dbItems = db.itemsById.values.toList
         val byTypes =
             if filter.types.isEmpty
@@ -106,18 +92,10 @@ class Library:
             if filter.contextFqns.isEmpty
             then byTypes
             else getItemsByContextFqns(byTypes, filter.contextFqns)
-        val byName =
-            if filter.name.isEmpty
-            then byContextFqns
-            else getItemsByName(byContextFqns, filter.name)
-        val byDescription =
-            if filter.description.isEmpty
-            then byName
-            else getItemsByDescription(byName, filter.description)
         val byTags =
             if filter.tags.isEmpty
-            then byDescription
-            else getItemsByTags(byDescription, filter.tags)
+            then byContextFqns
+            else getItemsByTags(byContextFqns, filter.tags)
 
         byTags
 
@@ -131,7 +109,8 @@ class Library:
 
                 val libraryItemIdFromFileName = fileName.split('.').head
                 scanResultEntry match
-                    case Left(_) =>
+                    case Left(err) =>
+                        logger.warn(s"Failed to parse library item from file $fileName: $err")
                         fileName -> scanResultEntry
                     case Right(item) =>
                         val itemId = item.spec.metadata.id
@@ -151,4 +130,6 @@ class Library:
             val itemId = item.spec.metadata.id
             itemId -> item
         }
+        logger.info(s"Library refreshed. Found ${itemsById.size} items in library")
+
         db = LibraryDb(itemsById = itemsById)

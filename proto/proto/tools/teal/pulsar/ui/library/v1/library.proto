@@ -46,8 +46,6 @@ message ListLibraryItemsRequest {
   repeated UserManagedItemType types = 1;
   repeated string context_fqns = 2;
   repeated string tags = 3;
-  string name = 5;
-  string description = 6;
 }
 
 message ListLibraryItemsResponse {

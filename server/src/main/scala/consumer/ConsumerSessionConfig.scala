@@ -56,12 +56,24 @@ given Encoder[MessageFilter] = new Encoder[MessageFilter] {
     )
 }
 
-enum MessageFilterChainMode:
-    case All
-    case Any
+object MessageFilterChainMode:
+    case class All()
+    case class Any()
 
-given Decoder[MessageFilterChainMode] = deriveDecoder[MessageFilterChainMode]
-given Encoder[MessageFilterChainMode] = deriveEncoder[MessageFilterChainMode]
+type MessageFilterChainMode = MessageFilterChainMode.All | MessageFilterChainMode.Any
+
+given Encoder[MessageFilterChainMode] = Encoder.instance {
+    case _: MessageFilterChainMode.All => "All".asJson
+    case _: MessageFilterChainMode.Any => "Any".asJson
+}
+given Decoder[MessageFilterChainMode] = Decoder.instance { cursor =>
+    cursor.as[String].flatMap {
+        case "All" => Right(MessageFilterChainMode.All())
+        case "Any" => Right(MessageFilterChainMode.Any())
+
+        case other => Left(DecodingFailure(s"Unknown type: $other", cursor.history))
+    }
+}
 
 case class MessageFilterChain(
     isEnabled: Boolean,
