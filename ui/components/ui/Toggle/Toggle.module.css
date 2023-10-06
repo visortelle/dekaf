@@ -36,6 +36,7 @@
 
 .Label {
   margin-left: 12rem;
+  user-select: none;
 }
 
 .Circle {

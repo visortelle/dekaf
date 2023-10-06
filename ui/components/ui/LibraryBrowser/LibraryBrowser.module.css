@@ -25,6 +25,7 @@
 
 .LibraryItemEditor {
   overflow: auto;
+  width: 480rem;
 }
 
 .Footer {

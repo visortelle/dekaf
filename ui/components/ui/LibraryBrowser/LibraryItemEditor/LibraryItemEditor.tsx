@@ -6,12 +6,15 @@ import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterChainEditor';
-import { UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
+import { UserManagedItem, UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
+import { LibraryContext } from '../model/library-context';
+import NoData from '../../NoData/NoData';
 
 export type LibraryItemEditorProps = {
   value: LibraryItem;
   onChange: (value: LibraryItem) => void;
   mode: 'editor' | 'viewer';
+  libraryContext: LibraryContext;
 };
 
 const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
@@ -33,6 +36,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
 
             props.onChange({ ...props.value, spec: v.value });
           }}
+          libraryContext={props.libraryContext}
         />
       );
       break;
@@ -51,6 +55,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
 
             props.onChange({ ...props.value, spec: v.value });
           }}
+          libraryContext={props.libraryContext}
         />
       );
       break;
@@ -61,7 +66,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
     <div className={s.LibraryItemEditor}>
       <div className={s.Info}>
         <FormItem>
-          <FormLabel content="Name" isRequired />
+          <FormLabel content="Name" isRequired={props.mode === 'editor'} />
           {props.mode === 'editor' && (
             <Input
               value={value.spec.metadata.name}
@@ -85,19 +90,27 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
               }}
             />
           )}
-          {props.mode === 'viewer' && (<div>{value.spec.metadata.descriptionMarkdown}</div>)}
+          {props.mode === 'viewer' && (<div>{value.spec.metadata.descriptionMarkdown || <NoData />}</div>)}
         </FormItem>
 
         {props.mode === 'viewer' && (
           <FormItem>
             <FormLabel content="Tags" />
-            <div>
-              {value.metadata.tags.map((tag) => (
-                <div key={tag}>{tag}</div>
-              ))}
-            </div>
+            {value.metadata.tags.length === 0 && (<NoData />)}
+            {value.metadata.tags.length !== 0 && (
+              <div>
+                {value.metadata.tags.map((tag) => (
+                  <div key={tag}>{tag}</div>
+                ))}
+              </div>
+            )}
           </FormItem>
         )}
+
+        <FormItem>
+          <FormLabel content="ID" />
+          <div>{value.spec.metadata.id}</div>
+        </FormItem>
       </div>
 
       <div className={s.Editor}>

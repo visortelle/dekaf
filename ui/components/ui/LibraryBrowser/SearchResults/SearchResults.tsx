@@ -11,15 +11,16 @@ export type SearchResultsProps = {
 };
 
 const SearchResults: React.FC<SearchResultsProps> = (props) => {
-  const [nameAndDescriptionFilter, setNameAndDescriptionFilter] = React.useState<string>("")
+  const [filterInputValue, setFilterInputValue] = React.useState<string>("")
 
   const filteredItems = React.useMemo(() => {
     return props.items.filter((item) => {
-      const { name, descriptionMarkdown } = item.spec.metadata;
-      return name.toLowerCase().includes(nameAndDescriptionFilter.toLowerCase()) ||
-        descriptionMarkdown.toLowerCase().includes(nameAndDescriptionFilter.toLowerCase())
+      const { name, descriptionMarkdown, id } = item.spec.metadata;
+      return name.toLowerCase().includes(filterInputValue.toLowerCase()) ||
+        descriptionMarkdown.toLowerCase().includes(filterInputValue.toLowerCase()) ||
+        id.includes(filterInputValue)
     })
-  }, [props.items, nameAndDescriptionFilter]);
+  }, [props.items, filterInputValue]);
 
   return (
     <div className={s.SearchResults}>
@@ -27,9 +28,9 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
         <>
           <div className={s.Filters}>
             <Input
-              placeholder="Search by name or description"
-              value={nameAndDescriptionFilter}
-              onChange={setNameAndDescriptionFilter}
+              placeholder="Search by name, description, or id"
+              value={filterInputValue}
+              onChange={setFilterInputValue}
               appearance='no-borders'
             />
           </div>

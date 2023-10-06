@@ -24,11 +24,11 @@ export type SearchEditorValue = {
   tags: string[];
 }
 
-export type MatchEditorProps = {
+export type SearchEditorProps = {
   mode: SearchEditorMode;
 };
 
-const MatchEditor: React.FC<MatchEditorProps> = (props) => {
+const SearchEditor: React.FC<SearchEditorProps> = (props) => {
   return (
     <div className={s.SearchEditor}>
       <div className={s.Content}>
@@ -45,7 +45,7 @@ const MatchEditor: React.FC<MatchEditorProps> = (props) => {
               }
               props.mode.onChange({ ...props.mode.value, itemType: v });
             }}
-            disabled={props.mode.type === 'readonly'}
+            readOnly={props.mode.type === 'readonly'}
           />
         </FormItem>
 
@@ -112,4 +112,4 @@ const MatchEditor: React.FC<MatchEditorProps> = (props) => {
   );
 }
 
-export default MatchEditor;
+export default SearchEditor;

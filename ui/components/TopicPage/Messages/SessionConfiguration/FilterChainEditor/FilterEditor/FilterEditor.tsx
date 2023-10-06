@@ -37,10 +37,6 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   const value = resolveResult.value;
   const spec = value.spec;
 
-  console.log('props.value', props.value);
-  console.log('value', value);
-  console.log('spec', spec);
-
   const onSpecChange = (spec: UserManagedMessageFilterSpec) => {
     const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, value: { ...value, spec } };
     props.onChange(newValue);
@@ -58,6 +54,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue: () => {} } : undefined}
       />
       <FormItem>
         <div className={s.Controls}>

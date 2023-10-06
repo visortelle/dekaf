@@ -6,7 +6,7 @@ import { UserManagedItemType } from '../../model/user-managed-items';
 export type UserManagedItemTypePickerProps = {
   value: UserManagedItemType;
   onChange: (value: UserManagedItemType) => void;
-  disabled?: boolean;
+  readOnly?: boolean;
 };
 
 const UserManagedItemTypePicker: React.FC<UserManagedItemTypePickerProps> = (props) => {
@@ -19,8 +19,9 @@ const UserManagedItemTypePicker: React.FC<UserManagedItemTypePickerProps> = (pro
           { type: 'item', title: 'Consumer Session Config', value: 'consumer-session-config' },
           { type: 'item', title: 'Producer Session Config', value: 'producer-session-config' },
           { type: 'item', title: 'Message Filter', value: 'message-filter' },
+          { type: 'item', title: 'Message Filter Chain', value: 'message-filter-chain' },
         ]}
-        disabled={props.disabled}
+        disabled={props.readOnly}
       />
     </div>
   );

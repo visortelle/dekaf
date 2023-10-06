@@ -7,6 +7,20 @@
 
 }
 
+.ReferenceIcon {
+  width: 16rem;
+  height: 16rem;
+  margin-left: 6rem;
+}
+
+.ReferenceIcon:hover {
+  cursor: pointer;
+}
+
+.ReferenceIcon svg {
+  fill: var(--text-color);
+}
+
 .Buttons {
   position: absolute;
   display: inline-flex;

@@ -61,7 +61,9 @@ const initialSearchEditorValue: SearchEditorValue = {
 }
 
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
-  const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>(initialSearchEditorValue);
+  const itemType = props.mode.type === 'save' ? props.mode.item.metadata.type : props.mode.itemType;
+
+  const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>({ ...initialSearchEditorValue, itemType });
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
   const resolvedLibraryItem = useResolveLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
@@ -191,10 +193,13 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
               mode={props.mode.type === 'save' ? 'editor' : 'viewer'}
               value={selectedItem}
               onChange={setSelectedItem}
+              libraryContext={props.libraryContext}
             />
           )}
           {!selectedItem && (
-            <NothingToShow content='Select an item to view or edit it.' />
+            <div style={{ padding: '12rem' }}>
+              <NothingToShow content='Select an item to view or edit it.' />
+            </div>
           )}
         </div>
       </div>

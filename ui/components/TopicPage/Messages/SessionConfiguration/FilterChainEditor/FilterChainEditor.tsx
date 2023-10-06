@@ -39,17 +39,14 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   const spec = value.spec;
 
   const onSpecChange = (spec: UserManagedMessageFilterChainSpec) => {
-    if (props.value.type === 'value') {
-      const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
-      props.onChange(newValue);
-      return;
-    }
+    const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...value, spec } };
+    props.onChange(newValue);
+  };
 
-    if (props.value.type === 'reference' && props.value.value !== undefined) {
-      const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
-      props.onChange(newValue);
-      return;
-    }
+  const onConvertToValue = () => {
+    console.log('onConvertToValue', value);
+    const newValue: UserManagedMessageFilterChainValueOrReference = { type: 'value', value };
+    props.onChange(newValue);
   };
 
   return (
@@ -58,15 +55,14 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         <LibraryBrowserPanel
           itemType='message-filter-chain'
           itemToSave={value}
-          onPick={(item) => {
-            if (item.metadata.type !== 'message-filter-chain') {
-              return;
-            }
-
-            props.onChange({ type: 'reference', reference: item.metadata.id })
-          }}
+          onPick={(item) => props.onChange({
+            type: 'reference',
+            reference: item.metadata.id,
+            value: item as UserManagedMessageFilterChain
+          })}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
+          managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
         />
         <div style={{ marginBottom: '12rem', display: 'flex', alignItems: 'center', gap: '8rem' }}>
           <Toggle
