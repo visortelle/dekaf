@@ -35,17 +35,16 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
     return <UseUserManagedItemValOrRefSpinner item={props.value} result={resolveResult} />
   }
 
-  const value = resolveResult.value;
-  const spec = value.spec;
+  const item = resolveResult.value;
+  const itemSpec = item.spec;
 
   const onSpecChange = (spec: UserManagedMessageFilterChainSpec) => {
-    const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...value, spec } };
+    const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    console.log('onConvertToValue', value);
-    const newValue: UserManagedMessageFilterChainValueOrReference = { type: 'value', value };
+    const newValue: UserManagedMessageFilterChainValueOrReference = { type: 'value', value: item };
     props.onChange(newValue);
   };
 
@@ -54,8 +53,13 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'
-          itemToSave={value}
+          itemToSave={item}
           onPick={(item) => props.onChange({
+            type: 'reference',
+            reference: item.metadata.id,
+            value: item as UserManagedMessageFilterChain
+          })}
+          onSave={(item) => props.onChange({
             type: 'reference',
             reference: item.metadata.id,
             value: item as UserManagedMessageFilterChain
@@ -67,14 +71,14 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
         <div style={{ marginBottom: '12rem', display: 'flex', alignItems: 'center', gap: '8rem' }}>
           <Toggle
             label="Enabled"
-            value={spec.isEnabled}
-            onChange={v => onSpecChange({ ...spec, isEnabled: v })}
+            value={itemSpec.isEnabled}
+            onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
             help="The whole filter chain will be disabled if this toggle is off."
           />
           <Toggle
             label="Negated"
-            value={spec.isNegated}
-            onChange={v => onSpecChange({ ...spec, isNegated: v })}
+            value={itemSpec.isNegated}
+            onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
             help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
           />
           <Select<'all' | 'any'>
@@ -82,19 +86,19 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
               { type: 'item', title: 'All filters should match', value: 'all' },
               { type: 'item', title: 'At least one filter should match', value: 'any' },
             ]}
-            value={spec.mode}
-            onChange={v => onSpecChange({ ...spec, mode: v })}
+            value={itemSpec.mode}
+            onChange={v => onSpecChange({ ...itemSpec, mode: v })}
           />
         </div>
       </div>
 
-      {spec.filters.length === 0 && (
+      {itemSpec.filters.length === 0 && (
         <div style={{ marginBottom: '12rem' }}>
           <NothingToShow content={<div>Click the button below to add a first filter.</div>} />
         </div>
       )}
 
-      {spec.filters.length !== 0 && spec.filters.map((filter) => {
+      {itemSpec.filters.length !== 0 && itemSpec.filters.map((filter) => {
         const filterId = filter.type === 'reference' ? filter.reference : filter.value.metadata.id;
         return (
           <div key={filterId} className={s.Entry}>
@@ -102,21 +106,21 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
               <FilterEditor
                 value={filter}
                 onChange={(updatedFilter) => {
-                  const newFilters = spec.filters.map((f) => {
+                  const newFilters = itemSpec.filters.map((f) => {
                     const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
                     if (fId === filterId) {
                       return updatedFilter;
                     }
                     return f;
                   });
-                  onSpecChange({ ...spec, filters: newFilters });
+                  onSpecChange({ ...itemSpec, filters: newFilters });
                 }}
                 onDelete={() => {
-                  const newFilters = spec.filters.filter((f) => {
+                  const newFilters = itemSpec.filters.filter((f) => {
                     const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
                     return fId !== filterId;
                   });
-                  onSpecChange({ ...spec, filters: newFilters });
+                  onSpecChange({ ...itemSpec, filters: newFilters });
                 }}
                 libraryContext={props.libraryContext}
               />
@@ -162,8 +166,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                 break;
             }
 
-            const newChain = spec.filters.concat([{ type: 'value', value: newFilter }]);
-            onSpecChange({ ...spec, filters: newChain });
+            const newChain = itemSpec.filters.concat([{ type: 'value', value: newFilter }]);
+            onSpecChange({ ...itemSpec, filters: newChain });
           }}
           text="Add Message Filter"
           type='primary'

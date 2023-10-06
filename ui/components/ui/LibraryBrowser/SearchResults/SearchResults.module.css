@@ -7,16 +7,24 @@
 
 .Filters {
   border-bottom: 1px solid var(--border-color);
-  /* flex: 0 0 auto; */
+}
+
+.Toolbar {
+  height: 48rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 12rem;
 }
 
 .Items {
   overflow: auto;
-  flex: 1 0 auto;
+  flex: 1 1 auto;
 }
 
 .Item {
   border-bottom: 1px solid var(--border-color);
+  border-left: 4px solid transparent;
 }
 
 .Item:hover {
@@ -26,11 +34,13 @@
 
 .ActiveItem {
   background-color: var(--surface-color);
+  border-left-color: var(--accent-color-blue);
 }
 
 .ItemName {
   font-weight: 500;
   padding: 12rem 12rem;
+  padding-left: 8rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -20,7 +20,7 @@ import { userManagedItemTypeToPb } from './model/user-managed-items-conversions-
 export type LibraryBrowserMode = {
   type: 'save';
   item: UserManagedItem;
-  onSave: () => void;
+  onSave: (item: UserManagedItem) => void;
 } | {
   type: 'pick';
   itemType: UserManagedItemType;
@@ -150,11 +150,11 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
           <ul>
             <li><strong>Name:</strong> {item.spec.metadata.name}</li>
-            <li><strong>Id:</strong> {item.spec.metadata.id}</li>
+            <li><strong>ID:</strong> {item.spec.metadata.id}</li>
           </ul>
         </div>
       );
-      props.mode.onSave();
+      props.mode.onSave(item.spec);
     }
   };
 

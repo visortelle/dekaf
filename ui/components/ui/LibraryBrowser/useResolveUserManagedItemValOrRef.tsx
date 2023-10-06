@@ -22,7 +22,6 @@ export function useResolveUserManagedItemValOrRef<ValueT>(valOrRef: ValueOrRefer
   const { notifyError } = Notifications.useContext();
   const [result, setResult] = useState<UseResolveUserManagedItemValOrRefResult<ValueT>>({ type: 'pending' });
 
-
   const fetchItem = async (itemId: string) => {
     const req = new pb.GetLibraryItemRequest();
     req.setId(itemId);
@@ -40,13 +39,13 @@ export function useResolveUserManagedItemValOrRef<ValueT>(valOrRef: ValueOrRefer
   };
 
   useEffect(() => {
-    if (valOrRef.type === 'value') {
-      setResult({ type: 'success', value: valOrRef.value });
+    if (valOrRef.type === 'reference' && valOrRef.value === undefined) {
+      fetchItem(valOrRef.reference);
       return;
     }
 
-    if (valOrRef.type === 'reference') {
-      fetchItem(valOrRef.reference);
+    if (valOrRef.value !== undefined) {
+      setResult({ type: 'success', value: valOrRef.value });
       return;
     }
   }, [valOrRef]);

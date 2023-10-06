@@ -17,6 +17,7 @@ export type LibraryBrowserPanelProps = {
   itemType: UserManagedItemType;
   itemToSave: UserManagedItem | undefined;
   onPick: (item: UserManagedItem) => void;
+  onSave: (item: UserManagedItem) => void;
   libraryContext: LibraryContext;
   isForceShowButtons?: boolean;
   managedItemReference?: {
@@ -52,7 +53,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
           <div
             className={s.ReferenceIcon}
             onClick={() => {
-              notifySuccess(<>The library item reference were stored as a part of the parent item value.<br />You can now modify it without affecting other items that use it.</>);
+              notifySuccess(<>The referenced library item were stored as a part of the parent item value.<br />You can now modify it without affecting other items that use it.</>);
               props.managedItemReference?.onConvertToValue()
             }}
             data-tooltip-id={tooltipId}
@@ -84,6 +85,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               itemType={props.itemType}
               itemToSave={props.itemToSave}
               onPick={props.onPick}
+              onSave={props.onSave}
               libraryContext={props.libraryContext}
             />
           </div>

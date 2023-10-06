@@ -3,6 +3,7 @@ import s from './SearchResults.module.css'
 import Input from '../../Input/Input';
 import { LibraryItem } from '../model/library';
 import NothingToShow from '../../NothingToShow/NothingToShow';
+import DeleteLibraryItemButton from './DeleteLibraryItemButton/DeleteLibraryItemButton';
 
 export type SearchResultsProps = {
   items: LibraryItem[];
@@ -32,7 +33,11 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
               value={filterInputValue}
               onChange={setFilterInputValue}
               appearance='no-borders'
+              clearable
             />
+          </div>
+          <div className={s.Toolbar}>
+            <DeleteLibraryItemButton itemId={props.selectedItemId} />
           </div>
           {filteredItems.length === 0 && (
             <div className={s.NothingToShow}>
