@@ -60,11 +60,21 @@ const initialSearchEditorValue: SearchEditorValue = {
   }
 }
 
+type SearchResultsState = {
+  type: 'pending'
+} | {
+  type: 'success';
+  items: LibraryItem[];
+} | {
+  type: 'error';
+  error: string;
+};
+
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const itemType = props.mode.type === 'save' ? props.mode.item.metadata.type : props.mode.itemType;
 
   const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>({ ...initialSearchEditorValue, itemType });
-  const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResultsState>({ type: 'pending' });
   const resolvedLibraryItem = useLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
   const { notifyError, notifySuccess } = Notifications.useContext();
@@ -107,7 +117,10 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
       req.setTagsList(searchEditorValue.tags);
 
       const res = await libraryServiceClient.listLibraryItems(req, null)
-        .catch(err => notifyError(`Unable to fetch library items. ${err}`));
+        .catch(err => {
+          setSearchResults({ type: 'error', error: err });
+          notifyError(`Unable to fetch library items. ${err}`);
+        });
 
       if (res === undefined) {
         return;
@@ -115,11 +128,12 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
       if (res.getStatus()?.getCode() !== Code.OK) {
         notifyError(`Unable to fetch library items. ${res.getStatus()?.getMessage()}`);
+        setSearchResults({ type: 'error', error: res.getStatus()?.getMessage() ?? 'Unknown error' });
         return;
       }
 
       const items = res.getItemsList().map(libraryItemFromPb);
-      setSearchResults(items);
+      setSearchResults({ type: 'success', items });
     }
 
     fetchSearchResults();
@@ -172,19 +186,30 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         </div>
 
         <div className={s.SearchResults}>
-          <SearchResults
-            items={searchResults}
-            selectedItemId={selectedItem?.spec.metadata.id}
-            onSelect={(itemId) => {
-              const item = searchResults.find(item => item.spec.metadata.id === itemId);
-              if (item === undefined) {
-                console.error(`Could not find library item with id ${itemId}`);
-                return;
-              }
+          {searchResults.type === 'pending' && (
+            <div className={s.SearchResultsNothingToShow}>
+              <NothingToShow reason='loading-in-progress' />
+            </div>
+          )}
+          {searchResults.type === 'error' && (
+            <div className={s.SearchResultsNothingToShow}>
+              <NothingToShow reason='error' content={<div><p>Unable to load search results.</p><p>{searchResults.error}</p></div>} />)
+            </div>
+          )}
+          {searchResults.type === 'success' && (
+            <SearchResults
+              items={searchResults.items}
+              selectedItemId={selectedItem?.spec.metadata.id}
+              onSelect={(itemId) => {
+                const item = searchResults.items.find(item => item.spec.metadata.id === itemId);
+                if (item === undefined) {
+                  console.error(`Could not find library item with id ${itemId}`);
+                  return;
+                }
 
-              setSelectedItem(item);
-            }}
-          />
+                setSelectedItem(item);
+              }}
+            />)}
         </div>
 
         <div className={s.LibraryItemEditor}>
