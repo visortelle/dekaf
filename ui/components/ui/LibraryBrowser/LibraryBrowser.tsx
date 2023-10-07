@@ -11,7 +11,7 @@ import * as Notifications from '../../app/contexts/Notifications';
 import { UserManagedItem, UserManagedItemType } from './model/user-managed-items';
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemFromPb, libraryItemToPb } from './model/library-conversions';
-import { useResolveLibraryItem } from './useResolveLibraryItem';
+import { useLibraryItem } from './useLibraryItem';
 import { LibraryContext, resourceMatcherFromContext } from './model/library-context';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { pulsarResourceToFqn } from '../../pulsar/pulsar-resources';
@@ -65,7 +65,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>({ ...initialSearchEditorValue, itemType });
   const [searchResults, setSearchResults] = useState<LibraryItem[]>([]);
-  const resolvedLibraryItem = useResolveLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
+  const resolvedLibraryItem = useLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
   const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();

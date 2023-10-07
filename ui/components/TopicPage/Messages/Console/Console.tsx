@@ -19,7 +19,7 @@ export type ConsoleProps = {
   onClose: () => void;
   sessionKey: number;
   sessionSubscriptionName: string;
-  sessionConfig: ConsumerSessionConfig;
+  sessionConfig: ConsumerSessionConfig | undefined;
   sessionState: SessionState;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   onSessionStateChange: (state: SessionState) => void;
@@ -31,6 +31,10 @@ type TabKey = 'producer' | 'cursors' | 'visualize' | 'filter-logs' | 'filter-rep
 
 const Console: React.FC<ConsoleProps> = (props) => {
   const [activeTab, setActiveTab] = React.useState<TabKey>('export');
+
+  if (props.sessionConfig === undefined) {
+    return null;
+  }
 
   return (
     <EnteringFromBottomDiv
@@ -46,14 +50,20 @@ const Console: React.FC<ConsoleProps> = (props) => {
           'producer': {
             title: 'Produce',
             isRenderAlways: true,
-            render: () => (
-              <Producer
-                preset={{
-                  topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
-                  key: ''
-                }}
-              />
-            )
+            render: () => {
+              if (props.sessionConfig === undefined) {
+                return;
+              }
+
+              return (
+                <Producer
+                  preset={{
+                    topic: props.sessionConfig.topicsSelector.type === 'by-names' ? props.sessionConfig.topicsSelector.topics[0] : undefined,
+                    key: ''
+                  }}
+                />
+              )
+            }
           },
           'visualize': {
             title: 'Visualize',
@@ -113,6 +123,10 @@ const Console: React.FC<ConsoleProps> = (props) => {
 }
 
 const CursorsTab: React.FC<ConsoleProps> = (props) => {
+  if ( props.sessionConfig === undefined) {
+    return null;
+  }
+
   return (
     <>
       {!(props.sessionState === 'running' || props.sessionState === 'paused') && (

@@ -15,7 +15,7 @@ import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
-import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
+import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 
 export type FilterChainProps = {
@@ -29,10 +29,11 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
     defaultValue: 'basic-message-filter',
   });
-  const resolveResult = useResolveUserManagedItemValOrRef<UserManagedMessageFilterChain>(props.value);
+
+  const resolveResult = useUserManagedItemValue<UserManagedMessageFilterChain>(props.value);
 
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValOrRefSpinner item={props.value} result={resolveResult} />
+    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const item = resolveResult.value;

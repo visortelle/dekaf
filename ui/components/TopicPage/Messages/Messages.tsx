@@ -30,7 +30,7 @@ import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
-import { SessionState, MessageDescriptor } from './types';
+import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
 import useSWR from 'swr';
@@ -86,16 +86,24 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
+  const [config, setConfig] = useState<ConsumerSessionConfig | undefined>(undefined);
 
-  const config = consumerSessionConfigFromValueOrReference(props.config);
-  const { topicsSelector } = config;
+  useEffect(() => {
+    try {
+      const a = consumerSessionConfigFromValueOrReference(props.config);
+      setConfig(a);
+    } catch (err) {
+      console.warn(err);
+      setConfig(undefined);
+    }
+  }, [props.config]);
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
-      config.topicsSelector.type === 'by-names' ? config.topicsSelector.topics : []
+      config?.topicsSelector.type === 'by-names' ? config.topicsSelector.topics : []
     ).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
     async () => {
-      if (config.topicsSelector.type !== 'by-names') {
+      if (config?.topicsSelector.type !== 'by-names') {
         return undefined;
       }
 
@@ -205,13 +213,19 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const initializeSession = useCallback(() => {
     async function createConsumer() {
+      if (config === undefined) {
+        return;
+      }
+
+      const topicsSelector = config.topicsSelector;
+
       const req = new CreateConsumerRequest();
-      const topicSelector = new TopicsSelector();
+      const topicsSelectorPb = new TopicsSelector();
 
       if (topicsSelector.type === 'by-names') {
         const selector = new TopicsSelectorByNames();
         selector.setTopicsList(topicsSelector.topics);
-        topicSelector.setByNames(selector);
+        topicsSelectorPb.setByNames(selector);
       }
 
       if (topicsSelector.type === 'by-regex') {
@@ -226,10 +240,10 @@ const Session: React.FC<SessionProps> = (props) => {
         }
 
         selector.setRegexSubscriptionMode(regexSubscriptionMode);
-        topicSelector.setByRegex(selector);
+        topicsSelectorPb.setByRegex(selector);
       }
 
-      req.setTopicsSelector(topicSelector)
+      req.setTopicsSelector(topicsSelectorPb)
       req.setConsumerName(consumerName.current);
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName.current);

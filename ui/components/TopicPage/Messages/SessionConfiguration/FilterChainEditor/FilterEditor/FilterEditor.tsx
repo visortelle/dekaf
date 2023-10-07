@@ -13,7 +13,7 @@ import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
 import { UserManagedMessageFilter, UserManagedMessageFilterSpec, UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
-import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
+import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 
 export type FilterEditorProps = {
@@ -29,9 +29,9 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
     defaultValue: 'basic-message-filter',
   });
 
-  const resolveResult = useResolveUserManagedItemValOrRef<UserManagedMessageFilter>(props.value);
+  const resolveResult = useUserManagedItemValue<UserManagedMessageFilter>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValOrRefSpinner item={props.value} result={resolveResult} />
+    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} onDelete={props.onDelete} />
   }
 
   const item = resolveResult.value;

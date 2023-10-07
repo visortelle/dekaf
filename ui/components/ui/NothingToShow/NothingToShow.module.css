@@ -8,5 +8,6 @@
 }
 
 .Error {
-  color: var(--error-color);
+  background: var(--accent-color-red);
+  color: #fff;
 }
