@@ -6,8 +6,9 @@ import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterChainEditor';
-import { UserManagedItem, UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
+import { UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
 import { LibraryContext } from '../model/library-context';
+import * as I18n from '../../../app/contexts/I18n/I18n';
 import NoData from '../../NoData/NoData';
 
 export type LibraryItemEditorProps = {
@@ -18,6 +19,7 @@ export type LibraryItemEditorProps = {
 };
 
 const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
+  const i18n = I18n.useContext();
   const value = props.value;
 
   let descriptorEditor: ReactElement = <></>;
@@ -56,6 +58,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
             props.onChange({ ...props.value, spec: v.value });
           }}
           libraryContext={props.libraryContext}
+          appearance="compact"
         />
       );
       break;
@@ -65,9 +68,9 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
   return (
     <div className={s.LibraryItemEditor}>
       <div className={s.Info}>
-        <FormItem>
-          <FormLabel content="Name" isRequired={props.mode === 'editor'} />
-          {props.mode === 'editor' && (
+        {props.mode === 'editor' && (
+          <FormItem>
+            <FormLabel content="Name" isRequired />
             <Input
               value={value.spec.metadata.name}
               onChange={v => {
@@ -75,13 +78,16 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
                 props.onChange({ ...value, spec: { ...value.spec, metadata: newMetadata } });
               }}
             />
-          )}
-          {props.mode === 'viewer' && (<div>{value.spec.metadata.name}</div>)}
-        </FormItem>
+          </FormItem>
+        )}
 
-        <FormItem>
-          <FormLabel content="Description" />
-          {props.mode === 'editor' && (
+        {props.mode === 'viewer' && props.value.spec.metadata.descriptionMarkdown && (
+          value.spec.metadata.descriptionMarkdown
+        )}
+
+        {props.mode === 'editor' && (
+          <FormItem>
+            <FormLabel content="Description" />
             <Input
               value={value.spec.metadata.descriptionMarkdown}
               onChange={v => {
@@ -89,32 +95,36 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
                 props.onChange({ ...value, spec: { ...value.spec, metadata: newMetadata } });
               }}
             />
-          )}
-          {props.mode === 'viewer' && (<div>{value.spec.metadata.descriptionMarkdown || <NoData />}</div>)}
-        </FormItem>
-
-        {props.mode === 'viewer' && (
-          <FormItem>
-            <FormLabel content="Tags" />
-            {value.metadata.tags.length === 0 && (<NoData />)}
-            {value.metadata.tags.length !== 0 && (
-              <div>
-                {value.metadata.tags.map((tag) => (
-                  <div key={tag}>{tag}</div>
-                ))}
-              </div>
-            )}
           </FormItem>
         )}
-
-        <FormItem>
-          <FormLabel content="ID" />
-          <div>{value.spec.metadata.id}</div>
-        </FormItem>
       </div>
 
       <div className={s.Editor}>
         {descriptorEditor}
+      </div>
+
+      <div style={{ marginTop: '24rem' }}>
+        <FormItem>
+          <FormLabel content="ID" />
+          <div>{value.spec.metadata.id}</div>
+        </FormItem>
+
+        <FormItem>
+          <FormLabel content="Tags" />
+          {value.metadata.tags.length === 0 && (<NoData />)}
+          {value.metadata.tags.length !== 0 && (
+            <div>
+              {value.metadata.tags.map((tag) => (
+                <div key={tag}>{tag}</div>
+              ))}
+            </div>
+          )}
+        </FormItem>
+
+        <FormItem>
+          <FormLabel content="Updated at" />
+          <div>{i18n.formatDateTime(new Date(value.metadata.updatedAt))}</div>
+        </FormItem>
       </div>
     </div>
   );

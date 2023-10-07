@@ -10,11 +10,13 @@
 }
 
 .Toolbar {
-  height: 48rem;
+  flex: 0 0 48rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 12rem;
+  gap: 12rem;
 }
 
 .Items {
@@ -23,6 +25,7 @@
 }
 
 .Item {
+  position: relative;
   border-bottom: 1px solid var(--border-color);
   border-left: 4px solid transparent;
 }
@@ -50,6 +53,14 @@
   padding: 2rem 12rem 12rem 12rem;
   margin-top: -12rem;
   font-size: 12rem;
+}
+
+.ItemUpdatedAt {
+  position: absolute;
+  font-size: 12rem;
+  opacity: 0.5;
+  right: 12rem;
+  bottom: 4rem;
 }
 
 .NothingToShow {

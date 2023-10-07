@@ -1,6 +1,6 @@
 import React from 'react';
 
-import FilterChain from './FilterChainEditor/FilterChainEditor';
+import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 
 import s from './SessionConfiguration.module.css'
@@ -87,7 +87,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           </FormItem>
         </div>
         <div className={s.RightColumn}>
-          <FilterChain
+          <FilterChainEditor
             value={spec.messageFilterChain}
             onChange={(v) => onSpecChange({ ...spec, messageFilterChain: v })}
             libraryContext={props.libraryContext}

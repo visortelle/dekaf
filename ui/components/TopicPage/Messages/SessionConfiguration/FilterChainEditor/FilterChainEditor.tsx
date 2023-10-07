@@ -18,13 +18,14 @@ import Toggle from '../../../../ui/Toggle/Toggle';
 import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 
-export type FilterChainProps = {
+export type FilterChainEditorProps = {
   value: UserManagedMessageFilterChainValueOrReference;
   onChange: (value: UserManagedMessageFilterChainValueOrReference) => void;
   libraryContext: LibraryContext;
+  appearance?: 'default' | 'compact';
 };
 
-const FilterChain: React.FC<FilterChainProps> = (props) => {
+const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
     defaultValue: 'basic-message-filter',
@@ -69,19 +70,29 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
         />
-        <div style={{ marginBottom: '12rem', display: 'flex', alignItems: 'center', gap: '8rem' }}>
-          <Toggle
-            label="Enabled"
-            value={itemSpec.isEnabled}
-            onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
-            help="The whole filter chain will be disabled if this toggle is off."
-          />
-          <Toggle
-            label="Negated"
-            value={itemSpec.isNegated}
-            onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
-            help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
-          />
+        <div
+          style={{
+              marginBottom: '12rem',
+              display: 'flex',
+              alignItems: props.appearance ? 'unset' : 'center',
+              gap: '8rem',
+              paddingTop: props.appearance === 'compact' ? '8rem' : '0',
+              flexDirection: props.appearance === 'compact' ? 'column' : 'row',
+          }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Toggle
+              label="Enabled"
+              value={itemSpec.isEnabled}
+              onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
+              help="The whole filter chain will be disabled if this toggle is off."
+            />
+            <Toggle
+              label="Negated"
+              value={itemSpec.isNegated}
+              onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
+              help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
+            />
+          </div>
           <Select<'all' | 'any'>
             list={[
               { type: 'item', title: 'All filters should match', value: 'all' },
@@ -179,4 +190,4 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   );
 }
 
-export default FilterChain;
+export default FilterChainEditor;

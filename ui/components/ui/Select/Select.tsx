@@ -17,6 +17,7 @@ export type SelectProps<V> = {
   list: List<V>;
   placeholder?: string;
   disabled?: boolean;
+  appearance?: 'regular' | 'no-borders';
 }
 
 function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
@@ -30,7 +31,7 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
   }
 
   return (
-    <div className={s.Container}>
+    <div className={`${s.Container} ${props.appearance === 'no-borders' ? s.NoBorders : ''}`}>
       {props.value === undefined && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={`${s.Select} ${props.disabled ? s.DisabledSelect : ''}`}
