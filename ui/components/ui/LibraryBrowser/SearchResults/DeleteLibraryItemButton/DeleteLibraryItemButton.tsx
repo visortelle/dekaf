@@ -11,6 +11,7 @@ import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 
 export type DeleteLibraryItemButtonProps = {
   itemId: string | undefined;
+  onDeleted: () => void;
 };
 
 const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) => {
@@ -46,6 +47,7 @@ const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) 
             }
 
             notifySuccess('Library item has been successfully deleted.');
+            props.onDeleted();
             modals.pop();
           }}
           type='danger'

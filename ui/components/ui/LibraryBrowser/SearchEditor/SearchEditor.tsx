@@ -103,6 +103,7 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
               if (props.mode.type === 'readonly') {
                 return;
               }
+
               props.mode.onChange({ ...props.mode.value, resourceMatcher: v })
             }}
           />

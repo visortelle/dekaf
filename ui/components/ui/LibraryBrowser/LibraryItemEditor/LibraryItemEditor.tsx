@@ -77,6 +77,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
                 const newMetadata = { ...value.spec.metadata, name: v };
                 props.onChange({ ...value, spec: { ...value.spec, metadata: newMetadata } });
               }}
+              focusOnMount
             />
           </FormItem>
         )}

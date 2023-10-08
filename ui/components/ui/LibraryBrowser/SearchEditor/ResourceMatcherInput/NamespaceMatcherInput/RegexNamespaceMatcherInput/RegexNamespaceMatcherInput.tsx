@@ -19,7 +19,7 @@ const RegexNamespaceMatcherInput: React.FC<RegexNamespaceMatcherInputProps> = (p
         <Input
           value={props.value.namespaceRegex}
           onChange={(v) => props.onChange({ ...props.value, namespaceRegex: v })}
-          placeholder='.*'
+          placeholder='Use .* regex to match all namespaces'
         />
       </FormItem>
       <FormItem>

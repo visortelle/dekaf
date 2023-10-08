@@ -7,10 +7,17 @@ import DeleteLibraryItemButton from './DeleteLibraryItemButton/DeleteLibraryItem
 import SortInput, { Sort } from '../../SortInput/SortInput';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 
+export type ExtraLabel = {
+  text: string;
+  color?: string;
+}
+
 export type SearchResultsProps = {
   items: LibraryItem[];
-  onSelect: (id: string) => void;
   selectedItemId?: string;
+  onSelect: (id: string) => void;
+  onDeleted: () => void;
+  extraLabels: Record<string, ExtraLabel>;
 };
 
 type SortOption = 'Name' | 'Last Modified';
@@ -30,7 +37,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
     if (sort.sortBy === 'Name') {
       result = result.sort((a, b) => a.spec.metadata.name.localeCompare(b.spec.metadata.name, 'en', { numeric: true }));
     } else if (sort.sortBy === 'Last Modified') {
-      result = result.sort((a, b) => a.spec.metadata.name.localeCompare(b.spec.metadata.name, 'en', { numeric: true }));
+      result = result.sort((a, b) => a.metadata.updatedAt.localeCompare(b.metadata.updatedAt, 'en', { numeric: true }));
     }
 
     return sort.sortDirection === 'asc' ? result : result.reverse();
@@ -57,7 +64,10 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                 onChange={setSort}
               />
             </div>
-            <DeleteLibraryItemButton itemId={props.selectedItemId} />
+            <DeleteLibraryItemButton
+              itemId={props.selectedItemId}
+              onDeleted={props.onDeleted}
+            />
           </div>
           {filteredItems.length === 0 && (
             <div className={s.NothingToShow}>
@@ -77,6 +87,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
                     updatedAt={item.metadata.updatedAt}
                     onClick={() => props.onSelect(id)}
                     selectedItemId={props.selectedItemId}
+                    extraLabel={props.extraLabels[id]}
                   />
                 )
               })}
@@ -95,6 +106,7 @@ export type ItemProps = {
   updatedAt: string;
   onClick: () => void;
   selectedItemId?: string;
+  extraLabel?: ExtraLabel;
 };
 
 const Item: React.FC<ItemProps> = (props) => {
@@ -104,7 +116,7 @@ const Item: React.FC<ItemProps> = (props) => {
   return (
     <div className={className} onClick={props.onClick}>
       <div className={s.ItemName}>
-        {props.name}
+        {props.name || <div className={s.Unnamed}>Unnamed</div>}
       </div>
       <div className={s.ItemDescription}>
         {props.descriptionMarkdown}
@@ -112,6 +124,11 @@ const Item: React.FC<ItemProps> = (props) => {
       <div className={s.ItemUpdatedAt}>
         Updated at: {i18n.formatDateTime(new Date(props.updatedAt))}
       </div>
+      {props.extraLabel && (
+        <div className={s.ItemExtraLabel} style={{ color: props.extraLabel.color }}>
+          {props.extraLabel.text}
+        </div>
+      )}
     </div>
   );
 }

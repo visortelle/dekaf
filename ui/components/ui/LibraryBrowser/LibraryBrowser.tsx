@@ -8,7 +8,7 @@ import Button from '../Button/Button';
 import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
-import { UserManagedItem, UserManagedItemType } from './model/user-managed-items';
+import { UserManagedItem, UserManagedItemMetadata, UserManagedItemType } from './model/user-managed-items';
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemFromPb, libraryItemToPb } from './model/library-conversions';
 import { useLibraryItem } from './useLibraryItem';
@@ -75,8 +75,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
   const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>({ ...initialSearchEditorValue, itemType });
   const [searchResults, setSearchResults] = useState<SearchResultsState>({ type: 'pending' });
-  const resolvedLibraryItem = useLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
-  const [selectedItem, setSelectedItem] = useState<LibraryItem | undefined>(undefined);
+  const resolvedItemToSave = useLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
+  const [itemToSave, setItemToSave] = useState<LibraryItem | undefined>(undefined);
+  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
 
@@ -90,52 +91,53 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         };
       }
 
-      if (resolvedLibraryItem.type === 'not-found' && props.mode.type === 'save') {
-        const metadata = await mkLibraryItemMetadata(props.libraryContext);
-        const libraryItem: LibraryItem = {
-          metadata,
+      if (resolvedItemToSave.type === 'not-found' && props.mode.type === 'save') {
+        const itemToSaveMetadata = await mkLibraryItemMetadata(props.libraryContext);
+        const itemToSave: LibraryItem = {
+          metadata: itemToSaveMetadata,
           spec: props.mode.item
         };
 
-        setSelectedItem(libraryItem);
+        setItemToSave(itemToSave);
+        setSelectedItemId(itemToSave.spec.metadata.id);
         setSearchEditorValue((v) => ({ ...v, resourceMatcher: resourceMatcherFromContext(props.libraryContext) }));
       }
 
-      if (resolvedLibraryItem.type === 'success') {
-        setSelectedItem(resolvedLibraryItem.value);
+      if (resolvedItemToSave.type === 'success') {
+        setSelectedItemId(resolvedItemToSave.value.spec.metadata.id);
       }
     }
 
     selectItem();
-  }, [resolvedLibraryItem, props.mode]);
+  }, [resolvedItemToSave, props.mode]);
 
-  useEffect(() => {
-    async function fetchSearchResults() {
-      const req = new pb.ListLibraryItemsRequest();
-      req.setContextFqnsList([pulsarResourceToFqn(props.libraryContext.pulsarResource)]);
-      req.setTypesList([userManagedItemTypeToPb(searchEditorValue.itemType)]);
-      req.setTagsList(searchEditorValue.tags);
+  async function fetchSearchResults() {
+    const req = new pb.ListLibraryItemsRequest();
+    req.setContextFqnsList([pulsarResourceToFqn(props.libraryContext.pulsarResource)]);
+    req.setTypesList([userManagedItemTypeToPb(searchEditorValue.itemType)]);
+    req.setTagsList(searchEditorValue.tags);
 
-      const res = await libraryServiceClient.listLibraryItems(req, null)
-        .catch(err => {
-          setSearchResults({ type: 'error', error: err });
-          notifyError(`Unable to fetch library items. ${err}`);
-        });
+    const res = await libraryServiceClient.listLibraryItems(req, null)
+      .catch(err => {
+        setSearchResults({ type: 'error', error: err });
+        notifyError(`Unable to fetch library items. ${err}`);
+      });
 
-      if (res === undefined) {
-        return;
-      }
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to fetch library items. ${res.getStatus()?.getMessage()}`);
-        setSearchResults({ type: 'error', error: res.getStatus()?.getMessage() ?? 'Unknown error' });
-        return;
-      }
-
-      const items = res.getItemsList().map(libraryItemFromPb);
-      setSearchResults({ type: 'success', items });
+    if (res === undefined) {
+      return;
     }
 
+    if (res.getStatus()?.getCode() !== Code.OK) {
+      notifyError(`Unable to fetch library items. ${res.getStatus()?.getMessage()}`);
+      setSearchResults({ type: 'error', error: res.getStatus()?.getMessage() ?? 'Unknown error' });
+      return;
+    }
+
+    const items = res.getItemsList().map(libraryItemFromPb);
+    setSearchResults({ type: 'success', items });
+  }
+
+  useEffect(() => {
     fetchSearchResults();
   }, [searchEditorValue, props.libraryContext]);
 
@@ -172,6 +174,32 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     }
   };
 
+  const items = (itemToSave === undefined ? [] : [itemToSave])
+    .concat(searchResults.type === 'success' ? searchResults.items : []);
+
+  const selectedItem = items.find((item) => item.spec.metadata.id === selectedItemId);
+  const updateSelectedItem = (item: LibraryItem) => {
+    if (item.spec.metadata.id === itemToSave?.spec.metadata.id) {
+      setItemToSave(item);
+      return;
+    }
+
+    setSearchResults((srs) => {
+      return {
+        type: 'success',
+        items: srs.type === 'success' ?
+          srs.items.map((sr) => {
+            if (sr.spec.metadata.id === item.spec.metadata.id) {
+              return item;
+            }
+
+            return sr;
+          }) :
+          []
+      };
+    });
+  }
+
   return (
     <div className={s.LibraryBrowser}>
       <div className={s.Content}>
@@ -198,18 +226,18 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
           )}
           {searchResults.type === 'success' && (
             <SearchResults
-              items={searchResults.items}
-              selectedItemId={selectedItem?.spec.metadata.id}
-              onSelect={(itemId) => {
-                const item = searchResults.items.find(item => item.spec.metadata.id === itemId);
-                if (item === undefined) {
-                  console.error(`Could not find library item with id ${itemId}`);
-                  return;
-                }
-
-                setSelectedItem(item);
+              items={items}
+              selectedItemId={selectedItemId}
+              onSelect={(itemId) => setSelectedItemId(itemId)}
+              onDeleted={() => {
+                setSelectedItemId(undefined);
+                fetchSearchResults();
               }}
-            />)}
+              extraLabels={{
+                [itemToSave?.spec.metadata.id ?? '']: { text: 'New item', color: 'var(--accent-color-blue)' }
+              }}
+            />
+          )}
         </div>
 
         <div className={s.LibraryItemEditor}>
@@ -217,11 +245,11 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             <LibraryItemEditor
               mode={props.mode.type === 'save' ? 'editor' : 'viewer'}
               value={selectedItem}
-              onChange={setSelectedItem}
+              onChange={updateSelectedItem}
               libraryContext={props.libraryContext}
             />
           )}
-          {!selectedItem && (
+          {!selectedItemId && (
             <div style={{ padding: '12rem' }}>
               <NothingToShow content='Select an item to view or edit it.' />
             </div>
@@ -237,7 +265,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         />
         {props.mode.type === 'pick' && (
           <Button
-            disabled={!selectedItem}
+            disabled={!selectedItemId}
             onClick={() => {
               if (props.mode.type !== 'pick') return;
               if (selectedItem === undefined) return;
@@ -254,11 +282,32 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
             onClick={async () => {
               if (props.mode.type !== 'save') return;
               if (selectedItem === undefined) return;
+              if (itemToSave === undefined) return;
 
-              await saveLibraryItem(selectedItem);
+              const libraryItemMetadata: LibraryItemMetadata = {
+                ...selectedItem.metadata,
+                availableForContexts: [searchEditorValue.resourceMatcher],
+                tags: searchEditorValue.tags,
+                updatedAt: new Date().toISOString()
+              };
+
+              const userManagedItemMetadata: UserManagedItemMetadata = {
+                ...itemToSave.spec.metadata,
+                id: selectedItem.spec.metadata.id,
+              };
+
+              const userManagedItem: UserManagedItem = {
+                ...props.mode.item,
+                metadata: userManagedItemMetadata
+              };
+
+              await saveLibraryItem({
+                metadata: libraryItemMetadata,
+                spec: userManagedItem
+              });
             }}
-            type='primary'
-            text='Save'
+            type={props.mode.item.metadata.id === selectedItem?.spec.metadata.id ? 'primary' : 'danger'}
+            text={props.mode.item.metadata.id === selectedItem?.spec.metadata.id ? 'Save' : 'Overwrite selected item'}
           />
         )}
       </div>

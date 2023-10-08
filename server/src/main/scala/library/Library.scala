@@ -50,9 +50,14 @@ class Library:
 
     def writeItem(item: LibraryItem): Unit =
         val itemId = item.spec.metadata.id
+
+        if item.spec.metadata.name.isEmpty then
+            throw new Exception(s"Library item $itemId should have a name.")
+
         val fileName = s"${itemId}.json"
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
         val itemAsJson = item.asJson.spaces2SortKeys
+
 
         os.write.over(
             target = filePath,

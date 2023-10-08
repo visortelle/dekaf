@@ -63,6 +63,18 @@
   bottom: 4rem;
 }
 
+.ItemExtraLabel {
+  position: absolute;
+  font-weight: var(--font-weight-bold);
+  font-size: 12rem;
+  right: 12rem;
+  top: 4rem;
+}
+
+.Unnamed {
+  opacity: 0.5;
+}
+
 .NothingToShow {
   padding: 12rem;
 }
