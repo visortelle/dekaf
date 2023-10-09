@@ -1,0 +1,1 @@
+This directory stores user-managed items like Message Filters or Consumer Session Configs that can be saved and reused later.

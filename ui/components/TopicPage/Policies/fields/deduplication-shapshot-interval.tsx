@@ -14,6 +14,7 @@ import { swrKeys } from '../../../swrKeys';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import {help} from "../../../ui/help";
 import React from "react";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 
 const policy = 'deduplicationSnapshotInterval';
@@ -24,7 +25,7 @@ type PolicyValue = { type: 'inherited-from-namespace-config' } | {
 };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -36,7 +37,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const swrKey = props.topicType === 'persistent' ?
+  const swrKey = props.topicPersistency === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
@@ -44,7 +45,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetDeduplicationSnapshotIntervalRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getDeduplicationSnapshotInterval(req, {});
@@ -83,7 +84,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-namespace-config') {
           const req = new pb.RemoveDeduplicationSnapshotIntervalRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
           const res = await topicPoliciesServiceClient.removeDeduplicationSnapshotInterval(req, {});
           if (res !== undefined && res.getStatus()?.getCode() !== Code.OK) {
@@ -99,7 +100,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
 
           const req = new pb.SetDeduplicationSnapshotIntervalRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
           req.setInterval(Math.floor(value.intervalSeconds));
           const res = await topicPoliciesServiceClient.setDeduplicationSnapshotInterval(req, {});

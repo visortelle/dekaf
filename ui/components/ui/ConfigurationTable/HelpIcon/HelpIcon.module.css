@@ -5,7 +5,7 @@
 }
 
 .HelpIcon:hover {
-  cursor: pointer;
+  cursor: help;
   position: relative;
 }
 

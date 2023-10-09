@@ -3,6 +3,8 @@ import React from 'react';
 import SvgIcon from '../SvgIcon/SvgIcon';
 
 import s from './SmallButton.module.css';
+import { tooltipId } from '../Tooltip/Tooltip';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 export type SmallButtonProps = {
   onClick: () => void,
@@ -37,8 +39,9 @@ const SmallButton = (props: SmallButtonProps) => {
       onClick={props.onClick}
       style={{ ...props.style }}
       disabled={props.disabled}
-      title={props.title}
       data-testid={props.testId}
+      data-tooltip-id={tooltipId}
+      data-tooltip-html={renderToStaticMarkup(<>{props.title}</>)}
     >
       {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
       {props.text && <span className={s.Text}>{props.text}</span>}
