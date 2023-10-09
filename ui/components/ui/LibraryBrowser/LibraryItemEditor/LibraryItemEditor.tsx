@@ -11,6 +11,7 @@ import { LibraryContext } from '../model/library-context';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import NoData from '../../NoData/NoData';
 import ResourceMatcherInput from '../SearchEditor/ResourceMatchersInput/ResourceMatcherInput/ResourceMatcherInput';
+import ResourceMatchersInput from '../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
 
 export type LibraryItemEditorProps = {
   value: LibraryItem;
@@ -69,6 +70,33 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
   return (
     <div className={s.LibraryItemEditor}>
       <div className={s.Info}>
+        <FormItem>
+          <FormLabel content="Name" />
+          <div>{value.spec.metadata.name}</div>
+        </FormItem>
+
+        <FormItem>
+          <FormLabel content="ID" />
+          <div>{value.spec.metadata.id}</div>
+        </FormItem>
+
+        <FormItem>
+          <FormLabel content="Tags" />
+          {value.metadata.tags.length === 0 && (<NoData />)}
+          {value.metadata.tags.length !== 0 && (
+            <div>
+              {value.metadata.tags.map((tag) => (
+                <div key={tag}>{tag}</div>
+              ))}
+            </div>
+          )}
+        </FormItem>
+
+        <FormItem>
+          <FormLabel content="Updated at" />
+          <div>{i18n.formatDateTime(new Date(value.metadata.updatedAt))}</div>
+        </FormItem>
+
         {props.mode === 'editor' && (
           <FormItem>
             <FormLabel content="Name" isRequired />
@@ -107,40 +135,12 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
 
       <div style={{ marginTop: '24rem' }}>
         <FormItem>
-          <FormLabel content="ID" />
-          <div>{value.spec.metadata.id}</div>
-        </FormItem>
-
-        <FormItem>
-          <FormLabel content="Tags" />
-          {value.metadata.tags.length === 0 && (<NoData />)}
-          {value.metadata.tags.length !== 0 && (
-            <div>
-              {value.metadata.tags.map((tag) => (
-                <div key={tag}>{tag}</div>
-              ))}
-            </div>
-          )}
-        </FormItem>
-
-        <FormItem>
-          <FormLabel content="Updated at" />
-          <div>{i18n.formatDateTime(new Date(value.metadata.updatedAt))}</div>
-        </FormItem>
-
-        <FormItem>
           <FormLabel content="Pulsar Resources" />
-          {value.metadata.availableForContexts.map((matcher, i) => {
-            return <ResourceMatcherInput
-              key={i}
-              value={matcher}
-              onChange={() => { }}
-              onDelete={() => {
-                const newMatchers = value.metadata.availableForContexts.filter(mt => mt.reactKey !== matcher.reactKey);
-                props.onChange({ ...props.value, metadata: { ...props.value.metadata, availableForContexts: newMatchers } });
-              }}
-            />
-          })}
+          <ResourceMatchersInput
+            libraryContext={props.libraryContext}
+            onChange={() => { }}
+            value={props.value.metadata.availableForContexts}
+          />
         </FormItem>
       </div>
     </div>
