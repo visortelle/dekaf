@@ -146,7 +146,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
           onClick={() => {
             const metadata: UserManagedItemMetadata = {
               id: uuid(),
-              name: 'Unnamed',
+              name: '',
               descriptionMarkdown: '',
               type: 'message-filter'
             };

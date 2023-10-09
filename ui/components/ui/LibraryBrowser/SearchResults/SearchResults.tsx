@@ -6,6 +6,7 @@ import NothingToShow from '../../NothingToShow/NothingToShow';
 import DeleteLibraryItemButton from './DeleteLibraryItemButton/DeleteLibraryItemButton';
 import SortInput, { Sort } from '../../SortInput/SortInput';
 import * as I18n from '../../../app/contexts/I18n/I18n';
+import partition from 'lodash/partition';
 
 export type ExtraLabel = {
   text: string;
@@ -18,6 +19,7 @@ export type SearchResultsProps = {
   onSelect: (id: string) => void;
   onDeleted: () => void;
   extraLabels: Record<string, ExtraLabel>;
+  itemsToKeepAtTop: string[];
 };
 
 type SortOption = 'Name' | 'Last Modified';
@@ -34,14 +36,25 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
         id.includes(filterInputValue)
     })
 
+    const [topItems, bottomItems] = partition(result, (item) => props.itemsToKeepAtTop.includes(item.spec.metadata.id));
+    let sortedTopItems = topItems;
+    let sortedBottomItems = bottomItems;
+
     if (sort.sortBy === 'Name') {
-      result = result.sort((a, b) => a.spec.metadata.name.localeCompare(b.spec.metadata.name, 'en', { numeric: true }));
+      const sortFn = (a: LibraryItem, b: LibraryItem) => a.spec.metadata.name.localeCompare(b.spec.metadata.name, 'en', { numeric: true });
+      sortedTopItems = topItems.sort(sortFn);
+      sortedBottomItems = bottomItems.sort(sortFn);
     } else if (sort.sortBy === 'Last Modified') {
-      result = result.sort((a, b) => a.metadata.updatedAt.localeCompare(b.metadata.updatedAt, 'en', { numeric: true }));
+      const sortFn = (a: LibraryItem, b: LibraryItem) => a.metadata.updatedAt.localeCompare(b.metadata.updatedAt, 'en', { numeric: true });
+      sortedTopItems = topItems.sort(sortFn);
+      sortedBottomItems = bottomItems.sort(sortFn);
     }
 
-    return sort.sortDirection === 'asc' ? result : result.reverse();
-  }, [props.items, filterInputValue, sort]);
+    sortedTopItems = sort.sortDirection === 'asc' ? sortedTopItems : sortedTopItems.reverse();
+    sortedBottomItems = sort.sortDirection === 'asc' ? sortedBottomItems : sortedBottomItems.reverse();
+
+    return sortedTopItems.concat(sortedBottomItems);
+  }, [props.items, props.itemsToKeepAtTop, filterInputValue, sort]);
 
   return (
     <div className={s.SearchResults}>

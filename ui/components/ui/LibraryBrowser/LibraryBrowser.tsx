@@ -8,6 +8,8 @@ import Button from '../Button/Button';
 import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
+import * as Modals from '../../app/contexts/Modals/Modals';
+import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
 import { UserManagedItem, UserManagedItemMetadata, UserManagedItemType } from './model/user-managed-items';
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemFromPb, libraryItemToPb } from './model/library-conversions';
@@ -80,35 +82,47 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { libraryServiceClient } = GrpcClient.useContext();
+  const modals = Modals.useContext();
 
   useEffect(() => {
-    async function selectItem() {
-      async function mkLibraryItemMetadata(context: LibraryContext): Promise<LibraryItemMetadata> {
-        return {
-          availableForContexts: [resourceMatcherFromContext(context)],
+    function updateItemToSave() {
+      let itemToSave: LibraryItem | undefined = undefined;
+
+      if (resolvedItemToSave.type === 'not-found' && props.mode.type === 'save') {
+        const itemToSaveMetadata = {
+          availableForContexts: [resourceMatcherFromContext(props.libraryContext)],
           tags: [],
           updatedAt: new Date().toISOString()
         };
-      }
 
-      if (resolvedItemToSave.type === 'not-found' && props.mode.type === 'save') {
-        const itemToSaveMetadata = await mkLibraryItemMetadata(props.libraryContext);
-        const itemToSave: LibraryItem = {
+        itemToSave = {
           metadata: itemToSaveMetadata,
           spec: props.mode.item
         };
-
-        setItemToSave(itemToSave);
-        setSelectedItemId(itemToSave.spec.metadata.id);
-        setSearchEditorValue((v) => ({ ...v, resourceMatcher: resourceMatcherFromContext(props.libraryContext) }));
       }
 
       if (resolvedItemToSave.type === 'success') {
-        setSelectedItemId(resolvedItemToSave.value.spec.metadata.id);
+        const itemToSaveMetadata = {
+          ...resolvedItemToSave.value.metadata,
+          updatedAt: new Date().toISOString()
+        };
+
+        itemToSave = {
+          metadata: itemToSaveMetadata,
+          spec: resolvedItemToSave.value.spec
+        };
       }
+
+      if (itemToSave === undefined) {
+        return;
+      }
+
+      setItemToSave(itemToSave);
+      setSelectedItemId(itemToSave.spec.metadata.id);
+      setSearchEditorValue((v) => ({ ...v, resourceMatcher: resourceMatcherFromContext(props.libraryContext) }));
     }
 
-    selectItem();
+    updateItemToSave();
   }, [resolvedItemToSave, props.mode]);
 
   async function fetchSearchResults() {
@@ -175,7 +189,9 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   };
 
   const items = (itemToSave === undefined ? [] : [itemToSave])
-    .concat(searchResults.type === 'success' ? searchResults.items : []);
+    .concat(searchResults.type === 'success' ?
+      searchResults.items.filter(it => it.spec.metadata.id !== itemToSave?.spec.metadata.id) : []
+    );
 
   const selectedItem = items.find((item) => item.spec.metadata.id === selectedItemId);
   const updateSelectedItem = (item: LibraryItem) => {
@@ -236,6 +252,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
               extraLabels={{
                 [itemToSave?.spec.metadata.id ?? '']: { text: 'New item', color: 'var(--accent-color-blue)' }
               }}
+              itemsToKeepAtTop={itemToSave === undefined ? [] : [itemToSave.spec.metadata.id]}
             />
           )}
         </div>
@@ -279,35 +296,74 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
         {props.mode.type === 'save' && (
           <Button
             disabled={!selectedItem || !selectedItem.spec.metadata.name}
-            onClick={async () => {
-              if (props.mode.type !== 'save') return;
-              if (selectedItem === undefined) return;
-              if (itemToSave === undefined) return;
+            onClick={() => {
+              const save = async () => {
+                if (props.mode.type !== 'save') return;
+                if (selectedItem === undefined) return;
+                if (itemToSave === undefined) return;
 
-              const libraryItemMetadata: LibraryItemMetadata = {
-                ...selectedItem.metadata,
-                availableForContexts: [searchEditorValue.resourceMatcher],
-                tags: searchEditorValue.tags,
-                updatedAt: new Date().toISOString()
-              };
+                const libraryItemMetadata: LibraryItemMetadata = {
+                  ...selectedItem.metadata,
+                  availableForContexts: [searchEditorValue.resourceMatcher],
+                  tags: searchEditorValue.tags,
+                  updatedAt: new Date().toISOString()
+                };
 
-              const userManagedItemMetadata: UserManagedItemMetadata = {
-                ...itemToSave.spec.metadata,
-                id: selectedItem.spec.metadata.id,
-              };
+                const userManagedItemMetadata: UserManagedItemMetadata = {
+                  ...itemToSave.spec.metadata,
+                  id: selectedItem.spec.metadata.id,
+                };
 
-              const userManagedItem: UserManagedItem = {
-                ...props.mode.item,
-                metadata: userManagedItemMetadata
-              };
+                const userManagedItem: UserManagedItem = {
+                  ...props.mode.item,
+                  metadata: userManagedItemMetadata
+                };
 
-              await saveLibraryItem({
-                metadata: libraryItemMetadata,
-                spec: userManagedItem
-              });
+                await saveLibraryItem({
+                  metadata: libraryItemMetadata,
+                  spec: userManagedItem
+                });
+              }
+
+              if (props.mode.type !== 'save') {
+                return;
+              }
+
+              const isOverwriteExistingItem = props.mode.item.metadata.id !== selectedItem?.spec.metadata.id;
+              if (isOverwriteExistingItem) {
+                modals.push({
+                  id: 'save-library-item',
+                  title: 'Save Library Item',
+                  content: (
+                    <ConfirmationDialog
+                      description={(
+                        <div>
+                          Are you sure you want to overwrite this library item?
+                          <br />
+                          It will affect all other items where the item you are going to override is used by reference.
+                        </div>
+                      )}
+                      onCancel={modals.pop}
+                      onConfirm={save}
+                      type='danger'
+                    />
+                  ),
+                  styleMode: 'no-content-padding'
+                });
+                return;
+              }
+
+              save();
             }}
             type={props.mode.item.metadata.id === selectedItem?.spec.metadata.id ? 'primary' : 'danger'}
-            text={props.mode.item.metadata.id === selectedItem?.spec.metadata.id ? 'Save' : 'Overwrite selected item'}
+            text={(() => {
+              if (props.mode.item.metadata.id === selectedItem?.spec.metadata.id) {
+                const isNewItem = resolvedItemToSave.type === 'not-found';
+                return isNewItem ? 'Create' : 'Update';
+              }
+
+              return 'Overwrite';
+            })()}
           />
         )}
       </div>

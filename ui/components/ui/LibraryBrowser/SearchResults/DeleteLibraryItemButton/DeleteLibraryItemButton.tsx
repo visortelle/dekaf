@@ -71,6 +71,7 @@ const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) 
         }}
         disabled={props.itemId === undefined}
         type='danger'
+        title="Delete selected item"
       />
     </div>
   );
