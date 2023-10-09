@@ -22,12 +22,13 @@ import Link from "../../ui/Link/Link";
 
 import s from "./Schema.module.css";
 import { useNavigate } from "react-router";
+import { PulsarTopicPersistency } from "../../pulsar/pulsar-resources";
 
 export type SchemaProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
   view: View;
 };
 
@@ -42,7 +43,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
   const modals = Modals.useContext();
   const navigate = useNavigate();
 
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const {
     data: latestSchemaInfo,
@@ -93,11 +94,11 @@ const Schema: React.FC<SchemaProps> = (props) => {
     // Redirect to the "Create schema" page if there is no schema.
     if (props.view.type === "initial-screen" && schemaInfo === undefined) {
       navigate(
-        routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema.create._.get({
+        routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema.create._.get({
           tenant: props.tenant,
           namespace: props.namespace,
           topic: props.topic,
-          topicType: props.topicType,
+          topicPersistency: props.topicPersistency,
         }),
       );
       return;
@@ -111,11 +112,11 @@ const Schema: React.FC<SchemaProps> = (props) => {
       }
 
       navigate(
-        routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema.view._.get({
+        routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema.view._.get({
           tenant: props.tenant,
           namespace: props.namespace,
           topic: props.topic,
-          topicType: props.topicType,
+          topicPersistency: props.topicPersistency,
           schemaVersion,
         }),
       );
@@ -157,11 +158,11 @@ const Schema: React.FC<SchemaProps> = (props) => {
           <div style={{ display: "flex", marginRight: "12rem", flex: "0 1 auto", justifyContent: "center" }}>
             <Link
               isNormalizeStyle
-              to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema.create._.get({
+              to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema.create._.get({
                 tenant: props.tenant,
                 namespace: props.namespace,
                 topic: props.topic,
-                topicType: props.topicType,
+                topicPersistency: props.topicPersistency,
               })}
             >
               <SmallButton text='New Schema' type='primary' onClick={() => { }} />
@@ -179,7 +180,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
                   title: `Delete schema`,
                   content: (
                     <DeleteDialog
-                      topicType={props.topicType}
+                      topicPersistency={props.topicPersistency}
                       topic={props.topic}
                       namespace={props.namespace}
                       tenant={props.tenant}
@@ -209,8 +210,8 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 <Link
                   key={schemaVersion}
                   isNormalizeStyle
-                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema.view._.get({
-                    topicType: props.topicType,
+                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema.view._.get({
+                    topicPersistency: props.topicPersistency,
                     tenant: props.tenant,
                     namespace: props.namespace,
                     topic: props.topic,
@@ -232,7 +233,7 @@ const Schema: React.FC<SchemaProps> = (props) => {
         <div className={s.Content}>
           {props.view.type === "create-schema" && (
             <CreateSchema
-              topicType={props.topicType}
+              topicPersistency={props.topicPersistency}
               tenant={props.tenant}
               namespace={props.namespace}
               topic={props.topic}
@@ -242,8 +243,8 @@ const Schema: React.FC<SchemaProps> = (props) => {
               onCreateSuccess={async () => {
                 await refetchData();
                 navigate(
-                  routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({
-                    topicType: props.topicType,
+                  routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.get({
+                    topicPersistency: props.topicPersistency,
                     tenant: props.tenant,
                     namespace: props.namespace,
                     topic: props.topic,

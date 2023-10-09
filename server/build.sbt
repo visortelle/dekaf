@@ -1,6 +1,6 @@
 val scala3Version = "3.3.0"
 val graalvmVersion = "22.3.1"
-val pulsarVersion = "3.0.0"
+val pulsarVersion = "3.1.0"
 val circeVersion = "0.14.5"
 val zioVersion = "2.0.15"
 val zioConfigVersion = "3.0.7"
@@ -97,7 +97,8 @@ lazy val root = project
             "com.google.guava" % "guava" % "31.1-jre",
             "com.lihaoyi" %% "os-lib" % "0.9.1",
             "com.lihaoyi" %% "pprint" % "0.8.1", // Useful during development
-            "io.netty" % "netty-all" % "4.1.93.Final"
+            "io.netty" % "netty-all" % "4.1.93.Final",
+            "com.fasterxml.uuid" % "java-uuid-generator" % "4.2.0"
         )
     )
 
