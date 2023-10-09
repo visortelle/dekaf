@@ -1,11 +1,9 @@
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-import SmallButton from '../../../../ui/SmallButton/SmallButton';
 import Select from '../../../../ui/Select/Select';
 import * as t from '../../types';
 import { UserManagedItemMetadata, UserManagedMessageFilter, UserManagedMessageFilterChain, UserManagedMessageFilterChainSpec, UserManagedMessageFilterChainValueOrReference } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import FilterEditor from './FilterEditor/FilterEditor';
-import createIcon from './icons/create.svg';
 
 import s from './FilterChainEditor.module.css';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
@@ -17,6 +15,7 @@ import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
 import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
+import AddButton from '../../../../ui/AddButton/AddButton';
 
 export type FilterChainEditorProps = {
   value: UserManagedMessageFilterChainValueOrReference;
@@ -142,7 +141,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
       })}
 
       <div className={`${s.Buttons}`}>
-        <SmallButton
+        <AddButton
           onClick={() => {
             const metadata: UserManagedItemMetadata = {
               id: uuid(),
@@ -181,9 +180,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             const newChain = itemSpec.filters.concat([{ type: 'value', value: newFilter }]);
             onSpecChange({ ...itemSpec, filters: newChain });
           }}
-          text="Add Message Filter"
-          type='primary'
-          svgIcon={createIcon}
+          itemName="Message Filter"
         />
       </div>
     </div>

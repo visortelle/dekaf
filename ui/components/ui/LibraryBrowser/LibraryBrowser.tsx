@@ -35,33 +35,6 @@ export type LibraryBrowserProps = {
   libraryContext: LibraryContext;
 };
 
-const initialSearchEditorValue: SearchEditorValue = {
-  itemType: 'message-filter',
-  tags: [],
-  resourceMatcher: {
-    type: 'topic-matcher',
-    value: {
-      persistency: 'any',
-      type: 'exact-topic-matcher',
-      topic: '',
-      namespace: {
-        type: 'namespace-matcher',
-        value: {
-          type: 'exact-namespace-matcher',
-          namespace: '',
-          tenant: {
-            type: 'tenant-matcher',
-            value: {
-              type: 'exact-tenant-matcher',
-              tenant: ''
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
 type SearchResultsState = {
   type: 'pending'
 } | {
@@ -75,7 +48,11 @@ type SearchResultsState = {
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const itemType = props.mode.type === 'save' ? props.mode.item.metadata.type : props.mode.itemType;
 
-  const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>({ ...initialSearchEditorValue, itemType });
+  const [searchEditorValue, setSearchEditorValue] = useState<SearchEditorValue>({
+    itemType,
+    tags: [],
+    resourceMatchers: [resourceMatcherFromContext(props.libraryContext)],
+  });
   const [searchResults, setSearchResults] = useState<SearchResultsState>({ type: 'pending' });
   const resolvedItemToSave = useLibraryItem(props.mode.type === 'save' ? props.mode.item.metadata.id : undefined);
   const [itemToSave, setItemToSave] = useState<LibraryItem | undefined>(undefined);
@@ -216,6 +193,8 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     });
   }
 
+  console.log('libc', props.libraryContext)
+
   return (
     <div className={s.LibraryBrowser}>
       <div className={s.Content}>
@@ -226,6 +205,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
               onChange: setSearchEditorValue,
               value: searchEditorValue
             }}
+            libraryContext={props.libraryContext}
           />
         </div>
 
@@ -304,7 +284,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
 
                 const libraryItemMetadata: LibraryItemMetadata = {
                   ...selectedItem.metadata,
-                  availableForContexts: [searchEditorValue.resourceMatcher],
+                  availableForContexts: searchEditorValue.resourceMatchers,
                   tags: searchEditorValue.tags,
                   updatedAt: new Date().toISOString()
                 };

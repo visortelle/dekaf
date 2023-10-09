@@ -1,10 +1,10 @@
 import React from 'react';
 import s from './RegexTopicMatcherInput.module.css'
-import Input from '../../../../../Input/Input';
+import Input from '../../../../../../Input/Input';
 import NamespaceMatcherInput from '../../NamespaceMatcherInput/NamespaceMatcherInput';
-import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-import { RegexTopicMatcher } from '../../../../model/resource-matchers';
+import FormItem from '../../../../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../../ConfigurationTable/FormLabel/FormLabel';
+import { RegexTopicMatcher } from '../../../../../model/resource-matchers';
 
 export type RegexTopicMatcherInputProps = {
   value: RegexTopicMatcher;

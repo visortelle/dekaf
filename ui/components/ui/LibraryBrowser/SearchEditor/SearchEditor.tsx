@@ -4,10 +4,11 @@ import UserManagedItemTypePicker from './UserManagedItemTypePicker/UserManagedIt
 import { UserManagedItemType } from '../model/user-managed-items';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
-import ResourceMatcherInput from './ResourceMatcherInput/ResourceMatcherInput';
 import { ResourceMatcher } from '../model/resource-matchers';
 import { H3 } from '../../H/H';
 import TagsPicker from './TagsPicker/TagsPicker';
+import ResourceMatchersInput from './ResourceMatchersInput/ResourceMatchersInput';
+import { LibraryContext } from '../model/library-context';
 
 type SearchEditorMode = {
   type: 'edit';
@@ -20,12 +21,13 @@ type SearchEditorMode = {
 
 export type SearchEditorValue = {
   itemType: UserManagedItemType;
-  resourceMatcher: ResourceMatcher;
+  resourceMatchers: ResourceMatcher[];
   tags: string[];
 }
 
 export type SearchEditorProps = {
   mode: SearchEditorMode;
+  libraryContext: LibraryContext;
 };
 
 const SearchEditor: React.FC<SearchEditorProps> = (props) => {
@@ -90,22 +92,23 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
             content={<H3>Pulsar Resources</H3>}
             help={
               <>
-                Pulsar resources to match.
+                Pulsar resources this item is available for.
                 <br />
                 <br />
                 For example, a message filter may work well for topics <code>A</code> and <code>B</code>, but it may not make sense at all for topic <code>C</code> due to schema differences.
               </>
             }
           />
-          <ResourceMatcherInput
-            value={props.mode.value.resourceMatcher}
+          <ResourceMatchersInput
+            value={props.mode.value.resourceMatchers}
             onChange={(v) => {
               if (props.mode.type === 'readonly') {
                 return;
               }
 
-              props.mode.onChange({ ...props.mode.value, resourceMatcher: v })
+              props.mode.onChange({ ...props.mode.value, resourceMatchers: v })
             }}
+            libraryContext={props.libraryContext}
           />
         </FormItem>
       </div>

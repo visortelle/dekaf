@@ -1,10 +1,10 @@
 import React from 'react';
 import s from './RegexNamespaceMatcherInput.module.css'
-import Input from '../../../../../Input/Input';
+import Input from '../../../../../../Input/Input';
 import TenantMatcherInput from '../../TenantMatcherInput/TenantMatcherInput';
-import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
-import { RegexNamespaceMatcher } from '../../../../model/resource-matchers';
+import FormLabel from '../../../../../../ConfigurationTable/FormLabel/FormLabel';
+import FormItem from '../../../../../../ConfigurationTable/FormItem/FormItem';
+import { RegexNamespaceMatcher } from '../../../../../model/resource-matchers';
 
 export type RegexNamespaceMatcherInputProps = {
   value: RegexNamespaceMatcher;

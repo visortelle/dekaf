@@ -1,6 +1,6 @@
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import * as t from "./library";
-import { resourceMatcherFromPb, resourceMatcherToPb } from "./resource-matchers-conversions";
+import { resourceMatcherFromPb, resourceMatcherToPb } from "./resource-matchers-conversions-pb";
 import { userManagedItemFromPb, userManagedItemToPb } from "./user-managed-items-conversions-pb";
 
 export function libraryItemMetadataFromPb(v: pb.LibraryItemMetadata): t.LibraryItemMetadata {

@@ -1,11 +1,11 @@
 import React from 'react';
 import s from './TenantMatcherInput.module.css';
-import Select from '../../../../Select/Select';
+import Select from '../../../../../Select/Select';
 import ExactTenantMatcherInput from './ExactTenantMatcherInput/ExactTenantMatcherInput';
 import RegexTenantMatcherInput from './RegexTenantMatcherInput/RegexTenantMatcherInput';
-import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
+import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
-import { TenantMatcherType, TenantMatcher } from '../../../model/resource-matchers';
+import { TenantMatcherType, TenantMatcher } from '../../../../model/resource-matchers';
 
 export type TenantMatcherInputProps = {
   value: TenantMatcher;

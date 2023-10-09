@@ -1,5 +1,6 @@
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/resource_matchers_pb";
 import * as t from "./resource-matchers";
+import { v4 as uuid } from 'uuid';
 
 export function exactTenantMatcherToPb(matcher: t.ExactTenantMatcher): pb.ExactTenantMatcher {
   const matcherPb = new pb.ExactTenantMatcher();
@@ -9,6 +10,7 @@ export function exactTenantMatcherToPb(matcher: t.ExactTenantMatcher): pb.ExactT
 
 export function exactTenantMatcherFromPb(matcherPb: pb.ExactTenantMatcher): t.ExactTenantMatcher {
   return {
+    reactKey: uuid(),
     type: 'exact-tenant-matcher',
     tenant: matcherPb.getTenant()
   };
@@ -22,6 +24,7 @@ export function regexTenantMatcherToPb(matcher: t.RegexTenantMatcher): pb.RegexT
 
 export function regexTenantMatcherFromPb(matcherPb: pb.RegexTenantMatcher): t.RegexTenantMatcher {
   return {
+    reactKey: uuid(),
     type: 'regex-tenant-matcher',
     tenantRegex: matcherPb.getTenantRegex()
   };
@@ -49,6 +52,7 @@ export function tenantMatcherFromPb(matcherPb: pb.TenantMatcher): t.TenantMatche
       }
 
       return {
+        reactKey: uuid(),
         type: 'tenant-matcher',
         value: exactTenantMatcherFromPb(exactTenantMatcherPb)
       };
@@ -61,6 +65,7 @@ export function tenantMatcherFromPb(matcherPb: pb.TenantMatcher): t.TenantMatche
       }
 
       return {
+        reactKey: uuid(),
         type: 'tenant-matcher',
         value: regexTenantMatcherFromPb(regexTenantMatcherPb)
       };
@@ -84,6 +89,7 @@ export function exactNamespaceMatcherFromPb(matcherPb: pb.ExactNamespaceMatcher)
   }
 
   return {
+    reactKey: uuid(),
     type: 'exact-namespace-matcher',
     tenant: tenantMatcherFromPb(tenantMatcherPb),
     namespace: matcherPb.getNamespace()
@@ -104,6 +110,7 @@ export function regexNamespaceMatcherFromPb(matcherPb: pb.RegexNamespaceMatcher)
   }
 
   return {
+    reactKey: uuid(),
     type: 'regex-namespace-matcher',
     tenant: tenantMatcherFromPb(tenantMatcherPb),
     namespaceRegex: matcherPb.getNamespaceRegex()
@@ -132,6 +139,7 @@ export function namespaceMatcherFromPb(matcherPb: pb.NamespaceMatcher): t.Namesp
       }
 
       return {
+        reactKey: uuid(),
         type: 'namespace-matcher',
         value: exactNamespaceMatcherFromPb(exactNamespaceMatcherPb)
       };
@@ -144,6 +152,7 @@ export function namespaceMatcherFromPb(matcherPb: pb.NamespaceMatcher): t.Namesp
       }
 
       return {
+        reactKey: uuid(),
         type: 'namespace-matcher',
         value: regexNamespaceMatcherFromPb(regexNamespaceMatcherPb)
       };
@@ -192,6 +201,7 @@ export function exactTopicMatcherFromPb(matcherPb: pb.ExactTopicMatcher): t.Exac
   }
 
   return {
+    reactKey: uuid(),
     type: 'exact-topic-matcher',
     persistency: topicPersistencyFromPb(matcherPb.getPersistency()),
     namespace: namespaceMatcherFromPb(namespaceMatcherPb),
@@ -214,6 +224,7 @@ export function regexTopicMatcherFromPb(matcherPb: pb.RegexTopicMatcher): t.Rege
   }
 
   return {
+    reactKey: uuid(),
     type: 'regex-topic-matcher',
     persistency: topicPersistencyFromPb(matcherPb.getPersistency()),
     namespace: namespaceMatcherFromPb(namespaceMatcherPb),
@@ -243,6 +254,7 @@ export function topicMatcherFromPb(matcherPb: pb.TopicMatcher): t.TopicMatcher {
       }
 
       return {
+        reactKey: uuid(),
         type: 'topic-matcher',
         value: exactTopicMatcherFromPb(exactTopicMatcherPb)
       };
@@ -255,6 +267,7 @@ export function topicMatcherFromPb(matcherPb: pb.TopicMatcher): t.TopicMatcher {
       }
 
       return {
+        reactKey: uuid(),
         type: 'topic-matcher',
         value: regexTopicMatcherFromPb(regexTopicMatcherPb)
       };
@@ -288,7 +301,8 @@ export function resourceMatcherFromPb(matcherPb: pb.ResourceMatcher): t.Resource
         throw new Error('Tenant matcher is undefined');
       }
 
-      return tenantMatcherFromPb(tenantMatcherPb);
+      const tenantMatcher = tenantMatcherFromPb(tenantMatcherPb);
+      return { ...tenantMatcher, reactKey: uuid() };
     }
 
     case pb.ResourceMatcher.MatcherCase.NAMESPACE: {
@@ -297,7 +311,8 @@ export function resourceMatcherFromPb(matcherPb: pb.ResourceMatcher): t.Resource
         throw new Error('Namespace matcher is undefined');
       }
 
-      return namespaceMatcherFromPb(namespaceMatcherPb);
+      const namespaceMatcher = namespaceMatcherFromPb(namespaceMatcherPb);
+      return { ...namespaceMatcher, reactKey: uuid() };
     }
 
     case pb.ResourceMatcher.MatcherCase.TOPIC: {
@@ -306,7 +321,8 @@ export function resourceMatcherFromPb(matcherPb: pb.ResourceMatcher): t.Resource
         throw new Error('Topic matcher is undefined');
       }
 
-      return topicMatcherFromPb(topicMatcherPb);
+      const topicMatcher = topicMatcherFromPb(topicMatcherPb);
+      return { ...topicMatcher, reactKey: uuid() };
     }
 
     default: throw new Error(`Unknown matcher case: ${matcherPb.getMatcherCase()}`);
