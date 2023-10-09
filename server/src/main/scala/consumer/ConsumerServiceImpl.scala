@@ -3,26 +3,7 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    MessageFilter as MessageFilterPb,
-    MessageFilterChain,
-    PauseRequest,
-    PauseResponse,
-    ResumeRequest,
-    ResumeResponse,
-    RunCodeRequest,
-    RunCodeResponse,
-    SeekRequest,
-    SeekResponse,
-    SkipMessagesRequest,
-    SkipMessagesResponse,
-    TopicsSelector
-}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,6 +18,9 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import org.apache.pulsar.client.api.{Message, MessageId}
 import _root_.pulsar_auth.RequestContext
+import consumer.converters.getMessageSchemaInfo
+import consumer.filters.MessageFilterChain.testMessageFilterChain
+import org.apache.pulsar.common.schema.SchemaType
 
 import java.io.ByteArrayOutputStream
 import java.util.UUID
@@ -94,8 +78,18 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     val consumerSessionConfig = consumerSessionConfigs(consumerName)
                     val messageFilterChain = consumerSessionConfig.messageFilterChain
 
+                    val currentSchemaType = getMessageSchemaInfo(schemasByTopic, msg)
+                        .map(_.getType)
+                        .getOrElse(SchemaType.NONE)
+
                     val (filterResult, jsonAccumulator) =
-                        getFilterChainTestResult(messageFilterChain, messageFilterContext, jsonMessage, messageValueToJsonResult)
+                        testMessageFilterChain(
+                            messageFilterChain,
+                            messageFilterContext,
+                            jsonMessage,
+                            messageValueToJsonResult,
+                            currentSchemaType
+                        )
 
                     val messageToSend = messagePb
                         .withAccumulator(jsonAccumulator)

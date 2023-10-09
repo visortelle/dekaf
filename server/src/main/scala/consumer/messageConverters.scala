@@ -2,21 +2,10 @@ package consumer
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
+import io.circe.parser.*
 import _root_.schema.avro
 import _root_.schema.protobufnative
-import _root_.conversions.primitiveConv.{
-    bytesToBoolean,
-    bytesToFloat32,
-    bytesToFloat64,
-    bytesToInt16,
-    bytesToInt32,
-    bytesToInt64,
-    bytesToInt8,
-    bytesToJson,
-    bytesToJsonString,
-    bytesToString,
-    leftPad
-}
+import _root_.conversions.primitiveConv.{bytesToBoolean, bytesToFloat32, bytesToFloat64, bytesToInt16, bytesToInt32, bytesToInt64, bytesToInt8, bytesToJson, bytesToJsonString, bytesToString, leftPad}
 
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
@@ -113,28 +102,41 @@ object converters:
 
     private val PartitionedTopicSuffixRegexp = "-partition-\\d+$".r
 
-    def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
-        val msgData = msg.getData
+    private def isValidJsonForBytes(inputBytes: Array[Byte]): Boolean = {
+        val jsonString = bytesToString(inputBytes)
+        parse(jsonString) match {
+            case Right(_) => true
+            case Left(_) => false
+        }
+    }
+
+    def getMessageSchemaInfo(schemas: SchemasByTopic, msg: Message[Array[Byte]]): Option[SchemaInfo] =
         val topicName = PartitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
         val schemasByVersion = schemas.get(topicName)
 
-        if schemasByVersion.isEmpty
-        then return Right(bytesToJsonString(msgData))
+        if schemasByVersion.isEmpty then
+            return None
 
-        val msgSchemaVersion = Option(msg.getSchemaVersion) match
+        val messageSchemaVersion = Option(msg.getSchemaVersion) match
             case Some(v) => bytesToInt64(v).toOption
-            case None    => None
+            case None => None
 
-        val schemaInfo =
-            if msgSchemaVersion.isEmpty
-            then return Right(bytesToJsonString(msgData))
-            else schemasByVersion.get(msgSchemaVersion.get)
+        messageSchemaVersion match
+            case Some(msgSchemaVersion) => Some(schemasByVersion.get(msgSchemaVersion))
+            case None => None
+            
+    def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
+        val msgData = msg.getData
+
+        val schemaInfo = getMessageSchemaInfo(schemas, msg) match
+            case Some(schemaInfo) => schemaInfo
+            case None => return Right(bytesToJsonString(msgData))
 
         schemaInfo.getType match
             case SchemaType.AVRO => avro.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
             case SchemaType.JSON =>
                 msgData match
-                    case v if v.isEmpty => Left(new Exception(s"Message \"${msg.getMessageId}\" uses JSON schema, but its' content isn't a valid JSON string."))
+                    case v if v.isEmpty || !isValidJsonForBytes(v) => Left(new Exception(s"Message \"${msg.getMessageId}\" uses JSON schema, but its' content isn't a valid JSON string."))
                     case _              => Right(bytesToString(msgData))
             case SchemaType.PROTOBUF        => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
             case SchemaType.PROTOBUF_NATIVE =>

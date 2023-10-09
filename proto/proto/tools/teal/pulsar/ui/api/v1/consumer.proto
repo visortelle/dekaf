@@ -172,11 +172,89 @@ message JsMessageFilter {
   string js_code = 1;
 }
 
-message BasicMessageFilter {}
+message BasicMessageFilterOperationEquals {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+message BasicMessageFilterOperationGreaterThan {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+message BasicMessageFilterOperationGreaterThanOrEquals {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+message BasicMessageFilterOperationLessThan {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+message BasicMessageFilterOperationLessThanOrEquals {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+message BasicMessageFilterOperationIsTruthy {
+  string value = 1;
+}
+
+message BasicMessageFilterOperationIsNull {
+  string value = 1;
+}
+
+message BasicMessageFilterOperationContains {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+message BasicMessageFilterOperationStartsWith {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+message BasicMessageFilterOperationEndsWith {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+message BasicMessageFilterOperationRegex {
+  string value = 1;
+  bool is_case_sensitive = 2;
+}
+
+enum BasicMessageFilterTarget {
+  BASIC_MESSAGE_FILTER_TARGET_UNSPECIFIED = 0;
+  BASIC_MESSAGE_FILTER_TARGET_KEY = 1;
+  BASIC_MESSAGE_FILTER_TARGET_VALUE = 2;
+  BASIC_MESSAGE_FILTER_TARGET_PROPERTIES = 3;
+}
+
+message BasicMessageFilter {
+  BasicMessageFilterTarget target = 2;
+  string field_selector = 3; // in a jq-like form: ".obj.nestedObj.field"
+
+  oneof operation {
+    BasicMessageFilterOperationContains contains = 10;
+    BasicMessageFilterOperationEquals equals = 11;
+    BasicMessageFilterOperationStartsWith starts_with = 12;
+    BasicMessageFilterOperationEndsWith ends_with = 13;
+    BasicMessageFilterOperationRegex regex = 14;
+    BasicMessageFilterOperationGreaterThan greater_than = 15;
+    BasicMessageFilterOperationGreaterThanOrEquals greater_than_or_equals = 16;
+    BasicMessageFilterOperationLessThan less_than = 17;
+    BasicMessageFilterOperationLessThanOrEquals less_than_or_equals = 18;
+    BasicMessageFilterOperationIsTruthy is_truthy = 19;
+    BasicMessageFilterOperationIsNull is_null = 20;
+  }
+}
 
 message MessageFilter {
   bool is_enabled = 10;
   bool is_negated = 11;
+
   oneof value {
     JsMessageFilter js = 1;
     BasicMessageFilter basic = 2;

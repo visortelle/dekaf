@@ -1,89 +1,14 @@
 package consumer
 
+import consumer.filters.{MessageFilter, MessageFilterChain}
+import consumer.filters.basicFilter.BasicMessageFilter
+import consumer.filters.jsFilter.JsMessageFilter
 import io.circe.*
 import io.circe.generic.semiauto.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
 import library.UserManagedItemType
-
-enum MessageFilterType:
-    case BasicMessageFilter
-    case JsMessageFilter
-given Decoder[MessageFilterType] = deriveDecoder[MessageFilterType]
-given Encoder[MessageFilterType] = deriveEncoder[MessageFilterType]
-
-case class BasicMessageFilter()
-given Decoder[BasicMessageFilter] = deriveDecoder[BasicMessageFilter]
-given Encoder[BasicMessageFilter] = deriveEncoder[BasicMessageFilter]
-
-case class JsMessageFilter(
-    jsCode: String
-)
-given Decoder[JsMessageFilter] = deriveDecoder[JsMessageFilter]
-given Encoder[JsMessageFilter] = deriveEncoder[JsMessageFilter]
-
-case class MessageFilter(
-    isEnabled: Boolean,
-    isNegated: Boolean,
-    `type`: MessageFilterType,
-    value: BasicMessageFilter | JsMessageFilter
-)
-given Decoder[MessageFilter] = new Decoder[MessageFilter] {
-    final def apply(c: HCursor): Decoder.Result[MessageFilter] =
-        for {
-            isEnabled <- c.downField("isEnabled").as[Boolean]
-            isNegated <- c.downField("isNegated").as[Boolean]
-            filterType <- c.downField("type").as[MessageFilterType]
-            value <- filterType match {
-                case MessageFilterType.JsMessageFilter    => c.downField("value").as[JsMessageFilter]
-                case MessageFilterType.BasicMessageFilter => c.downField("value").as[BasicMessageFilter]
-            }
-        } yield MessageFilter(isEnabled, isNegated, filterType, value)
-}
-given Encoder[MessageFilter] = new Encoder[MessageFilter] {
-    final def apply(a: MessageFilter): Json = Json.obj(
-        ("isEnabled", a.isEnabled.asJson),
-        ("isNegated", a.isNegated.asJson),
-        ("type", a.`type`.asJson),
-        (
-            "value",
-            a.value match {
-                case v: JsMessageFilter    => v.asJson
-                case v: BasicMessageFilter => v.asJson
-            }
-        )
-    )
-}
-
-object MessageFilterChainMode:
-    case class All()
-    case class Any()
-
-type MessageFilterChainMode = MessageFilterChainMode.All | MessageFilterChainMode.Any
-
-given Encoder[MessageFilterChainMode] = Encoder.instance {
-    case _: MessageFilterChainMode.All => "All".asJson
-    case _: MessageFilterChainMode.Any => "Any".asJson
-}
-given Decoder[MessageFilterChainMode] = Decoder.instance { cursor =>
-    cursor.as[String].flatMap {
-        case "All" => Right(MessageFilterChainMode.All())
-        case "Any" => Right(MessageFilterChainMode.Any())
-
-        case other => Left(DecodingFailure(s"Unknown type: $other", cursor.history))
-    }
-}
-
-case class MessageFilterChain(
-    isEnabled: Boolean,
-    isNegated: Boolean,
-    mode: MessageFilterChainMode,
-    filters: List[MessageFilter]
-)
-
-given Decoder[MessageFilterChain] = deriveDecoder[MessageFilterChain]
-given Encoder[MessageFilterChain] = deriveEncoder[MessageFilterChain]
 
 enum ConsumerSessionConfigStartFromType {
     case EarliestMessage

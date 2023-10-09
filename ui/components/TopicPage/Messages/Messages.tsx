@@ -241,7 +241,9 @@ const Session: React.FC<SessionProps> = (props) => {
 
       req.setPriorityLevel(1000);
 
-      const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
+      const res = await consumerServiceClient.createConsumer(req, {})
+        .catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
+
       if (res === undefined) {
         return;
       }
