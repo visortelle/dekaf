@@ -14,14 +14,14 @@ export type UseResolveLibraryItemResult = {
   type: 'pending'
 } | {
   type: 'failure',
-  reason: string
+  reason?: string
 } | {
   type: 'not-found'
 } | {
   type: 'no-value-expected'
 };
 
-export function useResolveLibraryItem(itemId: string | undefined): UseResolveLibraryItemResult {
+export function useLibraryItem(itemId: string | undefined): UseResolveLibraryItemResult {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const [result, setResult] = useState<UseResolveLibraryItemResult>({ type: 'pending' });
@@ -37,7 +37,8 @@ export function useResolveLibraryItem(itemId: string | undefined): UseResolveLib
     }
 
     if (res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Failed to load library item: ${res.getStatus()?.getMessage()}`);
+      notifyError(`Unable to load library item with id: ${itemId}. ${res.getStatus()?.getMessage()}`);
+      setResult({ type: 'failure', reason: res.getStatus()?.getMessage() });
       return;
     }
 
@@ -59,20 +60,22 @@ export function useResolveLibraryItem(itemId: string | undefined): UseResolveLib
   return result;
 }
 
-export type UseResolveLibraryItemSpinnerProps = {
+export type UseLibraryItemSpinnerProps = {
   itemId: string;
   result: UseResolveLibraryItemResult;
 };
-export const UseResolveLibraryItemSpinner: React.FC<UseResolveLibraryItemSpinnerProps> = (props) => {
+export const UseLibraryItemSpinner: React.FC<UseLibraryItemSpinnerProps> = (props) => {
   if (props.result.type === 'failure') {
     return (
-      <NothingToShow reason="error" content={(
-        <div>
-          Unable to fetch item with id: ${props.itemId}.
-          <br />
-          {props.result.reason}
-        </div>
-      )}
+      <NothingToShow
+        reason="error"
+        content={(
+          <div>
+            Unable to load item with id: {props.itemId}.
+            <br />
+            {props.result.reason}
+          </div>
+        )}
       />
     );
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import FilterChain from './FilterChainEditor/FilterChainEditor';
+import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
 import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 
 import s from './SessionConfiguration.module.css'
@@ -9,7 +9,7 @@ import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
 import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
-import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
+import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 
 export type SessionConfigurationProps = {
@@ -21,10 +21,10 @@ export type SessionConfigurationProps = {
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
-  const resolveResult = useResolveUserManagedItemValOrRef<UserManagedConsumerSessionConfig>(props.value);
+  const resolveResult = useUserManagedItemValue<UserManagedConsumerSessionConfig>(props.value);
 
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValOrRefSpinner item={props.value} result={resolveResult} />
+    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const value = resolveResult.value;
@@ -87,7 +87,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           </FormItem>
         </div>
         <div className={s.RightColumn}>
-          <FilterChain
+          <FilterChainEditor
             value={spec.messageFilterChain}
             onChange={(v) => onSpecChange({ ...spec, messageFilterChain: v })}
             libraryContext={props.libraryContext}

@@ -11,6 +11,7 @@ import { LibraryContext } from '../../../model/library-context';
 export type LibraryBrowserSaveButtonProps = {
   itemToSave: UserManagedItem | undefined;
   libraryContext: LibraryContext;
+  onSave: (item: UserManagedItem) => void;
 };
 
 const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props) => {
@@ -33,7 +34,10 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
               mode: {
                 type: 'save',
                 item: props.itemToSave,
-                onSave: () => modals.pop(),
+                onSave: (itemId) => {
+                  modals.pop();
+                  props.onSave(itemId);
+                },
               },
               onCancel: modals.pop,
               libraryContext: props.libraryContext,

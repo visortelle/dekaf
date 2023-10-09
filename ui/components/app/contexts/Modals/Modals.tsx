@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import { H2 } from '../../../ui/H/H';
@@ -42,10 +42,18 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   const clear = () => setValue((value) => ({ ...value, stack: [] }));
 
   const modalPortal = ReactDOM.createPortal(
-    <ModalElement
-      stack={value.stack}
-      onClose={pop}
-    />,
+    <>
+      <AnimatePresence>
+        {value.stack.map((entry, i) => (
+          <ModalElement
+            key={entry.id}
+            entry={entry}
+            onClose={pop}
+            isVisible={i === value.stack.length - 1}
+          />
+        ))}
+      </AnimatePresence>
+    </>,
     document.body
   );
 
@@ -58,28 +66,33 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
 };
 
 type ModalElementProps = {
-  stack: ModalStackEntry[];
+  entry: ModalStackEntry;
+  isVisible: boolean;
   onClose: () => void;
 }
 
 const ModalElement: React.FC<ModalElementProps> = (props) => {
-  const isVisible = props.stack.length > 0;
+  const isVisible = props.isVisible;
   const rootRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    rootRef.current?.focus();
-  }, [props.stack]);
-
-  const currentModal = props.stack[props.stack.length - 1];
+    if (props.isVisible) {
+      rootRef.current?.focus();
+    }
+  }, [props.isVisible]);
 
   return (
     <motion.div
       ref={rootRef}
       className={s.Root}
-      key={'modal'}
-      initial={{ y: '-100%' }}
-      animate={{ y: isVisible ? '0' : '-100%' }}
-      transition={{ duration: 0.33 }}
+      key={props.entry.id}
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{
+        opacity: isVisible ? 1 : 0,
+        scale: isVisible ? 1 : 0.5
+      }}
+      exit={{ opacity: 0, scale: 0.5 }}
+      transition={{ duration: 0.25, ease: 'easeInOut' }}
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
@@ -90,12 +103,12 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
       <div className={s.ContentContainer}>
         <div className={s.TopBar}>
           <div className={s.TopBarTitle}>
-            <H2>{currentModal?.title}</H2>
+            <H2>{props.entry.title}</H2>
           </div>
           <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>
         </div>
-        {isVisible && (
-          <div className={`${s.Content} ${currentModal.styleMode === 'no-content-padding' ? s.NoContentPadding : ''}`}>{currentModal.content}</div>
+        {(
+          <div className={`${s.Content} ${props.entry.styleMode === 'no-content-padding' ? s.NoContentPadding : ''}`}>{props.entry.content}</div>
         )}
       </div>
     </motion.div>

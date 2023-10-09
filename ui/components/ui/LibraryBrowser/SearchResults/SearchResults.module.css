@@ -7,16 +7,27 @@
 
 .Filters {
   border-bottom: 1px solid var(--border-color);
-  /* flex: 0 0 auto; */
+}
+
+.Toolbar {
+  flex: 0 0 48rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12rem;
+  gap: 12rem;
 }
 
 .Items {
   overflow: auto;
-  flex: 1 0 auto;
+  flex: 1 1 auto;
 }
 
 .Item {
+  position: relative;
   border-bottom: 1px solid var(--border-color);
+  border-left: 4px solid transparent;
 }
 
 .Item:hover {
@@ -26,11 +37,13 @@
 
 .ActiveItem {
   background-color: var(--surface-color);
+  border-left-color: var(--accent-color-blue);
 }
 
 .ItemName {
   font-weight: 500;
   padding: 12rem 12rem;
+  padding-left: 8rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -40,6 +53,26 @@
   padding: 2rem 12rem 12rem 12rem;
   margin-top: -12rem;
   font-size: 12rem;
+}
+
+.ItemUpdatedAt {
+  position: absolute;
+  font-size: 12rem;
+  opacity: 0.5;
+  right: 12rem;
+  bottom: 4rem;
+}
+
+.ItemExtraLabel {
+  position: absolute;
+  font-weight: var(--font-weight-bold);
+  font-size: 12rem;
+  right: 12rem;
+  top: 4rem;
+}
+
+.Unnamed {
+  opacity: 0.5;
 }
 
 .NothingToShow {

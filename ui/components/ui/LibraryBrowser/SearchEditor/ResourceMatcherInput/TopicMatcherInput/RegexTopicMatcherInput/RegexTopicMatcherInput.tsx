@@ -19,7 +19,7 @@ const RegexTopicMatcherInput: React.FC<RegexTopicMatcherInputProps> = (props) =>
         <Input
           value={props.value.topicRegex}
           onChange={(v) => props.onChange({ ...props.value, topicRegex: v })}
-          placeholder='.*'
+          placeholder='Use .* regex to match all topics'
         />
       </FormItem>
 

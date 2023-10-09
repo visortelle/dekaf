@@ -23,6 +23,11 @@
   display: flex;
 }
 
+.SearchResultsNothingToShow {
+  flex: 1;
+  padding: 12rem;
+}
+
 .LibraryItemEditor {
   overflow: auto;
   width: 480rem;

@@ -15,37 +15,38 @@ import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
-import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
+import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 
-export type FilterChainProps = {
+export type FilterChainEditorProps = {
   value: UserManagedMessageFilterChainValueOrReference;
   onChange: (value: UserManagedMessageFilterChainValueOrReference) => void;
   libraryContext: LibraryContext;
+  appearance?: 'default' | 'compact';
 };
 
-const FilterChain: React.FC<FilterChainProps> = (props) => {
+const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
     defaultValue: 'basic-message-filter',
   });
-  const resolveResult = useResolveUserManagedItemValOrRef<UserManagedMessageFilterChain>(props.value);
+
+  const resolveResult = useUserManagedItemValue<UserManagedMessageFilterChain>(props.value);
 
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValOrRefSpinner item={props.value} result={resolveResult} />
+    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
-  const value = resolveResult.value;
-  const spec = value.spec;
+  const item = resolveResult.value;
+  const itemSpec = item.spec;
 
   const onSpecChange = (spec: UserManagedMessageFilterChainSpec) => {
-    const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...value, spec } };
+    const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    console.log('onConvertToValue', value);
-    const newValue: UserManagedMessageFilterChainValueOrReference = { type: 'value', value };
+    const newValue: UserManagedMessageFilterChainValueOrReference = { type: 'value', value: item };
     props.onChange(newValue);
   };
 
@@ -54,8 +55,13 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'
-          itemToSave={value}
+          itemToSave={item}
           onPick={(item) => props.onChange({
+            type: 'reference',
+            reference: item.metadata.id,
+            value: item as UserManagedMessageFilterChain
+          })}
+          onSave={(item) => props.onChange({
             type: 'reference',
             reference: item.metadata.id,
             value: item as UserManagedMessageFilterChain
@@ -64,37 +70,47 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
           libraryContext={props.libraryContext}
           managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
         />
-        <div style={{ marginBottom: '12rem', display: 'flex', alignItems: 'center', gap: '8rem' }}>
-          <Toggle
-            label="Enabled"
-            value={spec.isEnabled}
-            onChange={v => onSpecChange({ ...spec, isEnabled: v })}
-            help="The whole filter chain will be disabled if this toggle is off."
-          />
-          <Toggle
-            label="Negated"
-            value={spec.isNegated}
-            onChange={v => onSpecChange({ ...spec, isNegated: v })}
-            help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
-          />
+        <div
+          style={{
+              marginBottom: '12rem',
+              display: 'flex',
+              alignItems: props.appearance ? 'unset' : 'center',
+              gap: '8rem',
+              paddingTop: props.appearance === 'compact' ? '8rem' : '0',
+              flexDirection: props.appearance === 'compact' ? 'column' : 'row',
+          }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Toggle
+              label="Enabled"
+              value={itemSpec.isEnabled}
+              onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
+              help="The whole filter chain will be disabled if this toggle is off."
+            />
+            <Toggle
+              label="Negated"
+              value={itemSpec.isNegated}
+              onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
+              help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
+            />
+          </div>
           <Select<'all' | 'any'>
             list={[
               { type: 'item', title: 'All filters should match', value: 'all' },
               { type: 'item', title: 'At least one filter should match', value: 'any' },
             ]}
-            value={spec.mode}
-            onChange={v => onSpecChange({ ...spec, mode: v })}
+            value={itemSpec.mode}
+            onChange={v => onSpecChange({ ...itemSpec, mode: v })}
           />
         </div>
       </div>
 
-      {spec.filters.length === 0 && (
+      {itemSpec.filters.length === 0 && (
         <div style={{ marginBottom: '12rem' }}>
           <NothingToShow content={<div>Click the button below to add a first filter.</div>} />
         </div>
       )}
 
-      {spec.filters.length !== 0 && spec.filters.map((filter) => {
+      {itemSpec.filters.length !== 0 && itemSpec.filters.map((filter) => {
         const filterId = filter.type === 'reference' ? filter.reference : filter.value.metadata.id;
         return (
           <div key={filterId} className={s.Entry}>
@@ -102,21 +118,21 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
               <FilterEditor
                 value={filter}
                 onChange={(updatedFilter) => {
-                  const newFilters = spec.filters.map((f) => {
+                  const newFilters = itemSpec.filters.map((f) => {
                     const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
                     if (fId === filterId) {
                       return updatedFilter;
                     }
                     return f;
                   });
-                  onSpecChange({ ...spec, filters: newFilters });
+                  onSpecChange({ ...itemSpec, filters: newFilters });
                 }}
                 onDelete={() => {
-                  const newFilters = spec.filters.filter((f) => {
+                  const newFilters = itemSpec.filters.filter((f) => {
                     const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
                     return fId !== filterId;
                   });
-                  onSpecChange({ ...spec, filters: newFilters });
+                  onSpecChange({ ...itemSpec, filters: newFilters });
                 }}
                 libraryContext={props.libraryContext}
               />
@@ -162,8 +178,8 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
                 break;
             }
 
-            const newChain = spec.filters.concat([{ type: 'value', value: newFilter }]);
-            onSpecChange({ ...spec, filters: newChain });
+            const newChain = itemSpec.filters.concat([{ type: 'value', value: newFilter }]);
+            onSpecChange({ ...itemSpec, filters: newChain });
           }}
           text="Add Message Filter"
           type='primary'
@@ -174,4 +190,4 @@ const FilterChain: React.FC<FilterChainProps> = (props) => {
   );
 }
 
-export default FilterChain;
+export default FilterChainEditor;

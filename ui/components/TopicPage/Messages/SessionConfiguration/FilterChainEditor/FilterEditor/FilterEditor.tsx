@@ -13,7 +13,7 @@ import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
 import { UserManagedMessageFilter, UserManagedMessageFilterSpec, UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
-import { UseUserManagedItemValOrRefSpinner, useResolveUserManagedItemValOrRef } from '../../../../../ui/LibraryBrowser/useResolveUserManagedItemValOrRef';
+import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 
 export type FilterEditorProps = {
@@ -29,45 +29,55 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
     defaultValue: 'basic-message-filter',
   });
 
-  const resolveResult = useResolveUserManagedItemValOrRef<UserManagedMessageFilter>(props.value);
+  const resolveResult = useUserManagedItemValue<UserManagedMessageFilter>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValOrRefSpinner item={props.value} result={resolveResult} />
+    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} onDelete={props.onDelete} />
   }
 
-  const value = resolveResult.value;
-  const spec = value.spec;
+  const item = resolveResult.value;
+  const itemSpec = item.spec;
 
   const onSpecChange = (spec: UserManagedMessageFilterSpec) => {
-    const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, value: { ...value, spec } };
+    const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, value: { ...item, spec } };
+    props.onChange(newValue);
+  };
+
+  const onConvertToValue = () => {
+    const newValue: UserManagedMessageFilterValueOrReference = { type: 'value', value: item };
     props.onChange(newValue);
   };
 
   return (
     <div className={s.FilterEditor} ref={hoverRef}>
       <LibraryBrowserPanel
-        itemToSave={value}
+        itemToSave={item}
         itemType='message-filter'
         onPick={(item) => props.onChange({
           type: 'reference',
           reference: item.metadata.id,
           value: item as UserManagedMessageFilter
         })}
+        onSave={(item) => props.onChange({
+          type: 'reference',
+          reference: item.metadata.id,
+          value: item as UserManagedMessageFilter
+        })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue: () => {} } : undefined}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
       />
       <FormItem>
         <div className={s.Controls}>
           <Toggle
-            value={spec.isEnabled}
-            onChange={() => onSpecChange({ ...spec, isEnabled: !spec.isEnabled })}
+            value={itemSpec.isEnabled}
+            onChange={() => onSpecChange({ ...itemSpec, isEnabled: !itemSpec.isEnabled })}
             label='Enabled'
             help="This filter will be disabled if this toggle is off."
           />
 
           <Toggle
-            value={spec.isNegated}
-            onChange={() => onSpecChange({ ...spec, isNegated: !spec.isNegated })}
+            value={itemSpec.isNegated}
+            onChange={() => onSpecChange({ ...itemSpec, isNegated: !itemSpec.isNegated })}
             help='This filter results will be reversed. Filtered messages will be passed and vice versa.'
             label='Negated'
           />
@@ -77,21 +87,21 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
               { type: 'item', title: 'Basic Filter', value: 'basic-message-filter' },
               { type: 'item', title: 'JS Filter', value: 'js-message-filter' },
             ]}
-            value={spec.type}
+            value={itemSpec.type}
             onChange={v => {
               setDefaultMessageFilterType(v);
 
               switch (v) {
                 case 'basic-message-filter':
                   onSpecChange({
-                    ...spec,
+                    ...itemSpec,
                     type: 'basic-message-filter',
                     value: {},
                   });
                   return;
                 case 'js-message-filter':
                   onSpecChange({
-                    ...spec,
+                    ...itemSpec,
                     type: 'js-message-filter',
                     value: defaultJsFilterValue,
                   });
@@ -112,12 +122,12 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
       </FormItem>
 
       <div>
-        {spec.type === 'basic-message-filter' && (
+        {itemSpec.type === 'basic-message-filter' && (
           <BasicFilterEditor />
         )}
-        {spec.type === 'js-message-filter' && (
+        {itemSpec.type === 'js-message-filter' && (
           <JsFilterEditor
-            value={spec.value}
+            value={itemSpec.value}
             onChange={(v) => onSpecChange({
               type: 'js-message-filter',
               value: v,

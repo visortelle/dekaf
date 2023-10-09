@@ -1,0 +1,13 @@
+.SortInput {
+  display: flex;
+  align-items: center;
+}
+
+.Arrow {
+  width: 24rem;
+  height: 24rem;
+}
+
+.Arrow svg {
+  fill: var(--text-color);
+}

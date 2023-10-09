@@ -11,7 +11,7 @@ import Input from '../../ui/Input/Input';
 
 export type ToolbarProps = {
   sessionState: SessionState;
-  config: ConsumerSessionConfig;
+  config: ConsumerSessionConfig | undefined;
   onSessionStateChange: (state: SessionState) => void;
   onStopSession: () => void;
   messagesLoaded: number;
@@ -75,7 +75,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         <div className={s.Control}>
           <div className={s.ConfigParamName}>Filters</div>
           <div style={{ display: 'flex' }}>
-            <div>{Object.keys(props.config.messageFilterChain.filters).length}</div>
+            <div>{props.config?.messageFilterChain.filters.length}</div>
             <div>&nbsp;</div>
           </div>
         </div>

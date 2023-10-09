@@ -9,6 +9,7 @@ export type LibraryBrowserButtonsProps = {
   itemType: UserManagedItemType;
   itemToSave: UserManagedItem | undefined;
   onPick: (item: UserManagedItem) => void;
+  onSave: (item: UserManagedItem) => void;
   libraryContext: LibraryContext;
 };
 
@@ -24,6 +25,7 @@ const LibraryBrowserButtons: React.FC<LibraryBrowserButtonsProps> = (props) => {
       <LibraryBrowserSaveButton
         itemToSave={props.itemToSave}
         libraryContext={props.libraryContext}
+        onSave={props.onSave}
       />
     </div>
   );
