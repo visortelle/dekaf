@@ -35,7 +35,7 @@ class KeygenClient(
                     if err.errors.getOrElse(List()).exists(err => err.code.getOrElse("") == "MACHINE_LIMIT_EXCEEDED")
                     then
                         val errMessage =
-                            "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://pulsocat.com"
+                            "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://dekaf.com"
                         ZIO.fail(new Exception(errMessage))
                     else ZIO.fail(new Exception(err.errors.asJson.toString))
                 case Right(v) => ZIO.succeed(v)

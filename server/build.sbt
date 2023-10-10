@@ -48,7 +48,7 @@ lazy val root = project
     .enablePlugins(GitVersioning)
     .in(file("."))
     .settings(
-        name := "pulsocat",
+        name := "dekaf",
         scalaVersion := scala3Version,
         Compile / mainClass := Some("main.Main"),
         Universal / javaOptions ++= javaOpts,

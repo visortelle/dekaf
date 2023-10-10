@@ -4,7 +4,7 @@ import demo.tenants.schemas.SchemasTenant
 import client.{adminClient, pulsarClient}
 import scala.jdk.CollectionConverters.*
 
-object PulsocatDemoApp extends ZIOAppDefault:
+object DekafDemoApp extends ZIOAppDefault:
     private def appLogic = for {
         schemasTenantPlan <- SchemasTenant.mkTenantPlan
 
