@@ -13,7 +13,7 @@ is_public_release=$?
 if [ $is_public_release -eq 0 ]; then
   docker_repo="dekaf"
 else
-  docker_repo="dekaf-demoapp"
+  docker_repo="dekaf-dev"
 fi
 set -ue
 

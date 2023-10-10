@@ -6,14 +6,14 @@ const os = require('os');
 const path = require('path');
 
 const thisDir = __dirname;
-const chartRoot = `${thisDir}/pulsocat-helm`;
+const chartRoot = `${thisDir}/dekaf-helm`;
 
 function publishChart(name, version) {
-  const tmpDir = path.join(os.tmpdir(), `pulsocat-helm-${new Date().getTime()}`);
+  const tmpDir = path.join(os.tmpdir(), `dekaf-helm-${new Date().getTime()}`);
   console.info(`Copying Helm Chart to ${tmpDir}`);
   execSync(`mkdir -p ${tmpDir}`);
   execSync(`cp -r "${chartRoot}" ${tmpDir}/`);
-  const tmpChartRoot = `${tmpDir}/pulsocat-helm`;
+  const tmpChartRoot = `${tmpDir}/dekaf-helm`;
   const chartYaml = `${tmpChartRoot}/Chart.yaml`;
 
   try {
@@ -47,10 +47,10 @@ function publishChart(name, version) {
 const gitRev = execSync('git rev-parse --short=8 HEAD', { encoding: 'utf-8' }).toString().trim();
 const publicReleaseVersion = execSync('git --no-pager tag --contains', { encoding: 'utf-8' }).toString().trim().replace(/^v/, '');
 
-publishChart('pulsocat-helm-dev', `0.0.0-${gitRev}`);
+publishChart('dekaf-helm-dev', `0.0.0-${gitRev}`);
 
 if (publicReleaseVersion) {
-  publishChart('pulsocat-helm', publicReleaseVersion);
+  publishChart('dekaf-helm', publicReleaseVersion);
 }
 
 // Thanks to Copilot :)

@@ -103,7 +103,7 @@ object PulsarAuthRoutes:
 
     def setCookieAndSuccess(ctx: io.javalin.http.Context, pulsarAuth: PulsarAuth): Unit =
         def withNewDefaultAuth(pulsarAuth: PulsarAuth): PulsarAuth =
-            // Pulsocat admin can change default credentials,
+            // Dekaf admin can change default credentials,
             // so we need deliver new default credentials to users.
             pulsarAuth.copy(credentials =
                 pulsarAuth.credentials + (

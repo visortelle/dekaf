@@ -39,7 +39,7 @@ object compiler:
 
     def compileFiles(files: Seq[FileEntry]): CompiledFiles =
         // Write protobuf files to temp dir
-        val tempDir = os.temp.dir(null, "__pulsocat-protobuf-native_")
+        val tempDir = os.temp.dir(null, "__dekaf-protobuf-native_")
         logger.info(s"Compiling PROTOBUF_NATIVE schema files. Temp dir: $tempDir")
 
         val srcDir = tempDir / "src"
