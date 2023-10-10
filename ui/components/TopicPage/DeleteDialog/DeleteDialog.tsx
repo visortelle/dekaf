@@ -65,7 +65,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently delete the {props.topic} topic and close all producers, consumers, replicators.</div>
+          <div>It will permanently delete the <strong>{props.topic}</strong> topic and close all producers, consumers, replicators.</div>
         </div>
       }
       forceDelete={forceDelete}
