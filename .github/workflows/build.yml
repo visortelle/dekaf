@@ -103,6 +103,6 @@ jobs:
         shell: bash
         run: nix-shell --run 'make publish-helm-chart'
 
-      - name: Deploy Pulsocat demo
+      - name: Deploy Dekaf demo
         shell: bash
-        run: nix-shell --run 'cd ./deployment/pulsocat && make deploy'
+        run: nix-shell --run 'cd ./deployment/dekaf && make deploy'
