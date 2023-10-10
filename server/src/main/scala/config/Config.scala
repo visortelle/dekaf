@@ -81,13 +81,14 @@ case class Config(
           |""".stripMargin)
     pulsarTlsProtocols: Option[List[String]] = None,
 
+    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
+    defaultPulsarAuth: Option[String] = None,
+
     // Internal config
     @describe("The port HTTP server listens on.")
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on.")
     internalGrpcPort: Option[Int] = None,
-    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
-    defaultPulsarAuth: Option[String] = None
 )
 
 val yamlConfigDescriptor = descriptor[Config]
