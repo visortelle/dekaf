@@ -1,9 +1,9 @@
 import React from 'react';
 import s from './RegexTenantMatcherInput.module.css'
-import Input from '../../../../../Input/Input';
-import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-import { RegexTenantMatcher } from '../../../../model/resource-matchers';
+import Input from '../../../../../../Input/Input';
+import FormItem from '../../../../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../../ConfigurationTable/FormLabel/FormLabel';
+import { RegexTenantMatcher } from '../../../../../model/resource-matchers';
 
 export type RegexTenantMatcherInputProps = {
   value: RegexTenantMatcher;

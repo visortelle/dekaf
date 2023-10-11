@@ -4,6 +4,7 @@ import removeIcon from './remove.svg';
 import { useEffect, useState } from "react";
 import * as Either from 'fp-ts/Either';
 import NothingToShow from '../../NothingToShow/NothingToShow';
+import AddButton from '../../AddButton/AddButton';
 
 type Id = string;
 type EditorValue<T> = T | undefined;
@@ -22,6 +23,7 @@ export type ListValue<T> = {
   onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
   testId?: string;
+  itemName?: string;
   nothingToShowContent?: React.ReactNode;
 };
 
@@ -75,13 +77,12 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
         </div>
       )}
       {props.onAdd && (
-        <button
-          className={`${s.AddButton} ${Either.isRight(validationResult) ? s.AddButtonEnabled : s.AddButtonDisabled}`}
-          type="button"
-          onClick={add}
-        >
-          Add
-        </button>
+        <div className={s.AddButton}>
+          <AddButton
+            onClick={add}
+            itemName={props.itemName}
+          />
+        </div>
       )}
     </div>
   )

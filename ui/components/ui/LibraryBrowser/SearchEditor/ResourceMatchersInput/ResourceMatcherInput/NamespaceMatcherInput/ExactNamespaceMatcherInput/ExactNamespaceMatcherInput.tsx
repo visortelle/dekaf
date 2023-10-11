@@ -1,10 +1,10 @@
 import React from 'react';
 import s from './ExactNamespaceMatcherInput.module.css'
-import Input from '../../../../../Input/Input';
+import Input from '../../../../../../Input/Input';
 import TenantMatcherInput from '../../TenantMatcherInput/TenantMatcherInput';
-import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
-import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
-import { ExactNamespaceMatcher } from '../../../../model/resource-matchers';
+import FormItem from '../../../../../../ConfigurationTable/FormItem/FormItem';
+import FormLabel from '../../../../../../ConfigurationTable/FormLabel/FormLabel';
+import { ExactNamespaceMatcher } from '../../../../../model/resource-matchers';
 
 export type ExactNamespaceMatcherInputProps = {
   value: ExactNamespaceMatcher;

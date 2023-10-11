@@ -18,6 +18,7 @@ const TagsPicker: React.FC<TagsPickerProps> = (props) => {
         onRemove={(v) => props.onChange(props.value.filter((vv) => vv !== v))}
         getId={(v) => v}
         nothingToShowContent={<div>No tags specified.</div>}
+        itemName="Tag"
       />
     </div>
   );

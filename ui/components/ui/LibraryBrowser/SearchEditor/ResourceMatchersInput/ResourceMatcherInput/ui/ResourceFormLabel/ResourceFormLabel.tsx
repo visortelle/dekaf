@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './ResourceFormLabel.module.css'
-import { TenantIcon, NamespaceIcon, TopicIcon } from '../../../../../Icons/Icons';
-import FormLabel from '../../../../../ConfigurationTable/FormLabel/FormLabel';
+import { TenantIcon, NamespaceIcon, TopicIcon } from '../../../../../../Icons/Icons';
+import FormLabel from '../../../../../../ConfigurationTable/FormLabel/FormLabel';
 
 export type ResourceFormLabelProps = {
   type: 'tenant' | 'namespace' | 'topic';

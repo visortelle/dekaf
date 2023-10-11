@@ -1,11 +1,11 @@
 import React from 'react';
 import s from './TopicMatcherInput.module.css';
-import Select from '../../../../Select/Select';
+import Select from '../../../../../Select/Select';
 import ExactTopicMatcherInput from './ExactTopicMatcherInput/ExactTopicMatcherInput';
 import RegexTopicMatcherInput from './RegexTopicMatcherInput/RegexTopicMatcherInput';
-import FormItem from '../../../../ConfigurationTable/FormItem/FormItem';
+import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
-import { TopicMatcherType, TopicMatcher } from '../../../model/resource-matchers';
+import { TopicMatcherType, TopicMatcher } from '../../../../model/resource-matchers';
 
 export type TopicMatcherInputProps = {
   value: TopicMatcher;

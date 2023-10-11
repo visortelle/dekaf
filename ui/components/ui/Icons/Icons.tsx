@@ -87,7 +87,7 @@ export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
   return <NodeIcon
     title="ns"
     textColor='#fff'
-    backgroundColor='var(--accent-color-red)'
+    backgroundColor='var(--accent-color-light-blue)'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}

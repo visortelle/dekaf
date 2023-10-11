@@ -14,7 +14,7 @@ import { swrKeys } from '../../../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
-import { isEqual } from 'lodash';
+import { divide, isEqual } from 'lodash';
 import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { useNavigate } from 'react-router';
 import { useTimeout } from '@react-hook/timeout';
@@ -23,6 +23,8 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
 import collapseAllIcon from './collapse-all.svg';
 import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
+import { tooltipId } from '../../Tooltip/Tooltip';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -311,13 +313,26 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     const pathStr = stringify(path);
 
-    return <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick} title={node.path.map(p => p.name).join('/')}>
-      <div className={s.NodeContent}>
-        <span>&nbsp;</span>
-        <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
-        <span className={s.NodeTextContent}>{nodeContent}</span>
+    return (
+      <div
+        key={`tree-node-${pathStr}`}
+        className={s.Node}
+        onClick={handleNodeClick}
+        data-tooltip-id={tooltipId}
+        data-tooltip-delay-show={1000}
+        data-tooltip-html={renderToStaticMarkup(
+          <div>
+            <strong>Tree path:</strong> {node.path.map(p => p.name).join('/')}
+          </div>
+        )}
+      >
+        <div className={s.NodeContent}>
+          <span>&nbsp;</span>
+          <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
+          <span className={s.NodeTextContent}>{nodeContent}</span>
+        </div>
       </div>
-    </div>
+    );
   }
 
   const isTreeInStuckState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
