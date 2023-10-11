@@ -9,7 +9,7 @@ import io.circe.generic.auto.*
 import _root_.config.readConfigAsync
 import consumer.filters.basicFilter.BasicMessageFilter.testBasicFilter
 import consumer.filters.{MessageFilter, MessageFilterChain, MessageFilterChainMode, MessageFilterType}
-import consumer.filters.basicFilter.{BasicMessageFilter, BasicMessageFilterOperationType}
+import consumer.filters.basicFilter.{BasicMessageFilter, BasicMessageFilterOperationType, BasicMessageFilterSelector}
 import consumer.filters.jsFilter.JsMessageFilter
 import consumer.filters.jsFilter.JsMessageFilter.testJsFilter
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
@@ -82,10 +82,10 @@ class MessageFilterContext(config: MessageFilterContextConfig):
         filter: MessageFilter,
         jsonMessage: JsonMessage,
         jsonValue: MessageValueToJsonResult,
-        currentSchemaType: SchemaType
+        schemaType: SchemaType
     ): FilterTestResult =
         val result = filter.value match
-            case basicFilter: BasicMessageFilter => testBasicFilter(context, basicFilter, jsonMessage, jsonValue, currentSchemaType)
+            case basicFilter: BasicMessageFilter => testBasicFilter(context, basicFilter, jsonMessage, jsonValue, schemaType)
             case jsFilter: JsMessageFilter => testJsFilter(context, jsFilter, jsonMessage, jsonValue)
 
         (
@@ -111,15 +111,85 @@ object MessageFilterContext:
            | message.accum = globalThis.$JsonAccumulatorVarName;
            |
            | ${setupAccessObjectFieldFunction}
-           | 
+           | ${setupNumericalStringComparisonFunctions}
+           |
            | globalThis.lastMessage = message; // For debug on the client side.
            |""".stripMargin
 
+    def setupFieldValueCode(maybeSelector: Option[BasicMessageFilterSelector]): JsCode =
+        maybeSelector match
+            case Some(BasicMessageFilterSelector.FieldSelector(fieldSelector)) =>
+                s"""const fieldValue = accessObjectField(message.value, "${fieldSelector}");"""
+            case _ =>
+                s"""const fieldValue = message.value;"""
+
+
+    private def setupNumericalStringComparisonFunctions: JsCode =
+        s"""
+           |const numericalStringEquals = (a, b) => {
+           |    const numA = parseFloat(a);
+           |    const numB = parseFloat(b);
+           |
+           |    if (isNaN(numA) || isNaN(numB)) {
+           |        return undefined;
+           |    }
+           |
+           |    return Math.abs(numA - numB) < 1e-12;
+           |};
+           |
+           |const numericalStringGreaterThan = (a, b) => {
+           |    const numA = parseFloat(a);
+           |    const numB = parseFloat(b);
+           |
+           |    if (isNaN(numA) || isNaN(numB)) {
+           |        return undefined;
+           |    }
+           |
+           |  return numA > numB;
+           |};
+           |
+           |const numericalStringGreaterThanOrEqual = (a, b) => {
+           |    const numA = parseFloat(a);
+           |    const numB = parseFloat(b);
+           |
+           |    if (isNaN(numA) || isNaN(numB)) {
+           |        return undefined;
+           |    }
+           |
+           |    return numA > numB || Math.abs(numA - numB) < 1e-12;
+           |};
+           |
+           |const numericalStringLessThan = (a, b) => {
+           |    const numA = parseFloat(a);
+           |    const numB = parseFloat(b);
+           |
+           |    if (isNaN(numA) || isNaN(numB)) {
+           |        return undefined;
+           |    }
+           |
+           |    return numA < numB;
+           |};
+           |
+           |const numericalStringLessThanOrEqual = (a, b) => {
+           |    const numA = parseFloat(a);
+           |    const numB = parseFloat(b);
+           |
+           |    if (isNaN(numA) || isNaN(numB)) {
+           |        return undefined;
+           |    }
+           |
+           |    return numA < numB || Math.abs(numA - numB) < 1e-12;
+           |};
+           |  """.stripMargin
+        
     private def setupAccessObjectFieldFunction: JsCode =
         val arrayElementRegex = "/^(\\d+)\\]$/"
-        
+
         s"""const accessObjectField = (obj, fieldSelector)  => {
            |    try {
+           |      if (!fieldSelector) return undefined;
+           |      if (!obj) return undefined;
+           |
            |      const keys = fieldSelector.startsWith('.') ? fieldSelector.slice(1).split('.') : fieldSelector.split('.');
            |
            |      let currentObj = obj;

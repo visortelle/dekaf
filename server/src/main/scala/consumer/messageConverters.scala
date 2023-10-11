@@ -11,6 +11,7 @@ import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp
+import io.circe.Encoder
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 
 import java.nio.charset.StandardCharsets
@@ -36,7 +37,7 @@ case class JsonMessage(
     isReplicated: Option[Boolean],
     replicatedFrom: Option[String],
     properties: Map[String, String]
-)
+) derives Encoder.AsObject
 
 object converters:
     def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, MessageValueToJsonResult) =
@@ -124,7 +125,7 @@ object converters:
         messageSchemaVersion match
             case Some(msgSchemaVersion) => Some(schemasByVersion.get(msgSchemaVersion))
             case None => None
-            
+
     def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
         val msgData = msg.getData
 

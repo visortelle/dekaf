@@ -23,7 +23,7 @@ object MessageFilterChain:
         messageFilterContext: MessageFilterContext,
         jsonMessage: JsonMessage,
         jsonValue: MessageValueToJsonResult,
-        currentSchemaType: SchemaType
+        schemaType: SchemaType
     ): FilterTestResult =
         var chain = filterChain
 
@@ -47,10 +47,10 @@ object MessageFilterChain:
 
         val filterResults = chain.filters
             .filter(_.isEnabled)
-            .map(f => testMessageFilter(f, messageFilterContext, jsonMessage, jsonValue, currentSchemaType))
+            .map(f => testMessageFilter(f, messageFilterContext, jsonMessage, jsonValue, schemaType))
 
         val maybeErr = filterResults.find(fr => fr._1.isLeft)
-        val filterChainResult = {
+        val filterChainResult: Either[FilterTestErrorMessage, Boolean] = {
             maybeErr match
                 case Some(Left(err: FilterTestErrorMessage), _) => Left(err)
                 case _ =>
@@ -59,6 +59,8 @@ object MessageFilterChain:
                             Right(filterResults.forall(fr => fr._1.getOrElse(false)))
                         case MessageFilterChainMode.Any =>
                             Right(filterResults.exists(fr => fr._1.getOrElse(false)))
+                        case MessageFilterChainMode.Unspecified =>
+                            Left("Filter chain mode is not specified")
         }.fold(
             err => Left(err),
             bool => Right(if chain.isNegated then !bool else bool)

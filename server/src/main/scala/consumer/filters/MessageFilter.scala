@@ -48,6 +48,6 @@ object MessageFilter:
         messageFilterContext: MessageFilterContext,
         jsonMessage: JsonMessage,
         jsonValue: MessageValueToJsonResult,
-        currentSchemaType: SchemaType
+        schemaType: SchemaType
     ): FilterTestResult =
-        messageFilterContext.test(filter, jsonMessage, jsonValue, currentSchemaType)
+        messageFilterContext.test(filter, jsonMessage, jsonValue, schemaType)

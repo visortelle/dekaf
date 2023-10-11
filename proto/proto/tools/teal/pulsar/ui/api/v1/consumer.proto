@@ -198,11 +198,9 @@ message BasicMessageFilterOperationLessThanOrEquals {
 }
 
 message BasicMessageFilterOperationIsTruthy {
-  string value = 1;
 }
 
 message BasicMessageFilterOperationIsNull {
-  string value = 1;
 }
 
 message BasicMessageFilterOperationContains {
@@ -232,9 +230,31 @@ enum BasicMessageFilterTarget {
   BASIC_MESSAGE_FILTER_TARGET_PROPERTIES = 3;
 }
 
+message BasicMessageFilterFieldSelector {
+  string field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+}
+
+enum BasicMessageFilterPropertiesSelectorMode {
+  BASIC_MESSAGE_FILTER_PROPERTIES_SELECTOR_MODE_UNSPECIFIED = 0;
+  BASIC_MESSAGE_FILTER_PROPERTIES_SELECTOR_MODE_ALL = 1;
+  BASIC_MESSAGE_FILTER_PROPERTIES_SELECTOR_MODE_ANY = 2;
+}
+
+message BasicMessageFilterPropertiesSelector {
+  repeated string properties_names = 1;
+  BasicMessageFilterPropertiesSelectorMode mode = 2;  
+}
+
+message BasicMessageFilterSelector {
+  oneof selector {
+    BasicMessageFilterFieldSelector field = 1;
+    BasicMessageFilterPropertiesSelector properties = 2;
+  }
+}
+
 message BasicMessageFilter {
   BasicMessageFilterTarget target = 2;
-  string field_selector = 3; // in a jq-like form: ".obj.nestedObj.field"
+  optional BasicMessageFilterSelector selector = 3;
 
   oneof operation {
     BasicMessageFilterOperationContains contains = 10;
