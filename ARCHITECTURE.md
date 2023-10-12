@@ -13,7 +13,7 @@
 - AWS EKS Kubernetes clusters for test Pulsar deployments.
 - AWS EC2 instances for manual testing on Windows, Linux and MacOS.
 
-## Communication
+## API Communication
 
 ```mermaid
 sequenceDiagram
@@ -39,3 +39,11 @@ sequenceDiagram
   gRPC server->>Pulsar broker: 6650 - service request
   Pulsar broker-->>gRPC server: 6650 - service response
 ```
+
+## Security checklist
+
+- [ ] Envoy <-> User Browser :: TLS
+- [ ] GrpcServer <-> Envoy :: mutual TLS
+- [ ] HttpServer <-> Envoy :: mutual TLS
+- [ ] Embedded Postgres <-> Dekaf Server :: Postgres SSL authentication
+- [ ] Pulsar <-> Dekaf Server :: Pulsar TLS authentication

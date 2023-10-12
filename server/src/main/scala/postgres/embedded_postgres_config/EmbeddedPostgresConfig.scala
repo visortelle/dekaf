@@ -1,6 +1,9 @@
 package postgres.embedded_postgres_config
 
 case class EmbeddedPostgresConfig(
-    listenPort: Int,
-    pgdataDir: String,
+    host: String,
+    port: Int,
+    dataDir: String,
+    user: String,
+    password: String,
 )

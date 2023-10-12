@@ -4,6 +4,8 @@ import zio.{Config, *}
 import zio.config.*
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
+import _root_.postgres.{PostgresVariant, given_Decoder_PostgresVariant, given_Encoder_PostgresVariant}
+import postgres.PostgresVariant.embedded
 
 import java.nio.file.Path
 
@@ -83,6 +85,14 @@ case class Config(
 
     @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
     defaultPulsarAuth: Option[String] = None,
+
+    // Postgres
+    postgresVariant: Option[PostgresVariant] = Some(PostgresVariant.embedded),
+    postgresUser: Option[String] = Some("dekafadmin"),
+    postgresPassword: Option[String] = Some("dekafadmin"),
+    postgresHost: Option[String] = Some("0.0.0.0"),
+    postgresPort: Option[Int] = None,
+    postgresDatabase: Option[String] = Some("dekaf"),
 
     // Internal config
     @describe("The port HTTP server listens on.")
