@@ -94,15 +94,14 @@ case class Config(
 val yamlConfigDescriptor = descriptor[Config]
 val envConfigDescriptor = descriptor[Config].mapKey(key => s"DEKAF_${toUpperSnakeCase(key)}")
 
-val yamlConfigSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
-val envConfigSource = ConfigSource.fromSystemEnv(None, None)
-
 val internalHttpPort = getFreePort
 val internalGrpcPort = getFreePort
 
 def readConfig =
     for
-        yamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource))
+        yamlConfigSource <- ZIO.attempt(YamlConfigSource.fromYamlPath(Path.of("./config.yaml")))
+        envConfigSource <- ZIO.attempt(ConfigSource.fromSystemEnv(None, None))
+        yamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).orElseSucceed(Config())
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
         defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
 

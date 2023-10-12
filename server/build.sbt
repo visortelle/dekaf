@@ -2,7 +2,7 @@ val scala3Version = "3.3.0"
 val graalvmVersion = "22.3.1"
 val pulsarVersion = "3.1.0"
 val circeVersion = "0.14.5"
-val zioVersion = "2.0.15"
+val zioVersion = "2.0.18"
 val zioConfigVersion = "3.0.7"
 
 maintainer := "kiryl_valkovich@teal.tools"
