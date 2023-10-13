@@ -44,4 +44,3 @@ case class PostgresProviderImpl(configProvider: ConfigProvider) extends Postgres
 //    val a = Quill.Postgres.fromNamingStrategy(SnakeCase)
 //    val ds = new PGSimpleDataSource()
 //    val b = Quill.DataSource.fromDataSource(ds)
-

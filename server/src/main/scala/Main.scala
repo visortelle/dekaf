@@ -10,18 +10,23 @@ import _root_.config.ConfigProviderImpl
 import zio.*
 
 object Main extends ZIOAppDefault:
-    def run = for {
+    def app = for {
         licenseServerInitResult <- LicenseServer.init
 
         _ <- ZIO.raceFirst(
             ZIO.never,
             List(
                 LicenseServer.run(licenseServerInitResult),
-                Grafana.run.provide(ConfigProviderImpl.layer, PostgresProviderImpl.layer),
-//                Envoy.run,
+                Grafana.run,
+                //                Envoy.run,
                 HttpServer.run,
                 GrpcServer.run
             )
         )
         _ <- ZIO.never
     } yield ()
+
+    def run = app.provide(
+        ConfigProviderImpl.layer,
+        PostgresProviderImpl.layer
+    )
