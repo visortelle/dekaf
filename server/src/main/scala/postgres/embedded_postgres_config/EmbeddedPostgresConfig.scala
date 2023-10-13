@@ -6,4 +6,5 @@ case class EmbeddedPostgresConfig(
     dataDir: String,
     user: String,
     password: String,
+    database: String
 )

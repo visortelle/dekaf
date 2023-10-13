@@ -18,7 +18,7 @@ val javaOpts = Seq(
 
 scalacOptions ++= Seq(
     "-Xmax-inlines",
-    "100", // https://github.com/softwaremill/magnolia/issues/374
+    "100" // https://github.com/softwaremill/magnolia/issues/374
 )
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT
@@ -31,14 +31,16 @@ Global / resolvers += Resolver.mavenLocal
 
 // Define extra properties at build time that are available in runtime.
 Compile / sourceGenerators += Def.task {
-  val buildInfo = (Compile / sourceManaged).value / "ExtraBuildInfo.scala"
-  IO.write(buildInfo,
-    s"""package buildinfo
+    val buildInfo = (Compile / sourceManaged).value / "ExtraBuildInfo.scala"
+    IO.write(
+        buildInfo,
+        s"""package buildinfo
        |object ExtraBuildInfo {
        |  val isBinaryBuild = ${System.getProperty("isBinaryBuild") == "true"}
        |}
-       |""".stripMargin)
-  Seq(buildInfo)
+       |""".stripMargin
+    )
+    Seq(buildInfo)
 }.taskValue
 
 lazy val root = project
@@ -90,6 +92,11 @@ lazy val root = project
             "io.javalin" % "javalin-rendering" % "5.3.2",
             "org.freemarker" % "freemarker" % "2.3.31",
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
+
+            // Postgres
+            "org.postgresql" % "postgresql" % "42.6.0",
+            "io.getquill" %% "quill-jdbc-zio" % "4.8.0",
+            "io.getquill" %% "quill-doobie" % "4.8.0",
 
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.12.0",
