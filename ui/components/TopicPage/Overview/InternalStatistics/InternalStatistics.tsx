@@ -9,19 +9,20 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import NothingToShow from '../../../ui/NothingToShow/NothingToShow';
 import PersistentTopicInternalStats from './PersistentTopicInternalStats/PersistentTopicInternalStats';
 import PartitionedTopicInternalStats from './PartitionedTopicInternalStats/PartitionedTopicInternalStats';
+import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
 
 export type InternalStatisticsProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
 };
 
 const InternalStatistics: React.FC<InternalStatisticsProps> = (props) => {
   const { topicServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
 
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const { data: topicsInternalStats, error: topicsInternalStatsError, isLoading } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._([topicFqn]),
@@ -68,7 +69,7 @@ const InternalStatistics: React.FC<InternalStatisticsProps> = (props) => {
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicPersistency={props.topicPersistency}
         />
       )}
       {partitionedTopicStats && (
@@ -77,7 +78,7 @@ const InternalStatistics: React.FC<InternalStatisticsProps> = (props) => {
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicPersistency={props.topicPersistency}
         />
       )}
     </div>

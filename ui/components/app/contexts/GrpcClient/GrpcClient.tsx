@@ -13,6 +13,7 @@ import * as _metricsServiceClient from '../../../../grpc-web/tools/teal/pulsar/u
 import * as _brokersServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/BrokersServiceClientPb';
 import * as _brokerstatsServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/brokerstats/v1/BrokerstatsServiceClientPb';
 import * as _topicPoliciesServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/topic_policies/v1/Topic_policiesServiceClientPb';
+import * as _libraryServiceClient from '../../../../grpc-web/tools/teal/pulsar/ui/library/v1/LibraryServiceClientPb';
 
 export type Value = {
   pulsarAuthServiceClient: _pulsarAuthServiceClient.PulsarAuthServiceClient,
@@ -28,6 +29,7 @@ export type Value = {
   metricsServiceClient: _metricsServiceClient.MetricsServiceClient,
   brokersServiceClient: _brokersServiceClient.BrokersServiceClient,
   brokerstatsServiceClient: _brokerstatsServiceClient.BrokerStatsServiceClient,
+  libraryServiceClient: _libraryServiceClient.LibraryServiceClient,
 }
 
 const defaultValue: Value = {
@@ -44,6 +46,7 @@ const defaultValue: Value = {
   metricsServiceClient: new _metricsServiceClient.MetricsServiceClient(''),
   brokersServiceClient: new _brokersServiceClient.BrokersServiceClient(''),
   brokerstatsServiceClient: new _brokerstatsServiceClient.BrokerStatsServiceClient(''),
+  libraryServiceClient: new _libraryServiceClient.LibraryServiceClient(''),
 };
 
 const Context = React.createContext<Value>(defaultValue);
@@ -66,6 +69,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
   const [metricsServiceClient] = useState(new _metricsServiceClient.MetricsServiceClient(props.grpcWebUrl));
   const [brokersServiceClient] = useState(new _brokersServiceClient.BrokersServiceClient(props.grpcWebUrl));
   const [brokerstatsServiceClient] = useState(new _brokerstatsServiceClient.BrokerStatsServiceClient(props.grpcWebUrl));
+  const [libraryServiceClient] = useState(new _libraryServiceClient.LibraryServiceClient(props.grpcWebUrl));
 
   return (
     <>
@@ -84,6 +88,7 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
           metricsServiceClient,
           brokersServiceClient,
           brokerstatsServiceClient,
+          libraryServiceClient
         }}
       >
         {props.children}

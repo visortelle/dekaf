@@ -7,6 +7,7 @@ import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.parser.decode
 import io.circe.syntax.*
 import org.apache.commons.codec.binary.Base64
+import com.typesafe.scalalogging.Logger
 
 import java.net.{URLDecoder, URLEncoder}
 import java.nio.charset.StandardCharsets.UTF_8
@@ -23,6 +24,8 @@ type JwtCredentialsType = "jwt"
 type CredentialsName = String
 type CredentialsType = EmptyCredentialsType | OAuth2CredentialsType | JwtCredentialsType
 type Credentials = EmptyCredentials | OAuth2Credentials | JwtCredentials
+
+val logger = Logger("pulsar-auth")
 
 case class EmptyCredentials(
     `type`: EmptyCredentialsType
@@ -128,7 +131,7 @@ def parsePulsarAuthCookie(json: Option[String]): Either[Throwable, PulsarAuth] =
 
             decode[PulsarAuth](v) match
                 case Left(err) =>
-                    println(s"Unable to parse cookie: ${err.getMessage}")
+                    logger.warn(s"Unable to parse cookie: ${err.getMessage}")
                     Left(new Exception(s"Unable to parse pulsar_auth cookie."))
                 case Right(pulsarAuth) => Right(
                     pulsarAuth

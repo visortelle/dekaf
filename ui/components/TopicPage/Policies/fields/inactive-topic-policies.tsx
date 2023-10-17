@@ -14,6 +14,7 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { swrKeys } from "../../../swrKeys";
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import {help} from "../../../ui/help";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'inactiveTopicPolicies';
 
@@ -27,7 +28,7 @@ type PolicyValue = { type: 'inherited-from-namespace-config' } | {
 }
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -40,7 +41,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
 
-  const swrKey = props.topicType === 'persistent' ? (
+  const swrKey = props.topicPersistency === 'persistent' ? (
       props.isGlobal ?
         swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.globalPolicy({ tenant: props.tenant, namespace: props.namespace, policy }) :
         swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.localPolicy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy })
@@ -54,7 +55,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetInactiveTopicPoliciesRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getInactiveTopicPolicies(req, {});
@@ -103,7 +104,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const updatePolicy = async (value: PolicyValue) => {
     if (value.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveInactiveTopicPoliciesRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.removeInactiveTopicPolicies(req, {});
@@ -123,7 +124,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       }
 
       const req = new pb.SetInactiveTopicPoliciesRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
       req.setInactiveTopicDeleteMode(inactiveTopicDeleteModeToPb(value.inactiveTopicDeleteMode));
       req.setMaxInactiveDurationSeconds(Math.floor(value.maxInactiveDurationSeconds));

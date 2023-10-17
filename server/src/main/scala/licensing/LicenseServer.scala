@@ -38,7 +38,7 @@ object LicenseServer:
             println(s"Built at: ${buildinfo.BuildInfo.builtAtString}")
             println(s"You can get help here: support@teal.tools")
             println(s"More products: https://teal.tools")
-            println(s"More info about this product: https://pulsocat.com")
+            println(s"More info about this product: https://dekaf.com")
         }
         config <- readConfig
         _ <- validateConfigOrDie(config)
@@ -65,7 +65,7 @@ object LicenseServer:
         product <- ZIO.attempt(ProductFamily.find(p => p.keygenProductId == keygenLicense.data.relationships.product.data.id))
         _ <- ZIO.whenCase(product) {
             case Some(p) => ZIO.logInfo(s"License successfully validated. Starting ${p.name}.")
-            case _       => ZIO.logError(s"Provided license doesn't match any product. Please contact support team at https://support.pulsocat.com")
+            case _       => ZIO.logError(s"Provided license doesn't match any product. Please contact support team at https://support.dekaf.com")
         }
         sessionFingerprint <- ZIO.attempt(UUID.randomUUID().toString)
         _ <- ZIO.logInfo(s"License session fingerprint: $sessionFingerprint")

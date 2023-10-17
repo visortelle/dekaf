@@ -21,6 +21,7 @@ import com.tools.teal.pulsar.ui.metrics.v1.metrics.MetricsServiceGrpc
 import com.tools.teal.pulsar.ui.brokers.v1.brokers.BrokersServiceGrpc
 import com.tools.teal.pulsar.ui.brokerstats.v1.brokerstats.BrokerStatsServiceGrpc
 import com.tools.teal.pulsar.ui.topic_policies.v1.topic_policies.TopicPoliciesServiceGrpc
+import com.tools.teal.pulsar.ui.library.v1.library.LibraryServiceGrpc
 
 import _root_.pulsar_auth.PulsarAuthServiceImpl
 import _root_.consumer.ConsumerServiceImpl
@@ -35,6 +36,7 @@ import _root_.metrics.MetricsServiceImpl
 import _root_.brokers.BrokersServiceImpl
 import _root_.brokerstats.BrokerStatsServiceImpl
 import _root_.topic_policies.TopicPoliciesServiceImpl
+import _root_.library.LibraryServiceImpl
 import _root_.pulsar_auth.PulsarAuthInterceptor
 
 object GrpcServer:
@@ -56,6 +58,7 @@ object GrpcServer:
         .addService(MetricsServiceGrpc.bindService(MetricsServiceImpl(), ExecutionContext.global))
         .addService(BrokersServiceGrpc.bindService(BrokersServiceImpl(), ExecutionContext.global))
         .addService(BrokerStatsServiceGrpc.bindService(BrokerStatsServiceImpl(), ExecutionContext.global))
+        .addService(LibraryServiceGrpc.bindService(LibraryServiceImpl(), ExecutionContext.global))
 
         .addService(ProtoReflectionService.newInstance)
 

@@ -1,7 +1,0 @@
-apiVersion: v2
-name: _chart-name
-description: Pulsocat is a UI for Apache Pulsar
-
-type: application
-
-version: 0.1.0

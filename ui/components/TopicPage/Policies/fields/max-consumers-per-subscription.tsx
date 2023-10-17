@@ -11,6 +11,7 @@ import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/
 import { swrKeys } from '../../../swrKeys';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'maxConsumersPerSubscription';
 
@@ -21,7 +22,7 @@ type PolicyValue = { type: 'inherited-from-namespace-config' } |
 };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -33,7 +34,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const swrKey = props.topicType === 'persistent' ? (
+  const swrKey = props.topicPersistency === 'persistent' ? (
       props.isGlobal ?
         swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.globalPolicy({ tenant: props.tenant, namespace: props.namespace, policy }) :
         swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.localPolicy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy })
@@ -47,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetMaxConsumersPerSubscriptionRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getMaxConsumersPerSubscription(req, {});
@@ -94,7 +95,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-namespace-config') {
           const req = new pb.RemoveMaxConsumersPerSubscriptionRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
           const res = await topicPoliciesServiceClient.removeMaxConsumersPerSubscription(req, {});
@@ -105,7 +106,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         if (value.type === 'unlimited' || value.type === 'specified-for-this-topic') {
           const req = new pb.SetMaxConsumersPerSubscriptionRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
           if (value.type === 'unlimited') {

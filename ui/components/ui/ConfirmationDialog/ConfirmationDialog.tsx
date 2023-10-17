@@ -11,11 +11,11 @@ type Props = {
   description: ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
-  switchForceDelete?: () => void;
-  forceDelete?: boolean;
-  forceDeleteInfo?: React.ReactNode;
+  switchForceDelete?: () => void; // TECH_DEBT_SMALL: remove this property
+  forceDelete?: boolean; // TECH_DEBT_SMALL: remove this property
+  forceDeleteInfo?: React.ReactNode; // TECH_DEBT_SMALL: remove this property
+  guard?: string; // TECH_DEBT_SMALL: rename ???
   disabled?: boolean;
-  guard?: string;
   type?: 'normal' | 'danger',
 }
 

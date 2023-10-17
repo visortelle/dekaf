@@ -13,6 +13,7 @@ import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topic_policies/v1/topic_policies_pb';
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 import { swrKeys } from "../../../swrKeys";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 /*
 Time limit	  Size limit  Message retention
@@ -51,7 +52,7 @@ type PolicyValue =
   }
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -65,7 +66,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig()
   const [validationError, setValidationError] = useState<ValidationError>(undefined);
 
-  const swrKey = props.topicType === 'persistent' ? (
+  const swrKey = props.topicPersistency === 'persistent' ? (
       props.isGlobal ?
         swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.globalPolicy({ tenant: props.tenant, namespace: props.namespace, policy }) :
         swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.localPolicy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy })
@@ -79,7 +80,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetRetentionRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getRetention(req, {});
@@ -136,7 +137,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const updatePolicy = async (value: PolicyValue) => {
     if (value.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveRetentionRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.removeRetention(req, {});
@@ -148,7 +149,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
     if (value.type === 'disabled') {
       const req = new pb.SetRetentionRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
       req.setRetentionSizeInMb(0);
       req.setRetentionTimeInMinutes(0);
@@ -161,7 +162,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
     if (value.type === 'retain-infinitely') {
       const req = new pb.SetRetentionRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
       req.setRetentionSizeInMb(-1);
       req.setRetentionTimeInMinutes(-1);
@@ -174,7 +175,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
     if (value.type === 'specified') {
       const req = new pb.SetRetentionRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       if (value.retentionSizeInMb.type === 'infinite') {

@@ -57,7 +57,7 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently delete the {props.tenant} tenant and all its namespaces.</div>
+          <div>It will permanently delete the <strong>{props.tenant}</strong> tenant and all its namespaces.</div>
         </div>
       }
       forceDelete={forceDelete}

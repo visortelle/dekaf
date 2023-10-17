@@ -3,7 +3,6 @@ import { useQueryParam, withDefault, BooleanParam } from 'use-query-params';
 
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
 import Checkbox from '../../ui/Checkbox/Checkbox';
-import { H1 } from '../../ui/H/H';
 import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 
 import messageTtlField from './fields/message-ttl';
@@ -25,7 +24,7 @@ import maxConsumersPerSubscriptionField from './fields/max-consumers-per-subscri
 import maxConsumersPerTopicField from './fields/max-consumers-per-topic';
 import maxProducersPerTopicField from './fields/max-producers-per-topic';
 import schemaCompatibilityStrategyField from './fields/schema-compatibility-strategy';
-import subscribyRateField from './fields/subscribe-rate';
+import subscribeRateField from './fields/subscribe-rate';
 import subscriptionTypesEnabledField from './fields/subscription-types-enabled';
 import maxSubscriptionsPerTopicField from './fields/max-subscriptions-per-topic';
 import maxMessageSizeField from './fields/max-message-size';
@@ -35,12 +34,13 @@ import Tabs from "../../ui/Tabs/Tabs";
 import CopyPoliciesButton from "./ClipboardButtons/CopyPoliciesButton";
 import PastePoliciesButton from "./ClipboardButtons/PastePoliciesButton";
 import {sessionStorageKeys} from "../../session-storage-keys";
+import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
 export type PoliciesProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
 };
 
 type TabsKey =
@@ -86,7 +86,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicType={props.topicPersistency}
           sessionId={sessionId}
           setSessionId={setSessionId}
           isGlobal={isGlobal}
@@ -95,7 +95,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicType={props.topicPersistency}
           sessionId={sessionId}
           setReloadKey={setReloadKey}
           isGlobal={isGlobal}
@@ -118,7 +118,7 @@ const Policies: React.FC<PoliciesProps> = (props) => {
                       compactionThresholdField,
                       persistenceField,
                       publishRateField,
-                      subscribyRateField,
+                      subscribeRateField,
                       maxMessageSizeField,
                       inactiveTopicPoliciesField,
                       maxProducersPerTopicField,

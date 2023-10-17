@@ -11,6 +11,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
 import stringify from 'safe-stable-stringify';
 import React from "react";
+import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
 
 const policy = 'subscriptionDispatchRate';
 
@@ -25,7 +26,7 @@ type PolicyValue = {
 };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -37,7 +38,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const swrKey = props.topicType === 'persistent' ? (
+  const swrKey = props.topicPersistency === 'persistent' ? (
       props.isGlobal ?
         swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.globalPolicy({ tenant: props.tenant, namespace: props.namespace, policy }) :
         swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.localPolicy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy })
@@ -51,7 +52,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetSubscriptionDispatchRateRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getSubscriptionDispatchRate(req, {});
@@ -98,7 +99,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-namespace-config') {
           const req = new pb.RemoveSubscriptionDispatchRateRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
           const res = await topicPoliciesServiceClient.removeSubscriptionDispatchRate(req, {});
@@ -109,7 +110,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         if (value.type === 'specified') {
           const req = new pb.SetSubscriptionDispatchRateRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
           req.setRateInMsg(value.rateInMsg);
           req.setRateInByte(value.rateInByte);
