@@ -181,7 +181,7 @@ object MessageFilterContext:
            |    return numA < numB || Math.abs(numA - numB) < 1e-12;
            |};
            |  """.stripMargin
-        
+
     private def setupAccessObjectFieldFunction: JsCode =
         val arrayElementRegex = "/^(\\d+)\\]$/"
 

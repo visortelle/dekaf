@@ -109,7 +109,7 @@ static_resources:
 
 def getEnvoyConfigPath(config: EnvoyConfigParams): IO[Throwable, os.Path] = for
     fileContent <- ZIO.succeed(renderEnvoyConfig(config))
-    tempDirPath <- ZIO.attempt(os.temp.dir(null, "pulsocat"))
+    tempDirPath <- ZIO.attempt(os.temp.dir(null, "dekaf"))
     tempFilePath <- ZIO.attempt(tempDirPath / "envoy.yaml")
     _ <- ZIO.attempt(os.write(tempFilePath, fileContent))
 yield tempFilePath

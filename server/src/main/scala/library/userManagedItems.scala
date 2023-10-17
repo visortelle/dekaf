@@ -6,8 +6,26 @@ import io.circe.generic.semiauto.*
 import io.circe.syntax.*
 import io.circe.parser.parse as parseJson
 import io.circe.parser.decode as decodeJson
-import consumer.filters.{MessageFilter, MessageFilterChainMode}
-
+import _root_.consumer.{
+    BasicMessageFilter,
+    ConsumerSessionConfig,
+    ConsumerSessionConfigPauseTrigger,
+    ConsumerSessionConfigStartFrom,
+    DateTime,
+    DateTimeUnit,
+    EarliestMessage,
+    JsMessageFilter,
+    LatestMessage,
+    MessageFilter,
+    MessageFilterChain,
+    MessageFilterChainMode,
+    MessageId,
+    RelativeDateTime,
+    given_Decoder_MessageFilter,
+    given_Encoder_MessageFilter,
+    given_Decoder_MessageFilterChainMode,
+    given_Encoder_MessageFilterChainMode
+}
 import java.time.Instant
 
 object UserManagedItemType:

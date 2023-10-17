@@ -25,9 +25,9 @@ docker manifest push --purge $image_version_tag
 git_branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$git_branch" == "main" ]; then
   docker manifest create \
-    tealtools/pulsocat-demoapp:latest \
+    tealtools/dekaf-demoapp:latest \
     --amend "${image_version_tag}-arm64" \
     --amend "${image_version_tag}-amd64"
 
-  docker manifest push --purge tealtools/pulsocat-demoapp:latest
+  docker manifest push --purge tealtools/dekaf-demoapp:latest
 fi

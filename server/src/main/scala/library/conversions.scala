@@ -7,8 +7,7 @@ import consumer.{
     messageFilterChainFromPb,
     messageFilterChainToPb,
     messageFilterFromPb,
-    messageFilterToPb,
-    ConsumerSessionConfig
+    messageFilterToPb
 }
 
 def libraryItemMetadataFromPb(v: libraryPb.LibraryItemMetadata): LibraryItemMetadata =

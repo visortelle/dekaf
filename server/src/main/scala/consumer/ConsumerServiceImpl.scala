@@ -3,7 +3,26 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{
+    ConsumerServiceGrpc,
+    CreateConsumerRequest,
+    CreateConsumerResponse,
+    DeleteConsumerRequest,
+    DeleteConsumerResponse,
+    MessageFilter as MessageFilterPb,
+    MessageFilterChain,
+    PauseRequest,
+    PauseResponse,
+    ResumeRequest,
+    ResumeResponse,
+    RunCodeRequest,
+    RunCodeResponse,
+    SeekRequest,
+    SeekResponse,
+    SkipMessagesRequest,
+    SkipMessagesResponse,
+    TopicsSelector
+}
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -138,7 +157,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         Future.successful(PauseResponse(status = Some(status)))
 
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
-        val consumerName: ConsumerName = request.consumerName.getOrElse("__pulsocat" + UUID.randomUUID().toString)
+        val consumerName: ConsumerName = request.consumerName.getOrElse("__dekaf" + UUID.randomUUID().toString)
         logger.info(s"Creating consumer. Consumer: $consumerName")
         val adminClient = RequestContext.pulsarAdmin.get()
         val pulsarClient = RequestContext.pulsarClient.get()

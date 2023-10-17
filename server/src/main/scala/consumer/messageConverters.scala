@@ -5,7 +5,19 @@ import org.apache.pulsar.client.api.Message
 import io.circe.parser.*
 import _root_.schema.avro
 import _root_.schema.protobufnative
-import _root_.conversions.primitiveConv.{bytesToBoolean, bytesToFloat32, bytesToFloat64, bytesToInt16, bytesToInt32, bytesToInt64, bytesToInt8, bytesToJson, bytesToJsonString, bytesToString, leftPad}
+import _root_.conversions.primitiveConv.{
+    bytesToBoolean,
+    bytesToFloat32,
+    bytesToFloat64,
+    bytesToInt16,
+    bytesToInt32,
+    bytesToInt64,
+    bytesToInt8,
+    bytesToJson,
+    bytesToJsonString,
+    bytesToString,
+    leftPad
+}
 
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*

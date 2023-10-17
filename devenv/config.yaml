@@ -2,7 +2,7 @@ port: 8090
 publicBaseUrl: http://localhost:8090
 
 library:
-  path: /pulsocat/library
+  path: /dekaf/library
 
 license:
   id: "db1fa160-7f2f-4bdf-b3f2-5e194d2af2f6"

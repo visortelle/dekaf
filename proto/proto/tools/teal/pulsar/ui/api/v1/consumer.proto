@@ -242,7 +242,7 @@ enum BasicMessageFilterPropertiesSelectorMode {
 
 message BasicMessageFilterPropertiesSelector {
   repeated string properties_names = 1;
-  BasicMessageFilterPropertiesSelectorMode mode = 2;  
+  BasicMessageFilterPropertiesSelectorMode mode = 2;
 }
 
 message BasicMessageFilterSelector {
