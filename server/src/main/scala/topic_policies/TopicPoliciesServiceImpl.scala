@@ -1425,7 +1425,6 @@ class TopicPoliciesServiceImpl extends TopicPoliciesServiceGrpc.TopicPoliciesSer
                                         case None =>
                                             "Persistence" -> (() => ())
 
-
                                 def setDeduplicationStatus(deduplicationStatus: Option[java.lang.Boolean]): NamedOperation =
                                     deduplicationStatus match
                                         case Some(deduplicationStatus) =>

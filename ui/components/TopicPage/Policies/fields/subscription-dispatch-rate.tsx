@@ -39,14 +39,22 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
 
   const swrKey = props.topicPersistency === 'persistent' ? (
-      props.isGlobal ?
-        swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.globalPolicy({ tenant: props.tenant, namespace: props.namespace, policy }) :
-        swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.localPolicy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy })
-    ) : (
-      props.isGlobal ?
-        swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.globalPolicy({ tenant: props.tenant, namespace: props.namespace, policy }) :
-        swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.localPolicy({ tenant: props.tenant, namespace: props.namespace, topic: props.topic, policy })
-    );
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({
+      tenant: props.tenant,
+      namespace: props.namespace,
+      topic: props.topic,
+      policy: policy,
+      isGlobal: props.isGlobal
+    })
+  ) : (
+    swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({
+      tenant: props.tenant,
+      namespace: props.namespace,
+      topic: props.topic,
+      policy: policy,
+      isGlobal: props.isGlobal
+    })
+  );
 
   const { data: initialValue, error: initialValueError } = useSWR(
     swrKey,
