@@ -2,6 +2,7 @@ package pulsar_auth
 
 import _root_.config.readConfigAsync
 import io.netty.channel.epoll.EpollEventLoopGroup
+import io.netty.channel.EventLoopGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.util.HashedWheelTimer
 import org.apache.pulsar.client.admin.PulsarAdmin
@@ -25,7 +26,9 @@ val internalExecutorProvider = ExecutorProvider(numThreads, "shared-internal-exe
 val externalExecutorProvider = ExecutorProvider(numThreads, "shared-external-executor")
 val scheduledExecutorProvider = ScheduledExecutorProvider(numThreads, "scheduled-pulsar-executor")
 val sharedTimer = new HashedWheelTimer(getThreadFactory("shared-pulsar-timer"), 1, TimeUnit.MILLISECONDS)
-val sharedEventLoopGroup = new NioEventLoopGroup() // Worse than EpollEventLoopGroup on Linux, but works everywhere
+val sharedEventLoopGroup: EventLoopGroup = if org.apache.commons.lang3.SystemUtils.IS_OS_LINUX
+    then new EpollEventLoopGroup() // better performance on Linux
+    else new NioEventLoopGroup()
 
 def makePulsarAdmin(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
     var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarHttpUrl.get)
