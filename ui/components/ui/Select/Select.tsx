@@ -12,11 +12,12 @@ export type ListItem<V> = {
 export type List<V> = ListItem<V>[]
 
 export type SelectProps<V> = {
-  value: string;
+  value: V;
   onChange: (value: V) => void;
   list: List<V>;
   placeholder?: string;
   disabled?: boolean;
+  appearance?: 'regular' | 'no-borders';
 }
 
 function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
@@ -30,8 +31,8 @@ function Select<V extends string>(props: SelectProps<V>): React.ReactElement {
   }
 
   return (
-    <div className={s.Container}>
-      {props.value && <div className={s.Placeholder}>{props.placeholder}</div>}
+    <div className={`${s.Container} ${props.appearance === 'no-borders' ? s.NoBorders : ''}`}>
+      {props.value === undefined && <div className={s.Placeholder}>{props.placeholder}</div>}
       <select
         className={`${s.Select} ${props.disabled ? s.DisabledSelect : ''}`}
         onChange={(v) => props.onChange(v.target.value as V)}

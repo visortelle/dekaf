@@ -1,0 +1,14 @@
+.ResourceMatchersInput {
+}
+
+.Matchers {
+  display: flex;
+  flex-direction: column;
+  gap: 48rem;
+}
+
+.AddButton {
+  margin-top: 8rem;
+  display: flex;
+  justify-content: flex-end;
+}

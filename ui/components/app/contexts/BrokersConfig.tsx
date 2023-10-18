@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { swrKeys } from '../../swrKeys';
 import { GetAllDynamicConfigurationsRequest, GetInternalConfigurationDataRequest, GetRuntimeConfigurationsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/brokers/v1/brokers_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
-import * as pbUtils from '../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../proto-utils/proto-utils';
 
 type InternalConfigurationData = {
   zookeeperServers?: string;

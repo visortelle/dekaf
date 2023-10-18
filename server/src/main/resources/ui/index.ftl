@@ -14,7 +14,7 @@
 
   <link data-rh="true" rel="icon" type="image/png" sizes="16x16" href="ui/static/favicon/favicon-16x16.png"/>
 
-  <title data-rh="true">Pulsocat</title>
+  <title data-rh="true">Dekaf</title>
 </head>
 
 <body>

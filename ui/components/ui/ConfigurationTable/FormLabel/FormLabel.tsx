@@ -10,7 +10,7 @@ export type FormLabelProps = {
 
 const FormLabel: React.FC<FormLabelProps> = (props) => {
   return (
-    <div className={s.FormLabel}>
+    <div className={`${s.FormLabel} ${props.help === undefined ? '' : s.WithHelp}`}>
       {props.content}
       {props.isRequired && <span className={s.Required}>*</span>}
       {props.help && (

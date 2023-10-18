@@ -6,3 +6,8 @@
   align-items: center;
   justify-content: center;
 }
+
+.Error {
+  background: var(--accent-color-red);
+  color: #fff;
+}

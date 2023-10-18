@@ -2,16 +2,17 @@ import React from 'react';
 import s from './PartitionedTopicInternalStats.module.css'
 import * as pb from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Select from '../../../../ui/Select/Select';
-import * as pbUtils from '../../../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../../../proto-utils/proto-utils';
 import PersistentTopicInternalStats from '../PersistentTopicInternalStats/PersistentTopicInternalStats';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import { PulsarTopicPersistency } from '../../../../pulsar/pulsar-resources';
 
 export type PartitionedTopicInternalStatsProps = {
   stats: pb.PartitionedTopicInternalStats;
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
 };
 
 const PartitionedTopicInternalStats: React.FC<PartitionedTopicInternalStatsProps> = (props) => {
@@ -44,7 +45,7 @@ const PartitionedTopicInternalStats: React.FC<PartitionedTopicInternalStatsProps
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicPersistency={props.topicPersistency}
         />
       </div>
     </div>

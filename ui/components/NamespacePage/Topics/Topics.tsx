@@ -11,7 +11,7 @@ import { partition, uniq } from 'lodash';
 import { help } from './help';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
-import * as pbUtils from '../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../proto-utils/proto-utils';
 import {
   GetTopicPropertiesResponse,
   GetTopicsStatsResponse,
@@ -183,11 +183,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 title: 'Name',
                 render: (de) => (
                   <Link
-                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistency,
+                      topicPersistency: de.persistency,
                     })}
                   >
                     {de.name}
@@ -218,11 +218,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 isLazy: true,
                 render: (de, ld) => i18n.withVoidDefault(ld?.stats.getPublishersList()?.length, v => (
                   <Link
-                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.get({
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistency,
+                      topicPersistency: de.persistency,
                     })}
                   >
                     {v}
@@ -234,11 +234,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 isLazy: true,
                 render: (de, ld) => i18n.withVoidDefault(ld?.stats.getSubscriptionsMap()?.getLength(), v => (
                   <Link
-                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.get({
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistency,
+                      topicPersistency: de.persistency,
                     })}
                   >
                     {v}

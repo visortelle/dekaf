@@ -7,12 +7,13 @@ import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialo
 import { routes } from "../../../routes";
 import { useNavigate } from "react-router";
 import { useState } from "react";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 export type Props = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
   refetchData: () => void;
 };
 
@@ -23,7 +24,7 @@ const DeleteDialog = (props: Props) => {
   const [forceDelete, setForceDelete] = useState(false);
   const navigate = useNavigate();
 
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const deleteSchema = async () => {
     const req = new DeleteSchemaRequest();
@@ -43,11 +44,11 @@ const DeleteDialog = (props: Props) => {
 
     await props.refetchData();
 
-    navigate(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({
+    navigate(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.get({
       tenant: props.tenant,
       namespace: props.namespace,
       topic: props.topic,
-      topicType: props.topicType,
+      topicPersistency: props.topicPersistency,
     }));
 
     modals.pop();

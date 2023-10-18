@@ -12,10 +12,10 @@ type Props = {
   onConfirm: () => void;
   isConfirmDisabled?: boolean;
   onCancel: () => void;
-  switchForceDelete?: () => void;
-  forceDelete?: boolean;
-  forceDeleteInfo?: React.ReactNode;
-  guard?: string;
+  switchForceDelete?: () => void; // TECH_DEBT_SMALL: remove this property
+  forceDelete?: boolean; // TECH_DEBT_SMALL: remove this property
+  forceDeleteInfo?: React.ReactNode; // TECH_DEBT_SMALL: remove this property
+  guard?: string; // TECH_DEBT_SMALL: rename ???
   type?: 'normal' | 'danger',
 }
 

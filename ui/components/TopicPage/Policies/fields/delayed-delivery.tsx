@@ -14,11 +14,12 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import {help} from "../../../ui/help";
 import React from "react";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'delayedDelivery';
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -39,7 +40,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const swrKey = props.topicType === 'persistent' ?
+  const swrKey = props.topicPersistency === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
@@ -47,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetDelayedDeliveryRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getDelayedDelivery(req, {});
@@ -90,7 +91,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const updatePolicy = async (value: PolicyValue) => {
     if (value.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveDelayedDeliveryRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.removeDelayedDelivery(req, {});
@@ -101,7 +102,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
     if (value.type === 'enabled' || value.type === 'disabled') {
       const req = new pb.SetDelayedDeliveryRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       if (value.type === 'enabled') {

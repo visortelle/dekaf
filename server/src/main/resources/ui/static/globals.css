@@ -19,6 +19,7 @@
   --surface-color-backdrop: rgba(94, 80, 134, 0.9);
   --text-color: rgba(0, 0, 0, 0.816);
   --border-color: #eceff2;
+  --border-color-dark: var(--text-color);
   --pulsar-color: #8f4e8b;
   --transition-short: all 180ms ease 0s;
   --backdrop-filter-blur: blur(12px);
@@ -26,6 +27,7 @@
   --accent-color-red: #fe6e6e;
   --accent-color-yellow: #f2c94c;
   --accent-color-blue: #6e79d6;
+  --accent-color-light-blue: #8fa0ff;
   --accent-color-purple: #9d50ff;
   --max-content-width: 1000px;
   --toastify-icon-color-success: var(--accent-color-green) !important;

@@ -13,7 +13,7 @@ import { Code } from "../../../grpc-web/google/rpc/code_pb";
 import * as Notifications from "../../app/contexts/Notifications";
 import { TabContent } from "../../ui/Tabs/Tabs";
 import NothingToShow from "../../ui/NothingToShow/NothingToShow";
-import * as pbUtils from "../../../pbUtils/pbUtils";
+import * as pbUtils from "../../../proto-utils/proto-utils";
 import Table from "../../ui/Table/Table";
 import * as Modals from "../../app/contexts/Modals/Modals";
 import SplitBundle from "./SplitBundle/SplitBundle";

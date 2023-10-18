@@ -3,7 +3,26 @@ package consumer
 import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, TopicsSelector, MessageFilter as MessageFilterPb}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{
+    ConsumerServiceGrpc,
+    CreateConsumerRequest,
+    CreateConsumerResponse,
+    DeleteConsumerRequest,
+    DeleteConsumerResponse,
+    MessageFilter as MessageFilterPb,
+    MessageFilterChain,
+    PauseRequest,
+    PauseResponse,
+    ResumeRequest,
+    ResumeResponse,
+    RunCodeRequest,
+    RunCodeResponse,
+    SeekRequest,
+    SeekResponse,
+    SkipMessagesRequest,
+    SkipMessagesResponse,
+    TopicsSelector
+}
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -17,7 +36,6 @@ import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import org.apache.pulsar.client.api.{Message, MessageId}
-import consumer.MessageFilter
 import _root_.pulsar_auth.RequestContext
 
 import java.io.ByteArrayOutputStream
@@ -34,7 +52,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
     var topics: Map[ConsumerName, Vector[String]] = Map.empty
     var schemasByTopic: SchemasByTopic = Map.empty
-    private var messageFilters: Map[ConsumerName, MessageFilter] = Map.empty
+    private var messageFilterContexts: Map[ConsumerName, MessageFilterContext] = Map.empty
+    private var consumerSessionConfigs: Map[ConsumerName, ConsumerSessionConfig] = Map.empty
     private var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
     private var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
     private var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
@@ -55,7 +74,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(PauseResponse(status = Some(status)))
 
         val streamDataHandler = streamDataHandlers.get(consumerName)
-        val messageFilter = messageFilters.get(consumerName) match
+        val messageFilterContext = messageFilterContexts.get(consumerName) match
             case Some(f) => f
             case _ =>
                 val status: Status = Status(
@@ -72,12 +91,15 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
                     val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(schemasByTopic, msg)
 
+                    val consumerSessionConfig = consumerSessionConfigs(consumerName)
+                    val messageFilterChain = consumerSessionConfig.messageFilterChain
+
                     val (filterResult, jsonAccumulator) =
-                        getFilterChainTestResult(request.messageFilterChain, messageFilter, jsonMessage, messageValueToJsonResult)
+                        getFilterChainTestResult(messageFilterChain, messageFilterContext, jsonMessage, messageValueToJsonResult)
 
                     val messageToSend = messagePb
                         .withAccumulator(jsonAccumulator)
-                        .withDebugStdout(messageFilter.getStdout())
+                        .withDebugStdout(messageFilterContext.getStdout())
 
                     val messages = filterResult match
                         case Right(true) => Seq(messageToSend)
@@ -123,7 +145,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         Future.successful(PauseResponse(status = Some(status)))
 
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
-        val consumerName: ConsumerName = request.consumerName.getOrElse("__pulsocat" + UUID.randomUUID().toString)
+        val consumerName: ConsumerName = request.consumerName.getOrElse("__dekaf" + UUID.randomUUID().toString)
         logger.info(s"Creating consumer. Consumer: $consumerName")
         val adminClient = RequestContext.pulsarAdmin.get()
         val pulsarClient = RequestContext.pulsarClient.get()
@@ -133,9 +155,12 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
 
-        messageFilters = messageFilters + (consumerName -> MessageFilter(
-            MessageFilterConfig(stdout = new ByteArrayOutputStream())
+        messageFilterContexts = messageFilterContexts + (consumerName -> MessageFilterContext(
+            MessageFilterContextConfig(stdout = new ByteArrayOutputStream())
         ))
+
+        val consumerSessionConfig = consumerSessionConfigFromPb(request.consumerSessionConfig.get)
+        consumerSessionConfigs = consumerSessionConfigs + (consumerName -> consumerSessionConfig)
 
         val topicsToConsume = request.topicsSelector match
             case Some(ts) =>
@@ -159,6 +184,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 return Future.successful(CreateConsumerResponse(status = Some(status)))
 
         val consumer = consumerBuilder.subscribe
+        handleStartFrom(startFrom = consumerSessionConfig.startFrom, consumer = consumer)
         consumers = consumers + (consumerName -> consumer)
 
         val status: Status = Status(code = Code.OK.index)
@@ -186,7 +212,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandlers = streamDataHandlers.removed(consumerName)
         processedMessagesCount = processedMessagesCount.removed(consumerName)
         responseObservers = responseObservers.removed(consumerName)
-        messageFilters = messageFilters.removed(consumerName)
+        messageFilterContexts = messageFilterContexts.removed(consumerName)
+        consumerSessionConfigs = consumerSessionConfigs.removed(consumerName)
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteConsumerResponse(status = Some(status)))
@@ -229,7 +256,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         Future.successful(SkipMessagesResponse(status = Some(status)))
 
     override def runCode(request: RunCodeRequest): Future[RunCodeResponse] =
-        val messageFilter = messageFilters.get(request.consumerName) match
+        val messageFilterContext = messageFilterContexts.get(request.consumerName) match
             case Some(f) => f
             case _ =>
                 val status: Status = Status(
@@ -238,7 +265,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                 )
                 return Future.successful(RunCodeResponse(status = Some(status)))
 
-        val result = messageFilter.runCode(request.code)
+        val result = messageFilterContext.runCode(request.code)
 
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))
