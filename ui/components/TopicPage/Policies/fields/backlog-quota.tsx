@@ -15,6 +15,7 @@ import { Code } from "../../../../grpc-web/google/rpc/code_pb";
 
 import s from './backlog-quota.module.css';
 import { useState } from "react";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'backlogQuota';
 
@@ -43,7 +44,7 @@ type PolicyValue = {
 }
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -56,7 +57,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { mutate } = useSWRConfig();
   const [key, setKey] = useState(0);
 
-  const swrKey = props.topicType === 'persistent' ?
+  const swrKey = props.topicPersistency === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
@@ -64,7 +65,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetBacklogQuotasRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getBacklogQuotas(req, {});
@@ -107,7 +108,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
   const updatePolicy = async (v: PolicyValue): Promise<void> => {
     const req = new pb.SetBacklogQuotasRequest();
-    req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+    req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
     req.setIsGlobal(props.isGlobal)
     let destinationStorageBacklogQuotaPb: pb.DestinationStorageBacklogQuota | undefined = undefined;
 
@@ -135,7 +136,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
     if (v.destinationStorage.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal)
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_DESTINATION_STORAGE);
       const res = await topicPoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));
@@ -146,7 +147,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
     if (v.messageAge.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveBacklogQuotaRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal)
       req.setBacklogQuotaType(pb.BacklogQuotaType.BACKLOG_QUOTA_TYPE_MESSAGE_AGE);
       const res = await topicPoliciesServiceClient.removeBacklogQuota(req, {}).catch(err => notifyError(`Unable to remove backlog quota policy. ${err}`));

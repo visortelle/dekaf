@@ -11,9 +11,9 @@ set +e
 git --no-pager tag --contains | grep +* &>/dev/null
 is_public_release=$?
 if [ $is_public_release -eq 0 ]; then
-  docker_repo="pulsocat"
+  docker_repo="dekaf"
 else
-  docker_repo="pulsocat-demoapp"
+  docker_repo="dekaf-demoapp"
 fi
 set -ue
 

@@ -65,43 +65,7 @@
 }
 
 .AddButton {
-  border: 0;
-  padding: 0;
-  font-size: 14rem;
-  margin-top: 8rem;
-  margin-left: auto;
-  height: 32rem;
-  padding: 0 12rem;
-
-  background-color: var(--accent-color-blue);
   display: flex;
-  align-items: center;
-  justify-self: center;
-  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
-  border-radius: 3rem;
-  line-height: 1;
-  color: #fff;
-  user-select: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.27);
-}
-
-.AddButton svg {
-  fill: #fff;
-  width: 14rem;
-  height: 14rem;
-}
-
-.AddButtonEnabled {
-  opacity: 1;
-}
-
-.AddButtonEnabled:hover {
-  opacity: 0.5;
-  cursor: pointer;
-}
-
-.AddButtonDisabled {
-  opacity: 0.5;
-  border-bottom: none;
-  box-shadow: none;
+  justify-content: flex-end;
+  margin-top: 8rem;
 }

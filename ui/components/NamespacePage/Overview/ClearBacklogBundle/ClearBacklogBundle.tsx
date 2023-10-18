@@ -48,8 +48,7 @@ const ClearBacklogBundle: React.FC<ClearBacklogBundleProps> = ({ namespaceFqn, b
       description={
         <div className={s.DialogContainer}>
           <div>This action <strong>cannot</strong> be undone.</div>
-          <br />
-          <div>It will permanently clear FULL backlog of this bundle and could lead to severe consequences.</div>
+          <div>It will permanently clear <strong>FULL backlog</strong> of this bundle and could lead to severe consequences.</div>
         </div>
       }
       onConfirm={clearBacklogBundle}

@@ -6,17 +6,18 @@ import { routes } from '../../../routes';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import Link from '../../../ui/Link/Link';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
+import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
 
 export type StatisticsProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
   topicsStatsRes: pb.GetTopicsStatsResponse;
 };
 
 const Statistics: React.FC<StatisticsProps> = (props) => {
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
   const i18n = I18n.useContext();
   const topicStats = props.topicsStatsRes.getTopicStatsMap().get(topicFqn) || props.topicsStatsRes.getPartitionedTopicStatsMap().get(topicFqn)?.getStats();
 
@@ -28,11 +29,11 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
             <td className={st.HighlightedCell}>Subscriptions</td>
             <Td style={{ minWidth: '100rem' }}>{i18n.withVoidDefault(topicStats?.getSubscriptionsMap()?.getLength(), v => (
               <Link
-                to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.get({
+                to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
                   tenant: props.tenant,
                   namespace: props.namespace,
                   topic: props.topic,
-                  topicType: props.topicType,
+                  topicPersistency: props.topicPersistency,
                 })}
               >
                 {v}
@@ -45,11 +46,11 @@ const Statistics: React.FC<StatisticsProps> = (props) => {
             <Td>{
               i18n.withVoidDefault(topicStats?.getPublishersList()?.length, v => (
                 <Link
-                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
+                  to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.get({
                     tenant: props.tenant,
                     namespace: props.namespace,
                     topic: props.topic,
-                    topicType: props.topicType,
+                    topicPersistency: props.topicPersistency,
                   })}
                 >
                   {v}

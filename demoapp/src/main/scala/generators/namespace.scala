@@ -42,7 +42,7 @@ case class NamespacePlanGenerator(
 
 object NamespacePlanGenerator:
     def make(
-        mkTenant: () => TenantName = () => "pulsocat_default",
+        mkTenant: () => TenantName = () => "dekaf_default",
         mkName: NamespaceIndex => NamespaceName = namespaceIndex => s"namespace-$namespaceIndex",
         mkTopicsCount: NamespaceIndex => Int = _ => 1,
         mkTopicGenerator: TopicIndex => Task[TopicPlanGenerator] = _ => TopicPlanGenerator.make(),

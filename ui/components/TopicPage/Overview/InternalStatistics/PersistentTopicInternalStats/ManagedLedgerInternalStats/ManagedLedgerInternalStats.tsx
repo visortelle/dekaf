@@ -6,15 +6,16 @@ import Td from '../../../../../ui/SimpleTable/Td';
 import { H3 } from '../../../../../ui/H/H';
 import Ledgers from './Ledgers/Ledgers';
 import Cursors from './Cursors/Cursors';
-import * as pbUtils from '../../../../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../../../../proto-utils/proto-utils';
 import { useMemo } from 'react';
+import { PulsarTopicPersistency } from '../../../../../pulsar/pulsar-resources';
 
 export type PersistentTopicInternalStatsProps = {
   stats: pb.ManagedLedgerInternalStats;
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
 };
 
 const PersistentTopicInternalStats: React.FC<PersistentTopicInternalStatsProps> = (props) => {
@@ -92,7 +93,7 @@ const PersistentTopicInternalStats: React.FC<PersistentTopicInternalStatsProps> 
             tenant={props.tenant}
             namespace={props.namespace}
             topic={props.topic}
-            topicType={props.topicType}
+            topicPersistency={props.topicPersistency}
           />
         </div>
       </div>

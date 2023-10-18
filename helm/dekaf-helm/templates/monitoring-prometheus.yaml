@@ -1,0 +1,39 @@
+{{ if .Values.monitoring.enabled }}
+
+{{ if .Values.monitoring.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: dekaf-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "_chart-name.labels" . | nindent 4 }}
+    {{- if .Values.monitoring.prometheus.extraLabels }}
+    {{- toYaml .Values.monitoring.prometheus.extraLabels | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.monitoring.prometheus.extraAnnotations }}
+    {{- toYaml .Values.monitoring.prometheus.extraAnnotations | nindent 4 }}
+    {{- end }}
+spec:
+  serviceMonitorSelector: {} # Intentianally empty, otherwise the operator fails with error.
+  additionalScrapeConfigs:
+    name: {{ .Values.monitoring.prometheus.scrapeConfigsSecret.name }}
+    key: {{ .Values.monitoring.prometheus.scrapeConfigsSecret.key }}
+  {{- with .Values.monitoring.prometheus.extraSpec }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{ end }}
+
+{{ if .Values.monitoring.scrapeConfigsSecret.enabled }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-scrape-configs
+  namespace: {{ .Release.Namespace }}
+stringData:
+  prometheus-scrape-configs.yaml: {{ .Values.monitoring.scrapeConfigsSecret.value | quote }}
+{{ end }}
+
+{{ end }}

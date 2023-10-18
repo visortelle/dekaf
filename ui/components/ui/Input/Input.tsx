@@ -10,14 +10,15 @@ export type InputProps = {
   isSmall?: boolean,
   iconSvg?: string,
   focusOnMount?: boolean,
-  annotation?: string, 
+  annotation?: string,
   clearable?: boolean,
   type?: HTMLInputTypeAttribute,
   inputProps?: InputHTMLAttributes<any>,
   placeholder?: string,
   testId?: string,
+  appearance?: 'default' | 'no-borders'
 }
-const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId, annotation }) => {
+const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, iconSvg, clearable, onChange, focusOnMount, type, inputProps, testId, annotation, appearance }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, ico
   }, [inputRef.current]);
 
   return (
-    <div className={`${s.Input} ${annotation && s.InputAnnotation}` }>
+    <div className={`${s.Input} ${annotation && s.InputAnnotation} ${appearance === 'no-borders' ? s.NoBorders : ''}` }>
       {annotation && <span className={s.Annotation}>{annotation}</span>}
       <input
         ref={inputRef}

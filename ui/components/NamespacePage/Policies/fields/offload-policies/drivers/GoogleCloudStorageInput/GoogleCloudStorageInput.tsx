@@ -107,7 +107,7 @@ const GoogleCloudStorageInput: React.FC<GoogleCloudStorageInputProps> = (props) 
         />
         <FormItem>
           <Select<'not-specified' | 'specified'>
-            value={isReadBufferSizeSpecified ? 'specified' : 'non-specified'}
+            value={isReadBufferSizeSpecified ? 'specified' : 'not-specified'}
             list={[{ type: 'item', value: 'not-specified', title: 'Not specified' }, { type: 'item', value: 'specified', title: 'Specified' }]}
             onChange={v => {
               if (v === 'not-specified') {

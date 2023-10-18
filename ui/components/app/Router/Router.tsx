@@ -24,6 +24,7 @@ import SubscriptionPage, { SubscriptionPageView } from '../../SubscriptionPage/S
 import { TreeNode } from "../../ui/Layout/NavigationTree/TreeView";
 import InstancePage from "../../InstancePage/InstancePage";
 import PageNotFound from "../../ui/PageNotFound/PageNotFound";
+import { PulsarTopicPersistency } from "../../pulsar/pulsar-resources";
 
 type WithLayoutProps = { layout: Omit<LayoutProps, "children"> };
 type WithLayout = (
@@ -130,7 +131,7 @@ const prepareRoutes = (): {
 
       /* Topics */
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .messages._.path,
         element: withLayout(
           <RoutedTopicPage view="messages" />,
@@ -138,18 +139,18 @@ const prepareRoutes = (): {
         ),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .overview._.path,
         element: withLayout(<RoutedTopicPage view="overview" />, withLayoutProps),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .policies._.path,
         element: withLayout(<RoutedTopicPage view="policies" />, withLayoutProps),
       },
 
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .schema._.path,
         element: withLayout(
           <RoutedTopicPage view="schema-initial-screen" />,
@@ -157,7 +158,7 @@ const prepareRoutes = (): {
         ),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .schema.create._.path,
         element: withLayout(
           <RoutedTopicPage view="schema-create" />,
@@ -165,7 +166,7 @@ const prepareRoutes = (): {
         ),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .schema.view._.path,
         element: withLayout(
           <RoutedTopicPage view="schema-view" />,
@@ -173,7 +174,7 @@ const prepareRoutes = (): {
         ),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .producers._.path,
         element: withLayout(
           <RoutedTopicPage view="producers" />,
@@ -181,7 +182,7 @@ const prepareRoutes = (): {
         ),
       },
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic
           .subscriptions._.path,
         element: withLayout(
           <RoutedTopicPage view="subscriptions" />,
@@ -194,7 +195,7 @@ const prepareRoutes = (): {
         path: routes.tenants.tenant.namespaces.namespace.overview._.path,
         element: withLayout(
           <RoutedNamespacePage view="overview" />,
-          setScrollMode(withLayoutProps,"window")
+          setScrollMode(withLayoutProps, "window")
         ),
       },
       {
@@ -235,7 +236,7 @@ const prepareRoutes = (): {
 
       /* Subscriptions */
       {
-        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.path,
+        path: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.consumers._.path,
         element: withLayout(
           <RoutedSubscriptionPage view="consumers" />,
           withLayoutProps
@@ -304,14 +305,14 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
         type: "namespace",
         name: currentRoute?.params?.namespace || "unknown",
       };
-  const topicType: "persistent" | "non-persistent" = currentRoute?.params
-    ?.topicType as "persistent" | "non-persistent";
+  const topicPersistency: PulsarTopicPersistency = currentRoute?.params
+    ?.topicPersistency as PulsarTopicPersistency;
   const topic: TreeNode | undefined =
-    topicType === undefined || currentRoute?.params?.topic === undefined
+    topicPersistency === undefined || currentRoute?.params?.topic === undefined
       ? undefined
       : {
         type:
-          topicType === "persistent"
+          topicPersistency === "persistent"
             ? "persistent-topic"
             : "non-persistent-topic",
         name: currentRoute?.params?.topic || "unknown",
@@ -343,7 +344,7 @@ const RoutedNamespacePage = (props: { view: NamespacePageView }) => {
 };
 
 const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
-  const { tenant, namespace, topic, topicType, schemaVersion } = useParams();
+  const { tenant, namespace, topic, topicPersistency, schemaVersion } = useParams();
   const navigate = useNavigate();
 
   let view: TopicPageView;
@@ -359,12 +360,12 @@ const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
         schemaVersion === undefined ? undefined : parseInt(schemaVersion, 10);
       if (_schemaVersion === undefined) {
         navigate(
-          routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get(
+          routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.get(
             {
               tenant: tenant!,
               namespace: namespace!,
               topic: topic!,
-              topicType: topicType as "persistent" | "non-persistent",
+              topicPersistency: topicPersistency as "persistent" | "non-persistent",
             }
           )
         );
@@ -392,13 +393,13 @@ const RoutedTopicPage = (props: { view: TopicPageView["type"] }) => {
       namespace={namespace!}
       topic={topic!}
       view={view}
-      topicType={topicType as "persistent" | "non-persistent"}
+      topicPersistency={topicPersistency as "persistent" | "non-persistent"}
     />
   );
 };
 
 const RoutedSubscriptionPage = (props: { view: SubscriptionPageView["type"] }) => {
-  const { tenant, namespace, topic, topicType, subscription } = useParams();
+  const { tenant, namespace, topic, topicPersistency, subscription } = useParams();
 
   let view: SubscriptionPageView;
   switch (props.view) {
@@ -415,7 +416,7 @@ const RoutedSubscriptionPage = (props: { view: SubscriptionPageView["type"] }) =
       namespace={namespace!}
       topic={topic!}
       view={view}
-      topicType={topicType as "persistent" | "non-persistent"}
+      topicPersistency={topicPersistency as "persistent" | "non-persistent"}
       subscription={subscription!}
     />
   );

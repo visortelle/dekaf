@@ -1,10 +1,13 @@
 import React from "react";
 import s from "./Toggle.module.css";
+import { tooltipId } from "../Tooltip/Tooltip";
+import { renderToStaticMarkup } from "react-dom/server";
 
 export type ToggleProps = {
   value: boolean;
   onChange: (value: boolean) => void;
   label?: string;
+  help?: React.ReactElement | string;
 };
 
 const Toggle: React.FC<ToggleProps> = (props) => {
@@ -33,7 +36,13 @@ const Toggle: React.FC<ToggleProps> = (props) => {
       >
         <div className={s.Circle} />
       </div>
-      <div className={s.Label}>{props.label}</div>
+      <div
+        className={s.Label}
+        data-tooltip-id={tooltipId}
+        data-tooltip-html={renderToStaticMarkup(<>{props.help}</>)}
+      >
+        {props.label}
+      </div>
     </div>
   );
 };

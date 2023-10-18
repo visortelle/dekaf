@@ -9,7 +9,7 @@ import { help } from './help';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
-import * as pbUtils from '../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../proto-utils/proto-utils';
 
 export type ColumnKey =
   'namespaceName' |
