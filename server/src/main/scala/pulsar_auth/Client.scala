@@ -19,9 +19,11 @@ import scala.util.{Failure, Success, Try}
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 
-val internalExecutorProvider = ExecutorProvider(8, "shared-internal-executor")
-val externalExecutorProvider = ExecutorProvider(8, "shared-external-executor")
-val scheduledExecutorProvider = ScheduledExecutorProvider(8, "scheduled-pulsar-executor")
+// See https://github.com/tealtools/pulsar-ui/issues/198
+val numThreads = Runtime.getRuntime.availableProcessors
+val internalExecutorProvider = ExecutorProvider(numThreads, "shared-internal-executor")
+val externalExecutorProvider = ExecutorProvider(numThreads, "shared-external-executor")
+val scheduledExecutorProvider = ScheduledExecutorProvider(numThreads, "scheduled-pulsar-executor")
 val sharedTimer = new HashedWheelTimer(getThreadFactory("shared-pulsar-timer"), 1, TimeUnit.MILLISECONDS)
 val sharedEventLoopGroup = new NioEventLoopGroup() // Worse than EpollEventLoopGroup on Linux, but works everywhere
 
