@@ -2,9 +2,8 @@ package postgres
 
 import zio.*
 import io.getquill.*
-import io.getquill.jdbczio.Quill
-import org.postgresql.ds.PGSimpleDataSource
 import _root_.config.ConfigProvider
+import io.getquill.jdbczio.Quill
 
 trait PostgresProvider:
     def getPostgresConfig: Task[PostgresConfig]
@@ -35,12 +34,3 @@ case class PostgresProviderImpl(configProvider: ConfigProvider) extends Postgres
             case Some(PostgresVariant.embedded) => EmbeddedPostgres.run
             case None => ZIO.fail(new Exception("postgres variant not set"))
     } yield postgresConfig
-
-//////////////////////////////////////////////
-//trait QuillProvider:
-//    def getQuill: Task[Quill[PostgresDialect, NamingStrategy]]
-
-//case class QuillProviderImpl(postgresProvider: PostgresProvider) extends QuillProvider:
-//    val a = Quill.Postgres.fromNamingStrategy(SnakeCase)
-//    val ds = new PGSimpleDataSource()
-//    val b = Quill.DataSource.fromDataSource(ds)
