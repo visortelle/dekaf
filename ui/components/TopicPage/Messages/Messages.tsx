@@ -11,57 +11,52 @@ import {
   TopicsSelector,
   DeleteConsumerRequest,
   PauseRequest,
-  SubscriptionInitialPosition,
-  SeekRequest,
   RegexSubscriptionMode,
   TopicsSelectorByNames,
   TopicsSelectorByRegex,
   SubscriptionMode,
-  MessageFilterChain,
-  MessageFilterChainMode,
-  MessageFilter,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
 import arrowUpIcon from '../../ui/ChildrenTable/arrow-up.svg';
-import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 import MessageComponent from './Message/Message';
 import { nanoid } from 'nanoid';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as I18n from '../../app/contexts/I18n/I18n';
 import { ItemContent, TableVirtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { ClientReadableStream } from 'grpc-web';
-import { createDeadline } from '../../../pbUtils/pbUtils';
+import { createDeadline } from '../../../proto-utils/proto-utils';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { useInterval } from '../../app/hooks/use-interval';
 import { usePrevious } from '../../app/hooks/use-previous';
 import Toolbar from './Toolbar';
-import { SessionState, SessionConfig, MessageDescriptor } from './types';
+import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
-import { quickDateToDate } from './SessionConfiguration/StartFromInput/quick-date';
-import { timestampToDate } from './SessionConfiguration/StartFromInput/timestamp-to-date';
 import Console from './Console/Console';
-import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import { messageDescriptorFromPb } from './conversions';
+import { consumerSessionConfigToPb, messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { UserManagedConsumerSessionConfigValueOrReference } from '../../ui/LibraryBrowser/model/user-managed-items';
+import { consumerSessionConfigFromValueOrReference } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
+import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
 export type SessionProps = {
   sessionKey: number;
-  config: SessionConfig;
-  onConfigChange: (config: SessionConfig) => void;
+  config: UserManagedConsumerSessionConfigValueOrReference;
+  onConfigChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
   onStopSession: () => void;
   isShowConsole: boolean;
   onSetIsShowConsole: (v: boolean) => void;
+  libraryContext: LibraryContext;
 };
 
 type View = 'messages' | 'configuration';
@@ -79,8 +74,8 @@ const Session: React.FC<SessionProps> = (props) => {
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);
-  const consumerName = useRef<string>('__pulsocat_' + nanoid());
-  const subscriptionName = useRef<string>('__pulsocat_' + nanoid());
+  const consumerName = useRef<string>('__dekaf_' + nanoid());
+  const subscriptionName = useRef<string>('__dekaf_' + nanoid());
   const [stream, setStream] = useState<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const streamRef = useRef<ClientReadableStream<ResumeResponse> | undefined>(undefined);
   const [displayMessagesLimit, setDisplayMessagesLimit] = useState<number>(10000);
@@ -91,19 +86,29 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
-  const { startFrom, topicsSelector } = props.config;
+  const [config, setConfig] = useState<ConsumerSessionConfig | undefined>(undefined);
+
+  useEffect(() => {
+    try {
+      const a = consumerSessionConfigFromValueOrReference(props.config);
+      setConfig(a);
+    } catch (err) {
+      console.warn(err);
+      setConfig(undefined);
+    }
+  }, [props.config]);
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
-      props.config.topicsSelector.type === 'by-names' ? props.config.topicsSelector.topics : []
+      config?.topicsSelector.type === 'by-names' ? config.topicsSelector.topics : []
     ).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
     async () => {
-      if (props.config.topicsSelector.type !== 'by-names') {
+      if (config?.topicsSelector.type !== 'by-names') {
         return undefined;
       }
 
       const req = new GetTopicsInternalStatsRequest();
-      req.setTopicsList(props.config.topicsSelector.topics);
+      req.setTopicsList(config.topicsSelector.topics);
       const res = await topicServiceClient.getTopicsInternalStats(req, {})
         .catch((err) => notifyError(`Unable to get topics internal stats. ${err}`));
 
@@ -155,53 +160,6 @@ const Session: React.FC<SessionProps> = (props) => {
     });
   }, messagesLoadedPerSecond.now > 0 ? 500 : false);
 
-  const applyConfig = async () => {
-    if (startFrom.type === 'messageId') {
-      const seekReq = new SeekRequest();
-      seekReq.setConsumerName(consumerName.current);
-      seekReq.setMessageId(i18n.hexStringToBytes(startFrom.hexString));
-      const res = await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by messageId. Consumer: ${consumerName.current}. ${err}`));
-
-      if (res !== undefined) {
-        const status = res.getStatus();
-        const code = status?.getCode();
-        if (code === Code.INVALID_ARGUMENT) {
-          notifyError(
-            <div>
-              Unable to seek by messageId. Consumer: {consumerName.current}.<br /><br />
-              Possible reasons:<br />
-              - Message with such id doesn&apos;t exist specified.<br />
-              - Some of the topics are partitioned.
-            </div>
-          );
-          props.onStopSession();
-          return;
-        }
-      }
-    }
-
-    if (startFrom.type === 'date' || startFrom.type === 'timestamp' || startFrom.type === 'quickDate') {
-      let fromDate;
-      switch (startFrom.type) {
-        case 'date': fromDate = dayjs(startFrom.date).millisecond(0).toDate(); break;
-        case 'timestamp': fromDate = dayjs(timestampToDate(startFrom.ts)).millisecond(0).toDate(); break;
-        case 'quickDate': fromDate = dayjs(quickDateToDate(startFrom.quickDate, startFrom.relativeTo)).millisecond(0).toDate(); break;
-      }
-
-      if (fromDate === undefined) {
-        return;
-      }
-
-      const seekReq = new SeekRequest();
-      const timestamp = Timestamp.fromDate(fromDate);
-      seekReq.setConsumerName(consumerName.current);
-      seekReq.setTimestamp(timestamp);
-      await consumerServiceClient.seek(seekReq, { deadline: createDeadline(10) })
-        .catch((err) => notifyError(`Unable to seek by timestamp. Consumer: ${consumerName.current}. ${err}`));
-    }
-  }
-
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList();
     setMessagesLoaded(messagesCount => messagesCount + newMessages.length);
@@ -224,7 +182,6 @@ const Session: React.FC<SessionProps> = (props) => {
         return;
       }
 
-      await applyConfig();
       stream.removeListener('data', streamDataHandler);
       stream.on('data', streamDataHandler);
     })()
@@ -254,15 +211,21 @@ const Session: React.FC<SessionProps> = (props) => {
     }
   }, []);
 
-  const initializeSession = useCallback(() => {
+  const initializeSession = () => {
     async function createConsumer() {
+      if (config === undefined) {
+        return;
+      }
+
+      const topicsSelector = config.topicsSelector;
+
       const req = new CreateConsumerRequest();
-      const topicSelector = new TopicsSelector();
+      const topicsSelectorPb = new TopicsSelector();
 
       if (topicsSelector.type === 'by-names') {
         const selector = new TopicsSelectorByNames();
         selector.setTopicsList(topicsSelector.topics);
-        topicSelector.setByNames(selector);
+        topicsSelectorPb.setByNames(selector);
       }
 
       if (topicsSelector.type === 'by-regex') {
@@ -271,23 +234,25 @@ const Session: React.FC<SessionProps> = (props) => {
 
         let regexSubscriptionMode: RegexSubscriptionMode;
         switch (topicsSelector.regexSubscriptionMode) {
-          case 'unspecified': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_UNSPECIFIED; break;
           case 'persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY; break;
           case 'non-persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY; break;
           case 'all-topics': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS; break;
         }
 
         selector.setRegexSubscriptionMode(regexSubscriptionMode);
-        topicSelector.setByRegex(selector);
+        topicsSelectorPb.setByRegex(selector);
       }
 
-      req.setTopicsSelector(topicSelector)
+      req.setTopicsSelector(topicsSelectorPb)
       req.setConsumerName(consumerName.current);
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName.current);
       req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
       req.setSubscriptionMode(SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE);
-      req.setSubscriptionInitialPosition(startFrom.type === 'earliest' ? SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST : SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST);
+
+      const consumerSessionConfigPb = consumerSessionConfigToPb(config);
+      req.setConsumerSessionConfig(consumerSessionConfigPb);
+
       req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
@@ -315,11 +280,11 @@ const Session: React.FC<SessionProps> = (props) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
     };
-  }, [props.config, subscriptionName.current]);
+  };
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
-  const handleVisibilityChange = useCallback(() => {
+  const handleVisibilityChange = () => {
     if (document.visibilityState === 'hidden') {
       setSessionStateBeforeWindowBlur(sessionState);
       setSessionState('pausing');
@@ -330,7 +295,7 @@ const Session: React.FC<SessionProps> = (props) => {
       setSessionState(sessionStateBeforeWindowBlur);
       return;
     }
-  }, [sessionState, sessionStateBeforeWindowBlur]);
+  };
 
   useEffect(() => {
     if (window === undefined) return;
@@ -370,20 +335,8 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState === 'running') {
       console.info(`%cRunning session: ${props.sessionKey}`, consoleCss);
 
-      const messageFilterChain = new MessageFilterChain();
-      messageFilterChain.setMode(props.config.messageFilter.mode === 'all' ? MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL : MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY);
-
-      Object.entries(props.config.messageFilter.filters)
-        .filter(([filterId]) => !props.config.messageFilter.disabledFilters.includes(filterId))
-        .forEach(([filterId, filter]) => {
-          const filterPb = new MessageFilter();
-          filterPb.setValue(filter.filter.value || '');
-          messageFilterChain.getFiltersMap().set(filterId, filterPb);
-        });
-
       const resumeReq = new ResumeRequest();
       resumeReq.setConsumerName(consumerName.current);
-      resumeReq.setMessageFilterChain(messageFilterChain);
       stream?.cancel();
       stream?.removeListener('data', streamDataHandler);
       const newStream = consumerServiceClient.resume(resumeReq, { deadline: createDeadline(60 * 10) });
@@ -460,7 +413,7 @@ const Session: React.FC<SessionProps> = (props) => {
   return (
     <div className={s.Messages}>
       <Toolbar
-        config={props.config}
+        config={config}
         sessionState={sessionState}
         onSessionStateChange={setSessionState}
         messagesLoaded={messagesLoaded}
@@ -526,11 +479,14 @@ const Session: React.FC<SessionProps> = (props) => {
       )}
 
       {currentView === 'configuration' && (
-        <SessionConfiguration
-          config={props.config}
-          onConfigChange={props.onConfigChange}
-          topicsInternalStats={topicsInternalStats}
-        />
+        <div className={s.SessionConfiguration}>
+          <SessionConfiguration
+            value={props.config}
+            onChange={props.onConfigChange}
+            topicsInternalStats={topicsInternalStats}
+            libraryContext={props.libraryContext}
+          />
+        </div>
       )}
 
       <Console
@@ -539,7 +495,7 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionKey={props.sessionKey}
         sessionState={sessionState}
         onSessionStateChange={setSessionState}
-        sessionConfig={props.config}
+        sessionConfig={config}
         sessionSubscriptionName={subscriptionName.current}
         topicsInternalStats={topicsInternalStats}
         messages={messages}
@@ -550,12 +506,13 @@ const Session: React.FC<SessionProps> = (props) => {
 }
 
 type SessionControllerProps = {
-  config: SessionConfig;
+  initialConfig: UserManagedConsumerSessionConfigValueOrReference;
+  libraryContext: LibraryContext;
 };
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
-  const [config, setConfig] = useState<SessionConfig>(props.config);
-  const [isShowConsole, setIsShowConsole] = useState<boolean>(true);
+  const [config, setConfig] = useState<UserManagedConsumerSessionConfigValueOrReference>(props.initialConfig);
+  const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
   return (
     <Session
@@ -564,27 +521,12 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       isShowConsole={isShowConsole}
       onSetIsShowConsole={() => setIsShowConsole(!isShowConsole)}
       {...props}
-      onStopSession={() => {
-        setSessionKey(n => n + 1);
-      }}
+      onStopSession={() => setSessionKey(n => n + 1)}
       config={config}
-      onConfigChange={(v) => {
-        setConfig(v);
-      }}
+      onConfigChange={setConfig}
+      libraryContext={props.libraryContext}
     />
   );
 }
 
 export default SessionController;
-
-export function hexStringToByteArray(hexString: string): Uint8Array {
-  if (hexString.length % 2 !== 0) {
-    throw "Must have an even number of hex digits to convert to bytes";
-  }
-  var numBytes = hexString.length / 2;
-  var byteArray = new Uint8Array(numBytes);
-  for (var i = 0; i < numBytes; i++) {
-    byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
-  }
-  return byteArray;
-}

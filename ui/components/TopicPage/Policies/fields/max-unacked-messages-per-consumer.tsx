@@ -11,6 +11,7 @@ import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirm
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { swrKeys } from '../../../swrKeys';
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'maxUnackedMessagesPerConsumer';
 
@@ -20,7 +21,7 @@ type PolicyValue = { type: 'inherited-from-namespace-config' } | { type: 'unlimi
 };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -32,7 +33,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const swrKey = props.topicType === 'persistent' ?
+  const swrKey = props.topicPersistency === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
@@ -40,7 +41,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetMaxUnackedMessagesOnConsumerRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
       const res = await topicPoliciesServiceClient.getMaxUnackedMessagesOnConsumer(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
@@ -82,7 +83,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const updatePolicy = async (value: PolicyValue) => {
     if (value.type === 'inherited-from-namespace-config') {
       const req = new pb.RemoveMaxUnackedMessagesOnConsumerRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.removeMaxUnackedMessagesOnConsumer(req, {});
@@ -93,7 +94,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
     if (value.type === 'unlimited' || value.type === 'specified-for-this-topic') {
       const req = new pb.SetMaxUnackedMessagesOnConsumerRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       if (value.type === 'unlimited') {

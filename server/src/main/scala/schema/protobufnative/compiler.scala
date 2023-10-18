@@ -39,13 +39,13 @@ object compiler:
 
     def compileFiles(files: Seq[FileEntry]): CompiledFiles =
         // Write protobuf files to temp dir
-        val tempDir = os.temp.dir(null, "__pulsocat-protobuf-native_")
+        val tempDir = os.temp.dir(null, "__dekaf-protobuf-native_")
         logger.info(s"Compiling PROTOBUF_NATIVE schema files. Temp dir: $tempDir")
 
         val srcDir = tempDir / "src"
         os.makeDir(srcDir)
 
-        val depsDir: os.Path = os.Path(config.libraryPath.get + "/proto", os.root)
+        val depsDir: os.Path = os.Path(config.dataDir.get + "/proto", os.root)
 
         files.foreach(f =>
             val path = srcDir / os.PathChunk.SeqPathChunk(f.relativePath.split("/"))

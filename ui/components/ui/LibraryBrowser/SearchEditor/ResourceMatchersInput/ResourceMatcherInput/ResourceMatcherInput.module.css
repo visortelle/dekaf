@@ -1,0 +1,9 @@
+.ResourceMatcherInput {
+  position: relative;
+}
+
+.DeleteButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

@@ -21,7 +21,8 @@ export type TermKey =
   'messagePublishRate' |
   'inactiveTopicPolicies' |
   'dispatchRate' |
-  'replicatorDispatchRate';
+  'replicatorDispatchRate' |
+  'tenant';
 
 export const help: Record<TermKey, React.ReactNode> = {
   ledger: <div>An append-only data structure in BookKeeper that is used to persistently store messages in Pulsar topics. It is used by a Pulsar broker to create and append entries(messages), and once closed, it becomes read-only. The ledger can be deleted when its entries are no longer required.</div>,
@@ -44,4 +45,5 @@ export const help: Record<TermKey, React.ReactNode> = {
   inactiveTopicPolicies: <div>Dictate the handling of topics that lack active producers or consumers. These policies can determine if and when such topics should be deleted due to inactivity. By default, topics are deleted after 60 seconds.</div>,
   dispatchRate: <div>Sets a limit on the number of messages that can be delivered to clients from all topics within a namespace. This rate control helps to prevent traffic surges and maintain system performance by avoiding memory usage spikes due to large message payloads.</div>,
   replicatorDispatchRate: <div>Rate at which replicated messages are dispatched for all topics within a namespace. Allows you to control the speed of message replication across clusters, helping to manage resource usage and network traffic.</div>,
+  tenant: <div>An administrative unit for allocating capacity and enforcing an authentication/authorization scheme.</div>,
 }

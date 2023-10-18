@@ -88,12 +88,15 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 const field = (props: FieldInputProps): ConfigurationField => ({
   id: policy,
   title: 'Schema compatibility strategy',
-  description: <span>Ensures that existing consumers can process the introduced messages.
-    <ul>
-      <li>
-        <A isExternalLink href="https://pulsar.apache.org/docs/3.0.x/schema-understand/#schema-compatibility-check">More info about properties</A>
-      </li>
-    </ul></span>,
+  description:
+    <span>
+      Ensures that existing consumers can process the introduced messages.
+      <ul>
+        <li>
+          <A isExternalLink href="https://pulsar.apache.org/docs/3.0.x/schema-understand/#schema-compatibility-check">More info about properties</A>
+        </li>
+      </ul>
+    </span>,
   input: <FieldInput {...props} />
 });
 

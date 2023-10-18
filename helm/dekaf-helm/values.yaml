@@ -1,0 +1,100 @@
+global:
+  nameOverride: ""
+  fullnameOverride: ""
+  imagePullSecrets: []
+
+dekaf:
+  # Set a custom "basePath" if you want to make Dekaf available on a subpath behind reverse-proxy.
+  # We exposed it to Helm values to make "livenessProbe" and "readinessProbe" work properly.
+  # It should be used in pair with the "publicBaseUrl" config field.
+  basePath: "/"
+
+  config: {}
+
+  env: []
+
+  image:
+    repository: tealtools/dekaf
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4096Mi
+    requests:
+      cpu: 1000m
+      memory: 2048Mi
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations:
+      {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+# Prerequisites:
+# - Prometheus Operator https://github.com/prometheus-operator/prometheus-operator
+# - Grafana Operator https://github.com/grafana-operator/grafana-operator
+monitoring:
+  enabled: true
+  scrapeConfigsSecret:
+    enabled: true
+    value: |
+      - job_name: pulsar
+        metrics_path: /cloud/metrics/export
+        scheme: https
+        oauth2:
+          client_id: "..."
+          client_secret: "..."
+          token_url: https://auth.streamnative.cloud/oauth/token
+          endpoint_params:
+            grant_type: "client_credentials"
+            audience: "..."
+        static_configs:
+        - targets: [metrics.streamnative.cloud]
+  prometheus:
+    enabled: true
+    scrapeConfigsSecret:
+      name: prometheus-scrape-configs
+      key: prometheus-scrape-configs.yaml
+    extraLabels: {}
+    extraAnnotations: {}
+    extraSpec: {}
+  grafana:
+    enabled: true
+    adminUser: admin
+    adminPassword: admin-password
+    dataSources:
+      enabled: true
+      extraLabels: {}
+      extraAnnotations: {}
+    dashboards:
+      enabled: true
+      extraLabels: {}
+      extraAnnotations: {}
+    extraLabels: {}
+    extraAnnotations: {}
+    extraSpec: {}

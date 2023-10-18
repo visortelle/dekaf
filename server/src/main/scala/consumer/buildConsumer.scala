@@ -1,6 +1,16 @@
 package consumer
 
-import org.apache.pulsar.client.api.{BatchReceivePolicy, Consumer, ConsumerBuilder, MessageListener, PulsarClient, RegexSubscriptionMode, SubscriptionInitialPosition, SubscriptionMode, SubscriptionType}
+import org.apache.pulsar.client.api.{
+    BatchReceivePolicy,
+    Consumer,
+    ConsumerBuilder,
+    MessageListener,
+    PulsarClient,
+    RegexSubscriptionMode,
+    SubscriptionInitialPosition,
+    SubscriptionMode,
+    SubscriptionType
+}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.CreateConsumerRequest
 import com.tools.teal.pulsar.ui.api.v1.consumer.TopicsSelector.TopicsSelector
@@ -14,21 +24,17 @@ def buildConsumer(
     consumerName: ConsumerName,
     request: CreateConsumerRequest,
     logger: Logger,
-    streamDataHandler: StreamDataHandler
+    listener: MessageListener[Array[Byte]]
 ): Either[String, ConsumerBuilder[Array[Byte]]] =
-    val listener: MessageListener[Array[Byte]] = (consumer, msg) =>
-        logger.debug(s"Listener received a message. Consumer: $consumerName")
-        streamDataHandler.onNext(msg)
-
-        if consumer.isConnected then consumer.acknowledgeAsync(msg)
-
     var consumer = pulsarClient.newConsumer
         .consumerName(consumerName)
         .receiverQueueSize(1000) // Too big queue causes long time messages loading after consumer pause.
+        .autoScaledReceiverQueueSizeEnabled(true)
         .autoUpdatePartitions(true)
         .maxPendingChunkedMessage(2)
         .autoAckOldestChunkedMessageOnQueueFull(true)
         .expireTimeOfIncompleteChunkedMessage(1, java.util.concurrent.TimeUnit.MINUTES)
+        .negativeAckRedeliveryDelay(0, java.util.concurrent.TimeUnit.SECONDS)
         .messageListener(listener)
         .startPaused(request.startPaused.getOrElse(true))
         .subscriptionName(request.subscriptionName.getOrElse(consumerName))
@@ -38,7 +44,7 @@ def buildConsumer(
         case Some(consumerPb.SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE) => consumer.subscriptionMode(SubscriptionMode.NonDurable)
 
         // Our application shouldn't make affect on messages retention, so we use NonDurable mode by default.
-        case _                                                               => consumer.subscriptionMode(SubscriptionMode.NonDurable)
+        case _ => consumer.subscriptionMode(SubscriptionMode.NonDurable)
 
     consumer = request.subscriptionType match
         case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_SHARED)     => consumer.subscriptionType(SubscriptionType.Shared)
@@ -47,12 +53,10 @@ def buildConsumer(
         case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED) => consumer.subscriptionType(SubscriptionType.Key_Shared)
         case _                                                              => consumer
 
-    consumer = request.subscriptionInitialPosition match
-        case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_EARLIEST) =>
-            consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-        case Some(consumerPb.SubscriptionInitialPosition.SUBSCRIPTION_INITIAL_POSITION_LATEST) =>
-            consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Latest)
-        case _ => consumer
+    consumer =
+        if request.consumerSessionConfig.get.startFrom.get.value.isLatestMessage
+        then consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Latest)
+        else consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
 
     consumer = request.priorityLevel match
         case Some(v) => consumer.priorityLevel(v)
@@ -80,7 +84,7 @@ def buildConsumer(
 
     val topicsSelector = request.topicsSelector match
         case Some(v) => v.topicsSelector
-        case _ => return Left("Topic selector shouldn't be empty")
+        case _       => return Left("Topic selector shouldn't be empty")
 
     topicsSelector match
         case TopicsSelector.ByNames(s) =>

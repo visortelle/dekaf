@@ -98,7 +98,7 @@ case class TopicPlanGenerator(
 object TopicPlanGenerator:
     def make(
         mkTenant: () => String = () => "pulsecat_default",
-        mkNamespace: () => String = () => "pulsocat_default",
+        mkNamespace: () => String = () => "dekaf_default",
         mkName: TopicIndex => TopicName = topicIndex => s"topic-$topicIndex",
         mkProducersCount: TopicIndex => Int = _ => 1,
         mkProducerGenerator: ProducerIndex => Task[ProducerPlanGenerator] = _ => ProducerPlanGenerator.make(),
@@ -203,6 +203,6 @@ object TopicPlanExecutor:
     def start(topicPlan: TopicPlan): Task[Unit] = for {
         _ <- ZIO.logInfo(s"Starting topic ${topicPlan.name}")
         produceFib <- TopicPlanExecutor.startProduce(topicPlan).fork
-//        _ <- TopicPlanExecutor.startConsume(topicPlan).fork
+       _ <- TopicPlanExecutor.startConsume(topicPlan).fork
         _ <- produceFib.join
     } yield ()
