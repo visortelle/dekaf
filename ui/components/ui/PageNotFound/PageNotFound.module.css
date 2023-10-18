@@ -1,0 +1,35 @@
+.PageContent {
+    padding: 24rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8rem;
+}
+
+.PageNotFoundTitle {
+    font-size: 32rem;
+}
+
+
+.PageNotFoundDescription {
+    font-size: 15rem;
+    line-height: 1.8;
+    margin-left: 18rem;
+    margin-top: 12rem;
+}
+
+.BackToHomeWrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 26rem;
+}
+
+.BackToHomeWrapper svg {
+    width: 20rem;
+    height: 20rem;
+    margin-right: 8rem;
+    fill: var(--accent-color-blue);
+}
+
+.BackToHome {
+    font-size: 16rem;
+}

@@ -6,6 +6,7 @@ import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import { routes } from "../routes";
 import Consumers from "./Consumers/Consumers";
 import { matchPath, useLocation } from 'react-router-dom';
+import { PulsarTopicPersistency } from "../pulsar/pulsar-resources";
 
 export type SubscriptionPageView = { type: "consumers" }
 
@@ -14,26 +15,26 @@ export type TopicPageProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
   subscription: string;
 };
 
 const TopicPage: React.FC<TopicPageProps> = (props) => {
   const { pathname } = useLocation();
   let extraCrumbs: Crumb[] = [];
-  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.path, pathname)) {
+  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.consumers._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'consumers', value: 'Consumers' }]
   }
 
-  const key = `${props.topicType}-${props.tenant}-${props.namespace}-${props.topic}-${props.subscription}`;
+  const key = `${props.topicPersistency}-${props.tenant}-${props.namespace}-${props.topic}-${props.subscription}`;
 
   let buttons: ToolbarButtonProps[] = [
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.consumers._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.consumers._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
-        topicType: props.topicType,
+        topicPersistency: props.topicPersistency,
         subscription: props.subscription,
       }),
       text: "Consumers",
@@ -64,7 +65,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           {
             id: `topic-${props.topic}`,
             value: props.topic,
-            type: props.topicType === "persistent" ? "persistent-topic" : "non-persistent-topic",
+            type: props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic",
           },
           {
             id: `subscription-${props.topic}`,
@@ -82,7 +83,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicPersistency={props.topicPersistency}
           subscription={props.subscription}
         />
       )}

@@ -1,50 +1,48 @@
-{ lib, stdenv, fetchFromGitHub, protobuf }:
+{ lib, stdenv, fetchurl }:
+
+let
+  src_linux_arm64 = {
+    url = "https://github.com/grpc/grpc-web/releases/download/1.4.2/protoc-gen-grpc-web-1.4.2-linux-aarch64";
+    sha256 = "";
+  };
+
+  src_linux_x86_64 = {
+    url = "https://github.com/grpc/grpc-web/releases/download/1.4.2/protoc-gen-grpc-web-1.4.2-linux-x86_64";
+    sha256 = "";
+  };
+
+  src_darwin_x86_64 = {
+    url = "https://github.com/grpc/grpc-web/releases/download/1.4.2/protoc-gen-grpc-web-1.4.2-darwin-x86_64";
+    sha256 = "sha256-a3Po6e8t6xFNOcnuoXf/hFDZLnFUteR96maKQ0maI4M=";
+  };
+in
 
 stdenv.mkDerivation rec {
   pname = "protoc-gen-grpc-web";
-  version = "1.4.2";
+  version = "v1.4.2";
 
-  src = fetchFromGitHub {
-    owner = "grpc";
-    repo = "grpc-web";
-    rev = version;
-    sha256 = "sha256-OetDAZ6zC8r7e82FILpQQnM+JHG9eludwhEuPaklrnw=";
-  };
+  src = fetchurl (if stdenv.hostPlatform.system == "x86_64-linux" then src_linux_x86_64
+  else if stdenv.hostPlatform.system == "aarch64-linux" then src_linux_arm64
+  else if stdenv.hostPlatform.system == "x86_64-darwin" then src_darwin_x86_64
+  else if stdenv.hostPlatform.system == "aarch64-darwin" then src_darwin_x86_64
+  else throw "Unsupported system");
 
-  sourceRoot = "source/javascript/net/grpc/web/generator";
+  dontUnpack = true;
 
-  strictDeps = true;
-  nativeBuildInputs = [ protobuf ];
-  buildInputs = [ protobuf ];
-
-  makeFlags = [ "PREFIX=$(out)" "STATIC=no" ];
-
-  doCheck = true;
-  checkInputs = [ protobuf ];
-  checkPhase = ''
-    runHook preCheck
-
-    CHECK_TMPDIR="$TMPDIR/proto"
-    mkdir -p "$CHECK_TMPDIR"
-
-    protoc \
-      --proto_path="${src}/packages/grpc-web/test/protos" \
-      --plugin="./protoc-gen-grpc-web" \
-      --grpc-web_out="import_style=commonjs,mode=grpcwebtext:$CHECK_TMPDIR" \
-      echo.proto
-
-    # check for grpc-web generated file
-    [ -f "$CHECK_TMPDIR/echo_grpc_web_pb.js" ]
-
-    runHook postCheck
+  installPhase = ''
+    mkdir -p "$out/bin"
+    cp $src $out/bin/
+    mv $out/bin/* $out/bin/protoc-gen-grpc-web
+    chmod +x $out/bin/protoc-gen-grpc-web
   '';
+
+  outputs = [ "out" ];
 
   meta = with lib; {
     homepage = "https://github.com/grpc/grpc-web";
-    changelog = "https://github.com/grpc/grpc-web/blob/${version}/CHANGELOG.md";
-    description = "gRPC web support for Google's protocol buffers";
+    description = "gRPC for Web Clients";
     license = licenses.asl20;
-    maintainers = with maintainers; [ jk ];
     platforms = platforms.unix;
   };
 }
+

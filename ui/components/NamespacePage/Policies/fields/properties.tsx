@@ -8,7 +8,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
 import KeyValueEditor from '../../../ui/KeyValueEditor/KeyValueEditor';
 import { swrKeys } from '../../../swrKeys';
-import { mapToObject } from '../../../../pbUtils/pbUtils';
+import { mapToObject } from '../../../../proto-utils/proto-utils';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { help } from "../../../TenantPage/Namespaces/help";
 import React from "react";

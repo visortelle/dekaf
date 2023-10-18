@@ -1,6 +1,7 @@
 import s from './Icons.module.css';
 import pulsarLogo from './pular-logo.svg';
 import SvgIcon from '../SvgIcon/SvgIcon';
+import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
 export type NodeIconsProps = {
   textColor: string;
@@ -47,7 +48,7 @@ export type TopicIconProps = {
   isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
-  topicType?: 'persistent' | 'non-persistent';
+  topicPersistency?: PulsarTopicPersistency;
 }
 export const TopicIcon: React.FC<TopicIconProps> = (props) => {
   let backgroundColor = 'initial';
@@ -55,7 +56,7 @@ export const TopicIcon: React.FC<TopicIconProps> = (props) => {
   let title = "to";
   let style = {};
 
-  switch (props.topicType) {
+  switch (props.topicPersistency) {
     case 'persistent': backgroundColor = 'var(--accent-color-green)'; textColor = '#fff'; title = "to"; break;
     case 'non-persistent': backgroundColor = '#fff'; textColor = 'var(--accent-color-green)'; title = "np"; style = { backgroundColor: '#eee' }; break;
   }
@@ -86,7 +87,7 @@ export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
   return <NodeIcon
     title="ns"
     textColor='#fff'
-    backgroundColor='var(--accent-color-red)'
+    backgroundColor='var(--accent-color-light-blue)'
     onClick={props.onClick}
     isExpanded={props.isExpanded}
     isExpandable={props.isExpandable}
@@ -195,4 +196,23 @@ export const ConsumerIcon: React.FC<ProducerIconProps> = (props) => {
   />
 }
 
+export type PageNotFoundIconProps = {
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
+  className?: string;
+  isGray?: boolean;
+}
 
+export const PageNotFoundIcon: React.FC<PageNotFoundIconProps> = (props) => {
+  return <NodeIcon
+    title="?"
+    textColor='var(--text-color)'
+    backgroundColor={props.isGray ? '#999' : 'var(--accent-color-red)'}
+    onClick={props.onClick}
+    isExpanded={props.isExpanded}
+    isExpandable={props.isExpandable}
+    className={props.className}
+    isGray={props.isGray}
+  />
+}

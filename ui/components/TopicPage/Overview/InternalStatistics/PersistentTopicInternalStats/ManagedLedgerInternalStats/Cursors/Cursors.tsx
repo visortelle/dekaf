@@ -2,9 +2,10 @@ import * as I18n from '../../../../../../app/contexts/I18n/I18n';
 import * as pb from '../../../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { useMemo } from 'react';
 import Table from '../../../../../../ui/Table/Table';
-import * as pbUtils from '../../../../../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../../../../../proto-utils/proto-utils';
 import { routes } from '../../../../../../routes';
 import Link from '../../../../../../ui/Link/Link';
+import { PulsarTopicPersistency } from '../../../../../../pulsar/pulsar-resources';
 
 type CursorsColumnKey =
   "subscriptionName" |
@@ -74,7 +75,7 @@ export type CursorsProps = {
   tenant: string,
   namespace: string,
   topic: string,
-  topicType: 'persistent' | 'non-persistent',
+  topicPersistency: PulsarTopicPersistency,
 };
 
 const Cursors: React.FC<CursorsProps> = (props) => {
@@ -94,11 +95,11 @@ const Cursors: React.FC<CursorsProps> = (props) => {
             title: "Subscription",
             render: (cursor) => i18n.withVoidDefault(cursor.subscriptionName, v => (
               <Link
-                to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions.subscription.overview._.get({
+                to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions.subscription.overview._.get({
                   tenant: props.tenant,
                   namespace: props.namespace,
                   topic: props.topic,
-                  topicType: props.topicType,
+                  topicPersistency: props.topicPersistency,
                   subscription: v,
                 })}
               >

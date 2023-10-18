@@ -11,7 +11,7 @@ import Checkbox from '../../ui/Checkbox/Checkbox';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Input from '../../ui/Input/Input';
 import { swrKeys } from '../../swrKeys';
-import { mapToObject } from '../../../pbUtils/pbUtils';
+import { mapToObject } from '../../../proto-utils/proto-utils';
 
 import s from './Permissions.module.css';
 import RevokeDialog from './RevokeDialog/RevokeDialog';

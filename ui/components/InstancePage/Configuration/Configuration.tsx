@@ -21,7 +21,7 @@ import Button from '../../ui/Button/Button';
 import s from './Configuration.module.css';
 import ActionButton from '../../ui/ActionButton/ActionButton';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
-import ReactDOMServer from 'react-dom/server';
+import ReactDOMServer, { renderToStaticMarkup } from 'react-dom/server';
 
 const Configuration = () => {
   const { dynamicConfig, runtimeConfig } = BrokerConfig.useContext();
@@ -80,7 +80,7 @@ const Configuration = () => {
               <th className={s.Cell}>
                 <div
                   data-tooltip-id={tooltipId}
-                  data-tooltip-html={ReactDOMServer.renderToStaticMarkup(help["property"] || <div>-</div>)}
+                  data-tooltip-html={renderToStaticMarkup(help["property"] || <div>-</div>)}
                 >
                   Property
                 </div>
@@ -170,7 +170,7 @@ export const DynamicConfigValue: React.FC<DynamicConfigValueProps> = (props) => 
   const updateDynamicConfigValue = async () => {
     const req = new UpdateDynamicConfigurationRequest();
     req.setName(props.configKey);
-    req.setValue(inputValue);
+    req.setValue(inputValue.replace(/ /g, ''));
     const res = await brokersServiceClient.updateDynamicConfiguration(req, {}).catch(err => notifyError(`Unable to update dynamic configuration value: ${err}`));
     if (res === undefined) {
       return;

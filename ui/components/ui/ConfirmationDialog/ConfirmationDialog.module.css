@@ -1,5 +1,5 @@
 .ConfirmationDialog {
-  padding: 24rem;
+  padding: 12rem 24rem;
   max-width: 450px;
 }
 
@@ -20,12 +20,16 @@
 
 .Guard {
   margin-top: 10rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
 }
 
 .ActionButtons {
   display: flex;
   justify-content: flex-end;
   width: 100%;
+  margin-top: 10rem;
 }
 .ActionButtons > button {
   margin: 4rem;

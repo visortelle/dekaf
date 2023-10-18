@@ -1,6 +1,3 @@
-import { QuickDate } from "./SessionConfiguration/StartFromInput/quick-date";
-import * as messageFilter from "../Messages/SessionConfiguration/MessageFilterInput/types";
-
 export type SessionState =
   | "paused"
   | "pausing"
@@ -11,34 +8,43 @@ export type SessionState =
   | "new";
 
 type RegexSubMode =
-  | "unspecified"
   | "all-topics"
   | "persistent-only"
   | "non-persistent-only";
 
-export type SessionTopicsSelector =
+export type ConsumerSessionTopicsSelector =
   | {
-      type: "by-names";
-      topics: string[];
-    }
+    type: "by-names";
+    topics: string[];
+  }
   | {
-      type: "by-regex";
-      pattern: string;
-      regexSubscriptionMode: RegexSubMode;
-    };
+    type: "by-regex";
+    pattern: string;
+    regexSubscriptionMode: RegexSubMode;
+  };
+
+export type DateTimeUnit = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
+
+export type RelativeDateTime = {
+  value: number,
+  unit: DateTimeUnit
+  isRoundedToUnitStart: boolean
+};
 
 export type StartFrom =
-  | { type: "date"; date: Date }
-  | { type: "quickDate"; quickDate: QuickDate; relativeTo: Date }
-  | { type: "timestamp"; ts: string }
-  | { type: "messageId"; hexString: string }
-  | { type: "earliest" }
-  | { type: "latest" };
+  { type: "earliestMessage" } |
+  { type: "latestMessage" } |
+  { type: "messageId"; hexString: string } |
+  { type: "dateTime"; dateTime: Date } |
+  {
+    type: "relativeDateTime",
+    value: RelativeDateTime
+  };
 
-export type SessionConfig = {
+export type ConsumerSessionConfig = {
   startFrom: StartFrom;
-  topicsSelector: SessionTopicsSelector;
-  messageFilter: messageFilter.Chain;
+  topicsSelector: ConsumerSessionTopicsSelector;
+  messageFilterChain: MessageFilterChain;
 };
 
 type Nullable<T> = T | null;
@@ -67,3 +73,33 @@ export type MessageDescriptor = {
 };
 
 export type PartialMessageDescriptor = Partial<MessageDescriptor>;
+
+export type JsMessageFilter = {
+  jsCode: string;
+};
+
+export type BasicMessageFilter = {
+
+};
+
+export type MessageFilter = {
+  isEnabled: boolean;
+  isNegated: boolean;
+} & ({
+  type: "js-message-filter";
+  value: JsMessageFilter;
+} | {
+  type: "basic-message-filter";
+  value: BasicMessageFilter;
+});
+
+export type MessageFilterChainMode = 'all' | 'any';
+
+export type MessageFilterChain = {
+  isEnabled: boolean;
+  isNegated: boolean;
+  filters: MessageFilter[];
+  mode: MessageFilterChainMode;
+}
+
+export type MessageFilterType = MessageFilter['type'];
