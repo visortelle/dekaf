@@ -99,6 +99,14 @@ case class Config(
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on.")
     internalGrpcPort: Option[Int] = None,
+
+    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
+    defaultPulsarAuth: Option[String] = None,
+
+    @describe("Determines whether the user is forced to send the cookie over a valid HTTPS secure connection.")
+    cookieSecure: Option[Boolean] = None,
+    @describe("Determines whether the user agent should block the transmission of a cookie with cross-site requests.")
+    cookieSameSite: Option[String] = None
 )
 
 val yamlConfigDescriptor = descriptor[Config]
