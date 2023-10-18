@@ -1,8 +1,8 @@
 val scala3Version = "3.3.0"
 val graalvmVersion = "22.3.1"
-val pulsarVersion = "3.0.0"
+val pulsarVersion = "3.1.0"
 val circeVersion = "0.14.5"
-val zioVersion = "2.0.15"
+val zioVersion = "2.0.18"
 val zioConfigVersion = "3.0.7"
 
 maintainer := "kiryl_valkovich@teal.tools"
@@ -18,7 +18,7 @@ val javaOpts = Seq(
 
 scalacOptions ++= Seq(
     "-Xmax-inlines",
-    "100", // https://github.com/softwaremill/magnolia/issues/374
+    "100" // https://github.com/softwaremill/magnolia/issues/374
 )
 
 // Gracefully shutdown the app on Ctrl+C when running it from SBT
@@ -31,14 +31,16 @@ Global / resolvers += Resolver.mavenLocal
 
 // Define extra properties at build time that are available in runtime.
 Compile / sourceGenerators += Def.task {
-  val buildInfo = (Compile / sourceManaged).value / "ExtraBuildInfo.scala"
-  IO.write(buildInfo,
-    s"""package buildinfo
+    val buildInfo = (Compile / sourceManaged).value / "ExtraBuildInfo.scala"
+    IO.write(
+        buildInfo,
+        s"""package buildinfo
        |object ExtraBuildInfo {
        |  val isBinaryBuild = ${System.getProperty("isBinaryBuild") == "true"}
        |}
-       |""".stripMargin)
-  Seq(buildInfo)
+       |""".stripMargin
+    )
+    Seq(buildInfo)
 }.taskValue
 
 lazy val root = project
@@ -48,7 +50,7 @@ lazy val root = project
     .enablePlugins(GitVersioning)
     .in(file("."))
     .settings(
-        name := "pulsocat",
+        name := "dekaf",
         scalaVersion := scala3Version,
         Compile / mainClass := Some("main.Main"),
         Universal / javaOptions ++= javaOpts,
@@ -91,13 +93,19 @@ lazy val root = project
             "org.freemarker" % "freemarker" % "2.3.31",
             "javax.annotation" % "javax.annotation-api" % "1.3.2",
 
+            // Postgres
+            "org.postgresql" % "postgresql" % "42.6.0",
+            "io.getquill" %% "quill-jdbc-zio" % "4.8.0",
+            "io.getquill" %% "quill-doobie" % "4.8.0",
+
             // Uncategorized
             "org.apache.commons" % "commons-lang3" % "3.12.0",
             "tech.allegro.schema.json2avro" % "converter" % "0.2.15",
             "com.google.guava" % "guava" % "31.1-jre",
             "com.lihaoyi" %% "os-lib" % "0.9.1",
             "com.lihaoyi" %% "pprint" % "0.8.1", // Useful during development
-            "io.netty" % "netty-all" % "4.1.93.Final"
+            "io.netty" % "netty-all" % "4.1.93.Final",
+            "com.fasterxml.uuid" % "java-uuid-generator" % "4.2.0"
         )
     )
 

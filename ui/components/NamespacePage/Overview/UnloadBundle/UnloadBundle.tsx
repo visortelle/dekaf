@@ -44,7 +44,7 @@ const UnloadBundle: React.FC<UnloadBundleProps> = ({ namespaceFqn, bundleKey }) 
         <div className={s.DialogContainer}>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>This releases the ownership of a bundle from a specific broker and that could lead to severe consequences.</div>
+          <div>Releasing a bundle's ownership may redistribute topic traffic, potentially impacting performance and load distribution.</div>
         </div>
       }
       onConfirm={unloadBundle}

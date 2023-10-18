@@ -3,7 +3,7 @@ package consumer
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.MessageListener
 
-class TopicMessageListener(streamDataHandler: StreamDataHandler) extends MessageListener[Array[Byte]] {
+class TopicMessageListener(val streamDataHandler: StreamDataHandler) extends MessageListener[Array[Byte]] {
     val logger: Logger = Logger(getClass.getName)
 
     // https://levelup.gitconnected.com/graceful-shutdown-of-pulsar-queue-consumers-in-java-and-spring-boot-f93645a92b2b

@@ -13,6 +13,7 @@ import { swrKeys } from "../../../swrKeys";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb";
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
 import { Code } from "../../../../grpc-web/google/rpc/code_pb";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 function subscriptionTypeFromPb(pbType: pb.SubscriptionType): SubscriptionType {
   switch (pbType) {
@@ -54,7 +55,7 @@ type PolicyValue =
   { type: 'specified-for-this-topic', subscriptionTypes: SubscriptionType[] };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -67,7 +68,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const swrKey = props.topicType === 'persistent' ?
+  const swrKey = props.topicPersistency === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
@@ -75,7 +76,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetSubscriptionTypesEnabledRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getSubscriptionTypesEnabled(req, {});
@@ -118,7 +119,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-namespace-config') {
           const req = new pb.RemoveSubscriptionTypesEnabledRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
           const res = await topicPoliciesServiceClient.removeSubscriptionTypesEnabled(req, {});
@@ -130,7 +131,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         if (value.type === 'specified-for-this-topic') {
           const req = new pb.SetSubscriptionTypesEnabledRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
           req.setTypesList(value.subscriptionTypes.map(subscriptionTypeToPb));
 

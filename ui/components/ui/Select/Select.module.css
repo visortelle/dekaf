@@ -24,6 +24,27 @@
   transition: var(--transition-short);
 }
 
+.NoBorders {
+  background-color: transparent;
+}
+
+.NoBorders .Select {
+  height: unset;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  background-color: transparent;
+}
+
+.NoBorders .Arrow {
+  display: none;
+}
+
+.NoBorders:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
 .DisabledSelect {
   opacity: 1;
   color: #aaa;

@@ -3,12 +3,17 @@
   margin-bottom: 4rem;
   font-weight: var(--font-weight-bold);
   position: relative;
-  display: flex;
+  display: inline-flex;
+}
+
+.WithHelp {
+  margin-right: 18rem;
 }
 
 .HelpIcon {
-  margin-left: 1ch;
-  margin-top: 2rem;
+  position: absolute;
+  top: -4rem;
+  right: -20rem;
 }
 
 .Required {

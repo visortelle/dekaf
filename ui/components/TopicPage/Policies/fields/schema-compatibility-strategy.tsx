@@ -13,6 +13,7 @@ import { swrKeys } from "../../../swrKeys";
 
 import sf from '../../../ui/ConfigurationTable/form.module.css';
 import A from "../../../ui/A/A";
+import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
 
 const policy = 'schemaCompatibilityStrategy';
 
@@ -23,7 +24,7 @@ type PolicyValue =
   { type: 'specified-for-this-topic', schemaCompatibilityStrategy: Strategies };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -39,7 +40,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const swrKey = props.topicType === 'persistent' ?
+  const swrKey = props.topicPersistency === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
@@ -47,7 +48,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetSchemaCompatibilityStrategyRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
       const res = await topicPoliciesServiceClient.getSchemaCompatibilityStrategy(req, {});
       if (res.getStatus()?.getCode() !== Code.OK) {
@@ -87,7 +88,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-namespace-config') {
           const req = new pb.SetSchemaCompatibilityStrategyRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
           const res = await topicPoliciesServiceClient.removeSchemaCompatibilityStrategy(req, {});
@@ -99,7 +100,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         if (value.type === 'specified-for-this-topic') {
           const req = new pb.SetSchemaCompatibilityStrategyRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
           req.setStrategy(pb.SchemaCompatibilityStrategy[value.schemaCompatibilityStrategy]);
 

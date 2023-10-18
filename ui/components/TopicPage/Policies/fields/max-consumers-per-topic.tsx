@@ -14,6 +14,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import TooltipElement from "../../../ui/Tooltip/TooltipElement/TooltipElement";
 import * as generalHelp from "../../../ui/help";
 import React from "react";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'maxConsumers';
 
@@ -24,7 +25,7 @@ type PolicyValue = { type: 'inherited-from-namespace-config' } |
 };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -36,7 +37,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig();
 
-  const swrKey = props.topicType === 'persistent' ?
+  const swrKey = props.topicPersistency === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
@@ -44,7 +45,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetMaxConsumersRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
 
       const res = await topicPoliciesServiceClient.getMaxConsumers(req, {});
@@ -91,7 +92,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
       onConfirm={async (value) => {
         if (value.type === 'inherited-from-namespace-config') {
           const req = new pb.RemoveMaxConsumersRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
           const res = await topicPoliciesServiceClient.removeMaxConsumers(req, {});
@@ -102,7 +103,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
         if (value.type === 'unlimited' || value.type === 'specified-for-this-topic') {
           const req = new pb.SetMaxConsumersRequest();
-          req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+          req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
           req.setIsGlobal(props.isGlobal);
 
           if (value.type === 'unlimited') {

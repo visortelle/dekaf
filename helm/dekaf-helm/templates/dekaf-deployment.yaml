@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "_chart-name.fullname" . }}
+  labels:
+    {{- include "_chart-name.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "_chart-name.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: dekaf
+  template:
+    metadata:
+      annotations:
+      {{- with .Values.dekaf.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "_chart-name.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: dekaf
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.dekaf.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.dekaf.securityContext | nindent 12 }}
+          image: "{{ .Values.dekaf.image.repository }}:{{ .Values.dekaf.image.tag }}"
+          imagePullPolicy: {{ .Values.dekaf.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8090
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              {{ $base_path_without_trailing_slash := trimSuffix "/" .Values.dekaf.basePath }}
+              path: {{ $base_path_without_trailing_slash }}/health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: {{ $base_path_without_trailing_slash }}/health
+              port: http
+          resources:
+            {{- toYaml .Values.dekaf.resources | nindent 12 }}
+          env:
+            - name: DEKAF_BASE_PATH
+              value: {{ .Values.dekaf.basePath }}
+          {{- toYaml .Values.dekaf.env | nindent 12 }}
+          volumeMounts:
+            - name: dekaf-config
+              mountPath: "/dekaf/config.yaml"
+              subPath: "config.yaml"
+              readOnly: true
+      volumes:
+        - name: dekaf-config
+          configMap:
+            name: {{ include "_chart-name.fullname" . }}-dekaf-config
+            items:
+              - key: config.yaml
+                path: config.yaml
+      {{- with .Values.dekaf.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dekaf.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dekaf.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

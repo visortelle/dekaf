@@ -1,3 +1,5 @@
+import { PulsarTopicPersistency } from "./pulsar/pulsar-resources";
+
 export const routes = {
   instance: {
     tenants: {
@@ -108,131 +110,131 @@ export const routes = {
               get: (props: { tenant: string; namespace: string }) =>
                 `/tenants/${props.tenant}/namespaces/${props.namespace}/topics`,
             },
-            anyTopicType: {
+            anyTopicPersistency: {
               topic: {
                 messages: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/messages",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/messages",
                     get: (props: {
                       tenant: string;
                       namespace: string;
-                      topicType: "persistent" | "non-persistent";
+                      topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/messages`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/messages`,
                   },
                 },
                 producers: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/producers",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/producers",
                     get: (props: {
                       tenant: string;
                       namespace: string;
-                      topicType: "persistent" | "non-persistent";
+                      topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/producers`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/producers`,
                   },
                 },
                 subscriptions: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/subscriptions",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/subscriptions",
                     get: (props: {
                       tenant: string;
                       namespace: string;
-                      topicType: "persistent" | "non-persistent";
+                      topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/subscriptions`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions`,
                   },
                   subscription: {
                     overview: {
                       _: {
-                        path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/subscriptions/:subscription",
+                        path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/subscriptions/:subscription",
                         get: (props: {
                           tenant: string;
                           namespace: string;
-                          topicType: "persistent" | "non-persistent";
+                          topicPersistency: PulsarTopicPersistency;
                           topic: string;
                           subscription: string;
                         }) =>
-                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/subscriptions/${props.subscription}`,
+                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions/${props.subscription}`,
                       },
                     },
                     consumers: {
                       _: {
-                        path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/subscriptions/:subscription/consumers",
+                        path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/subscriptions/:subscription/consumers",
                         get: (props: {
                           tenant: string;
                           namespace: string;
-                          topicType: "persistent" | "non-persistent";
+                          topicPersistency: PulsarTopicPersistency;
                           topic: string;
                           subscription: string;
                         }) =>
-                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/subscriptions/${props.subscription}/consumers`,
+                          `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/subscriptions/${props.subscription}/consumers`,
                       }
                     }
                   }
                 },
                 overview: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/overview",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/overview",
                     get: (props: {
                       tenant: string;
                       namespace: string;
-                      topicType: "persistent" | "non-persistent";
+                      topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/overview`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/overview`,
                   },
                 },
                 schema: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/schema",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/schema",
                     get: (props: {
                       tenant: string;
                       namespace: string;
-                      topicType: "persistent" | "non-persistent";
+                      topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/schema`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/schema`,
                   },
                   create: {
                     _: {
-                      path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/schema/create",
+                      path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/schema/create",
                       get: (props: {
                         tenant: string;
                         namespace: string;
-                        topicType: "persistent" | "non-persistent";
+                        topicPersistency: PulsarTopicPersistency;
                         topic: string;
                       }) =>
-                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/schema/create`,
+                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/schema/create`,
                     },
                   },
                   view: {
                     _: {
-                      path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/schema/view/:schemaVersion",
+                      path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/schema/view/:schemaVersion",
                       get: (props: {
                         tenant: string;
                         namespace: string;
-                        topicType: "persistent" | "non-persistent";
+                        topicPersistency: PulsarTopicPersistency;
                         topic: string;
                         schemaVersion: number;
                       }) =>
-                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/schema/view/${props.schemaVersion}`,
+                        `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/schema/view/${props.schemaVersion}`,
                     },
                   },
                 },
                 policies: {
                   _: {
-                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicType/:topic/policies",
+                    path: "tenants/:tenant/namespaces/:namespace/topics/:topicPersistency/:topic/policies",
                     get: (props: {
                       tenant: string;
                       namespace: string;
-                      topicType: "persistent" | "non-persistent";
+                      topicPersistency: PulsarTopicPersistency;
                       topic: string;
                     }) =>
-                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicType}/${props.topic}/policies`,
+                      `/tenants/${props.tenant}/namespaces/${props.namespace}/topics/${props.topicPersistency}/${props.topic}/policies`,
                   },
                 },
               },

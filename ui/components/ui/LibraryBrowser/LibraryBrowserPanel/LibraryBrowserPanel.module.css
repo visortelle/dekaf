@@ -1,0 +1,43 @@
+.LibraryBrowserPanel {
+  min-width: 240rem;
+  position: relative;
+}
+
+.ItemName {
+
+}
+
+.ReferenceIcon {
+  width: 16rem;
+  height: 16rem;
+  margin-left: 6rem;
+}
+
+.ReferenceIcon:hover {
+  cursor: pointer;
+}
+
+.ReferenceIcon svg {
+  fill: var(--text-color);
+}
+
+.Buttons {
+  position: absolute;
+  display: inline-flex;
+  right: -12rem;
+  top: -7rem;
+  transform: translate(100%, 0);
+  background-color: #fff;
+  z-index: 10;
+  animation: fade-in 0.2s ease-in-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+

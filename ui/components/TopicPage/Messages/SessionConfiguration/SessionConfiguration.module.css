@@ -1,23 +1,28 @@
 .SessionConfiguration {
   flex: 1 1 auto;
   overflow: auto;
-  display: flex;
+  padding: 24rem 12rem;
 }
 
-.LeftColumn,
-.RightColumn {
-  padding: 12rem;
+.Title {
+  padding-bottom: 24rem;
+  display: flex;
+  gap: 18rem;
+}
+
+.Content {
+  display: flex;
+  gap: 48rem;
+  max-width: 1000rem;
 }
 
 .LeftColumn {
-  width: 33.33333333333%;
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  gap: 24rem;
 }
 
 .RightColumn {
-  width: 66.66666666666%;
-}
-
-.ControlLabel {
-  font-weight: var(--font-weight-bold);
-  margin-bottom: 4rem;
+  width: 60%;
 }
