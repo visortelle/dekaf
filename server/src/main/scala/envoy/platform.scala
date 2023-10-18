@@ -45,5 +45,5 @@ def getEnvoyBinPath: IO[Throwable, os.Path] =
         binResourcePath <- getEnvoyBinResourcePath
         binOut <- ZIO.attempt(os.temp.dir(null, "pulsar-ui") / "envoy")
         _ <- ZIO.logInfo(s"Copying Envoy proxy binary to temp directory: ${binOut.toString}")
-        _ <- ZIO.attempt(os.write(binOut, binResourcePath.toSource, "r-xr-xr-x"))
+        _ <- ZIO.attempt({ os.write(binOut, binResourcePath.toSource, "r-xr-xr-x") })
     yield binOut

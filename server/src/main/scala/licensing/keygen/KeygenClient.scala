@@ -79,12 +79,14 @@ class KeygenClient(
         result <- ZIO.fromEither(res.body)
     } yield result
 
-    def licenseHeartbeatPing(machineId: String, onFail: Task[Unit]): Task[Unit] = for {
+    def licenseHeartbeatPing(machineId: String): Task[Unit] = for {
         _ <- ZIO.logInfo("License session heartbeat ping.")
         httpBackend <- HttpClientZioBackend()
         res <- basicRequest
             .post(uri"$keygenApiBase/machines/$machineId/actions/ping-heartbeat")
             .headers(headers)
             .send(httpBackend)
-        _ <- onFail.unless(res.code.isSuccess)
+        _ <- ZIO
+            .fail(new Exception("License session heartbeat ping failed."))
+            .unless(res.code.isSuccess)
     } yield ()

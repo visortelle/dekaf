@@ -8,8 +8,8 @@ import java.io.File
 
 object Envoy:
     def run: IO[Throwable, Unit] = for
-        envoyConfigParams <- readConfig.map(c =>
-            EnvoyConfigParams(
+        envoyConfigProps <- readConfig.map(c =>
+            EnvoyConfigProps(
               httpServerPort = c.internalHttpPort.get,
               grpcServerPort = c.internalGrpcPort.get,
               listenPort = c.port.get,
@@ -18,16 +18,13 @@ object Envoy:
         )
 
         envoyBinPath <- getEnvoyBinPath
-        configPath <- getEnvoyConfigPath(envoyConfigParams).map(_.toString)
+        configPath <- getEnvoyConfigPath(envoyConfigProps).map(_.toString)
 
         _ <- ZIO.logInfo(s"Starting Envoy proxy with config: $configPath")
-        _ <- ZIO.logInfo(s"Listening port: ${envoyConfigParams.listenPort}")
+        _ <- ZIO.logInfo(s"Listening port: ${envoyConfigProps.listenPort}")
 
         process <- Command(envoyBinPath.toString, "--config-path", configPath).run
 
-        // Uncomment to see Envoy logs
-        // TODO - make it configurable
-//         _ <- process.stdout.linesStream.foreach(line => ZIO.logInfo(line))
-//         _ <- process.stderr.linesStream.foreach(line => ZIO.logError(line))
         _ <- process.successfulExitCode
+        _ <- ZIO.never
     yield ()
