@@ -4,6 +4,8 @@ import zio.{Config, *}
 import zio.config.*
 import zio.config.magnolia.{describe, descriptor}
 import zio.config.yaml.YamlConfigSource
+import _root_.postgres.{PostgresVariant, given_Decoder_PostgresVariant, given_Encoder_PostgresVariant}
+import postgres.PostgresVariant.embedded
 
 import java.nio.file.Path
 
@@ -81,27 +83,35 @@ case class Config(
           |""".stripMargin)
     pulsarTlsProtocols: Option[List[String]] = None,
 
+    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
+    defaultPulsarAuth: Option[String] = None,
+
+    // Postgres
+    postgresVariant: Option[PostgresVariant] = Some(PostgresVariant.embedded),
+    postgresUser: Option[String] = Some("dekafadmin"),
+    postgresPassword: Option[String] = Some("dekafadmin"),
+    postgresHost: Option[String] = Some("0.0.0.0"),
+    postgresPort: Option[Int] = None,
+    postgresDatabase: Option[String] = Some("dekaf"),
+
     // Internal config
     @describe("The port HTTP server listens on.")
     internalHttpPort: Option[Int] = None,
     @describe("The port gRPC server listens on.")
     internalGrpcPort: Option[Int] = None,
-    @describe("Default authentication credentials for all users. Not recommended to use it in production environment.")
-    defaultPulsarAuth: Option[String] = None
 )
 
 val yamlConfigDescriptor = descriptor[Config]
 val envConfigDescriptor = descriptor[Config].mapKey(key => s"DEKAF_${toUpperSnakeCase(key)}")
-
-val yamlConfigSource = YamlConfigSource.fromYamlPath(Path.of("./config.yaml"))
-val envConfigSource = ConfigSource.fromSystemEnv(None, None)
 
 val internalHttpPort = getFreePort
 val internalGrpcPort = getFreePort
 
 def readConfig =
     for
-        yamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource))
+        yamlConfigSource <- ZIO.attempt(YamlConfigSource.fromYamlPath(Path.of("./config.yaml")))
+        envConfigSource <- ZIO.attempt(ConfigSource.fromSystemEnv(None, None))
+        yamlConfig <- read(yamlConfigDescriptor.from(yamlConfigSource)).orElseSucceed(Config())
         envConfig <- read(envConfigDescriptor.from(envConfigSource))
         defaultConfig <- ZIO.succeed(Config(internalHttpPort = Some(internalHttpPort), internalGrpcPort = Some(internalGrpcPort)))
 

@@ -6,3 +6,4 @@
 target
 
 /data/library/*.json
+/data/pgdata
