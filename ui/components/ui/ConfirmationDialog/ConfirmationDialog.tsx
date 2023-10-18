@@ -10,6 +10,7 @@ import Input from "../Input/Input";
 type Props = {
   description: ReactNode;
   onConfirm: () => void;
+  isConfirmDisabled?: boolean;
   onCancel: () => void;
   switchForceDelete?: () => void; // TECH_DEBT_SMALL: remove this property
   forceDelete?: boolean; // TECH_DEBT_SMALL: remove this property
@@ -56,7 +57,7 @@ const ConfirmationDialog = (props: Props) => {
             type={props.type === 'danger' ? 'danger': 'primary'}
             text={`Confirm`}
             onClick={() => props.onConfirm()}
-            disabled={props.guard !== undefined && props.guard !== guard}
+            disabled={(props.guard !== undefined && props.guard !== guard) || props.isConfirmDisabled}
             testId="confirmation-dialog-confirm-button"
           />
         </div>
