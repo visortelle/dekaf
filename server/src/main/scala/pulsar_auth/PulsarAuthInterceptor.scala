@@ -1,14 +1,12 @@
 package pulsar_auth
 
-import com.typesafe.scalalogging.Logger
-import org.apache.pulsar.client.api.PulsarClient
-import org.apache.pulsar.client.admin.PulsarAdmin
 import io.grpc.*
-import zio.*
+import org.apache.pulsar.client.admin.PulsarAdmin
+import org.apache.pulsar.client.api.PulsarClient
 
-import scala.jdk.CollectionConverters.*
 import java.time.Instant
 import java.util.TimerTask
+import scala.jdk.CollectionConverters.*
 
 case class PulsarAdminCacheEntry(
     client: PulsarAdmin,
@@ -38,7 +36,7 @@ object ClientsCache:
     private var pulsarAdmin: Map[Int, PulsarAdminCacheEntry] = Map.empty
     private var pulsarClient: Map[Int, PulsarClientCacheEntry] = Map.empty
 
-    private def writePulsarAdmin(auth: PulsarAuth): Either[Throwable, PulsarAdmin] = makeAdminClient(auth) match
+    private def writePulsarAdmin(auth: PulsarAuth): Either[Throwable, PulsarAdmin] = makePulsarAdmin(auth) match
         case Left(err) => Left(err)
         case Right(client) =>
             val entry = PulsarAdminCacheEntry(

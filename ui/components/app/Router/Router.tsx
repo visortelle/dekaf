@@ -23,6 +23,7 @@ import TopicPage, { TopicPageView } from "../../TopicPage/TopicPage";
 import SubscriptionPage, { SubscriptionPageView } from '../../SubscriptionPage/SubscriptionPage';
 import { TreeNode } from "../../ui/Layout/NavigationTree/TreeView";
 import InstancePage from "../../InstancePage/InstancePage";
+import PageNotFound from "../../ui/PageNotFound/PageNotFound";
 import { PulsarTopicPersistency } from "../../pulsar/pulsar-resources";
 
 type WithLayoutProps = { layout: Omit<LayoutProps, "children"> };
@@ -262,6 +263,13 @@ const prepareRoutes = (): {
         element: withLayout(
           <RoutedTenantPage view={"namespaces"} />,
           setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+      {
+        path: "*",
+        element: withLayout(
+          <PageNotFound />,
+          withLayoutProps
         ),
       },
     ];

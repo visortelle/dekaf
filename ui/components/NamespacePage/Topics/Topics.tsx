@@ -19,6 +19,7 @@ import {
   TopicProperties,
   TopicStats
 } from "../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
+import {customTopicsNamesSort} from "./sorting";
 
 export type ColumnKey =
   'topicName' |
@@ -60,7 +61,8 @@ type DataEntry = {
   name: string,
   partitioning: 'partitioned' | 'non-partitioned' | 'partition',
   persistency: 'persistent' | 'non-persistent',
-}
+};
+
 type LazyDataEntry = {
   stats: pb.TopicStats,
   partitionedTopicMetadata?: pb.PartitionedTopicMetadata,
@@ -191,16 +193,16 @@ const Topics: React.FC<TopicsProps> = (props) => {
                     {de.name}
                   </Link>
                 ),
-                sortFn: (a, b) => a.data.name.localeCompare(b.data.name, 'en', { numeric: true }),
+                sortFn: (a, b) => customTopicsNamesSort(a.data.name, b.data.name),
                 filter: {
                   descriptor: {
                     type: 'string',
-                    defaultValue: { type: 'string', value: '' }
+                    defaultValue: {type: 'string', value: ''}
                   },
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'string') {
                       return true
-                    };
+                    }
 
                     return de.name.toLowerCase().includes(filterValue.value.toLowerCase());
                   },

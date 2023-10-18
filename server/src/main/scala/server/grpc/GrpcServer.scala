@@ -73,4 +73,5 @@ object GrpcServer:
         server <- ZIO.attempt(createGrpcServer(port))
         _ <- ZIO.attempt(server.start)
         _ <- ZIO.attemptBlockingInterrupt(server.awaitTermination)
+        _ <- ZIO.never
     yield ()
