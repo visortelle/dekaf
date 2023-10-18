@@ -3,52 +3,103 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.api.v1;
 
 import "google/rpc/status.proto";
+import "google/protobuf/timestamp.proto";
 
-message CreateProducerRequest {
-  string producer_name = 1;
-  string topic = 2;
+message FixedJsonGenerator {
+  string json = 1;
 }
 
-message CreateProducerResponse {
+message JsJsonGenerator {
+  string js_code = 1;
+}
+
+enum InterpretJsonAs {
+  INTERPRET_JSON_AS_UNSPECIFIED = 0;
+  INTERPRET_JSON_AS_JSON = 1;
+  INTERPRET_JSON_AS_BASE64_ENCODED_BYTES = 2;
+  INTERPRET_JSON_AS_HEX_BYTES = 3;
+}
+
+message JsonGenerator {
+  oneof generator {
+    FixedJsonGenerator fixed_generator = 11;
+    JsJsonGenerator js_generator = 12;
+  }
+  InterpretJsonAs interpret_json_as = 2;
+}
+
+message AutoEventTimeGenerator {}
+
+message FixedEventTimeGenerator {
+  google.protobuf.Timestamp event_time = 1;
+}
+
+message EventTimeGenerator {
+  oneof generator {
+    AutoEventTimeGenerator auto_generator = 11;
+    FixedEventTimeGenerator fixed_generator = 12;
+    JsJsonGenerator js_generator = 13;
+  }
+}
+
+message MessageGenerator {
+  JsonGenerator key_generator = 1;
+  JsonGenerator value_generator = 2;
+  JsonGenerator properties_generator = 3;
+  EventTimeGenerator event_time_generator = 4;
+}
+
+message ProducerSessionPauseTrigger {
+  int64 time_elapsed_ms = 2;
+  int64 messages_produced = 3;
+}
+
+message ProducerSessionFlowGeneratorStep {
+  string target_topic = 1;
+  MessageGenerator generator = 2;
+  int64 generator_runs_count = 3;
+  int64 generator_runs_interval_ms = 4;
+}
+
+message ProducerSessionFlowWaitStep {
+  int64 wait_ms = 1;
+}
+
+message ProducerSessionFlowStep {
+  oneof step {
+    ProducerSessionFlowGeneratorStep generator_step = 1;
+    ProducerSessionFlowWaitStep wait_step = 2;
+    ProducerSessionFlowStep flow_step = 3;
+  }
+}
+
+message ProducerSessionFlow {
+  repeated ProducerSessionFlowStep steps = 1;
+}
+
+message ProducerSession {
+  ProducerSessionFlow flow = 1;
+  ProducerSessionPauseTrigger pause_trigger = 2;
+}
+
+message CreateProducerSessionRequest {
+  ProducerSession session = 1;
+  string session_id = 2;
+}
+
+message CreateProducerSessionResponse {
   google.rpc.Status status = 1;
 }
 
-message DeleteProducerRequest {
-  string producer_name = 1;
+message DeleteProducerSessionRequest {
+  string session_id = 1;
 }
 
-message DeleteProducerResponse {
+message DeleteProducerSessionResponse {
   google.rpc.Status status = 1;
 }
 
-enum MessageFormat {
-  MESSAGE_FORMAT_UNSPECIFIED = 0;
-  MESSAGE_FORMAT_BYTES = 1;
-  MESSAGE_FORMAT_JSON = 2;
-}
-
-message ProducerMessage {
-  optional string key = 1;
-  bytes value = 3;
-  optional int64 event_time = 10;
-  map<string, string> properties = 4;
-}
-
-message SendRequest {
-  string producer_name = 1;
-  repeated ProducerMessage messages = 2;
-  MessageFormat format = 3;
-}
-
-message SendResponse {
-  google.rpc.Status status = 1;
-}
-
-message GetStatsRequest {
-  string producer_name = 1;
-}
-
-message Stats {
+message ProducerStats {
   int64 num_messages_sent = 1;
   int64 num_bytes_sent = 2;
   int64 num_send_failed = 3;
@@ -62,14 +113,39 @@ message Stats {
   int32 pending_queue_size = 11;
 }
 
-message GetStatsResponse {
+message ProducerSessionStats {
+  map<string, ProducerStats> stats_per_producer = 1;
+}
+
+message GetProducerSessionStatsRequest {
+  string session_id = 1;
+}
+
+message GetProducerSessionStatsResponse {
   google.rpc.Status status = 1;
-  Stats stats = 2;
+  ProducerSessionStats stats = 2;
+}
+
+message PauseProducerSessionRequest {
+  string session_id = 1;
+}
+
+message PauseProducerSessionResponse {
+  google.rpc.Status status = 1;
+}
+
+message ResumeProducerSessionRequest {
+  string session_id = 1;
+}
+
+message ResumeProducerSessionResponse {
+  google.rpc.Status status = 1;
 }
 
 service ProducerService {
-  rpc CreateProducer(CreateProducerRequest) returns (CreateProducerResponse);
-  rpc DeleteProducer(DeleteProducerRequest) returns (DeleteProducerResponse);
-  rpc Send(SendRequest) returns (SendResponse);
-  rpc GetStats(GetStatsRequest) returns (GetStatsResponse);
+  rpc CreateProducerSession(CreateProducerSessionRequest) returns (CreateProducerSessionResponse);
+  rpc DeleteProducerSession(DeleteProducerSessionRequest) returns (DeleteProducerSessionResponse);
+  rpc GetProducerSessionStats(GetProducerSessionStatsRequest) returns (GetProducerSessionStatsResponse);
+  rpc PauseProducerSession(PauseProducerSessionRequest) returns (PauseProducerSessionResponse);
+  rpc ResumeProducerSession(ResumeProducerSessionRequest) returns (ResumeProducerSessionResponse);
 }
