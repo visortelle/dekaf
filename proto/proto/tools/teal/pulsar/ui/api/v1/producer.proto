@@ -3,7 +3,6 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.api.v1;
 
 import "google/rpc/status.proto";
-import "google/protobuf/timestamp.proto";
 
 message FixedJsonGenerator {
   string json = 1;
@@ -17,7 +16,7 @@ enum InterpretJsonAs {
   INTERPRET_JSON_AS_UNSPECIFIED = 0;
   INTERPRET_JSON_AS_JSON = 1;
   INTERPRET_JSON_AS_BASE64_ENCODED_BYTES = 2;
-  INTERPRET_JSON_AS_HEX_BYTES = 3;
+  INTERPRET_JSON_AS_HEX_ENCODED_BYTES = 3;
 }
 
 message JsonGenerator {
@@ -28,75 +27,74 @@ message JsonGenerator {
   InterpretJsonAs interpret_json_as = 2;
 }
 
+message EmptyEventTimeGenerator {}
 message AutoEventTimeGenerator {}
-
 message FixedEventTimeGenerator {
-  google.protobuf.Timestamp event_time = 1;
+  int64 event_time = 1;
 }
 
 message EventTimeGenerator {
   oneof generator {
+    EmptyEventTimeGenerator empty_generator = 10;
     AutoEventTimeGenerator auto_generator = 11;
     FixedEventTimeGenerator fixed_generator = 12;
-    JsJsonGenerator js_generator = 13;
+    JsonGenerator json_generator = 13;
+  }
+}
+
+message EmptyKeyGenerator {}
+message RandomKeyGenerator {
+  int32 min_chars = 1;
+  int32 max_chars = 2;
+}
+message FixedKeyGenerator {
+  string key = 1;
+}
+
+message KeyGenerator {
+  oneof generator {
+    EmptyKeyGenerator empty_generator = 10;
+    RandomKeyGenerator random_generator = 11;
+    RandomKeyGenerator fixed_generator = 12;
+    JsonGenerator json_generator = 13;
+  }
+}
+
+message EmptyValueGenerator {}
+message RandomBytesGenerator {
+  int32 min_bytes = 1;
+  int32 max_bytes = 2;
+}
+
+message ValueGenerator {
+  oneof generator {
+    EmptyValueGenerator empty_generator = 10;
+    RandomBytesGenerator random_bytes_generator = 11;
+    JsonGenerator json_generator = 12;
+  }
+}
+
+message EmptyPropertiesGenerator {}
+
+message PropertiesGenerator {
+  oneof generator {
+    EmptyPropertiesGenerator empty_generator = 10;
+    JsonGenerator json_generator = 11;
   }
 }
 
 message MessageGenerator {
-  JsonGenerator key_generator = 1;
-  JsonGenerator value_generator = 2;
-  JsonGenerator properties_generator = 3;
+  KeyGenerator key_generator = 1;
+  ValueGenerator value_generator = 2;
+  PropertiesGenerator properties_generator = 3;
   EventTimeGenerator event_time_generator = 4;
 }
 
-message ProducerSessionPauseTrigger {
-  int64 time_elapsed_ms = 2;
-  int64 messages_produced = 3;
-}
-
-message ProducerSessionFlowGeneratorStep {
+message ProduceMessagesTask {
   string target_topic = 1;
   MessageGenerator generator = 2;
   int64 generator_runs_count = 3;
   int64 generator_runs_interval_ms = 4;
-}
-
-message ProducerSessionFlowWaitStep {
-  int64 wait_ms = 1;
-}
-
-message ProducerSessionFlowStep {
-  oneof step {
-    ProducerSessionFlowGeneratorStep generator_step = 1;
-    ProducerSessionFlowWaitStep wait_step = 2;
-    ProducerSessionFlowStep flow_step = 3;
-  }
-}
-
-message ProducerSessionFlow {
-  repeated ProducerSessionFlowStep steps = 1;
-}
-
-message ProducerSession {
-  ProducerSessionFlow flow = 1;
-  ProducerSessionPauseTrigger pause_trigger = 2;
-}
-
-message CreateProducerSessionRequest {
-  ProducerSession session = 1;
-  string session_id = 2;
-}
-
-message CreateProducerSessionResponse {
-  google.rpc.Status status = 1;
-}
-
-message DeleteProducerSessionRequest {
-  string session_id = 1;
-}
-
-message DeleteProducerSessionResponse {
-  google.rpc.Status status = 1;
 }
 
 message ProducerStats {
@@ -113,12 +111,34 @@ message ProducerStats {
   int32 pending_queue_size = 11;
 }
 
+message ProducerSession {
+  string task_id = 1;
+  ProduceMessagesTask task = 2;
+}
+
+message CreateProducerSessionRequest {
+  string task_id = 1;
+  ProducerSession session = 2;
+}
+
+message CreateProducerSessionResponse {
+  google.rpc.Status status = 1;
+}
+
+message DeleteProducerSessionRequest {
+  string task_id = 1;
+}
+
+message DeleteProducerSessionResponse {
+  google.rpc.Status status = 1;
+}
+
 message ProducerSessionStats {
   map<string, ProducerStats> stats_per_producer = 1;
 }
 
 message GetProducerSessionStatsRequest {
-  string session_id = 1;
+  string task_id = 1;
 }
 
 message GetProducerSessionStatsResponse {
@@ -127,7 +147,7 @@ message GetProducerSessionStatsResponse {
 }
 
 message PauseProducerSessionRequest {
-  string session_id = 1;
+  string task_id = 1;
 }
 
 message PauseProducerSessionResponse {

@@ -1,0 +1,50 @@
+global:
+  membership:
+    broadcastAddress: "0.0.0.0"
+publicClient:
+  hostPort: "0.0.0.0:8933"
+persistence:
+  defaultStore: default
+  visibilityStore: postgres-visibility
+  numHistoryShards: 512
+  datastores:
+    default:
+      sql:
+        pluginName: "postgres16"
+        databaseName: "dekaf"
+        connectAddr: "0.0.0.0:5432"
+        connectProtocol: "tcp"
+        connectAttributes:
+          search_path: temporal-default
+        user: "postgres"
+        password: "postgres"
+        maxConn: 2
+        maxIdleConns: 2
+        maxConnLifetime: "1h"
+    postgres-visibility:
+      sql:
+        pluginName: "postgres16"
+        databaseName: "dekaf"
+        connectAddr: "0.0.0.0:5432"
+        connectProtocol: "tcp"
+        connectAttributes:
+          search_path: temporal-visibility
+        user: "postgres"
+        password: "postgres"
+        maxConn: 2
+        maxIdleConns: 2
+        maxConnLifetime: "1h"
+log:
+  stdout: true
+clusterMetadata:
+  enableGlobalNamespace: false
+  failoverVersionIncrement: 10
+  masterClusterName: "dekaf"
+  currentClusterName: "dekaf"
+  clusterInformation:
+    active:
+      enabled: true
+      initialFailoverVersion: 0
+      rpcAddress: "0.0.0.0:7233"
+  replicationConsumer:
+  type: rpc

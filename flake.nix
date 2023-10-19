@@ -93,7 +93,8 @@
               pkgs.act
 
               pkgs.postgresql_16
-              pkgs.grafana
+              pkgs.temporal
+              pkgs.temporal-cli
               pkgs.prometheus
               pkgs.prometheus-alertmanager
             ] ++ missingSysPkgs;
