@@ -25,5 +25,5 @@ object Main extends ZIOAppDefault:
     } yield ()
 
     def run = app.provide(
-        ConfigProviderImpl.layer,
+        ConfigProviderImpl.layer
     )

@@ -14,29 +14,29 @@ def fixedJsonGeneratorToPb(v: FixedJsonGenerator): pb.FixedJsonGenerator = pb.Fi
 def jsJsonGeneratorFromPb(v: pb.JsJsonGenerator): JsJsonGenerator = JsJsonGenerator(jsCode = v.jsCode)
 def jsJsonGeneratorToPb(v: JsJsonGenerator): pb.JsJsonGenerator = pb.JsJsonGenerator(jsCode = v.jsCode)
 
-def interpretJsonAsGeneratorFromPb(v: pb.InterpretJsonAsGenerator): InterpretJsonAsGenerator = v match
+def interpretJsonAsFromPb(v: pb.InterpretJsonAs): InterpretJsonAs = v match
     case pb.InterpretJsonAs.INTERPRET_JSON_AS_JSON => InterpretJsonAs.Json
     case pb.InterpretJsonAs.INTERPRET_JSON_AS_BASE64_ENCODED_BYTES => InterpretJsonAs.Base64EncodedBytes
     case pb.InterpretJsonAs.INTERPRET_JSON_AS_HEX_ENCODED_BYTES => InterpretJsonAs.HexEncodedBytes
     case _ => throw new Exception("Unknown InterpretJsonAs value: " + v)
 
-def interpretJsonAsGeneratorToPb(v: InterpretJsonAsGenerator): pb.InterpretJsonAsGenerator = v match
+def interpretJsonAsToPb(v: InterpretJsonAs): pb.InterpretJsonAs = v match
     case InterpretJsonAs.Json => pb.InterpretJsonAs.INTERPRET_JSON_AS_JSON
     case InterpretJsonAs.Base64EncodedBytes => pb.InterpretJsonAs.INTERPRET_JSON_AS_BASE64_ENCODED_BYTES
     case InterpretJsonAs.HexEncodedBytes => pb.InterpretJsonAs.INTERPRET_JSON_AS_HEX_ENCODED_BYTES
 
 def jsonGeneratorFromPb(v: pb.JsonGenerator): JsonGenerator = JsonGenerator(
-    interpretJsonAs = interpretJsonAsGeneratorFromPb(v.interpretJsonAs),
+    interpretJsonAs = interpretJsonAsFromPb(v.interpretJsonAs),
     generator = v.generator match
         case pb.JsonGenerator.Generator.FixedGenerator(gen) => fixedJsonGeneratorFromPb(gen)
         case pb.JsonGenerator.Generator.JsGenerator(gen) => jsJsonGeneratorFromPb(gen)
 )
 
 def jsonGeneratorToPb(v: JsonGenerator): pb.JsonGenerator = pb.JsonGenerator(
-    interpretJsonAs = interpretJsonAsGeneratorToPb(v.interpretJsonAs),
+    interpretJsonAs = interpretJsonAsToPb(v.interpretJsonAs),
     generator = v.generator match
-        case FixedJsonGenerator(json) => pb.JsonGenerator.Generator.FixedGenerator(fixedJsonGeneratorToPb(json))
-        case JsJsonGenerator(jsCode) => pb.JsonGenerator.Generator.JsGenerator(jsJsonGeneratorToPb(jsCode))
+        case v: FixedJsonGenerator => pb.JsonGenerator.Generator.FixedGenerator(fixedJsonGeneratorToPb(v))
+        case v: JsJsonGenerator => pb.JsonGenerator.Generator.JsGenerator(jsJsonGeneratorToPb(v))
 )
 
 def emptyEventTimeGeneratorFromPb(v: pb.EmptyEventTimeGenerator): EmptyEventTimeGenerator = EmptyEventTimeGenerator()
@@ -59,17 +59,23 @@ def eventTimeGeneratorFromPb(v: pb.EventTimeGenerator): EventTimeGenerator = Eve
 
 def eventTimeGeneratorToPb(v: EventTimeGenerator): pb.EventTimeGenerator = pb.EventTimeGenerator(
     generator = v.generator match
-        case EmptyEventTimeGenerator() => pb.EventTimeGenerator.Generator.EmptyGenerator(emptyEventTimeGeneratorToPb())
-        case AutoEventTimeGenerator() => pb.EventTimeGenerator.Generator.AutoGenerator(autoEventTimeGeneratorToPb())
-        case FixedEventTimeGenerator(eventTime) => pb.EventTimeGenerator.Generator.FixedGenerator(fixedEventTimeGeneratorToPb(eventTime))
-        case JsonGenerator(interpretJsonAs, generator) => pb.EventTimeGenerator.Generator.JsonGenerator(jsonGeneratorToPb(JsonGenerator(interpretJsonAs, generator)))
+        case v: EmptyEventTimeGenerator => pb.EventTimeGenerator.Generator.EmptyGenerator(emptyEventTimeGeneratorToPb(v))
+        case v: AutoEventTimeGenerator => pb.EventTimeGenerator.Generator.AutoGenerator(autoEventTimeGeneratorToPb(v))
+        case v: FixedEventTimeGenerator => pb.EventTimeGenerator.Generator.FixedGenerator(fixedEventTimeGeneratorToPb(v))
+        case v: JsonGenerator => pb.EventTimeGenerator.Generator.JsonGenerator(jsonGeneratorToPb(v))
 )
 
 def emptyKeyGeneratorFromPb(v: pb.EmptyKeyGenerator): EmptyKeyGenerator = EmptyKeyGenerator()
 def emptyKeyGeneratorToPb(v: EmptyKeyGenerator): pb.EmptyKeyGenerator = pb.EmptyKeyGenerator()
 
-def randomKeyGeneratorFromPb(v: pb.RandomKeyGenerator): RandomKeyGenerator = RandomKeyGenerator()
-def randomKeyGeneratorToPb(v: RandomKeyGenerator): pb.RandomKeyGenerator = pb.RandomKeyGenerator()
+def randomKeyGeneratorFromPb(v: pb.RandomKeyGenerator): RandomKeyGenerator = RandomKeyGenerator(
+    minChars = v.minChars,
+    maxChars = v.maxChars
+)
+def randomKeyGeneratorToPb(v: RandomKeyGenerator): pb.RandomKeyGenerator = pb.RandomKeyGenerator(
+    minChars = v.minChars,
+    maxChars = v.maxChars
+)
 
 def fixedKeyGeneratorFromPb(v: pb.FixedKeyGenerator): FixedKeyGenerator = FixedKeyGenerator(key = v.key)
 def fixedKeyGeneratorToPb(v: FixedKeyGenerator): pb.FixedKeyGenerator = pb.FixedKeyGenerator(key = v.key)
@@ -85,10 +91,10 @@ def keyGeneratorFromPb(v: pb.KeyGenerator): KeyGenerator = KeyGenerator(
 
 def keyGeneratorToPb(v: KeyGenerator): pb.KeyGenerator = pb.KeyGenerator(
     generator = v.generator match
-        case EmptyKeyGenerator() => pb.KeyGenerator.Generator.EmptyGenerator(emptyKeyGeneratorToPb())
-        case RandomKeyGenerator() => pb.KeyGenerator.Generator.RandomGenerator(randomKeyGeneratorToPb())
-        case FixedKeyGenerator(key) => pb.KeyGenerator.Generator.FixedGenerator(fixedKeyGeneratorToPb(key))
-        case JsonGenerator(interpretJsonAs, generator) => pb.KeyGenerator.Generator.JsonGenerator(jsonGeneratorToPb(JsonGenerator(interpretJsonAs, generator)))
+        case v: EmptyKeyGenerator => pb.KeyGenerator.Generator.EmptyGenerator(emptyKeyGeneratorToPb(v))
+        case v: RandomKeyGenerator => pb.KeyGenerator.Generator.RandomGenerator(randomKeyGeneratorToPb(v))
+        case v: FixedKeyGenerator => pb.KeyGenerator.Generator.FixedGenerator(fixedKeyGeneratorToPb(v))
+        case v: JsonGenerator => pb.KeyGenerator.Generator.JsonGenerator(jsonGeneratorToPb(v))
 )
 
 def emptyValueGeneratorFromPb(v: pb.EmptyValueGenerator): EmptyValueGenerator = EmptyValueGenerator()
@@ -106,16 +112,16 @@ def randomBytesGeneratorToPb(v: RandomBytesGenerator): pb.RandomBytesGenerator =
 def valueGeneratorFromPb(v: pb.ValueGenerator): ValueGenerator = ValueGenerator(
     generator = v.generator match
         case pb.ValueGenerator.Generator.EmptyGenerator(gen) => emptyValueGeneratorFromPb(gen)
-        case pb.ValueGenerator.Generator.RandomGenerator(gen) => randomBytesGeneratorFromPb(gen)
+        case pb.ValueGenerator.Generator.RandomBytesGenerator(gen) => randomBytesGeneratorFromPb(gen)
         case pb.ValueGenerator.Generator.JsonGenerator(gen) => jsonGeneratorFromPb(gen)
         case _ => throw new Exception("Unknown ValueGenerator.Generator value: " + v.generator)
 )
 
 def valueGeneratorToPb(v: ValueGenerator): pb.ValueGenerator = pb.ValueGenerator(
     generator = v.generator match
-        case EmptyValueGenerator() => pb.ValueGenerator.Generator.EmptyGenerator(emptyValueGeneratorToPb())
-        case RandomBytesGenerator(minBytes, maxBytes) => pb.ValueGenerator.Generator.RandomGenerator(randomBytesGeneratorToPb(RandomBytesGenerator(minBytes, maxBytes)))
-        case JsonGenerator(interpretJsonAs, generator) => pb.ValueGenerator.Generator.JsonGenerator(jsonGeneratorToPb(JsonGenerator(interpretJsonAs, generator)))
+        case v: EmptyValueGenerator => pb.ValueGenerator.Generator.EmptyGenerator(emptyValueGeneratorToPb(v))
+        case v: RandomBytesGenerator => pb.ValueGenerator.Generator.RandomBytesGenerator(randomBytesGeneratorToPb(v))
+        case v: JsonGenerator => pb.ValueGenerator.Generator.JsonGenerator(jsonGeneratorToPb(v))
 )
 
 def emptyPropertiesGeneratorFromPb(v: pb.EmptyPropertiesGenerator): EmptyPropertiesGenerator = EmptyPropertiesGenerator()
@@ -129,26 +135,31 @@ def propertiesGeneratorFromPb(v: pb.PropertiesGenerator): PropertiesGenerator = 
 )
 def propertiesGeneratorToPb(v: PropertiesGenerator): pb.PropertiesGenerator = pb.PropertiesGenerator(
     generator = v.generator match
-        case EmptyPropertiesGenerator() => pb.PropertiesGenerator.Generator.EmptyGenerator(emptyPropertiesGeneratorToPb())
-        case JsonGenerator(interpretJsonAs, generator) => pb.PropertiesGenerator.Generator.JsonGenerator(jsonGeneratorToPb(JsonGenerator(interpretJsonAs, generator)))
+        case v: EmptyPropertiesGenerator => pb.PropertiesGenerator.Generator.EmptyGenerator(emptyPropertiesGeneratorToPb(v))
+        case v: JsonGenerator => pb.PropertiesGenerator.Generator.JsonGenerator(jsonGeneratorToPb(v))
 )
 
 def messageGeneratorFromPb(v: pb.MessageGenerator): MessageGenerator = MessageGenerator(
-    keyGenerator = keyGeneratorFromPb(v.keyGenerator),
-    valueGenerator = valueGeneratorFromPb(v.valueGenerator),
-    propertiesGenerator = propertiesGeneratorFromPb(v.propertiesGenerator),
-    eventTimeGenerator = eventTimeGeneratorFromPb(v.eventTimeGenerator)
+    keyGenerator = v.keyGenerator.map(keyGeneratorFromPb).getOrElse(KeyGenerator(generator = EmptyKeyGenerator())),
+    valueGenerator = v.valueGenerator.map(valueGeneratorFromPb).getOrElse(ValueGenerator(generator = EmptyValueGenerator())),
+    propertiesGenerator = v.propertiesGenerator.map(propertiesGeneratorFromPb).getOrElse(PropertiesGenerator(generator = EmptyPropertiesGenerator())),
+    eventTimeGenerator = v.eventTimeGenerator.map(eventTimeGeneratorFromPb).getOrElse(EventTimeGenerator(generator = EmptyEventTimeGenerator()))
 )
-def messageGeneratorToPb(v: MessageGenerator): MessageGenerator = MessageGenerator(
-    keyGenerator = keyGeneratorToPb(v.keyGenerator),
-    valueGenerator = valueGeneratorToPb(v.valueGenerator),
-    propertiesGenerator = propertiesGeneratorToPb(v.propertiesGenerator),
-    eventTimeGenerator = eventTimeGeneratorToPb(v.eventTimeGenerator)
+def messageGeneratorToPb(v: MessageGenerator): pb.MessageGenerator = pb.MessageGenerator(
+    keyGenerator = Some(keyGeneratorToPb(v.keyGenerator)),
+    valueGenerator = Some(valueGeneratorToPb(v.valueGenerator)),
+    propertiesGenerator = Some(propertiesGeneratorToPb(v.propertiesGenerator)),
+    eventTimeGenerator = Some(eventTimeGeneratorToPb(v.eventTimeGenerator))
 )
 
 def produceMessagesTaskFromPb(v: pb.ProduceMessagesTask): ProduceMessagesTask = ProduceMessagesTask(
     targetTopic = v.targetTopic,
-    generator = messageGeneratorFromPb(v.messageGenerator),
+    generator = v.generator.map(messageGeneratorFromPb).getOrElse(MessageGenerator(
+        keyGenerator = KeyGenerator(generator = EmptyKeyGenerator()),
+        valueGenerator = ValueGenerator(generator = EmptyValueGenerator()),
+        propertiesGenerator = PropertiesGenerator(generator = EmptyPropertiesGenerator()),
+        eventTimeGenerator = EventTimeGenerator(generator = EmptyEventTimeGenerator())
+    )),
     generatorRunsCount = v.generatorRunsCount,
     generatorRunsIntervalMs = v.generatorRunsIntervalMs
 )

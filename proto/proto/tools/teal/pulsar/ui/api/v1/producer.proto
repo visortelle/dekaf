@@ -55,7 +55,7 @@ message KeyGenerator {
   oneof generator {
     EmptyKeyGenerator empty_generator = 10;
     RandomKeyGenerator random_generator = 11;
-    RandomKeyGenerator fixed_generator = 12;
+    FixedKeyGenerator fixed_generator = 12;
     JsonGenerator json_generator = 13;
   }
 }
@@ -90,11 +90,82 @@ message MessageGenerator {
   EventTimeGenerator event_time_generator = 4;
 }
 
+message LocalScheduleRecurs {
+  int64 n = 1;
+}
+
+message LocalScheduleSpaced {
+  int64 duration_nanos = 2;
+}
+
+message LocalScheduleFixed {
+  int64 duration_nanos = 2;
+}
+
+message LocalScheduleExponential {
+  int64 base_duration_nanos = 1;
+  int64 factor = 2;
+}
+
+message LocalScheduleFibonacci {
+  int64 base_duration_nanos = 1;
+}
+
+enum LocalScheduleCombinator {
+  LOCAL_SCHEDULE_COMBINATOR_UNSPECIFIED = 0;
+  LOCAL_SCHEDULE_COMBINATOR_UNION = 1;
+  LOCAL_SCHEDULE_COMBINATOR_INTERSECTION = 2;
+  LOCAL_SCHEDULE_COMBINATOR_SEQUENCING = 3;
+}
+
+message LocalScheduleJittering {
+  int32 min = 1; // 0.0
+  int32 max = 2; // 1.0
+}
+
+enum CompressionType {
+  COMPRESSION_TYPE_UNSPECIFIED = 0;
+  COMPRESSION_TYPE_NONE = 1;
+  COMPRESSION_TYPE_LZ4 = 2;
+  COMPRESSION_TYPE_ZLIB = 3;
+  COMPRESSION_TYPE_ZSTD = 4;
+  COMPRESSION_TYPE_SNAPPY = 5;
+}
+
+enum HashingScheme {
+  HASHING_SCHEME_UNSPECIFIED = 0;
+  HASHING_SCHEME_JAVA_STRING_HASH = 1;
+  HASHING_SCHEME_MURMUR3_32_HASH = 2;
+}
+
+message LocalSchedule {
+  oneof schedule {
+    LocalScheduleRecurs schedule_recurs = 1;
+    LocalScheduleSpaced schedule_spaced = 2;
+    LocalScheduleFixed schedule_fixed = 3;
+    LocalScheduleExponential schedule_exponential = 4;
+    LocalScheduleFibonacci schedule_fibonacci = 5;
+    LocalSchedule schedule_schedule = 6;
+  }
+  LocalScheduleCombinator combinator = 7;
+  LocalScheduleJittering jittering = 8;
+}
+
 message ProduceMessagesTask {
   string target_topic = 1;
   MessageGenerator generator = 2;
-  int64 generator_runs_count = 3;
-  int64 generator_runs_interval_ms = 4;
+  LocalSchedule schedule = 3;
+  int64 batch_time_window = 9;
+  int64 batch_max_messages = 10;
+  int64 batch_max_bytes = 11;
+  int64 batch_max_publish_delay = 12;
+  bool is_chunking_enabled = 13;
+  CompressionType compression_type = 14;
+  HashingScheme hashing_scheme = 15;
+  map<string, string> producer_extra_properties = 16;
+  int64 send_timeout_nanos = 17;
+  int64 warmup_duration_nanos = 18;
+  int64 warmup_messages = 19;
 }
 
 message ProducerStats {
@@ -112,12 +183,12 @@ message ProducerStats {
 }
 
 message ProducerSession {
-  string task_id = 1;
+  string session_id = 1;
   ProduceMessagesTask task = 2;
 }
 
 message CreateProducerSessionRequest {
-  string task_id = 1;
+  string session_id = 1;
   ProducerSession session = 2;
 }
 
@@ -126,7 +197,7 @@ message CreateProducerSessionResponse {
 }
 
 message DeleteProducerSessionRequest {
-  string task_id = 1;
+  string session_id = 1;
 }
 
 message DeleteProducerSessionResponse {
@@ -138,7 +209,7 @@ message ProducerSessionStats {
 }
 
 message GetProducerSessionStatsRequest {
-  string task_id = 1;
+  string session_id = 1;
 }
 
 message GetProducerSessionStatsResponse {
@@ -147,7 +218,7 @@ message GetProducerSessionStatsResponse {
 }
 
 message PauseProducerSessionRequest {
-  string task_id = 1;
+  string session_id = 1;
 }
 
 message PauseProducerSessionResponse {
