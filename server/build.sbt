@@ -73,12 +73,14 @@ lazy val root = project
 
             // ZIO
             "dev.zio" %% "zio" % zioVersion,
+            "dev.zio" %% "zio-concurrent" % zioVersion,
             "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
             "dev.zio" %% "zio-config" % zioConfigVersion,
             "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
             "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
             "dev.zio" %% "zio-config-yaml" % zioConfigVersion,
             "dev.zio" %% "zio-process" % "0.7.2",
+            "dev.zio" %% "zio-cache" % "0.2.3",
             "com.softwaremill.sttp.client4" %% "zio" % "4.0.0-M2",
             "com.softwaremill.sttp.client4" %% "circe" % "4.0.0-M2",
 

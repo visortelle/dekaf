@@ -171,12 +171,12 @@ def produceMessagesTaskToPb(v: ProduceMessagesTask): pb.ProduceMessagesTask = pb
     generatorRunsIntervalMs = v.generatorRunsIntervalMs
 )
 
-def producerSessionFromPb(v: pb.ProducerSession): ProducerSession = ProducerSession(
-    sessionId: v.sessionId,
-    tasks = v.tasks.map(produceMessagesTaskFromPb)
-)
-
-def producerSessionToPb(v: ProducerSession): pb.ProducerSession = pb.ProducerSession(
-    sessionId: v.sessionId,
-    tasks = v.tasks.map(produceMessagesTaskToPb)
-)
+//def producerSessionFromPb(v: pb.ProducerSession): ProducerSession = ProducerSession(
+//    sessionId: v.sessionId,
+//    tasks = v.tasks.map(produceMessagesTaskFromPb)
+//)
+//
+//def producerSessionToPb(v: ProducerSession): pb.ProducerSession = pb.ProducerSession(
+//    sessionId: v.sessionId,
+//    tasks = v.tasks.map(produceMessagesTaskToPb)
+//)

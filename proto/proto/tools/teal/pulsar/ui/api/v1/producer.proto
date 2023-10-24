@@ -123,6 +123,22 @@ message LocalScheduleJittering {
   int32 max = 2; // 1.0
 }
 
+message LocalScheduleEntry {
+  oneof schedule {
+    LocalScheduleRecurs schedule_recurs = 1;
+    LocalScheduleSpaced schedule_spaced = 2;
+    LocalScheduleFixed schedule_fixed = 3;
+    LocalScheduleExponential schedule_exponential = 4;
+    LocalScheduleFibonacci schedule_fibonacci = 5;
+  }
+  LocalScheduleCombinator combinator = 10;
+  LocalScheduleJittering jittering = 11;
+}
+
+message LocalSchedule {
+  repeated LocalScheduleEntry entries = 1;
+}
+
 enum CompressionType {
   COMPRESSION_TYPE_UNSPECIFIED = 0;
   COMPRESSION_TYPE_NONE = 1;
@@ -135,20 +151,7 @@ enum CompressionType {
 enum HashingScheme {
   HASHING_SCHEME_UNSPECIFIED = 0;
   HASHING_SCHEME_JAVA_STRING_HASH = 1;
-  HASHING_SCHEME_MURMUR3_32_HASH = 2;
-}
-
-message LocalSchedule {
-  oneof schedule {
-    LocalScheduleRecurs schedule_recurs = 1;
-    LocalScheduleSpaced schedule_spaced = 2;
-    LocalScheduleFixed schedule_fixed = 3;
-    LocalScheduleExponential schedule_exponential = 4;
-    LocalScheduleFibonacci schedule_fibonacci = 5;
-    LocalSchedule schedule_schedule = 6;
-  }
-  LocalScheduleCombinator combinator = 7;
-  LocalScheduleJittering jittering = 8;
+  HASHING_SCHEME_MURMUR3_HASH_32 = 2;
 }
 
 message ProduceMessagesTask {
@@ -158,7 +161,7 @@ message ProduceMessagesTask {
   int64 batch_time_window = 9;
   int64 batch_max_messages = 10;
   int64 batch_max_bytes = 11;
-  int64 batch_max_publish_delay = 12;
+  int64 batch_max_publish_delay_nanos = 12;
   bool is_chunking_enabled = 13;
   CompressionType compression_type = 14;
   HashingScheme hashing_scheme = 15;

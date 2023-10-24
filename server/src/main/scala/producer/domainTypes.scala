@@ -49,11 +49,29 @@ case class MessageGenerator(
     eventTimeGenerator: EventTimeGenerator
 )
 
+enum CompressionType:
+    case None, LZ4, ZLib, ZStd, Snappy
+
+enum HashingScheme:
+    case JavaStringHash, Murmur3Hash32
+
 case class ProduceMessagesTask(
     targetTopic: String,
     generator: MessageGenerator,
-    generatorRunsCount: Long,
-    generatorRunsIntervalMs: Long
+    schedule: LocalSchedule,
+
+    batchTimeWindow: Long,
+    batchMaxMessages: Long,
+    batchMaxBytes: Long,
+    batchMaxPublishDelayNanos: Long,
+
+    isChunkingEnabled: Boolean,
+    compressionType: CompressionType,
+    producerExtraProperties: Map[String, String],
+    sendTimeoutNanos: Long,
+
+    warmupDurationNanos: Long,
+    warmupMessages: Long,
 )
 
 case class ProducerSession(
