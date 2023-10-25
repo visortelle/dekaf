@@ -55,10 +55,9 @@
   width: 420rem;
 }
 
-.JsonViewer {
-  display: flex;
-  flex-direction: column;
-  width: 30vw;
+.Properties {
+  width: 480rem;
+  margin-bottom: 24rem;
 }
 
 .HighlightedCell {

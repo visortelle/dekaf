@@ -21,8 +21,8 @@ import ClearBacklogBundle from "./ClearBacklogBundle/ClearBacklogBundle";
 import UnloadBundle from "./UnloadBundle/UnloadBundle";
 import UnloadAll from "./UnloadAll/UnloadAll";
 import ClearBacklog from "./ClearBacklog/ClearBacklog";
-import JsonView from "../../ui/JsonView/JsonView";
 import SmallButton from '../../ui/SmallButton/SmallButton';
+import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
 
 export type BundleKey = string
 
@@ -195,15 +195,14 @@ const Overview: React.FC<OverviewProps> = (props) => {
         </table>
       </div>
 
-      <div style={{ marginBottom: '24rem' }}>
+      <div className={s.Properties}>
         <strong>Properties</strong>
-        <div className={s.JsonViewer}>
-          <JsonView
-            value={topicCounts?.properties}
-            height={'130rem'}
-            width={'100%'}
-          />
-        </div>
+        <KeyValueEditor
+          value={recordToIndexedKv(topicCounts?.properties || {})}
+          onChange={() => { }}
+          height='240rem'
+          mode='readonly'
+        />
       </div>
 
       <div className={s.Section}>

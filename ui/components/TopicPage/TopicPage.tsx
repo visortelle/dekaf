@@ -147,7 +147,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       onClick: () =>
         modals.push({
           id: "delete-topic",
-          title: `Delete topic`,
+          title: `Delete Topic`,
           content: (
             <DeleteDialog
               tenant={props.tenant}

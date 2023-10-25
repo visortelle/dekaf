@@ -43,6 +43,7 @@ const Input: React.FC<InputProps> = ({ value, placeholder, isError, isSmall, ico
             inputRef?.current?.blur();
           }
         }}
+        disabled={inputProps?.disabled}
         {...inputProps}
         data-testid={testId}
       />

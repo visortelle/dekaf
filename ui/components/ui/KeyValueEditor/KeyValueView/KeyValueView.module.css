@@ -1,52 +1,17 @@
-.List {
+.KeyValueView {
   display: flex;
   flex-direction: column;
 }
 
-.Row {
-  display: flex;
-  width: 100%;
-  font-size: 14rem;
-  margin-bottom: 8rem;
-  z-index: 100;
+.InputCell {
+  padding: 2rem 0;
 }
 
-.Row:last-child {
-  margin-bottom: 0;
+.ButtonCell {
+  padding: 2rem 4rem;
 }
 
-.Rows {
-  overflow-y: auto;
-}
-
-.Header {
-  top: 0;
-  background-color: #fff;
-  z-index: 101;
-  padding-bottom: 5rem;
-}
-
-.ColumnName {
-  width: calc(50% - 38rem);
-  margin-right: 8rem;
-  font-weight: var(--font-weight-bold);
-}
-
-.Field {
-  width: calc(50% - 43rem);
-  max-width: calc(50% - 43rem);
-  margin-right: 8rem;
-}
-
-.Button {
-  padding-left: 0;
-  padding-right: 0;
-  width: 100%;
-}
-
-.ButtonBlock {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60rem;
+.ErrorField input {
+  border-color: var(--accent-color-red) !important;
+  box-shadow: 1rem 1rem 1rem 1rem #00000045, 0 0 0 1rem var(--accent-color-red) !important;
 }

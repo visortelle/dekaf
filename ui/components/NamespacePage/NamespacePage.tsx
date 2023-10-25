@@ -95,19 +95,19 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
             type: 'regular',
             active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.permissions._.path, pathname))
           },
-          {
-            linkTo: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Subscription Permissions',
-            onClick: () => { },
-            type: 'regular',
-            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, pathname))
-          },
+          // {
+          //   linkTo: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.get({ tenant: props.tenant, namespace: props.namespace }),
+          //   text: 'Subscription Permissions',
+          //   onClick: () => { },
+          //   type: 'regular',
+          //   active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, pathname))
+          // },
           {
             text: 'Delete',
             type: 'danger',
             onClick: () => modals.push({
               id: 'delete-namepsace',
-              title: `Delete namespace`,
+              title: `Delete Namespace`,
               content: <DeleteDialog tenant={props.tenant} namespace={props.namespace} navigate={navigate} />,
               styleMode: 'no-content-padding'
             }),
