@@ -82,22 +82,22 @@ object AvroNamespace:
                         ),
                     mkSchemaInfos = _ => List(avroDemoRecordSchema.getSchemaInfo)
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"records-100-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ =>
-                                _ =>
-                                    Encoders.toAvro(
-                                        avroDemoRecordSchema.getSchemaInfo.getSchema,
-                                        AvroDemoRecord.random()
-                                    ),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
-                        ),
-                    mkSchemaInfos = _ => List(avroDemoRecordSchema.getSchemaInfo)
-                )
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"records-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ =>
+//                                _ =>
+//                                    Encoders.toAvro(
+//                                        avroDemoRecordSchema.getSchemaInfo.getSchema,
+//                                        AvroDemoRecord.random()
+//                                    ),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = _ => List(avroDemoRecordSchema.getSchemaInfo)
+//                )
             )
 
         NamespacePlanGenerator.make(
