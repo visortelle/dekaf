@@ -40,7 +40,7 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'subscription-permissions', value: 'Subscription Permissions' }]
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.createTopic._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'create-topic', value: 'New Topic' }]
+    extraCrumbs = [{ type: 'link', id: 'create-topic', value: 'Create Topic' }]
   }
 
   return (
@@ -68,34 +68,39 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
       <Toolbar
         buttons={[
           {
-            linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'Topics',
-            onClick: () => { },
-            type: 'regular'
-          },
-          {
             linkTo: routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Overview',
             onClick: () => { },
-            type: 'regular'
+            type: 'regular',
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.overview._.path, pathname))
+          },
+          {
+            linkTo: routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }),
+            text: 'Topics',
+            onClick: () => { },
+            type: 'regular',
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics._.path, pathname))
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.policies._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Policies',
             onClick: () => { },
-            type: 'regular'
+            type: 'regular',
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.policies._.path, pathname))
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.permissions._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Permissions',
             onClick: () => { },
-            type: 'regular'
+            type: 'regular',
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.permissions._.path, pathname))
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.get({ tenant: props.tenant, namespace: props.namespace }),
             text: 'Subscription Permissions',
             onClick: () => { },
-            type: 'regular'
+            type: 'regular',
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.subscriptionPermissions._.path, pathname))
           },
           {
             text: 'Delete',
@@ -110,10 +115,11 @@ const NamespacePage: React.FC<NamespacePageProps> = (props) => {
           },
           {
             linkTo: routes.tenants.tenant.namespaces.namespace.createTopic._.get({ tenant: props.tenant, namespace: props.namespace }),
-            text: 'New topic',
+            text: 'Create Topic',
             onClick: () => { },
             type: 'primary',
-            position: 'right'
+            position: 'right',
+            active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.createTopic._.path, pathname))
           }
         ]}
       />

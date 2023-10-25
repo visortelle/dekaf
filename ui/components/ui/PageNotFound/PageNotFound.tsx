@@ -5,6 +5,7 @@ import s from "./PageNotFound.module.css";
 import Link from "../Link/Link";
 import SvgIcon from "../SvgIcon/SvgIcon";
 import arrowBackIcon from "./icons/arrow-back.svg"
+import { H1 } from "../H/H";
 
 type PageNotFoundProps = {
 
@@ -14,7 +15,7 @@ const PageNotFound: React.FC<PageNotFoundProps> = (props) => {
   const pageNotFoundCrumb = {
     id: 'page-not-found',
     type: 'page-not-found' as CrumbType,
-    value: 'Page not found',
+    value: '',
   }
 
   return (
@@ -22,11 +23,9 @@ const PageNotFound: React.FC<PageNotFoundProps> = (props) => {
       <BreadCrumbsAtPageTop crumbs={[pageNotFoundCrumb]}/>
       <div className={s.PageContent}>
         <div className={s.PageNotFoundTitle}>
-          Page not found
+          <H1>404 Not found</H1>
         </div>
-        <div className={s.PageNotFoundDescription}>
-          <span>We're sorry, the page you requested could not be found.<br />It may be either under development, or does not exist.<br />If you have some questions, please contact us.</span>
-        </div>
+        <p>The page you requested isn't found.</p>
         <div className={s.BackToHomeWrapper}>
           <SvgIcon svg={arrowBackIcon} />
           <Link className={s.BackToHome} to={routes.instance.tenants._.path}>
