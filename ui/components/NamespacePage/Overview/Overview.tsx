@@ -23,6 +23,8 @@ import UnloadAll from "./UnloadAll/UnloadAll";
 import ClearBacklog from "./ClearBacklog/ClearBacklog";
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
+import FormLabel from '../../ui/ConfigurationTable/FormLabel/FormLabel';
+import FormItem from '../../ui/ConfigurationTable/FormItem/FormItem';
 
 export type BundleKey = string
 
@@ -196,13 +198,20 @@ const Overview: React.FC<OverviewProps> = (props) => {
       </div>
 
       <div className={s.Properties}>
-        <strong>Properties</strong>
-        <KeyValueEditor
-          value={recordToIndexedKv(topicCounts?.properties || {})}
-          onChange={() => { }}
-          height='240rem'
-          mode='readonly'
-        />
+        <FormItem>
+          <FormLabel
+            content="Properties"
+            help={(
+              <div>Custom metadata associated with a namespace. <br /> They serve as annotations or labels that provide additional information about the namespace, such as its environment, owner, or any other metadata. <br /> They are useful for organization, tracking, and potential automation tasks.</div>
+            )}
+          />
+          <KeyValueEditor
+            value={recordToIndexedKv(topicCounts?.properties || {})}
+            onChange={() => { }}
+            height='240rem'
+            mode='readonly'
+          />
+        </FormItem>
       </div>
 
       <div className={s.Section}>

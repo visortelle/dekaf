@@ -5,6 +5,7 @@ import JsonView from '../JsonView/JsonView';
 import SmallButton from '../SmallButton/SmallButton';
 
 import s from './KeyValueEditor.module.css';
+import NothingToShow from '../NothingToShow/NothingToShow';
 
 export type IndexedKv = { key: string, value: string }[];
 
@@ -34,6 +35,10 @@ const KeyValueEditor = (props: Props) => {
 
   const changeValidity = (validity: boolean) => {
     setIsValid(validity);
+  }
+
+  if (props.mode === 'readonly' && props.value.length === 0) {
+    return <NothingToShow />
   }
 
   return (

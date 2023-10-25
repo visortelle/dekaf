@@ -16,7 +16,7 @@ import { routes } from '../../routes';
 
 import s from './CreateTopic.module.css'
 import {help} from "../Topics/help";
-import KeyValueEditor from "../../ui/KeyValueEditor/KeyValueEditor";
+import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from "../../ui/KeyValueEditor/KeyValueEditor";
 
 export type CreateTopicProps = {
   tenant: string;
@@ -64,8 +64,8 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
 
   const propertiesEditorInput = (
     <KeyValueEditor
-      value={properties}
-      onChange={setProperties}
+      value={recordToIndexedKv(properties)}
+      onChange={v => setProperties(recordFromIndexedKv(v))}
       height="300rem"
       testId="properties"
     />
