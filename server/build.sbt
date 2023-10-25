@@ -113,6 +113,7 @@ lazy val root = project
 libraryDependencies ++= Seq(
     "com.google.protobuf" % "protobuf-java" % "3.23.4",
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+    "com.thesamet.scalapb" %% "scalapb-json4s" % "0.12.0",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
