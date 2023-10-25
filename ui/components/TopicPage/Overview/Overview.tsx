@@ -15,6 +15,8 @@ import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
 import JsonView from "../../ui/JsonView/JsonView";
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
+import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
+import { mapToObject } from '../../../proto-utils/proto-utils';
 
 export type OverviewProps = {
   tenant: string;
@@ -109,8 +111,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
   const partitionsCount = partitionedTopicMetadata?.getPartitions()?.getValue();
   let properties = propertiesResponse &&
     propertiesResponse.getTopicPropertiesMap().get(topicFqn) &&
-    propertiesResponse.getTopicPropertiesMap().get(topicFqn)?.getPropertiesMap() ||
-    new Map<string, string>
+    propertiesResponse.getTopicPropertiesMap().get(topicFqn)?.getPropertiesMap();
 
   return (
     <div className={s.Overview}>
@@ -154,10 +155,11 @@ const Overview: React.FC<OverviewProps> = (props) => {
       <div style={{ marginBottom: '24rem' }}>
         <strong>Properties</strong>
         <div className={s.JsonViewer}>
-          <JsonView
-            value={Object.fromEntries(properties.entries())}
-            height={'110rem'}
-            width={'100%'}
+          <KeyValueEditor
+            value={recordToIndexedKv(mapToObject(properties))}
+            mode='readonly'
+            onChange={() => { }}
+            height='240rem'
           />
         </div>
       </div>
