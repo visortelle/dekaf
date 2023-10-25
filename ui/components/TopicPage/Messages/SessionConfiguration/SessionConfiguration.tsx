@@ -11,6 +11,7 @@ import { useHover } from '../../../app/hooks/use-hover';
 import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
+import StartFromInput from "./StartFromInput/StartFromInput";
 
 export type SessionConfigurationProps = {
   value: UserManagedConsumerSessionConfigValueOrReference;

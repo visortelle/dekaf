@@ -78,9 +78,13 @@ export type JsMessageFilter = {
   jsCode: string;
 };
 
-export type BasicMessageFilter = {
-
+export type BasicMessageFilterValue = {
+  target: 'key' | 'value' | 'properties' | 'accum';
+  value?: string;
+  isCaseSensitive?: boolean;
 };
+
+export type BasicMessageFilterValueTarget = BasicMessageFilterValue['target'];
 
 export type MessageFilter = {
   isEnabled: boolean;
@@ -88,10 +92,41 @@ export type MessageFilter = {
 } & ({
   type: "js-message-filter";
   value: JsMessageFilter;
-} | {
-  type: "basic-message-filter";
-  value: BasicMessageFilter;
-});
+} |
+  ({
+    type: "basic-message-filter-contains";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-end-with";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-equals";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-greater-than";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-greater-than-or-equals";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-is-null";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-is-truthy";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-less-than";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-less-than-or-equals";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-regex";
+    value: BasicMessageFilterValue;
+  } | {
+    type: "basic-message-filter-starts-with";
+    value: BasicMessageFilterValue;
+  }));
 
 export type MessageFilterChainMode = 'all' | 'any';
 

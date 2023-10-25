@@ -28,30 +28,57 @@ case class BasicMessageFilterOperationIsTruthy(
 
         def getKeyEvalCode: JsCode =
             val resultEvalCode =
-                s"""isTruthy(message.key?.toLowerCase())"""
+                s"""isTruthy(message.key?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |    ${setupIsTruthyFunction}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
         def getDefaultValueEvalCode: JsCode =
             val resultEvalCode =
-                s"""isTruthy(message.value?.toLowerCase())"""
+                s"""isTruthy(message.value?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |    ${setupIsTruthyFunction}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
+        def getAccumEvalCode: JsCode =
+            val resultEvalCode =
+                s"""isTruthy(message.accum?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
+
+            s"""
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |    ${setupIsTruthyFunction}
+               |
+               |    return ${resultEvalCode} ?? false;
+               | })()
+               |""".stripMargin
+
+        def getJsonValueEvalCode: JsCode =
+            val resultEvalCode =
+                s"""isTruthy(fieldValue?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
+
+            s"""
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |    ${MessageFilterContext.setupFieldValueCode(filter.selector)}
+               |    ${setupIsTruthyFunction}
+               |
+               |    return ${resultEvalCode} ?? false;
+               | })()
+               |""".stripMargin
+            
         def getPropertiesEvalCode: JsCode =
             filter.selector match
                 case Some(BasicMessageFilterSelector.PropertiesSelector(propertiesNames, mode)) =>
@@ -59,18 +86,18 @@ case class BasicMessageFilterOperationIsTruthy(
 
                     val propertiesEvalCode = propertiesNames.map { propertyName =>
                         val resultEvalCode =
-                            s"""isTruthy(message.properties?.${propertyName}?.toLowerCase())"""
+                            s"""isTruthy(message.properties?["${propertyName}"]?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
 
                         s"(${resultEvalCode} ?? false)"
 
                     }.mkString(s" ${modeOperator} ")
 
                     s"""
-                       | () => {
+                       | (() => {
                        |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                        |
                        |    return ${propertiesEvalCode};
-                       | }
+                       | })()
                        |""".stripMargin
                 case _ => BasicMessageFilterOperation.getSucceededEvalCode
 
@@ -79,8 +106,12 @@ case class BasicMessageFilterOperationIsTruthy(
             case BasicMessageFilterTarget.Key => getKeyEvalCode
             case BasicMessageFilterTarget.Value =>
                 schemaType match
+                    case SchemaType.JSON => getJsonValueEvalCode
+                    case SchemaType.AVRO => getJsonValueEvalCode
+                    case SchemaType.PROTOBUF_NATIVE => getJsonValueEvalCode
                     case _ => getDefaultValueEvalCode
             case BasicMessageFilterTarget.Properties => getPropertiesEvalCode
+            case BasicMessageFilterTarget.Accum => getAccumEvalCode
 
 object BasicMessageFilterOperationIsTruthy:
     def apply(targetString: String): BasicMessageFilterOperationIsTruthy =

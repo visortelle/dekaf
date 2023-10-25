@@ -8,6 +8,7 @@ enum BasicMessageFilterTarget:
     case Key
     case Value
     case Properties
+    case Accum
 
 object BasicMessageFilterTarget:
     given Decoder[BasicMessageFilterTarget] = deriveDecoder[BasicMessageFilterTarget]

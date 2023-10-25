@@ -9,8 +9,7 @@ import org.apache.pulsar.common.schema.SchemaType
 
 case class BasicMessageFilterOperationLessThan(
     private val operationType: BasicMessageFilterOperationType = BasicMessageFilterOperationType.LessThan,
-    lessThanValue: String,
-    isCaseSensitive: Boolean
+    lessThanValue: String
 ) extends BasicMessageFilterOperation(operationType):
     override def getEvalCode(
         filter: BasicMessageFilter,
@@ -18,56 +17,93 @@ case class BasicMessageFilterOperationLessThan(
         jsonValue: MessageValueToJsonResult,
         schemaType: SchemaType
     ): JsCode =
+        def setupCompareValuesFunctionCode: JsCode =
+            s"""
+               | const compareValues = (value, valueToCompare) => {
+               |  try {
+               |    const parsedValue = JSON.parse(value);
+               |    if (typeof parsedValue === 'number' || typeof parsedValue === 'boolean' || typeof parsedValue === 'bigint') {
+               |      return parsedValue < valueToCompare;
+               |    }
+               |  } catch (e) {
+               |
+               |  }
+               |  return true;
+               | }
+               |""".stripMargin
+
         def getKeyEvalCode: JsCode =
-            val resultEvalCode = if isCaseSensitive then
-                s""""${lessThanValue}" < message.key"""
-            else
-                s""""${lessThanValue.toLowerCase()}" < message.key?.toLowerCase()"""
+            val resultEvalCode =
+                s"""
+                   | ${setupCompareValuesFunctionCode}
+                   |
+                   | return compareValues(decodeURIComponent("${lessThanValue}"), message.key?.replaceAll('\"', '\\\\' + '\"')) ?? false;
+                   |""".stripMargin
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
-               |    return ${resultEvalCode} ?? false;
-               | }
+               |    ${resultEvalCode}
+               | })()
                |""".stripMargin
 
         def getDefaultValueEvalCode: JsCode =
-            val resultEvalCode = if isCaseSensitive then
-                s""""${lessThanValue}" < message.value"""
-            else
-                s""""${lessThanValue.toLowerCase()}" < message.value?.toLowerCase()"""
+            val resultEvalCode =
+                s"""
+                   | ${setupCompareValuesFunctionCode}
+                   |
+                   | return compareValues(decodeURIComponent("${lessThanValue}"), message.value?.replaceAll('\"', '\\\\' + '\"')) ?? false;
+                   |""".stripMargin
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
-               |    return ${resultEvalCode} ?? false;
-               | }
+               |    ${resultEvalCode}
+               | })()
                |""".stripMargin
-
-        def getJsonValueEvalCode: JsCode =
-            val resultEvalCode = if isCaseSensitive then
-                s""""${lessThanValue}" < fieldValue"""
-            else
-                s""""${lessThanValue.toLowerCase()}" < fieldValue?.toLowerCase()""""
+            
+        def getAccumEvalCode: JsCode =
+            val resultEvalCode =
+                s"""
+                   | ${setupCompareValuesFunctionCode}
+                   |
+                   | return compareValues(decodeURIComponent("${lessThanValue}"), message.accum?.replaceAll('\"', '\\\\' + '\"')) ?? false;
+                   |""".stripMargin
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
-               |    ${MessageFilterContext.setupFieldValueCode(filter.selector)}
                |
-               |    return ${resultEvalCode} ?? false;
-               | }
+               |    ${resultEvalCode}
+               | })()
                |""".stripMargin
 
         def getNumericalStringValueEvalCode: JsCode =
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
-               |    return numericalStringLessThan("${lessThanValue}", message.value) ?? false;
-               | }
+               |    return numericalStringGreaterThan("${lessThanValue}", message.value?.replaceAll('\"', '\\\\' + '\"')) ?? false;
+               | })()
+               |""".stripMargin
+
+        def getJsonValueEvalCode: JsCode =
+            val resultEvalCode =
+                s"""
+                   | ${setupCompareValuesFunctionCode}
+                   |
+                   | return compareValues(decodeURIComponent("${lessThanValue}"), fieldValue?.replaceAll('\"', '\\\\' + '\"')) ?? false;
+                   |""".stripMargin
+
+            s"""
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |    ${MessageFilterContext.setupFieldValueCode(filter.selector)}
+               |
+               |    ${resultEvalCode}
+               | })()
                |""".stripMargin
 
         def getPropertiesEvalCode: JsCode =
@@ -76,21 +112,20 @@ case class BasicMessageFilterOperationLessThan(
                     val modeOperator: String = PropertiesSelectorMode.getModeStringOperator(mode)
 
                     val propertiesEvalCode = propertiesNames.map { propertyName =>
-                        val resultEvalCode = if isCaseSensitive then
-                            s""""${lessThanValue}" < message.properties?.${propertyName}"""
-                        else
-                            s""""${lessThanValue.toLowerCase()}" < message.properties?.${propertyName}?.toLowerCase()""""
+                        val resultEvalCode = s"""compareValues(decodeURIComponent("${lessThanValue}"), message.properties?["${propertyName}"]?.replaceAll('\"', '\\\\' + '\"'))"""
 
-                        s"(${resultEvalCode} ?? false)"
+                        s"""
+                           |(${resultEvalCode} ?? false)
+                           |""".stripMargin
 
                     }.mkString(s" ${modeOperator} ")
 
                     s"""
-                       | () => {
+                       | (() => {
                        |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                        |
                        |    return ${propertiesEvalCode};
-                       | }
+                       | })()
                        |""".stripMargin
                 case _ => BasicMessageFilterOperation.getSucceededEvalCode
 
@@ -100,25 +135,28 @@ case class BasicMessageFilterOperationLessThan(
             case BasicMessageFilterTarget.Value =>
                 schemaType match
                     case SchemaType.JSON => getJsonValueEvalCode
+                    case SchemaType.AVRO => getJsonValueEvalCode
+                    case SchemaType.PROTOBUF_NATIVE => getJsonValueEvalCode
+                    case SchemaType.BOOLEAN => getDefaultValueEvalCode
                     case SchemaType.INT8 => getNumericalStringValueEvalCode
                     case SchemaType.INT16 => getNumericalStringValueEvalCode
                     case SchemaType.INT32 => getNumericalStringValueEvalCode
                     case SchemaType.INT64 => getNumericalStringValueEvalCode
                     case SchemaType.FLOAT => getNumericalStringValueEvalCode
                     case SchemaType.DOUBLE => getNumericalStringValueEvalCode
-                    case _ => getDefaultValueEvalCode
+                    case _ => BasicMessageFilterOperation.getSucceededEvalCode
             case BasicMessageFilterTarget.Properties => getPropertiesEvalCode
+            case BasicMessageFilterTarget.Accum => getAccumEvalCode
 
 object BasicMessageFilterOperationLessThan:
-    def apply(lessThanValue: String, isCaseSensitive: Boolean): BasicMessageFilterOperationLessThan =
+    def apply(lessThanValue: String): BasicMessageFilterOperationLessThan =
         BasicMessageFilterOperationLessThan(
             BasicMessageFilterOperationType.LessThan,
-            lessThanValue,
-            isCaseSensitive
+            lessThanValue
         )
 
-    def unapply(op: BasicMessageFilterOperationLessThan): Option[(String, Boolean)] =
-        Some((op.lessThanValue, op.isCaseSensitive))
+    def unapply(op: BasicMessageFilterOperationLessThan): Option[String] =
+        Some(op.lessThanValue)
 
     given Decoder[BasicMessageFilterOperationLessThan] = deriveDecoder[BasicMessageFilterOperationLessThan]
     given Encoder[BasicMessageFilterOperationLessThan] = deriveEncoder[BasicMessageFilterOperationLessThan]

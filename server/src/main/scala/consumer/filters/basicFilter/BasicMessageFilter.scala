@@ -40,7 +40,7 @@ object BasicMessageFilter:
                 Left(s"BasicMessageFilter error: BasicMessageFilter operation unspecified.")
             case _ =>
                 try
-                    Right(context.eval("js", basicMessageFilterEvalCode).asBoolean)
+                    Right(context.eval("js", basicMessageFilterEvalCode).asBoolean())
                 catch
                     case err: Throwable => Left(s"BasicMessageFilter error: ${err.getMessage}")
 

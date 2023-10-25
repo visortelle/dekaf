@@ -21,45 +21,59 @@ case class BasicMessageFilterOperationStartsWith(
     ): JsCode =
         def getKeyEvalCode: JsCode =
             val resultEvalCode = if (isCaseSensitive) then
-                s"""message.key?.startsWith("${startsWithSubstring}")"""
+                s"""message.key?.startsWith(decodeURIComponent("${startsWithSubstring}"))"""
             else
-                s"""message.key?.toLowerCase().startsWith("${startsWithSubstring}")"""
+                s"""message.key?.toLowerCase().replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring}"))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
         def getDefaultValueEvalCode: JsCode =
             val resultEvalCode = if (isCaseSensitive) then
-                s"""message.value?.startsWith("${startsWithSubstring}")"""
+                s"""message.value?.replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring}"))"""
             else
-                s"""message.value?.toLowerCase().startsWith("${startsWithSubstring.toLowerCase}")"""
+                s"""message.value?.toLowerCase().replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring.toLowerCase}"))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
+               |""".stripMargin
+
+        def getAccumEvalCode: JsCode =
+            val resultEvalCode = if (isCaseSensitive) then
+                s"""message.accum?.replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring}"))"""
+            else
+                s"""message.accum?.toLowerCase().replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring.toLowerCase}"))"""
+
+            s"""
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |
+               |    return ${resultEvalCode} ?? false;
+               | })()
                |""".stripMargin
 
         def getJsonValueEvalCode: JsCode =
             val resultEvalCode = if (isCaseSensitive) then
-                s"""fieldValue?.startsWith("${startsWithSubstring}")"""
+                s"""fieldValue?.replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring}"))"""
             else
-                s"""fieldValue?.toLowerCase().startsWith("${startsWithSubstring}")"""
+                s"""fieldValue?.toLowerCase().replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring}"))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |    ${MessageFilterContext.setupFieldValueCode(filter.selector)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
         def getPropertiesEvalCode: JsCode =
@@ -69,20 +83,20 @@ case class BasicMessageFilterOperationStartsWith(
 
                     val propertiesEvalCode = propertiesNames.map { propertyName =>
                         val resultEvalCode = if (isCaseSensitive) then
-                            s"""message.properties?.${propertyName}?.startsWith("${startsWithSubstring}")"""
+                            s"""message.properties?["${propertyName}"]?.replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring}"))"""
                         else
-                            s"""message.properties?.${propertyName}?.toLowerCase().startsWith("${startsWithSubstring}")"""
+                            s"""message.properties?["${propertyName}"]?.toLowerCase().replaceAll('\"', '\\\\' + '\"').startsWith(decodeURIComponent("${startsWithSubstring}"))"""
 
                         s"(${resultEvalCode} ?? false)"
 
                     }.mkString(s" ${modeOperator} ")
 
                     s"""
-                       | () => {
+                       | (() => {
                        |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                        |
                        |    return ${propertiesEvalCode};
-                       | }
+                       | })()
                        |""".stripMargin
                 case _ => BasicMessageFilterOperation.getSucceededEvalCode
 
@@ -92,8 +106,11 @@ case class BasicMessageFilterOperationStartsWith(
             case BasicMessageFilterTarget.Value =>
                 schemaType match
                     case SchemaType.JSON => getJsonValueEvalCode
+                    case SchemaType.AVRO => getJsonValueEvalCode
+                    case SchemaType.PROTOBUF_NATIVE => getJsonValueEvalCode
                     case _ => getDefaultValueEvalCode
             case BasicMessageFilterTarget.Properties => getPropertiesEvalCode
+            case BasicMessageFilterTarget.Accum => getAccumEvalCode
 
 object BasicMessageFilterOperationStartsWith:
     def apply(startsWithSubstring: String, isCaseSensitive: Boolean): BasicMessageFilterOperationStartsWith =
@@ -108,21 +125,3 @@ object BasicMessageFilterOperationStartsWith:
 
     given Decoder[BasicMessageFilterOperationStartsWith] = deriveDecoder[BasicMessageFilterOperationStartsWith]
     given Encoder[BasicMessageFilterOperationStartsWith] = deriveEncoder[BasicMessageFilterOperationStartsWith]
-
-    def getBasicMessageFilterOperationStartsWithEvalCode(
-        operation: BasicMessageFilterOperationStartsWith,
-        jsonMessage: JsonMessage,
-        jsonValue: MessageValueToJsonResult
-    ): JsCode =
-        val resultEvalCode = if operation.isCaseSensitive then
-            s"message.value?.startsWith(\"${operation.startsWithSubstring}\")"
-        else
-            s"message.value?.toLowerCase().startsWith(\"${operation.startsWithSubstring.toLowerCase()}\")"
-
-        s"""
-           | () => {
-           |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
-           |
-           |    return ${resultEvalCode} ?? false;
-           | }
-           |""".stripMargin

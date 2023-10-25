@@ -44,3 +44,6 @@ object converters extends JsonSerDe[Proto3Datum]:
         } catch {
             case err: Throwable => Left(err)
         }
+
+    def protobufToJsonSchema(schema: Array[Byte]): Either[Throwable, Array[Byte]] =
+        ???

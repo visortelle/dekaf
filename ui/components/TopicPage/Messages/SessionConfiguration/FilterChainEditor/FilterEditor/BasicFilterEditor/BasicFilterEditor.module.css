@@ -1,0 +1,29 @@
+.BasicFilterEditor {
+    display: flex;
+    flex-direction: column;
+    gap: 12rem;
+}
+
+.BasicFilterEditorControls {
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+}
+
+.ActionCheckbox {
+    display: flex;
+    gap: 8rem;
+    align-items: center;
+}
+
+.ControlsRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    gap: 12rem;
+}
+
+.BasicFilterEditorTarget {
+    max-width: 140rem;
+}

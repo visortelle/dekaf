@@ -80,6 +80,9 @@ lazy val root = project
             "com.softwaremill.sttp.client4" %% "zio" % "4.0.0-M2",
             "com.softwaremill.sttp.client4" %% "circe" % "4.0.0-M2",
 
+            "com.github.wnameless.json" % "json-flattener" % "0.16.3",
+            "com.github.fge" % "json-schema-avro" % "0.1.4",
+          
             // Serialization
             "io.circe" %% "circe-core" % circeVersion,
             "io.circe" %% "circe-generic" % circeVersion,

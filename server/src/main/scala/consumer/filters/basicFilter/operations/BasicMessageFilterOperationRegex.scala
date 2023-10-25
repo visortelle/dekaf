@@ -10,8 +10,7 @@ import consumer.filters.basicFilter.BasicMessageFilterSelector.PropertiesSelecto
 
 case class BasicMessageFilterOperationRegex(
     private val operationType: BasicMessageFilterOperationType = BasicMessageFilterOperationType.Regex,
-    regexPattern: String,
-    isCaseSensitive: Boolean
+    regexPattern: String
 ) extends BasicMessageFilterOperation(operationType):
     override def getEvalCode(
         filter: BasicMessageFilter,
@@ -19,40 +18,45 @@ case class BasicMessageFilterOperationRegex(
         jsonValue: MessageValueToJsonResult,
         schemaType: SchemaType
     ): JsCode =
-        val regexValue = if isCaseSensitive then
-            s"/${regexPattern}/g"
-        else
-            s"/${regexPattern}/gi"
-
         def getKeyEvalCode: JsCode =
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
-               |    const regex = ${regexValue};
-               |    return Boolean(message.key?.match(regex));
-               | }
+               |    const regex = ${regexPattern};
+               |    return Boolean(message.key?.replaceAll('\"', '\\\\' + '\"').match(regex));
+               | })()
                |""".stripMargin
 
         def getDefaultValueEvalCode: JsCode =
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
-               |    const regex = ${regexValue};
-               |    return Boolean(message.value?.match(regex));
-               | }
+               |    const regex = ${regexPattern};
+               |    return Boolean(message.value?.replaceAll('\"', '\\\\' + '\"').match(regex));
+               | })()
+               |""".stripMargin
+            
+        def getAccumEvalCode: JsCode =
+            s"""
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |
+               |    const regex = ${regexPattern};
+               |    return Boolean(message.accum?.replaceAll('\"', '\\\\' + '\"').match(regex));
+               | })()
                |""".stripMargin
 
         def getJsonValueEvalCode: JsCode =
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |    ${MessageFilterContext.setupFieldValueCode(filter.selector)}
                |
-               |    const regex = ${regexValue};
+               |    const regex = ${regexPattern};
                |    return Boolean(fieldValue?.match(regex));
-               | }
+               | })()
                |""".stripMargin
 
         def getPropertiesEvalCode: JsCode =
@@ -61,16 +65,16 @@ case class BasicMessageFilterOperationRegex(
                     val modeOperator: String = PropertiesSelectorMode.getModeStringOperator(mode)
 
                     val propertiesEvalCode = propertiesNames.map { propertyName =>
-                        s"Boolean(message.properties?.${propertyName}?.match(regex))"
+                        s"""Boolean(message.properties?["${propertyName}"]?.replaceAll('\"', '\\\\' + '\"').match(regex))"""
                     }.mkString(s" ${modeOperator} ")
 
                     s"""
-                       | () => {
+                       | (() => {
                        |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                        |
-                       |    const regex = ${regexValue};
+                       |    const regex = ${regexPattern};
                        |    return ${propertiesEvalCode};
-                       | }
+                       | })()
                        |""".stripMargin
                 case _ => BasicMessageFilterOperation.getSucceededEvalCode
 
@@ -80,19 +84,21 @@ case class BasicMessageFilterOperationRegex(
             case BasicMessageFilterTarget.Value =>
                 schemaType match
                     case SchemaType.JSON => getJsonValueEvalCode
+                    case SchemaType.AVRO => getJsonValueEvalCode
+                    case SchemaType.PROTOBUF_NATIVE => getJsonValueEvalCode
                     case _ => getDefaultValueEvalCode
             case BasicMessageFilterTarget.Properties => getPropertiesEvalCode
+            case BasicMessageFilterTarget.Accum => getAccumEvalCode
 
 object BasicMessageFilterOperationRegex:
-    def apply(regexPattern: String, isCaseSensitive: Boolean): BasicMessageFilterOperationRegex =
+    def apply(regexPattern: String): BasicMessageFilterOperationRegex =
         new BasicMessageFilterOperationRegex(
             BasicMessageFilterOperationType.Regex,
-            regexPattern,
-            isCaseSensitive
+            regexPattern
         )
 
-    def unapply(op: BasicMessageFilterOperationRegex): Option[(String, Boolean)] =
-        Some((op.regexPattern, op.isCaseSensitive))
+    def unapply(op: BasicMessageFilterOperationRegex): Option[String] =
+        Some(op.regexPattern)
 
     given Decoder[BasicMessageFilterOperationRegex] = deriveDecoder[BasicMessageFilterOperationRegex]
     given Encoder[BasicMessageFilterOperationRegex] = deriveEncoder[BasicMessageFilterOperationRegex]

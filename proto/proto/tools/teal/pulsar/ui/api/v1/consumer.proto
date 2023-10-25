@@ -179,22 +179,18 @@ message BasicMessageFilterOperationEquals {
 
 message BasicMessageFilterOperationGreaterThan {
   string value = 1;
-  bool is_case_sensitive = 2;
 }
 
 message BasicMessageFilterOperationGreaterThanOrEquals {
   string value = 1;
-  bool is_case_sensitive = 2;
 }
 
 message BasicMessageFilterOperationLessThan {
   string value = 1;
-  bool is_case_sensitive = 2;
 }
 
 message BasicMessageFilterOperationLessThanOrEquals {
   string value = 1;
-  bool is_case_sensitive = 2;
 }
 
 message BasicMessageFilterOperationIsTruthy {
@@ -220,7 +216,6 @@ message BasicMessageFilterOperationEndsWith {
 
 message BasicMessageFilterOperationRegex {
   string value = 1;
-  bool is_case_sensitive = 2;
 }
 
 enum BasicMessageFilterTarget {
@@ -228,6 +223,7 @@ enum BasicMessageFilterTarget {
   BASIC_MESSAGE_FILTER_TARGET_KEY = 1;
   BASIC_MESSAGE_FILTER_TARGET_VALUE = 2;
   BASIC_MESSAGE_FILTER_TARGET_PROPERTIES = 3;
+  BASIC_MESSAGE_FILTER_TARGET_ACCUM = 4;
 }
 
 message BasicMessageFilterFieldSelector {

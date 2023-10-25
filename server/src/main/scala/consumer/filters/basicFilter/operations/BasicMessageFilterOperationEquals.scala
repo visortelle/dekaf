@@ -21,54 +21,68 @@ case class BasicMessageFilterOperationEquals(
     ): JsCode =
         def getKeyEvalCode: JsCode =
             val resultEvalCode = if isCaseSensitive then
-                s"""message.key === "${equalToValue}""""
+                s"""message.key.replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue}")"""
             else
-                s"""message.key?.toLowerCase() === "${equalToValue.toLowerCase()}""""
+                s"""message.key?.toLowerCase().replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue.toLowerCase()}")"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
         def getDefaultValueEvalCode: JsCode =
             val resultEvalCode = if isCaseSensitive then
-                s"""message.value === "${equalToValue}""""
+                s"""message.value.replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue}")"""
             else
-                s"""message.value?.toLowerCase() === "${equalToValue.toLowerCase()}""""
+                s"""message.value?.toLowerCase().replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue.toLowerCase()}")"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
+               |""".stripMargin
+
+        def getAccumEvalCode: JsCode =
+            val resultEvalCode = if isCaseSensitive then
+                s"""message.accum.replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue}")"""
+            else
+                s"""message.accum?.toLowerCase().replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue.toLowerCase()}")"""
+
+            s"""
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |
+               |    return ${resultEvalCode} ?? false;
+               | })()
                |""".stripMargin
 
         def getJsonValueEvalCode: JsCode =
             val resultEvalCode = if (isCaseSensitive) then
-                s"""fieldValue === "${equalToValue}""""
+                s"""fieldValue.replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue}")"""
             else
-                s"""fieldValue?.toLowerCase() === ("${equalToValue.toLowerCase()}")"""
+                s"""fieldValue?.toLowerCase().replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue.toLowerCase()}")"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |    ${MessageFilterContext.setupFieldValueCode(filter.selector)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
         def getNumericalStringValueEvalCode: JsCode =
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
-               |    return numericalStringEquals("${equalToValue}", message.value) ?? false;
-               | }
+               |    return numericalStringEquals(decodeURIComponent("${equalToValue}"), message.value) ?? false;
+               | })()
                |""".stripMargin
 
         def getPropertiesEvalCode: JsCode =
@@ -78,20 +92,20 @@ case class BasicMessageFilterOperationEquals(
 
                     val propertiesEvalCode = propertiesNames.map { propertyName =>
                         val resultEvalCode = if (isCaseSensitive) then
-                            s"""message.properties?.${propertyName} === "${equalToValue}""""
+                            s"""message.properties?["${propertyName}"].replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue}")"""
                         else
-                            s"""message.properties?.${propertyName}?.toLowerCase() === ("${equalToValue.toLowerCase()}")"""
+                            s"""message.properties?["${propertyName}"]?.toLowerCase().replaceAll('\"', '\\\\' + '\"') === decodeURIComponent("${equalToValue.toLowerCase()}")"""
 
                         s"(${resultEvalCode} ?? false)"
 
                     }.mkString(s" ${modeOperator} ")
 
                     s"""
-                       | () => {
+                       | (() => {
                        |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                        |
                        |    return ${propertiesEvalCode};
-                       | }
+                       | })()
                        |""".stripMargin
                 case _ => BasicMessageFilterOperation.getSucceededEvalCode
 
@@ -101,6 +115,8 @@ case class BasicMessageFilterOperationEquals(
             case BasicMessageFilterTarget.Value =>
                 schemaType match
                     case SchemaType.JSON => getJsonValueEvalCode
+                    case SchemaType.AVRO => getJsonValueEvalCode
+                    case SchemaType.PROTOBUF_NATIVE => getJsonValueEvalCode
                     case SchemaType.INT8 => getNumericalStringValueEvalCode
                     case SchemaType.INT16 => getNumericalStringValueEvalCode
                     case SchemaType.INT32 => getNumericalStringValueEvalCode
@@ -109,6 +125,7 @@ case class BasicMessageFilterOperationEquals(
                     case SchemaType.DOUBLE => getNumericalStringValueEvalCode
                     case _ => getDefaultValueEvalCode
             case BasicMessageFilterTarget.Properties => getPropertiesEvalCode
+            case BasicMessageFilterTarget.Accum => getAccumEvalCode
 
 object BasicMessageFilterOperationEquals:
     def apply(equalToValue: String, isCaseSensitive: Boolean): BasicMessageFilterOperationEquals =

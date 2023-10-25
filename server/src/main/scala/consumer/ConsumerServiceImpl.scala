@@ -167,7 +167,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
         processedMessagesCount = processedMessagesCount + (consumerName -> 0)
 
-        messageFilterContexts = messageFilterContexts + (consumerName -> MessageFilterContext(
+        messageFilterContexts = messageFilterContexts + (consumerName -> new MessageFilterContext(
             MessageFilterContextConfig(stdout = new ByteArrayOutputStream())
         ))
 

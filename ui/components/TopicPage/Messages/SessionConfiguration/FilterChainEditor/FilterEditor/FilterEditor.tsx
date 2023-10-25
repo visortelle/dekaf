@@ -26,7 +26,7 @@ export type FilterEditorProps = {
 const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const [_, setDefaultMessageFilterType] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
-    defaultValue: 'basic-message-filter',
+    defaultValue: 'basic-message-filter-contains',
   });
 
   const resolveResult = useUserManagedItemValue<UserManagedMessageFilter>(props.value);
@@ -84,19 +84,138 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
 
           <Select<t.MessageFilterType>
             list={[
-              { type: 'item', title: 'Basic Filter', value: 'basic-message-filter' },
               { type: 'item', title: 'JS Filter', value: 'js-message-filter' },
+              {
+                type: 'group', title: 'Basic Filter', items: [
+                  { type: 'item', title: 'Contains', value: 'basic-message-filter-contains' },
+                  { type: 'item', title: 'Ends With', value: 'basic-message-filter-end-with' },
+                  { type: 'item', title: 'Equals', value: 'basic-message-filter-equals' },
+                  { type: 'item', title: 'Greater Than', value: 'basic-message-filter-greater-than' },
+                  { type: 'item', title: 'Greater Than Or Equal', value: 'basic-message-filter-greater-than-or-equals' },
+                  { type: 'item', title: 'Is Null', value: 'basic-message-filter-is-null' },
+                  { type: 'item', title: 'Is Truthy', value: 'basic-message-filter-is-truthy' },
+                  { type: 'item', title: 'Less Than', value: 'basic-message-filter-less-than' },
+                  { type: 'item', title: 'Less Than Or Equal', value: 'basic-message-filter-less-than-or-equals' },
+                  { type: 'item', title: 'Regex', value: 'basic-message-filter-regex' },
+                  { type: 'item', title: 'Starts With', value: 'basic-message-filter-starts-with' },
+                ]
+              }
             ]}
             value={itemSpec.type}
             onChange={v => {
               setDefaultMessageFilterType(v);
 
               switch (v) {
-                case 'basic-message-filter':
+                case 'basic-message-filter-contains':
                   onSpecChange({
                     ...itemSpec,
-                    type: 'basic-message-filter',
-                    value: {},
+                    type: 'basic-message-filter-contains',
+                    value: {
+                      value: '',
+                      target: 'value',
+                      isCaseSensitive: false,
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-end-with':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-end-with',
+                    value: {
+                      value: '',
+                      target: 'value',
+                      isCaseSensitive: false,
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-equals':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-equals',
+                    value: {
+                      value: '',
+                      target: 'value',
+                      isCaseSensitive: false,
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-greater-than':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-greater-than',
+                    value: {
+                      value: '',
+                      target: 'value',
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-greater-than-or-equals':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-greater-than-or-equals',
+                    value: {
+                      value: '',
+                      target: 'value',
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-is-null':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-is-null',
+                    value: {
+                      target: 'value',
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-is-truthy':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-is-truthy',
+                    value: {
+                      target: 'value',
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-less-than':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-less-than',
+                    value: {
+                      value: '',
+                      target: 'value',
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-less-than-or-equals':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-less-than-or-equals',
+                    value: {
+                      value: '',
+                      target: 'value',
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-regex':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-regex',
+                    value: {
+                      value: '',
+                      target: 'value',
+                    }
+                  });
+                  return;
+                case 'basic-message-filter-starts-with':
+                  onSpecChange({
+                    ...itemSpec,
+                    type: 'basic-message-filter-starts-with',
+                    value: {
+                      value: '',
+                      target: 'value',
+                      isCaseSensitive: false,
+                    }
                   });
                   return;
                 case 'js-message-filter':
@@ -122,15 +241,26 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
       </FormItem>
 
       <div>
-        {itemSpec.type === 'basic-message-filter' && (
-          <BasicFilterEditor />
-        )}
-        {itemSpec.type === 'js-message-filter' && (
+        {itemSpec.type === 'js-message-filter' ? (
           <JsFilterEditor
             value={itemSpec.value}
             onChange={(v) => onSpecChange({
               type: 'js-message-filter',
               value: v,
+              isEnabled: true,
+              isNegated: false,
+            })}
+          />
+        ) : (
+          <BasicFilterEditor
+            filterValue={itemSpec.value}
+            onChange={(filterValue) => onSpecChange({
+              type: itemSpec.type,
+              value: {
+                value: filterValue.value!,
+                target: filterValue.target,
+                isCaseSensitive: filterValue.isCaseSensitive!,
+              },
               isEnabled: true,
               isNegated: false,
             })}

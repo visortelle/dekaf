@@ -27,7 +27,7 @@ export type FilterChainEditorProps = {
 const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
-    defaultValue: 'basic-message-filter',
+    defaultValue: 'basic-message-filter-contains',
   });
 
   const resolveResult = useUserManagedItemValue<UserManagedMessageFilterChain>(props.value);
@@ -110,7 +110,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
       )}
 
       {itemSpec.filters.length !== 0 && itemSpec.filters.map((filter) => {
-        const filterId = filter.type === 'reference' ? filter.reference : filter.value.metadata.id;
+        const filterId = filter.type === 'reference' ? filter.reference : filter.value?.metadata?.id;
         return (
           <div key={filterId} className={s.Entry}>
             <div className={s.EntryFilter}>
@@ -118,7 +118,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 value={filter}
                 onChange={(updatedFilter) => {
                   const newFilters = itemSpec.filters.map((f) => {
-                    const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
+                    const fId = f.type === 'reference' ? f.reference : f.value?.metadata?.id;
                     if (fId === filterId) {
                       return updatedFilter;
                     }
@@ -128,7 +128,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 }}
                 onDelete={() => {
                   const newFilters = itemSpec.filters.filter((f) => {
-                    const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
+                    const fId = f.type === 'reference' ? f.reference : f.value?.metadata?.id;
                     return fId !== filterId;
                   });
                   onSpecChange({ ...itemSpec, filters: newFilters });
@@ -153,14 +153,159 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             let newFilter: UserManagedMessageFilter;
 
             switch (defaultMessageFilterType) {
-              case 'basic-message-filter':
+              case 'basic-message-filter-contains':
                 newFilter = {
                   metadata,
                   spec: {
                     isEnabled: true,
                     isNegated: false,
-                    type: 'basic-message-filter',
-                    value: {}
+                    type: 'basic-message-filter-contains',
+                    value: {
+                      value: '',
+                      target: 'value',
+                      isCaseSensitive: false
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-end-with':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-end-with',
+                    value: {
+                      value: '',
+                      target: 'value',
+                      isCaseSensitive: false
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-equals':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-equals',
+                    value: {
+                      value: '',
+                      target: 'value',
+                      isCaseSensitive: false
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-greater-than':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-greater-than',
+                    value: {
+                      value: '',
+                      target: 'value'
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-greater-than-or-equals':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-greater-than-or-equals',
+                    value: {
+                      value: '',
+                      target: 'value'
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-is-null':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-is-null',
+                    value: {
+                      target: 'value'
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-is-truthy':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-is-truthy',
+                    value: {
+                      target: 'value'
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-less-than':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-less-than',
+                    value: {
+                      value: '',
+                      target: 'value'
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-less-than-or-equals':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-less-than-or-equals',
+                    value: {
+                      value: '',
+                      target: 'value'
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-regex':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-regex',
+                    value: {
+                      value: '',
+                      target: 'value'
+                    }
+                  }
+                };
+                break;
+              case 'basic-message-filter-starts-with':
+                newFilter = {
+                  metadata,
+                  spec: {
+                    isEnabled: true,
+                    isNegated: false,
+                    type: 'basic-message-filter-starts-with',
+                    value: {
+                      value: '',
+                      target: 'value',
+                      isCaseSensitive: false
+                    }
                   }
                 };
                 break;

@@ -24,30 +24,57 @@ case class BasicMessageFilterOperationIsNull(
 
         def getKeyEvalCode: JsCode =
             val resultEvalCode =
-                s"""isNullOrStringNull(message.key?.toLowerCase())"""
+                s"""isNullOrStringNull(message.key?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |    ${setupIsNullFunction}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
         def getDefaultValueEvalCode: JsCode =
             val resultEvalCode =
-                s"""isNullOrStringNull(message.value?.toLowerCase())"""
+                s"""isNullOrStringNull(message.value?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |    ${setupIsNullFunction}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
+            
+        def getAccumEvalCode: JsCode =
+            val resultEvalCode =
+                s"""isNullOrStringNull(message.accum?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
 
+            s"""
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |    ${setupIsNullFunction}
+               |
+               |    return ${resultEvalCode} ?? false;
+               | })()
+               |""".stripMargin
+        
+        def getJsonValueEvalCode: JsCode =
+            val resultEvalCode = 
+                s"""isNullOrStringNull(fieldValue?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
+
+            s"""
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |    ${MessageFilterContext.setupFieldValueCode(filter.selector)}
+               |    ${setupIsNullFunction}
+               |
+               |    return ${resultEvalCode} ?? false;
+               | })()
+               |""".stripMargin
+            
         def getPropertiesEvalCode: JsCode =
             filter.selector match
                 case Some(BasicMessageFilterSelector.PropertiesSelector(propertiesNames, mode)) =>
@@ -55,18 +82,18 @@ case class BasicMessageFilterOperationIsNull(
 
                     val propertiesEvalCode = propertiesNames.map { propertyName =>
                         val resultEvalCode =
-                            s"""isNullOrStringNull(message.properties?.${propertyName}?.toLowerCase())"""
+                            s"""isNullOrStringNull(message.properties?["${propertyName}"]?.toLowerCase().replaceAll('\"', '\\\\' + '\"'))"""
 
                         s"(${resultEvalCode} ?? false)"
 
                     }.mkString(s" ${modeOperator} ")
 
                     s"""
-                       | () => {
+                       | (() => {
                        |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                        |
                        |    return ${propertiesEvalCode};
-                       | }
+                       | })()
                        |""".stripMargin
                 case _ => BasicMessageFilterOperation.getSucceededEvalCode
 
@@ -75,8 +102,12 @@ case class BasicMessageFilterOperationIsNull(
             case BasicMessageFilterTarget.Key => getKeyEvalCode
             case BasicMessageFilterTarget.Value =>
                 schemaType match
+                    case SchemaType.JSON => getJsonValueEvalCode
+                    case SchemaType.AVRO => getJsonValueEvalCode
+                    case SchemaType.PROTOBUF_NATIVE => getJsonValueEvalCode
                     case _ => getDefaultValueEvalCode
             case BasicMessageFilterTarget.Properties => getPropertiesEvalCode
+            case BasicMessageFilterTarget.Accum => getAccumEvalCode
 
 object BasicMessageFilterOperationIsNull:
     def apply(targetString: String): BasicMessageFilterOperationIsNull =

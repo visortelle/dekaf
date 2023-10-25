@@ -20,51 +20,65 @@ case class BasicMessageFilterOperationEndsWith(
         schemaType: SchemaType
     ): JsCode =
         val resultEvalCode = if isCaseSensitive then
-            s"message.value?.endsWith(\"${endsWithSubstring}\")"
+            s"""message.value?.replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
         else
-            s"message.value?.toLowerCase().endsWith(\"${endsWithSubstring.toLowerCase()}\")"
+            s"""message.value?.toLowerCase().replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring.toLowerCase()}"))"""
 
         def getKeyEvalCode: JsCode =
             val resultEvalCode = if (isCaseSensitive) then
-                s"""message.key?.endsWith("${endsWithSubstring}")"""
+                s"""message.key?.replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
             else
-                s"""message.key?.toLowerCase().endsWith("${endsWithSubstring}")"""
+                s"""message.key?.toLowerCase().replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
         def getDefaultValueEvalCode: JsCode =
             val resultEvalCode = if (isCaseSensitive) then
-                s"""message.value?.endsWith("${endsWithSubstring}")"""
+                s"""message.value?.replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
             else
-                s"""message.value?.toLowerCase().endsWith("${endsWithSubstring.toLowerCase}")"""
+                s"""message.value?.toLowerCase().replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring.toLowerCase}"))"""
 
             s"""
-               | () => {
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
-
-        def getJsonValueEvalCode: JsCode =
+        
+        def getAccumEvalCode: JsCode =
             val resultEvalCode = if (isCaseSensitive) then
-                s"""fieldValue?.endsWith("${endsWithSubstring}")"""
+                s"""message.accum?.replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
             else
-                s"""fieldValue?.toLowerCase().endsWith("${endsWithSubstring}")"""
+                s"""message.accum?.toLowerCase().replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring.toLowerCase}"))"""
 
             s"""
-               | () => {
+               | (() => {
+               |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
+               |
+               |    return ${resultEvalCode} ?? false;
+               | })()
+               |""".stripMargin
+            
+        def getJsonValueEvalCode: JsCode =
+            val resultEvalCode = if (isCaseSensitive) then
+                s"""fieldValue?.replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
+            else
+                s"""fieldValue?.toLowerCase().replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
+
+            s"""
+               | (() => {
                |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                |    ${MessageFilterContext.setupFieldValueCode(filter.selector)}
                |
                |    return ${resultEvalCode} ?? false;
-               | }
+               | })()
                |""".stripMargin
 
         def getPropertiesEvalCode: JsCode =
@@ -74,31 +88,34 @@ case class BasicMessageFilterOperationEndsWith(
 
                     val propertiesEvalCode = propertiesNames.map { propertyName =>
                         val resultEvalCode = if (isCaseSensitive) then
-                            s"""message.properties?.${propertyName}?.endsWith("${endsWithSubstring}")"""
+                            s"""message.properties?["${propertyName}"]?.replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
                         else
-                            s"""message.properties?.${propertyName}?.toLowerCase().endsWith("${endsWithSubstring}")"""
+                            s"""message.properties?["${propertyName}"]?.toLowerCase().replaceAll('\"', '\\\\' + '\"').endsWith(decodeURIComponent("${endsWithSubstring}"))"""
 
                         s"(${resultEvalCode} ?? false)"
 
                     }.mkString(s" ${modeOperator} ")
 
                     s"""
-                       | () => {
+                       | (() => {
                        |    ${MessageFilterContext.setupFilterContextCode(jsonMessage, jsonValue)}
                        |
                        |    return ${propertiesEvalCode};
-                       | }
+                       | })()
                        |""".stripMargin
                 case _ => BasicMessageFilterOperation.getSucceededEvalCode
-        
+
         filter.target match
             case BasicMessageFilterTarget.Unspecified => BasicMessageFilterOperation.getSucceededEvalCode
             case BasicMessageFilterTarget.Key => getKeyEvalCode
             case BasicMessageFilterTarget.Value =>
                 schemaType match
                     case SchemaType.JSON => getJsonValueEvalCode
+                    case SchemaType.AVRO => getJsonValueEvalCode
+                    case SchemaType.PROTOBUF_NATIVE => getJsonValueEvalCode
                     case _ => getDefaultValueEvalCode
             case BasicMessageFilterTarget.Properties => getPropertiesEvalCode
+            case BasicMessageFilterTarget.Accum => getAccumEvalCode
 
 
 object BasicMessageFilterOperationEndsWith:

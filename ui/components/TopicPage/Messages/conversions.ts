@@ -1,17 +1,16 @@
-import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
+import {Timestamp} from "google-protobuf/google/protobuf/timestamp_pb";
 import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { hexStringFromByteArray, hexStringToByteArray } from "../../conversions/conversions";
+import {BasicMessageFilterTarget} from "../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
+import {hexStringFromByteArray, hexStringToByteArray} from "../../conversions/conversions";
 import {
-  MessageDescriptor,
-  PartialMessageDescriptor,
   ConsumerSessionConfig,
-  BasicMessageFilter,
-  JsMessageFilter,
+  DateTimeUnit,
+  MessageDescriptor,
   MessageFilter,
   MessageFilterChain,
   MessageFilterChainMode,
+  PartialMessageDescriptor,
   StartFrom,
-  DateTimeUnit,
 } from "./types";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
@@ -252,9 +251,18 @@ export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
 
       return messageFilterPb;
     }
-
-    case "basic-message-filter": {
+    case "basic-message-filter-contains": {
       const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const containsOperationPb = new pb.BasicMessageFilterOperationContains();
+      containsOperationPb.setValue(filter.value.value ?? '');
+      containsOperationPb.setIsCaseSensitive(filter.value.isCaseSensitive ?? false);
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setContains(containsOperationPb);
 
       const messageFilterPb = new pb.MessageFilter();
       messageFilterPb.setBasic(basicMessageFilterPb)
@@ -263,7 +271,207 @@ export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
       messageFilterPb.setIsNegated(filter.isNegated);
 
       return messageFilterPb;
+    }
+    case "basic-message-filter-end-with": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const endWithOperationPb = new pb.BasicMessageFilterOperationEndsWith();
+      endWithOperationPb.setValue(filter.value.value ?? '');
+      endWithOperationPb.setIsCaseSensitive(filter.value.isCaseSensitive ?? false);
 
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setEndsWith(endWithOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-equals": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const equalsOperationPb = new pb.BasicMessageFilterOperationEquals();
+      equalsOperationPb.setValue(filter.value.value ?? '');
+      equalsOperationPb.setIsCaseSensitive(filter.value.isCaseSensitive ?? false);
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setEquals(equalsOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-greater-than": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const greaterThanOperationPb = new pb.BasicMessageFilterOperationGreaterThan();
+      greaterThanOperationPb.setValue(filter.value.value ?? '');
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setGreaterThan(greaterThanOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-greater-than-or-equals": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const greaterThanOrEqualOperationPb = new pb.BasicMessageFilterOperationGreaterThanOrEquals();
+      greaterThanOrEqualOperationPb.setValue(filter.value.value ?? '');
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setGreaterThanOrEquals(greaterThanOrEqualOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-is-null": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const isNullOperationPb = new pb.BasicMessageFilterOperationIsNull();
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setIsNull(isNullOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-is-truthy": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const isTruthyOperationPb = new pb.BasicMessageFilterOperationIsTruthy();
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setIsTruthy(isTruthyOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-less-than": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const lessThanOperationPb = new pb.BasicMessageFilterOperationLessThan();
+      lessThanOperationPb.setValue(filter.value.value ?? '');
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setLessThan(lessThanOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-less-than-or-equals": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const lessThanOrEqualsOperationPb = new pb.BasicMessageFilterOperationLessThanOrEquals();
+      lessThanOrEqualsOperationPb.setValue(filter.value.value ?? '');
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setLessThanOrEquals(lessThanOrEqualsOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-regex": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const regexOperationPb = new pb.BasicMessageFilterOperationRegex();
+      regexOperationPb.setValue(filter.value.value ?? '');
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setRegex(regexOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+    case "basic-message-filter-starts-with": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const startsWithOperationPb = new pb.BasicMessageFilterOperationStartsWith();
+      startsWithOperationPb.setValue(filter.value.value ?? '');
+      startsWithOperationPb.setIsCaseSensitive(filter.value.isCaseSensitive ?? false);
+
+      filter.value.target === 'key' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY)
+      filter.value.target === 'value' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE)
+      filter.value.target === 'properties' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES)
+      filter.value.target === 'accum' && basicMessageFilterPb.setTarget(BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM)
+
+      basicMessageFilterPb.setStartsWith(startsWithOperationPb);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
     }
   }
 }
@@ -295,20 +503,162 @@ export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
     case pb.MessageFilter.ValueCase.JS:
       return {
         type: 'js-message-filter',
-        value: { jsCode: filter.getJs()?.getJsCode() ?? '' },
+        value: {jsCode: filter.getJs()?.getJsCode() ?? ''},
         isEnabled: filter.getIsEnabled(),
         isNegated: filter.getIsNegated(),
       };
-    case pb.MessageFilter.ValueCase.BASIC: {
-      return {
-        type: 'basic-message-filter',
-        value: {},
-        isEnabled: filter.getIsEnabled(),
-        isNegated: filter.getIsNegated(),
-      };
-    }
+    case pb.MessageFilter.ValueCase.BASIC:
+      const target =
+        filter.getBasic()?.getTarget() === BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_KEY ? 'key' :
+          filter.getBasic()?.getTarget() === BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_VALUE ? 'value' :
+            filter.getBasic()?.getTarget() === BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_PROPERTIES ? 'properties' :
+              filter.getBasic()?.getTarget() === BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_UNSPECIFIED ? 'value' :
+                filter.getBasic()?.getTarget() === BasicMessageFilterTarget.BASIC_MESSAGE_FILTER_TARGET_ACCUM ? 'accum' :
+                filter.getBasic() === undefined ? 'value' : 'value';
+
+      switch (filter.getBasic()?.getOperationCase()) {
+        case pb.BasicMessageFilter.OperationCase.CONTAINS:
+          return {
+            type: 'basic-message-filter-contains',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getContains()?.getValue() ?? undefined,
+              isCaseSensitive: filter.getBasic()?.getContains()?.getIsCaseSensitive() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        case pb.BasicMessageFilter.OperationCase.ENDS_WITH:
+          return {
+            type: 'basic-message-filter-end-with',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getEndsWith()?.getValue() ?? undefined,
+              isCaseSensitive: filter.getBasic()?.getEndsWith()?.getIsCaseSensitive() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        case pb.BasicMessageFilter.OperationCase.EQUALS: {
+          return {
+            type: 'basic-message-filter-equals',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getEquals()?.getValue() ?? undefined,
+              isCaseSensitive: filter.getBasic()?.getEquals()?.getIsCaseSensitive() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        case pb.BasicMessageFilter.OperationCase.GREATER_THAN: {
+          return {
+            type: 'basic-message-filter-greater-than',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getGreaterThan()?.getValue() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        case pb.BasicMessageFilter.OperationCase.GREATER_THAN_OR_EQUALS: {
+          return {
+            type: 'basic-message-filter-greater-than-or-equals',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getGreaterThanOrEquals()?.getValue() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        case pb.BasicMessageFilter.OperationCase.IS_NULL: {
+          return {
+            type: 'basic-message-filter-is-null',
+            value: {
+              target: target,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        case pb.BasicMessageFilter.OperationCase.IS_TRUTHY: {
+          return {
+            type: 'basic-message-filter-is-truthy',
+            value: {
+              target: target,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        case pb.BasicMessageFilter.OperationCase.LESS_THAN: {
+          return {
+            type: 'basic-message-filter-less-than',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getLessThan()?.getValue() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        case pb.BasicMessageFilter.OperationCase.LESS_THAN_OR_EQUALS: {
+          return {
+            type: 'basic-message-filter-less-than-or-equals',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getLessThanOrEquals()?.getValue() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        case pb.BasicMessageFilter.OperationCase.REGEX: {
+          return {
+            type: 'basic-message-filter-regex',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getRegex()?.getValue() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        case pb.BasicMessageFilter.OperationCase.STARTS_WITH: {
+          return {
+            type: 'basic-message-filter-starts-with',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getStartsWith()?.getValue() ?? undefined,
+              isCaseSensitive: filter.getBasic()?.getStartsWith()?.getIsCaseSensitive() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+        }
+        default:
+          //throw new Error(`Unknown BasicMessageFilter operation case. ${filter.getBasic()?.getOperationCase()}`);
+          return {
+            type: 'basic-message-filter-contains',
+            value: {
+              target: target,
+              value: filter.getBasic()?.getContains()?.getValue() ?? undefined,
+              isCaseSensitive: filter.getBasic()?.getContains()?.getIsCaseSensitive() ?? undefined,
+            },
+            isEnabled: filter.getIsEnabled(),
+            isNegated: filter.getIsNegated(),
+          }
+      }
     default:
-      throw new Error(`Unknown MessageFilter value case. ${filter.getValueCase()}`);
+      //throw new Error(`Unknown MessageFilter value case. ${filter.getValueCase()}`);
+      return {
+        type: 'js-message-filter',
+        value: {jsCode: filter.getJs()?.getJsCode() ?? ''},
+        isEnabled: filter.getIsEnabled(),
+        isNegated: filter.getIsNegated(),
+      };
   }
 }
 
