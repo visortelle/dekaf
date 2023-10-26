@@ -228,6 +228,20 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                     }
                   }
                 },
+                startFrom: {
+                  type: 'value',
+                  value: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'consumer-session-start-from'
+                    },
+                    spec: {
+                      startFrom: { type: 'earliestMessage' }
+                    }
+                  }
+                }
               },
             }
           }}

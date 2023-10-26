@@ -16,11 +16,14 @@ export type ValueOrReference<ValueT> = {
 
 export type UserManagedItemType =
   "consumer-session-config" |
-  "consumer-session-start-from" |
   "consumer-session-pause-trigger" |
-  "producer-session-config" |
+  "consumer-session-start-from" |
+  "date-time" |
+  "message-filter-chain" |
   "message-filter" |
-  "message-filter-chain";
+  "message-id" |
+  "producer-session-config" |
+  "relative-date-time";
 
 export type UserManagedItemMetadata = {
   type: UserManagedItemType,
@@ -88,11 +91,11 @@ export type UserManagedRelativeDateTime = {
 }
 export type UserManagedRelativeDateTimeValueOrReference = ValueOrReference<UserManagedRelativeDateTime>;
 
-export type StartFromEarliestMessage = { type: 'earliest-message' };
-export type StartFromLatestMessage = { type: 'latest-message' };
-export type StartFromMessageId = { type: 'message-id', messageId: UserManagedMessageIdValueOrReference };
-export type StartFromDateTime = { type: 'date-time', dateTime: UserManagedDateTimeValueOrReference };
-export type StartFromRelativeDateTime = { type: 'relative-date-time', relativeDateTime: UserManagedRelativeDateTimeValueOrReference };
+export type StartFromEarliestMessage = { type: 'earliestMessage' };
+export type StartFromLatestMessage = { type: 'latestMessage' };
+export type StartFromMessageId = { type: 'messageId', messageId: UserManagedMessageIdValueOrReference };
+export type StartFromDateTime = { type: 'dateTime', dateTime: UserManagedDateTimeValueOrReference };
+export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: UserManagedRelativeDateTimeValueOrReference };
 
 export type UserManagedConsumerSessionStartFromSpec = {
   startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
@@ -118,4 +121,4 @@ export type UserManagedConsumerSessionConfig = {
 
 export type UserManagedConsumerSessionConfigValueOrReference = ValueOrReference<UserManagedConsumerSessionConfig>;
 
-export type UserManagedItem = UserManagedConsumerSessionConfig | UserManagedMessageFilter | UserManagedMessageFilterChain;
+export type UserManagedItem = UserManagedMessageFilter | UserManagedMessageFilterChain | UserManagedConsumerSessionStartFrom;

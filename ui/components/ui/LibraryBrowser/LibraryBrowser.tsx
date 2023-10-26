@@ -45,6 +45,8 @@ type SearchResultsState = {
   error: string;
 };
 
+export const newItemLabel = 'New item';
+
 const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   const itemType = props.mode.type === 'save' ? props.mode.item.metadata.type : props.mode.itemType;
 
@@ -193,8 +195,6 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
     });
   }
 
-  console.log('libc', props.libraryContext)
-
   return (
     <div className={s.LibraryBrowser}>
       <div className={s.Content}>
@@ -230,7 +230,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
                 fetchSearchResults();
               }}
               extraLabels={{
-                [itemToSave?.spec.metadata.id ?? '']: { text: 'New item', color: 'var(--accent-color-blue)' }
+                [itemToSave?.spec.metadata.id ?? '']: { text: newItemLabel, color: 'var(--accent-color-blue)' }
               }}
               itemsToKeepAtTop={itemToSave === undefined ? [] : [itemToSave.spec.metadata.id]}
             />

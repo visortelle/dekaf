@@ -208,36 +208,36 @@ def userManagedRelativeDateTimeValueOrReferenceToPb(v: UserManagedRelativeDateTi
 
 def userManagedConsumerSessionStartFromSpecFromPb(v: pb.UserManagedConsumerSessionStartFromSpec): UserManagedConsumerSessionStartFromSpec =
     v.startFrom match
-        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.EarliestMessage => UserManagedConsumerSessionStartFromSpec(startFrom = EarliestMessage())
-        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.LatestMessage   => UserManagedConsumerSessionStartFromSpec(startFrom = LatestMessage())
-        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.MessageId =>
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromEarliestMessage => UserManagedConsumerSessionStartFromSpec(startFrom = EarliestMessage())
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromLatestMessage   => UserManagedConsumerSessionStartFromSpec(startFrom = LatestMessage())
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromMessageId =>
             UserManagedConsumerSessionStartFromSpec(startFrom = userManagedMessageIdValueOrReferenceFromPb(sf.value))
-        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.DateTime =>
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromDateTime =>
             UserManagedConsumerSessionStartFromSpec(startFrom = userManagedDateTimeValueOrReferenceFromPb(sf.value))
-        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.RelativeDateTime =>
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromRelativeDateTime =>
             UserManagedConsumerSessionStartFromSpec(startFrom = userManagedRelativeDateTimeValueOrReferenceFromPb(sf.value))
 
 def userManagedConsumerSessionStartFromSpecToPb(v: UserManagedConsumerSessionStartFromSpec): pb.UserManagedConsumerSessionStartFromSpec =
     v.startFrom match
         case v: EarliestMessage =>
             pb.UserManagedConsumerSessionStartFromSpec(
-                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.EarliestMessage(consumerPb.EarliestMessage())
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromEarliestMessage(consumerPb.EarliestMessage())
             )
         case v: LatestMessage =>
             pb.UserManagedConsumerSessionStartFromSpec(
-                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.LatestMessage(consumerPb.LatestMessage())
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromLatestMessage(consumerPb.LatestMessage())
             )
         case v: UserManagedMessageIdValueOrReference =>
             pb.UserManagedConsumerSessionStartFromSpec(
-                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.MessageId(userManagedMessageIdValueOrReferenceToPb(v))
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromMessageId(userManagedMessageIdValueOrReferenceToPb(v))
             )
         case v: UserManagedDateTimeValueOrReference =>
             pb.UserManagedConsumerSessionStartFromSpec(
-                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.DateTime(userManagedDateTimeValueOrReferenceToPb(v))
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromDateTime(userManagedDateTimeValueOrReferenceToPb(v))
             )
         case v: UserManagedRelativeDateTimeValueOrReference =>
             pb.UserManagedConsumerSessionStartFromSpec(
-                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.RelativeDateTime(userManagedRelativeDateTimeValueOrReferenceToPb(v))
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.StartFromRelativeDateTime(userManagedRelativeDateTimeValueOrReferenceToPb(v))
             )
 
 def userManagedConsumerSessionStartFromFromPb(v: pb.UserManagedConsumerSessionStartFrom): UserManagedConsumerSessionStartFrom =
@@ -510,6 +510,8 @@ def userManagedMessageFilterValueOrReferenceFromPb(v: pb.UserManagedMessageFilte
                 value = None,
                 reference = Some(v)
             )
+        case _ => throw new IllegalArgumentException("Unknown message filter value or reference")
+
 def userManagedMessageFilterValueOrReferenceToPb(v: UserManagedMessageFilterValueOrReference): pb.UserManagedMessageFilterValueOrReference =
     v.value match
         case Some(v) =>

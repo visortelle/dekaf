@@ -1,6 +1,6 @@
 package consumer
 
-import java.time.{Instant, ZonedDateTime}
+import java.time.ZonedDateTime
 import org.apache.pulsar.client.api.Consumer
 import org.apache.pulsar.client.api.MessageId as PulsarMessageId
 

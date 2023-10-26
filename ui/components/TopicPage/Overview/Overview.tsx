@@ -156,7 +156,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
         <strong>Properties</strong>
         <div className={s.JsonViewer}>
           <KeyValueEditor
-            value={recordToIndexedKv(mapToObject(properties))}
+            value={properties === undefined ? [] : recordToIndexedKv(mapToObject(properties))}
             mode='readonly'
             onChange={() => { }}
             height='240rem'

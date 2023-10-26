@@ -230,15 +230,15 @@ export function userManagedRelativeDateTimeValueOrReferenceToPb(v: t.UserManaged
 export function userManagedConsumerSessionStartFromSpecFromPb(v: pb.UserManagedConsumerSessionStartFromSpec): t.UserManagedConsumerSessionStartFromSpec {
   switch (v.getStartFromCase()) {
     case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_EARLIEST_MESSAGE:
-      return { startFrom: { type: 'earliest-message' } };
+      return { startFrom: { type: 'earliestMessage' } };
     case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_LATEST_MESSAGE:
-      return { startFrom: { type: 'latest-message' } };
+      return { startFrom: { type: 'latestMessage' } };
     case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_MESSAGE_ID:
-      return { startFrom: { type: 'message-id', messageId: userManagedMessageIdValueOrReferenceFromPb(v.getStartFromMessageId()!) } };
+      return { startFrom: { type: 'messageId', messageId: userManagedMessageIdValueOrReferenceFromPb(v.getStartFromMessageId()!) } };
     case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_DATE_TIME:
-      return { startFrom: { type: 'date-time', dateTime: userManagedDateTimeValueOrReferenceFromPb(v.getStartFromDateTime()!) } };
+      return { startFrom: { type: 'dateTime', dateTime: userManagedDateTimeValueOrReferenceFromPb(v.getStartFromDateTime()!) } };
     case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_RELATIVE_DATE_TIME:
-      return { startFrom: { type: 'relative-date-time', relativeDateTime: userManagedRelativeDateTimeValueOrReferenceFromPb(v.getStartFromRelativeDateTime()!) } };
+      return { startFrom: { type: 'relativeDateTime', relativeDateTime: userManagedRelativeDateTimeValueOrReferenceFromPb(v.getStartFromRelativeDateTime()!) } };
     default:
       throw new Error(`Unknown UserManagedConsumerSessionStartFromSpec: ${v}`);
   }
@@ -247,19 +247,19 @@ export function userManagedConsumerSessionStartFromSpecFromPb(v: pb.UserManagedC
 export function userManagedConsumerSessionStartFromSpecToPb(v: t.UserManagedConsumerSessionStartFromSpec): pb.UserManagedConsumerSessionStartFromSpec {
   const specPb = new pb.UserManagedConsumerSessionStartFromSpec();
   switch (v.startFrom.type) {
-    case 'earliest-message':
+    case 'earliestMessage':
       specPb.setStartFromEarliestMessage(new consumerPb.EarliestMessage());
       break;
-    case 'latest-message':
+    case 'latestMessage':
       specPb.setStartFromLatestMessage(new consumerPb.LatestMessage());
       break;
-    case 'message-id':
+    case 'messageId':
       specPb.setStartFromMessageId(userManagedMessageIdValueOrReferenceToPb(v.startFrom.messageId));
       break;
-    case 'date-time':
+    case 'dateTime':
       specPb.setStartFromDateTime(userManagedDateTimeValueOrReferenceToPb(v.startFrom.dateTime));
       break;
-    case 'relative-date-time':
+    case 'relativeDateTime':
       specPb.setStartFromRelativeDateTime(userManagedRelativeDateTimeValueOrReferenceToPb(v.startFrom.relativeDateTime));
       break;
     default:
@@ -440,6 +440,8 @@ export function userManagedItemFromPb(v: pb.UserManagedItem): t.UserManagedItem 
       return userManagedMessageFilterFromPb(v.getMessageFilter()!);
     case pb.UserManagedItem.ItemCase.MESSAGE_FILTER_CHAIN:
       return userManagedMessageFilterChainFromPb(v.getMessageFilterChain()!);
+    case pb.UserManagedItem.ItemCase.CONSUMER_SESSION_START_FROM:
+      return userManagedConsumerSessionStartFromFromPb(v.getConsumerSessionStartFrom()!);
     default:
       throw new Error(`Unknown UserManagedItem: ${v}`);
   }
@@ -456,8 +458,10 @@ export function userManagedItemToPb(v: t.UserManagedItem): pb.UserManagedItem {
       itemPb.setMessageFilterChain(userManagedMessageFilterChainToPb(v as t.UserManagedMessageFilterChain));
       break;
     }
-    default:
-      throw new Error(`Unknown UserManagedItem: ${v}`);
+    case "consumer-session-start-from": {
+      itemPb.setConsumerSessionStartFrom(userManagedConsumerSessionStartFromToPb(v as t.UserManagedConsumerSessionStartFrom));
+      break;
+    }
   }
   return itemPb;
 }

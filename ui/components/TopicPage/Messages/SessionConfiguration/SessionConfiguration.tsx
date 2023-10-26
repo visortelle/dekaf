@@ -68,11 +68,11 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
       <div className={s.Content}>
         <div className={s.LeftColumn}>
           <FormItem>
-            <FormLabel content="Start From" />
             <StartFromInput
-              value={itemSpec}
-              onChange={(v) => props.onChange({ ...props.value, startFrom: v })}
+              value={itemSpec.startFrom}
+              onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
               topicsInternalStats={props.topicsInternalStats}
+              libraryContext={props.libraryContext}
             />
           </FormItem>
 
