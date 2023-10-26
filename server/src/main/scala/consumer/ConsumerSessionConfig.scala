@@ -2,11 +2,8 @@ package consumer
 
 import library.UserManagedItemType
 
-enum MessageFilterType:
-    case BasicMessageFilter
-    case JsMessageFilter
-
 case class BasicMessageFilter()
+
 
 case class JsMessageFilter(
     jsCode: String
@@ -15,7 +12,6 @@ case class JsMessageFilter(
 case class MessageFilter(
     isEnabled: Boolean,
     isNegated: Boolean,
-    `type`: MessageFilterType,
     value: BasicMessageFilter | JsMessageFilter
 )
 
@@ -31,14 +27,6 @@ case class MessageFilterChain(
     mode: MessageFilterChainMode,
     filters: List[MessageFilter]
 )
-
-enum ConsumerSessionConfigStartFromType {
-    case EarliestMessage
-    case LatestMessage
-    case MessageId
-    case DateTime
-    case RelativeDateTime
-}
 
 case class EarliestMessage()
 
@@ -68,15 +56,32 @@ case class MessageId(
     messageId: Array[Byte]
 )
 
-case class ConsumerSessionConfigStartFrom(
-    `type`: ConsumerSessionConfigStartFromType,
-    value: EarliestMessage | LatestMessage | MessageId | DateTime | RelativeDateTime
+type ConsumerSessionStartFrom = EarliestMessage | LatestMessage | MessageId | DateTime | RelativeDateTime
+
+case class ConsumerSessionEventMessagesProcessed(messageCount: Long)
+case class ConsumerSessionEventMessagesDelivered(messageCount: Long)
+case class ConsumerSessionEventBytesProcessed(byteCount: Long)
+case class ConsumerSessionEventBytesDelivered(byteCount: Long)
+case class ConsumerSessionEventMessageDecodeFailed(failCount: Long)
+case class ConsumerSessionEventTimeElapsedMs(timeElapsedMs: Long)
+case class ConsumerSessionEventTopicEndReached()
+case class ConsumerSessionEventUnexpectedErrorOccurred()
+case class ConsumerSessionEventMessageFilterChainPassed(messageFilterChain: MessageFilterChain)
+
+type ConsumerSessionEvent = ConsumerSessionEventMessagesProcessed | ConsumerSessionEventMessagesDelivered | ConsumerSessionEventBytesProcessed |
+    ConsumerSessionEventBytesDelivered | ConsumerSessionEventMessageDecodeFailed | ConsumerSessionEventTimeElapsedMs | ConsumerSessionEventTopicEndReached |
+    ConsumerSessionEventUnexpectedErrorOccurred | ConsumerSessionEventMessageFilterChainPassed
+
+enum ConsumerSessionPauseTriggerChainMode:
+    case All, Any
+
+case class ConsumerSessionPauseTriggerChain(
+   events: Vector[ConsumerSessionEvent],
+   mode: ConsumerSessionPauseTriggerChainMode,
 )
 
-case class ConsumerSessionConfigPauseTrigger()
-
 case class ConsumerSessionConfig(
-    startFrom: ConsumerSessionConfigStartFrom,
+    startFrom: ConsumerSessionStartFrom,
     messageFilterChain: MessageFilterChain,
-    pauseTriggers: List[ConsumerSessionConfigPauseTrigger]
+    pauseTriggerChain: ConsumerSessionPauseTriggerChain,
 )

@@ -166,7 +166,6 @@ def getFilterChainTestResult(
                 MessageFilter(
                     isEnabled = true,
                     isNegated = false,
-                    `type` = MessageFilterType.JsMessageFilter,
                     value = JsMessageFilter(jsCode = "() => true")
                 )
             )

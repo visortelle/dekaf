@@ -106,54 +106,21 @@ message UserManagedConsumerSessionStartFromValueOrReference {
   }
 }
 
-message ConsumerSessionEventMessagesProcessed {
-  int64 message_count = 1;
-}
-
-message ConsumerSessionEventMessagesDelivered {
-  int64 message_count = 1;
-}
-
-message ConsumerSessionEventBytesProcessed {
-  int64 byte_count = 1;
-}
-
-message ConsumerSessionEventBytesDelivered {
-  int64 byte_count = 1;
-}
-
-message ConsumerSessionEventMessageDecodeFailed {
-  int64 fail_count = 1;
-}
-
-message ConsumerSessionEventElapsedTimeMs {
-  int64 elapsed_time_ms = 1;
-}
-
-message ConsumerSessionEventTopicEndReached {}
-
-message ConsumerSessionEventUnexpectedError {}
-
-message ConsumerSessionEventMessageId {
-  UserManagedMessageIdValueOrReference message_id = 1;
-}
-
-message ConsumerSessionEventMessageFilterChainPass {
+message ConsumerSessionEventMessageFilterChainPassed {
   UserManagedMessageFilterChainValueOrReference message_filter_chain = 1;
 }
 
 message UserManagedConsumerSessionEventSpec {
   oneof event {
-    ConsumerSessionEventMessagesProcessed event_message_processed = 1;
-    ConsumerSessionEventMessagesDelivered event_message_delivered = 2;
-    ConsumerSessionEventBytesProcessed event_bytes_processed = 3;
-    ConsumerSessionEventBytesDelivered event_bytes_delivered = 4;
-    ConsumerSessionEventMessageDecodeFailed event_message_decode_failed = 5;
-    ConsumerSessionEventElapsedTimeMs event_elapsed_time_ms = 6;
-    ConsumerSessionEventTopicEndReached event_topic_end_reached = 7;
-    ConsumerSessionEventUnexpectedError event_unexpected_error = 8;
-    ConsumerSessionEventMessageId event_message_id = 9;
-    ConsumerSessionEventMessageFilterChainPass event_message_filter_chain_pass = 10;
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionEventMessagesProcessed event_messages_processed = 1;
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionEventMessagesDelivered event_messages_delivered = 2;
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionEventBytesProcessed event_bytes_processed = 3;
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionEventBytesDelivered event_bytes_delivered = 4;
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionEventMessageDecodeFailed event_message_decode_failed = 5;
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionEventTimeElapsedMs event_time_elapsed_ms = 6;
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionEventTopicEndReached event_topic_end_reached = 7;
+    tools.teal.pulsar.ui.api.v1.ConsumerSessionEventUnexpectedErrorOccurred event_unexpected_error_occurred = 8;
+    ConsumerSessionEventMessageFilterChainPassed event_message_filter_chain_passed = 10;
   }
 }
 
@@ -169,15 +136,9 @@ message UserManagedConsumerSessionEventValueOrReference {
   }
 }
 
-enum ConsumerSessionPauseTriggerChainMode {
-  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_UNSPECIFIED = 0;
-  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL = 1;
-  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY = 2;
-}
-
 message UserManagedConsumerSessionPauseTriggerChainSpec {
   repeated UserManagedConsumerSessionEventValueOrReference events = 1;
-  ConsumerSessionPauseTriggerChainMode mode = 2;
+  tools.teal.pulsar.ui.api.v1.ConsumerSessionPauseTriggerChainMode mode = 2;
 }
 
 message UserManagedConsumerSessionPauseTriggerChain {

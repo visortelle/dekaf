@@ -14,6 +14,15 @@ import consumer.{
     messageFilterChainModeToPb,
     messageFilterFromPb,
     messageFilterToPb,
+    ConsumerSessionEventBytesDelivered,
+    ConsumerSessionEventBytesProcessed,
+    ConsumerSessionEventMessageDecodeFailed,
+    ConsumerSessionEventMessagesDelivered,
+    ConsumerSessionEventMessagesProcessed,
+    ConsumerSessionEventTimeElapsedMs,
+    ConsumerSessionEventTopicEndReached,
+    ConsumerSessionEventUnexpectedErrorOccurred,
+    ConsumerSessionPauseTriggerChainMode,
     EarliestMessage,
     LatestMessage
 }
@@ -270,104 +279,94 @@ def userManagedConsumerSessionStartFromValueOrReferenceToPb(
                 startFrom = pb.UserManagedConsumerSessionStartFromValueOrReference.StartFrom.StartFromReference(v.reference.get)
             )
 
-def consumerSessionEventMessagesProcessedFromPb(v: pb.ConsumerSessionEventMessagesProcessed): ConsumerSessionEventMessagesProcessed =
+def consumerSessionEventMessagesProcessedFromPb(v: consumerPb.ConsumerSessionEventMessagesProcessed): ConsumerSessionEventMessagesProcessed =
     ConsumerSessionEventMessagesProcessed(messageCount = v.messageCount)
 
-def consumerSessionEventMessagesProcessedToPb(v: ConsumerSessionEventMessagesProcessed): pb.ConsumerSessionEventMessagesProcessed =
-    pb.ConsumerSessionEventMessagesProcessed(messageCount = v.messageCount)
+def consumerSessionEventMessagesProcessedToPb(v: ConsumerSessionEventMessagesProcessed): consumerPb.ConsumerSessionEventMessagesProcessed =
+    consumerPb.ConsumerSessionEventMessagesProcessed(messageCount = v.messageCount)
 
-def consumerSessionEventMessagesDeliveredFromPb(v: pb.ConsumerSessionEventMessagesDelivered): ConsumerSessionEventMessagesDelivered =
+def consumerSessionEventMessagesDeliveredFromPb(v: consumerPb.ConsumerSessionEventMessagesDelivered): ConsumerSessionEventMessagesDelivered =
     ConsumerSessionEventMessagesDelivered(messageCount = v.messageCount)
 
-def consumerSessionEventMessagesDeliveredToPb(v: ConsumerSessionEventMessagesDelivered): pb.ConsumerSessionEventMessagesDelivered =
-    pb.ConsumerSessionEventMessagesDelivered(messageCount = v.messageCount)
+def consumerSessionEventMessagesDeliveredToPb(v: ConsumerSessionEventMessagesDelivered): consumerPb.ConsumerSessionEventMessagesDelivered =
+    consumerPb.ConsumerSessionEventMessagesDelivered(messageCount = v.messageCount)
 
-def consumerSessionEventMessageDecodeFailedFromPb(v: pb.ConsumerSessionEventMessageDecodeFailed): ConsumerSessionEventMessageDecodeFailed =
+def consumerSessionEventMessageDecodeFailedFromPb(v: consumerPb.ConsumerSessionEventMessageDecodeFailed): ConsumerSessionEventMessageDecodeFailed =
     ConsumerSessionEventMessageDecodeFailed(failCount = v.failCount)
 
-def consumerSessionEventMessageDecodeFailedToPb(v: ConsumerSessionEventMessageDecodeFailed): pb.ConsumerSessionEventMessageDecodeFailed =
-    pb.ConsumerSessionEventMessageDecodeFailed(failCount = v.failCount)
+def consumerSessionEventMessageDecodeFailedToPb(v: ConsumerSessionEventMessageDecodeFailed): consumerPb.ConsumerSessionEventMessageDecodeFailed =
+    consumerPb.ConsumerSessionEventMessageDecodeFailed(failCount = v.failCount)
 
-def consumerSessionEventElapsedTimeMsFromPb(v: pb.ConsumerSessionEventElapsedTimeMs): ConsumerSessionEventElapsedTimeMs =
-    ConsumerSessionEventElapsedTimeMs(elapsedTimeMs = v.elapsedTimeMs)
+def consumerSessionEventTimeElapsedMsFromPb(v: consumerPb.ConsumerSessionEventTimeElapsedMs): ConsumerSessionEventTimeElapsedMs =
+    ConsumerSessionEventTimeElapsedMs(timeElapsedMs = v.timeElapsedMs)
 
-def consumerSessionEventElapsedTimeMsToPb(v: ConsumerSessionEventElapsedTimeMs): pb.ConsumerSessionEventElapsedTimeMs =
-    pb.ConsumerSessionEventElapsedTimeMs(elapsedTimeMs = v.elapsedTimeMs)
+def consumerSessionEventTimeElapsedMsToPb(v: ConsumerSessionEventTimeElapsedMs): consumerPb.ConsumerSessionEventTimeElapsedMs =
+    consumerPb.ConsumerSessionEventTimeElapsedMs(timeElapsedMs = v.timeElapsedMs)
 
-def consumerSessionEventTopicEndReachedFromPb(v: pb.ConsumerSessionEventTopicEndReached): ConsumerSessionEventTopicEndReached =
+def consumerSessionEventTopicEndReachedFromPb(v: consumerPb.ConsumerSessionEventTopicEndReached): ConsumerSessionEventTopicEndReached =
     ConsumerSessionEventTopicEndReached()
 
-def consumerSessionEventTopicEndReachedToPb(v: ConsumerSessionEventTopicEndReached): pb.ConsumerSessionEventTopicEndReached =
-    pb.ConsumerSessionEventTopicEndReached()
+def consumerSessionEventTopicEndReachedToPb(v: ConsumerSessionEventTopicEndReached): consumerPb.ConsumerSessionEventTopicEndReached =
+    consumerPb.ConsumerSessionEventTopicEndReached()
 
-def consumerSessionEventUnexpectedErrorFromPb(v: pb.ConsumerSessionEventUnexpectedError): ConsumerSessionEventUnexpectedError =
-    ConsumerSessionEventUnexpectedError()
+def consumerSessionEventUnexpectedErrorOccurredFromPb(v: consumerPb.ConsumerSessionEventUnexpectedErrorOccurred): ConsumerSessionEventUnexpectedErrorOccurred =
+    ConsumerSessionEventUnexpectedErrorOccurred()
 
-def consumerSessionEventUnexpectedErrorToPb(v: ConsumerSessionEventUnexpectedError): pb.ConsumerSessionEventUnexpectedError =
-    pb.ConsumerSessionEventUnexpectedError()
+def consumerSessionEventUnexpectedErrorOccurredToPb(v: ConsumerSessionEventUnexpectedErrorOccurred): consumerPb.ConsumerSessionEventUnexpectedErrorOccurred =
+    consumerPb.ConsumerSessionEventUnexpectedErrorOccurred()
 
-def consumerSessionEventMessageIdFromPb(v: pb.ConsumerSessionEventMessageId): ConsumerSessionEventMessageId =
-    ConsumerSessionEventMessageId(messageId = userManagedMessageIdValueOrReferenceFromPb(v.messageId.get))
+def consumerSessionEventMessageFilterChainPassedFromPb(v: pb.ConsumerSessionEventMessageFilterChainPassed): ConsumerSessionEventMessageFilterChainPassed =
+    ConsumerSessionEventMessageFilterChainPassed(messageFilterChain = userManagedMessageFilterChainValueOrReferenceFromPb(v.messageFilterChain.get))
 
-def consumerSessionEventMessageIdToPb(v: ConsumerSessionEventMessageId): pb.ConsumerSessionEventMessageId =
-    pb.ConsumerSessionEventMessageId(messageId = Some(userManagedMessageIdValueOrReferenceToPb(v.messageId)))
-
-def consumerSessionEventMessageFilterChainPassFromPb(v: pb.ConsumerSessionEventMessageFilterChainPass): ConsumerSessionEventMessageFilterChainPass =
-    ConsumerSessionEventMessageFilterChainPass(messageFilterChain = userManagedMessageFilterChainValueOrReferenceFromPb(v.messageFilterChain.get))
-
-def consumerSessionEventMessageFilterChainPassToPb(v: ConsumerSessionEventMessageFilterChainPass): pb.ConsumerSessionEventMessageFilterChainPass =
-    pb.ConsumerSessionEventMessageFilterChainPass(messageFilterChain = Some(userManagedMessageFilterChainValueOrReferenceToPb(v.messageFilterChain)))
+def consumerSessionEventMessageFilterChainPassedToPb(v: ConsumerSessionEventMessageFilterChainPassed): pb.ConsumerSessionEventMessageFilterChainPassed =
+    pb.ConsumerSessionEventMessageFilterChainPassed(messageFilterChain = Some(userManagedMessageFilterChainValueOrReferenceToPb(v.messageFilterChain)))
 
 def userManagedConsumerSessionEventSpecFromPb(v: pb.UserManagedConsumerSessionEventSpec): UserManagedConsumerSessionEventSpec =
     v.event match
-        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageProcessed =>
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessagesProcessed =>
             UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessagesProcessedFromPb(evt.value))
-        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageDelivered =>
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessagesDelivered =>
             UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessagesDeliveredFromPb(evt.value))
         case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageDecodeFailed =>
             UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessageDecodeFailedFromPb(evt.value))
-        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventElapsedTimeMs =>
-            UserManagedConsumerSessionEventSpec(event = consumerSessionEventElapsedTimeMsFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventTimeElapsedMs =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventTimeElapsedMsFromPb(evt.value))
         case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventTopicEndReached =>
             UserManagedConsumerSessionEventSpec(event = consumerSessionEventTopicEndReachedFromPb(evt.value))
-        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventUnexpectedError =>
-            UserManagedConsumerSessionEventSpec(event = consumerSessionEventUnexpectedErrorFromPb(evt.value))
-        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageId =>
-            UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessageIdFromPb(evt.value))
-        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageFilterChainPass =>
-            UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessageFilterChainPassFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventUnexpectedErrorOccurred =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventUnexpectedErrorOccurredFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageFilterChainPassed =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessageFilterChainPassedFromPb(evt.value))
 
 def userManagedConsumerSessionEventSpecToPb(v: UserManagedConsumerSessionEventSpec): pb.UserManagedConsumerSessionEventSpec =
     v.event match
         case evt: ConsumerSessionEventMessagesProcessed =>
             pb.UserManagedConsumerSessionEventSpec(event =
-                pb.UserManagedConsumerSessionEventSpec.Event.EventMessageProcessed(consumerSessionEventMessagesProcessedToPb(evt))
+                pb.UserManagedConsumerSessionEventSpec.Event.EventMessagesProcessed(consumerSessionEventMessagesProcessedToPb(evt))
             )
         case evt: ConsumerSessionEventMessagesDelivered =>
             pb.UserManagedConsumerSessionEventSpec(event =
-                pb.UserManagedConsumerSessionEventSpec.Event.EventMessageDelivered(consumerSessionEventMessagesDeliveredToPb(evt))
+                pb.UserManagedConsumerSessionEventSpec.Event.EventMessagesDelivered(consumerSessionEventMessagesDeliveredToPb(evt))
             )
         case evt: ConsumerSessionEventMessageDecodeFailed =>
             pb.UserManagedConsumerSessionEventSpec(event =
                 pb.UserManagedConsumerSessionEventSpec.Event.EventMessageDecodeFailed(consumerSessionEventMessageDecodeFailedToPb(evt))
             )
-        case evt: ConsumerSessionEventElapsedTimeMs =>
+        case evt: ConsumerSessionEventTimeElapsedMs =>
             pb.UserManagedConsumerSessionEventSpec(event =
-                pb.UserManagedConsumerSessionEventSpec.Event.EventElapsedTimeMs(consumerSessionEventElapsedTimeMsToPb(evt))
+                pb.UserManagedConsumerSessionEventSpec.Event.EventTimeElapsedMs(consumerSessionEventTimeElapsedMsToPb(evt))
             )
         case evt: ConsumerSessionEventTopicEndReached =>
             pb.UserManagedConsumerSessionEventSpec(event =
                 pb.UserManagedConsumerSessionEventSpec.Event.EventTopicEndReached(consumerSessionEventTopicEndReachedToPb(evt))
             )
-        case evt: ConsumerSessionEventUnexpectedError =>
+        case evt: ConsumerSessionEventUnexpectedErrorOccurred =>
             pb.UserManagedConsumerSessionEventSpec(event =
-                pb.UserManagedConsumerSessionEventSpec.Event.EventUnexpectedError(consumerSessionEventUnexpectedErrorToPb(evt))
+                pb.UserManagedConsumerSessionEventSpec.Event.EventUnexpectedErrorOccurred(consumerSessionEventUnexpectedErrorOccurredToPb(evt))
             )
-        case evt: ConsumerSessionEventMessageId =>
-            pb.UserManagedConsumerSessionEventSpec(event = pb.UserManagedConsumerSessionEventSpec.Event.EventMessageId(consumerSessionEventMessageIdToPb(evt)))
-        case evt: ConsumerSessionEventMessageFilterChainPass =>
+        case evt: ConsumerSessionEventMessageFilterChainPassed =>
             pb.UserManagedConsumerSessionEventSpec(event =
-                pb.UserManagedConsumerSessionEventSpec.Event.EventMessageFilterChainPass(consumerSessionEventMessageFilterChainPassToPb(evt))
+                pb.UserManagedConsumerSessionEventSpec.Event.EventMessageFilterChainPassed(consumerSessionEventMessageFilterChainPassedToPb(evt))
             )
 
 def userManagedConsumerSessionEventFromPb(v: pb.UserManagedConsumerSessionEvent): UserManagedConsumerSessionEvent =
@@ -410,22 +409,22 @@ def userManagedConsumerSessionEventValueOrReferenceToPb(
                 event = pb.UserManagedConsumerSessionEventValueOrReference.Event.EventReference(v.reference.get)
             )
 
-def consumerSessionPauseTriggerChainModeFromPb(v: pb.ConsumerSessionPauseTriggerChainMode): ConsumerSessionPauseTriggerChainMode =
+def consumerSessionPauseTriggerChainModeFromPb(v: consumerPb.ConsumerSessionPauseTriggerChainMode): ConsumerSessionPauseTriggerChainMode =
     v match
-        case pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL => ConsumerSessionPauseTriggerChainMode.All
-        case pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY => ConsumerSessionPauseTriggerChainMode.Any
+        case consumerPb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL => ConsumerSessionPauseTriggerChainMode.All
+        case consumerPb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY => ConsumerSessionPauseTriggerChainMode.Any
         case _ => throw new IllegalArgumentException("Unknown consumer session pause trigger chain mode")
 
-def consumerSessionPauseTriggerChainModeToPb(v: ConsumerSessionPauseTriggerChainMode): pb.ConsumerSessionPauseTriggerChainMode =
+def consumerSessionPauseTriggerChainModeToPb(v: ConsumerSessionPauseTriggerChainMode): consumerPb.ConsumerSessionPauseTriggerChainMode =
     v match
-        case ConsumerSessionPauseTriggerChainMode.All => pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL
-        case ConsumerSessionPauseTriggerChainMode.Any => pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY
+        case ConsumerSessionPauseTriggerChainMode.All => consumerPb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL
+        case ConsumerSessionPauseTriggerChainMode.Any => consumerPb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY
 
 def userManagedConsumerSessionPauseTriggerChainSpecFromPb(
     v: pb.UserManagedConsumerSessionPauseTriggerChainSpec
 ): UserManagedConsumerSessionPauseTriggerChainSpec =
     UserManagedConsumerSessionPauseTriggerChainSpec(
-        events = v.events.map(userManagedConsumerSessionEventValueOrReferenceFromPb).toList,
+        events = v.events.map(userManagedConsumerSessionEventValueOrReferenceFromPb).toVector,
         mode = consumerSessionPauseTriggerChainModeFromPb(v.mode)
     )
 

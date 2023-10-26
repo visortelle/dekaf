@@ -3,8 +3,16 @@ package library
 import _root_.consumer.{
     BasicMessageFilter,
     ConsumerSessionConfig,
-    ConsumerSessionConfigPauseTrigger,
-    ConsumerSessionConfigStartFrom,
+    ConsumerSessionStartFrom,
+    ConsumerSessionEventBytesDelivered,
+    ConsumerSessionEventBytesProcessed,
+    ConsumerSessionEventTimeElapsedMs,
+    ConsumerSessionEventMessageDecodeFailed,
+    ConsumerSessionEventMessagesDelivered,
+    ConsumerSessionEventMessagesProcessed,
+    ConsumerSessionEventTopicEndReached,
+    ConsumerSessionEventUnexpectedErrorOccurred,
+    ConsumerSessionPauseTriggerChainMode,
     DateTime,
     DateTimeUnit,
     EarliestMessage,
@@ -106,22 +114,12 @@ case class UserManagedConsumerSessionStartFromValueOrReference(
     reference: Option[UserManagedItemReference]
 )
 
-case class ConsumerSessionEventMessagesProcessed(messageCount: Long)
-case class ConsumerSessionEventMessagesDelivered(messageCount: Long)
-case class ConsumerSessionEventBytesProcessed(byteCount: Long)
-case class ConsumerSessionEventBytesDelivered(byteCount: Long)
-case class ConsumerSessionEventMessageDecodeFailed(failCount: Long)
-case class ConsumerSessionEventElapsedTimeMs(elapsedTimeMs: Long)
-case class ConsumerSessionEventTopicEndReached()
-case class ConsumerSessionEventUnexpectedError()
-case class ConsumerSessionEventMessageId(messageId: UserManagedMessageIdValueOrReference)
-case class ConsumerSessionEventMessageFilterChainPass(messageFilterChain: UserManagedMessageFilterChainValueOrReference)
+case class ConsumerSessionEventMessageFilterChainPassed(messageFilterChain: UserManagedMessageFilterChainValueOrReference)
 
 case class UserManagedConsumerSessionEventSpec(
     event: ConsumerSessionEventMessagesProcessed | ConsumerSessionEventMessagesDelivered | ConsumerSessionEventBytesProcessed |
-        ConsumerSessionEventBytesDelivered | ConsumerSessionEventMessageDecodeFailed | ConsumerSessionEventElapsedTimeMs |
-        ConsumerSessionEventTopicEndReached | ConsumerSessionEventUnexpectedError | ConsumerSessionEventMessageId |
-        ConsumerSessionEventMessageFilterChainPass
+        ConsumerSessionEventBytesDelivered | ConsumerSessionEventMessageDecodeFailed | ConsumerSessionEventTimeElapsedMs | ConsumerSessionEventTopicEndReached |
+        ConsumerSessionEventUnexpectedErrorOccurred | ConsumerSessionEventMessageFilterChainPassed
 )
 
 case class UserManagedConsumerSessionEvent(
@@ -134,11 +132,8 @@ case class UserManagedConsumerSessionEventValueOrReference(
     reference: Option[UserManagedItemReference]
 )
 
-enum ConsumerSessionPauseTriggerChainMode:
-    case All, Any
-
 case class UserManagedConsumerSessionPauseTriggerChainSpec(
-    events: List[UserManagedConsumerSessionEventValueOrReference],
+    events: Vector[UserManagedConsumerSessionEventValueOrReference],
     mode: ConsumerSessionPauseTriggerChainMode
 )
 
