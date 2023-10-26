@@ -9,7 +9,7 @@ import RelativeDateTimePicker from '../../../../ui/RelativeDateTimePicker/Relati
 import { useHover } from '../../../../app/hooks/use-hover';
 
 export type StartFromInputProps = {
-  value: UserManagedConsumerSessionConfigStartFrom;
+  value: UserManagedConsumerSessionStartFrom;
   onChange: (value: StartFrom) => void;
   disabled?: boolean;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;

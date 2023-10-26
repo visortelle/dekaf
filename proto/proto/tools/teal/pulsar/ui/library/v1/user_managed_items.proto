@@ -86,11 +86,11 @@ message UserManagedRelativeDateTimeValueOrReference {
 
 message UserManagedConsumerSessionStartFromSpec {
   oneof start_from {
-    tools.teal.pulsar.ui.api.v1.EarliestMessage earliest_message = 1;
-    tools.teal.pulsar.ui.api.v1.LatestMessage latest_message = 2;
-    UserManagedMessageIdValueOrReference message_id = 3;
-    UserManagedDateTimeValueOrReference date_time = 4;
-    UserManagedRelativeDateTimeValueOrReference relative_date_time = 5;
+    tools.teal.pulsar.ui.api.v1.EarliestMessage start_from_earliest_message = 1;
+    tools.teal.pulsar.ui.api.v1.LatestMessage start_from_latest_message = 2;
+    UserManagedMessageIdValueOrReference start_from_message_id = 3;
+    UserManagedDateTimeValueOrReference start_from_date_time = 4;
+    UserManagedRelativeDateTimeValueOrReference start_from_relative_date_time = 5;
   }
 }
 

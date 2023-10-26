@@ -8,7 +8,7 @@ import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
-import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
@@ -31,7 +31,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedConsumerSessionConfigSpec) => {
+  const onSpecChange = (spec: UserManagedConsumerSessionSpec) => {
     const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, value: { ...item, spec } };
     props.onChange(newValue);
   };
