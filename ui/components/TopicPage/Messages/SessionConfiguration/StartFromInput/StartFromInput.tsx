@@ -6,9 +6,10 @@ import { StartFrom } from '../../types';
 import Input from '../../../../ui/Input/Input';
 import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import RelativeDateTimePicker from '../../../../ui/RelativeDateTimePicker/RelativeDateTimePicker';
+import { useHover } from '../../../../app/hooks/use-hover';
 
 export type StartFromInputProps = {
-  value: StartFrom;
+  value: UserManagedConsumerSessionConfigStartFrom;
   onChange: (value: StartFrom) => void;
   disabled?: boolean;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
@@ -30,9 +31,10 @@ const list: List<StartFromType> = [
 
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {
   const isHasPartitionedTopic = hasPartitionedTopic(props.topicsInternalStats);
+  const [hoverRef, isHovered] = useHover();
 
   return (
-    <div className={s.StartFromInput}>
+    <div className={s.StartFromInput} ref={hoverRef}>
       <div className={s.TypeSelect}>
         <Select
           list={list}

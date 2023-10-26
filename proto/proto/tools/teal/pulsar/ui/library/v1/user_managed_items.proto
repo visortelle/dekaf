@@ -9,8 +9,8 @@ enum UserManagedItemType {
   USER_MANAGED_ITEM_TYPE_UNSPECIFIED = 0;
 
   USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG = 1;
-  USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM = 11;
-  USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER = 12;
+  USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM = 11;
+  USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER = 12;
 
   USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER = 4;
   USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN = 5;
@@ -67,7 +67,7 @@ message UserManagedDateTimeValueOrReference {
 }
 
 message UserManagedRelativeDateTimeSpec {
-  int32 value = 2;
+  int64 value = 2;
   tools.teal.pulsar.ui.api.v1.DateTimeUnit unit = 3;
   bool is_rounded_to_unit_start = 4;
 }
@@ -84,7 +84,7 @@ message UserManagedRelativeDateTimeValueOrReference {
   }
 }
 
-message UserManagedConsumerSessionConfigStartFromSpec {
+message UserManagedConsumerSessionStartFromSpec {
   oneof start_from {
     tools.teal.pulsar.ui.api.v1.EarliestMessage earliest_message = 1;
     tools.teal.pulsar.ui.api.v1.LatestMessage latest_message = 2;
@@ -94,44 +94,101 @@ message UserManagedConsumerSessionConfigStartFromSpec {
   }
 }
 
-message UserManagedConsumerSessionConfigStartFrom {
+message UserManagedConsumerSessionStartFrom {
   UserManagedItemMetadata metadata = 1;
-  UserManagedConsumerSessionConfigStartFromSpec spec = 2;
+  UserManagedConsumerSessionStartFromSpec spec = 2;
 }
 
-message UserManagedConsumerSessionConfigStartFromValueOrReference {
+message UserManagedConsumerSessionStartFromValueOrReference {
   oneof start_from {
-    UserManagedConsumerSessionConfigStartFrom start_from_value = 1;
+    UserManagedConsumerSessionStartFrom start_from_value = 1;
     string start_from_reference = 2;
   }
 }
 
-message UserManagedConsumerSessionConfigPauseTriggerSpec {
-  oneof trigger {
-    int64 on_messages_processed = 1;
-    int64 on_messages_delivered = 2;
-    int64 on_bytes_processed = 3;
-    int64 on_bytes_delivered = 4;
-    int64 on_message_decode_fails = 7;
-    int64 on_elapsed_time_ms = 5;
-    bool on_topic_end_reached = 6;
-    UserManagedDateTimeValueOrReference on_date_time = 8;
-    UserManagedRelativeDateTimeValueOrReference on_relative_date_time = 9;
-    UserManagedMessageIdValueOrReference on_message_id = 10;
-    UserManagedMessageFilterValueOrReference on_message_filter_pass = 11;
-    UserManagedMessageFilterChainValueOrReference on_message_filter_chain_pass = 12;
+message ConsumerSessionEventMessagesProcessed {
+  int64 message_count = 1;
+}
+
+message ConsumerSessionEventMessagesDelivered {
+  int64 message_count = 1;
+}
+
+message ConsumerSessionEventBytesProcessed {
+  int64 byte_count = 1;
+}
+
+message ConsumerSessionEventBytesDelivered {
+  int64 byte_count = 1;
+}
+
+message ConsumerSessionEventMessageDecodeFailed {
+  int64 fail_count = 1;
+}
+
+message ConsumerSessionEventElapsedTimeMs {
+  int64 elapsed_time_ms = 1;
+}
+
+message ConsumerSessionEventTopicEndReached {}
+
+message ConsumerSessionEventUnexpectedError {}
+
+message ConsumerSessionEventMessageId {
+  UserManagedMessageIdValueOrReference message_id = 1;
+}
+
+message ConsumerSessionEventMessageFilterChainPass {
+  UserManagedMessageFilterChainValueOrReference message_filter_chain = 1;
+}
+
+message UserManagedConsumerSessionEventSpec {
+  oneof event {
+    ConsumerSessionEventMessagesProcessed event_message_processed = 1;
+    ConsumerSessionEventMessagesDelivered event_message_delivered = 2;
+    ConsumerSessionEventBytesProcessed event_bytes_processed = 3;
+    ConsumerSessionEventBytesDelivered event_bytes_delivered = 4;
+    ConsumerSessionEventMessageDecodeFailed event_message_decode_failed = 5;
+    ConsumerSessionEventElapsedTimeMs event_elapsed_time_ms = 6;
+    ConsumerSessionEventTopicEndReached event_topic_end_reached = 7;
+    ConsumerSessionEventUnexpectedError event_unexpected_error = 8;
+    ConsumerSessionEventMessageId event_message_id = 9;
+    ConsumerSessionEventMessageFilterChainPass event_message_filter_chain_pass = 10;
   }
 }
 
-message UserManagedConsumerSessionConfigPauseTrigger {
+message UserManagedConsumerSessionEvent {
   UserManagedItemMetadata metadata = 1;
-  UserManagedConsumerSessionConfigPauseTriggerSpec spec = 2;
+  UserManagedConsumerSessionEventSpec spec = 2;
 }
 
-message UserManagedConsumerSessionConfigPauseTriggerValueOrReference {
-  oneof pause_trigger {
-    UserManagedConsumerSessionConfigPauseTrigger pause_trigger_value = 1;
-    string pause_trigger_reference = 2;
+message UserManagedConsumerSessionEventValueOrReference {
+  oneof event {
+    UserManagedConsumerSessionEvent event_value = 1;
+    string event_reference = 2;
+  }
+}
+
+enum ConsumerSessionPauseTriggerChainMode {
+  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_UNSPECIFIED = 0;
+  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL = 1;
+  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY = 2;
+}
+
+message UserManagedConsumerSessionPauseTriggerChainSpec {
+  repeated UserManagedConsumerSessionEventValueOrReference events = 1;
+  ConsumerSessionPauseTriggerChainMode mode = 2;
+}
+
+message UserManagedConsumerSessionPauseTriggerChain {
+  UserManagedItemMetadata metadata = 1;
+  UserManagedConsumerSessionPauseTriggerChainSpec spec = 2;
+}
+
+message UserManagedConsumerSessionPauseTriggerChainValueOrReference {
+  oneof pause_trigger_chain {
+    UserManagedConsumerSessionPauseTriggerChain pause_trigger_chain_value = 1;
+    string pause_trigger_chain_reference = 2;
   }
 }
 
@@ -171,9 +228,9 @@ message UserManagedMessageFilterChainValueOrReference {
 }
 
 message UserManagedConsumerSessionConfigSpec {
-  UserManagedConsumerSessionConfigStartFromValueOrReference start_from = 1;
+  UserManagedConsumerSessionStartFromValueOrReference start_from = 1;
   UserManagedMessageFilterChainValueOrReference message_filter_chain = 2;
-  UserManagedConsumerSessionConfigPauseTriggerValueOrReference pause_trigger = 3;
+  UserManagedConsumerSessionPauseTriggerChainValueOrReference pause_trigger_chain = 3;
 }
 
 message UserManagedConsumerSessionConfig {
@@ -184,8 +241,8 @@ message UserManagedConsumerSessionConfig {
 message UserManagedItem {
   oneof item {
     UserManagedConsumerSessionConfig consumer_session_config = 2;
-    UserManagedConsumerSessionConfigStartFrom consumer_session_config_start_from = 3;
-    UserManagedConsumerSessionConfigPauseTrigger consumer_session_config_pause_trigger = 4;
+    UserManagedConsumerSessionStartFrom consumer_session_start_from = 3;
+    UserManagedConsumerSessionPauseTriggerChain consumer_session_pause_trigger_chain = 4;
     UserManagedMessageId message_id = 5;
     UserManagedDateTime date_time = 6;
     UserManagedRelativeDateTime relative_date_time = 7;

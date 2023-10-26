@@ -22,27 +22,27 @@ import java.time.Instant
 
 def userManagedItemTypeFromPb(v: pb.UserManagedItemType): UserManagedItemType =
     v match
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG               => UserManagedItemType.ConsumerSessionConfig()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM    => UserManagedItemType.ConsumerSessionConfigStartFrom()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER => UserManagedItemType.ConsumerSessionConfigPauseTrigger()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG               => UserManagedItemType.ProducerSessionConfig()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT                     => UserManagedItemType.MarkdownDocument()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER                        => UserManagedItemType.MessageFilter()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN                  => UserManagedItemType.MessageFilterChain()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET             => UserManagedItemType.DataVisualizationWidget()
-        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD          => UserManagedItemType.DataVisualizationDashboard()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG        => UserManagedItemType.ConsumerSessionConfig()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM    => UserManagedItemType.ConsumerSessionStartFrom()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER => UserManagedItemType.ConsumerSessionPauseTrigger()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG        => UserManagedItemType.ProducerSessionConfig()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT              => UserManagedItemType.MarkdownDocument()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER                 => UserManagedItemType.MessageFilter()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN           => UserManagedItemType.MessageFilterChain()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET      => UserManagedItemType.DataVisualizationWidget()
+        case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD   => UserManagedItemType.DataVisualizationDashboard()
         case _ => throw new IllegalArgumentException("Unknown user managed item type")
 def userManagedItemTypeToPb(v: UserManagedItemType): pb.UserManagedItemType =
     v match
-        case UserManagedItemType.ConsumerSessionConfig()             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG
-        case UserManagedItemType.ConsumerSessionConfigStartFrom()    => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM
-        case UserManagedItemType.ConsumerSessionConfigPauseTrigger() => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER
-        case UserManagedItemType.ProducerSessionConfig()             => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG
-        case UserManagedItemType.MarkdownDocument()                  => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
-        case UserManagedItemType.MessageFilter()                     => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER
-        case UserManagedItemType.MessageFilterChain()                => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN
-        case UserManagedItemType.DataVisualizationWidget()           => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
-        case UserManagedItemType.DataVisualizationDashboard()        => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
+        case UserManagedItemType.ConsumerSessionConfig()       => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG
+        case UserManagedItemType.ConsumerSessionStartFrom()    => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM
+        case UserManagedItemType.ConsumerSessionPauseTrigger() => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER
+        case UserManagedItemType.ProducerSessionConfig()       => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG
+        case UserManagedItemType.MarkdownDocument()            => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
+        case UserManagedItemType.MessageFilter()               => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER
+        case UserManagedItemType.MessageFilterChain()          => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN
+        case UserManagedItemType.DataVisualizationWidget()     => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
+        case UserManagedItemType.DataVisualizationDashboard()  => pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
 
 def userManagedItemMetadataFromPb(v: pb.UserManagedItemMetadata): UserManagedItemMetadata =
     UserManagedItemMetadata(
@@ -197,191 +197,286 @@ def userManagedRelativeDateTimeValueOrReferenceToPb(v: UserManagedRelativeDateTi
                 relativeDateTime = pb.UserManagedRelativeDateTimeValueOrReference.RelativeDateTime.RelativeDateTimeReference(v.reference.get)
             )
 
-def userManagedConsumerSessionConfigStartFromSpecFromPb(v: pb.UserManagedConsumerSessionConfigStartFromSpec): UserManagedConsumerSessionConfigStartFromSpec =
-    UserManagedConsumerSessionConfigStartFromSpec(
-        earliestMessage = v.startFrom match
-            case pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.EarliestMessage(v) =>
-                Some(EarliestMessage())
-            case _ => None
-        ,
-        latestMessage = v.startFrom match
-            case pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.LatestMessage(v) =>
-                Some(LatestMessage())
-            case _ => None
-        ,
-        messageId = v.startFrom match
-            case pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.MessageId(v) =>
-                Some(userManagedMessageIdValueOrReferenceFromPb(v))
-            case _ => None
-        ,
-        dateTime = v.startFrom match
-            case pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.DateTime(v) =>
-                Some(userManagedDateTimeValueOrReferenceFromPb(v))
-            case _ => None
-        ,
-        relativeDateTime = v.startFrom match
-            case pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.RelativeDateTime(v) =>
-                Some(userManagedRelativeDateTimeValueOrReferenceFromPb(v))
-            case _ => None
-    )
-
-def userManagedConsumerSessionConfigStartFromSpecToPb(v: UserManagedConsumerSessionConfigStartFromSpec): pb.UserManagedConsumerSessionConfigStartFromSpec =
-    pb.UserManagedConsumerSessionConfigStartFromSpec(
-        startFrom = v.earliestMessage match
-            case Some(_) => pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.EarliestMessage(consumerPb.EarliestMessage())
-            case None =>
-                v.latestMessage match
-                    case Some(_) => pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.LatestMessage(consumerPb.LatestMessage())
-                    case None =>
-                        v.messageId match
-                            case Some(v) => pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.MessageId(userManagedMessageIdValueOrReferenceToPb(v))
-                            case None =>
-                                v.dateTime match
-                                    case Some(v) =>
-                                        pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.DateTime(userManagedDateTimeValueOrReferenceToPb(v))
-                                    case None =>
-                                        v.relativeDateTime match
-                                            case Some(v) =>
-                                                pb.UserManagedConsumerSessionConfigStartFromSpec.StartFrom.RelativeDateTime(
-                                                    userManagedRelativeDateTimeValueOrReferenceToPb(v)
-                                                )
-                                            case None => throw new Exception("Invalid UserManagedConsumerSessionConfigStartFromSpec")
-    )
-
-def userManagedConsumerSessionConfigStartFromFromPb(v: pb.UserManagedConsumerSessionConfigStartFrom): UserManagedConsumerSessionConfigStartFrom =
-    UserManagedConsumerSessionConfigStartFrom(
-        metadata = userManagedItemMetadataFromPb(v.metadata.get),
-        spec = userManagedConsumerSessionConfigStartFromSpecFromPb(v.spec.get)
-    )
-def userManagedConsumerSessionConfigStartFromToPb(v: UserManagedConsumerSessionConfigStartFrom): pb.UserManagedConsumerSessionConfigStartFrom =
-    pb.UserManagedConsumerSessionConfigStartFrom(
-        metadata = Some(userManagedItemMetadataToPb(v.metadata)),
-        spec = Some(userManagedConsumerSessionConfigStartFromSpecToPb(v.spec))
-    )
-
-def userManagedConsumerSessionConfigStartFromValueOrReferenceFromPb(
-    v: pb.UserManagedConsumerSessionConfigStartFromValueOrReference
-): UserManagedConsumerSessionConfigStartFromValueOrReference =
+def userManagedConsumerSessionStartFromSpecFromPb(v: pb.UserManagedConsumerSessionStartFromSpec): UserManagedConsumerSessionStartFromSpec =
     v.startFrom match
-        case pb.UserManagedConsumerSessionConfigStartFromValueOrReference.StartFrom.StartFromValue(v) =>
-            UserManagedConsumerSessionConfigStartFromValueOrReference(
-                value = Some(userManagedConsumerSessionConfigStartFromFromPb(v)),
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.EarliestMessage => UserManagedConsumerSessionStartFromSpec(startFrom = EarliestMessage())
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.LatestMessage   => UserManagedConsumerSessionStartFromSpec(startFrom = LatestMessage())
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.MessageId =>
+            UserManagedConsumerSessionStartFromSpec(startFrom = userManagedMessageIdValueOrReferenceFromPb(sf.value))
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.DateTime =>
+            UserManagedConsumerSessionStartFromSpec(startFrom = userManagedDateTimeValueOrReferenceFromPb(sf.value))
+        case sf: pb.UserManagedConsumerSessionStartFromSpec.StartFrom.RelativeDateTime =>
+            UserManagedConsumerSessionStartFromSpec(startFrom = userManagedRelativeDateTimeValueOrReferenceFromPb(sf.value))
+
+def userManagedConsumerSessionStartFromSpecToPb(v: UserManagedConsumerSessionStartFromSpec): pb.UserManagedConsumerSessionStartFromSpec =
+    v.startFrom match
+        case v: EarliestMessage =>
+            pb.UserManagedConsumerSessionStartFromSpec(
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.EarliestMessage(consumerPb.EarliestMessage())
+            )
+        case v: LatestMessage =>
+            pb.UserManagedConsumerSessionStartFromSpec(
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.LatestMessage(consumerPb.LatestMessage())
+            )
+        case v: UserManagedMessageIdValueOrReference =>
+            pb.UserManagedConsumerSessionStartFromSpec(
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.MessageId(userManagedMessageIdValueOrReferenceToPb(v))
+            )
+        case v: UserManagedDateTimeValueOrReference =>
+            pb.UserManagedConsumerSessionStartFromSpec(
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.DateTime(userManagedDateTimeValueOrReferenceToPb(v))
+            )
+        case v: UserManagedRelativeDateTimeValueOrReference =>
+            pb.UserManagedConsumerSessionStartFromSpec(
+                startFrom = pb.UserManagedConsumerSessionStartFromSpec.StartFrom.RelativeDateTime(userManagedRelativeDateTimeValueOrReferenceToPb(v))
+            )
+
+def userManagedConsumerSessionStartFromFromPb(v: pb.UserManagedConsumerSessionStartFrom): UserManagedConsumerSessionStartFrom =
+    UserManagedConsumerSessionStartFrom(
+        metadata = userManagedItemMetadataFromPb(v.metadata.get),
+        spec = userManagedConsumerSessionStartFromSpecFromPb(v.spec.get)
+    )
+def userManagedConsumerSessionStartFromToPb(v: UserManagedConsumerSessionStartFrom): pb.UserManagedConsumerSessionStartFrom =
+    pb.UserManagedConsumerSessionStartFrom(
+        metadata = Some(userManagedItemMetadataToPb(v.metadata)),
+        spec = Some(userManagedConsumerSessionStartFromSpecToPb(v.spec))
+    )
+
+def userManagedConsumerSessionStartFromValueOrReferenceFromPb(
+    v: pb.UserManagedConsumerSessionStartFromValueOrReference
+): UserManagedConsumerSessionStartFromValueOrReference =
+    v.startFrom match
+        case pb.UserManagedConsumerSessionStartFromValueOrReference.StartFrom.StartFromValue(v) =>
+            UserManagedConsumerSessionStartFromValueOrReference(
+                value = Some(userManagedConsumerSessionStartFromFromPb(v)),
                 reference = None
             )
-        case pb.UserManagedConsumerSessionConfigStartFromValueOrReference.StartFrom.StartFromReference(v) =>
-            UserManagedConsumerSessionConfigStartFromValueOrReference(
+        case pb.UserManagedConsumerSessionStartFromValueOrReference.StartFrom.StartFromReference(v) =>
+            UserManagedConsumerSessionStartFromValueOrReference(
                 value = None,
                 reference = Some(v)
             )
 
-def userManagedConsumerSessionConfigStartFromValueOrReferenceToPb(
-    v: UserManagedConsumerSessionConfigStartFromValueOrReference
-): pb.UserManagedConsumerSessionConfigStartFromValueOrReference =
+def userManagedConsumerSessionStartFromValueOrReferenceToPb(
+    v: UserManagedConsumerSessionStartFromValueOrReference
+): pb.UserManagedConsumerSessionStartFromValueOrReference =
     v.value match
         case Some(v) =>
-            pb.UserManagedConsumerSessionConfigStartFromValueOrReference(
-                startFrom =
-                    pb.UserManagedConsumerSessionConfigStartFromValueOrReference.StartFrom.StartFromValue(userManagedConsumerSessionConfigStartFromToPb(v))
+            pb.UserManagedConsumerSessionStartFromValueOrReference(
+                startFrom = pb.UserManagedConsumerSessionStartFromValueOrReference.StartFrom.StartFromValue(userManagedConsumerSessionStartFromToPb(v))
             )
         case None =>
-            pb.UserManagedConsumerSessionConfigStartFromValueOrReference(
-                startFrom = pb.UserManagedConsumerSessionConfigStartFromValueOrReference.StartFrom.StartFromReference(v.reference.get)
+            pb.UserManagedConsumerSessionStartFromValueOrReference(
+                startFrom = pb.UserManagedConsumerSessionStartFromValueOrReference.StartFrom.StartFromReference(v.reference.get)
             )
 
-def userManagedConsumerSessionConfigPauseTriggerSpecFromPb(
-    v: pb.UserManagedConsumerSessionConfigPauseTriggerSpec
-): UserManagedConsumerSessionConfigPauseTriggerSpec =
-    v.trigger match
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnMessagesProcessed(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onMessagesProcessed = Some(v)
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnMessagesDelivered(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onMessagesDelivered = Some(v)
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnBytesProcessed(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onBytesProcessed = Some(v)
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnBytesDelivered(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onBytesDelivered = Some(v)
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnMessageDecodeFails(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onMessageDecodeFails = Some(v)
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnElapsedTimeMs(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onElapsedTimeMs = Some(v)
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnTopicEndReached(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onTopicEndReached = Some(v)
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnDateTime(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onDateTime = Some(userManagedDateTimeValueOrReferenceFromPb(v))
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnRelativeDateTime(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onRelativeDateTime = Some(userManagedRelativeDateTimeValueOrReferenceFromPb(v))
-            )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnMessageId(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerSpec(
-                onMessageId = Some(userManagedMessageIdValueOrReferenceFromPb(v))
-            )
-//        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnMessageFilterPass(v) =>
-//            UserManagedConsumerSessionConfigPauseTriggerSpec(
-//                onMessageFilterPass = Some(userManagedMessageFilterChainValueOrReferenceFromPb(v)),
-//            )
-//        case pb.UserManagedConsumerSessionConfigPauseTriggerSpec.Trigger.OnMessageFilterChainPass(v) =>
-//            UserManagedConsumerSessionConfigPauseTriggerSpec(
-//                onMessageFilterChainPass = Some(userManagedMessageFilterChainValueOrReferenceFromPb(v)),
-//            )
-//
-def userManagedConsumerSessionConfigPauseTriggerSpecToPb(spec: UserManagedConsumerSessionConfigPauseTriggerSpec) = ???
+def consumerSessionEventMessagesProcessedFromPb(v: pb.ConsumerSessionEventMessagesProcessed): ConsumerSessionEventMessagesProcessed =
+    ConsumerSessionEventMessagesProcessed(messageCount = v.messageCount)
 
-def userManagedConsumerSessionConfigPauseTriggerFromPb(v: pb.UserManagedConsumerSessionConfigPauseTrigger): UserManagedConsumerSessionConfigPauseTrigger =
-    UserManagedConsumerSessionConfigPauseTrigger(
+def consumerSessionEventMessagesProcessedToPb(v: ConsumerSessionEventMessagesProcessed): pb.ConsumerSessionEventMessagesProcessed =
+    pb.ConsumerSessionEventMessagesProcessed(messageCount = v.messageCount)
+
+def consumerSessionEventMessagesDeliveredFromPb(v: pb.ConsumerSessionEventMessagesDelivered): ConsumerSessionEventMessagesDelivered =
+    ConsumerSessionEventMessagesDelivered(messageCount = v.messageCount)
+
+def consumerSessionEventMessagesDeliveredToPb(v: ConsumerSessionEventMessagesDelivered): pb.ConsumerSessionEventMessagesDelivered =
+    pb.ConsumerSessionEventMessagesDelivered(messageCount = v.messageCount)
+
+def consumerSessionEventMessageDecodeFailedFromPb(v: pb.ConsumerSessionEventMessageDecodeFailed): ConsumerSessionEventMessageDecodeFailed =
+    ConsumerSessionEventMessageDecodeFailed(failCount = v.failCount)
+
+def consumerSessionEventMessageDecodeFailedToPb(v: ConsumerSessionEventMessageDecodeFailed): pb.ConsumerSessionEventMessageDecodeFailed =
+    pb.ConsumerSessionEventMessageDecodeFailed(failCount = v.failCount)
+
+def consumerSessionEventElapsedTimeMsFromPb(v: pb.ConsumerSessionEventElapsedTimeMs): ConsumerSessionEventElapsedTimeMs =
+    ConsumerSessionEventElapsedTimeMs(elapsedTimeMs = v.elapsedTimeMs)
+
+def consumerSessionEventElapsedTimeMsToPb(v: ConsumerSessionEventElapsedTimeMs): pb.ConsumerSessionEventElapsedTimeMs =
+    pb.ConsumerSessionEventElapsedTimeMs(elapsedTimeMs = v.elapsedTimeMs)
+
+def consumerSessionEventTopicEndReachedFromPb(v: pb.ConsumerSessionEventTopicEndReached): ConsumerSessionEventTopicEndReached =
+    ConsumerSessionEventTopicEndReached()
+
+def consumerSessionEventTopicEndReachedToPb(v: ConsumerSessionEventTopicEndReached): pb.ConsumerSessionEventTopicEndReached =
+    pb.ConsumerSessionEventTopicEndReached()
+
+def consumerSessionEventUnexpectedErrorFromPb(v: pb.ConsumerSessionEventUnexpectedError): ConsumerSessionEventUnexpectedError =
+    ConsumerSessionEventUnexpectedError()
+
+def consumerSessionEventUnexpectedErrorToPb(v: ConsumerSessionEventUnexpectedError): pb.ConsumerSessionEventUnexpectedError =
+    pb.ConsumerSessionEventUnexpectedError()
+
+def consumerSessionEventMessageIdFromPb(v: pb.ConsumerSessionEventMessageId): ConsumerSessionEventMessageId =
+    ConsumerSessionEventMessageId(messageId = userManagedMessageIdValueOrReferenceFromPb(v.messageId.get))
+
+def consumerSessionEventMessageIdToPb(v: ConsumerSessionEventMessageId): pb.ConsumerSessionEventMessageId =
+    pb.ConsumerSessionEventMessageId(messageId = Some(userManagedMessageIdValueOrReferenceToPb(v.messageId)))
+
+def consumerSessionEventMessageFilterChainPassFromPb(v: pb.ConsumerSessionEventMessageFilterChainPass): ConsumerSessionEventMessageFilterChainPass =
+    ConsumerSessionEventMessageFilterChainPass(messageFilterChain = userManagedMessageFilterChainValueOrReferenceFromPb(v.messageFilterChain.get))
+
+def consumerSessionEventMessageFilterChainPassToPb(v: ConsumerSessionEventMessageFilterChainPass): pb.ConsumerSessionEventMessageFilterChainPass =
+    pb.ConsumerSessionEventMessageFilterChainPass(messageFilterChain = Some(userManagedMessageFilterChainValueOrReferenceToPb(v.messageFilterChain)))
+
+def userManagedConsumerSessionEventSpecFromPb(v: pb.UserManagedConsumerSessionEventSpec): UserManagedConsumerSessionEventSpec =
+    v.event match
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageProcessed =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessagesProcessedFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageDelivered =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessagesDeliveredFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageDecodeFailed =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessageDecodeFailedFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventElapsedTimeMs =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventElapsedTimeMsFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventTopicEndReached =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventTopicEndReachedFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventUnexpectedError =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventUnexpectedErrorFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageId =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessageIdFromPb(evt.value))
+        case evt: pb.UserManagedConsumerSessionEventSpec.Event.EventMessageFilterChainPass =>
+            UserManagedConsumerSessionEventSpec(event = consumerSessionEventMessageFilterChainPassFromPb(evt.value))
+
+def userManagedConsumerSessionEventSpecToPb(v: UserManagedConsumerSessionEventSpec): pb.UserManagedConsumerSessionEventSpec =
+    v.event match
+        case evt: ConsumerSessionEventMessagesProcessed =>
+            pb.UserManagedConsumerSessionEventSpec(event =
+                pb.UserManagedConsumerSessionEventSpec.Event.EventMessageProcessed(consumerSessionEventMessagesProcessedToPb(evt))
+            )
+        case evt: ConsumerSessionEventMessagesDelivered =>
+            pb.UserManagedConsumerSessionEventSpec(event =
+                pb.UserManagedConsumerSessionEventSpec.Event.EventMessageDelivered(consumerSessionEventMessagesDeliveredToPb(evt))
+            )
+        case evt: ConsumerSessionEventMessageDecodeFailed =>
+            pb.UserManagedConsumerSessionEventSpec(event =
+                pb.UserManagedConsumerSessionEventSpec.Event.EventMessageDecodeFailed(consumerSessionEventMessageDecodeFailedToPb(evt))
+            )
+        case evt: ConsumerSessionEventElapsedTimeMs =>
+            pb.UserManagedConsumerSessionEventSpec(event =
+                pb.UserManagedConsumerSessionEventSpec.Event.EventElapsedTimeMs(consumerSessionEventElapsedTimeMsToPb(evt))
+            )
+        case evt: ConsumerSessionEventTopicEndReached =>
+            pb.UserManagedConsumerSessionEventSpec(event =
+                pb.UserManagedConsumerSessionEventSpec.Event.EventTopicEndReached(consumerSessionEventTopicEndReachedToPb(evt))
+            )
+        case evt: ConsumerSessionEventUnexpectedError =>
+            pb.UserManagedConsumerSessionEventSpec(event =
+                pb.UserManagedConsumerSessionEventSpec.Event.EventUnexpectedError(consumerSessionEventUnexpectedErrorToPb(evt))
+            )
+        case evt: ConsumerSessionEventMessageId =>
+            pb.UserManagedConsumerSessionEventSpec(event = pb.UserManagedConsumerSessionEventSpec.Event.EventMessageId(consumerSessionEventMessageIdToPb(evt)))
+        case evt: ConsumerSessionEventMessageFilterChainPass =>
+            pb.UserManagedConsumerSessionEventSpec(event =
+                pb.UserManagedConsumerSessionEventSpec.Event.EventMessageFilterChainPass(consumerSessionEventMessageFilterChainPassToPb(evt))
+            )
+
+def userManagedConsumerSessionEventFromPb(v: pb.UserManagedConsumerSessionEvent): UserManagedConsumerSessionEvent =
+    UserManagedConsumerSessionEvent(
         metadata = userManagedItemMetadataFromPb(v.metadata.get),
-        spec = userManagedConsumerSessionConfigPauseTriggerSpecFromPb(v.spec.get)
-    )
-def userManagedConsumerSessionConfigPauseTriggerToPb(v: UserManagedConsumerSessionConfigPauseTrigger): pb.UserManagedConsumerSessionConfigPauseTrigger =
-    pb.UserManagedConsumerSessionConfigPauseTrigger(
-        metadata = Some(userManagedItemMetadataToPb(v.metadata)),
-        spec = Some(userManagedConsumerSessionConfigPauseTriggerSpecToPb(v.spec))
+        spec = userManagedConsumerSessionEventSpecFromPb(v.spec.get)
     )
 
-def userManagedConsumerSessionConfigPauseTriggerValueOrReferenceFromPb(
-    v: pb.UserManagedConsumerSessionConfigPauseTriggerValueOrReference
-): UserManagedConsumerSessionConfigPauseTriggerValueOrReference =
-    v.pauseTrigger match
-        case pb.UserManagedConsumerSessionConfigPauseTriggerValueOrReference.PauseTrigger.PauseTriggerValue(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerValueOrReference(
-                value = Some(userManagedConsumerSessionConfigPauseTriggerFromPb(v)),
+def userManagedConsumerSessionEventToPb(v: UserManagedConsumerSessionEvent): pb.UserManagedConsumerSessionEvent =
+    pb.UserManagedConsumerSessionEvent(
+        metadata = Some(userManagedItemMetadataToPb(v.metadata)),
+        spec = Some(userManagedConsumerSessionEventSpecToPb(v.spec))
+    )
+
+def userManagedConsumerSessionEventValueOrReferenceFromPb(
+    v: pb.UserManagedConsumerSessionEventValueOrReference
+): UserManagedConsumerSessionEventValueOrReference =
+    v.event match
+        case pb.UserManagedConsumerSessionEventValueOrReference.Event.EventValue(v) =>
+            UserManagedConsumerSessionEventValueOrReference(
+                value = Some(userManagedConsumerSessionEventFromPb(v)),
                 reference = None
             )
-        case pb.UserManagedConsumerSessionConfigPauseTriggerValueOrReference.PauseTrigger.PauseTriggerReference(v) =>
-            UserManagedConsumerSessionConfigPauseTriggerValueOrReference(
+        case pb.UserManagedConsumerSessionEventValueOrReference.Event.EventReference(v) =>
+            UserManagedConsumerSessionEventValueOrReference(
                 value = None,
                 reference = Some(v)
             )
 
-def userManagedConsumerSessionConfigPauseTriggerValueOrReferenceToPb(
-    v: UserManagedConsumerSessionConfigPauseTriggerValueOrReference
-): pb.UserManagedConsumerSessionConfigPauseTriggerValueOrReference =
+def userManagedConsumerSessionEventValueOrReferenceToPb(
+    v: UserManagedConsumerSessionEventValueOrReference
+): pb.UserManagedConsumerSessionEventValueOrReference =
     v.value match
         case Some(v) =>
-            pb.UserManagedConsumerSessionConfigPauseTriggerValueOrReference(
-                pauseTrigger = pb.UserManagedConsumerSessionConfigPauseTriggerValueOrReference.PauseTrigger.PauseTriggerValue(
-                    userManagedConsumerSessionConfigPauseTriggerToPb(v)
+            pb.UserManagedConsumerSessionEventValueOrReference(
+                event = pb.UserManagedConsumerSessionEventValueOrReference.Event.EventValue(userManagedConsumerSessionEventToPb(v))
+            )
+        case None =>
+            pb.UserManagedConsumerSessionEventValueOrReference(
+                event = pb.UserManagedConsumerSessionEventValueOrReference.Event.EventReference(v.reference.get)
+            )
+
+def consumerSessionPauseTriggerChainModeFromPb(v: pb.ConsumerSessionPauseTriggerChainMode): ConsumerSessionPauseTriggerChainMode =
+    v match
+        case pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL => ConsumerSessionPauseTriggerChainMode.All
+        case pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY => ConsumerSessionPauseTriggerChainMode.Any
+        case _ => throw new IllegalArgumentException("Unknown consumer session pause trigger chain mode")
+
+def consumerSessionPauseTriggerChainModeToPb(v: ConsumerSessionPauseTriggerChainMode): pb.ConsumerSessionPauseTriggerChainMode =
+    v match
+        case ConsumerSessionPauseTriggerChainMode.All => pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL
+        case ConsumerSessionPauseTriggerChainMode.Any => pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY
+
+def userManagedConsumerSessionPauseTriggerChainSpecFromPb(
+    v: pb.UserManagedConsumerSessionPauseTriggerChainSpec
+): UserManagedConsumerSessionPauseTriggerChainSpec =
+    UserManagedConsumerSessionPauseTriggerChainSpec(
+        events = v.events.map(userManagedConsumerSessionEventValueOrReferenceFromPb).toList,
+        mode = consumerSessionPauseTriggerChainModeFromPb(v.mode)
+    )
+
+def userManagedConsumerSessionPauseTriggerChainSpecToPb(
+    v: UserManagedConsumerSessionPauseTriggerChainSpec
+): pb.UserManagedConsumerSessionPauseTriggerChainSpec =
+    pb.UserManagedConsumerSessionPauseTriggerChainSpec(
+        events = v.events.map(userManagedConsumerSessionEventValueOrReferenceToPb),
+        mode = consumerSessionPauseTriggerChainModeToPb(v.mode)
+    )
+
+def userManagedConsumerSessionPauseTriggerChainFromPb(v: pb.UserManagedConsumerSessionPauseTriggerChain): UserManagedConsumerSessionPauseTriggerChain =
+    UserManagedConsumerSessionPauseTriggerChain(
+        metadata = userManagedItemMetadataFromPb(v.metadata.get),
+        spec = userManagedConsumerSessionPauseTriggerChainSpecFromPb(v.spec.get)
+    )
+
+def userManagedConsumerSessionPauseTriggerChainToPb(v: UserManagedConsumerSessionPauseTriggerChain): pb.UserManagedConsumerSessionPauseTriggerChain =
+    pb.UserManagedConsumerSessionPauseTriggerChain(
+        metadata = Some(userManagedItemMetadataToPb(v.metadata)),
+        spec = Some(userManagedConsumerSessionPauseTriggerChainSpecToPb(v.spec))
+    )
+
+def userManagedConsumerSessionPauseTriggerChainValueOrReferenceFromPb(
+    v: pb.UserManagedConsumerSessionPauseTriggerChainValueOrReference
+): UserManagedConsumerSessionPauseTriggerChainValueOrReference =
+    v.pauseTriggerChain match
+        case pb.UserManagedConsumerSessionPauseTriggerChainValueOrReference.PauseTriggerChain.PauseTriggerChainValue(v) =>
+            UserManagedConsumerSessionPauseTriggerChainValueOrReference(
+                value = Some(userManagedConsumerSessionPauseTriggerChainFromPb(v)),
+                reference = None
+            )
+        case pb.UserManagedConsumerSessionPauseTriggerChainValueOrReference.PauseTriggerChain.PauseTriggerChainReference(v) =>
+            UserManagedConsumerSessionPauseTriggerChainValueOrReference(
+                value = None,
+                reference = Some(v)
+            )
+
+def userManagedConsumerSessionPauseTriggerChainValueOrReferenceToPb(
+    v: UserManagedConsumerSessionPauseTriggerChainValueOrReference
+): pb.UserManagedConsumerSessionPauseTriggerChainValueOrReference =
+    v.value match
+        case Some(v) =>
+            pb.UserManagedConsumerSessionPauseTriggerChainValueOrReference(
+                pauseTriggerChain = pb.UserManagedConsumerSessionPauseTriggerChainValueOrReference.PauseTriggerChain.PauseTriggerChainValue(
+                    userManagedConsumerSessionPauseTriggerChainToPb(v)
                 )
             )
         case None =>
-            pb.UserManagedConsumerSessionConfigPauseTriggerValueOrReference(
-                pauseTrigger = pb.UserManagedConsumerSessionConfigPauseTriggerValueOrReference.PauseTrigger.PauseTriggerReference(v.reference.get)
+            pb.UserManagedConsumerSessionPauseTriggerChainValueOrReference(
+                pauseTriggerChain = pb.UserManagedConsumerSessionPauseTriggerChainValueOrReference.PauseTriggerChain.PauseTriggerChainReference(v.reference.get)
             )
 
 def userManagedMessageFilterSpecFromPb(v: pb.UserManagedMessageFilterSpec): UserManagedMessageFilterSpec =
@@ -480,15 +575,15 @@ def userManagedMessageFilterChainValueOrReferenceToPb(v: UserManagedMessageFilte
 
 def userManagedConsumerSessionConfigSpecFromPb(v: pb.UserManagedConsumerSessionConfigSpec): UserManagedConsumerSessionConfigSpec =
     UserManagedConsumerSessionConfigSpec(
-        startFrom = userManagedConsumerSessionConfigStartFromValueOrReferenceFromPb(v.startFrom.get),
+        startFrom = userManagedConsumerSessionStartFromValueOrReferenceFromPb(v.startFrom.get),
         messageFilterChain = userManagedMessageFilterChainValueOrReferenceFromPb(v.messageFilterChain.get),
-        pauseTrigger = userManagedConsumerSessionConfigPauseTriggerValueOrReferenceFromPb(v.pauseTrigger.get)
+        pauseTriggerChain = userManagedConsumerSessionPauseTriggerChainValueOrReferenceFromPb(v.pauseTriggerChain.get)
     )
 def userManagedConsumerSessionConfigSpecToPb(v: UserManagedConsumerSessionConfigSpec): pb.UserManagedConsumerSessionConfigSpec =
     pb.UserManagedConsumerSessionConfigSpec(
-        startFrom = Some(userManagedConsumerSessionConfigStartFromValueOrReferenceToPb(v.startFrom)),
+        startFrom = Some(userManagedConsumerSessionStartFromValueOrReferenceToPb(v.startFrom)),
         messageFilterChain = Some(userManagedMessageFilterChainValueOrReferenceToPb(v.messageFilterChain)),
-        pauseTrigger = Some(userManagedConsumerSessionConfigPauseTriggerValueOrReferenceToPb(v.pauseTrigger))
+        pauseTriggerChain = Some(userManagedConsumerSessionPauseTriggerChainValueOrReferenceToPb(v.pauseTriggerChain))
     )
 
 def userManagedConsumerSessionConfigFromPb(v: pb.UserManagedConsumerSessionConfig): UserManagedConsumerSessionConfig =
@@ -504,27 +599,27 @@ def userManagedConsumerSessionConfigToPb(v: UserManagedConsumerSessionConfig): p
 
 def userManagedItemFromPb(v: pb.UserManagedItem): UserManagedItem =
     v.item match
-        case it: pb.UserManagedItem.Item.ConsumerSessionConfig             => userManagedConsumerSessionConfigFromPb(it.value)
-        case it: pb.UserManagedItem.Item.ConsumerSessionConfigStartFrom    => userManagedConsumerSessionConfigStartFromFromPb(it.value)
-        case it: pb.UserManagedItem.Item.ConsumerSessionConfigPauseTrigger => userManagedConsumerSessionConfigPauseTriggerFromPb(it.value)
-        case it: pb.UserManagedItem.Item.MessageId                         => userManagedMessageIdFromPb(it.value)
-        case it: pb.UserManagedItem.Item.DateTime                          => userManagedDateTimeFromPb(it.value)
-        case it: pb.UserManagedItem.Item.RelativeDateTime                  => userManagedRelativeDateTimeFromPb(it.value)
-        case it: pb.UserManagedItem.Item.MessageFilter                     => userManagedMessageFilterFromPb(it.value)
-        case it: pb.UserManagedItem.Item.MessageFilterChain                => userManagedMessageFilterChainFromPb(it.value)
-        case _                                                             => throw new IllegalArgumentException("Unknown user managed item type")
+        case it: pb.UserManagedItem.Item.ConsumerSessionConfig            => userManagedConsumerSessionConfigFromPb(it.value)
+        case it: pb.UserManagedItem.Item.ConsumerSessionStartFrom         => userManagedConsumerSessionStartFromFromPb(it.value)
+        case it: pb.UserManagedItem.Item.ConsumerSessionPauseTriggerChain => userManagedConsumerSessionPauseTriggerChainFromPb(it.value)
+        case it: pb.UserManagedItem.Item.MessageId                        => userManagedMessageIdFromPb(it.value)
+        case it: pb.UserManagedItem.Item.DateTime                         => userManagedDateTimeFromPb(it.value)
+        case it: pb.UserManagedItem.Item.RelativeDateTime                 => userManagedRelativeDateTimeFromPb(it.value)
+        case it: pb.UserManagedItem.Item.MessageFilter                    => userManagedMessageFilterFromPb(it.value)
+        case it: pb.UserManagedItem.Item.MessageFilterChain               => userManagedMessageFilterChainFromPb(it.value)
+        case _                                                            => throw new IllegalArgumentException("Unknown user managed item type")
 
 def userManagedItemToPb(v: UserManagedItem): pb.UserManagedItem =
     v match
         case it: UserManagedConsumerSessionConfig =>
             val itPb = userManagedConsumerSessionConfigToPb(it)
             pb.UserManagedItem(item = pb.UserManagedItem.Item.ConsumerSessionConfig(itPb))
-        case it: UserManagedConsumerSessionConfigStartFrom =>
-            val itPb = userManagedConsumerSessionConfigStartFromToPb(it)
-            pb.UserManagedItem(item = pb.UserManagedItem.Item.ConsumerSessionConfigStartFrom(itPb))
-        case it: UserManagedConsumerSessionConfigPauseTrigger =>
-            val itPb = userManagedConsumerSessionConfigPauseTriggerToPb(it)
-            pb.UserManagedItem(item = pb.UserManagedItem.Item.ConsumerSessionConfigPauseTrigger(itPb))
+        case it: UserManagedConsumerSessionStartFrom =>
+            val itPb = userManagedConsumerSessionStartFromToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.ConsumerSessionStartFrom(itPb))
+        case it: UserManagedConsumerSessionPauseTriggerChain =>
+            val itPb = userManagedConsumerSessionPauseTriggerChainToPb(it)
+            pb.UserManagedItem(item = pb.UserManagedItem.Item.ConsumerSessionPauseTriggerChain(itPb))
         case it: UserManagedMessageId =>
             val itPb = userManagedMessageIdToPb(it)
             pb.UserManagedItem(item = pb.UserManagedItem.Item.MessageId(itPb))

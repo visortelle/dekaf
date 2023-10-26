@@ -1,3 +1,4 @@
+import { UserManagedMessageIdValueOrReference } from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/user_managed_items_pb";
 import { ConsumerSessionTopicsSelector, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
 
 export type ValueOrReference<ValueT> = {
@@ -59,11 +60,65 @@ export type UserManagedConsumerSessionTopicSelector = {
   spec: UserManagedConsumerSessionTopicSelectorSpec,
 };
 
+export type UserManagedMessageIdSpec = {
+  messageId: Uint8Array
+};
+export type UserManagedMessageId = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedMessageIdSpec,
+}
+export type UserManagedMessageIdValueOrReference = ValueOrReference<UserManagedMessageId>;
+
+export type UserManagedDateTimeSpec = {
+  dateTime: string
+};
+export type UserManagedDateTime = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedDateTimeSpec,
+}
+export type UserManagedDateTimeValueOrReference = ValueOrReference<UserManagedDateTime>;
+
+export type DateTimeUnit =
+  { type: 'year' } |
+  { type: 'month' } |
+  { type: 'week' } |
+  { type: 'day' } |
+  { type: 'hour' } |
+  { type: 'minute' } |
+  { type: 'second' };
+
+export type UserManagedRelativeDateTimeSpec = {
+  value: number,
+  unit: DateTimeUnit,
+  isRoundedToUnitStart: boolean,
+};
+export type UserManagedRelativeDateTime = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedRelativeDateTimeSpec,
+}
+export type UserManagedRelativeDateTimeValueOrReference = ValueOrReference<UserManagedRelativeDateTime>;
+
+export type StartFromEarliestMessage = { type: 'earliest-message' };
+export type StartFromLatestMessage = { type: 'latest-message' };
+export type StartFromMessageId = { type: 'message-id', messageId: UserManagedMessageIdValueOrReference };
+export type StartFromDateTime = { type: 'date-time', dateTime: UserManagedDateTimeValueOrReference };
+export type StartFromRelativeDateTime = { type: 'relative-date-time', relativeDateTime: UserManagedRelativeDateTimeValueOrReference };
+
+export type UserManagedConsumerSessionConfigStartFromSpec = {
+  startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
+};
+export type UserManagedConsumerSessionConfigStartFrom = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedConsumerSessionConfigStartFromSpec,
+};
+export type UserManagedConsumerSessionConfigStartFromValueOrReference = ValueOrReference<UserManagedConsumerSessionConfigStartFrom>;
+
 export type UserManagedConsumerSessionTopicSelectorValueOrReference = ValueOrReference<UserManagedConsumerSessionTopicSelector>;
 
 export type UserManagedConsumerSessionConfigSpec = {
   messageFilterChain: UserManagedMessageFilterChainValueOrReference,
   topicsSelector: ConsumerSessionTopicsSelector,
+  startFrom: UserManagedConsumerSessionConfigStartFromValueOrReference,
 };
 
 export type UserManagedConsumerSessionConfig = {

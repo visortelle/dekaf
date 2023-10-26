@@ -14,14 +14,14 @@ import _root_.consumer.{
     MessageFilterChain,
     MessageFilterChainMode,
     MessageId,
-    RelativeDateTime,
+    RelativeDateTime
 }
 import java.time.Instant
 
 object UserManagedItemType:
     case class ConsumerSessionConfig()
-    case class ConsumerSessionConfigStartFrom()
-    case class ConsumerSessionConfigPauseTrigger()
+    case class ConsumerSessionStartFrom()
+    case class ConsumerSessionPauseTrigger()
     case class ProducerSessionConfig()
     case class MarkdownDocument()
     case class MessageFilter()
@@ -33,7 +33,7 @@ object UserManagedItemType:
     case class RelativeDateTime()
 
 type UserManagedItemType =
-    UserManagedItemType.ConsumerSessionConfig | UserManagedItemType.ConsumerSessionConfigStartFrom | UserManagedItemType.ConsumerSessionConfigPauseTrigger |
+    UserManagedItemType.ConsumerSessionConfig | UserManagedItemType.ConsumerSessionStartFrom | UserManagedItemType.ConsumerSessionPauseTrigger |
         UserManagedItemType.ProducerSessionConfig | UserManagedItemType.MarkdownDocument | UserManagedItemType.MessageFilter |
         UserManagedItemType.MessageFilterChain | UserManagedItemType.DataVisualizationWidget | UserManagedItemType.DataVisualizationDashboard |
         UserManagedItemType.MessageId | UserManagedItemType.DateTime | UserManagedItemType.RelativeDateTime
@@ -76,7 +76,7 @@ case class UserManagedDateTimeValueOrReference(
 )
 
 case class UserManagedRelativeDateTimeSpec(
-    value: Int,
+    value: Long,
     unit: DateTimeUnit,
     isRoundedToUnitStart: Boolean
 )
@@ -91,46 +91,64 @@ case class UserManagedRelativeDateTimeValueOrReference(
     reference: Option[UserManagedItemReference]
 )
 
-case class UserManagedConsumerSessionConfigStartFromSpec(
-    earliestMessage: Option[EarliestMessage] = None,
-    latestMessage: Option[LatestMessage] = None,
-    messageId: Option[UserManagedMessageIdValueOrReference] = None,
-    dateTime: Option[UserManagedDateTimeValueOrReference] = None,
-    relativeDateTime: Option[UserManagedRelativeDateTimeValueOrReference] = None
+case class UserManagedConsumerSessionStartFromSpec(
+    startFrom: EarliestMessage | LatestMessage | UserManagedMessageIdValueOrReference | UserManagedDateTimeValueOrReference |
+        UserManagedRelativeDateTimeValueOrReference
 )
 
-case class UserManagedConsumerSessionConfigStartFrom(
+case class UserManagedConsumerSessionStartFrom(
     metadata: UserManagedItemMetadata,
-    spec: UserManagedConsumerSessionConfigStartFromSpec
+    spec: UserManagedConsumerSessionStartFromSpec
 ) extends UserManagedItemTrait
 
-case class UserManagedConsumerSessionConfigStartFromValueOrReference(
-    value: Option[UserManagedConsumerSessionConfigStartFrom],
+case class UserManagedConsumerSessionStartFromValueOrReference(
+    value: Option[UserManagedConsumerSessionStartFrom],
     reference: Option[UserManagedItemReference]
 )
 
-case class UserManagedConsumerSessionConfigPauseTriggerSpec(
-    onMessagesProcessed: Option[Long] = None,
-    onMessagesDelivered: Option[Long] = None,
-    onBytesProcessed: Option[Long] = None,
-    onBytesDelivered: Option[Long] = None,
-    onMessageDecodeFails: Option[Long] = None,
-    onElapsedTimeMs: Option[Long] = None,
-    onTopicEndReached: Option[Boolean] = None,
-    onDateTime: Option[UserManagedDateTimeValueOrReference] = None,
-    onRelativeDateTime: Option[UserManagedRelativeDateTimeValueOrReference] = None,
-    onMessageId: Option[UserManagedMessageIdValueOrReference] = None,
-    onMessageFilterPass: Option[UserManagedMessageFilterChainValueOrReference] = None,
-    onMessageFilterChainPass: Option[UserManagedMessageFilterChainValueOrReference] = None
+case class ConsumerSessionEventMessagesProcessed(messageCount: Long)
+case class ConsumerSessionEventMessagesDelivered(messageCount: Long)
+case class ConsumerSessionEventBytesProcessed(byteCount: Long)
+case class ConsumerSessionEventBytesDelivered(byteCount: Long)
+case class ConsumerSessionEventMessageDecodeFailed(failCount: Long)
+case class ConsumerSessionEventElapsedTimeMs(elapsedTimeMs: Long)
+case class ConsumerSessionEventTopicEndReached()
+case class ConsumerSessionEventUnexpectedError()
+case class ConsumerSessionEventMessageId(messageId: UserManagedMessageIdValueOrReference)
+case class ConsumerSessionEventMessageFilterChainPass(messageFilterChain: UserManagedMessageFilterChainValueOrReference)
+
+case class UserManagedConsumerSessionEventSpec(
+    event: ConsumerSessionEventMessagesProcessed | ConsumerSessionEventMessagesDelivered | ConsumerSessionEventBytesProcessed |
+        ConsumerSessionEventBytesDelivered | ConsumerSessionEventMessageDecodeFailed | ConsumerSessionEventElapsedTimeMs |
+        ConsumerSessionEventTopicEndReached | ConsumerSessionEventUnexpectedError | ConsumerSessionEventMessageId |
+        ConsumerSessionEventMessageFilterChainPass
 )
 
-case class UserManagedConsumerSessionConfigPauseTrigger(
+case class UserManagedConsumerSessionEvent(
     metadata: UserManagedItemMetadata,
-    spec: UserManagedConsumerSessionConfigPauseTriggerSpec
+    spec: UserManagedConsumerSessionEventSpec
 ) extends UserManagedItemTrait
 
-case class UserManagedConsumerSessionConfigPauseTriggerValueOrReference(
-    value: Option[UserManagedConsumerSessionConfigPauseTrigger],
+case class UserManagedConsumerSessionEventValueOrReference(
+    value: Option[UserManagedConsumerSessionEvent],
+    reference: Option[UserManagedItemReference]
+)
+
+enum ConsumerSessionPauseTriggerChainMode:
+    case All, Any
+
+case class UserManagedConsumerSessionPauseTriggerChainSpec(
+    events: List[UserManagedConsumerSessionEventValueOrReference],
+    mode: ConsumerSessionPauseTriggerChainMode
+)
+
+case class UserManagedConsumerSessionPauseTriggerChain(
+    metadata: UserManagedItemMetadata,
+    spec: UserManagedConsumerSessionPauseTriggerChainSpec
+) extends UserManagedItemTrait
+
+case class UserManagedConsumerSessionPauseTriggerChainValueOrReference(
+    value: Option[UserManagedConsumerSessionPauseTriggerChain],
     reference: Option[UserManagedItemReference]
 )
 
@@ -166,9 +184,9 @@ case class UserManagedMessageFilterChainValueOrReference(
 )
 
 case class UserManagedConsumerSessionConfigSpec(
-    startFrom: UserManagedConsumerSessionConfigStartFromValueOrReference,
+    startFrom: UserManagedConsumerSessionStartFromValueOrReference,
     messageFilterChain: UserManagedMessageFilterChainValueOrReference,
-    pauseTrigger: UserManagedConsumerSessionConfigPauseTriggerValueOrReference
+    pauseTriggerChain: UserManagedConsumerSessionPauseTriggerChainValueOrReference
 )
 
 case class UserManagedConsumerSessionConfig(
@@ -179,5 +197,5 @@ case class UserManagedConsumerSessionConfig(
 trait UserManagedItemTrait:
     val metadata: UserManagedItemMetadata
 
-type UserManagedItem = UserManagedConsumerSessionConfig | UserManagedConsumerSessionConfigStartFrom | UserManagedConsumerSessionConfigPauseTrigger |
+type UserManagedItem = UserManagedConsumerSessionConfig | UserManagedConsumerSessionStartFrom | UserManagedConsumerSessionPauseTriggerChain |
     UserManagedMessageId | UserManagedDateTime | UserManagedRelativeDateTime | UserManagedMessageFilter | UserManagedMessageFilterChain
