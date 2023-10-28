@@ -6,7 +6,7 @@ export type BasicFilterEditorProps = {};
 const BasicFilterEditor: React.FC<BasicFilterEditorProps> = (props) => {
   return (
     <div className={s.BasicFilterEditor}>
-      basic filter editor
+      Basic filters aren't available at this moment.
     </div>
   );
 }

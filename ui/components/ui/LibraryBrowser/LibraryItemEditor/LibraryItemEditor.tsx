@@ -6,12 +6,12 @@ import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterChainEditor';
-import { UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
+import { UserManagedConsumerSessionStartFrom, UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
 import { LibraryContext } from '../model/library-context';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import NoData from '../../NoData/NoData';
-import ResourceMatcherInput from '../SearchEditor/ResourceMatchersInput/ResourceMatcherInput/ResourceMatcherInput';
 import ResourceMatchersInput from '../SearchEditor/ResourceMatchersInput/ResourceMatchersInput';
+import StartFromInput from '../../../TopicPage/Messages/SessionConfiguration/StartFromInput/StartFromInput';
 
 export type LibraryItemEditorProps = {
   value: LibraryItem;
@@ -61,6 +61,26 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
           }}
           libraryContext={props.libraryContext}
           appearance="compact"
+        />
+      );
+      break;
+    }
+    case 'consumer-session-start-from': {
+      descriptorEditor = (
+        <StartFromInput
+          value={{
+            type: 'value',
+            value: value.spec as UserManagedConsumerSessionStartFrom
+          }}
+          onChange={v => {
+            if (v.type === 'reference') {
+              throw new Error('Item value shouldn\'t be a reference');
+            }
+
+            props.onChange({ ...props.value, spec: v.value });
+          }}
+          topicsInternalStats={undefined}
+          libraryContext={props.libraryContext}
         />
       );
       break;

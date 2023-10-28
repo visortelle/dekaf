@@ -12,7 +12,7 @@ import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, ProducerMe
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
-import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
+import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from '../../../../ui/KeyValueEditor/KeyValueEditor';
 
 import sendIcon from './icons/send.svg';
 
@@ -183,8 +183,8 @@ const Producer: React.FC<ProducerProps> = (props) => {
             <div className={s.FormControl}>
               <strong>Properties</strong>
               <KeyValueEditor
-                value={JSON.parse(propertiesJsonMap)}
-                onChange={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
+                value={recordToIndexedKv(JSON.parse(propertiesJsonMap))}
+                onChange={v => changePropertiesJsonMap(JSON.stringify(recordFromIndexedKv(v)) || '')}
                 height="320rem"
               />
             </div>

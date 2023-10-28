@@ -52,17 +52,17 @@ object StringNamespace:
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-words-100-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => faker.lorem().word().getBytes("UTF-8"),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"random-words-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => faker.lorem().word().getBytes("UTF-8"),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,

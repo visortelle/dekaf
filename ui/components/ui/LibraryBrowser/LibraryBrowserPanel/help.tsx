@@ -38,6 +38,17 @@ export const help = {
       </p>
     </div>
   ),
+  consumerSessionStartFrom: (
+    <div>
+      <p>
+        <strong>Start From</strong> allows you to specify the starting point for a consumer session.
+      </p>
+
+      <p>
+        You can save it to <strong>Library</strong> and reuse later.
+      </p>
+    </div>
+  ),
   messageFilterChain: (
     <div>
       <p>

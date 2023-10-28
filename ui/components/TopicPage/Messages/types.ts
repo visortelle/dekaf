@@ -31,18 +31,18 @@ export type RelativeDateTime = {
   isRoundedToUnitStart: boolean
 };
 
-export type StartFrom =
+export type ConsumerSessionStartFrom =
   { type: "earliestMessage" } |
   { type: "latestMessage" } |
   { type: "messageId"; hexString: string } |
   { type: "dateTime"; dateTime: Date } |
   {
     type: "relativeDateTime",
-    value: RelativeDateTime
+    relativeDateTime: RelativeDateTime
   };
 
 export type ConsumerSessionConfig = {
-  startFrom: StartFrom;
+  startFrom: ConsumerSessionStartFrom;
   topicsSelector: ConsumerSessionTopicsSelector;
   messageFilterChain: MessageFilterChain;
 };

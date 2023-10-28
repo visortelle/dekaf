@@ -59,17 +59,6 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   let buttons: ToolbarButtonProps[] = [
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicPersistency: props.topicPersistency,
-      }),
-      text: "Messages",
-      onClick: () => { },
-      type: "regular",
-    },
-    {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
         tenant: props.tenant,
         namespace: props.namespace,
@@ -79,6 +68,19 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       text: "Overview",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname))
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicPersistency: props.topicPersistency,
+      }),
+      text: "Messages",
+      onClick: () => { },
+      type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.path, pathname))
     },
     {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
@@ -90,6 +92,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       text: "Subscriptions",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.path, pathname))
     },
     {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.get({
@@ -101,6 +104,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       text: "Producers",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname))
     },
     {
       linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.get({
@@ -112,6 +116,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       text: "Schema",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
     },
   ];
 
@@ -129,6 +134,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
         onClick: () => { },
         type: "regular",
         testId: "topic-policies-button",
+        active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
       },
     ]);
   }
@@ -141,7 +147,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       onClick: () =>
         modals.push({
           id: "delete-topic",
-          title: `Delete topic`,
+          title: `Delete Topic`,
           content: (
             <DeleteDialog
               tenant={props.tenant}
@@ -222,6 +228,20 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                     }
                   }
                 },
+                startFrom: {
+                  type: 'value',
+                  value: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'consumer-session-start-from'
+                    },
+                    spec: {
+                      startFrom: { type: 'earliestMessage' }
+                    }
+                  }
+                }
               },
             }
           }}

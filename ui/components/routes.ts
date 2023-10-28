@@ -4,8 +4,8 @@ export const routes = {
   instance: {
     tenants: {
       _: {
-        path: "/",
-        get: () => `/`,
+        path: "/tenants",
+        get: () => `/tenants`,
       },
     },
     overview: {

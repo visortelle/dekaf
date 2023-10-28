@@ -13,7 +13,6 @@ import { swrKeys } from "../../swrKeys";
 import Favicons from "./favicons/Favicons";
 import SmallButton from "../SmallButton/SmallButton";
 import { useLocation } from "react-router-dom";
-import PageNotFound from "../PageNotFound/PageNotFound";
 
 export type CrumbType =
   "instance" |
@@ -75,16 +74,16 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     let className = '';
     switch (crumb.type) {
       case "instance":
-        href = routes.instance.tenants._.get();
+        href = routes.instance.overview._.get();
         break;
       case "tenant":
-        href = routes.tenants.tenant.namespaces._.get({ tenant });
+        href = routes.tenants.tenant.overview._.get({ tenant });
         break;
       case "namespace":
-        href = routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant, namespace });
+        href = routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant, namespace });
         break;
       case "persistent-topic":
-        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
           tenant,
           namespace,
           topic,
@@ -92,7 +91,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         });
         break;
       case "non-persistent-topic":
-        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
           tenant,
           namespace,
           topic,
@@ -100,7 +99,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         });
         break;
       case "page-not-found":
-        href = routes.instance.tenants._.get();
+        href = routes.instance.overview._.get();
         break;
       case "link":
         href = pathname;

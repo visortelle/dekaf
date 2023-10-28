@@ -52,6 +52,7 @@ case class JsonMessage(
 object converters:
     def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, MessageValueToJsonResult) =
         val jsonValue = messageValueToJson(schemas, msg)
+
         val properties = Option(msg.getProperties) match
             case Some(v) => v.asScala.toMap
             case _       => Map.empty

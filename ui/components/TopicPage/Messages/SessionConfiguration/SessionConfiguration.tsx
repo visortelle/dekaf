@@ -8,9 +8,10 @@ import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
-import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionConfigSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
+import StartFromInput from './StartFromInput/StartFromInput';
 
 export type SessionConfigurationProps = {
   value: UserManagedConsumerSessionConfigValueOrReference;
@@ -21,56 +22,56 @@ export type SessionConfigurationProps = {
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
-  const resolveResult = useUserManagedItemValue<UserManagedConsumerSessionConfig>(props.value);
 
+  const resolveResult = useUserManagedItemValue<UserManagedConsumerSessionConfig>(props.value);
   if (resolveResult.type !== 'success') {
     return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
-  const value = resolveResult.value;
-  const spec = value.spec;
+  const item = resolveResult.value;
+  const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedConsumerSessionConfigSpec) => {
-    if (props.value.type === 'value') {
-      const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
-      props.onChange(newValue);
-      return;
-    }
+  const onSpecChange = (spec: UserManagedConsumerSessionSpec) => {
+    const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, value: { ...item, spec } };
+    props.onChange(newValue);
+  };
 
-    if (props.value.type === 'reference' && props.value.value !== undefined) {
-      const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, value: { ...props.value.value, spec } };
-      props.onChange(newValue);
-      return;
-    }
+  const onConvertToValue = () => {
+    const newValue: UserManagedConsumerSessionConfigValueOrReference = { type: 'value', value: item };
+    props.onChange(newValue);
   };
 
   return (
     <div className={s.SessionConfiguration}>
       <div className={s.Title} ref={hoverRef}>
         <LibraryBrowserPanel
-          itemToSave={value}
+          itemToSave={item}
           itemType='consumer-session-config'
-          onPick={(item) => {
-            if (item.metadata.type !== 'message-filter-chain') {
-              return;
-            }
-
-            props.onChange({ type: 'reference', reference: item.metadata.id })
-          }}
+          onPick={(item) => props.onChange({
+            type: 'reference',
+            reference: item.metadata.id,
+            value: item as UserManagedConsumerSessionConfig
+          })}
+          onSave={(item) => props.onChange({
+            type: 'reference',
+            reference: item.metadata.id,
+            value: item as UserManagedConsumerSessionConfig
+          })}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
+          managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
         />
       </div>
 
       <div className={s.Content}>
         <div className={s.LeftColumn}>
           <FormItem>
-            <FormLabel content="Start From" />
-            {/* <StartFromInput
-              value={props.value.startFrom}
-              onChange={(v) => props.onChange({ ...props.value, startFrom: v })}
+            <StartFromInput
+              value={itemSpec.startFrom}
+              onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
               topicsInternalStats={props.topicsInternalStats}
-            /> */}
+              libraryContext={props.libraryContext}
+            />
           </FormItem>
 
           <FormItem>
@@ -88,8 +89,8 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
         </div>
         <div className={s.RightColumn}>
           <FilterChainEditor
-            value={spec.messageFilterChain}
-            onChange={(v) => onSpecChange({ ...spec, messageFilterChain: v })}
+            value={itemSpec.messageFilterChain}
+            onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
             libraryContext={props.libraryContext}
           />
         </div>
