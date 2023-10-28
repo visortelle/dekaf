@@ -90,8 +90,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
   useEffect(() => {
     try {
-      const a = consumerSessionConfigFromValueOrReference(props.config);
-      setConfig(a);
+      setConfig(consumerSessionConfigFromValueOrReference(props.config));
     } catch (err) {
       console.warn(err);
       setConfig(undefined);

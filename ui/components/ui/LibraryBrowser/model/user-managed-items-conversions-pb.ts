@@ -10,6 +10,7 @@ import {
   dateTimeUnitToPb
 } from "../../../TopicPage/Messages/conversions";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
+import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
 
 export function userManagedItemTypeFromPb(v: pb.UserManagedItemType): t.UserManagedItemType {
   switch (v) {
@@ -54,12 +55,12 @@ export function userManagedItemMetadataToPb(v: t.UserManagedItemMetadata): pb.Us
 }
 
 export function userManagedMessageIdSpecFromPb(v: pb.UserManagedMessageIdSpec): t.UserManagedMessageIdSpec {
-  return { messageId: v.getMessageId_asU8() };
+  return { hexString: hexStringFromByteArray(v.getMessageId_asU8(), 'hex-with-space') };
 }
 
 export function userManagedMessageIdSpecToPb(v: t.UserManagedMessageIdSpec): pb.UserManagedMessageIdSpec {
   const specPb = new pb.UserManagedMessageIdSpec();
-  specPb.setMessageId(v.messageId);
+  specPb.setMessageId(v.hexString);
   return specPb;
 }
 

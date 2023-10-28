@@ -2,7 +2,7 @@ import React from 'react';
 import s from './StartFromInput.module.css'
 import Select, { List } from '../../../../ui/Select/Select';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
-import { StartFrom } from '../../types';
+import { ConsumerSessionStartFrom } from '../../types';
 import Input from '../../../../ui/Input/Input';
 import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import RelativeDateTimePicker from '../../../../ui/RelativeDateTimePicker/RelativeDateTimePicker';
@@ -22,7 +22,7 @@ export type StartFromInputProps = {
   disabled?: boolean;
 };
 
-type StartFromType = StartFrom['type'];
+type StartFromType = ConsumerSessionStartFrom['type'];
 
 const list: List<StartFromType> = [
   { type: 'item', title: 'Earliest message', value: 'earliestMessage' },
@@ -96,7 +96,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                   type: 'value',
                   value: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'message-id' },
-                    spec: { messageId: new Uint8Array() }
+                    spec: { hexString: '' }
                   }
                 }
                 onSpecChange({ startFrom: { type: 'messageId', messageId } });

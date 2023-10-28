@@ -41,8 +41,6 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
     props.onChange(newValue);
   };
 
-
-
   return (
     <div className={s.SessionConfiguration}>
       <div className={s.Title} ref={hoverRef}>

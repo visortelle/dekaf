@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer';
 import { ValueType } from '../types';
 import * as Either from 'fp-ts/lib/Either';
+import { hexStringToByteArray } from '../../../../../conversions/conversions';
 
 export function valueToBytes(value: string, valueType: ValueType): Either.Either<Error, Uint8Array> {
   switch (valueType) {
@@ -20,7 +21,7 @@ export function valueToBytes(value: string, valueType: ValueType): Either.Either
       return Either.right(bytes);
     };
     case 'bytes-hex': {
-      const bytes = Uint8Array.from(Buffer.from(value.replace(/\s/g, ''), 'hex'))
+      const bytes = hexStringToByteArray(value);
       return Either.right(bytes);
     };
   }

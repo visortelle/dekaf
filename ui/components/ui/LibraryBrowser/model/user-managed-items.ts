@@ -63,7 +63,7 @@ export type UserManagedConsumerSessionTopicSelector = {
 };
 
 export type UserManagedMessageIdSpec = {
-  messageId: Uint8Array
+  hexString: string
 };
 export type UserManagedMessageId = {
   metadata: UserManagedItemMetadata,

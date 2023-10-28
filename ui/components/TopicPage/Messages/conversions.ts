@@ -10,7 +10,7 @@ import {
   MessageFilter,
   MessageFilterChain,
   MessageFilterChainMode,
-  StartFrom,
+  ConsumerSessionStartFrom,
   DateTimeUnit,
 } from "./types";
 
@@ -146,7 +146,7 @@ export function dateTimeUnitToPb(unit: DateTimeUnit): pb.DateTimeUnit {
 }
 
 
-export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): StartFrom {
+export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): ConsumerSessionStartFrom {
   switch (startFrom.getStartFromCase()) {
     case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_EARLIEST_MESSAGE:
       return { type: 'earliestMessage' };
@@ -160,7 +160,7 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): StartFr
         throw new Error('Message Id should be defined.');
       }
 
-      return { type: 'messageId', hexString: hexStringFromByteArray(byteArray) };
+      return { type: 'messageId', hexString: hexStringFromByteArray(byteArray, 'hex-with-space') };
     }
 
     case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_DATE_TIME: {
@@ -180,7 +180,7 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): StartFr
 
       return {
         type: 'relativeDateTime',
-        value: {
+        relativeDateTime: {
           unit: dateTimeUnitFromPb(relativeDateTimePb.getUnit()),
           value: relativeDateTimePb.getValue(),
           isRoundedToUnitStart: relativeDateTimePb.getIsRoundedToUnitStart(),
@@ -193,7 +193,7 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): StartFr
   }
 }
 
-function startFromToPb(startFrom: StartFrom): pb.ConsumerSessionStartFrom {
+function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {
   const startFromPb = new pb.ConsumerSessionStartFrom();
 
   switch (startFrom.type) {
@@ -214,9 +214,9 @@ function startFromToPb(startFrom: StartFrom): pb.ConsumerSessionStartFrom {
       break;
     case 'relativeDateTime':
       const relativeDateTimePb = new pb.RelativeDateTime();
-      relativeDateTimePb.setUnit(dateTimeUnitToPb(startFrom.value.unit))
-      relativeDateTimePb.setValue(startFrom.value.value)
-      relativeDateTimePb.setIsRoundedToUnitStart(startFrom.value.isRoundedToUnitStart)
+      relativeDateTimePb.setUnit(dateTimeUnitToPb(startFrom.relativeDateTime.unit))
+      relativeDateTimePb.setValue(startFrom.relativeDateTime.value)
+      relativeDateTimePb.setIsRoundedToUnitStart(startFrom.relativeDateTime.isRoundedToUnitStart)
 
       startFromPb.setStartFromRelativeDateTime(relativeDateTimePb);
       break;

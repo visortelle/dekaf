@@ -15,11 +15,8 @@ case class MessageFilter(
     value: BasicMessageFilter | JsMessageFilter
 )
 
-object MessageFilterChainMode:
-    case class All()
-    case class Any()
-
-type MessageFilterChainMode = MessageFilterChainMode.All | MessageFilterChainMode.Any
+enum MessageFilterChainMode:
+    case All, Any
 
 case class MessageFilterChain(
     isEnabled: Boolean,
