@@ -33,7 +33,7 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
   } else if (matchPath(routes.instance.tenants._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'tenants', value: 'Tenants' }]
   } else if (matchPath(routes.instance.createTenant._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'create-tenant', value: 'New Tenant' }]
+    extraCrumbs = [{ type: 'link', id: 'create-tenant', value: 'Create Tenant' }]
   } else if (matchPath(routes.instance.resourceGroups._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'resource-groups', value: 'Resource Groups' }]
   }
@@ -54,35 +54,40 @@ const InstancePage: React.FC<InstancePageProps> = (props) => {
         <Toolbar
           buttons={[
             {
+              linkTo: routes.instance.overview._.get(),
+              text: 'Overview',
+              onClick: () => { },
+              type: 'regular',
+              active: Boolean(matchPath(routes.instance.overview._.path, pathname))
+            },
+            {
               linkTo: routes.instance.tenants._.get(),
               text: 'Tenants',
               onClick: () => { },
               type: 'regular',
-            },
-            {
-              linkTo: routes.instance.overview._.get(),
-              text: 'Overview',
-              onClick: () => { },
-              type: 'regular'
+              active: Boolean(matchPath(routes.instance.tenants._.path, pathname))
             },
             {
               linkTo: routes.instance.configuration._.get(),
               text: 'Configuration',
               onClick: () => { },
-              type: 'regular'
+              type: 'regular',
+              active: Boolean(matchPath(routes.instance.configuration._.path, pathname))
             },
             {
               linkTo: routes.instance.resourceGroups._.get(),
               text: 'Resource Groups',
               onClick: () => { },
-              type: 'regular'
+              type: 'regular',
+              active: Boolean(matchPath(routes.instance.resourceGroups._.path, pathname))
             },
             {
               linkTo: routes.instance.createTenant._.get(),
-              text: 'New Tenant',
+              text: 'Create Tenant',
               onClick: () => { },
               type: 'primary',
-              position: 'right'
+              position: 'right',
+              active: Boolean(matchPath(routes.instance.createTenant._.path, pathname))
             },
           ]}
         />

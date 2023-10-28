@@ -10,7 +10,7 @@ import {
   MessageFilter,
   MessageFilterChain,
   MessageFilterChainMode,
-  StartFrom,
+  ConsumerSessionStartFrom,
   DateTimeUnit,
 } from "./types";
 
@@ -146,25 +146,25 @@ export function dateTimeUnitToPb(unit: DateTimeUnit): pb.DateTimeUnit {
 }
 
 
-export function startFromFromPb(startFrom: pb.ConsumerSessionConfigStartFrom): StartFrom {
-  switch (startFrom.getValueCase()) {
-    case pb.ConsumerSessionConfigStartFrom.ValueCase.EARLIEST_MESSAGE:
+export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): ConsumerSessionStartFrom {
+  switch (startFrom.getStartFromCase()) {
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_EARLIEST_MESSAGE:
       return { type: 'earliestMessage' };
 
-    case pb.ConsumerSessionConfigStartFrom.ValueCase.LATEST_MESSAGE:
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_LATEST_MESSAGE:
       return { type: 'latestMessage' };
 
-    case pb.ConsumerSessionConfigStartFrom.ValueCase.MESSAGE_ID: {
-      const byteArray = startFrom.getMessageId()?.getMessageId_asU8();
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_MESSAGE_ID: {
+      const byteArray = startFrom.getStartFromMessageId()?.getMessageId_asU8();
       if (byteArray === undefined) {
         throw new Error('Message Id should be defined.');
       }
 
-      return { type: 'messageId', hexString: hexStringFromByteArray(byteArray) };
+      return { type: 'messageId', hexString: hexStringFromByteArray(byteArray, 'hex-with-space') };
     }
 
-    case pb.ConsumerSessionConfigStartFrom.ValueCase.DATE_TIME: {
-      const dateTimePb = startFrom.getDateTime()?.getDateTime();
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_DATE_TIME: {
+      const dateTimePb = startFrom.getStartFromDateTime()?.getDateTime();
       if (dateTimePb === undefined) {
         throw new Error('DateTime should be defined.');
       }
@@ -172,15 +172,15 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionConfigStartFrom): S
 
     }
 
-    case pb.ConsumerSessionConfigStartFrom.ValueCase.RELATIVE_DATE_TIME: {
-      const relativeDateTimePb = startFrom.getRelativeDateTime();
+    case pb.ConsumerSessionStartFrom.StartFromCase.START_FROM_RELATIVE_DATE_TIME: {
+      const relativeDateTimePb = startFrom.getStartFromRelativeDateTime();
       if (relativeDateTimePb === undefined) {
         throw new Error('Relative date-time should be defined.');
       }
 
       return {
         type: 'relativeDateTime',
-        value: {
+        relativeDateTime: {
           unit: dateTimeUnitFromPb(relativeDateTimePb.getUnit()),
           value: relativeDateTimePb.getValue(),
           isRoundedToUnitStart: relativeDateTimePb.getIsRoundedToUnitStart(),
@@ -189,36 +189,36 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionConfigStartFrom): S
     }
 
     default:
-      throw new Error(`Unknown StartFrom value case. ${startFrom.getValueCase()}`);
+      throw new Error(`Unknown StartFrom value case. ${startFrom.getStartFromCase()}`);
   }
 }
 
-function startFromToPb(startFrom: StartFrom): pb.ConsumerSessionConfigStartFrom {
-  const startFromPb = new pb.ConsumerSessionConfigStartFrom();
+function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {
+  const startFromPb = new pb.ConsumerSessionStartFrom();
 
   switch (startFrom.type) {
     case 'earliestMessage':
-      startFromPb.setEarliestMessage(new pb.EarliestMessage());
+      startFromPb.setStartFromEarliestMessage(new pb.EarliestMessage());
       break;
     case 'latestMessage':
-      startFromPb.setLatestMessage(new pb.LatestMessage());
+      startFromPb.setStartFromLatestMessage(new pb.LatestMessage());
       break;
     case 'messageId':
-      startFromPb.setMessageId(new pb.MessageId().setMessageId(hexStringToByteArray(startFrom.hexString)));
+      startFromPb.setStartFromMessageId(new pb.MessageId().setMessageId(hexStringToByteArray(startFrom.hexString)));
       break;
     case 'dateTime':
       const epochSeconds = Math.floor(startFrom.dateTime.getTime() / 1000);
       const timestampPb = new Timestamp();
       timestampPb.setSeconds(epochSeconds);
-      startFromPb.setDateTime(new pb.DateTime().setDateTime(timestampPb));
+      startFromPb.setStartFromDateTime(new pb.DateTime().setDateTime(timestampPb));
       break;
     case 'relativeDateTime':
       const relativeDateTimePb = new pb.RelativeDateTime();
-      relativeDateTimePb.setUnit(dateTimeUnitToPb(startFrom.value.unit))
-      relativeDateTimePb.setValue(startFrom.value.value)
-      relativeDateTimePb.setIsRoundedToUnitStart(startFrom.value.isRoundedToUnitStart)
+      relativeDateTimePb.setUnit(dateTimeUnitToPb(startFrom.relativeDateTime.unit))
+      relativeDateTimePb.setValue(startFrom.relativeDateTime.value)
+      relativeDateTimePb.setIsRoundedToUnitStart(startFrom.relativeDateTime.isRoundedToUnitStart)
 
-      startFromPb.setRelativeDateTime(relativeDateTimePb);
+      startFromPb.setStartFromRelativeDateTime(relativeDateTimePb);
       break;
     default:
       throw new Error(`Unknown StartFrom type. ${startFrom}`);

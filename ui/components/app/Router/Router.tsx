@@ -10,6 +10,7 @@ import {
   matchPath,
   useNavigate,
   Params,
+  Navigate,
 } from "react-router-dom";
 import * as Modals from "../contexts/Modals/Modals";
 
@@ -69,6 +70,14 @@ const prepareRoutes = (): {
     withLayoutProps: WithLayoutProps;
   }) => [
       /* Instance */
+      {
+        // Redirect to the Instance Overview page
+        path: "/",
+        element: withLayout(
+          <Navigate to={routes.instance.overview._.path} replace />,
+          withLayoutProps
+        ),
+      },
       {
         path: routes.instance.overview._.path,
         element: withLayout(

@@ -7,6 +7,7 @@ import DeleteLibraryItemButton from './DeleteLibraryItemButton/DeleteLibraryItem
 import SortInput, { Sort } from '../../SortInput/SortInput';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import partition from 'lodash/partition';
+import { newItemLabel } from '../LibraryBrowser';
 
 export type ExtraLabel = {
   text: string;
@@ -80,6 +81,7 @@ const SearchResults: React.FC<SearchResultsProps> = (props) => {
             <DeleteLibraryItemButton
               itemId={props.selectedItemId}
               onDeleted={props.onDeleted}
+              isDisabled={Object.values(props.extraLabels).find(el => el.text === newItemLabel) !== undefined}
             />
           </div>
           {filteredItems.length === 0 && (

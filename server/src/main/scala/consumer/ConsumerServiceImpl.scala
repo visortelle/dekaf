@@ -50,6 +50,7 @@ case class ConsumerSession(
     consumer: Consumer[Array[Byte]],
     grpcResponseObserver: Option[io.grpc.stub.StreamObserver[ResumeResponse]],
     listener: TopicMessageListener,
+    schemasByTopic: SchemasByTopic,
     var processedMessagesCount: Long
 )
 
@@ -57,7 +58,6 @@ case class StreamDataHandler(var onNext: (msg: Message[Array[Byte]]) => Unit)
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
     private val logger: Logger = Logger(getClass.getName)
-    private val schemasByTopic: SchemasByTopic = Map.empty
     private val consumerSessions: ConcurrentHashMap[ConsumerName, ConsumerSession] = new ConcurrentHashMap[ConsumerName, ConsumerSession]()
 
     override def resume(request: ResumeRequest, responseObserver: io.grpc.stub.StreamObserver[ResumeResponse]): Unit =
@@ -89,7 +89,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
             consumerSession.processedMessagesCount += 1
 
-            val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(schemasByTopic, msg)
+            val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(consumerSession.schemasByTopic, msg)
 
             val consumerSessionConfig = consumerSession.config
             val messageFilterChain = consumerSessionConfig.messageFilterChain
@@ -144,6 +144,16 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumerName: ConsumerName = request.consumerName.getOrElse("__dekaf" + UUID.randomUUID().toString)
         logger.info(s"Creating consumer. Consumer: $consumerName")
         val pulsarClient = RequestContext.pulsarClient.get()
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        val topicsToConsume = request.topicsSelector match
+            case Some(ts) =>
+                ts.topicsSelector.byNames match
+                    case Some(bn) => bn.topics.toVector
+            case _ =>
+                val status: Status =
+                    Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
+                return Future.successful(CreateConsumerResponse(status = Some(status)))
 
         val config = consumerSessionConfigFromPb(request.consumerSessionConfig.get)
         val listener = TopicMessageListener(StreamDataHandler(onNext = _ => ()))
@@ -158,12 +168,15 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumer = consumerBuilder.subscribe
         handleStartFrom(startFrom = config.startFrom, consumer = consumer)
 
+        val schemasByTopic = getSchemasByTopic(adminClient, topicsToConsume)
+
         val consumerSession = ConsumerSession(
             config = config,
             messageFilterContext = MessageFilterContext(MessageFilterContextConfig(stdout = new ByteArrayOutputStream())),
             consumer = consumer,
             grpcResponseObserver = None,
             listener = listener,
+            schemasByTopic = schemasByTopic,
             processedMessagesCount = 0
         )
 

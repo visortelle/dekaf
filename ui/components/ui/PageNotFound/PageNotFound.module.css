@@ -1,14 +1,9 @@
 .PageContent {
-    padding: 24rem;
+    padding: 24rem 12rem;
     display: flex;
     flex-direction: column;
     gap: 8rem;
 }
-
-.PageNotFoundTitle {
-    font-size: 32rem;
-}
-
 
 .PageNotFoundDescription {
     font-size: 15rem;

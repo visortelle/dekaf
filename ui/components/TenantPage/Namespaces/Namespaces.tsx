@@ -60,7 +60,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             namespaceName: {
               title: 'Name',
               render: (de) => i18n.withVoidDefault(de.namespaceName, v => (
-                <Link to={`${routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: de.namespaceName })}`}>
+                <Link to={`${routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: de.namespaceName })}`}>
                   {v}
                 </Link>
               )),

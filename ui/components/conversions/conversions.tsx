@@ -10,8 +10,9 @@ export function hexStringToByteArray(hexString: string): Uint8Array {
   return byteArray;
 }
 
-export function hexStringFromByteArray(byteArray: Uint8Array): string {
+export type ByteArrayStyle = 'hex-no-space' | 'hex-with-space';
+export function hexStringFromByteArray(byteArray: Uint8Array, style: ByteArrayStyle): string {
   return Array.from(byteArray, function (byte) {
     return ('0' + (byte & 0xFF).toString(16)).slice(-2);
-  }).join('')
+  }).join(style === 'hex-with-space' ? ' ' : '');
 }

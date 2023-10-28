@@ -17,7 +17,7 @@ const RegexTenantMatcherInput: React.FC<RegexTenantMatcherInputProps> = (props) 
         <FormLabel content="Tenant Name Regex" />
         <Input
           value={props.value.tenantRegex}
-          onChange={(v) => props.onChange({ type: 'regex-tenant-matcher', tenantRegex: v })}
+          onChange={(v) => props.onChange({ ...props.value, tenantRegex: v })}
           placeholder='Use .* regex to match all tenants'
         />
       </FormItem>

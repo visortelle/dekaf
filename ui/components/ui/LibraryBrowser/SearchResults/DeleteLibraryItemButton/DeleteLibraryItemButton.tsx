@@ -12,6 +12,7 @@ import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 export type DeleteLibraryItemButtonProps = {
   itemId: string | undefined;
   onDeleted: () => void;
+  isDisabled: boolean;
 };
 
 const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) => {
@@ -69,7 +70,7 @@ const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) 
 
           deleteItem();
         }}
-        disabled={props.itemId === undefined}
+        disabled={props.itemId === undefined || props.isDisabled}
         type='danger'
         title="Delete selected item"
       />

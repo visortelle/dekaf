@@ -161,12 +161,11 @@ def getFilterChainTestResult(
         chain = MessageFilterChain(
             isEnabled = true,
             isNegated = false,
-            mode = MessageFilterChainMode.All(),
+            mode = MessageFilterChainMode.All,
             filters = List(
                 MessageFilter(
                     isEnabled = true,
                     isNegated = false,
-                    `type` = MessageFilterType.JsMessageFilter,
                     value = JsMessageFilter(jsCode = "() => true")
                 )
             )
@@ -182,9 +181,9 @@ def getFilterChainTestResult(
             case Some(Left(err), _) => Left(err)
             case _ =>
                 chain.mode match
-                    case MessageFilterChainMode.All() =>
+                    case MessageFilterChainMode.All =>
                         Right(filterResults.forall(fr => fr._1.getOrElse(false)))
-                    case MessageFilterChainMode.Any() =>
+                    case MessageFilterChainMode.Any =>
                         Right(filterResults.exists(fr => fr._1.getOrElse(false)))
     }.fold(
         err => Left(err),

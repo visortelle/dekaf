@@ -53,7 +53,7 @@ const ClearBacklogBundle: React.FC<ClearBacklogBundleProps> = ({ namespaceFqn, b
       }
       onConfirm={clearBacklogBundle}
       onCancel={modals.pop}
-      guard={"Confirm clear bundle backlog"}
+      guard={"CONFIRM"}
       type='danger'
     />
   );

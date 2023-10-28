@@ -54,7 +54,7 @@ const Tenants: React.FC<TenantsProps> = (props) => {
             tenantName: {
               title: 'Name',
               render: (de) => i18n.withVoidDefault(de.tenantName, v => (
-                <Link to={`${routes.tenants.tenant.namespaces._.get({ tenant: v })}`}>
+                <Link to={`${routes.tenants.tenant.overview._.get({ tenant: v })}`}>
                   {v}
                 </Link>
               )),

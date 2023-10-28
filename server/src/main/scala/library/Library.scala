@@ -1,11 +1,9 @@
 package library
 
-import io.circe.*
-import io.circe.generic.semiauto.*
-import io.circe.syntax.*
-import io.circe.parser.parse as parseJson
-import io.circe.parser.decode as decodeJson
+import scalapb.json4s.JsonFormat
 import com.typesafe.scalalogging.Logger
+import com.tools.teal.pulsar.ui.library.v1.library as pb
+import scala.util.{Failure, Success, Try}
 
 case class LibraryItemMetadata(
     updatedAt: String,
@@ -17,8 +15,12 @@ case class LibraryItem(
     metadata: LibraryItemMetadata,
     spec: UserManagedItem
 )
-given Decoder[LibraryItem] = deriveDecoder[LibraryItem]
-given Encoder[LibraryItem] = deriveEncoder[LibraryItem]
+
+object LibraryItem:
+    def toJson(item: LibraryItem): String =
+        val itemPb = libraryItemToPb(item)
+        JsonFormat.toJsonString[pb.LibraryItem](itemPb)
+    def fromJson(json: String): LibraryItem = libraryItemFromPb(JsonFormat.fromJsonString[pb.LibraryItem](json))
 
 type LibraryItemId = String
 type FileName = String
@@ -51,13 +53,11 @@ class Library:
     def writeItem(item: LibraryItem): Unit =
         val itemId = item.spec.metadata.id
 
-        if item.spec.metadata.name.isEmpty then
-            throw new Exception(s"Library item $itemId should have a name.")
+        if item.spec.metadata.name.isEmpty then throw new Exception(s"Library item $itemId should have a name.")
 
-        val fileName = s"${itemId}.json"
+        val fileName = s"$itemId.json"
         val filePath = os.Path(fileName, os.Path(rootDir, os.pwd))
-        val itemAsJson = item.asJson.spaces2SortKeys
-
+        val itemAsJson: String = LibraryItem.toJson(item)
 
         os.write.over(
             target = filePath,
@@ -110,7 +110,7 @@ class Library:
             .map { path =>
                 val fileName = path.last
                 val fileContent = os.read(path)
-                val scanResultEntry = decodeJson[LibraryItem](fileContent)
+                val scanResultEntry = Try(LibraryItem.fromJson(fileContent)).toEither
 
                 val libraryItemIdFromFileName = fileName.split('.').head
                 scanResultEntry match

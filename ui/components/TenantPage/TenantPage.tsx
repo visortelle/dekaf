@@ -55,16 +55,18 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
         <Toolbar
           buttons={[
             {
-              linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
-              text: 'Namespaces',
-              onClick: () => { },
-              type: 'regular',
-            },
-            {
               linkTo: routes.tenants.tenant.overview._.get({ tenant: props.tenant }),
               text: 'Overview',
               onClick: () => { },
               type: 'regular',
+              active: Boolean(matchPath(routes.tenants.tenant.overview._.path, pathname))
+            },
+            {
+              linkTo: routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }),
+              text: 'Namespaces',
+              onClick: () => { },
+              type: 'regular',
+              active: Boolean(matchPath(routes.tenants.tenant.namespaces._.path, pathname))
             },
             {
               text: 'Delete',
@@ -79,10 +81,11 @@ const TenantPage: React.FC<TenantPageProps> = (props) => {
             },
             {
               linkTo: routes.tenants.tenant.createNamespace._.get({ tenant: props.tenant }),
-              text: 'New Namespace',
+              text: 'Create Namespace',
               onClick: () => { },
               type: 'primary',
               position: 'right',
+              active: Boolean(matchPath(routes.tenants.tenant.createNamespace._.path, pathname))
             }
           ]}
         />
