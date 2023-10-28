@@ -93,6 +93,14 @@ enum DateTimeUnit {
 message EarliestMessage {}
 message LatestMessage {}
 
+message NMessagesBeforeLatest {
+  int64 n = 1;
+}
+
+message NMessagesAfterEarliest {
+  int64 n = 1;
+}
+
 message MessageId {
   bytes message_id = 1;
 }
@@ -111,6 +119,8 @@ message ConsumerSessionStartFrom {
   oneof start_from {
     EarliestMessage start_from_earliest_message = 1;
     LatestMessage start_from_latest_message = 2;
+    NMessagesAfterEarliest start_from_n_messages_after_earliest = 6;
+    NMessagesBeforeLatest start_from_n_messages_before_latest = 7;
     MessageId start_from_message_id = 3;
     DateTime start_from_date_time = 4;
     RelativeDateTime start_from_relative_date_time = 5;

@@ -203,6 +203,12 @@ function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionS
     case 'latestMessage':
       startFromPb.setStartFromLatestMessage(new pb.LatestMessage());
       break;
+    case 'nMessagesAfterEarliest':
+      startFromPb.setStartFromNMessagesAfterEarliest(new pb.NMessagesAfterEarliest().setN(startFrom.n));
+      break;
+    case 'nMessagesBeforeLatest':
+      startFromPb.setStartFromNMessagesBeforeLatest(new pb.NMessagesBeforeLatest().setN(startFrom.n));
+      break;
     case 'messageId':
       startFromPb.setStartFromMessageId(new pb.MessageId().setMessageId(hexStringToByteArray(startFrom.hexString)));
       break;

@@ -83,6 +83,8 @@ def consumerSessionStartFromFromPb(startFrom: pb.ConsumerSessionStartFrom): Cons
     startFrom.startFrom match
         case pb.ConsumerSessionStartFrom.StartFrom.StartFromEarliestMessage(_) => EarliestMessage()
         case pb.ConsumerSessionStartFrom.StartFrom.StartFromLatestMessage(_)   => LatestMessage()
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromNMessagesAfterEarliest(v)       => NMessagesAfterEarliest(n = v.n)
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromNMessagesBeforeLatest(v)       => NMessagesBeforeLatest(n = v.n)
         case pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(v)       => MessageId(messageId = v.messageId.toByteArray)
         case pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(v) =>
             DateTime(dateTime = Instant.ofEpochSecond(v.dateTime.get.seconds, v.dateTime.get.nanos))
