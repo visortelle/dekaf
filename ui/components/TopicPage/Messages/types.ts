@@ -34,8 +34,8 @@ export type RelativeDateTime = {
 export type ConsumerSessionStartFrom =
   { type: "earliestMessage" } |
   { type: "latestMessage" } |
-  { type: "nMessagesAfterEarliest", n: number } |
-  { type: "nMessagesBeforeLatest", n: number } |
+  { type: "nthMessageAfterEarliest", n: number } |
+  { type: "nthMessageBeforeLatest", n: number } |
   { type: "messageId"; hexString: string } |
   { type: "dateTime"; dateTime: Date } |
   {

@@ -12,10 +12,10 @@ def handleStartFrom(startFrom: ConsumerSessionStartFrom, consumer: Consumer[Arra
     startFrom match
         case _: EarliestMessage => // Do nothing here. It's handled on the consumer creation.
         case _: LatestMessage   => // Do nothing here. It's handled on the consumer creation.
-        case v: NMessagesAfterEarliest =>
+        case v: NthMessageAfterEarliest =>
             val message = adminClient.topics.examineMessage(topicFqn, "earliest", v.n)
             consumer.seek(message.getMessageId)
-        case v: NMessagesBeforeLatest =>
+        case v: NthMessageBeforeLatest =>
             val message = adminClient.topics.examineMessage(topicFqn, "latest", v.n + 1)
             consumer.seek(message.getMessageId)
         case v: MessageId =>

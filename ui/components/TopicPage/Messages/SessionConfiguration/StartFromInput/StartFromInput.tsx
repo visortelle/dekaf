@@ -28,8 +28,8 @@ type StartFromType = ConsumerSessionStartFrom['type'];
 const list: List<StartFromType> = [
   { type: 'item', title: 'Earliest message', value: 'earliestMessage' },
   { type: 'item', title: 'Latest message', value: 'latestMessage' },
-  { type: 'item', title: 'n-th message after Earliest message', value: 'nMessagesAfterEarliest' },
-  { type: 'item', title: 'n-th message before Latest message', value: 'nMessagesBeforeLatest' },
+  { type: 'item', title: 'n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
+  { type: 'item', title: 'n-th message before Latest message', value: 'nthMessageBeforeLatest' },
   {
     type: 'item',
     title: 'Message with specific ID',
@@ -94,12 +94,12 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 onSpecChange({ startFrom: { type: 'latestMessage' } });
                 return;
               }
-              case 'nMessagesAfterEarliest': {
-                onSpecChange({ startFrom: { type: 'nMessagesAfterEarliest', n: 100 } });
+              case 'nthMessageAfterEarliest': {
+                onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: 100 } });
                 return;
               }
-              case 'nMessagesBeforeLatest': {
-                onSpecChange({ startFrom: { type: 'nMessagesBeforeLatest', n: 100 } });
+              case 'nthMessageBeforeLatest': {
+                onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: 100 } });
                 return;
               }
               case 'messageId': {
@@ -145,20 +145,20 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         />
       </div>
       <div className={s.AdditionalControls}>
-        {itemSpec.startFrom.type === 'nMessagesAfterEarliest' && (
+        {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
           <Input
             value={itemSpec.startFrom.n.toString()}
             type='number'
-            onChange={(v) => onSpecChange({ startFrom: { type: 'nMessagesAfterEarliest', n: parseInt(v) } })}
+            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
             inputProps={{ disabled: props.disabled, min: 0 }}
             placeholder='n'
           />
         )}
-        {itemSpec.startFrom.type === 'nMessagesBeforeLatest' && (
+        {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
           <Input
             value={itemSpec.startFrom.n.toString()}
             type='number'
-            onChange={(v) => onSpecChange({ startFrom: { type: 'nMessagesBeforeLatest', n: parseInt(v) } })}
+            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
             inputProps={{ disabled: props.disabled, min: 0 }}
             placeholder='n'
           />

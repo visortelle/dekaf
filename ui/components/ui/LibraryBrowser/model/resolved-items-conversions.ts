@@ -56,8 +56,8 @@ export function consumerSessionStartFromFromValueOrReference(v: UserManagedConsu
   switch (spec.startFrom.type) {
     case 'earliestMessage': return { type: 'earliestMessage' };
     case 'latestMessage': return { type: 'latestMessage' };
-    case 'nMessagesAfterEarliest': return { type: 'nMessagesAfterEarliest', n: spec.startFrom.n };
-    case 'nMessagesBeforeLatest': return { type: 'nMessagesBeforeLatest', n: spec.startFrom.n };
+    case 'nthMessageAfterEarliest': return { type: 'nthMessageAfterEarliest', n: spec.startFrom.n };
+    case 'nthMessageBeforeLatest': return { type: 'nthMessageBeforeLatest', n: spec.startFrom.n };
     case 'dateTime': return {
       type: 'dateTime',
       dateTime: dateTimeFromValueOrReference(spec.startFrom.dateTime)

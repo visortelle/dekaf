@@ -27,8 +27,8 @@ case class MessageFilterChain(
 
 case class EarliestMessage()
 case class LatestMessage()
-case class NMessagesAfterEarliest(n: Long)
-case class NMessagesBeforeLatest(n: Long)
+case class NthMessageAfterEarliest(n: Long)
+case class NthMessageBeforeLatest(n: Long)
 
 enum DateTimeUnit {
     case Second
@@ -54,7 +54,7 @@ case class MessageId(
     messageId: Array[Byte]
 )
 
-type ConsumerSessionStartFrom = EarliestMessage | LatestMessage | NMessagesAfterEarliest | NMessagesBeforeLatest | MessageId | DateTime | RelativeDateTime
+type ConsumerSessionStartFrom = EarliestMessage | LatestMessage | NthMessageAfterEarliest | NthMessageBeforeLatest | MessageId | DateTime | RelativeDateTime
 
 case class ConsumerSessionEventMessagesProcessed(messageCount: Long)
 case class ConsumerSessionEventMessagesDelivered(messageCount: Long)
