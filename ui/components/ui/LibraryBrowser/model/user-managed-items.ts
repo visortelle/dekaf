@@ -93,12 +93,14 @@ export type UserManagedRelativeDateTimeValueOrReference = ValueOrReference<UserM
 
 export type StartFromEarliestMessage = { type: 'earliestMessage' };
 export type StartFromLatestMessage = { type: 'latestMessage' };
+export type StartFromNthMessageAfterEarliest = { type: 'nthMessageAfterEarliest', n: number };
+export type StartFromNthMessageBeforeLatest = { type: 'nthMessageBeforeLatest', n: number };
 export type StartFromMessageId = { type: 'messageId', messageId: UserManagedMessageIdValueOrReference };
 export type StartFromDateTime = { type: 'dateTime', dateTime: UserManagedDateTimeValueOrReference };
 export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: UserManagedRelativeDateTimeValueOrReference };
 
 export type UserManagedConsumerSessionStartFromSpec = {
-  startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
+  startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromNthMessageAfterEarliest | StartFromNthMessageBeforeLatest | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
 };
 export type UserManagedConsumerSessionStartFrom = {
   metadata: UserManagedItemMetadata,

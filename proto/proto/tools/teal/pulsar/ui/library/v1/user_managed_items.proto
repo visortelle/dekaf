@@ -88,6 +88,8 @@ message UserManagedConsumerSessionStartFromSpec {
   oneof start_from {
     tools.teal.pulsar.ui.api.v1.EarliestMessage start_from_earliest_message = 1;
     tools.teal.pulsar.ui.api.v1.LatestMessage start_from_latest_message = 2;
+    tools.teal.pulsar.ui.api.v1.NthMessageAfterEarliest start_from_nth_message_after_earliest = 6;
+    tools.teal.pulsar.ui.api.v1.NthMessageBeforeLatest start_from_nth_message_before_latest = 7;
     UserManagedMessageIdValueOrReference start_from_message_id = 3;
     UserManagedDateTimeValueOrReference start_from_date_time = 4;
     UserManagedRelativeDateTimeValueOrReference start_from_relative_date_time = 5;

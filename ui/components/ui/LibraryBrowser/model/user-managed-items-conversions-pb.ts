@@ -234,6 +234,10 @@ export function userManagedConsumerSessionStartFromSpecFromPb(v: pb.UserManagedC
       return { startFrom: { type: 'earliestMessage' } };
     case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_LATEST_MESSAGE:
       return { startFrom: { type: 'latestMessage' } };
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_NTH_MESSAGE_AFTER_EARLIEST:
+      return { startFrom: { type: 'nthMessageAfterEarliest', n: v.getStartFromNthMessageAfterEarliest()!.getN() } };
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_NTH_MESSAGE_BEFORE_LATEST:
+      return { startFrom: { type: 'nthMessageBeforeLatest', n: v.getStartFromNthMessageBeforeLatest()!.getN() } };
     case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_MESSAGE_ID:
       return { startFrom: { type: 'messageId', messageId: userManagedMessageIdValueOrReferenceFromPb(v.getStartFromMessageId()!) } };
     case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_DATE_TIME:
@@ -253,6 +257,12 @@ export function userManagedConsumerSessionStartFromSpecToPb(v: t.UserManagedCons
       break;
     case 'latestMessage':
       specPb.setStartFromLatestMessage(new consumerPb.LatestMessage());
+      break;
+    case 'nthMessageAfterEarliest':
+      specPb.setStartFromNthMessageAfterEarliest(new consumerPb.NthMessageAfterEarliest().setN(v.startFrom.n));
+      break;
+    case 'nthMessageBeforeLatest':
+      specPb.setStartFromNthMessageBeforeLatest(new consumerPb.NthMessageBeforeLatest().setN(v.startFrom.n));
       break;
     case 'messageId':
       specPb.setStartFromMessageId(userManagedMessageIdValueOrReferenceToPb(v.startFrom.messageId));
