@@ -42,7 +42,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
-  const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(5000);
+  const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(150000000);
   const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();

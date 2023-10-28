@@ -81,9 +81,11 @@ def dateTimeUnitToPb(dateTimeUnit: DateTimeUnit): pb.DateTimeUnit =
 
 def consumerSessionStartFromFromPb(startFrom: pb.ConsumerSessionStartFrom): ConsumerSessionStartFrom =
     startFrom.startFrom match
-        case pb.ConsumerSessionStartFrom.StartFrom.StartFromEarliestMessage(_) => EarliestMessage()
-        case pb.ConsumerSessionStartFrom.StartFrom.StartFromLatestMessage(_)   => LatestMessage()
-        case pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(v)       => MessageId(messageId = v.messageId.toByteArray)
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromEarliestMessage(_)         => EarliestMessage()
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromLatestMessage(_)           => LatestMessage()
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromNthMessageAfterEarliest(v) => NthMessageAfterEarliest(n = v.n)
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromNthMessageBeforeLatest(v)  => NthMessageBeforeLatest(n = v.n)
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(v)               => MessageId(messageId = v.messageId.toByteArray)
         case pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(v) =>
             DateTime(dateTime = Instant.ofEpochSecond(v.dateTime.get.seconds, v.dateTime.get.nanos))
         case pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(v) =>

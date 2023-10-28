@@ -48,7 +48,7 @@ export function relativeDateTimeFromValueOrReference(v: UserManagedRelativeDateT
 
 export function consumerSessionStartFromFromValueOrReference(v: UserManagedConsumerSessionStartFromValueOrReference): ConsumerSessionStartFrom {
   if (v.value === undefined) {
-    throw new Error('ConsumerSessionStartFrom reference can\'t be converted value');
+    throw new Error('ConsumerSessionStartFrom reference can\'t be converted to value');
   }
 
   const spec = v.value.spec;
@@ -56,6 +56,8 @@ export function consumerSessionStartFromFromValueOrReference(v: UserManagedConsu
   switch (spec.startFrom.type) {
     case 'earliestMessage': return { type: 'earliestMessage' };
     case 'latestMessage': return { type: 'latestMessage' };
+    case 'nthMessageAfterEarliest': return { type: 'nthMessageAfterEarliest', n: spec.startFrom.n };
+    case 'nthMessageBeforeLatest': return { type: 'nthMessageBeforeLatest', n: spec.startFrom.n };
     case 'dateTime': return {
       type: 'dateTime',
       dateTime: dateTimeFromValueOrReference(spec.startFrom.dateTime)

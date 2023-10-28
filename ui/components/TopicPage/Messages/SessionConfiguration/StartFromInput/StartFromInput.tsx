@@ -13,6 +13,7 @@ import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../.
 import dayjs from 'dayjs';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
+import { clone } from 'lodash';
 
 export type StartFromInputProps = {
   value: UserManagedConsumerSessionStartFromValueOrReference;
@@ -27,6 +28,8 @@ type StartFromType = ConsumerSessionStartFrom['type'];
 const list: List<StartFromType> = [
   { type: 'item', title: 'Earliest message', value: 'earliestMessage' },
   { type: 'item', title: 'Latest message', value: 'latestMessage' },
+  { type: 'item', title: 'n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
+  { type: 'item', title: 'n-th message before Latest message', value: 'nthMessageBeforeLatest' },
   {
     type: 'item',
     title: 'Message with specific ID',
@@ -91,6 +94,14 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 onSpecChange({ startFrom: { type: 'latestMessage' } });
                 return;
               }
+              case 'nthMessageAfterEarliest': {
+                onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: 100 } });
+                return;
+              }
+              case 'nthMessageBeforeLatest': {
+                onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: 100 } });
+                return;
+              }
               case 'messageId': {
                 const messageId: UserManagedMessageIdValueOrReference = {
                   type: 'value',
@@ -134,20 +145,51 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         />
       </div>
       <div className={s.AdditionalControls}>
-        {/* {props.value.spec.startFrom.type === 'messageId' && (
+        {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
+          <Input
+            value={itemSpec.startFrom.n.toString()}
+            type='number'
+            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
+            inputProps={{ disabled: props.disabled, min: 0 }}
+            placeholder='n'
+          />
+        )}
+        {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
+          <Input
+            value={itemSpec.startFrom.n.toString()}
+            type='number'
+            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
+            inputProps={{ disabled: props.disabled, min: 0 }}
+            placeholder='n'
+          />
+        )}
+        {itemSpec.startFrom.type === 'messageId' && (
           isHasPartitionedTopic ? (
             <div style={{ color: 'var(--accent-color-red)', marginTop: '2rem' }}>
               <strong>Can be only applied on non-partitioned topics or individual partitions.</strong>
             </div>
           ) : (
             <Input
-              value={props.value.spec.startFrom.messageId}
+              value={itemSpec.startFrom.messageId.value?.spec.hexString || ''}
               placeholder="08 c3 03 10 cd 04 20 00 30 01"
-              onChange={(v) => props.onChange({ type: 'messageId', hexString: v })}
+              onChange={(v) => {
+                const newItemSpec = clone(itemSpec);
+
+                if (newItemSpec.startFrom.type !== 'messageId') {
+                  return;
+                }
+
+                if (newItemSpec.startFrom.messageId.value === undefined) {
+                  return;
+                }
+
+                newItemSpec.startFrom.messageId.value.spec.hexString = v;
+                onSpecChange(newItemSpec);
+              }}
             />
           )
         )}
-        {props.value.spec.startFrom.type === 'dateTime' && (
+        {/* {props.value.spec.startFrom.type === 'dateTime' && (
           <DatetimePicker
             value={props.value.spec.startFrom.dateTime}
             onChange={(v) => props.onChange({ type: 'dateTime', dateTime: v || new Date() })}
