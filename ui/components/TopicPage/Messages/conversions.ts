@@ -12,6 +12,10 @@ import {
   MessageFilterChainMode,
   ConsumerSessionStartFrom,
   DateTimeUnit,
+  TopicsSelector,
+  TopicsSelectorByFqns,
+  TopicsSelectorByRegex,
+  RegexSubMode,
 } from "./types";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
@@ -145,6 +149,91 @@ export function dateTimeUnitToPb(unit: DateTimeUnit): pb.DateTimeUnit {
   }
 }
 
+export function topicsSelectorByFqnsFromPb(v: pb.TopicsSelectorByFqns): TopicsSelectorByFqns {
+  return {
+    type: 'by-fqns',
+    topicFqns: v.getTopicFqnsList(),
+  };
+}
+
+export function topicsSelectorByFqnsToPb(v: TopicsSelectorByFqns): pb.TopicsSelectorByFqns {
+  const topicsSelectorByFqnsPb = new pb.TopicsSelectorByFqns();
+  topicsSelectorByFqnsPb.setTopicFqnsList(v.topicFqns);
+  return topicsSelectorByFqnsPb;
+}
+
+
+
+export function regexSubscriptionModeFromPb(v: pb.RegexSubscriptionMode): RegexSubMode {
+  switch (v) {
+    case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS:
+      return 'all-topics';
+    case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY:
+      return 'persistent-only';
+    case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY:
+      return 'non-persistent-only';
+    default:
+      throw new Error(`Unknown regex subscription mode: ${v}`);
+  }
+}
+
+export function regexSubscriptionModeToPb(v: RegexSubMode): pb.RegexSubscriptionMode {
+  switch (v) {
+    case 'all-topics':
+      return pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS;
+    case 'persistent-only':
+      return pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY;
+    case 'non-persistent-only':
+      return pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY;
+    default:
+      throw new Error(`Unknown regex subscription mode: ${v}`);
+  }
+}
+
+export function topicsSelectorByRegexFromPb(v: pb.TopicsSelectorByRegex): TopicsSelectorByRegex {
+  return {
+    type: 'by-regex',
+    pattern: v.getPattern(),
+    regexSubscriptionMode: regexSubscriptionModeFromPb(v.getRegexSubscriptionMode()),
+  };
+}
+
+export function topicsSelectorByRegexToPb(v: TopicsSelectorByRegex): pb.TopicsSelectorByRegex {
+  const topicsSelectorByRegexPb = new pb.TopicsSelectorByRegex();
+  topicsSelectorByRegexPb.setPattern(v.pattern);
+  topicsSelectorByRegexPb.setRegexSubscriptionMode(regexSubscriptionModeToPb(v.regexSubscriptionMode));
+  return topicsSelectorByRegexPb;
+}
+
+export function topicsSelectorFromPb(v: pb.TopicsSelector): TopicsSelector {
+  switch (v.getTopicsSelectorCase()) {
+    case pb.TopicsSelector.TopicsSelectorCase.TOPICS_SELECTOR_BY_FQNS: {
+      return topicsSelectorByFqnsFromPb(v.getTopicsSelectorByFqns()!);
+    }
+    case pb.TopicsSelector.TopicsSelectorCase.TOPICS_SELECTOR_BY_REGEX: {
+      return topicsSelectorByRegexFromPb(v.getTopicsSelectorByRegex()!);
+    }
+    default:
+      throw new Error(`Unknown topics selector type: ${v}`);
+  }
+}
+
+export function topicsSelectorToPb(v: TopicsSelector): pb.TopicsSelector {
+  const topicsSelectorPb = new pb.TopicsSelector();
+
+  switch (v.type) {
+    case 'by-fqns':
+      topicsSelectorPb.setTopicsSelectorByFqns(topicsSelectorByFqnsToPb(v));
+      break;
+    case 'by-regex':
+      topicsSelectorPb.setTopicsSelectorByRegex(topicsSelectorByRegexToPb(v));
+      break;
+    default:
+      throw new Error(`Unknown topics selector type: ${v}`);
+  }
+
+  return topicsSelectorPb;
+}
 
 export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): ConsumerSessionStartFrom {
   switch (startFrom.getStartFromCase()) {

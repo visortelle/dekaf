@@ -12,7 +12,7 @@ import {
   DeleteConsumerRequest,
   PauseRequest,
   RegexSubscriptionMode,
-  TopicsSelectorByNames,
+  TopicsSelectorByFqns,
   TopicsSelectorByRegex,
   SubscriptionMode,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
@@ -37,7 +37,7 @@ import useSWR from 'swr';
 import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import { consumerSessionConfigToPb, messageDescriptorFromPb } from './conversions';
+import { consumerSessionConfigToPb, messageDescriptorFromPb, topicsSelectorToPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
@@ -99,15 +99,15 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
-      config?.topicsSelector.type === 'by-names' ? config.topicsSelector.topics : []
+      config?.topicsSelector.type === 'by-fqns' ? config.topicsSelector.topicFqns : []
     ).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
     async () => {
-      if (config?.topicsSelector.type !== 'by-names') {
+      if (config?.topicsSelector.type !== 'by-fqns') {
         return undefined;
       }
 
       const req = new GetTopicsInternalStatsRequest();
-      req.setTopicsList(config.topicsSelector.topics);
+      req.setTopicsList(config.topicsSelector.topicFqns);
       const res = await topicServiceClient.getTopicsInternalStats(req, {})
         .catch((err) => notifyError(`Unable to get topics internal stats. ${err}`));
 
@@ -219,28 +219,7 @@ const Session: React.FC<SessionProps> = (props) => {
       const topicsSelector = config.topicsSelector;
 
       const req = new CreateConsumerRequest();
-      const topicsSelectorPb = new TopicsSelector();
-
-      if (topicsSelector.type === 'by-names') {
-        const selector = new TopicsSelectorByNames();
-        selector.setTopicsList(topicsSelector.topics);
-        topicsSelectorPb.setByNames(selector);
-      }
-
-      if (topicsSelector.type === 'by-regex') {
-        const selector = new TopicsSelectorByRegex();
-        selector.setPattern(topicsSelector.pattern);
-
-        let regexSubscriptionMode: RegexSubscriptionMode;
-        switch (topicsSelector.regexSubscriptionMode) {
-          case 'persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY; break;
-          case 'non-persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY; break;
-          case 'all-topics': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS; break;
-        }
-
-        selector.setRegexSubscriptionMode(regexSubscriptionMode);
-        topicsSelectorPb.setByRegex(selector);
-      }
+      let topicsSelectorPb = topicsSelectorToPb(topicsSelector);
 
       req.setTopicsSelector(topicsSelectorPb)
       req.setConsumerName(consumerName.current);

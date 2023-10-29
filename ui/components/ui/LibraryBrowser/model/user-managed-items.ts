@@ -1,4 +1,4 @@
-import { ConsumerSessionTopicsSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
+import { TopicsSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode, TopicsSelectorByRegex } from "../../../TopicPage/Messages/types";
 
 export type ValueOrReference<ValueT> = {
   type: 'value',
@@ -55,7 +55,7 @@ export type UserManagedMessageFilterChain = {
 
 export type UserManagedMessageFilterChainValueOrReference = ValueOrReference<UserManagedMessageFilterChain>;
 
-export type UserManagedConsumerSessionTopicSelectorSpec = ConsumerSessionTopicsSelector;
+export type UserManagedConsumerSessionTopicSelectorSpec = TopicsSelector;
 
 export type UserManagedConsumerSessionTopicSelector = {
   metadata: UserManagedItemMetadata,
@@ -110,9 +110,28 @@ export type UserManagedConsumerSessionStartFromValueOrReference = ValueOrReferen
 
 export type UserManagedConsumerSessionTopicSelectorValueOrReference = ValueOrReference<UserManagedConsumerSessionTopicSelector>;
 
+export type TopicsSelectorCurrentTopic = { type: "current-topic" };
+
+export type TopicsSelectorByFqns = {
+  type: "by-fqns",
+  topicFqns: string[],
+  isConvertPartitionedTopicToItsPartitions: boolean,
+};
+
+export type UserManagedTopicsSelectorSpec = {
+  topicsSelector: TopicsSelectorCurrentTopic | TopicsSelectorByFqns | TopicsSelectorByRegex,
+};
+
+export type UserManagedTopicsSelector = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedTopicsSelectorSpec,
+};
+
+export type UserManagedTopicsSelectorValueOrReference = ValueOrReference<UserManagedTopicsSelector>;
+
 export type UserManagedConsumerSessionSpec = {
   messageFilterChain: UserManagedMessageFilterChainValueOrReference,
-  topicsSelector: ConsumerSessionTopicsSelector,
+  topicsSelector: TopicsSelector,
   startFrom: UserManagedConsumerSessionStartFromValueOrReference,
 };
 

@@ -150,8 +150,8 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
             val topicsToConsume = request.topicsSelector match
                 case Some(ts) =>
-                    ts.topicsSelector.byNames match
-                        case Some(bn) => bn.topics.toVector
+                    ts.topicsSelector.topicsSelectorByFqns match
+                        case Some(bn) => bn.topicFqns.toVector
                 case _ =>
                     val status: Status =
                         Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")

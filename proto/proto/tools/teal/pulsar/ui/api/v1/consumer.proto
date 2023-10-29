@@ -63,19 +63,19 @@ enum RegexSubscriptionMode {
   REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
 }
 
-message TopicsSelectorByNames {
-  repeated string topics = 1;
+message TopicsSelectorByFqns {
+  repeated string topic_fqns = 1;
 }
 
 message TopicsSelectorByRegex {
-  optional string pattern = 2;
-  optional RegexSubscriptionMode regex_subscription_mode = 3;
+  string pattern = 2;
+  RegexSubscriptionMode regex_subscription_mode = 3;
 }
 
 message TopicsSelector {
   oneof topics_selector {
-    TopicsSelectorByNames by_names = 1;
-    TopicsSelectorByRegex by_regex = 2;
+    TopicsSelectorByFqns topics_selector_by_fqns = 1;
+    TopicsSelectorByRegex topics_selector_by_regex = 2;
   }
 }
 

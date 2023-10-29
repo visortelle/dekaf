@@ -7,21 +7,23 @@ export type SessionState =
   | "initializing"
   | "new";
 
-type RegexSubMode =
+export type RegexSubMode =
   | "all-topics"
   | "persistent-only"
   | "non-persistent-only";
 
-export type ConsumerSessionTopicsSelector =
-  | {
-    type: "by-names";
-    topics: string[];
-  }
-  | {
-    type: "by-regex";
-    pattern: string;
-    regexSubscriptionMode: RegexSubMode;
-  };
+export type TopicsSelectorByFqns = {
+  type: "by-fqns";
+  topicFqns: string[];
+};
+
+export type TopicsSelectorByRegex = {
+  type: "by-regex";
+  pattern: string;
+  regexSubscriptionMode: RegexSubMode;
+}
+
+export type TopicsSelector = TopicsSelectorByFqns | TopicsSelectorByRegex;
 
 export type DateTimeUnit = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
 
@@ -45,7 +47,7 @@ export type ConsumerSessionStartFrom =
 
 export type ConsumerSessionConfig = {
   startFrom: ConsumerSessionStartFrom;
-  topicsSelector: ConsumerSessionTopicsSelector;
+  topicsSelector: TopicsSelector;
   messageFilterChain: MessageFilterChain;
 };
 

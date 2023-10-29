@@ -7,7 +7,9 @@ import {
   messageFilterChainModeFromPb,
   messageFilterChainModeToPb,
   dateTimeUnitFromPb,
-  dateTimeUnitToPb
+  dateTimeUnitToPb,
+  topicsSelectorByRegexFromPb,
+  topicsSelectorByRegexToPb
 } from "../../../TopicPage/Messages/conversions";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
@@ -443,6 +445,60 @@ export function userManagedMessageFilterChainValueOrReferenceToPb(v: t.UserManag
       throw new Error(`Unknown UserManagedMessageFilterChainValueOrReference: ${v}`);
   }
   return chainPb;
+}
+
+export function topicsSelectorCurrentFromPb(v: pb.TopicsSelectorCurrentTopic): t.TopicsSelectorCurrentTopic {
+  return { type: 'current-topic' };
+}
+
+export function topicsSelectorCurrentToPb(v: t.TopicsSelectorCurrentTopic): pb.TopicsSelectorCurrentTopic {
+  return new pb.TopicsSelectorCurrentTopic();
+}
+
+export function topicsSelectorByFqnsFromPb(v: pb.TopicsSelectorByFqns): t.TopicsSelectorByFqns {
+  return {
+    type: 'by-fqns',
+    topicFqns: v.getTopicFqnsList(),
+    isConvertPartitionedTopicToItsPartitions: v.getIsConvertPartitionedTopicToItsPartitions()
+  };
+}
+
+export function topicsSelectorByFqnsToPb(v: t.TopicsSelectorByFqns): pb.TopicsSelectorByFqns {
+  const specPb = new pb.TopicsSelectorByFqns();
+  specPb.setTopicFqnsList(v.topicFqns);
+  specPb.setIsConvertPartitionedTopicToItsPartitions(v.isConvertPartitionedTopicToItsPartitions);
+  return specPb;
+}
+
+export function userManagedTopicsSelectorSpecFromPb(v: pb.UserManagedTopicsSelectorSpec): t.UserManagedTopicsSelectorSpec {
+  switch (v.getTopicsSelectorCase()) {
+    case pb.UserManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_CURRENT_TOPIC:
+      return { topicsSelector: topicsSelectorCurrentFromPb(v.getTopicsSelectorCurrentTopic()!) };
+    case pb.UserManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_BY_FQNS:
+      return { topicsSelector: topicsSelectorByFqnsFromPb(v.getTopicsSelectorByFqns()!) };
+    case pb.UserManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_BY_REGEX:
+      return { topicsSelector: topicsSelectorByRegexFromPb(v.getTopicsSelectorByRegex()!) };
+    default:
+      throw new Error(`Unknown UserManagedTopicsSelectorSpec: ${v}`);
+  }
+}
+
+export function userManagedTopicsSelectorSpecToPb(v: t.UserManagedTopicsSelectorSpec): pb.UserManagedTopicsSelectorSpec {
+  const specPb = new pb.UserManagedTopicsSelectorSpec();
+  switch (v.topicsSelector.type) {
+    case 'current-topic':
+      specPb.setTopicsSelectorCurrentTopic(topicsSelectorCurrentToPb(v.topicsSelector));
+      break;
+    case 'by-fqns':
+      specPb.setTopicsSelectorByFqns(topicsSelectorByFqnsToPb(v.topicsSelector));
+      break;
+    case 'by-regex':
+      specPb.setTopicsSelectorByRegex(topicsSelectorByRegexToPb(v.topicsSelector));
+      break;
+    default:
+      throw new Error(`Unknown UserManagedTopicsSelectorSpec: ${v}`);
+  }
+  return specPb;
 }
 
 export function userManagedItemFromPb(v: pb.UserManagedItem): t.UserManagedItem {

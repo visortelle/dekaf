@@ -87,22 +87,18 @@ def buildConsumer(
         case _       => return Left("Topic selector shouldn't be empty")
 
     topicsSelector match
-        case TopicsSelector.ByNames(s) =>
-            consumer = consumer.topics(s.topics.toList.asJava)
-        case TopicsSelector.ByRegex(s) =>
-            s.pattern match
-                case Some(p) =>
-                    consumer = consumer.topicsPattern(p)
-
-                    s.regexSubscriptionMode match
-                        case Some(consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY) =>
-                            consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.PersistentOnly)
-                        case Some(consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY) =>
-                            consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.NonPersistentOnly)
-                        case Some(consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS) =>
-                            consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.AllTopics)
-                        case _ => consumer = consumer
-                case _ => ()
+        case TopicsSelector.TopicsSelectorByFqns(s) =>
+            consumer = consumer.topics(s.topicFqns.toList.asJava)
+        case TopicsSelector.TopicsSelectorByRegex(s) =>
+            consumer = consumer.topicsPattern(s.pattern)
+            s.regexSubscriptionMode match
+                case consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY =>
+                    consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.PersistentOnly)
+                case consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY =>
+                    consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.NonPersistentOnly)
+                case consumerPb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS =>
+                    consumer = consumer.subscriptionTopicsMode(RegexSubscriptionMode.AllTopics)
+                case _ => consumer = consumer
         case _ => ()
 
     Right(consumer)

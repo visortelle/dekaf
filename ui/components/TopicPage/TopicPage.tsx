@@ -213,7 +213,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                 type: 'consumer-session-config'
               },
               spec: {
-                topicsSelector: { type: "by-names", topics: [`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`] },
+                topicsSelector: { type: "by-fqns", topicFqns: [`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`] },
                 messageFilterChain: {
                   type: 'value',
                   value: {

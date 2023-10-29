@@ -36,12 +36,12 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
       return;
     }
 
-    if (props.sessionConfig.topicsSelector.type !== 'by-names') {
+    if (props.sessionConfig.topicsSelector.type !== 'by-fqns') {
       props.onSessionStateChange('got-initial-cursor-positions');
       return;
     }
 
-    const gotInitialCursorsPositions = props.sessionConfig.topicsSelector.topics.every(topic => {
+    const gotInitialCursorsPositions = props.sessionConfig.topicsSelector.topicFqns.every(topic => {
       if (props.topicsInternalStats === undefined) {
         return;
       }
