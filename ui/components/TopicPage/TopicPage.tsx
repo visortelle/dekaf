@@ -213,7 +213,22 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                 type: 'consumer-session-config'
               },
               spec: {
-                topicsSelector: { type: "by-fqns", topicFqns: [`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`] },
+                topicsSelectors: [{
+                  type: 'value',
+                  value: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'topics-selector'
+                    },
+                    spec: {
+                      topicsSelector: {
+                        type: 'current-topic'
+                      }
+                    }
+                  }
+                }],
                 messageFilterChain: {
                   type: 'value',
                   value: {

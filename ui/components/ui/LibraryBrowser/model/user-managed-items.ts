@@ -23,7 +23,8 @@ export type UserManagedItemType =
   "message-filter" |
   "message-id" |
   "producer-session-config" |
-  "relative-date-time";
+  "relative-date-time" |
+  "topics-selector";
 
 export type UserManagedItemMetadata = {
   type: UserManagedItemType,

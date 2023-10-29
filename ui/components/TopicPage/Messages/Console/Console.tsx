@@ -58,7 +58,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
               return (
                 <Producer
                   preset={{
-                    topic: props.sessionConfig.topicsSelector.type === 'by-fqns' ? props.sessionConfig.topicsSelector.value.topicFqns[0] : undefined,
+                    topic: props.sessionConfig.topicsSelector.type === 'by-fqns' ? props.sessionConfig.topicsSelector.topicFqns[0] : undefined,
                     key: ''
                   }}
                 />
@@ -143,7 +143,7 @@ const CursorsTab: React.FC<ConsoleProps> = (props) => {
               sessionState={props.sessionState}
               sessionConfig={props.sessionConfig}
               onSessionStateChange={props.onSessionStateChange}
-              selector={props.sessionConfig.topicsSelector.value.topicFqns.reduce((acc, topic) => ({ ...acc, [topic]: [props.sessionSubscriptionName] }), {})}
+              selector={props.sessionConfig.topicsSelector.topicFqns.reduce((acc, topic) => ({ ...acc, [topic]: [props.sessionSubscriptionName] }), {})}
               topicsInternalStats={props.topicsInternalStats}
             />
           </div>

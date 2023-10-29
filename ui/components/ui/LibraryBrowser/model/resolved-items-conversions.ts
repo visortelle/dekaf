@@ -73,7 +73,7 @@ export function consumerSessionStartFromFromValueOrReference(v: UserManagedConsu
   }
 }
 
-export function topicsSelectorFromValueOrReference(v: UserManagedTopicsSelectorValueOrReference[], currentTopicFqn: string): TopicsSelector {
+export function topicsSelectorFromValueOrReference(v: UserManagedTopicsSelectorValueOrReference[], currentTopicFqn: string | undefined): TopicsSelector {
   if (v.some(ts => ts.value === undefined)) {
     throw new Error('TopicsSelector reference can\'t be converted to value');
   }
@@ -90,7 +90,7 @@ export function topicsSelectorFromValueOrReference(v: UserManagedTopicsSelectorV
     const topicFqns = v.map(ts => {
       if (ts.value?.spec.topicsSelector.type === 'by-fqns') {
         return ts.value.spec.topicsSelector.topicFqns;
-      } else if (ts.value?.spec.topicsSelector.type === 'current-topic') {
+      } else if (ts.value?.spec.topicsSelector.type === 'current-topic' && currentTopicFqn !== undefined) {
         return [currentTopicFqn];
       }
 
@@ -124,7 +124,7 @@ export function topicsSelectorFromValueOrReference(v: UserManagedTopicsSelectorV
   throw new Error('TopicsSelector reference can\'t be converted to value');
 }
 
-export function consumerSessionConfigFromValueOrReference(v: UserManagedConsumerSessionConfigValueOrReference, currentTopicFqn: string): ConsumerSessionConfig {
+export function consumerSessionConfigFromValueOrReference(v: UserManagedConsumerSessionConfigValueOrReference, currentTopicFqn: string | undefined): ConsumerSessionConfig {
   if (v.value === undefined) {
     throw new Error('Consumer session config reference can\'t be converted to value');
   }

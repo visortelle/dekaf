@@ -90,7 +90,9 @@ const Session: React.FC<SessionProps> = (props) => {
 
   useEffect(() => {
     try {
-      setConfig(consumerSessionConfigFromValueOrReference(props.config));
+      const currentTopic = props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined;
+      const currentTopicFqn: string | undefined = currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`;
+      setConfig(consumerSessionConfigFromValueOrReference(props.config, currentTopicFqn));
     } catch (err) {
       console.warn(err);
       setConfig(undefined);
