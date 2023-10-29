@@ -1,5 +1,5 @@
-import { UserManagedConsumerSessionConfigValueOrReference, UserManagedConsumerSessionStartFrom, UserManagedConsumerSessionStartFromValueOrReference, UserManagedDateTimeValueOrReference, UserManagedMessageFilterChainValueOrReference, UserManagedMessageFilterValueOrReference, UserManagedMessageIdValueOrReference, UserManagedRelativeDateTime, UserManagedRelativeDateTimeValueOrReference } from "./user-managed-items";
-import { ConsumerSessionConfig, ConsumerSessionStartFrom, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
+import { UserManagedConsumerSessionConfigValueOrReference, UserManagedConsumerSessionStartFrom, UserManagedConsumerSessionStartFromValueOrReference, UserManagedDateTimeValueOrReference, UserManagedMessageFilterChainValueOrReference, UserManagedMessageFilterValueOrReference, UserManagedMessageIdValueOrReference, UserManagedRelativeDateTime, UserManagedRelativeDateTimeValueOrReference, UserManagedTopicsSelectorValueOrReference } from "./user-managed-items";
+import { ConsumerSessionConfig, ConsumerSessionStartFrom, MessageFilter, MessageFilterChain, RegexSubMode, RelativeDateTime, TopicsSelector } from "../../../TopicPage/Messages/types";
 
 export function messageFilterFromValueOrReference(v: UserManagedMessageFilterValueOrReference): MessageFilter {
   if (v.value === undefined) {
@@ -73,7 +73,58 @@ export function consumerSessionStartFromFromValueOrReference(v: UserManagedConsu
   }
 }
 
-export function consumerSessionConfigFromValueOrReference(v: UserManagedConsumerSessionConfigValueOrReference): ConsumerSessionConfig {
+export function topicsSelectorFromValueOrReference(v: UserManagedTopicsSelectorValueOrReference[], currentTopicFqn: string): TopicsSelector {
+  if (v.some(ts => ts.value === undefined)) {
+    throw new Error('TopicsSelector reference can\'t be converted to value');
+  }
+
+  // by-fqns and by-regex topics selectors can't be mixed together because Pulsar consumer doesn't support it.
+  let topicSelectorType: TopicsSelector['type'] = 'by-fqns';
+  if (v.every(ts => ts.value?.spec.topicsSelector.type === 'by-fqns' || ts.value?.spec.topicsSelector.type === 'current-topic')) {
+    topicSelectorType = 'by-fqns';
+  } else if (v.every(ts => ts.value?.spec.topicsSelector.type === 'by-regex')) {
+    topicSelectorType = 'by-regex';
+  }
+
+  if (topicSelectorType === 'by-fqns') {
+    const topicFqns = v.map(ts => {
+      if (ts.value?.spec.topicsSelector.type === 'by-fqns') {
+        return ts.value.spec.topicsSelector.topicFqns;
+      } else if (ts.value?.spec.topicsSelector.type === 'current-topic') {
+        return [currentTopicFqn];
+      }
+
+      return [];
+    }).flat();
+
+    return {
+      type: 'by-fqns',
+      topicFqns
+    }
+  } else if (topicSelectorType === 'by-regex') {
+    const patterns = v.map(ts => {
+      if (ts.value?.spec.topicsSelector.type === 'by-regex') {
+        return ts.value.spec.topicsSelector.pattern;
+      }
+
+      return [];
+    }).flat();
+
+    const regexSubscriptionMode: RegexSubMode = v[0].value?.spec.topicsSelector.type === 'by-regex' ?
+      v[0].value?.spec.topicsSelector.regexSubscriptionMode :
+      'all-topics';
+
+    return {
+      type: 'by-regex',
+      pattern: patterns.join('|'),
+      regexSubscriptionMode
+    }
+  }
+
+  throw new Error('TopicsSelector reference can\'t be converted to value');
+}
+
+export function consumerSessionConfigFromValueOrReference(v: UserManagedConsumerSessionConfigValueOrReference, currentTopicFqn: string): ConsumerSessionConfig {
   if (v.value === undefined) {
     throw new Error('Consumer session config reference can\'t be converted to value');
   }
@@ -81,6 +132,6 @@ export function consumerSessionConfigFromValueOrReference(v: UserManagedConsumer
   return {
     startFrom: consumerSessionStartFromFromValueOrReference(v.value.spec.startFrom),
     messageFilterChain: messageFilterChainFromValueOrReference(v.value.spec.messageFilterChain),
-    topicsSelector: v.value.spec.topicsSelector
+    topicsSelector: topicsSelectorFromValueOrReference(v.value.spec.topicsSelectors, currentTopicFqn)
   }
 }

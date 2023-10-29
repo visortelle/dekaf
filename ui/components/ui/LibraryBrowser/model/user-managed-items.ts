@@ -131,7 +131,7 @@ export type UserManagedTopicsSelectorValueOrReference = ValueOrReference<UserMan
 
 export type UserManagedConsumerSessionSpec = {
   messageFilterChain: UserManagedMessageFilterChainValueOrReference,
-  topicsSelector: TopicsSelector,
+  topicsSelectors: UserManagedTopicsSelectorValueOrReference[],
   startFrom: UserManagedConsumerSessionStartFromValueOrReference,
 };
 
