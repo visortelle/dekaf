@@ -1,16 +1,15 @@
 package envoy
 
 import zio.*
-import os as os
 
-case class EnvoyConfigParams(
+case class EnvoyConfigProps(
     httpServerPort: Int,
     grpcServerPort: Int,
     listenPort: Int,
     basePath: String
 )
 
-def renderEnvoyConfig(config: EnvoyConfigParams): String =
+def renderEnvoyConfig(config: EnvoyConfigProps): String =
     s"""
 static_resources:
   listeners:
@@ -107,7 +106,7 @@ static_resources:
                     port_value: ${config.httpServerPort}
                   """.stripMargin
 
-def getEnvoyConfigPath(config: EnvoyConfigParams): IO[Throwable, os.Path] = for
+def getEnvoyConfigPath(config: EnvoyConfigProps): IO[Throwable, os.Path] = for
     fileContent <- ZIO.succeed(renderEnvoyConfig(config))
     tempDirPath <- ZIO.attempt(os.temp.dir(null, "dekaf"))
     tempFilePath <- ZIO.attempt(tempDirPath / "envoy.yaml")

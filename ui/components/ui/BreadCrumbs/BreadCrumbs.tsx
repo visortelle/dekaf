@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./BreadCrumbs.module.css";
-import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon } from "../Icons/Icons";
+import {TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon, PageNotFoundIcon} from "../Icons/Icons";
 import * as AppContext from '../../app/contexts/AppContext';
 import * as Notifications from "../../app/contexts/Notifications";
 import SvgIcon from "../SvgIcon/SvgIcon";
@@ -21,6 +21,7 @@ export type CrumbType =
   "persistent-topic" |
   "non-persistent-topic" |
   "subscription" |
+  "page-not-found" |
   "link";
 
 export type Crumb = {
@@ -62,6 +63,9 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       case "subscription":
         icon = <SubscriptionIcon />;
         break;
+      case "page-not-found":
+        icon = <PageNotFoundIcon isGray={true} />;
+        break;
     }
 
     const isLast = i === total - 1;
@@ -70,16 +74,16 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     let className = '';
     switch (crumb.type) {
       case "instance":
-        href = routes.instance.tenants._.get();
+        href = routes.instance.overview._.get();
         break;
       case "tenant":
-        href = routes.tenants.tenant.namespaces._.get({ tenant });
+        href = routes.tenants.tenant.overview._.get({ tenant });
         break;
       case "namespace":
-        href = routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant, namespace });
+        href = routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant, namespace });
         break;
       case "persistent-topic":
-        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
           tenant,
           namespace,
           topic,
@@ -87,12 +91,15 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
         });
         break;
       case "non-persistent-topic":
-        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
           tenant,
           namespace,
           topic,
           topicPersistency: "non-persistent",
         });
+        break;
+      case "page-not-found":
+        href = routes.instance.overview._.get();
         break;
       case "link":
         href = pathname;

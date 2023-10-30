@@ -89,7 +89,7 @@ export const TopicField: React.FC<FieldProps> = (props) => {
   const topicResource = props.message.topic === null ? undefined : pulsarResourceFromFqn<PulsarTopicResource>(props.message.topic);
   const topicHref = topicResource === undefined ?
     undefined :
-    routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({ tenant: topicResource.tenant, namespace: topicResource.namespace, topic: topicResource.topic, topicPersistency: topicResource.topicPersistency });
+    routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: topicResource.tenant, namespace: topicResource.namespace, topic: topicResource.topic, topicPersistency: topicResource.topicPersistency });
 
   return <Field isShowTooltips={props.isShowTooltips} value={topic} valueHref={topicHref} tooltip={help.topic} />
 }

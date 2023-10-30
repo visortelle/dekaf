@@ -45,7 +45,7 @@ object HttpServer:
                             "pulsarBrokerUrl" -> appConfig.pulsarBrokerUrl.get,
                             "pulsarHttpUrl" -> appConfig.pulsarHttpUrl.get,
                             "pulsarName" -> appConfig.pulsarName.get,
-                            "pulsarColor" -> appConfig.pulsarColor.get,
+                            "pulsarColor" -> appConfig.pulsarColor.get
                         ).asJava
 
                         val pulsarAuthJson = Option(ctx.cookie("pulsar_auth"))
@@ -66,4 +66,5 @@ object HttpServer:
         _ <- ZIO.logInfo(s"HTTP server listening on port $port")
         app <- ZIO.attempt(createApp(config))
         _ <- ZIO.attempt(app.start(port))
+        _ <- ZIO.never
     yield ()

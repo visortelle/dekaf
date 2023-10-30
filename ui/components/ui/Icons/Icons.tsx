@@ -196,4 +196,23 @@ export const ConsumerIcon: React.FC<ProducerIconProps> = (props) => {
   />
 }
 
+export type PageNotFoundIconProps = {
+  onClick?: () => void;
+  isExpanded?: boolean;
+  isExpandable?: boolean;
+  className?: string;
+  isGray?: boolean;
+}
 
+export const PageNotFoundIcon: React.FC<PageNotFoundIconProps> = (props) => {
+  return <NodeIcon
+    title="?"
+    textColor='var(--text-color)'
+    backgroundColor={props.isGray ? '#999' : 'var(--accent-color-red)'}
+    onClick={props.onClick}
+    isExpanded={props.isExpanded}
+    isExpandable={props.isExpandable}
+    className={props.className}
+    isGray={props.isGray}
+  />
+}

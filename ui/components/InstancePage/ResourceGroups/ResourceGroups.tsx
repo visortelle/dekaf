@@ -14,7 +14,7 @@ import ActionButton from '../../ui/ActionButton/ActionButton';
 import { ToolbarButton } from '../../ui/Toolbar/Toolbar';
 
 import s from './ResourceGroups.module.css';
-import sc from '../Configuration/Configuration.module.css';
+import sc from '../../ui/SimpleTable/SimpleTable.module.css';
 import NothingToShow from '../../ui/NothingToShow/NothingToShow';
 
 type View = FormView | { type: 'show-all-groups' };
@@ -52,7 +52,7 @@ const ResourceGroups: React.FC<Props> = (props) => {
 
   return (
     <div className={s.ResourceGroups}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12rem' }}>
         <H1>Resource Groups</H1>
         {props.view.type === 'show-all-groups' && (
           <ToolbarButton
@@ -68,63 +68,67 @@ const ResourceGroups: React.FC<Props> = (props) => {
       {props.view.type === 'create' && <ResourceGroupForm view={props.view} />}
       {props.view.type === 'edit' && <ResourceGroupForm view={props.view} />}
 
-      {props.view.type === 'show-all-groups' && (
-        <>
-          {groupsToRender?.length === 0 && <NothingToShow />}
-          {(groupsToRender?.length || 0) > 0 && (
-            <div className={sc.ConfigurationTable}>
-              <table className={sc.Table}>
-                <thead>
-                  <tr className={sc.Row}>
-                    <th className={sc.Cell} style={{ minWidth: '20ch' }}>Name</th>
-                    <th className={sc.Cell}>Publish rate in bytes</th>
-                    <th className={sc.Cell}>Publish rate in msgs.</th>
-                    <th className={sc.Cell}>Dispatch rate in bytes</th>
-                    <th className={sc.Cell}>Dispatch rate in msgs.</th>
-                    <th className={sc.Cell}></th>
+      {props.view.type === 'show-all-groups' && groupsToRender === undefined && (
+        <NothingToShow reason='loading-in-progress' />
+      )}
+
+      {props.view.type === 'show-all-groups' && groupsToRender !== undefined && groupsToRender.length === 0 && (
+        <NothingToShow />
+      )}
+
+      {props.view.type === 'show-all-groups' && groupsToRender && groupsToRender.length > 0 && (
+        <div className={s.TableContainer}>
+          <table className={sc.Table}>
+            <thead>
+              <tr className={sc.Row}>
+                <th className={sc.Cell} style={{ minWidth: '20ch' }}>Name</th>
+                <th className={sc.Cell}>Publish rate in bytes</th>
+                <th className={sc.Cell}>Publish rate in msgs.</th>
+                <th className={sc.Cell}>Dispatch rate in bytes</th>
+                <th className={sc.Cell}>Dispatch rate in msgs.</th>
+                <th className={sc.Cell}></th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {groupsToRender && groupsToRender.map((rg) => {
+                const dispatchRateInBytes = rg.getDispatchRateInBytes()?.getValue();
+                const dispatchRateInMsgs = rg.getDispatchRateInMsgs()?.getValue();
+                const publishRateInBytes = rg.getPublishRateInBytes()?.getValue();
+                const publishRateInMsgs = rg.getPublishRateInMsgs()?.getValue();
+
+                return (
+                  <tr key={rg.getName()} className={sc.Row}>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-name-${rg.getName()}`}>
+                      {rg.getName()}
+                    </td>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-b-${rg.getName()}`}>
+                      {dispatchRateInBytes === undefined ? '-' : i18n.formatLongNumber(dispatchRateInBytes)}
+                    </td>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-m-${rg.getName()}`}>
+                      {dispatchRateInMsgs === undefined ? '-' : i18n.formatLongNumber(dispatchRateInMsgs)}
+                    </td>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-b-${rg.getName()}`}>
+                      {publishRateInBytes === undefined ? '-' : i18n.formatLongNumber(publishRateInBytes)}
+                    </td>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-m-${rg.getName()}`}>
+                      {publishRateInMsgs === undefined ? '-' : i18n.formatLongNumber(publishRateInMsgs)}
+                    </td>
+                    <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
+                      <ActionButton
+                        action={{ type: 'predefined', action: 'edit' }}
+                        linkTo={routes.instance.resourceGroups.edit._.get({ groupName: rg.getName() })}
+                        onClick={() => undefined}
+                        testId={`resource-group-edit-button-${rg.getName()}`}
+                        title={'Edit Resource Group'}
+                      />
+                    </td>
                   </tr>
-                </thead>
-
-                <tbody>
-                  {groupsToRender && groupsToRender.map((rg) => {
-                    const dispatchRateInBytes = rg.getDispatchRateInBytes()?.getValue();
-                    const dispatchRateInMsgs = rg.getDispatchRateInMsgs()?.getValue();
-                    const publishRateInBytes = rg.getPublishRateInBytes()?.getValue();
-                    const publishRateInMsgs = rg.getPublishRateInMsgs()?.getValue();
-
-                    return (
-                      <tr key={rg.getName()} className={sc.Row}>
-                        <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-name-${rg.getName()}`}>
-                          {rg.getName()}
-                        </td>
-                        <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-b-${rg.getName()}`}>
-                          {dispatchRateInBytes === undefined ? '-' : i18n.formatLongNumber(dispatchRateInBytes)}
-                        </td>
-                        <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-d-r-m-${rg.getName()}`}>
-                          {dispatchRateInMsgs === undefined ? '-' : i18n.formatLongNumber(dispatchRateInMsgs)}
-                        </td>
-                        <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-b-${rg.getName()}`}>
-                          {publishRateInBytes === undefined ? '-' : i18n.formatLongNumber(publishRateInBytes)}
-                        </td>
-                        <td className={`${sc.Cell} ${sc.DynamicConfigCell}`} data-testid={`resource-group-p-r-m-${rg.getName()}`}>
-                          {publishRateInMsgs === undefined ? '-' : i18n.formatLongNumber(publishRateInMsgs)}
-                        </td>
-                        <td className={`${sc.Cell} ${sc.DynamicConfigCell}`}>
-                          <ActionButton
-                            action={{ type: 'predefined', action: 'edit' }}
-                            linkTo={routes.instance.resourceGroups.edit._.get({ groupName: rg.getName() })}
-                            onClick={() => undefined}
-                            testId={`resource-group-edit-button-${rg.getName()}`}
-                          />
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

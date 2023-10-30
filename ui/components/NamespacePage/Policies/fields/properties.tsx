@@ -6,7 +6,7 @@ import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/namespace/v1/namespace_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import { ConfigurationField } from "../../../ui/ConfigurationTable/ConfigurationTable";
-import KeyValueEditor from '../../../ui/KeyValueEditor/KeyValueEditor';
+import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from '../../../ui/KeyValueEditor/KeyValueEditor';
 import { swrKeys } from '../../../swrKeys';
 import { mapToObject } from '../../../../proto-utils/proto-utils';
 import WithUpdateConfirmation from "../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation";
@@ -81,8 +81,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     >
       {({ value, onChange }) => (
         <KeyValueEditor
-          value={value}
-          onChange={onChange}
+          value={recordToIndexedKv(value)}
+          onChange={v => onChange(recordFromIndexedKv(v))}
           height="300rem"
           testId="properties"
         />

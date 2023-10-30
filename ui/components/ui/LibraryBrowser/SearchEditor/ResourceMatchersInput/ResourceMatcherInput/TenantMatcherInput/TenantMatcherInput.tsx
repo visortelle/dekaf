@@ -6,6 +6,7 @@ import RegexTenantMatcherInput from './RegexTenantMatcherInput/RegexTenantMatche
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
 import { TenantMatcherType, TenantMatcher } from '../../../../model/resource-matchers';
+import { v4 as uuid } from 'uuid';
 
 export type TenantMatcherInputProps = {
   value: TenantMatcher;
@@ -21,9 +22,25 @@ const TenantMatcherInput: React.FC<TenantMatcherInputProps> = (props) => {
           value={props.value.value.type}
           onChange={(v) => {
             if (v === 'exact-tenant-matcher') {
-              props.onChange({ type: 'tenant-matcher', value: { type: 'exact-tenant-matcher', tenant: '' } })
+              props.onChange({
+                type: 'tenant-matcher',
+                value: {
+                  type: 'exact-tenant-matcher',
+                  tenant: '',
+                  reactKey: uuid()
+                },
+                reactKey: uuid()
+              });
             } else {
-              props.onChange({ type: 'tenant-matcher', value: { type: 'regex-tenant-matcher', tenantRegex: '' } })
+              props.onChange({
+                type: 'tenant-matcher',
+                value: {
+                  type: 'regex-tenant-matcher',
+                  tenantRegex: '',
+                  reactKey: uuid()
+                },
+                reactKey: uuid()
+              });
             }
           }}
           list={[

@@ -21,6 +21,7 @@ export type ToolbarButtonProps = ButtonProps & {
   linkTo?: string;
   position?: 'left' | 'right';
   disabled?: boolean;
+  active?: boolean;
 }
 
 export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
@@ -31,6 +32,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = (props) => {
       type={props.type}
       testId={props.testId}
       disabled={props.disabled}
+      active={props.active}
       //state={props.state}
     />
   );

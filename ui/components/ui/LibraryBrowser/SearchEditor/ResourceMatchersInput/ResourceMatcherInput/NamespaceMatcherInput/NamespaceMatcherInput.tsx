@@ -6,6 +6,7 @@ import RegexNamespaceMatcherInput from './RegexNamespaceMatcherInput/RegexNamesp
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
 import { NamespaceMatcherType, NamespaceMatcher } from '../../../../model/resource-matchers';
+import { v4 as uuid } from 'uuid';
 
 export type NamespaceMatcherInputProps = {
   value: NamespaceMatcher;
@@ -25,8 +26,11 @@ const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
                 type: 'namespace-matcher',
                 value: {
                   type: 'exact-namespace-matcher',
-                  tenant: props.value.value.tenant, namespace: ''
-                }
+                  tenant: props.value.value.tenant,
+                  namespace: '',
+                  reactKey: uuid()
+                },
+                reactKey: uuid()
               });
             } else if (v === 'regex-namespace-matcher') {
               props.onChange({
@@ -34,8 +38,10 @@ const NamespaceMatcherInput: React.FC<NamespaceMatcherInputProps> = (props) => {
                 value: {
                   type: 'regex-namespace-matcher',
                   tenant: props.value.value.tenant,
-                  namespaceRegex: ''
-                }
+                  namespaceRegex: '',
+                  reactKey: uuid()
+                },
+                reactKey: uuid()
               });
             }
           }}

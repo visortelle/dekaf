@@ -1,0 +1,5 @@
+.UnloadSplitBundlesCheckbox {
+    display: flex;
+    gap: 8rem;
+    align-items: center;
+}

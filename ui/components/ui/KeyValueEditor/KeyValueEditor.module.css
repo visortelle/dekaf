@@ -1,6 +1,6 @@
 .KeyValueEditor {
-  padding: 12rem 6rem;
   position: relative;
+  overflow: auto;
 }
 
 .Line {

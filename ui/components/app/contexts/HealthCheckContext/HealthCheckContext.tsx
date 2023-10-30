@@ -94,11 +94,11 @@ export const DefaultProvider: React.FC<DefaultProviderProps> = (props) => {
     padding: '48rem'
   };
   // if (result.uiServerConnection === 'failed') {
-  //   return <div style={style}>Your browser ↔ UI Server connection check has failed.</div>;
+  //   return <div style={style}>Your browser ↔ Dekaf connection check has failed.</div>;
   // }
 
   // if (result.brokerConnection === 'failed') {
-  //   return <div style={style}>UI Server ↔ Pulsar Broker connection check has failed.</div>;
+  //   return <div style={style}>Dekaf ↔ Pulsar Broker connection check has failed.</div>;
   // }
 
   return (

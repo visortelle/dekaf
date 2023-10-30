@@ -1,16 +1,20 @@
 package consumer
 
-import _root_.config.readConfigAsync
+import com.tools.teal.pulsar.ui.api.v1.consumer as pb
+import com.typesafe.scalalogging.Logger
+import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.proxy.*
+import io.circe.syntax.*
+import io.circe.generic.auto.*
+
 import consumer.filters.MessageFilter
 import consumer.filters.basicFilter.BasicMessageFilter.testBasicFilter
 import consumer.filters.basicFilter.{BasicMessageFilter, BasicMessageFilterSelector}
 import consumer.filters.jsFilter.JsMessageFilter
 import consumer.filters.jsFilter.JsMessageFilter.testJsFilter
-import io.circe.generic.auto.*
-import io.circe.syntax.*
 import org.apache.pulsar.common.schema.SchemaType
-import org.graalvm.polyglot.Context
 
+import _root_.config.readConfigAsync
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
 

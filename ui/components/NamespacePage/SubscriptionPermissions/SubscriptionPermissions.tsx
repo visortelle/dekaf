@@ -282,7 +282,6 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
             type='text'
             value={newPermission?.subscription || ''}
             onChange={(v) => setNewPermission({ ...newPermission, subscription: v })}
-            placeholder='subscription-on-produce'
             inputProps={{
               onKeyDown: (e) => {
                 if (

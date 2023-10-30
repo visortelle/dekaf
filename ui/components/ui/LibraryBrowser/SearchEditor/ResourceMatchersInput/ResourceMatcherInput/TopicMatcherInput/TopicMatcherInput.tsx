@@ -6,6 +6,7 @@ import RegexTopicMatcherInput from './RegexTopicMatcherInput/RegexTopicMatcherIn
 import FormItem from '../../../../../ConfigurationTable/FormItem/FormItem';
 import ResourceFormLabel from '../ui/ResourceFormLabel/ResourceFormLabel';
 import { TopicMatcherType, TopicMatcher } from '../../../../model/resource-matchers';
+import { v4 as uuid } from 'uuid';
 
 export type TopicMatcherInputProps = {
   value: TopicMatcher;
@@ -27,8 +28,10 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
                   type: 'exact-topic-matcher',
                   namespace: props.value.value.namespace,
                   persistency: 'any',
-                  topic: ''
-                }
+                  topic: '',
+                  reactKey: uuid()
+                },
+                reactKey: uuid()
               });
             } else if (v === 'regex-topic-matcher') {
               props.onChange({
@@ -37,8 +40,10 @@ const TopicMatcherInput: React.FC<TopicMatcherInputProps> = (props) => {
                   type: 'regex-topic-matcher',
                   namespace: props.value.value.namespace,
                   persistency: 'any',
-                  topicRegex: ''
-                }
+                  topicRegex: '',
+                  reactKey: uuid()
+                },
+                reactKey: uuid()
               });
             }
           }}

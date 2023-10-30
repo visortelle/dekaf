@@ -177,7 +177,6 @@ def messageFilterFromPb(filter: pb.MessageFilter): MessageFilter =
             MessageFilter(
                 isEnabled = filter.isEnabled,
                 isNegated = filter.isNegated,
-                `type` = MessageFilterType.JsMessageFilter,
                 value = jsMessageFilterFromPb(jsFilter)
             )
         )
@@ -187,7 +186,6 @@ def messageFilterFromPb(filter: pb.MessageFilter): MessageFilter =
                     MessageFilter(
                         isEnabled = filter.isEnabled,
                         isNegated = filter.isNegated,
-                        `type` = MessageFilterType.BasicMessageFilter,
                         value = basicMessageFilterFromPb(basicFilter)
                     )
                 )
@@ -196,13 +194,13 @@ def messageFilterFromPb(filter: pb.MessageFilter): MessageFilter =
 
 def messageFilterToPb(filter: MessageFilter): pb.MessageFilter =
     filter match
-        case MessageFilter(isEnabled, isNegated, _, filter: JsMessageFilter) =>
+        case MessageFilter(isEnabled, isNegated, filter: JsMessageFilter) =>
             pb.MessageFilter(
                 isEnabled = isEnabled,
                 isNegated = isNegated,
                 value = pb.MessageFilter.Value.Js(jsMessageFilterToPb(filter))
             )
-        case MessageFilter(isEnabled, isNegated, _, filter: BasicMessageFilter) =>
+        case MessageFilter(isEnabled, isNegated, filter: BasicMessageFilter) =>
             pb.MessageFilter(
                 isEnabled = isEnabled,
                 isNegated = isNegated,
@@ -223,82 +221,65 @@ def messageFilterChainModeToPb(mode: MessageFilterChainMode): pb.MessageFilterCh
 
 def dateTimeUnitFromPb(dateTimeUnit: pb.DateTimeUnit): DateTimeUnit =
     dateTimeUnit match
-        case pb.DateTimeUnit.DATE_TIME_UNIT_YEAR => DateTimeUnit.Year
-        case pb.DateTimeUnit.DATE_TIME_UNIT_MONTH => DateTimeUnit.Month
-        case pb.DateTimeUnit.DATE_TIME_UNIT_WEEK => DateTimeUnit.Week
-        case pb.DateTimeUnit.DATE_TIME_UNIT_DAY => DateTimeUnit.Day
-        case pb.DateTimeUnit.DATE_TIME_UNIT_HOUR => DateTimeUnit.Hour
+        case pb.DateTimeUnit.DATE_TIME_UNIT_YEAR   => DateTimeUnit.Year
+        case pb.DateTimeUnit.DATE_TIME_UNIT_MONTH  => DateTimeUnit.Month
+        case pb.DateTimeUnit.DATE_TIME_UNIT_WEEK   => DateTimeUnit.Week
+        case pb.DateTimeUnit.DATE_TIME_UNIT_DAY    => DateTimeUnit.Day
+        case pb.DateTimeUnit.DATE_TIME_UNIT_HOUR   => DateTimeUnit.Hour
         case pb.DateTimeUnit.DATE_TIME_UNIT_MINUTE => DateTimeUnit.Minute
         case pb.DateTimeUnit.DATE_TIME_UNIT_SECOND => DateTimeUnit.Second
 
 def dateTimeUnitToPb(dateTimeUnit: DateTimeUnit): pb.DateTimeUnit =
     dateTimeUnit match
-        case DateTimeUnit.Year => pb.DateTimeUnit.DATE_TIME_UNIT_YEAR
-        case DateTimeUnit.Month => pb.DateTimeUnit.DATE_TIME_UNIT_MONTH
-        case DateTimeUnit.Week => pb.DateTimeUnit.DATE_TIME_UNIT_WEEK
-        case DateTimeUnit.Day => pb.DateTimeUnit.DATE_TIME_UNIT_DAY
-        case DateTimeUnit.Hour => pb.DateTimeUnit.DATE_TIME_UNIT_HOUR
+        case DateTimeUnit.Year   => pb.DateTimeUnit.DATE_TIME_UNIT_YEAR
+        case DateTimeUnit.Month  => pb.DateTimeUnit.DATE_TIME_UNIT_MONTH
+        case DateTimeUnit.Week   => pb.DateTimeUnit.DATE_TIME_UNIT_WEEK
+        case DateTimeUnit.Day    => pb.DateTimeUnit.DATE_TIME_UNIT_DAY
+        case DateTimeUnit.Hour   => pb.DateTimeUnit.DATE_TIME_UNIT_HOUR
         case DateTimeUnit.Minute => pb.DateTimeUnit.DATE_TIME_UNIT_MINUTE
         case DateTimeUnit.Second => pb.DateTimeUnit.DATE_TIME_UNIT_SECOND
 
-def consumerSessionConfigStartFromFromPb(startFrom: pb.ConsumerSessionConfigStartFrom): ConsumerSessionConfigStartFrom =
-    startFrom.value match
-        case pb.ConsumerSessionConfigStartFrom.Value.EarliestMessage(_) =>
-            ConsumerSessionConfigStartFrom(
-                `type` = ConsumerSessionConfigStartFromType.EarliestMessage,
-                value = EarliestMessage()
-            )
-        case pb.ConsumerSessionConfigStartFrom.Value.LatestMessage(_) =>
-            ConsumerSessionConfigStartFrom(
-                `type` = ConsumerSessionConfigStartFromType.LatestMessage,
-                value = LatestMessage()
-            )
-        case pb.ConsumerSessionConfigStartFrom.Value.MessageId(v) =>
-            ConsumerSessionConfigStartFrom(
-                `type` = ConsumerSessionConfigStartFromType.MessageId,
-                value = MessageId(messageId = v.messageId.toByteArray)
-            )
-        case pb.ConsumerSessionConfigStartFrom.Value.DateTime(v) =>
-            ConsumerSessionConfigStartFrom(
-                `type` = ConsumerSessionConfigStartFromType.DateTime,
-                value = DateTime(dateTime = Instant.ofEpochSecond(v.dateTime.get.seconds, v.dateTime.get.nanos))
-            )
-        case pb.ConsumerSessionConfigStartFrom.Value.RelativeDateTime(v) =>
-            val relativeDateTime = RelativeDateTime(
+def consumerSessionStartFromFromPb(startFrom: pb.ConsumerSessionStartFrom): ConsumerSessionStartFrom =
+    startFrom.startFrom match
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromEarliestMessage(_)         => EarliestMessage()
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromLatestMessage(_)           => LatestMessage()
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromNthMessageAfterEarliest(v) => NthMessageAfterEarliest(n = v.n)
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromNthMessageBeforeLatest(v)  => NthMessageBeforeLatest(n = v.n)
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(v)               => MessageId(messageId = v.messageId.toByteArray)
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(v) =>
+            DateTime(dateTime = Instant.ofEpochSecond(v.dateTime.get.seconds, v.dateTime.get.nanos))
+        case pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(v) =>
+            RelativeDateTime(
                 value = v.value,
                 unit = dateTimeUnitFromPb(v.unit),
                 isRoundedToUnitStart = v.isRoundedToUnitStart
             )
-            ConsumerSessionConfigStartFrom(
-                `type` = ConsumerSessionConfigStartFromType.RelativeDateTime,
-                value = relativeDateTime
-            )
 
-def consumerSessionConfigStartFromToPb(startFrom: ConsumerSessionConfigStartFrom): pb.ConsumerSessionConfigStartFrom =
+def consumerSessionStartFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom =
     startFrom match
-        case ConsumerSessionConfigStartFrom(_, EarliestMessage()) =>
-            pb.ConsumerSessionConfigStartFrom(value = pb.ConsumerSessionConfigStartFrom.Value.EarliestMessage(pb.EarliestMessage()))
-        case ConsumerSessionConfigStartFrom(_, LatestMessage()) =>
-            pb.ConsumerSessionConfigStartFrom(value = pb.ConsumerSessionConfigStartFrom.Value.LatestMessage(pb.LatestMessage()))
-        case ConsumerSessionConfigStartFrom(_, MessageId(messageId)) =>
-            pb.ConsumerSessionConfigStartFrom(
-                value = pb.ConsumerSessionConfigStartFrom.Value.MessageId(
-                    pb.MessageId(messageId = ByteString.copyFrom(messageId))
+        case v: EarliestMessage =>
+            pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromEarliestMessage(pb.EarliestMessage()))
+        case v: LatestMessage =>
+            pb.ConsumerSessionStartFrom(startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromLatestMessage(pb.LatestMessage()))
+        case v: MessageId =>
+            pb.ConsumerSessionStartFrom(
+                startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromMessageId(
+                    pb.MessageId(messageId = ByteString.copyFrom(v.messageId))
                 )
             )
-        case ConsumerSessionConfigStartFrom(_, DateTime(dateTime)) =>
-            pb.ConsumerSessionConfigStartFrom(
-                value = pb.ConsumerSessionConfigStartFrom.Value.DateTime(
-                    pb.DateTime(dateTime = Some(Timestamp(seconds = dateTime.getEpochSecond, nanos = dateTime.getNano)))
+        case v: DateTime =>
+            pb.ConsumerSessionStartFrom(
+                startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromDateTime(
+                    pb.DateTime(dateTime = Some(Timestamp(seconds = v.dateTime.getEpochSecond, nanos = v.dateTime.getNano)))
                 )
             )
-        case ConsumerSessionConfigStartFrom(_, RelativeDateTime(value, unit, isRoundedToUnitStart)) =>
-            pb.ConsumerSessionConfigStartFrom(
-                value = pb.ConsumerSessionConfigStartFrom.Value.RelativeDateTime(
+        case v: RelativeDateTime =>
+            pb.ConsumerSessionStartFrom(
+                startFrom = pb.ConsumerSessionStartFrom.StartFrom.StartFromRelativeDateTime(
                     pb.RelativeDateTime(
-                        value = value,
-                        unit = dateTimeUnitToPb(unit),
-                        isRoundedToUnitStart = isRoundedToUnitStart
+                        value = v.value,
+                        unit = dateTimeUnitToPb(v.unit),
+                        isRoundedToUnitStart = v.isRoundedToUnitStart
                     )
                 )
             )
@@ -321,14 +302,31 @@ def messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFilterChain =
 
 def consumerSessionConfigFromPb(config: pb.ConsumerSessionConfig): ConsumerSessionConfig =
     ConsumerSessionConfig(
-        startFrom = consumerSessionConfigStartFromFromPb(config.startFrom.get),
-        messageFilterChain = messageFilterChainFromPb(config.messageFilterChain.get),
-        pauseTriggers = List.empty
+        startFrom = config.startFrom.map(consumerSessionStartFromFromPb).getOrElse(EarliestMessage()),
+        messageFilterChain = config.messageFilterChain
+            .map(messageFilterChainFromPb)
+            .getOrElse(
+                MessageFilterChain(
+                    isEnabled = true,
+                    isNegated = false,
+                    mode = MessageFilterChainMode.All,
+                    filters = List.empty
+                )
+            ),
+        pauseTriggerChain = ConsumerSessionPauseTriggerChain(
+            events = Vector.empty,
+            mode = ConsumerSessionPauseTriggerChainMode.All
+        )
     )
 
 def consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.ConsumerSessionConfig =
     pb.ConsumerSessionConfig(
-        startFrom = Some(consumerSessionConfigStartFromToPb(config.startFrom)),
+        startFrom = Some(consumerSessionStartFromToPb(config.startFrom)),
         messageFilterChain = Some(messageFilterChainToPb(config.messageFilterChain)),
-        pauseTriggers = List.empty
+        pauseTriggerChain = Some(
+            pb.ConsumerSessionPauseTriggerChain(
+                events = Vector.empty,
+                mode = pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL
+            )
+        )
     )

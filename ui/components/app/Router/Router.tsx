@@ -10,6 +10,7 @@ import {
   matchPath,
   useNavigate,
   Params,
+  Navigate,
 } from "react-router-dom";
 import * as Modals from "../contexts/Modals/Modals";
 
@@ -23,6 +24,7 @@ import TopicPage, { TopicPageView } from "../../TopicPage/TopicPage";
 import SubscriptionPage, { SubscriptionPageView } from '../../SubscriptionPage/SubscriptionPage';
 import { TreeNode } from "../../ui/Layout/NavigationTree/TreeView";
 import InstancePage from "../../InstancePage/InstancePage";
+import PageNotFound from "../../ui/PageNotFound/PageNotFound";
 import { PulsarTopicPersistency } from "../../pulsar/pulsar-resources";
 
 type WithLayoutProps = { layout: Omit<LayoutProps, "children"> };
@@ -68,6 +70,14 @@ const prepareRoutes = (): {
     withLayoutProps: WithLayoutProps;
   }) => [
       /* Instance */
+      {
+        // Redirect to the Instance Overview page
+        path: "/",
+        element: withLayout(
+          <Navigate to={routes.instance.overview._.path} replace />,
+          withLayoutProps
+        ),
+      },
       {
         path: routes.instance.overview._.path,
         element: withLayout(
@@ -262,6 +272,13 @@ const prepareRoutes = (): {
         element: withLayout(
           <RoutedTenantPage view={"namespaces"} />,
           setScrollMode(withLayoutProps, "page-own")
+        ),
+      },
+      {
+        path: "*",
+        element: withLayout(
+          <PageNotFound />,
+          withLayoutProps
         ),
       },
     ];

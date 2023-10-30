@@ -61,7 +61,7 @@ const DeleteNamespace: React.FC<DeleteNamespaceProps> = (props) => {
       }
       forceDelete={forceDelete}
       switchForceDelete={switchForceDelete}
-      forceDeleteInfo="Delete namespace forcefully by force deleting all topics under it."
+      forceDeleteInfo="Delete namespace forcefully by deleting all topics under it."
       onConfirm={deleteNamespace}
       onCancel={modals.pop}
       guard={props.namespace}

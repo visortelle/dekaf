@@ -1,20 +1,11 @@
 package library
 
-import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.*
-import io.circe.generic.semiauto.*
-
 case class ExactTenantMatcher(`type`: "exact-tenant-matcher", tenant: String)
-given Decoder[ExactTenantMatcher] = deriveDecoder[ExactTenantMatcher]
-given Encoder[ExactTenantMatcher] = deriveEncoder[ExactTenantMatcher]
 
 object ExactTenantMatcher:
     def test(matcher: ExactTenantMatcher, tenantFqn: String): Boolean = matcher.tenant == tenantFqn
 
 case class RegexTenantMatcher(`type`: "regex-tenant-matcher", tenantRegex: String)
-given Decoder[RegexTenantMatcher] = deriveDecoder[RegexTenantMatcher]
-given Encoder[RegexTenantMatcher] = deriveEncoder[RegexTenantMatcher]
 
 object RegexTenantMatcher:
     def test(matcher: RegexTenantMatcher, tenantFqn: String): Boolean = tenantFqn.matches(matcher.tenantRegex)
@@ -23,8 +14,6 @@ case class TenantMatcher(
     exactTenantMatcher: Option[ExactTenantMatcher] = None,
     regexTenantMatcher: Option[RegexTenantMatcher] = None
 )
-given Decoder[TenantMatcher] = deriveDecoder[TenantMatcher]
-given Encoder[TenantMatcher] = deriveEncoder[TenantMatcher]
 
 object TenantMatcher:
     def test(matcher: TenantMatcher, tenantFqn: String): Boolean =
@@ -32,8 +21,6 @@ object TenantMatcher:
             matcher.regexTenantMatcher.exists(RegexTenantMatcher.test(_, tenantFqn))
 
 case class ExactNamespaceMatcher(`type`: "exact-namespace-matcher", tenant: TenantMatcher, namespace: String)
-given Decoder[ExactNamespaceMatcher] = deriveDecoder[ExactNamespaceMatcher]
-given Encoder[ExactNamespaceMatcher] = deriveEncoder[ExactNamespaceMatcher]
 
 object ExactNamespaceMatcher:
     def test(matcher: ExactNamespaceMatcher, namespaceFqn: String): Boolean =
@@ -41,8 +28,6 @@ object ExactNamespaceMatcher:
         TenantMatcher.test(matcher.tenant, tenant) && matcher.namespace == namespace
 
 case class RegexNamespaceMatcher(`type`: "regex-namespace-matcher", tenant: TenantMatcher, namespaceRegex: String)
-given Decoder[RegexNamespaceMatcher] = deriveDecoder[RegexNamespaceMatcher]
-given Encoder[RegexNamespaceMatcher] = deriveEncoder[RegexNamespaceMatcher]
 
 object RegexNamespaceMatcher:
     def test(matcher: RegexNamespaceMatcher, namespaceFqn: String): Boolean =
@@ -53,8 +38,6 @@ case class NamespaceMatcher(
     exactNamespaceMatcher: Option[ExactNamespaceMatcher] = None,
     regexNamespaceMatcher: Option[RegexNamespaceMatcher] = None
 )
-given Decoder[NamespaceMatcher] = deriveDecoder[NamespaceMatcher]
-given Encoder[NamespaceMatcher] = deriveEncoder[NamespaceMatcher]
 
 object NamespaceMatcher:
     def test(matcher: NamespaceMatcher, namespaceFqn: String): Boolean =
@@ -65,8 +48,6 @@ enum TopicPersistency:
     case NonPersistent
     case Persistent
     case Any
-given Decoder[TopicPersistency] = deriveDecoder[TopicPersistency]
-given Encoder[TopicPersistency] = deriveEncoder[TopicPersistency]
 
 object TopicPersistency:
     def testTopicFqn(want: TopicPersistency, topicFqn: String): Boolean =
@@ -82,8 +63,6 @@ case class ExactTopicMatcher(
     namespace: NamespaceMatcher,
     topic: String
 )
-given Decoder[ExactTopicMatcher] = deriveDecoder[ExactTopicMatcher]
-given Encoder[ExactTopicMatcher] = deriveEncoder[ExactTopicMatcher]
 
 object ExactTopicMatcher:
     def test(matcher: ExactTopicMatcher, topicFqn: String): Boolean =
@@ -101,8 +80,6 @@ case class RegexTopicMatcher(
     namespace: NamespaceMatcher,
     topicRegex: String
 )
-given Decoder[RegexTopicMatcher] = deriveDecoder[RegexTopicMatcher]
-given Encoder[RegexTopicMatcher] = deriveEncoder[RegexTopicMatcher]
 
 object RegexTopicMatcher:
     def test(matcher: RegexTopicMatcher, topicFqn: String): Boolean =
@@ -118,8 +95,6 @@ case class TopicMatcher(
     exactTopicMatcher: Option[ExactTopicMatcher] = None,
     regexTopicMatcher: Option[RegexTopicMatcher] = None
 )
-given Decoder[TopicMatcher] = deriveDecoder[TopicMatcher]
-given Encoder[TopicMatcher] = deriveEncoder[TopicMatcher]
 
 object TopicMatcher:
     def test(matcher: TopicMatcher, topicFqn: String): Boolean =
@@ -131,8 +106,6 @@ case class ResourceMatcher(
     namespaceMatcher: Option[NamespaceMatcher] = None,
     topicMatcher: Option[TopicMatcher] = None
 )
-given Decoder[ResourceMatcher] = deriveDecoder[ResourceMatcher]
-given Encoder[ResourceMatcher] = deriveEncoder[ResourceMatcher]
 
 enum ResourceType:
     case Tenant

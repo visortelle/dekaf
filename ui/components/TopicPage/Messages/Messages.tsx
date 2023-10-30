@@ -90,8 +90,7 @@ const Session: React.FC<SessionProps> = (props) => {
 
   useEffect(() => {
     try {
-      const a = consumerSessionConfigFromValueOrReference(props.config);
-      setConfig(a);
+      setConfig(consumerSessionConfigFromValueOrReference(props.config));
     } catch (err) {
       console.warn(err);
       setConfig(undefined);
@@ -211,7 +210,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
   }, []);
 
-  const initializeSession = useCallback(() => {
+  const initializeSession = () => {
     async function createConsumer() {
       if (config === undefined) {
         return;
@@ -282,11 +281,11 @@ const Session: React.FC<SessionProps> = (props) => {
     return () => {
       window.removeEventListener('beforeunload', cleanup);
     };
-  }, [props.config, subscriptionName.current]);
+  };
 
   // Stream's connection pauses on window blur and we don't receive new messages.
   // Here we are trying to handle this situation.
-  const handleVisibilityChange = useCallback(() => {
+  const handleVisibilityChange = () => {
     if (document.visibilityState === 'hidden') {
       setSessionStateBeforeWindowBlur(sessionState);
       setSessionState('pausing');
@@ -297,7 +296,7 @@ const Session: React.FC<SessionProps> = (props) => {
       setSessionState(sessionStateBeforeWindowBlur);
       return;
     }
-  }, [sessionState, sessionStateBeforeWindowBlur]);
+  };
 
   useEffect(() => {
     if (window === undefined) return;

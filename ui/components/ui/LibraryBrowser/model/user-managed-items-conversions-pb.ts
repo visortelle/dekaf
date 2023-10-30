@@ -1,17 +1,22 @@
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/user_managed_items_pb";
+import * as consumerPb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
 import * as t from "./user-managed-items";
 import {
   messageFilterFromPb,
   messageFilterToPb,
   messageFilterChainModeFromPb,
-  messageFilterChainModeToPb
+  messageFilterChainModeToPb,
+  dateTimeUnitFromPb,
+  dateTimeUnitToPb
 } from "../../../TopicPage/Messages/conversions";
+import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
+import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
 
 export function userManagedItemTypeFromPb(v: pb.UserManagedItemType): t.UserManagedItemType {
   switch (v) {
     case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG: return "consumer-session-config";
-    case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM: return "consumer-session-config-start-from";
-    case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER: return "consumer-session-config-pause-trigger";
+    case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM: return "consumer-session-start-from";
+    case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER: return "consumer-session-pause-trigger";
     case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG: return "producer-session-config";
     case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER: return "message-filter";
     case pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN: return "message-filter-chain";
@@ -22,8 +27,8 @@ export function userManagedItemTypeFromPb(v: pb.UserManagedItemType): t.UserMana
 export function userManagedItemTypeToPb(v: t.UserManagedItemType): pb.UserManagedItemType {
   switch (v) {
     case "consumer-session-config": return pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG;
-    case "consumer-session-config-start-from": return pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_START_FROM;
-    case "consumer-session-config-pause-trigger": return pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG_PAUSE_TRIGGER;
+    case "consumer-session-start-from": return pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM;
+    case "consumer-session-pause-trigger": return pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER;
     case "producer-session-config": return pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG;
     case "message-filter": return pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER;
     case "message-filter-chain": return pb.UserManagedItemType.USER_MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN;
@@ -47,6 +52,277 @@ export function userManagedItemMetadataToPb(v: t.UserManagedItemMetadata): pb.Us
   metadataPb.setName(v.name);
   metadataPb.setDescriptionMarkdown(v.descriptionMarkdown);
   return metadataPb;
+}
+
+export function userManagedMessageIdSpecFromPb(v: pb.UserManagedMessageIdSpec): t.UserManagedMessageIdSpec {
+  return { hexString: hexStringFromByteArray(v.getMessageId_asU8(), 'hex-with-space') };
+}
+
+export function userManagedMessageIdSpecToPb(v: t.UserManagedMessageIdSpec): pb.UserManagedMessageIdSpec {
+  const specPb = new pb.UserManagedMessageIdSpec();
+  specPb.setMessageId(v.hexString);
+  return specPb;
+}
+
+export function userManagedMessageIdFromPb(v: pb.UserManagedMessageId): t.UserManagedMessageId {
+  return {
+    metadata: userManagedItemMetadataFromPb(v.getMetadata()!),
+    spec: userManagedMessageIdSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function userManagedMessageIdToPb(v: t.UserManagedMessageId): pb.UserManagedMessageId {
+  const idPb = new pb.UserManagedMessageId();
+  idPb.setMetadata(userManagedItemMetadataToPb(v.metadata));
+  idPb.setSpec(userManagedMessageIdSpecToPb(v.spec));
+  return idPb;
+}
+
+export function userManagedMessageIdValueOrReferenceFromPb(v: pb.UserManagedMessageIdValueOrReference): t.UserManagedMessageIdValueOrReference {
+  switch (v.getMessageIdCase()) {
+    case pb.UserManagedMessageIdValueOrReference.MessageIdCase.MESSAGE_ID_VALUE:
+      return {
+        type: 'value',
+        value: userManagedMessageIdFromPb(v.getMessageIdValue()!)
+      };
+    case pb.UserManagedMessageIdValueOrReference.MessageIdCase.MESSAGE_ID_REFERENCE:
+      return {
+        type: 'reference',
+        reference: v.getMessageIdReference()
+      };
+    default:
+      throw new Error(`Unknown UserManagedMessageIdValueOrReference: ${v}`);
+  }
+}
+
+export function userManagedMessageIdValueOrReferenceToPb(v: t.UserManagedMessageIdValueOrReference): pb.UserManagedMessageIdValueOrReference {
+  const idPb = new pb.UserManagedMessageIdValueOrReference();
+  switch (v.type) {
+    case 'value':
+      idPb.setMessageIdValue(userManagedMessageIdToPb(v.value));
+      break;
+    case 'reference':
+      idPb.setMessageIdReference(v.reference);
+      break;
+    default:
+      throw new Error(`Unknown UserManagedMessageIdValueOrReference: ${v}`);
+  }
+  return idPb;
+}
+
+export function userManagedDateTimeSpecFromPb(v: pb.UserManagedDateTimeSpec): t.UserManagedDateTimeSpec {
+  return { dateTime: v.getDateTime()!.toDate() };
+}
+
+export function userManagedDateTimeSpecToPb(v: t.UserManagedDateTimeSpec): pb.UserManagedDateTimeSpec {
+  const specPb = new pb.UserManagedDateTimeSpec();
+  specPb.setDateTime(Timestamp.fromDate(v.dateTime));
+  return specPb;
+}
+
+export function userManagedDateTimeFromPb(v: pb.UserManagedDateTime): t.UserManagedDateTime {
+  return {
+    metadata: userManagedItemMetadataFromPb(v.getMetadata()!),
+    spec: userManagedDateTimeSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function userManagedDateTimeToPb(v: t.UserManagedDateTime): pb.UserManagedDateTime {
+  const idPb = new pb.UserManagedDateTime();
+  idPb.setMetadata(userManagedItemMetadataToPb(v.metadata));
+  idPb.setSpec(userManagedDateTimeSpecToPb(v.spec));
+  return idPb;
+}
+
+export function userManagedDateTimeValueOrReferenceFromPb(v: pb.UserManagedDateTimeValueOrReference): t.UserManagedDateTimeValueOrReference {
+  switch (v.getDateTimeCase()) {
+    case pb.UserManagedDateTimeValueOrReference.DateTimeCase.DATE_TIME_VALUE:
+      return {
+        type: 'value',
+        value: userManagedDateTimeFromPb(v.getDateTimeValue()!)
+      };
+    case pb.UserManagedDateTimeValueOrReference.DateTimeCase.DATE_TIME_REFERENCE:
+      return {
+        type: 'reference',
+        reference: v.getDateTimeReference()
+      };
+    default:
+      throw new Error(`Unknown UserManagedDateTimeValueOrReference: ${v}`);
+  }
+}
+
+export function userManagedDateTimeValueOrReferenceToPb(v: t.UserManagedDateTimeValueOrReference): pb.UserManagedDateTimeValueOrReference {
+  const idPb = new pb.UserManagedDateTimeValueOrReference();
+  switch (v.type) {
+    case 'value':
+      idPb.setDateTimeValue(userManagedDateTimeToPb(v.value));
+      break;
+    case 'reference':
+      idPb.setDateTimeReference(v.reference);
+      break;
+    default:
+      throw new Error(`Unknown UserManagedDateTimeValueOrReference: ${v}`);
+  }
+  return idPb;
+}
+
+export function userManagedRelativeDateTimeSpecFromPb(v: pb.UserManagedRelativeDateTimeSpec): t.UserManagedRelativeDateTimeSpec {
+  return {
+    value: v.getValue(),
+    unit: dateTimeUnitFromPb(v.getUnit()),
+    isRoundedToUnitStart: v.getIsRoundedToUnitStart()
+  };
+}
+
+export function userManagedRelativeDateTimeSpecToPb(v: t.UserManagedRelativeDateTimeSpec): pb.UserManagedRelativeDateTimeSpec {
+  const specPb = new pb.UserManagedRelativeDateTimeSpec();
+  specPb.setValue(v.value);
+  specPb.setUnit(dateTimeUnitToPb(v.unit));
+  specPb.setIsRoundedToUnitStart(v.isRoundedToUnitStart);
+  return specPb;
+}
+
+export function userManagedRelativeDateTimeFromPb(v: pb.UserManagedRelativeDateTime): t.UserManagedRelativeDateTime {
+  return {
+    metadata: userManagedItemMetadataFromPb(v.getMetadata()!),
+    spec: userManagedRelativeDateTimeSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function userManagedRelativeDateTimeToPb(v: t.UserManagedRelativeDateTime): pb.UserManagedRelativeDateTime {
+  const idPb = new pb.UserManagedRelativeDateTime();
+  idPb.setMetadata(userManagedItemMetadataToPb(v.metadata));
+  idPb.setSpec(userManagedRelativeDateTimeSpecToPb(v.spec));
+  return idPb;
+}
+
+export function userManagedRelativeDateTimeValueOrReferenceFromPb(v: pb.UserManagedRelativeDateTimeValueOrReference): t.UserManagedRelativeDateTimeValueOrReference {
+  switch (v.getRelativeDateTimeCase()) {
+    case pb.UserManagedRelativeDateTimeValueOrReference.RelativeDateTimeCase.RELATIVE_DATE_TIME_VALUE:
+      return {
+        type: 'value',
+        value: userManagedRelativeDateTimeFromPb(v.getRelativeDateTimeValue()!)
+      };
+    case pb.UserManagedRelativeDateTimeValueOrReference.RelativeDateTimeCase.RELATIVE_DATE_TIME_REFERENCE:
+      return {
+        type: 'reference',
+        reference: v.getRelativeDateTimeReference()
+      };
+    default:
+      throw new Error(`Unknown UserManagedRelativeDateTimeValueOrReference: ${v}`);
+  }
+}
+
+export function userManagedRelativeDateTimeValueOrReferenceToPb(v: t.UserManagedRelativeDateTimeValueOrReference): pb.UserManagedRelativeDateTimeValueOrReference {
+  const idPb = new pb.UserManagedRelativeDateTimeValueOrReference();
+  switch (v.type) {
+    case 'value':
+      idPb.setRelativeDateTimeValue(userManagedRelativeDateTimeToPb(v.value));
+      break;
+    case 'reference':
+      idPb.setRelativeDateTimeReference(v.reference);
+      break;
+    default:
+      throw new Error(`Unknown UserManagedRelativeDateTimeValueOrReference: ${v}`);
+  }
+  return idPb;
+}
+
+export function userManagedConsumerSessionStartFromSpecFromPb(v: pb.UserManagedConsumerSessionStartFromSpec): t.UserManagedConsumerSessionStartFromSpec {
+  switch (v.getStartFromCase()) {
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_EARLIEST_MESSAGE:
+      return { startFrom: { type: 'earliestMessage' } };
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_LATEST_MESSAGE:
+      return { startFrom: { type: 'latestMessage' } };
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_NTH_MESSAGE_AFTER_EARLIEST:
+      return { startFrom: { type: 'nthMessageAfterEarliest', n: v.getStartFromNthMessageAfterEarliest()!.getN() } };
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_NTH_MESSAGE_BEFORE_LATEST:
+      return { startFrom: { type: 'nthMessageBeforeLatest', n: v.getStartFromNthMessageBeforeLatest()!.getN() } };
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_MESSAGE_ID:
+      return { startFrom: { type: 'messageId', messageId: userManagedMessageIdValueOrReferenceFromPb(v.getStartFromMessageId()!) } };
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_DATE_TIME:
+      return { startFrom: { type: 'dateTime', dateTime: userManagedDateTimeValueOrReferenceFromPb(v.getStartFromDateTime()!) } };
+    case pb.UserManagedConsumerSessionStartFromSpec.StartFromCase.START_FROM_RELATIVE_DATE_TIME:
+      return { startFrom: { type: 'relativeDateTime', relativeDateTime: userManagedRelativeDateTimeValueOrReferenceFromPb(v.getStartFromRelativeDateTime()!) } };
+    default:
+      throw new Error(`Unknown UserManagedConsumerSessionStartFromSpec: ${v}`);
+  }
+}
+
+export function userManagedConsumerSessionStartFromSpecToPb(v: t.UserManagedConsumerSessionStartFromSpec): pb.UserManagedConsumerSessionStartFromSpec {
+  const specPb = new pb.UserManagedConsumerSessionStartFromSpec();
+  switch (v.startFrom.type) {
+    case 'earliestMessage':
+      specPb.setStartFromEarliestMessage(new consumerPb.EarliestMessage());
+      break;
+    case 'latestMessage':
+      specPb.setStartFromLatestMessage(new consumerPb.LatestMessage());
+      break;
+    case 'nthMessageAfterEarliest':
+      specPb.setStartFromNthMessageAfterEarliest(new consumerPb.NthMessageAfterEarliest().setN(v.startFrom.n));
+      break;
+    case 'nthMessageBeforeLatest':
+      specPb.setStartFromNthMessageBeforeLatest(new consumerPb.NthMessageBeforeLatest().setN(v.startFrom.n));
+      break;
+    case 'messageId':
+      specPb.setStartFromMessageId(userManagedMessageIdValueOrReferenceToPb(v.startFrom.messageId));
+      break;
+    case 'dateTime':
+      specPb.setStartFromDateTime(userManagedDateTimeValueOrReferenceToPb(v.startFrom.dateTime));
+      break;
+    case 'relativeDateTime':
+      specPb.setStartFromRelativeDateTime(userManagedRelativeDateTimeValueOrReferenceToPb(v.startFrom.relativeDateTime));
+      break;
+    default:
+      throw new Error(`Unknown UserManagedConsumerSessionStartFromSpec: ${v}`);
+  }
+  return specPb;
+}
+
+export function userManagedConsumerSessionStartFromFromPb(v: pb.UserManagedConsumerSessionStartFrom): t.UserManagedConsumerSessionStartFrom {
+  return {
+    metadata: userManagedItemMetadataFromPb(v.getMetadata()!),
+    spec: userManagedConsumerSessionStartFromSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function userManagedConsumerSessionStartFromToPb(v: t.UserManagedConsumerSessionStartFrom): pb.UserManagedConsumerSessionStartFrom {
+  const idPb = new pb.UserManagedConsumerSessionStartFrom();
+  idPb.setMetadata(userManagedItemMetadataToPb(v.metadata));
+  idPb.setSpec(userManagedConsumerSessionStartFromSpecToPb(v.spec));
+  return idPb;
+}
+
+export function userManagedConsumerSessionStartFromValueOrReferenceFromPb(v: pb.UserManagedConsumerSessionStartFromValueOrReference): t.UserManagedConsumerSessionStartFromValueOrReference {
+  switch (v.getStartFromCase()) {
+    case pb.UserManagedConsumerSessionStartFromValueOrReference.StartFromCase.START_FROM_VALUE:
+      return {
+        type: 'value',
+        value: userManagedConsumerSessionStartFromFromPb(v.getStartFromValue()!)
+      };
+    case pb.UserManagedConsumerSessionStartFromValueOrReference.StartFromCase.START_FROM_REFERENCE:
+      return {
+        type: 'reference',
+        reference: v.getStartFromReference()
+      };
+    default:
+      throw new Error(`Unknown UserManagedConsumerSessionStartFromValueOrReference: ${v}`);
+  }
+}
+
+export function userManagedConsumerSessionStartFromValueOrReferenceToPb(v: t.UserManagedConsumerSessionStartFromValueOrReference): pb.UserManagedConsumerSessionStartFromValueOrReference {
+  const idPb = new pb.UserManagedConsumerSessionStartFromValueOrReference();
+  switch (v.type) {
+    case 'value':
+      idPb.setStartFromValue(userManagedConsumerSessionStartFromToPb(v.value));
+      break;
+    case 'reference':
+      idPb.setStartFromReference(v.reference);
+      break;
+    default:
+      throw new Error(`Unknown UserManagedConsumerSessionStartFromValueOrReference: ${v}`);
+  }
+  return idPb;
 }
 
 export function userMangedMessageFilterSpecFromPb(v: pb.UserManagedMessageFilterSpec): t.UserManagedMessageFilterSpec {
@@ -169,13 +445,14 @@ export function userManagedMessageFilterChainValueOrReferenceToPb(v: t.UserManag
   return chainPb;
 }
 
-
 export function userManagedItemFromPb(v: pb.UserManagedItem): t.UserManagedItem {
   switch (v.getItemCase()) {
     case pb.UserManagedItem.ItemCase.MESSAGE_FILTER:
       return userManagedMessageFilterFromPb(v.getMessageFilter()!);
     case pb.UserManagedItem.ItemCase.MESSAGE_FILTER_CHAIN:
       return userManagedMessageFilterChainFromPb(v.getMessageFilterChain()!);
+    case pb.UserManagedItem.ItemCase.CONSUMER_SESSION_START_FROM:
+      return userManagedConsumerSessionStartFromFromPb(v.getConsumerSessionStartFrom()!);
     default:
       throw new Error(`Unknown UserManagedItem: ${v}`);
   }
@@ -192,8 +469,10 @@ export function userManagedItemToPb(v: t.UserManagedItem): pb.UserManagedItem {
       itemPb.setMessageFilterChain(userManagedMessageFilterChainToPb(v as t.UserManagedMessageFilterChain));
       break;
     }
-    default:
-      throw new Error(`Unknown UserManagedItem: ${v}`);
+    case "consumer-session-start-from": {
+      itemPb.setConsumerSessionStartFrom(userManagedConsumerSessionStartFromToPb(v as t.UserManagedConsumerSessionStartFrom));
+      break;
+    }
   }
   return itemPb;
 }

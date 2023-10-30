@@ -1,63 +1,22 @@
-.ConfigurationTable {
+.Title {
+  padding: 12rem;
+  margin-bottom: 12rem;
+}
+.TableContainer {
   display: flex;
-}
-
-.Table {
-  font-size: 14rem;
-  border-spacing: 0;
-  border: 1px solid var(--border-color);
-  border-left: none;
-  border-right: none;
-  width: 100%;
-}
-
-.Cell {
-  padding: 4rem 12rem;
-  border: 1px solid var(--border-color);
-  border-bottom: none;
-  border-right: none;
-  word-wrap: break-word;
-}
-
-.Table thead .Cell {
-  border-top: none;
-}
-
-.Table thead .Cell:first-child {
-  border-left: none;
-}
-
-.Row:last-child .Cell {
-  border-bottom: none;
-}
-
-.Row .Cell:first-child {
-  border-left: none;
-}
-
-.Row .Cell:last-child {
-  border-right: none;
-}
-
-.Row:hover .Cell {
-  background-color: var(--surface-color);
+  flex-direction: column;
 }
 
 .Buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8rem;
 }
 
-.ButtonBlock {
+.CheckboxCell {
   display: flex;
   justify-content: center;
   width: 100%;
-}
-
-.Button {
-  margin-right: 8rem;
-  padding-left: 0;
-  padding-right: 0;
 }
 
 .Button:last-child {
@@ -65,7 +24,7 @@
 }
 
 .NewRoleInputCell {
-  padding: 4rem 4rem;
+  padding: 0;
 }
 
 .RoleField {
@@ -73,13 +32,4 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }

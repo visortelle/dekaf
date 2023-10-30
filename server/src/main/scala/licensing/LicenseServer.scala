@@ -14,21 +14,23 @@ val KeygenApiUrl = "https://api.keygen.sh"
 
 val Graffiti =
     """
-      | _______             __                                          __
-      ||       \           |  \                                        |  \
-      || $$$$$$$\ __    __ | $$  _______   ______    _______  ______  _| $$_
-      || $$__/ $$|  \  |  \| $$ /       \ /      \  /       \|      \|   $$ \
-      || $$    $$| $$  | $$| $$|  $$$$$$$|  $$$$$$\|  $$$$$$$ \$$$$$$\\$$$$$$
-      || $$$$$$$ | $$  | $$| $$ \$$    \ | $$  | $$| $$      /      $$ | $$ __
-      || $$      | $$__/ $$| $$ _\$$$$$$\| $$__/ $$| $$_____|  $$$$$$$ | $$|  \
-      || $$       \$$    $$| $$|       $$ \$$    $$ \$$     \\$$    $$  \$$  $$
-      | \$$        \$$$$$$  \$$ \$$$$$$$   \$$$$$$   \$$$$$$$ \$$$$$$$   \$$$$  for Apache Pulsar
+      |########  ######## ##    ##    ###    ########
+      |##     ## ##       ##   ##    ## ##   ##
+      |##     ## ##       ##  ##    ##   ##  ##
+      |##     ## ######   #####    ##     ## ######
+      |##     ## ##       ##  ##   ######### ##
+      |##     ## ##       ##   ##  ##     ## ##
+      |########  ######## ##    ## ##     ## ##
+      |for Apache Pulsar
       |""".stripMargin.replace("$", "▓")
 
 object LicenseServer:
-    case class InitResult(cleanup: Task[Unit], keygenMachine: KeygenMachine)
+    case class InitResult(
+        keygenMachine: KeygenMachine,
+        keygenClient: KeygenClient
+    )
 
-    def init: ZIO[Any, Throwable, InitResult] = for {
+    def init: Task[InitResult] = for {
         _ <- ZIO.attempt {
             println(Graffiti)
             println(
@@ -38,7 +40,7 @@ object LicenseServer:
             println(s"Built at: ${buildinfo.BuildInfo.builtAtString}")
             println(s"You can get help here: support@teal.tools")
             println(s"More products: https://teal.tools")
-            println(s"More info about this product: https://dekaf.com")
+            println(s"More info about this product: https://dekaf.io")
         }
         config <- readConfig
         _ <- validateConfigOrDie(config)
@@ -49,8 +51,8 @@ object LicenseServer:
                 val charsToMask = licenseToken.length - 4
                 "*" * charsToMask + licenseToken.drop(charsToMask)
             }
-            println(s"License id: $licenseId")
-            println(s"License token: $maskedToken")
+            println(s"License ID: $licenseId")
+            println(s"License Token: $maskedToken")
         }
         _ <- ZIO.logInfo(s"Started at: ${java.time.Instant.now().toString}")
         config <- readConfig
@@ -91,13 +93,13 @@ object LicenseServer:
                     )
                 )
             )
-        result = InitResult(
-            cleanup = keygenClient.deactivateMachine(keygenMachine.data.id.get),
-            keygenMachine = keygenMachine
-        )
-    } yield result
+    } yield InitResult(keygenMachine, keygenClient)
 
-    def startLicenseHeartbeatPing(keygenMachineId: String, onFail: Task[Unit]): Task[Unit] = for {
+    def run(initResult: InitResult): Task[Unit] =
+        startLicenseHeartbeatPing(initResult.keygenMachine.data.id.get)
+            .ensuring(initResult.keygenClient.deactivateMachine(initResult.keygenMachine.data.id.get).orElseSucceed(()))
+
+    private def startLicenseHeartbeatPing(keygenMachineId: String): Task[Unit] = for {
         config <- readConfig
         keygenClient <- ZIO.attempt {
             new KeygenClient(
@@ -107,6 +109,6 @@ object LicenseServer:
             )
         }
         _ <- keygenClient
-            .licenseHeartbeatPing(keygenMachineId, onFail)
-            .repeat(Schedule.fixed(Duration.fromSeconds(20 * 60)))
+            .licenseHeartbeatPing(keygenMachineId)
+            .repeat(Schedule.fixed(Duration.fromSeconds(15 * 60)))
     } yield ()

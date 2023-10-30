@@ -1,13 +1,23 @@
 package consumer
 
-import java.time.{Instant, ZonedDateTime}
+import org.apache.pulsar.client.admin.PulsarAdmin
+
+import java.time.ZonedDateTime
 import org.apache.pulsar.client.api.Consumer
 import org.apache.pulsar.client.api.MessageId as PulsarMessageId
 
-def handleStartFrom(startFrom: ConsumerSessionConfigStartFrom, consumer: Consumer[Array[Byte]]): Unit =
-    startFrom.value match
+def handleStartFrom(startFrom: ConsumerSessionStartFrom, consumer: Consumer[Array[Byte]], adminClient: PulsarAdmin, topicFqn: String): Unit =
+    consumer.resume()
+
+    startFrom match
         case _: EarliestMessage => // Do nothing here. It's handled on the consumer creation.
         case _: LatestMessage   => // Do nothing here. It's handled on the consumer creation.
+        case v: NthMessageAfterEarliest =>
+            val message = adminClient.topics.examineMessage(topicFqn, "earliest", v.n)
+            consumer.seek(message.getMessageId)
+        case v: NthMessageBeforeLatest =>
+            val message = adminClient.topics.examineMessage(topicFqn, "latest", v.n + 1)
+            consumer.seek(message.getMessageId)
         case v: MessageId =>
             val messageId = PulsarMessageId.fromByteArray(v.messageId)
             consumer.seek(messageId)
@@ -39,3 +49,5 @@ def handleStartFrom(startFrom: ConsumerSessionConfigStartFrom, consumer: Consume
                     val dt = now.minusSeconds(v.value)
                     if v.isRoundedToUnitStart then dt.truncatedTo(java.time.temporal.ChronoUnit.SECONDS) else dt
             consumer.seek(dateTime.toInstant.toEpochMilli)
+
+    consumer.pause()

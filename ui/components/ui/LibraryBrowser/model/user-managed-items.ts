@@ -1,4 +1,4 @@
-import { ConsumerSessionTopicsSelector, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
+import { ConsumerSessionTopicsSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
 
 export type ValueOrReference<ValueT> = {
   type: 'value',
@@ -16,11 +16,14 @@ export type ValueOrReference<ValueT> = {
 
 export type UserManagedItemType =
   "consumer-session-config" |
-  "consumer-session-config-start-from" |
-  "consumer-session-config-pause-trigger" |
-  "producer-session-config" |
+  "consumer-session-pause-trigger" |
+  "consumer-session-start-from" |
+  "date-time" |
+  "message-filter-chain" |
   "message-filter" |
-  "message-filter-chain";
+  "message-id" |
+  "producer-session-config" |
+  "relative-date-time";
 
 export type UserManagedItemMetadata = {
   type: UserManagedItemType,
@@ -59,18 +62,65 @@ export type UserManagedConsumerSessionTopicSelector = {
   spec: UserManagedConsumerSessionTopicSelectorSpec,
 };
 
+export type UserManagedMessageIdSpec = {
+  hexString: string
+};
+export type UserManagedMessageId = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedMessageIdSpec,
+}
+export type UserManagedMessageIdValueOrReference = ValueOrReference<UserManagedMessageId>;
+
+export type UserManagedDateTimeSpec = {
+  dateTime: Date
+};
+export type UserManagedDateTime = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedDateTimeSpec,
+}
+export type UserManagedDateTimeValueOrReference = ValueOrReference<UserManagedDateTime>;
+
+export type UserManagedRelativeDateTimeSpec = {
+  value: number,
+  unit: DateTimeUnit,
+  isRoundedToUnitStart: boolean,
+};
+export type UserManagedRelativeDateTime = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedRelativeDateTimeSpec,
+}
+export type UserManagedRelativeDateTimeValueOrReference = ValueOrReference<UserManagedRelativeDateTime>;
+
+export type StartFromEarliestMessage = { type: 'earliestMessage' };
+export type StartFromLatestMessage = { type: 'latestMessage' };
+export type StartFromNthMessageAfterEarliest = { type: 'nthMessageAfterEarliest', n: number };
+export type StartFromNthMessageBeforeLatest = { type: 'nthMessageBeforeLatest', n: number };
+export type StartFromMessageId = { type: 'messageId', messageId: UserManagedMessageIdValueOrReference };
+export type StartFromDateTime = { type: 'dateTime', dateTime: UserManagedDateTimeValueOrReference };
+export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: UserManagedRelativeDateTimeValueOrReference };
+
+export type UserManagedConsumerSessionStartFromSpec = {
+  startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromNthMessageAfterEarliest | StartFromNthMessageBeforeLatest | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
+};
+export type UserManagedConsumerSessionStartFrom = {
+  metadata: UserManagedItemMetadata,
+  spec: UserManagedConsumerSessionStartFromSpec,
+};
+export type UserManagedConsumerSessionStartFromValueOrReference = ValueOrReference<UserManagedConsumerSessionStartFrom>;
+
 export type UserManagedConsumerSessionTopicSelectorValueOrReference = ValueOrReference<UserManagedConsumerSessionTopicSelector>;
 
-export type UserManagedConsumerSessionConfigSpec = {
+export type UserManagedConsumerSessionSpec = {
   messageFilterChain: UserManagedMessageFilterChainValueOrReference,
   topicsSelector: ConsumerSessionTopicsSelector,
+  startFrom: UserManagedConsumerSessionStartFromValueOrReference,
 };
 
 export type UserManagedConsumerSessionConfig = {
   metadata: UserManagedItemMetadata,
-  spec: UserManagedConsumerSessionConfigSpec,
+  spec: UserManagedConsumerSessionSpec,
 };
 
 export type UserManagedConsumerSessionConfigValueOrReference = ValueOrReference<UserManagedConsumerSessionConfig>;
 
-export type UserManagedItem = UserManagedConsumerSessionConfig | UserManagedMessageFilter | UserManagedMessageFilterChain;
+export type UserManagedItem = UserManagedMessageFilter | UserManagedMessageFilterChain | UserManagedConsumerSessionStartFrom;

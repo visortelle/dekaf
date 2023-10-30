@@ -52,7 +52,7 @@ const DeleteDialog = (props: Props) => {
       }
       onConfirm={deleteResourceGroup}
       onCancel={modals.pop}
-      guard={props.resourceGroup}
+      guard={"CONFIRM"}
       type='danger'
     />
   );

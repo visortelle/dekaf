@@ -26,7 +26,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.{
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.grpc.stub.StreamObserver
+import scala.util.{Try, Success, Failure}
 
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
@@ -37,6 +37,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import org.apache.pulsar.client.api.{Message, MessageId}
 import _root_.pulsar_auth.RequestContext
+import java.util.concurrent.ConcurrentHashMap
 import consumer.converters.getMessageSchemaInfo
 import consumer.filters.MessageFilterChain.testMessageFilterChain
 import org.apache.pulsar.common.schema.SchemaType
@@ -47,55 +48,55 @@ import java.time.Instant
 
 type ConsumerName = String
 
-class StreamDataHandler:
-    var onNext: (msg: Message[Array[Byte]]) => Unit = _ => ()
+case class ConsumerSession(
+    config: ConsumerSessionConfig,
+    messageFilterContext: MessageFilterContext,
+    consumer: Consumer[Array[Byte]],
+    grpcResponseObserver: Option[io.grpc.stub.StreamObserver[ResumeResponse]],
+    listener: TopicMessageListener,
+    schemasByTopic: SchemasByTopic,
+    var processedMessagesCount: Long
+)
+
+case class StreamDataHandler(var onNext: (msg: Message[Array[Byte]]) => Unit)
 
 class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
-    val logger: Logger = Logger(getClass.getName)
+    private val logger: Logger = Logger(getClass.getName)
+    private val consumerSessions: ConcurrentHashMap[ConsumerName, ConsumerSession] = new ConcurrentHashMap[ConsumerName, ConsumerSession]()
 
-    var topics: Map[ConsumerName, Vector[String]] = Map.empty
-    var schemasByTopic: SchemasByTopic = Map.empty
-    private var messageFilterContexts: Map[ConsumerName, MessageFilterContext] = Map.empty
-    private var consumerSessionConfigs: Map[ConsumerName, ConsumerSessionConfig] = Map.empty
-    private var consumers: Map[ConsumerName, Consumer[Array[Byte]]] = Map.empty
-    private var streamDataHandlers: Map[ConsumerName, StreamDataHandler] = Map.empty
-    private var processedMessagesCount: Map[ConsumerName, Long] = Map.empty
-    private var responseObservers: Map[ConsumerName, StreamObserver[ResumeResponse]] = Map.empty
-
-    override def resume(request: ResumeRequest, responseObserver: StreamObserver[ResumeResponse]): Unit =
+    override def resume(request: ResumeRequest, responseObserver: io.grpc.stub.StreamObserver[ResumeResponse]): Unit =
         val consumerName: ConsumerName = request.consumerName
         logger.info(s"Resume consuming. Consumer: $consumerName")
 
-        responseObservers = responseObservers + (consumerName -> responseObserver)
-
-        val consumer = consumers.get(consumerName) match
-            case Some(consumer) => consumer
+        val consumerSession = Option(consumerSessions.get(consumerName)) match
+            case Some(consumerSession) => consumerSession
             case _ =>
                 val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
+
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
-                return Future.successful(PauseResponse(status = Some(status)))
+                val res = ResumeResponse(status = Some(status))
+                responseObserver.onNext(res)
+                responseObserver.onCompleted()
+                return ()
 
-        val streamDataHandler = streamDataHandlers.get(consumerName)
-        val messageFilterContext = messageFilterContexts.get(consumerName) match
-            case Some(f) => f
-            case _ =>
-                val status: Status = Status(
-                    code = Code.FAILED_PRECONDITION.index,
-                    message = s"Message filter context isn't found for consumer: $consumerName"
-                )
-                return Future.successful(PauseResponse(status = Some(status)))
+        val updatedConsumerSession = consumerSession.copy(grpcResponseObserver = Some(responseObserver))
+        consumerSessions.replace(consumerName, updatedConsumerSession)
 
-        streamDataHandler match
-            case Some(handler) =>
-                handler.onNext = (msg: Message[Array[Byte]]) =>
-                    logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId}")
+        val consumer = consumerSession.consumer
+        val listener = consumerSession.listener
+        val streamDataHandler = listener.streamDataHandler
+        val messageFilterContext = consumerSession.messageFilterContext
 
-                    processedMessagesCount = processedMessagesCount + (consumerName -> (processedMessagesCount.getOrElse(consumerName, 0: Long) + 1))
-                    val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(schemasByTopic, msg)
+        streamDataHandler.onNext = (msg: Message[Array[Byte]]) =>
+            logger.debug(s"Message received. Consumer: $consumerName, Message id: ${msg.getMessageId}")
 
-                    val consumerSessionConfig = consumerSessionConfigs(consumerName)
-                    val messageFilterChain = consumerSessionConfig.messageFilterChain
+            consumerSession.processedMessagesCount += 1
+
+            val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(consumerSession.schemasByTopic, msg)
+
+            val consumerSessionConfig = consumerSession.config
+            val messageFilterChain = consumerSessionConfig.messageFilterChain
 
                     // TODO: try to place it in a JsonMessage or another structure (but not directly as circe encoders crash on it)
                     val schemaType = getMessageSchemaInfo(schemasByTopic, msg).map(_.getType).getOrElse(SchemaType.NONE)
@@ -109,123 +110,121 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                             schemaType
                         )
 
-                    val messageToSend = messagePb
-                        .withAccumulator(jsonAccumulator)
-                        .withDebugStdout(messageFilterContext.getStdout())
+            val messageToSend = messagePb
+                .withAccumulator(jsonAccumulator)
+                .withDebugStdout(messageFilterContext.getStdout())
 
-                    val messages = filterResult match
-                        case Right(true) => Seq(messageToSend)
-                        case _           => Seq()
+            val messages = filterResult match
+                case Right(true) => Seq(messageToSend)
+                case _           => Seq()
 
-                    consumers.get(consumerName) match
-                        case Some(_) =>
-                            val status: Status = filterResult match
-                                case Right(_)  => Status(code = Code.OK.index)
-                                case Left(err) => Status(code = Code.INVALID_ARGUMENT.index, message = err)
-                            val resumeResponse = ResumeResponse(
-                                status = Some(status),
-                                messages = messages,
-                                processedMessages = processedMessagesCount.getOrElse(consumerName, 0: Long)
-                            )
-                            responseObserver.onNext(resumeResponse)
-                        case _ => ()
+            val status: Status = filterResult match
+                case Right(_)  => Status(code = Code.OK.index)
+                case Left(err) => Status(code = Code.INVALID_ARGUMENT.index, message = err)
 
-                consumer.resume()
-                val status: Status = Status(code = Code.OK.index)
-                Future.successful(ResumeResponse(status = Some(status)))
-            case _ =>
-                val msg = s"No such consumer: $consumerName"
-                logger.warn(msg)
-                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
-                Future.successful(ResumeResponse(status = Some(status)))
+            val resumeResponse = ResumeResponse(
+                status = Some(status),
+                messages = messages,
+                processedMessages = consumerSession.processedMessagesCount
+            )
+            responseObserver.onNext(resumeResponse)
+
+        listener.startAcceptingNewMessages()
+        consumer.resume()
+
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(ResumeResponse(status = Some(status)))
 
     override def pause(request: PauseRequest): Future[PauseResponse] =
         val consumerName: ConsumerName = request.consumerName
         logger.info(s"Pausing consumer. Consumer: $consumerName")
 
-        val consumer = consumers.get(consumerName) match
-            case Some(consumer) => consumer
+        val consumerSession = Option(consumerSessions.get(consumerName)) match
+            case Some(consumerSession) => consumerSession
             case _ =>
                 val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(PauseResponse(status = Some(status)))
 
-        consumer.pause()
+        consumerSession.consumer.pause()
+        consumerSession.listener.stopAcceptingNewMessages()
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(PauseResponse(status = Some(status)))
 
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
-        val consumerName: ConsumerName = request.consumerName.getOrElse("__dekaf" + UUID.randomUUID().toString)
-        logger.info(s"Creating consumer. Consumer: $consumerName")
-        val adminClient = RequestContext.pulsarAdmin.get()
-        val pulsarClient = RequestContext.pulsarClient.get()
+        Try {
+            val consumerName: ConsumerName = request.consumerName.getOrElse("__dekaf" + UUID.randomUUID().toString)
+            logger.info(s"Creating consumer. Consumer: $consumerName")
+            val pulsarClient = RequestContext.pulsarClient.get()
+            val adminClient = RequestContext.pulsarAdmin.get()
 
-        val streamDataHandler = StreamDataHandler()
-        streamDataHandler.onNext = _ => ()
-        streamDataHandlers = streamDataHandlers + (consumerName -> streamDataHandler)
-        processedMessagesCount = processedMessagesCount + (consumerName -> 0)
+            val topicsToConsume = request.topicsSelector match
+                case Some(ts) =>
+                    ts.topicsSelector.byNames match
+                        case Some(bn) => bn.topics.toVector
+                case _ =>
+                    val status: Status =
+                        Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
+                    return Future.successful(CreateConsumerResponse(status = Some(status)))
 
-        messageFilterContexts = messageFilterContexts + (consumerName -> new MessageFilterContext(
-            MessageFilterContextConfig(stdout = new ByteArrayOutputStream())
-        ))
+            val config = consumerSessionConfigFromPb(request.consumerSessionConfig.get)
+            val listener = TopicMessageListener(StreamDataHandler(onNext = _ => ()))
 
-        val consumerSessionConfig = consumerSessionConfigFromPb(request.consumerSessionConfig.get)
-        consumerSessionConfigs = consumerSessionConfigs + (consumerName -> consumerSessionConfig)
+            val consumerBuilder = buildConsumer(pulsarClient, consumerName, request, logger, listener) match
+                case Right(consumer) => consumer
+                case Left(error) =>
+                    logger.warn(error)
+                    val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = error)
+                    return Future.successful(CreateConsumerResponse(status = Some(status)))
 
-        val topicsToConsume = request.topicsSelector match
-            case Some(ts) =>
-                ts.topicsSelector.byNames match
-                    case Some(bn) => bn.topics.toVector
-            case _ =>
-                val status: Status =
-                    Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
-                return Future.successful(CreateConsumerResponse(status = Some(status)))
+            val consumer = consumerBuilder.subscribe
+            handleStartFrom(startFrom = config.startFrom, consumer = consumer, adminClient = adminClient, topicFqn = topicsToConsume.head)
 
-        getSchemasByTopic(adminClient, topicsToConsume)
-            .foreach((topicName, schemasByVersion) => schemasByTopic = schemasByTopic + (topicName -> schemasByVersion))
+            val schemasByTopic = getSchemasByTopic(adminClient, topicsToConsume)
 
-        topics = topics + (consumerName -> topicsToConsume)
+            val consumerSession = ConsumerSession(
+                config = config,
+                messageFilterContext = MessageFilterContext(MessageFilterContextConfig(stdout = new ByteArrayOutputStream())),
+                consumer = consumer,
+                grpcResponseObserver = None,
+                listener = listener,
+                schemasByTopic = schemasByTopic,
+                processedMessagesCount = 0
+            )
 
-        val consumerBuilder = buildConsumer(pulsarClient, consumerName, request, logger, streamDataHandler) match
-            case Right(consumer) => consumer
-            case Left(error) =>
-                logger.warn(error)
-                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = error)
-                return Future.successful(CreateConsumerResponse(status = Some(status)))
-
-        val consumer = consumerBuilder.subscribe
-        handleStartFrom(startFrom = consumerSessionConfig.startFrom, consumer = consumer)
-        consumers = consumers + (consumerName -> consumer)
-
-        val status: Status = Status(code = Code.OK.index)
-        Future.successful(CreateConsumerResponse(status = Some(status)))
+            consumerSessions.put(consumerName, consumerSession)
+        } match
+            case Success(_) =>
+                val status: Status = Status(code = Code.OK.index)
+                Future.successful(CreateConsumerResponse(status = Some(status)))
+            case Failure(err) =>
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                Future.successful(CreateConsumerResponse(status = Some(status)))
 
     override def deleteConsumer(request: DeleteConsumerRequest): Future[DeleteConsumerResponse] =
         val consumerName = request.consumerName
         logger.info(s"Deleting consumer. Consumer: $consumerName")
 
+        val consumerSession = Option(consumerSessions.get(consumerName)) match
+            case Some(consumerSession) => consumerSession
+            case _ =>
+                val msg = s"No such consumer: $consumerName"
+                logger.warn(msg)
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
+                return Future.successful(DeleteConsumerResponse(status = Some(status)))
+
         def tryUnsubscribe: Unit =
-            consumers.get(consumerName) match
-                case Some(consumer) =>
-                    try
-                        consumer.unsubscribe()
-                    catch
-                        // Unsubscribe fails on partitioned topics in most cases.
-                        // Anyway we can't handle it meaningfully.
-                        _ => ()
-                    finally ()
+            try consumerSession.consumer.unsubscribe()
+            catch
+                // Unsubscribe fails on partitioned topics in most cases.
+                // Anyway we can't handle it meaningfully.
                 case _ => ()
 
         tryUnsubscribe
 
-        consumers = consumers.removed(consumerName)
-        streamDataHandlers = streamDataHandlers.removed(consumerName)
-        processedMessagesCount = processedMessagesCount.removed(consumerName)
-        responseObservers = responseObservers.removed(consumerName)
-        messageFilterContexts = messageFilterContexts.removed(consumerName)
-        consumerSessionConfigs = consumerSessionConfigs.removed(consumerName)
+        consumerSessions.remove(consumerName)
 
         val status: Status = Status(code = Code.OK.index)
         Future.successful(DeleteConsumerResponse(status = Some(status)))
@@ -234,13 +233,15 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val consumerName: ConsumerName = request.consumerName
         logger.info(s"Seek over subscription. Consumer: $consumerName")
 
-        val consumer = consumers.get(consumerName) match
-            case Some(v) => v
+        val consumerSession = Option(consumerSessions.get(consumerName)) match
+            case Some(consumerSession) => consumerSession
             case _ =>
                 val msg = s"No such consumer: $consumerName"
                 logger.warn(msg)
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = msg)
                 return Future.successful(SeekResponse(status = Some(status)))
+
+        val consumer = consumerSession.consumer
 
         request.seek match
             case Seek.Empty => Left("Seek request should contain timestamp or message id")
@@ -268,16 +269,13 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         Future.successful(SkipMessagesResponse(status = Some(status)))
 
     override def runCode(request: RunCodeRequest): Future[RunCodeResponse] =
-        val messageFilterContext = messageFilterContexts.get(request.consumerName) match
-            case Some(f) => f
+        val consumerSession = Option(consumerSessions.get(request.consumerName)) match
+            case Some(consumerSession) => consumerSession
             case _ =>
-                val status: Status = Status(
-                    code = Code.FAILED_PRECONDITION.index,
-                    message = s"Message filter context isn't found for consumer: ${request.consumerName}"
-                )
+                val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"Consumer isn't found: ${request.consumerName}")
                 return Future.successful(RunCodeResponse(status = Some(status)))
 
-        val result = messageFilterContext.runCode(request.code)
+        val result = consumerSession.messageFilterContext.runCode(request.code)
 
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))
