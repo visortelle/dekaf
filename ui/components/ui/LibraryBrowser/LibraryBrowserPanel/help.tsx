@@ -59,5 +59,18 @@ export const help = {
         You can save it to <strong>Library</strong> and reuse later.
       </p>
     </div>
+  ),
+  topicsSelector: (
+    <div>
+      <p>
+        <strong>Topics Selector</strong> allows to select one or more topics to use.
+      </p>
+      <p>
+        Analyzing multiple topics simultaneously can be valuable to identify message patterns that may be difficult to notice by inspecting each topic in isolation.
+      </p>
+      <p>
+        You can save it to <strong>Library</strong> and reuse later.
+      </p>
+    </div>
   )
 } as const;

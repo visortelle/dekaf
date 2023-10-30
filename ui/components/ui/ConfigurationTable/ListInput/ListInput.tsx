@@ -19,6 +19,7 @@ export type ListValue<T> = {
   renderItem: (value: T) => React.ReactElement;
   editor?: Editor<T>;
   getId: (value: T) => Id;
+  shouldShowError?: (value: T) => boolean;
   validate?: (value: T) => Either.Either<Error, void>;
   onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
@@ -35,9 +36,14 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
     setEditorValue(props.editor?.initialValue);
   }, [props.editor?.initialValue])
 
+  let isShowError = true;
+  if (props.shouldShowError !== undefined && editorValue !== undefined) {
+    isShowError = props.shouldShowError(editorValue)
+  }
+
   let validationResult: Either.Either<Error, void> = Either.right(undefined);
   if (props.validate !== undefined) {
-    typeof editorValue === 'undefined' ? Either.left(new Error('The value is undefined')) : props.validate(editorValue);
+    validationResult = typeof editorValue === 'undefined' ? Either.left(new Error('The value is undefined')) : props.validate(editorValue);
   }
 
   const add = () => {
@@ -76,11 +82,17 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
           {props.editor?.render(editorValue!, (v) => setEditorValue(v))}
         </div>
       )}
+      {isShowError && Either.isLeft(validationResult) && (
+        <div className={s.Error}>
+          {validationResult.left.message}
+        </div>
+      )}
       {props.onAdd && (
         <div className={s.AddButton}>
           <AddButton
             onClick={add}
             itemName={props.itemName}
+            disabled={Either.isLeft(validationResult)}
           />
         </div>
       )}

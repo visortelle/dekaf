@@ -57,7 +57,7 @@ def buildConsumer(
         if request.consumerSessionConfig.get.startFrom.get.startFrom.isStartFromLatestMessage
         then consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Latest)
         else consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-
+        
     consumer = request.priorityLevel match
         case Some(v) => consumer.priorityLevel(v)
         case _       => consumer

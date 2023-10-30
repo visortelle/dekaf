@@ -57,7 +57,7 @@
 }
 
 .Editor {
-  margin-top: 18rem;
+  margin-top: 8rem;
 }
 
 .Editor:first-child {
@@ -68,4 +68,9 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 8rem;
+}
+
+.Error {
+  margin-top: 4rem;
+  color: var(--accent-color-red);
 }

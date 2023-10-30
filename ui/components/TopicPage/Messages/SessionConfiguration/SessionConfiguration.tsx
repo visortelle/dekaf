@@ -12,6 +12,7 @@ import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionSpec, UserM
 import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../ui/LibraryBrowser/useUserManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
+import TopicsSelectorInput from './TopicsSelectorsInput/TopicsSelectorsInput';
 
 export type SessionConfigurationProps = {
   value: UserManagedConsumerSessionConfigValueOrReference;
@@ -65,6 +66,14 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
 
       <div className={s.Content}>
         <div className={s.LeftColumn}>
+          <FormItem>
+            <TopicsSelectorInput
+              value={itemSpec.topicsSelectors}
+              onChange={(v) => onSpecChange({ ...itemSpec, topicsSelectors: v })}
+              libraryContext={props.libraryContext}
+            />
+          </FormItem>
+
           <FormItem>
             <StartFromInput
               value={itemSpec.startFrom}

@@ -15,4 +15,5 @@
 .Buttons {
   display: flex;
   gap: 8rem;
+  justify-content: flex-end;
 }

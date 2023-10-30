@@ -143,4 +143,4 @@ export type UserManagedConsumerSessionConfig = {
 
 export type UserManagedConsumerSessionConfigValueOrReference = ValueOrReference<UserManagedConsumerSessionConfig>;
 
-export type UserManagedItem = UserManagedMessageFilter | UserManagedMessageFilterChain | UserManagedConsumerSessionStartFrom;
+export type UserManagedItem = UserManagedMessageFilter | UserManagedMessageFilterChain | UserManagedConsumerSessionStartFrom | UserManagedTopicsSelector;
