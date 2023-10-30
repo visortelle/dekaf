@@ -17,12 +17,12 @@
 }
 
 .LeftColumn {
-  width: 40%;
+  width: 50%;
   display: flex;
   flex-direction: column;
   gap: 24rem;
 }
 
 .RightColumn {
-  width: 60%;
+  width: 50%;
 }

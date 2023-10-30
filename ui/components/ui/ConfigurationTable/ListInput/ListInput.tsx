@@ -43,7 +43,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
 
   let validationResult: Either.Either<Error, void> = Either.right(undefined);
   if (props.validate !== undefined) {
-    validationResult = typeof editorValue === 'undefined' ? Either.left(new Error('The value is undefined')) : props.validate(editorValue);
+    validationResult = typeof editorValue === 'undefined' ? Either.right(undefined) : props.validate(editorValue);
   }
 
   const add = () => {

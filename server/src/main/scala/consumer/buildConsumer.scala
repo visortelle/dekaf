@@ -36,6 +36,8 @@ def buildConsumer(
         .expireTimeOfIncompleteChunkedMessage(1, java.util.concurrent.TimeUnit.MINUTES)
         .negativeAckRedeliveryDelay(0, java.util.concurrent.TimeUnit.SECONDS)
         .messageListener(listener)
+        .startMessageIdInclusive()
+        .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
         .startPaused(request.startPaused.getOrElse(true))
         .subscriptionName(request.subscriptionName.getOrElse(consumerName))
 
@@ -53,11 +55,6 @@ def buildConsumer(
         case Some(consumerPb.SubscriptionType.SUBSCRIPTION_TYPE_KEY_SHARED) => consumer.subscriptionType(SubscriptionType.Key_Shared)
         case _                                                              => consumer
 
-    consumer =
-        if request.consumerSessionConfig.get.startFrom.get.startFrom.isStartFromLatestMessage
-        then consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Latest)
-        else consumer.subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-        
     consumer = request.priorityLevel match
         case Some(v) => consumer.priorityLevel(v)
         case _       => consumer

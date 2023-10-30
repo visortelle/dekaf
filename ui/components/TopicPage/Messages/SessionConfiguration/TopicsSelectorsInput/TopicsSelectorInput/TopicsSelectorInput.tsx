@@ -123,6 +123,15 @@ const TopicsSelectorsInput: React.FC<TopicsSelectorsInputProps> = (props) => {
             itemName="topic"
             nothingToShowContent="No topics selected."
             validate={v => {
+              if (itemSpec.topicsSelector.type !== 'by-fqns') {
+                return Either.right(undefined);
+              }
+
+              const topicAlreadyInList = itemSpec.topicsSelector.topicFqns.includes(v);
+              if (topicAlreadyInList) {
+                return Either.left(new Error('The topic is already in the list.'));
+              }
+
               const pulsarTopicFqnRegex = /^(persistent|non-persistent):\/\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)$/;
               return v.match(pulsarTopicFqnRegex) ? Either.right(undefined) : Either.left(new Error('Expected following topic name format: persistent://tenant/namespace/topic'))
             }}
