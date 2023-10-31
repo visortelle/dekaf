@@ -21,7 +21,7 @@ export type UseUserManagedItemValue<ValueT> = {
 export function useUserManagedItemValue<ValueT>(valOrRef: ValueOrReference<ValueT>): UseUserManagedItemValue<ValueT> {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const [result, setResult] = useState<UseUserManagedItemValue<ValueT>>({ type: 'pending' });
+  const [fetchedItem, setFetchedItem] = useState<UseUserManagedItemValue<ValueT>>({ type: 'pending' });
 
   const fetchItem = async (itemId: string) => {
     const req = new pb.GetLibraryItemRequest();
@@ -30,14 +30,14 @@ export function useUserManagedItemValue<ValueT>(valOrRef: ValueOrReference<Value
     const res = await libraryServiceClient.getLibraryItem(req, {});
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to load library item with id: ${itemId}. ${res.getStatus()?.getMessage()}`);
-      setResult({ type: 'failure', reason: res.getStatus()?.getMessage() });
+      setFetchedItem({ type: 'failure', reason: res.getStatus()?.getMessage() });
       return;
     }
 
     const itemPb = res.getItem()!;
     const item = libraryItemFromPb(itemPb);
 
-    setResult({ type: 'success', value: item.spec as ValueT });
+    setFetchedItem({ type: 'success', value: item.spec as ValueT });
   };
 
   useEffect(() => {
@@ -45,14 +45,17 @@ export function useUserManagedItemValue<ValueT>(valOrRef: ValueOrReference<Value
       fetchItem(valOrRef.reference);
       return;
     }
-
-    if (valOrRef.value !== undefined) {
-      setResult({ type: 'success', value: valOrRef.value });
-      return;
-    }
   }, [valOrRef]);
 
-  return result;
+  if (valOrRef.type === 'value') {
+    return { type: 'success', value: valOrRef.value };
+  }
+
+  if (valOrRef.type == 'reference' && valOrRef.value !== undefined) {
+    return { type: 'success', value: valOrRef.value };
+  }
+
+  return fetchedItem;
 }
 
 export type UseUserManagedItemValueSpinnerProps = {

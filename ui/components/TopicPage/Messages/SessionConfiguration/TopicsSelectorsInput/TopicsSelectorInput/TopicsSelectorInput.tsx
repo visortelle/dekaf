@@ -10,15 +10,16 @@ import ListInput from '../../../../../ui/ConfigurationTable/ListInput/ListInput'
 import Input from '../../../../../ui/Input/Input';
 import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import * as Either from 'fp-ts/Either';
+import { RegexSubMode } from '../../../types';
 
-export type TopicsSelectorsInputProps = {
+export type TopicsSelectorInputProps = {
   value: UserManagedTopicsSelectorValueOrReference;
   onChange: (value: UserManagedTopicsSelectorValueOrReference) => void;
   onDelete?: () => void;
   libraryContext: LibraryContext;
 };
 
-const TopicsSelectorsInput: React.FC<TopicsSelectorsInputProps> = (props) => {
+const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useUserManagedItemValue<UserManagedTopicsSelector>(props.value);
@@ -58,6 +59,7 @@ const TopicsSelectorsInput: React.FC<TopicsSelectorsInputProps> = (props) => {
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
       />
+
       <FormItem>
         <Select<UserManagedTopicsSelectorSpec['topicsSelector']['type']>
           list={[
@@ -139,8 +141,44 @@ const TopicsSelectorsInput: React.FC<TopicsSelectorsInputProps> = (props) => {
           />
         </FormItem>
       )}
+
+      {itemSpec.topicsSelector.type === 'by-regex' && (
+        <>
+          <FormItem>
+            <Select<RegexSubMode>
+              list={[
+                { type: 'item', title: 'All topics', value: 'all-topics' },
+                { type: 'item', title: 'Persistent topics', value: 'persistent-only' },
+                { type: 'item', title: 'Non-Persistent topics', value: 'non-persistent-only' }
+              ]}
+              value={itemSpec.topicsSelector.regexSubscriptionMode}
+              onChange={(v) => {
+                if (itemSpec.topicsSelector.type !== 'by-regex') {
+                  return;
+                }
+
+                onSpecChange({ topicsSelector: { ...itemSpec.topicsSelector, regexSubscriptionMode: v } });
+              }}
+            />
+          </FormItem>
+
+          <FormItem>
+            <Input
+              value={itemSpec.topicsSelector.pattern}
+              onChange={(v) => {
+                if (itemSpec.topicsSelector.type !== 'by-regex') {
+                  return;
+                }
+
+                onSpecChange({ topicsSelector: { ...itemSpec.topicsSelector, pattern: v } });
+              }}
+              placeholder='.*'
+            />
+          </FormItem>
+        </>
+      )}
     </div>
   );
 }
 
-export default TopicsSelectorsInput;
+export default TopicsSelectorInput;

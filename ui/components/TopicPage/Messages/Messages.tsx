@@ -8,12 +8,8 @@ import {
   ResumeRequest,
   ResumeResponse,
   SubscriptionType,
-  TopicsSelector,
   DeleteConsumerRequest,
   PauseRequest,
-  RegexSubscriptionMode,
-  TopicsSelectorByFqns,
-  TopicsSelectorByRegex,
   SubscriptionMode,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
@@ -51,8 +47,8 @@ const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
 export type SessionProps = {
   sessionKey: number;
-  config: UserManagedConsumerSessionConfigValueOrReference;
-  onConfigChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
+  configValueOrReference: UserManagedConsumerSessionConfigValueOrReference;
+  onConfigValueOrReferenceChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
   onStopSession: () => void;
   isShowConsole: boolean;
   onSetIsShowConsole: (v: boolean) => void;
@@ -86,18 +82,17 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
-  const [config, setConfig] = useState<ConsumerSessionConfig | undefined>(undefined);
 
-  useEffect(() => {
+  const config = useMemo<ConsumerSessionConfig | undefined>(() => {
     try {
       const currentTopic = props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined;
       const currentTopicFqn: string | undefined = currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`;
-      setConfig(consumerSessionConfigFromValueOrReference(props.config, currentTopicFqn));
+      return consumerSessionConfigFromValueOrReference(props.configValueOrReference, currentTopicFqn);
     } catch (err) {
       console.warn(err);
-      setConfig(undefined);
+      return undefined;
     }
-  }, [props.config]);
+  }, [props.configValueOrReference]);
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
@@ -327,7 +322,7 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState && prevSessionState === undefined) {
       console.info(`%c--------------------`, consoleCss);
       console.info(`%cStarting new consumer session: ${props.sessionKey}`, consoleCss);
-      console.info('%cSession config: %o', consoleCss, props.config);
+      console.info('%cSession config: %o', consoleCss, props.configValueOrReference);
       console.info('%cConsumer name:', consoleCss, consumerName.current);
       console.info('%cSubscription name:', consoleCss, subscriptionName.current);
     }
@@ -461,8 +456,8 @@ const Session: React.FC<SessionProps> = (props) => {
       {currentView === 'configuration' && (
         <div className={s.SessionConfiguration}>
           <SessionConfiguration
-            value={props.config}
-            onChange={props.onConfigChange}
+            value={props.configValueOrReference}
+            onChange={props.onConfigValueOrReferenceChange}
             topicsInternalStats={topicsInternalStats}
             libraryContext={props.libraryContext}
           />
@@ -502,8 +497,8 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       onSetIsShowConsole={() => setIsShowConsole(!isShowConsole)}
       {...props}
       onStopSession={() => setSessionKey(n => n + 1)}
-      config={config}
-      onConfigChange={setConfig}
+      configValueOrReference={config}
+      onConfigValueOrReferenceChange={setConfig}
       libraryContext={props.libraryContext}
     />
   );
