@@ -78,8 +78,10 @@ case class ConsumerSessionPauseTriggerChain(
    mode: ConsumerSessionPauseTriggerChainMode,
 )
 
+case class ConsumerSessionConsumerConfig(
+)
+
 case class ConsumerSessionConfig(
-    startFrom: ConsumerSessionStartFrom,
-    messageFilterChain: MessageFilterChain,
-    pauseTriggerChain: ConsumerSessionPauseTriggerChain,
+    consumerConfigs: Vector[ConsumerSessionConsumerConfig],
+    pauseTriggers: Vector[ConsumerSessionPauseTriggerChain],
 )

@@ -38,6 +38,7 @@
 
           protoc-gen-grpc-web = pkgs.callPackage ./nix/protoc-gen-grpc-web.nix { };
           protoc-gen-scala = pkgs.callPackage ./nix/protoc-gen-scala.nix { };
+          protoc-gen-zio = pkgs.callPackage ./nix/protoc-gen-zio.nix { };
           graalvm = pkgs.callPackage ./nix/graalvm { };
 
           missingSysPkgs =
@@ -78,6 +79,7 @@
               pkgs.buf
               protoc-gen-grpc-web
               protoc-gen-scala
+              protoc-gen-zio
 
               pkgs.pulumi-bin
               pkgs.kubectl

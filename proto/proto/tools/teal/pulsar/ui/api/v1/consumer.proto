@@ -42,40 +42,19 @@ message Message {
   google.protobuf.StringValue replicated_from = 21;
 }
 
-enum SubscriptionMode {
-  SUBSCRIPTION_MODE_UNSPECIFIED = 0;
-  SUBSCRIPTION_MODE_DURABLE = 1;
-  SUBSCRIPTION_MODE_NON_DURABLE = 2;
+message TopicsSelectorSingleTopic {
+  string topic_fqn = 1;
 }
 
-enum SubscriptionType {
-  SUBSCRIPTION_TYPE_UNSPECIFIED = 0;
-  SUBSCRIPTION_TYPE_EXCLUSIVE = 1;
-  SUBSCRIPTION_TYPE_FAILOVER = 2;
-  SUBSCRIPTION_TYPE_SHARED = 3;
-  SUBSCRIPTION_TYPE_KEY_SHARED = 4;
-}
-
-enum RegexSubscriptionMode {
-  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
-  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
-  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2;
-  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
-}
-
-message TopicsSelectorByFqns {
-  repeated string topic_fqns = 1;
-}
-
-message TopicsSelectorByRegex {
+message TopicsSelectorByNamespacedRegex {
+  string namespace_fqn = 1;
   string pattern = 2;
-  RegexSubscriptionMode regex_subscription_mode = 3;
 }
 
 message TopicsSelector {
   oneof topics_selector {
-    TopicsSelectorByFqns topics_selector_by_fqns = 1;
-    TopicsSelectorByRegex topics_selector_by_regex = 2;
+    TopicsSelectorSingleTopic topics_selector_single_topic = 1;
+    TopicsSelectorByNamespacedRegex topics_selector_by_namespaced_regex = 2;
   }
 }
 
@@ -188,37 +167,31 @@ message ConsumerSessionPauseTriggerChain {
   ConsumerSessionPauseTriggerChainMode mode = 2;
 }
 
-message ConsumerSessionConfig {
+message ConsumerSessionConsumerConfig {
+  TopicsSelector topics_selector = 4;
   ConsumerSessionStartFrom start_from = 1;
   MessageFilterChain message_filter_chain = 2;
-  ConsumerSessionPauseTriggerChain pause_trigger_chain = 3;
 }
 
-message CreateConsumerRequest {
-  TopicsSelector topics_selector = 100;
-  optional string consumer_name = 1;
-  optional string subscription_name = 2;
-  optional int32 priority_level = 3;
-  optional bool start_paused = 4;
-  optional SubscriptionMode subscription_mode = 5;
-  optional SubscriptionType subscription_type = 6;
-  optional int64 ack_timeout_ms = 8;
-  optional int64 ack_timeout_tick_time_ms = 9;
-  optional int64 expire_time_of_incomplete_chunked_message_ms = 10;
-  optional int64 acknowledgment_group_time_ms = 11;
-  optional int64 negative_ack_redelivery_delay_ms = 12;
-  ConsumerSessionConfig consumer_session_config = 13;
+message ConsumerSessionConfig {
+  repeated ConsumerSessionConsumerConfig consumer_configs = 1;
+  ConsumerSessionPauseTriggerChain pause_trigger_chain = 2;
 }
 
-message CreateConsumerResponse {
+message CreateConsumerSessionRequest {
+  string consumer_session_id = 1;
+  ConsumerSessionConfig consumer_session_config = 4;
+}
+
+message CreateConsumerSessionResponse {
   google.rpc.Status status = 1;
 }
 
-message DeleteConsumerRequest {
-  string consumer_name = 1;
+message DeleteConsumerSessionRequest {
+  string consumer_session_id = 1;
 }
 
-message DeleteConsumerResponse {
+message DeleteConsumerSessionResponse {
   google.rpc.Status status = 1;
 }
 
@@ -250,52 +223,30 @@ message MessageFilterChain {
   MessageFilterChainMode mode = 2;
 }
 
-message ResumeRequest {
-  string consumer_name = 1;
+message ResumeConsumerSessionRequest {
+  string consumer_session_id = 1;
   bool include_consumer_stats = 2;
 }
 
 message ConsumerStats {}
 
-message ResumeResponse {
+message ResumeConsumerSessionResponse {
   optional google.rpc.Status status = 1;
   repeated Message messages = 2;
   int64 processed_messages = 3;
   optional ConsumerStats consumer_stats = 4;
 }
 
-message PauseRequest {
-  string consumer_name = 1;
+message PauseConsumerSessionRequest {
+  string consumer_session_id = 1;
 }
 
-message PauseResponse {
-  google.rpc.Status status = 1;
-}
-
-message SeekRequest {
-  string consumer_name = 1;
-  oneof seek {
-    google.protobuf.Timestamp timestamp = 2;
-    bytes message_id = 3;
-  }
-}
-
-message SeekResponse {
-  google.rpc.Status status = 1;
-}
-
-message SkipMessagesRequest {
-  string consumer_name = 1;
-  string subscription_name = 2;
-  int64 count = 3;
-}
-
-message SkipMessagesResponse {
+message PauseConsumerSessionResponse {
   google.rpc.Status status = 1;
 }
 
 message RunCodeRequest {
-  string consumer_name = 1;
+  string consumer_session_id = 1;
   string code = 2;
 }
 
@@ -305,11 +256,9 @@ message RunCodeResponse {
 }
 
 service ConsumerService {
-  rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
-  rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
-  rpc Resume(ResumeRequest) returns (stream ResumeResponse);
-  rpc Pause(PauseRequest) returns (PauseResponse);
-  rpc Seek(SeekRequest) returns (SeekResponse);
-  rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
+  rpc CreateConsumerSession(CreateConsumerSessionRequest) returns (CreateConsumerSessionResponse);
+  rpc DeleteConsumerSession(DeleteConsumerSessionRequest) returns (DeleteConsumerSessionResponse);
+  rpc ResumeConsumerSession(ResumeConsumerSessionRequest) returns (stream ResumeConsumerSessionResponse);
+  rpc PauseConsumerSession(PauseConsumerSessionRequest) returns (PauseConsumerSessionResponse);
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
 }

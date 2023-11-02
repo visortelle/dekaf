@@ -200,8 +200,8 @@ message TopicsSelectorByFqns {
 message UserManagedTopicsSelectorSpec {
   oneof topics_selector {
     TopicsSelectorCurrentTopic topics_selector_current_topic = 3;
-    TopicsSelectorByFqns topics_selector_by_fqns = 1;
-    tools.teal.pulsar.ui.api.v1.TopicsSelectorByRegex topics_selector_by_regex = 2;
+    tools.teal.pulsar.ui.api.v1.TopicsSelectorSingleTopic topics_selector_single_topic = 1;
+    tools.teal.pulsar.ui.api.v1.TopicsSelectorByNamespacedRegex topics_selector_by_namespaced_regex = 2;
   }
 }
 
@@ -217,21 +217,21 @@ message UserManagedTopicsSelectorValueOrReference {
   }
 }
 
-message UserManagedConsumerSessionConfigSpec {
-  repeated UserManagedTopicsSelector topic_selectors = 4;
+message UserManagedConsumerSessionConsumerSpec {
+  UserManagedTopicsSelector topic_selector = 4;
   UserManagedConsumerSessionStartFromValueOrReference start_from = 1;
   UserManagedMessageFilterChainValueOrReference message_filter_chain = 2;
   UserManagedConsumerSessionPauseTriggerChainValueOrReference pause_trigger_chain = 3;
 }
 
-message UserManagedConsumerSessionConfig {
+message UserManagedConsumerSessionConsumer {
   UserManagedItemMetadata metadata = 1;
-  UserManagedConsumerSessionConfigSpec spec = 2;
+  UserManagedConsumerSessionConsumerSpec spec = 2;
 }
 
 message UserManagedItem {
   oneof item {
-    UserManagedConsumerSessionConfig consumer_session_config = 2;
+    UserManagedConsumerSessionConsumer consumer_session_consumer = 2;
     UserManagedTopicsSelector topics_selector = 10;
     UserManagedConsumerSessionStartFrom consumer_session_start_from = 3;
     UserManagedConsumerSessionPauseTriggerChain consumer_session_pause_trigger_chain = 4;

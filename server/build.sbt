@@ -73,6 +73,7 @@ lazy val root = project
 
             // ZIO
             "dev.zio" %% "zio" % zioVersion,
+            "dev.zio" %% "zio-concurrent" % zioVersion,
             "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
             "dev.zio" %% "zio-config" % zioConfigVersion,
             "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,

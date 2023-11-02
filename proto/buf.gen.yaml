@@ -16,3 +16,8 @@ plugins:
     opt:
       - grpc
       - no_lenses
+  - name: zio
+    out: ../server/src/main/scala/pb
+    opt:
+      - grpc
+      - no_lenses

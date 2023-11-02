@@ -33,5 +33,5 @@ def getSchemasByVersion(pulsarAdmin: PulsarAdmin, topic: TopicName): SchemasByVe
 
     versions.zip(schemas).toMap
 
-def getSchemasByTopic(pulsarAdmin: PulsarAdmin, topics: Seq[TopicName]): SchemasByTopic =
+def getSchemasByTopic(pulsarAdmin: PulsarAdmin, topics: Vector[TopicName]): SchemasByTopic =
     topics.map(topicName => (topicName, getSchemasByVersion(pulsarAdmin, topicName))).toMap
