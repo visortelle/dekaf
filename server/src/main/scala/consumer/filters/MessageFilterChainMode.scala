@@ -8,8 +8,3 @@ enum MessageFilterChainMode:
     case All
     case Any
     case Unspecified
-
-object MessageFilterChainMode:
-    given Decoder[MessageFilterChainMode] = deriveDecoder[MessageFilterChainMode]
-    given Encoder[MessageFilterChainMode] = deriveEncoder[MessageFilterChainMode]
-

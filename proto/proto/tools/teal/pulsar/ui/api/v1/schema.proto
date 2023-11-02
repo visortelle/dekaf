@@ -126,6 +126,25 @@ message GetHumanReadableSchemaResponse {
   optional string human_readable_schema = 2;
 }
 
+message GetSchemaFieldSelectorsRequest {
+  string topic = 1;
+}
+
+message GetSchemaFieldSelectorsResponse {
+  google.rpc.Status status = 1;
+  repeated string field_selectors = 2;
+}
+
+message GetSchemaExampleMessageRequest {
+  string topic = 1;
+  int64 schema_version = 2;
+}
+
+message GetSchemaExampleMessageResponse {
+  google.rpc.Status status = 1;
+  string example_message = 2;
+}
+
 service SchemaService {
   rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse);
   rpc GetLatestSchemaInfo(GetLatestSchemaInfoRequest) returns (GetLatestSchemaInfoResponse);
@@ -136,4 +155,6 @@ service SchemaService {
   rpc TestCompatibility(TestCompatibilityRequest) returns (TestCompatibilityResponse);
 
   rpc GetHumanReadableSchema(GetHumanReadableSchemaRequest) returns (GetHumanReadableSchemaResponse);
+  rpc GetSchemaFieldSelectors(GetSchemaFieldSelectorsRequest) returns (GetSchemaFieldSelectorsResponse);
+  rpc GetSchemaExampleMessage(GetSchemaExampleMessageRequest) returns (GetSchemaExampleMessageResponse);
 }

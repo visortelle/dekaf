@@ -16,12 +16,10 @@ import _root_.consumer.{
     DateTimeUnit,
     EarliestMessage,
     LatestMessage,
-    MessageFilter,
-    MessageFilterChain,
-    MessageFilterChainMode,
     MessageId,
     RelativeDateTime
 }
+import consumer.filters.{MessageFilter, MessageFilterChainMode}
 import consumer.filters.jsFilter.JsMessageFilter
 import consumer.filters.basicFilter.BasicMessageFilter
 import java.time.Instant

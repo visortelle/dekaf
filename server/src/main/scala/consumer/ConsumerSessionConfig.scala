@@ -5,22 +5,6 @@ import consumer.filters.basicFilter.BasicMessageFilter
 import consumer.filters.jsFilter.JsMessageFilter
 import library.UserManagedItemType
 
-case class MessageFilter(
-    isEnabled: Boolean,
-    isNegated: Boolean,
-    value: BasicMessageFilter | JsMessageFilter
-)
-
-enum MessageFilterChainMode:
-    case All, Any
-
-case class MessageFilterChain(
-    isEnabled: Boolean,
-    isNegated: Boolean,
-    mode: MessageFilterChainMode,
-    filters: List[MessageFilter]
-)
-
 case class EarliestMessage()
 case class LatestMessage()
 case class NthMessageAfterEarliest(n: Long)

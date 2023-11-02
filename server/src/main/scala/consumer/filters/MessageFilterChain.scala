@@ -15,9 +15,6 @@ case class MessageFilterChain(
 )
 
 object MessageFilterChain:
-    given Decoder[MessageFilterChain] = deriveDecoder[MessageFilterChain]
-    given Encoder[MessageFilterChain] = deriveEncoder[MessageFilterChain]
-
     def testMessageFilterChain(
         filterChain: MessageFilterChain,
         messageFilterContext: MessageFilterContext,
@@ -39,7 +36,6 @@ object MessageFilterChain:
                     MessageFilter(
                         isEnabled = true,
                         isNegated = false,
-                        `type` = MessageFilterType.JsMessageFilter,
                         value = JsMessageFilter(jsCode = "() => true")
                     )
                 )

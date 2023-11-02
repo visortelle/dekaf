@@ -28,6 +28,8 @@ Global / fork := true
 javaOptions ++= javaOpts
 
 Global / resolvers += Resolver.mavenLocal
+Global / resolvers += "jitpack" at "https://jitpack.io"
+resolvers += "jitpack" at "https://jitpack.io"
 
 // Define extra properties at build time that are available in runtime.
 Compile / sourceGenerators += Def.task {
@@ -83,8 +85,8 @@ lazy val root = project
             "com.softwaremill.sttp.client4" %% "circe" % "4.0.0-M2",
 
             "com.github.wnameless.json" % "json-flattener" % "0.16.3",
-            "com.github.fge" % "json-schema-avro" % "0.1.4",
-          
+            "net.jimblackler" % "jsongenerator" % "0.4.7",
+
             // Serialization
             "io.circe" %% "circe-core" % circeVersion,
             "io.circe" %% "circe-generic" % circeVersion,

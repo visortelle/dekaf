@@ -45,5 +45,7 @@ object converters extends JsonSerDe[Proto3Datum]:
             case err: Throwable => Left(err)
         }
 
-    def protobufToJsonSchema(schema: Array[Byte]): Either[Throwable, Array[Byte]] =
-        ???
+    def protobufToJsonSchema(schema: Array[Byte]): Either[Throwable, String] =
+        compiler.compileProtobufNativeToJsonSchema(schema) match
+            case Left(value) => Left(value)
+            case Right(value) => Right(value)

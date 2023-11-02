@@ -1,29 +1,27 @@
 package schema.protobufnative
 
-import com.google.protobuf.DescriptorProtos.FileDescriptorProto
-import com.google.protobuf.Descriptors
-import com.google.protobuf.Descriptors.FileDescriptor
-
-import java.io.FileInputStream
-import java.nio.file.Paths
-import scala.sys.process.*
-import scala.jdk.CollectionConverters.*
-import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
-import com.google.protobuf.Descriptors.DescriptorValidationException
-import com.google.protobuf.DescriptorProtos.FileDescriptorSet
-import com.typesafe.scalalogging.Logger
-import org.apache.pulsar.client.impl
-import org.apache.pulsar.common.protocol.schema.ProtobufNativeSchemaData
-
-import scala.reflect.ClassTag
-import java.io.OutputStream
-import java.io.PrintStream
-
 import _root_.config.readConfigAsync
+import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptorSet}
+import com.google.protobuf.Descriptors
+import com.google.protobuf.Descriptors.{FieldDescriptor, FileDescriptor}
+import com.typesafe.scalalogging.Logger
+import io.circe.*
+import io.circe.generic.auto.*
+import io.circe.parser.*
+import org.apache.pulsar.client.impl
+import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
+
+import java.lang
+import java.util.Base64
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
+import scala.jdk.CollectionConverters.*
+import scala.reflect.ClassTag
+import scala.sys.process.*
 
 type RelativePath = String
+type JsonSchema = String
+
 case class FileEntry(relativePath: RelativePath, content: String)
 
 case class Schema(rawSchema: Array[Byte], humanReadableSchema: String)
@@ -32,6 +30,8 @@ type MessageName = String
 case class CompiledFile(schemas: Map[MessageName, Schema])
 
 case class CompiledFiles(files: Map[RelativePath, Either[Throwable, CompiledFile]])
+
+case class ProtoSchema(fileDescriptorSet: String, rootMessageTypeName: String, rootFileDescriptorName: String)
 
 object compiler:
     val config = Await.result(readConfigAsync, Duration(10, SECONDS))
@@ -45,7 +45,7 @@ object compiler:
         val srcDir = tempDir / "src"
         os.makeDir(srcDir)
 
-        val depsDir: os.Path = os.Path(config.dataDir.get + "/proto", os.root)
+        val depsDir: os.Path = os.Path(config.dataDir.get + "/proto", os.pwd)
 
         files.foreach(f =>
             val path = srcDir / os.PathChunk.SeqPathChunk(f.relativePath.split("/"))
@@ -124,3 +124,49 @@ object compiler:
         for (i <- list.indices)
             arr(i) = list(i)
         arr
+
+    def compileProtobufNativeToJsonSchema(schema: Array[Byte]): Either[Throwable, JsonSchema] =
+        val tempDir = os.temp.dir(null, "__dekaf-protobuf-native-json-schema_")
+        logger.info(s"Compiling PROTOBUF_NATIVE to JSON_SCHEMA schema. Temp dir: $tempDir")
+        val depsDir: os.Path = os.Path(config.dataDir.get + "/proto", os.pwd)
+
+        val jsonDescriptorString = schema.map(_.toChar).mkString
+
+        val decodedJson = decode[ProtoSchema](jsonDescriptorString) match
+            case Left(err) => return Left(err)
+            case Right(v)  => v
+
+        val fileDescriptorSetBytes = Base64.getDecoder.decode(decodedJson.fileDescriptorSet)
+        val fileDescriptorSet = FileDescriptorSet.parseFrom(fileDescriptorSetBytes)
+        val fileDescriptor = FileDescriptor.buildFrom(fileDescriptorSet.getFile(0), Array.empty)
+        val descriptorName = fileDescriptorSet.getFile(0).getMessageTypeList.get(0).getName
+
+        val schemaData = ProtoDescriptorConverter.getProtoSchemaFromDescriptor(fileDescriptor)
+
+        val protobufJsonSchemaCompilerFile = os.Path(config.dataDir.get + "/compilers", os.pwd) / "protoc-gen-jsonschema"
+        val inputFile = tempDir / "schema.proto"
+        val outputFile = tempDir / (descriptorName + ".json")
+        val protocLogFile = tempDir / "protoc.log"
+
+        os.write(inputFile, schemaData, null, true)
+
+        val protocCommand =
+            s"""protoc \\
+                   --plugin=$protobufJsonSchemaCompilerFile \\
+                   --jsonschema_opt=disallow_additional_properties \\
+                   --jsonschema_opt=enforce_oneof \\
+                   --jsonschema_opt=all_fields_required \\
+                   --jsonschema_opt=json_fieldnames \\
+                   --jsonschema_opt=file_extension=json \\
+                   -I $tempDir -I $depsDir \\
+                   --jsonschema_out=$tempDir \\
+                   $inputFile &> $protocLogFile
+               """
+
+        val protocProcess = Seq("sh", "-c", s"set -ue; $protocCommand").run
+
+        if protocProcess.exitValue != 0 then
+            val compilationError = os.read(protocLogFile)
+            return Left(Exception(s"Failed to compile $inputFile.\nError: $compilationError"))
+
+        Right(os.read(outputFile))

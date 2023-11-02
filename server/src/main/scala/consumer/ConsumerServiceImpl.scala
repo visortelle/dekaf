@@ -96,19 +96,22 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(consumerSession.schemasByTopic, msg)
 
             val consumerSessionConfig = consumerSession.config
+            val schemasByTopic = consumerSession.schemasByTopic
             val messageFilterChain = consumerSessionConfig.messageFilterChain
+            
+            // TODO: try to place it in a JsonMessage or another structure (but not directly as circe encoders crash on it)
+            val schemaType = getMessageSchemaInfo(schemasByTopic, msg)
+                .map(_.getType)
+                .getOrElse(SchemaType.NONE)
 
-                    // TODO: try to place it in a JsonMessage or another structure (but not directly as circe encoders crash on it)
-                    val schemaType = getMessageSchemaInfo(schemasByTopic, msg).map(_.getType).getOrElse(SchemaType.NONE)
-
-                    val (filterResult, jsonAccumulator) =
-                        testMessageFilterChain(
-                            messageFilterChain,
-                            messageFilterContext,
-                            jsonMessage,
-                            messageValueToJsonResult,
-                            schemaType
-                        )
+            val (filterResult, jsonAccumulator) =
+                testMessageFilterChain(
+                    messageFilterChain,
+                    messageFilterContext,
+                    jsonMessage,
+                    messageValueToJsonResult,
+                    schemaType
+                )
 
             val messageToSend = messagePb
                 .withAccumulator(jsonAccumulator)

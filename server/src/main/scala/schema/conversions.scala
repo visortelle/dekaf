@@ -3,7 +3,8 @@ package schema
 import scala.jdk.CollectionConverters.*
 import com.google.protobuf.ByteString
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
-import com.tools.teal.pulsar.ui.api.v1.schema.{SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import com.tools.teal.pulsar.ui.api.v1.schema.{CompiledProtobufNativeFile, ProtobufNativeSchema, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import schema.protobufnative.CompiledFile
 
 def schemaInfoToPb(s: SchemaInfo): SchemaInfoPb =
     SchemaInfoPb(
@@ -89,3 +90,15 @@ def schemaTypeToPb(schemaType: SchemaType): SchemaTypePb =
         case _ => SchemaTypePb.SCHEMA_TYPE_NONE
 
 
+def compileFileToPb(compiledFile: CompiledFile) =
+    CompiledProtobufNativeFile(
+        schemas = compiledFile.schemas
+            .map(s =>
+                val (messageName, schema) = s
+                val schemaPb: ProtobufNativeSchema = ProtobufNativeSchema(
+                    rawSchema = ByteString.copyFrom(schema.rawSchema),
+                    humanReadableSchema = schema.humanReadableSchema
+                )
+                (messageName, schemaPb)
+            )
+    )
