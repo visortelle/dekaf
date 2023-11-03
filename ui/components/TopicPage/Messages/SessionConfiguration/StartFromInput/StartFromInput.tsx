@@ -60,7 +60,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
     props.onChange(newValue);
   };
 
-  const worksBestWithNonPartitionedTopic = <div style={{ padding: '12rem', borderRadius: '8rem', marginTop: '8rem', background: 'var(--surface-color)'}}>Works best with a single non-partitioned topic.</div>;
+  const worksBestWithNonPartitionedTopic = <div style={{ padding: '12rem', borderRadius: '8rem', marginTop: '8rem', background: 'var(--surface-color)' }}>Works best with a single non-partitioned topic.</div>;
 
   return (
     <div className={s.StartFromInput} ref={hoverRef}>
@@ -193,19 +193,45 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             {worksBestWithNonPartitionedTopic}
           </>
         )}
-        {/* {props.value.spec.startFrom.type === 'dateTime' && (
+        {itemSpec.startFrom.type === 'dateTime' && (
           <DatetimePicker
-            value={props.value.spec.startFrom.dateTime}
-            onChange={(v) => props.onChange({ type: 'dateTime', dateTime: v || new Date() })}
+            value={itemSpec.startFrom.dateTime.value?.spec.dateTime}
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
+
+              if (newItemSpec.startFrom.type !== 'dateTime') {
+                return;
+              }
+
+              if (newItemSpec.startFrom.dateTime.value === undefined) {
+                return;
+              }
+
+              newItemSpec.startFrom.dateTime.value.spec.dateTime = v || new Date();
+              onSpecChange(newItemSpec);
+            }}
             disabled={props.disabled}
           />
         )}
-        {props.value.type === 'relativeDateTime' && (
+        {itemSpec.startFrom.type === 'relativeDateTime' && (
           <RelativeDateTimePicker
-            value={props.value.value}
-            onChange={(v) => props.onChange({ type: 'relativeDateTime', value: v })}
+            value={itemSpec.startFrom.relativeDateTime.value?.spec!}
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
+
+              if (newItemSpec.startFrom.type !== 'relativeDateTime') {
+                return;
+              }
+
+              if (newItemSpec.startFrom.relativeDateTime.value === undefined) {
+                return;
+              }
+
+              newItemSpec.startFrom.relativeDateTime.value.spec = v;
+              onSpecChange(newItemSpec);
+            }}
           />
-        )} */}
+        )}
       </div>
     </div >
   );
