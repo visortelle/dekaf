@@ -117,5 +117,6 @@ libraryDependencies ++= Seq(
     "com.thesamet.scalapb" %% "scalapb-json4s" % "0.12.0",
     "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
-    "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+    "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
+    "com.thesamet.scalapb.zio-grpc" %% "zio-grpc-core" % "0.6.0-rc6"
 )

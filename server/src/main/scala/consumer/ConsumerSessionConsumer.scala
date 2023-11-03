@@ -16,8 +16,8 @@ case class ConsumerSessionConsumer(
 ):
     def pause(): Task[Unit] = ???
     def resume(): Task[Unit] = ???
-    def stop(): Task[Unit] = ZIO.attempt(pulsarConsumer.close())
-    def setListener(listener: TopicMessageListener): Task[Unit] = listenerRef.set(listener)
+    def stop(): Task[Unit] = ???
+//    def setListener(listener: TopicMessageListener): Task[Unit] = listenerRef.set(listener)
 
 object ConsumerSessionConsumer:
     def createFromPb(
@@ -53,7 +53,7 @@ object ConsumerSessionConsumer:
                 .subscribe()
         }
 
-//        startFrom <- ZIO.attempt(configPb.startFrom.map(consumerSessionStartFromFromPb).getOrElse(EarliestMessage()))
+        startFrom <- ZIO.attempt(configPb.startFrom.map(consumerSessionStartFromFromPb).getOrElse(EarliestMessage()))
 //        _ <- handleStartFrom(pulsarConsumer, startFrom)
 
         messageFilterChain <- ZIO.attempt(messageFilterChainFromPb(configPb.messageFilterChain.get))

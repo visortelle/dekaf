@@ -167,15 +167,115 @@ message ConsumerSessionPauseTriggerChain {
   ConsumerSessionPauseTriggerChainMode mode = 2;
 }
 
+message BarRaceChartEntry {
+  string metric_name = 1;
+  string value_field_selector = 2;
+  string bar_color = 3;
+}
+
+message GaugeChartEntry {
+  string metric_name = 1;
+  string value_field_selector = 2;
+  string bar_color = 3;
+}
+
+message GaugeChartCheckpoint {
+  int64 value = 1;
+  string color = 2;
+}
+
+message GaugeChart {
+  repeated GaugeChartEntry gauges = 1;
+  repeated GaugeChartCheckpoint checkpoints = 2;
+}
+
+message BarRaceChart {
+  repeated BarRaceChartEntry bars = 1;
+}
+
+message PieChartEntry {
+  string metric_name = 1;
+  string value_field_selector = 2;
+  string pie_piece_color = 3;
+}
+
+message PieChart {
+  repeated PieChartEntry pie_pieces = 1;
+}
+
+message BarChartStackEntry {
+  string metric_name = 1;
+  string value_field_selector = 2;
+  string bar_color = 3;
+}
+
+message BarChart {
+  repeated BarChartStackEntry stack = 1;
+}
+
+message LineChartStackEntry {
+  string metric_name = 1;
+  string value_field_selector = 2;
+  string line_color = 3;
+}
+message LineChart {
+  repeated LineChartStackEntry stack = 1;
+}
+
+message DataAnalysisJsMessageProcessor {
+  string js_code = 1;
+}
+
+message DataAnalysisMessageProcessor {
+  bool is_enabled = 1;
+  bool is_run_only_on_filtered_messages = 2;
+  oneof message_processor {
+    DataAnalysisJsMessageProcessor message_processor_js = 10;
+  }
+}
+
+message DataAnalysisWidget {
+  oneof widget {
+    BarChart widget_bar_chart = 1;
+    LineChart widget_line_chart = 2;
+    PieChart widget_pie_chart = 3;
+    GaugeChart widget_gauge_chart = 4;
+  }
+}
+
+message DataAnalysisWidgetGroup {
+  string name = 1;
+  repeated DataAnalysisWidget widgets = 2;
+  repeated DataAnalysisMessageProcessor message_processors = 3;
+}
+
+message DataAnalysis {
+  string message_processor_js_code = 1;
+}
+
+message ColoringRule {
+  MessageFilterChain message_filter_chain = 1;
+  string foreground_color = 2;
+  string background_color = 3;
+}
+
+message ColoringRules {
+  repeated ColoringRule coloring_rules = 1;
+}
+
 message ConsumerSessionConsumerConfig {
-  TopicsSelector topics_selector = 4;
   ConsumerSessionStartFrom start_from = 1;
+  TopicsSelector topics_selector = 4;
   MessageFilterChain message_filter_chain = 2;
+  ConsumerSessionPauseTriggerChain pause_trigger_chain = 3;
+  ColoringRules coloring_rules = 5;
 }
 
 message ConsumerSessionConfig {
-  repeated ConsumerSessionConsumerConfig consumer_configs = 1;
-  ConsumerSessionPauseTriggerChain pause_trigger_chain = 2;
+  repeated ConsumerSessionConsumerConfig consumer_configs = 2;
+  ConsumerSessionPauseTriggerChain pause_trigger_chain = 3;
+  ColoringRules coloring_rules = 5;
+  bool is_preserve_message_order = 6;
 }
 
 message CreateConsumerSessionRequest {
@@ -255,10 +355,26 @@ message RunCodeResponse {
   google.protobuf.StringValue result = 2;
 }
 
+message LoadNMessages {
+  int32 n = 1;
+  bytes relative_to_message_id = 2;
+  bool is_backward_otherwise_forward = 3;
+};
+
+message LoadNMessagesRequest {
+  google.rpc.Status status = 1;
+}
+
+message LoadNMessagesResponse {
+  google.rpc.Status status = 1;
+  Message messages = 2;
+}
+
 service ConsumerService {
   rpc CreateConsumerSession(CreateConsumerSessionRequest) returns (CreateConsumerSessionResponse);
   rpc DeleteConsumerSession(DeleteConsumerSessionRequest) returns (DeleteConsumerSessionResponse);
   rpc ResumeConsumerSession(ResumeConsumerSessionRequest) returns (stream ResumeConsumerSessionResponse);
   rpc PauseConsumerSession(PauseConsumerSessionRequest) returns (PauseConsumerSessionResponse);
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
+  rpc LoadNMessages(LoadNMessagesRequest) returns (stream LoadNMessagesResponse);
 }
