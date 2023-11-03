@@ -123,18 +123,33 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
             }}
             itemName="topic"
             nothingToShowContent="No topics selected."
-            validate={v => {
+            validate={(v, topicFqns) => {
               if (itemSpec.topicsSelector.type !== 'by-fqns') {
                 return Either.right(undefined);
               }
 
-              const topicAlreadyInList = itemSpec.topicsSelector.topicFqns.includes(v);
+              const topicAlreadyInList = topicFqns.includes(v);
               if (topicAlreadyInList) {
                 return Either.left(new Error('The topic is already in the list.'));
               }
 
               const pulsarTopicFqnRegex = /^(persistent|non-persistent):\/\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)$/;
-              return v.match(pulsarTopicFqnRegex) ? Either.right(undefined) : Either.left(new Error('Expected following topic name format: persistent://tenant/namespace/topic'))
+
+              if(!v.match(pulsarTopicFqnRegex)) {
+                return Either.left(new Error('Expected following topic name format: persistent://tenant/namespace/topic'))
+              }
+
+              const isMixesTopicsAndItsPartitions = topicFqns.concat([v]).some((topicFqn) => {
+                return topicFqns.some((maybePartition) => {
+                  return maybePartition.startsWith(`${topicFqn}-partition-`) && /\d+$/.test(maybePartition);
+                });
+              });
+
+              if (isMixesTopicsAndItsPartitions) {
+                return Either.left(new Error('You can\'t mix topics and its partitions.'));
+              }
+
+              return Either.right(undefined);
             }}
             shouldShowError={v => v !== ''}
           />

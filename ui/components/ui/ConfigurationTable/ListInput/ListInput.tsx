@@ -20,7 +20,7 @@ export type ListValue<T> = {
   editor?: Editor<T>;
   getId: (value: T) => Id;
   shouldShowError?: (value: T) => boolean;
-  validate?: (value: T) => Either.Either<Error, void>;
+  validate?: (value: T, list: T[]) => Either.Either<Error, void>;
   onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
   testId?: string;
@@ -43,7 +43,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
 
   let validationResult: Either.Either<Error, void> = Either.right(undefined);
   if (props.validate !== undefined) {
-    validationResult = typeof editorValue === 'undefined' ? Either.right(undefined) : props.validate(editorValue);
+    validationResult = typeof editorValue === 'undefined' ? Either.right(undefined) : props.validate(editorValue, props.value);
   }
 
   const add = () => {
