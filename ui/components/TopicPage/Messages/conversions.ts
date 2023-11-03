@@ -323,12 +323,14 @@ function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionS
 }
 
 export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.ConsumerSessionConfig {
+  const topicsSelectorPb = topicsSelectorToPb(config.topicsSelector);
   const startFromPb = startFromToPb(config.startFrom);
   const messageFilterChainPb = messageFilterChainToPb(config.messageFilterChain);
 
   const configPb = new pb.ConsumerSessionConfig();
   configPb.setStartFrom(startFromPb);
   configPb.setMessageFilterChain(messageFilterChainPb);
+  configPb.setTopicsSelector(topicsSelectorPb);
 
   return configPb;
 }

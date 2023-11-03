@@ -119,7 +119,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                   type: 'value',
                   value: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'date-time' },
-                    spec: { dateTime: dayjs(new Date()).subtract(1, 'day').toDate() }
+                    spec: { dateTime: new Date() }
                   }
                 };
                 onSpecChange({ startFrom: { type: 'dateTime', dateTime } });
@@ -132,7 +132,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'relative-date-time' },
                     spec: {
                       unit: 'hour',
-                      value: 24,
+                      value: 1,
                       isRoundedToUnitStart: false
                     }
                   }

@@ -14,7 +14,7 @@ import { swrKeys } from '../../../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
-import { divide, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { useNavigate } from 'react-router';
 import { useTimeout } from '@react-hook/timeout';
@@ -42,7 +42,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
-  const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(150000000);
+  const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(10_000);
   const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();

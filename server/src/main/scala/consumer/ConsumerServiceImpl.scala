@@ -148,7 +148,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
             val pulsarClient = RequestContext.pulsarClient.get()
             val adminClient = RequestContext.pulsarAdmin.get()
 
-            val topicsToConsume = request.topicsSelector match
+            val topicsToConsume = request.consumerSessionConfig.get.topicsSelector match
                 case Some(ts) =>
                     ts.topicsSelector.topicsSelectorByFqns match
                         case Some(bn) => bn.topicFqns.toVector

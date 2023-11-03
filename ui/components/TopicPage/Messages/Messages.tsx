@@ -213,12 +213,8 @@ const Session: React.FC<SessionProps> = (props) => {
         return;
       }
 
-      const topicsSelector = config.topicsSelector;
-
       const req = new CreateConsumerRequest();
-      let topicsSelectorPb = topicsSelectorToPb(topicsSelector);
 
-      req.setTopicsSelector(topicsSelectorPb)
       req.setConsumerName(consumerName.current);
       req.setStartPaused(true);
       req.setSubscriptionName(subscriptionName.current);

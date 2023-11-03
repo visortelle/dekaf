@@ -189,13 +189,13 @@ message ConsumerSessionPauseTriggerChain {
 }
 
 message ConsumerSessionConfig {
+  TopicsSelector topics_selector = 100;
   ConsumerSessionStartFrom start_from = 1;
   MessageFilterChain message_filter_chain = 2;
   ConsumerSessionPauseTriggerChain pause_trigger_chain = 3;
 }
 
 message CreateConsumerRequest {
-  TopicsSelector topics_selector = 100;
   optional string consumer_name = 1;
   optional string subscription_name = 2;
   optional int32 priority_level = 3;

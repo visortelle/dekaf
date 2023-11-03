@@ -79,7 +79,7 @@ def buildConsumer(
         case Some(v) => consumer.negativeAckRedeliveryDelay(v, MILLISECONDS)
         case _       => consumer
 
-    val topicsSelector = request.topicsSelector match
+    val topicsSelector = request.consumerSessionConfig.get.topicsSelector match
         case Some(v) => v.topicsSelector
         case _       => return Left("Topic selector shouldn't be empty")
 
