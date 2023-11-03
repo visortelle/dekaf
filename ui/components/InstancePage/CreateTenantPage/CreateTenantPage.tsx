@@ -66,7 +66,7 @@ const CreateTenantPage: React.FC = () => {
 
     await mutate(swrKeys.pulsar.tenants.listTenants._());
 
-    navigate(routes.instance.tenants._.get());
+    navigate(routes.tenants.tenant.overview._.get({ tenant: tenantName }));
   }
 
   const tenantNameInput = <Input value={tenantName} onChange={setTenantName} placeholder="tenant-1" testId="tenant-name" focusOnMount />;

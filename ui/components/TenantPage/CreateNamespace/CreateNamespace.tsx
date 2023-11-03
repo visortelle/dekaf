@@ -97,7 +97,7 @@ const CreateNamespace: React.FC<CreateNamespaceProps> = (props) => {
 
     await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: props.tenant }));
 
-    navigate(routes.tenants.tenant.namespaces._.get({ tenant: props.tenant }));
+    navigate(routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: namespaceName }));
   };
 
   const namespaceNameInput = (

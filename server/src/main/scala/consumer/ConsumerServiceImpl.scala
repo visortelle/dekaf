@@ -168,7 +168,12 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     return Future.successful(CreateConsumerResponse(status = Some(status)))
 
             val consumer = consumerBuilder.subscribe
-            handleStartFrom(startFrom = config.startFrom, consumer = consumer, adminClient = adminClient, topicFqn = topicsToConsume.head)
+            handleStartFrom(
+                startFrom = config.startFrom,
+                consumer = consumer,
+                adminClient = adminClient,
+                topicsToConsume = topicsToConsume
+            )
 
             val schemasByTopic = getSchemasByTopic(adminClient, topicsToConsume)
 

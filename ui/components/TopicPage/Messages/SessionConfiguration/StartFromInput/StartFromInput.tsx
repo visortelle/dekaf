@@ -28,8 +28,6 @@ type StartFromType = ConsumerSessionStartFrom['type'];
 const list: List<StartFromType> = [
   { type: 'item', title: 'Earliest message', value: 'earliestMessage' },
   { type: 'item', title: 'Latest message', value: 'latestMessage' },
-  { type: 'item', title: 'n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
-  { type: 'item', title: 'n-th message before Latest message', value: 'nthMessageBeforeLatest' },
   {
     type: 'item',
     title: 'Message with specific ID',
@@ -37,10 +35,11 @@ const list: List<StartFromType> = [
   },
   { type: 'item', title: 'Specific time', value: 'dateTime' },
   { type: 'item', title: 'Relative time ago', value: 'relativeDateTime' },
+  { type: 'item', title: 'Best effort n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
+  { type: 'item', title: 'Best effort n-th message before Latest message', value: 'nthMessageBeforeLatest' }
 ];
 
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {
-  const isHasPartitionedTopic = hasPartitionedTopic(props.topicsInternalStats);
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useUserManagedItemValue<UserManagedConsumerSessionStartFrom>(props.value);
@@ -60,6 +59,8 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
     const newValue: UserManagedConsumerSessionStartFromValueOrReference = { type: 'value', value: item };
     props.onChange(newValue);
   };
+
+  const worksBestWithNonPartitionedTopic = <div style={{ padding: '12rem', borderRadius: '8rem', marginTop: '8rem', background: 'var(--surface-color)'}}>Works best with non-partitioned topic.</div>;
 
   return (
     <div className={s.StartFromInput} ref={hoverRef}>
@@ -146,29 +147,31 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       </div>
       <div className={s.AdditionalControls}>
         {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
-          <Input
-            value={itemSpec.startFrom.n.toString()}
-            type='number'
-            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
-            inputProps={{ disabled: props.disabled, min: 0 }}
-            placeholder='n'
-          />
+          <>
+            <Input
+              value={itemSpec.startFrom.n.toString()}
+              type='number'
+              onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
+              inputProps={{ disabled: props.disabled, min: 0 }}
+              placeholder='n'
+            />
+            {worksBestWithNonPartitionedTopic}
+          </>
         )}
         {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
-          <Input
-            value={itemSpec.startFrom.n.toString()}
-            type='number'
-            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
-            inputProps={{ disabled: props.disabled, min: 0 }}
-            placeholder='n'
-          />
+          <>
+            <Input
+              value={itemSpec.startFrom.n.toString()}
+              type='number'
+              onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
+              inputProps={{ disabled: props.disabled, min: 0 }}
+              placeholder='n'
+            />
+            {worksBestWithNonPartitionedTopic}
+          </>
         )}
         {itemSpec.startFrom.type === 'messageId' && (
-          isHasPartitionedTopic ? (
-            <div style={{ color: 'var(--accent-color-red)', marginTop: '2rem' }}>
-              <strong>Can be only applied on non-partitioned topics or individual partitions.</strong>
-            </div>
-          ) : (
+          <>
             <Input
               value={itemSpec.startFrom.messageId.value?.spec.hexString || ''}
               placeholder="08 c3 03 10 cd 04 20 00 30 01"
@@ -187,7 +190,8 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 onSpecChange(newItemSpec);
               }}
             />
-          )
+            {worksBestWithNonPartitionedTopic}
+          </>
         )}
         {/* {props.value.spec.startFrom.type === 'dateTime' && (
           <DatetimePicker

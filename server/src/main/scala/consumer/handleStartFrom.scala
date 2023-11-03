@@ -5,21 +5,82 @@ import org.apache.pulsar.client.admin.PulsarAdmin
 import java.time.ZonedDateTime
 import org.apache.pulsar.client.api.Consumer
 import org.apache.pulsar.client.api.MessageId as PulsarMessageId
+import org.apache.pulsar.client.api.Message as PulsarMessage
+import _root_.topic.{getIsPartitionedTopic, TopicPartitioning}
+import scala.util.{Failure, Success, Try}
+import scala.jdk.CollectionConverters.*
 
-def handleStartFrom(startFrom: ConsumerSessionStartFrom, consumer: Consumer[Array[Byte]], adminClient: PulsarAdmin, topicFqn: String): Unit =
+def getPartitions(adminClient: PulsarAdmin, topicFqn: String): Vector[String] =
+    val tenant = topicFqn.split('/')(2)
+    val namespace = topicFqn.split('/')(3)
+    val namespaceFqn = s"$tenant/$namespace"
+    val partitions = adminClient.topics
+        .getList(namespaceFqn)
+        .asScala
+        .filter(partitionFqn => partitionFqn.matches(s"$topicFqn-partition-\\d+"))
+        .toVector
+    partitions
+
+def examineNonPartitionedTopicMessage(adminClient: PulsarAdmin, topicFqn: String, initialPosition: String, n: Long): Option[PulsarMessage[Array[Byte]]] =
+    Try(adminClient.topics.examineMessage(topicFqn, initialPosition, n)).toOption
+
+def examinePartitionedTopicMessage(adminClient: PulsarAdmin, topicFqn: String, initialPosition: String, n: Long): Option[PulsarMessage[Array[Byte]]] =
+    val partitions = getPartitions(adminClient, topicFqn)
+    partitions.flatMap(partitionFqn => examineNonPartitionedTopicMessage(adminClient, partitionFqn, initialPosition, n)) match
+        case Vector() => None
+        case candidates =>
+            initialPosition match
+                case "earliest" => Some(candidates.minBy(msg => msg.getPublishTime))
+                case "latest"   => Some(candidates.maxBy(msg => msg.getPublishTime))
+
+def findNthMessage(adminClient: PulsarAdmin, topicFqn: String, initialPosition: String, n: Long): Option[PulsarMessage[Array[Byte]]] =
+    getIsPartitionedTopic(adminClient, topicFqn) match
+        case TopicPartitioning.Partitioned =>
+            examinePartitionedTopicMessage(adminClient, topicFqn, initialPosition, n)
+        case TopicPartitioning.NonPartitioned =>
+            examineNonPartitionedTopicMessage(adminClient, topicFqn, initialPosition, n)
+
+def findNthMessageMultiTopic(adminClient: PulsarAdmin, topics: Vector[String], initialPosition: String, n: Long): Option[PulsarMessage[Array[Byte]]] =
+    topics.flatMap(topicFqn => findNthMessage(adminClient, topicFqn, initialPosition, n)) match
+        case Vector() => None
+        case messages =>
+            initialPosition match
+                case "earliest" => Some(messages.minBy(msg => msg.getPublishTime))
+                case "latest"   => Some(messages.maxBy(msg => msg.getPublishTime))
+
+def getIsSinglePartitionedTopic(adminClient: PulsarAdmin, topics: Vector[String]): Boolean =
+    topics.size == 1 && getIsPartitionedTopic(adminClient, topics.head) == TopicPartitioning.Partitioned
+
+def handleStartFrom(startFrom: ConsumerSessionStartFrom, consumer: Consumer[Array[Byte]], adminClient: PulsarAdmin, topicsToConsume: Vector[String]): Unit =
     consumer.resume()
 
     startFrom match
         case _: EarliestMessage =>
             consumer.seek(PulsarMessageId.earliest)
-        case _: LatestMessage   =>
+        case _: LatestMessage =>
             consumer.seek(PulsarMessageId.latest)
         case v: NthMessageAfterEarliest =>
-            val message = adminClient.topics.examineMessage(topicFqn, "earliest", v.n)
-            consumer.seek(message.getMessageId)
+            val n = v.n + 1
+            if getIsSinglePartitionedTopic(adminClient, topicsToConsume) then
+                findNthMessage(adminClient, topicsToConsume.head, "earliest", n) match
+                    case Some(message) => consumer.seek(message.getMessageId)
+                    case None          => consumer.seek(PulsarMessageId.latest)
+            else
+                findNthMessageMultiTopic(adminClient, topicsToConsume, "earliest", n) match
+                    case Some(message) => consumer.seek(message.getPublishTime)
+                    case None          => consumer.seek(PulsarMessageId.latest)
+
         case v: NthMessageBeforeLatest =>
-            val message = adminClient.topics.examineMessage(topicFqn, "latest", v.n + 1)
-            consumer.seek(message.getMessageId)
+            val n = v.n
+            if getIsSinglePartitionedTopic(adminClient, topicsToConsume) then
+                findNthMessage(adminClient, topicsToConsume.head, "latest", n) match
+                    case Some(message) => consumer.seek(message.getMessageId)
+                    case None => consumer.seek(PulsarMessageId.earliest)
+            else
+                findNthMessageMultiTopic(adminClient, topicsToConsume, "latest", n) match
+                    case Some(message) => consumer.seek(message.getPublishTime)
+                    case None => consumer.seek(PulsarMessageId.earliest)
+
         case v: MessageId =>
             val messageId = PulsarMessageId.fromByteArray(v.messageId)
             consumer.seek(messageId)

@@ -65,7 +65,6 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
           list={[
             { type: 'item', title: 'Current topic', value: 'current-topic' },
             { type: 'item', title: 'By topic names', value: 'by-fqns' },
-            { type: 'item', title: 'By regex', value: 'by-regex' },
           ]}
           onChange={(v) => {
             if (v === 'current-topic') {
