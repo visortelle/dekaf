@@ -21,12 +21,12 @@ def getTopicInternalStatsPb(pulsarAdmin: PulsarAdmin, topic: String): Either[Str
 enum TopicPartitioning:
     case Partitioned, NonPartitioned
 
-def getIsPartitionedTopic(pulsarAdmin: PulsarAdmin, topic: String): TopicPartitioning =
+def getIsPartitionedTopic(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPartitioning =
     // XXX - Pulsar admin .lookup() is truthy both for partitioned and non-partitioned topics.
     // Therefore, the order of lookups matters here.
     val isPartitioned =
         try {
-            pulsarAdmin.lookups().lookupPartitionedTopic(topic)
+            pulsarAdmin.lookups().lookupPartitionedTopic(topicFqn)
             true
         } catch {
             case _ => false
@@ -35,14 +35,14 @@ def getIsPartitionedTopic(pulsarAdmin: PulsarAdmin, topic: String): TopicPartiti
 
     val isNonPartitioned =
         try {
-            pulsarAdmin.lookups().lookupTopic(topic)
+            pulsarAdmin.lookups().lookupTopic(topicFqn)
             true
         } catch {
             case _ => false
         }
     if isNonPartitioned then return TopicPartitioning.NonPartitioned
 
-    throw new Exception(s"Topic \"${topic}\" not found")
+    throw new Exception(s"Topic \"${topicFqn}\" not found")
 
 def getNonPartitionedTopicInternalStats(pulsarAdmin: PulsarAdmin, topic: String): Either[String, PersistentTopicInternalStats] =
     try {

@@ -60,7 +60,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
     props.onChange(newValue);
   };
 
-  const worksBestWithNonPartitionedTopic = <div style={{ padding: '12rem', borderRadius: '8rem', marginTop: '8rem', background: 'var(--surface-color)'}}>Works best with non-partitioned topic.</div>;
+  const worksBestWithNonPartitionedTopic = <div style={{ padding: '12rem', borderRadius: '8rem', marginTop: '8rem', background: 'var(--surface-color)'}}>Works best with a single non-partitioned topic.</div>;
 
   return (
     <div className={s.StartFromInput} ref={hoverRef}>
@@ -96,11 +96,11 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 return;
               }
               case 'nthMessageAfterEarliest': {
-                onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: 100 } });
+                onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: 5 } });
                 return;
               }
               case 'nthMessageBeforeLatest': {
-                onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: 100 } });
+                onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: 5 } });
                 return;
               }
               case 'messageId': {

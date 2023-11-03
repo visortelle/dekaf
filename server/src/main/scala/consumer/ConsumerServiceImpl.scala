@@ -168,12 +168,18 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
                     return Future.successful(CreateConsumerResponse(status = Some(status)))
 
             val consumer = consumerBuilder.subscribe
-            handleStartFrom(
+
+            Try(handleStartFrom(
                 startFrom = config.startFrom,
                 consumer = consumer,
+                pulsarClient = pulsarClient,
                 adminClient = adminClient,
                 topicsToConsume = topicsToConsume
-            )
+            )) match
+                case Success(_) => // ok
+                case Failure(err) =>
+                    val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = err.getMessage)
+                    return Future.successful(CreateConsumerResponse(status = Some(status)))
 
             val schemasByTopic = getSchemasByTopic(adminClient, topicsToConsume)
 
