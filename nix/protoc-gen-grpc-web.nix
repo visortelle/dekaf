@@ -3,7 +3,7 @@
 let
   src_linux_arm64 = {
     url = "https://github.com/grpc/grpc-web/releases/download/1.4.2/protoc-gen-grpc-web-1.4.2-linux-aarch64";
-    sha256 = "";
+    sha256 = "2zseGChKFXsTYey3lQLl9GI6IS2vcYXxfjW9jiOQVaQ=";
   };
 
   src_linux_x86_64 = {
