@@ -12,13 +12,13 @@ import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowser
 import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
-import { UserManagedMessageFilter, UserManagedMessageFilterSpec, UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
-import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../../ui/LibraryBrowser/useUserManagedItemValue';
+import { ManagedMessageFilter, ManagedMessageFilterSpec, ManagedMessageFilterValOrRef } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 
 export type FilterEditorProps = {
-  value: UserManagedMessageFilterValueOrReference;
-  onChange: (value: UserManagedMessageFilterValueOrReference) => void;
+  value: ManagedMessageFilterValOrRef;
+  onChange: (value: ManagedMessageFilterValOrRef) => void;
   onDelete?: () => void;
   libraryContext: LibraryContext;
 };
@@ -29,21 +29,21 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
     defaultValue: 'basic-message-filter',
   });
 
-  const resolveResult = useUserManagedItemValue<UserManagedMessageFilter>(props.value);
+  const resolveResult = useManagedItemValue<ManagedMessageFilter>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} onDelete={props.onDelete} />
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} onDelete={props.onDelete} />
   }
 
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedMessageFilterSpec) => {
-    const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, value: { ...item, spec } };
+  const onSpecChange = (spec: ManagedMessageFilterSpec) => {
+    const newValue: ManagedMessageFilterValOrRef = { ...props.value, value: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: UserManagedMessageFilterValueOrReference = { type: 'value', value: item };
+    const newValue: ManagedMessageFilterValOrRef = { type: 'value', value: item };
     props.onChange(newValue);
   };
 
@@ -55,12 +55,12 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
         onPick={(item) => props.onChange({
           type: 'reference',
           reference: item.metadata.id,
-          value: item as UserManagedMessageFilter
+          value: item as ManagedMessageFilter
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
           reference: item.metadata.id,
-          value: item as UserManagedMessageFilter
+          value: item as ManagedMessageFilter
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}

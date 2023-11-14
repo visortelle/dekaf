@@ -8,15 +8,15 @@ import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
-import { UserManagedConsumerSessionConfig, UserManagedConsumerSessionSpec, UserManagedConsumerSessionConfigValueOrReference } from '../../../ui/LibraryBrowser/model/user-managed-items';
-import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../ui/LibraryBrowser/useUserManagedItemValue';
+import { ManagedConsumerSessionConfig, ManagedConsumerSessionSpec, ManagedConsumerSessionConfigValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
 import TopicsSelectorInput from './TopicsSelectorsInput/TopicsSelectorsInput';
 
 export type SessionConfigurationProps = {
-  value: UserManagedConsumerSessionConfigValueOrReference;
-  onChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
+  value: ManagedConsumerSessionConfigValOrRef;
+  onChange: (config: ManagedConsumerSessionConfigValOrRef) => void;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   libraryContext: LibraryContext;
 };
@@ -24,21 +24,21 @@ export type SessionConfigurationProps = {
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
-  const resolveResult = useUserManagedItemValue<UserManagedConsumerSessionConfig>(props.value);
+  const resolveResult = useManagedItemValue<ManagedConsumerSessionConfig>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedConsumerSessionSpec) => {
-    const newValue: UserManagedConsumerSessionConfigValueOrReference = { ...props.value, value: { ...item, spec } };
+  const onSpecChange = (spec: ManagedConsumerSessionSpec) => {
+    const newValue: ManagedConsumerSessionConfigValOrRef = { ...props.value, value: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: UserManagedConsumerSessionConfigValueOrReference = { type: 'value', value: item };
+    const newValue: ManagedConsumerSessionConfigValOrRef = { type: 'value', value: item };
     props.onChange(newValue);
   };
 
@@ -51,12 +51,12 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           onPick={(item) => props.onChange({
             type: 'reference',
             reference: item.metadata.id,
-            value: item as UserManagedConsumerSessionConfig
+            value: item as ManagedConsumerSessionConfig
           })}
           onSave={(item) => props.onChange({
             type: 'reference',
             reference: item.metadata.id,
-            value: item as UserManagedConsumerSessionConfig
+            value: item as ManagedConsumerSessionConfig
           })}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}

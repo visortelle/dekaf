@@ -6,7 +6,7 @@ import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterChainEditor';
-import { UserManagedConsumerSessionStartFrom, UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
+import { ManagedConsumerSessionStartFrom, ManagedMessageFilter, ManagedMessageFilterChain } from '../model/user-managed-items';
 import { LibraryContext } from '../model/library-context';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import NoData from '../../NoData/NoData';
@@ -31,7 +31,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
         <FilterEditor
           value={{
             type: 'value',
-            value: value.spec as UserManagedMessageFilter
+            value: value.spec as ManagedMessageFilter
           }}
           onChange={v => {
             if (v.type === 'reference') {
@@ -50,7 +50,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
         <FilterChainEditor
           value={{
             type: 'value',
-            value: value.spec as UserManagedMessageFilterChain
+            value: value.spec as ManagedMessageFilterChain
           }}
           onChange={v => {
             if (v.type === 'reference') {
@@ -70,7 +70,7 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
         <StartFromInput
           value={{
             type: 'value',
-            value: value.spec as UserManagedConsumerSessionStartFrom
+            value: value.spec as ManagedConsumerSessionStartFrom
           }}
           onChange={v => {
             if (v.type === 'reference') {

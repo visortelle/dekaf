@@ -13,7 +13,7 @@ case class LibraryItemMetadata(
 
 case class LibraryItem(
     metadata: LibraryItemMetadata,
-    spec: UserManagedItem
+    spec: ManagedItem
 )
 
 object LibraryItem:
@@ -29,7 +29,7 @@ type LibraryScanResultEntry = Either[Throwable, LibraryItem]
 type LibraryScanResults = Map[FileName, LibraryScanResultEntry]
 
 case class ListItemsFilter(
-    types: List[UserManagedItemType],
+    types: List[ManagedItemType],
     tags: List[TagName],
     contextFqns: List[String]
 )

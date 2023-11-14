@@ -8,16 +8,16 @@ import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/te
 import RelativeDateTimePicker from '../../../../ui/RelativeDateTimePicker/RelativeDateTimePicker';
 import { v4 as uuid } from 'uuid';
 import { useHover } from '../../../../app/hooks/use-hover';
-import { UserManagedConsumerSessionStartFrom, UserManagedConsumerSessionStartFromSpec, UserManagedConsumerSessionStartFromValueOrReference, UserManagedDateTimeValueOrReference, UserManagedMessageIdValueOrReference, UserManagedRelativeDateTimeValueOrReference } from '../../../../ui/LibraryBrowser/model/user-managed-items';
-import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../ui/LibraryBrowser/useUserManagedItemValue';
+import { ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromSpec, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import dayjs from 'dayjs';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import { clone } from 'lodash';
 
 export type StartFromInputProps = {
-  value: UserManagedConsumerSessionStartFromValueOrReference;
-  onChange: (value: UserManagedConsumerSessionStartFromValueOrReference) => void;
+  value: ManagedConsumerSessionStartFromValOrRef;
+  onChange: (value: ManagedConsumerSessionStartFromValOrRef) => void;
   libraryContext: LibraryContext;
   topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   disabled?: boolean;
@@ -35,28 +35,28 @@ const list: List<StartFromType> = [
   },
   { type: 'item', title: 'Specific time', value: 'dateTime' },
   { type: 'item', title: 'Relative time ago', value: 'relativeDateTime' },
-  { type: 'item', title: 'Best effort n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
-  { type: 'item', title: 'Best effort n-th message before Latest message', value: 'nthMessageBeforeLatest' }
+  { type: 'item', title: 'n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
+  { type: 'item', title: 'n-th message before Latest message', value: 'nthMessageBeforeLatest' }
 ];
 
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
-  const resolveResult = useUserManagedItemValue<UserManagedConsumerSessionStartFrom>(props.value);
+  const resolveResult = useManagedItemValue<ManagedConsumerSessionStartFrom>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedConsumerSessionStartFromSpec) => {
-    const newValue: UserManagedConsumerSessionStartFromValueOrReference = { ...props.value, value: { ...item, spec } };
+  const onSpecChange = (spec: ManagedConsumerSessionStartFromSpec) => {
+    const newValue: ManagedConsumerSessionStartFromValOrRef = { ...props.value, value: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: UserManagedConsumerSessionStartFromValueOrReference = { type: 'value', value: item };
+    const newValue: ManagedConsumerSessionStartFromValOrRef = { type: 'value', value: item };
     props.onChange(newValue);
   };
 
@@ -70,19 +70,19 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         onPick={(item) => props.onChange({
           type: 'reference',
           reference: item.metadata.id,
-          value: item as UserManagedConsumerSessionStartFrom
+          value: item as ManagedConsumerSessionStartFrom
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
           reference: item.metadata.id,
-          value: item as UserManagedConsumerSessionStartFrom
+          value: item as ManagedConsumerSessionStartFrom
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
       />
       <div className={s.TypeSelect}>
-        <Select<UserManagedConsumerSessionStartFromSpec['startFrom']['type']>
+        <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>
           list={list}
           value={itemSpec.startFrom.type}
           onChange={(v) => {
@@ -104,7 +104,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 return;
               }
               case 'messageId': {
-                const messageId: UserManagedMessageIdValueOrReference = {
+                const messageId: ManagedMessageIdValOrRef = {
                   type: 'value',
                   value: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'message-id' },
@@ -115,7 +115,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 return;
               };
               case 'dateTime': {
-                const dateTime: UserManagedDateTimeValueOrReference = {
+                const dateTime: ManagedDateTimeValOrRef = {
                   type: 'value',
                   value: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'date-time' },
@@ -126,7 +126,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 return;
               }
               case 'relativeDateTime': {
-                const relativeDateTime: UserManagedRelativeDateTimeValueOrReference = {
+                const relativeDateTime: ManagedRelativeDateTimeValOrRef = {
                   type: 'value',
                   value: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'relative-date-time' },

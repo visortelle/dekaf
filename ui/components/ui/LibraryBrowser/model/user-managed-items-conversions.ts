@@ -1,30 +1,30 @@
 import * as t from "./user-managed-items";
 import { MessageFilter, MessageFilterChain } from "../../../TopicPage/Messages/types";
 
-export function userManagedMessageFilterSpecToMessageFilter(v: t.UserManagedMessageFilterSpec): MessageFilter {
+export function managedMessageFilterSpecToMessageFilter(v: t.ManagedMessageFilterSpec): MessageFilter {
   return v;
 }
 
-export function userManagedMessageFilterSpecFromMessageFilter(v: MessageFilter): t.UserManagedMessageFilterSpec {
+export function managedMessageFilterSpecFromMessageFilter(v: MessageFilter): t.ManagedMessageFilterSpec {
   return v;
 }
 
-export function userManagedMessageFilterChainSpecToMessageFilterChain(v: t.UserManagedMessageFilterChainSpec): MessageFilterChain {
+export function managedMessageFilterChainSpecToMessageFilterChain(v: t.ManagedMessageFilterChainSpec): MessageFilterChain {
   return {
     isEnabled: v.isEnabled,
     isNegated: v.isNegated,
-    filters: v.filters.map(userManagedMessageFilterValueOrReferenceToMessageFilter),
+    filters: v.filters.map(managedMessageFilterValOrRefToMessageFilter),
     mode: v.mode,
   };
 }
 
-export function userManagedMessageFilterValueOrReferenceToMessageFilter(v: t.UserManagedMessageFilterValueOrReference): MessageFilter {
+export function managedMessageFilterValOrRefToMessageFilter(v: t.ManagedMessageFilterValOrRef): MessageFilter {
   switch (v.type) {
     case 'value':
-      return userManagedMessageFilterSpecToMessageFilter(v.value.spec);
+      return managedMessageFilterSpecToMessageFilter(v.value.spec);
     case 'reference':
       throw new Error(`MessageFilter isn't resolved: ${v}`);
     default:
-      throw new Error(`Unknown UserManagedMessageFilterValueOrReference: ${v}`);
+      throw new Error(`Unknown ManagedMessageFilterValOrRef: ${v}`);
   }
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { v4 as uuid } from 'uuid';
 import Select from '../../../../ui/Select/Select';
 import * as t from '../../types';
-import { UserManagedItemMetadata, UserManagedMessageFilter, UserManagedMessageFilterChain, UserManagedMessageFilterChainSpec, UserManagedMessageFilterChainValueOrReference } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import FilterEditor from './FilterEditor/FilterEditor';
 
 import s from './FilterChainEditor.module.css';
@@ -13,13 +13,13 @@ import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
-import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../ui/LibraryBrowser/useUserManagedItemValue';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import AddButton from '../../../../ui/AddButton/AddButton';
 
 export type FilterChainEditorProps = {
-  value: UserManagedMessageFilterChainValueOrReference;
-  onChange: (value: UserManagedMessageFilterChainValueOrReference) => void;
+  value: ManagedMessageFilterChainValOrRef;
+  onChange: (value: ManagedMessageFilterChainValOrRef) => void;
   libraryContext: LibraryContext;
   appearance?: 'default' | 'compact';
 };
@@ -30,22 +30,22 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
     defaultValue: 'basic-message-filter',
   });
 
-  const resolveResult = useUserManagedItemValue<UserManagedMessageFilterChain>(props.value);
+  const resolveResult = useManagedItemValue<ManagedMessageFilterChain>(props.value);
 
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedMessageFilterChainSpec) => {
-    const newValue: UserManagedMessageFilterChainValueOrReference = { ...props.value, value: { ...item, spec } };
+  const onSpecChange = (spec: ManagedMessageFilterChainSpec) => {
+    const newValue: ManagedMessageFilterChainValOrRef = { ...props.value, value: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: UserManagedMessageFilterChainValueOrReference = { type: 'value', value: item };
+    const newValue: ManagedMessageFilterChainValOrRef = { type: 'value', value: item };
     props.onChange(newValue);
   };
 
@@ -58,12 +58,12 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
           onPick={(item) => props.onChange({
             type: 'reference',
             reference: item.metadata.id,
-            value: item as UserManagedMessageFilterChain
+            value: item as ManagedMessageFilterChain
           })}
           onSave={(item) => props.onChange({
             type: 'reference',
             reference: item.metadata.id,
-            value: item as UserManagedMessageFilterChain
+            value: item as ManagedMessageFilterChain
           })}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
@@ -71,12 +71,12 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
         />
         <div
           style={{
-              marginBottom: '12rem',
-              display: 'flex',
-              alignItems: props.appearance ? 'unset' : 'center',
-              gap: '8rem',
-              paddingTop: props.appearance === 'compact' ? '8rem' : '0',
-              flexDirection: props.appearance === 'compact' ? 'column' : 'row',
+            marginBottom: '12rem',
+            display: 'flex',
+            alignItems: props.appearance ? 'unset' : 'center',
+            gap: '8rem',
+            paddingTop: props.appearance === 'compact' ? '8rem' : '0',
+            flexDirection: props.appearance === 'compact' ? 'column' : 'row',
           }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Toggle
@@ -143,14 +143,14 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
       <div className={`${s.Buttons}`}>
         <AddButton
           onClick={() => {
-            const metadata: UserManagedItemMetadata = {
+            const metadata: ManagedItemMetadata = {
               id: uuid(),
               name: '',
               descriptionMarkdown: '',
               type: 'message-filter'
             };
 
-            let newFilter: UserManagedMessageFilter;
+            let newFilter: ManagedMessageFilter;
 
             switch (defaultMessageFilterType) {
               case 'basic-message-filter':

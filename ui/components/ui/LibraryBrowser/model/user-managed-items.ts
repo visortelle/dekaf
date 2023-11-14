@@ -1,6 +1,6 @@
 import { TopicsSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode, TopicsSelectorByRegex } from "../../../TopicPage/Messages/types";
 
-export type ValueOrReference<ValueT> = {
+export type ValOrRef<ValueT> = {
   type: 'value',
   value: ValueT
 } | {
@@ -14,7 +14,7 @@ export type ValueOrReference<ValueT> = {
   value?: ValueT
 };
 
-export type UserManagedItemType =
+export type ManagedItemType =
   "consumer-session-config" |
   "consumer-session-pause-trigger" |
   "consumer-session-start-from" |
@@ -26,90 +26,90 @@ export type UserManagedItemType =
   "relative-date-time" |
   "topics-selector";
 
-export type UserManagedItemMetadata = {
-  type: UserManagedItemType,
+export type ManagedItemMetadata = {
+  type: ManagedItemType,
   id: string,
   name: string,
   descriptionMarkdown: string,
 };
 
-export type UserManagedMessageFilterSpec = MessageFilter;
+export type ManagedMessageFilterSpec = MessageFilter;
 
-export type UserManagedMessageFilter = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedMessageFilterSpec,
+export type ManagedMessageFilter = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMessageFilterSpec,
 };
 
-export type UserManagedMessageFilterValueOrReference = ValueOrReference<UserManagedMessageFilter>;
+export type ManagedMessageFilterValOrRef = ValOrRef<ManagedMessageFilter>;
 
-export type UserManagedMessageFilterChainSpec = {
+export type ManagedMessageFilterChainSpec = {
   isEnabled: boolean,
   isNegated: boolean,
-  filters: UserManagedMessageFilterValueOrReference[],
+  filters: ManagedMessageFilterValOrRef[],
   mode: MessageFilterChainMode
 };
 
-export type UserManagedMessageFilterChain = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedMessageFilterChainSpec,
+export type ManagedMessageFilterChain = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMessageFilterChainSpec,
 };
 
-export type UserManagedMessageFilterChainValueOrReference = ValueOrReference<UserManagedMessageFilterChain>;
+export type ManagedMessageFilterChainValOrRef = ValOrRef<ManagedMessageFilterChain>;
 
-export type UserManagedConsumerSessionTopicSelectorSpec = TopicsSelector;
+export type ManagedConsumerSessionTopicSelectorSpec = TopicsSelector;
 
-export type UserManagedConsumerSessionTopicSelector = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedConsumerSessionTopicSelectorSpec,
+export type ManagedConsumerSessionTopicSelector = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionTopicSelectorSpec,
 };
 
-export type UserManagedMessageIdSpec = {
+export type ManagedMessageIdSpec = {
   hexString: string
 };
-export type UserManagedMessageId = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedMessageIdSpec,
+export type ManagedMessageId = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMessageIdSpec,
 }
-export type UserManagedMessageIdValueOrReference = ValueOrReference<UserManagedMessageId>;
+export type ManagedMessageIdValOrRef = ValOrRef<ManagedMessageId>;
 
-export type UserManagedDateTimeSpec = {
+export type ManagedDateTimeSpec = {
   dateTime: Date
 };
-export type UserManagedDateTime = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedDateTimeSpec,
+export type ManagedDateTime = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedDateTimeSpec,
 }
-export type UserManagedDateTimeValueOrReference = ValueOrReference<UserManagedDateTime>;
+export type ManagedDateTimeValOrRef = ValOrRef<ManagedDateTime>;
 
-export type UserManagedRelativeDateTimeSpec = {
+export type ManagedRelativeDateTimeSpec = {
   value: number,
   unit: DateTimeUnit,
   isRoundedToUnitStart: boolean,
 };
-export type UserManagedRelativeDateTime = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedRelativeDateTimeSpec,
+export type ManagedRelativeDateTime = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedRelativeDateTimeSpec,
 }
-export type UserManagedRelativeDateTimeValueOrReference = ValueOrReference<UserManagedRelativeDateTime>;
+export type ManagedRelativeDateTimeValOrRef = ValOrRef<ManagedRelativeDateTime>;
 
 export type StartFromEarliestMessage = { type: 'earliestMessage' };
 export type StartFromLatestMessage = { type: 'latestMessage' };
 export type StartFromNthMessageAfterEarliest = { type: 'nthMessageAfterEarliest', n: number };
 export type StartFromNthMessageBeforeLatest = { type: 'nthMessageBeforeLatest', n: number };
-export type StartFromMessageId = { type: 'messageId', messageId: UserManagedMessageIdValueOrReference };
-export type StartFromDateTime = { type: 'dateTime', dateTime: UserManagedDateTimeValueOrReference };
-export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: UserManagedRelativeDateTimeValueOrReference };
+export type StartFromMessageId = { type: 'messageId', messageId: ManagedMessageIdValOrRef };
+export type StartFromDateTime = { type: 'dateTime', dateTime: ManagedDateTimeValOrRef };
+export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: ManagedRelativeDateTimeValOrRef };
 
-export type UserManagedConsumerSessionStartFromSpec = {
+export type ManagedConsumerSessionStartFromSpec = {
   startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromNthMessageAfterEarliest | StartFromNthMessageBeforeLatest | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
 };
-export type UserManagedConsumerSessionStartFrom = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedConsumerSessionStartFromSpec,
+export type ManagedConsumerSessionStartFrom = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionStartFromSpec,
 };
-export type UserManagedConsumerSessionStartFromValueOrReference = ValueOrReference<UserManagedConsumerSessionStartFrom>;
+export type ManagedConsumerSessionStartFromValOrRef = ValOrRef<ManagedConsumerSessionStartFrom>;
 
-export type UserManagedConsumerSessionTopicSelectorValueOrReference = ValueOrReference<UserManagedConsumerSessionTopicSelector>;
+export type ManagedConsumerSessionTopicSelectorValOrRef = ValOrRef<ManagedConsumerSessionTopicSelector>;
 
 export type TopicsSelectorCurrentTopic = { type: "current-topic" };
 
@@ -119,28 +119,28 @@ export type TopicsSelectorByFqns = {
   isConvertPartitionedTopicToItsPartitions: boolean,
 };
 
-export type UserManagedTopicsSelectorSpec = {
+export type ManagedTopicsSelectorSpec = {
   topicsSelector: TopicsSelectorCurrentTopic | TopicsSelectorByFqns | TopicsSelectorByRegex,
 };
 
-export type UserManagedTopicsSelector = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedTopicsSelectorSpec,
+export type ManagedTopicsSelector = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedTopicsSelectorSpec,
 };
 
-export type UserManagedTopicsSelectorValueOrReference = ValueOrReference<UserManagedTopicsSelector>;
+export type ManagedTopicsSelectorValOrRef = ValOrRef<ManagedTopicsSelector>;
 
-export type UserManagedConsumerSessionSpec = {
-  messageFilterChain: UserManagedMessageFilterChainValueOrReference,
-  topicsSelectors: UserManagedTopicsSelectorValueOrReference[],
-  startFrom: UserManagedConsumerSessionStartFromValueOrReference,
+export type ManagedConsumerSessionSpec = {
+  messageFilterChain: ManagedMessageFilterChainValOrRef,
+  topicsSelectors: ManagedTopicsSelectorValOrRef[],
+  startFrom: ManagedConsumerSessionStartFromValOrRef,
 };
 
-export type UserManagedConsumerSessionConfig = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedConsumerSessionSpec,
+export type ManagedConsumerSessionConfig = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionSpec,
 };
 
-export type UserManagedConsumerSessionConfigValueOrReference = ValueOrReference<UserManagedConsumerSessionConfig>;
+export type ManagedConsumerSessionConfigValOrRef = ValOrRef<ManagedConsumerSessionConfig>;
 
-export type UserManagedItem = UserManagedMessageFilter | UserManagedMessageFilterChain | UserManagedConsumerSessionStartFrom | UserManagedTopicsSelector;
+export type ManagedItem = ManagedMessageFilter | ManagedMessageFilterChain | ManagedConsumerSessionStartFrom | ManagedTopicsSelector;

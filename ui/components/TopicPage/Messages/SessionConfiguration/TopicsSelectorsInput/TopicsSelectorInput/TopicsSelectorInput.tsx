@@ -1,9 +1,9 @@
 import React from 'react';
 import s from './TopicsSelectorInput.module.css'
-import { UserManagedTopicsSelector, UserManagedTopicsSelectorSpec, UserManagedTopicsSelectorValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedTopicsSelector, ManagedTopicsSelectorSpec, ManagedTopicsSelectorValOrRef } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 import { useHover } from '../../../../../app/hooks/use-hover';
-import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../../ui/LibraryBrowser/useUserManagedItemValue';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../ui/LibraryBrowser/useManagedItemValue';
 import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import Select from '../../../../../ui/Select/Select';
 import ListInput from '../../../../../ui/ConfigurationTable/ListInput/ListInput';
@@ -13,8 +13,8 @@ import * as Either from 'fp-ts/Either';
 import { RegexSubMode } from '../../../types';
 
 export type TopicsSelectorInputProps = {
-  value: UserManagedTopicsSelectorValueOrReference;
-  onChange: (value: UserManagedTopicsSelectorValueOrReference) => void;
+  value: ManagedTopicsSelectorValOrRef;
+  onChange: (value: ManagedTopicsSelectorValOrRef) => void;
   onDelete?: () => void;
   libraryContext: LibraryContext;
 };
@@ -22,21 +22,21 @@ export type TopicsSelectorInputProps = {
 const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
-  const resolveResult = useUserManagedItemValue<UserManagedTopicsSelector>(props.value);
+  const resolveResult = useManagedItemValue<ManagedTopicsSelector>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedTopicsSelectorSpec) => {
-    const newValue: UserManagedTopicsSelectorValueOrReference = { ...props.value, value: { ...item, spec } };
+  const onSpecChange = (spec: ManagedTopicsSelectorSpec) => {
+    const newValue: ManagedTopicsSelectorValOrRef = { ...props.value, value: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: UserManagedTopicsSelectorValueOrReference = { type: 'value', value: item };
+    const newValue: ManagedTopicsSelectorValOrRef = { type: 'value', value: item };
     props.onChange(newValue);
   };
 
@@ -48,12 +48,12 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         onPick={(item) => props.onChange({
           type: 'reference',
           reference: item.metadata.id,
-          value: item as UserManagedTopicsSelector
+          value: item as ManagedTopicsSelector
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
           reference: item.metadata.id,
-          value: item as UserManagedTopicsSelector
+          value: item as ManagedTopicsSelector
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
@@ -61,7 +61,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
       />
 
       <FormItem>
-        <Select<UserManagedTopicsSelectorSpec['topicsSelector']['type']>
+        <Select<ManagedTopicsSelectorSpec['topicsSelector']['type']>
           list={[
             { type: 'item', title: 'Current topic', value: 'current-topic' },
             { type: 'item', title: 'By topic names', value: 'by-fqns' },
@@ -135,7 +135,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
 
               const pulsarTopicFqnRegex = /^(persistent|non-persistent):\/\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)$/;
 
-              if(!v.match(pulsarTopicFqnRegex)) {
+              if (!v.match(pulsarTopicFqnRegex)) {
                 return Either.left(new Error('Expected following topic name format: persistent://tenant/namespace/topic'))
               }
 

@@ -4,12 +4,12 @@ import SmallButton from '../../../../SmallButton/SmallButton';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../modals';
 import pickIcon from './pick.svg';
-import { UserManagedItem, UserManagedItemType } from '../../../model/user-managed-items';
+import { ManagedItem, ManagedItemType } from '../../../model/user-managed-items';
 import { LibraryContext } from '../../../model/library-context';
 
 export type LibraryBrowserPickButtonProps = {
-  itemType: UserManagedItemType;
-  onPick: (item: UserManagedItem) => void;
+  itemType: ManagedItemType;
+  onPick: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
 };
 

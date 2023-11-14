@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
-import { UserManagedItem, UserManagedItemType } from '../model/user-managed-items';
+import { ManagedItem, ManagedItemType } from '../model/user-managed-items';
 import { H3 } from '../../H/H';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
@@ -14,10 +14,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import * as Notifications from '../../../app/contexts/Notifications';
 
 export type LibraryBrowserPanelProps = {
-  itemType: UserManagedItemType;
-  itemToSave: UserManagedItem | undefined;
-  onPick: (item: UserManagedItem) => void;
-  onSave: (item: UserManagedItem) => void;
+  itemType: ManagedItemType;
+  itemToSave: ManagedItem | undefined;
+  onPick: (item: ManagedItem) => void;
+  onSave: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
   isForceShowButtons?: boolean;
   managedItemReference?: {

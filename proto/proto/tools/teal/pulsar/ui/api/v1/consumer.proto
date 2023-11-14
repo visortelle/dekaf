@@ -63,22 +63,6 @@ enum RegexSubscriptionMode {
   REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
 }
 
-message TopicsSelectorByFqns {
-  repeated string topic_fqns = 1;
-}
-
-message TopicsSelectorByRegex {
-  string pattern = 2;
-  RegexSubscriptionMode regex_subscription_mode = 3;
-}
-
-message TopicsSelector {
-  oneof topics_selector {
-    TopicsSelectorByFqns topics_selector_by_fqns = 1;
-    TopicsSelectorByRegex topics_selector_by_regex = 2;
-  }
-}
-
 enum DateTimeUnit {
   DATE_TIME_UNIT_UNSPECIFIED = 0;
   DATE_TIME_UNIT_YEAR = 1;
@@ -147,7 +131,7 @@ message ConsumerSessionEventMessageDecodeFailed {
   int64 fail_count = 1;
 }
 
-message ConsumerSessionEventTimeElapsedMs {
+message ConsumerSessionEventTimeElapsed {
   int64 time_elapsed_ms = 1;
 }
 
@@ -159,21 +143,16 @@ message ConsumerSessionEventMessageId {
   MessageId message_id = 1;
 }
 
-message ConsumerSessionEventMessageFilterChainPassed {
-  MessageFilterChain message_filter_chain = 1;
-}
-
 message ConsumerSessionEvent {
   oneof event {
     ConsumerSessionEventMessagesProcessed event_messages_processed = 1;
     ConsumerSessionEventMessagesDelivered event_messages_delivered = 2;
     ConsumerSessionEventBytesProcessed event_bytes_processed = 3;
     ConsumerSessionEventBytesDelivered event_bytes_delivered = 4;
-    ConsumerSessionEventMessageDecodeFailed event_message_decoding_failed = 5;
-    ConsumerSessionEventTimeElapsedMs event_time_elapsed_ms = 6;
+    ConsumerSessionEventMessageDecodeFailed event_message_decode_failed = 5;
+    ConsumerSessionEventTimeElapsed event_time_elapsed = 6;
     ConsumerSessionEventTopicEndReached event_topic_end_reached = 7;
     ConsumerSessionEventUnexpectedErrorOccurred event_unexpected_error_occurred = 8;
-    ConsumerSessionEventMessageFilterChainPassed event_message_filter_chain_passed = 10;
   }
 }
 
@@ -188,26 +167,49 @@ message ConsumerSessionPauseTriggerChain {
   ConsumerSessionPauseTriggerChainMode mode = 2;
 }
 
-message ConsumerSessionConfig {
-  TopicsSelector topics_selector = 100;
-  ConsumerSessionStartFrom start_from = 1;
+message ColoringRule {
+  MessageFilterChain message_filter_chain = 1;
+  string foreground_color = 2;
+  string background_color = 3;
+}
+
+message ColoringRuleChain {
+  repeated ColoringRule coloring_rules = 1;
+}
+
+message SingleTopicSelector {
+  string topic_fqn = 1;
+}
+
+message NamespacedRegexTopicSelector {
+  string namespace_fqn = 1;
+  string pattern = 2;
+}
+
+message TopicSelector {
+  oneof topic_selector {
+    SingleTopicSelector single_topic_selector = 1;
+    NamespacedRegexTopicSelector namespaced_regex_topic_selector = 2;
+  }
+}
+
+message ConsumerSessionTopic {
+  TopicSelector topic_selector = 1;
   MessageFilterChain message_filter_chain = 2;
-  ConsumerSessionPauseTriggerChain pause_trigger_chain = 3;
+  ColoringRuleChain coloring_rule_chain = 3;
+}
+
+message ConsumerSessionConfig {
+  ConsumerSessionStartFrom start_from = 1;
+  repeated ConsumerSessionTopic topics = 2;
+  MessageFilterChain message_filter_chain = 3;
+  ConsumerSessionPauseTriggerChain pause_trigger_chain = 4;
+  ColoringRuleChain coloring_rule_chain = 5;
 }
 
 message CreateConsumerRequest {
-  optional string consumer_name = 1;
-  optional string subscription_name = 2;
-  optional int32 priority_level = 3;
-  optional bool start_paused = 4;
-  optional SubscriptionMode subscription_mode = 5;
-  optional SubscriptionType subscription_type = 6;
-  optional int64 ack_timeout_ms = 8;
-  optional int64 ack_timeout_tick_time_ms = 9;
-  optional int64 expire_time_of_incomplete_chunked_message_ms = 10;
-  optional int64 acknowledgment_group_time_ms = 11;
-  optional int64 negative_ack_redelivery_delay_ms = 12;
-  ConsumerSessionConfig consumer_session_config = 13;
+  string consumer_name = 1;
+  ConsumerSessionConfig consumer_session_config = 2;
 }
 
 message CreateConsumerResponse {
@@ -231,9 +233,9 @@ message BasicMessageFilter {}
 message MessageFilter {
   bool is_enabled = 10;
   bool is_negated = 11;
-  oneof value {
-    JsMessageFilter js = 1;
-    BasicMessageFilter basic = 2;
+  oneof filter {
+    JsMessageFilter filter_js = 1;
+    BasicMessageFilter filter_basic = 2;
   }
 }
 

@@ -39,16 +39,16 @@ import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { UserManagedConsumerSessionConfigValueOrReference } from '../../ui/LibraryBrowser/model/user-managed-items';
-import { consumerSessionConfigFromValueOrReference } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
+import { ManagedConsumerSessionConfigValOrRef } from '../../ui/LibraryBrowser/model/user-managed-items';
+import { consumerSessionConfigFromValOrRef } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
 export type SessionProps = {
   sessionKey: number;
-  configValueOrReference: UserManagedConsumerSessionConfigValueOrReference;
-  onConfigValueOrReferenceChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
+  configValOrRef: ManagedConsumerSessionConfigValOrRef;
+  onConfigValOrRefChange: (config: ManagedConsumerSessionConfigValOrRef) => void;
   onStopSession: () => void;
   isShowConsole: boolean;
   onSetIsShowConsole: (v: boolean) => void;
@@ -87,12 +87,12 @@ const Session: React.FC<SessionProps> = (props) => {
     try {
       const currentTopic = props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined;
       const currentTopicFqn: string | undefined = currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`;
-      return consumerSessionConfigFromValueOrReference(props.configValueOrReference, currentTopicFqn);
+      return consumerSessionConfigFromValOrRef(props.configValOrRef, currentTopicFqn);
     } catch (err) {
       console.warn(err);
       return undefined;
     }
-  }, [props.configValueOrReference]);
+  }, [props.configValOrRef]);
 
   const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
     swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
@@ -318,7 +318,7 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState && prevSessionState === undefined) {
       console.info(`%c--------------------`, consoleCss);
       console.info(`%cStarting new consumer session: ${props.sessionKey}`, consoleCss);
-      console.info('%cSession config: %o', consoleCss, props.configValueOrReference);
+      console.info('%cSession config: %o', consoleCss, props.configValOrRef);
       console.info('%cConsumer name:', consoleCss, consumerName.current);
       console.info('%cSubscription name:', consoleCss, subscriptionName.current);
     }
@@ -452,8 +452,8 @@ const Session: React.FC<SessionProps> = (props) => {
       {currentView === 'configuration' && (
         <div className={s.SessionConfiguration}>
           <SessionConfiguration
-            value={props.configValueOrReference}
-            onChange={props.onConfigValueOrReferenceChange}
+            value={props.configValOrRef}
+            onChange={props.onConfigValOrRefChange}
             topicsInternalStats={topicsInternalStats}
             libraryContext={props.libraryContext}
           />
@@ -477,12 +477,12 @@ const Session: React.FC<SessionProps> = (props) => {
 }
 
 type SessionControllerProps = {
-  initialConfig: UserManagedConsumerSessionConfigValueOrReference;
+  initialConfig: ManagedConsumerSessionConfigValOrRef;
   libraryContext: LibraryContext;
 };
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
-  const [config, setConfig] = useState<UserManagedConsumerSessionConfigValueOrReference>(props.initialConfig);
+  const [config, setConfig] = useState<ManagedConsumerSessionConfigValOrRef>(props.initialConfig);
   const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
   return (
@@ -493,8 +493,8 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       onSetIsShowConsole={() => setIsShowConsole(!isShowConsole)}
       {...props}
       onStopSession={() => setSessionKey(n => n + 1)}
-      configValueOrReference={config}
-      onConfigValueOrReferenceChange={setConfig}
+      configValOrRef={config}
+      onConfigValOrRefChange={setConfig}
       libraryContext={props.libraryContext}
     />
   );

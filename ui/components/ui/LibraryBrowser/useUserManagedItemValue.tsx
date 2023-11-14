@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ValueOrReference } from "./model/user-managed-items";
+import { ValOrRef } from "./model/user-managed-items";
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -8,7 +8,7 @@ import { libraryItemFromPb } from "./model/library-conversions";
 import NothingToShow from "../NothingToShow/NothingToShow";
 import SmallButton from "../SmallButton/SmallButton";
 
-export type UseUserManagedItemValue<ValueT> = {
+export type UseManagedItemValue<ValueT> = {
   type: 'success',
   value: ValueT
 } | {
@@ -18,10 +18,10 @@ export type UseUserManagedItemValue<ValueT> = {
   reason?: string
 };
 
-export function useUserManagedItemValue<ValueT>(valOrRef: ValueOrReference<ValueT>): UseUserManagedItemValue<ValueT> {
+export function useManagedItemValue<ValueT>(valOrRef: ValOrRef<ValueT>): UseManagedItemValue<ValueT> {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const [fetchedItem, setFetchedItem] = useState<UseUserManagedItemValue<ValueT>>({ type: 'pending' });
+  const [fetchedItem, setFetchedItem] = useState<UseManagedItemValue<ValueT>>({ type: 'pending' });
 
   const fetchItem = async (itemId: string) => {
     const req = new pb.GetLibraryItemRequest();
@@ -58,13 +58,13 @@ export function useUserManagedItemValue<ValueT>(valOrRef: ValueOrReference<Value
   return fetchedItem;
 }
 
-export type UseUserManagedItemValueSpinnerProps = {
-  item: ValueOrReference<any>;
-  result: UseUserManagedItemValue<any>;
+export type UseManagedItemValueSpinnerProps = {
+  item: ValOrRef<any>;
+  result: UseManagedItemValue<any>;
   onDelete?: () => void;
   onReset?: () => void;
 };
-export const UseUserManagedItemValueSpinner: React.FC<UseUserManagedItemValueSpinnerProps> = (props) => {
+export const UseManagedItemValueSpinner: React.FC<UseManagedItemValueSpinnerProps> = (props) => {
   if (props.result.type === 'failure') {
     return (
       <NothingToShow

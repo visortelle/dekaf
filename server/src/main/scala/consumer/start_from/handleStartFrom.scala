@@ -5,6 +5,7 @@ import org.apache.pulsar.client.admin.PulsarAdmin
 import java.time.ZonedDateTime
 import org.apache.pulsar.client.api.{Consumer, Message as PulsarMessage, MessageId as PulsarMessageId, PulsarClient}
 import _root_.topic.{getIsPartitionedTopic, TopicPartitioning}
+import _root_.consumer.start_from.{ConsumerSessionStartFrom, EarliestMessage, LatestMessage, MessageId, DateTime, RelativeDateTime, NthMessageAfterEarliest, NthMessageBeforeLatest, DateTimeUnit}
 
 import scala.util.{Failure, Success, Try}
 import scala.jdk.CollectionConverters.*

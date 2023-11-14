@@ -1,17 +1,17 @@
 import React from 'react';
 import s from './TopicsSelectorsInput.module.css'
-import { UserManagedTopicsSelector, UserManagedTopicsSelectorSpec, UserManagedTopicsSelectorValueOrReference } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedTopicsSelector, ManagedTopicsSelectorSpec, ManagedTopicsSelectorValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import { useHover } from '../../../../app/hooks/use-hover';
-import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../ui/LibraryBrowser/useUserManagedItemValue';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { TopicsSelector } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import TopicsSelectorInput from './TopicsSelectorInput/TopicsSelectorInput';
 import { clone } from 'lodash';
 
 export type TopicsSelectorsInputProps = {
-  value: UserManagedTopicsSelectorValueOrReference[];
-  onChange: (value: UserManagedTopicsSelectorValueOrReference[]) => void;
+  value: ManagedTopicsSelectorValOrRef[];
+  onChange: (value: ManagedTopicsSelectorValOrRef[]) => void;
   libraryContext: LibraryContext;
 };
 

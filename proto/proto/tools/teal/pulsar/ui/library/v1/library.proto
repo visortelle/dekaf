@@ -4,7 +4,7 @@ package tools.teal.pulsar.ui.library.v1;
 
 import "google/rpc/status.proto";
 import "tools/teal/pulsar/ui/library/v1/resource_matchers.proto";
-import "tools/teal/pulsar/ui/library/v1/user_managed_items.proto";
+import "tools/teal/pulsar/ui/library/v1/managed_items.proto";
 
 message LibraryItemMetadata {
   string updated_at = 4;
@@ -14,7 +14,7 @@ message LibraryItemMetadata {
 
 message LibraryItem {
   LibraryItemMetadata metadata = 1;
-  UserManagedItem spec = 2;
+  ManagedItem spec = 2;
 }
 
 message DeleteLibraryItemRequest {
@@ -43,14 +43,14 @@ message GetLibraryItemResponse {
 }
 
 message ListLibraryItemsRequest {
-  repeated UserManagedItemType types = 1;
+  repeated ManagedItemType types = 1;
   repeated string context_fqns = 2;
   repeated string tags = 3;
 }
 
 message ListLibraryItemsResponse {
   google.rpc.Status status = 1;
-  repeated LibraryItem items = 2; // resource spec is ommited in response to reduce it's size
+  repeated LibraryItem items = 2; // resource spec is omitted in response to reduce it's size
 }
 
 service LibraryService {

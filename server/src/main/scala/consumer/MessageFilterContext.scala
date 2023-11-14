@@ -8,6 +8,7 @@ import io.circe.syntax.*
 import io.circe.generic.auto.*
 
 import _root_.config.readConfigAsync
+import _root_.consumer.message_filter.{BasicMessageFilter, JsMessageFilter, MessageFilter, MessageFilterChain, MessageFilterChainMode}
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
 
