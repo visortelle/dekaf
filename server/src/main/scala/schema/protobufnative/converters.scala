@@ -5,6 +5,7 @@ import com.google.protobuf.util.JsonFormat
 import com.google.protobuf.Descriptors.Descriptor
 import com.google.protobuf.{DescriptorProtos, DynamicMessage, Struct}
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
+import schema.utils.JsonSchema
 
 import scala.jdk.CollectionConverters.*
 
@@ -45,7 +46,5 @@ object converters extends JsonSerDe[Proto3Datum]:
             case err: Throwable => Left(err)
         }
 
-    def protobufToJsonSchema(schema: Array[Byte]): Either[Throwable, String] =
-        compiler.compileProtobufNativeToJsonSchema(schema) match
-            case Left(value) => Left(value)
-            case Right(value) => Right(value)
+    def protobufToJsonSchema(schema: Array[Byte]): Either[Throwable, JsonSchema] =
+        compiler.compileProtobufNativeToJsonSchema(schema)

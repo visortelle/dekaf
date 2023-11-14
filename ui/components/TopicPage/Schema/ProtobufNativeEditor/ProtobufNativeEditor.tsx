@@ -4,7 +4,12 @@ import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import uploadIcon from './upload.svg';
 import Select from '../../../ui/Select/Select';
-import { CompileProtobufNativeRequest, CompileProtobufNativeResponse, FileEntry as FileEntryPb } from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
+import {
+  CompileProtobufNativeRequest,
+  CompileProtobufNativeResponse,
+  FileEntry as FileEntryPb,
+  GetSchemaExampleMessageRequest, GetSchemaFieldSelectorsRequest
+} from '../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb';
 import Pre from '../../../ui/Pre/Pre';
 import CodeEditor from '../../../ui/CodeEditor/CodeEditor';
 import Button from '../../../ui/Button/Button';

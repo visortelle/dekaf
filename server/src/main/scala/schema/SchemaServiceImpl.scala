@@ -20,7 +20,6 @@ import net.jimblackler.jsonschemafriend.SchemaStore
 import org.apache.pulsar.client.api.{Producer, ProducerAccessMode}
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import _root_.schema.protobufnative
-import _root_.schema.avro.converters.avroToJsonSchema
 import _root_.schema.protobufnative.converters.protobufToJsonSchema
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.wnameless.json.flattener.JsonFlattener
@@ -30,10 +29,10 @@ import pulsar_auth.RequestContext
 import scala.concurrent.{Await, Future}
 import java.util.concurrent.{CompletableFuture, TimeUnit}
 import java.time.{Instant, LocalDate, LocalDateTime, LocalTime}
-import java.util.Random as JavaRandom
 import scala.util.Random
 import scala.concurrent.duration.Duration
 import schema.protobufnative.{CompiledFile, FileEntry}
+import schema.utils.{generateSampleJsonByAvroSchema, generateSampleJsonByJsonSchema}
 
 class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
     val logger: Logger = Logger(getClass.getName)
@@ -210,79 +209,82 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
                     )
                 )
 
-    private def generateSampleJson(jsonSchema: String): String =
-        val config = DefaultConfig.build
-            .setPedanticTypes(false)
-            .setGenerateNulls(false)
-            .setGenerateMinimal(false)
-            .setGenerateAdditionalProperties(false)
-            .setNonRequiredPropertyChance(0.6f)
-            .get
-        val schemaStore = SchemaStore(true)
-        val schema: Schema = schemaStore.loadSchemaJson(jsonSchema)
-        val generator: Generator = Generator(config, schemaStore, JavaRandom())
-
-        val jsonObject: Object = generator.generate(schema, 16)
-
-        val objectMapper = ObjectMapper()
-        val jsonString = objectMapper.writeValueAsString(jsonObject)
-
-        jsonString
-
-    private def getJsonSchema(schemaInfo: SchemaInfo): Either[Throwable, String] =
-        schemaInfo.getType match
-            //TODO: Add support for AVRO and JSON (create a converter from AVRO Schema to JSON Schema)
-            //case SchemaType.AVRO => avroToJsonSchema(schemaInfo.getSchema)
-            //case SchemaType.JSON => Right(schemaInfo.getSchema.map(_.toChar).mkString)
-            case SchemaType.PROTOBUF_NATIVE => protobufToJsonSchema(schemaInfo.getSchema)
-            case _ => Left(Exception("Unsupported schema type"))
-
     override def getSchemaFieldSelectors(request: GetSchemaFieldSelectorsRequest): Future[GetSchemaFieldSelectorsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
-        val schemaInfoWithVersion = adminClient.schemas.getSchemaInfoWithVersion(request.topic)
+        val schemaInfo = adminClient.schemas.getSchemaInfo(request.topic)
 
-        schemaInfoWithVersion.getSchemaInfo.getType match
-            case /*SchemaType.AVRO | SchemaType.JSON |*/ SchemaType.PROTOBUF_NATIVE =>
-                val jsonSchema = getJsonSchema(schemaInfoWithVersion.getSchemaInfo)
+        def getFieldSelectors(json: String): Seq[String] =
+            JsonFlattener.flattenAsMap(json).asScala.keys.toSeq
+                .map(_.replaceAll("\\[\\d+\\]", ""))
+                .distinct
 
-                val fieldSelectors = jsonSchema match
-                    case Right(jsonSchema) =>
-                        val jsonSample = generateSampleJson(jsonSchema)
-
-                        JsonFlattener.flattenAsMap(jsonSample).asScala.keys.toSeq
-                    case Left(err) =>
-                        val status = Status(
-                            code = Code.INVALID_ARGUMENT.index,
-                            message = err.getMessage
-                        )
-
-                        return Future.successful(
-                            GetSchemaFieldSelectorsResponse(
-                                status = Some(status)
-                            )
-                        )
-
-                val status = Status(code = Code.OK.index)
-                Future.successful(
-                    GetSchemaFieldSelectorsResponse(
-                        status = Some(status),
-                        fieldSelectors = fieldSelectors
-                    )
+        def completeSuccessfully(fieldSelectors: Seq[String]) =
+            val status = Status(code = Code.OK.index)
+            Future.successful(
+                GetSchemaFieldSelectorsResponse(
+                    status = Some(status),
+                    fieldSelectors = fieldSelectors
                 )
+            )
+
+        def completeWithFailure(message: String) =
+            val status = Status(
+                code = Code.INVALID_ARGUMENT.index,
+                message = message
+            )
+
+            Future.successful(
+                GetSchemaFieldSelectorsResponse(
+                    status = Some(status)
+                )
+            )
+
+        schemaInfo.getType match
+            case SchemaType.AVRO | SchemaType.JSON =>
+                val maybeFieldSelectors = generateSampleJsonByAvroSchema(schemaInfo.getSchema)
+                    .toOption
+                    .map(getFieldSelectors)
+
+                maybeFieldSelectors
+                    .map(completeSuccessfully)
+                    .getOrElse(completeWithFailure("Failed to generate sample json from Avro schema"))
+            case SchemaType.PROTOBUF_NATIVE =>
+                val maybeJsonSchema = protobufToJsonSchema(schemaInfo.getSchema).toOption
+
+                val fieldSelectors = maybeJsonSchema
+                    .flatMap(generateSampleJsonByJsonSchema(_).toOption)
+                    .map(getFieldSelectors)
+
+                fieldSelectors
+                    .map(completeSuccessfully)
+                    .getOrElse(completeWithFailure("Failed to generate sample json from Protobuf Native schema"))
             case _ =>
-                val status = Status(
-                    code = Code.INVALID_ARGUMENT.index,
-                    message = "Provided schema type is not supported"
-                )
+                completeWithFailure("Provided schema type is not supported")
 
-                Future.successful(
-                    GetSchemaFieldSelectorsResponse(
-                        status = Some(status)
-                    )
-                )
     override def getSchemaExampleMessage(request: GetSchemaExampleMessageRequest): Future[GetSchemaExampleMessageResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
         val schemaInfo = adminClient.schemas.getSchemaInfo(request.topic, request.schemaVersion)
+
+        def completeSuccessfully(exampleMessage: String) =
+            val status = Status(code = Code.OK.index)
+            Future.successful(
+                GetSchemaExampleMessageResponse(
+                    status = Some(status),
+                    exampleMessage = exampleMessage
+                )
+            )
+
+        def completeWithFailure(message: String) =
+            val status = Status(
+                code = Code.INVALID_ARGUMENT.index,
+                message = message
+            )
+
+            Future.successful(
+                GetSchemaExampleMessageResponse(
+                    status = Some(status)
+                )
+            )
 
         val exampleMessage = schemaInfo.getType match
             case SchemaType.NONE | SchemaType.BYTES => String(Random.nextBytes(100))
@@ -294,48 +296,28 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
             case SchemaType.INT64 => Random.nextLong().toString
             case SchemaType.FLOAT => Random.nextFloat().toString
             case SchemaType.DOUBLE => Random.nextDouble().toString
-            case SchemaType.DATE => s"${Random.nextInt(2023 - 1900) + 1900}-${Random.nextInt(12) + 1}-${Random.nextInt(28) + 1}"
+            case SchemaType.DATE => s"${Random.nextInt(2023 - 1970) + 1970}-${Random.nextInt(12) + 1}-${Random.nextInt(28) + 1}"
             case SchemaType.TIME => f"${Random.nextInt(24)}%02d:${Random.nextInt(60)}%02d:${Random.nextInt(60)}%02d"
             case SchemaType.TIMESTAMP => Random.nextLong().toString
             case SchemaType.INSTANT => Random.nextLong().toString
             case SchemaType.LOCAL_DATE => s"${Random.nextInt(2023 - 1900) + 1900}-${Random.nextInt(12) + 1}-${Random.nextInt(28) + 1}"
             case SchemaType.LOCAL_TIME => f"${Random.nextInt(24)}%02d:${Random.nextInt(60)}%02d:${Random.nextInt(60)}%02d"
             case SchemaType.LOCAL_DATE_TIME => s"${Random.nextInt(2023 - 1900) + 1900}-${Random.nextInt(12) + 1}-${Random.nextInt(28) + 1}T${Random.nextInt(24)}:${Random.nextInt(60)}:${Random.nextInt(60)}"
-            case /*SchemaType.JSON | SchemaType.AVRO |*/ SchemaType.PROTOBUF_NATIVE =>
-                val jsonSchema = getJsonSchema(schemaInfo)
-
-                jsonSchema match
-                    case Right(jsonSchema) =>
-                        val jsonSample = generateSampleJson(jsonSchema)
-
-                        jsonSample
-                    case Left(err) =>
-                        val status = Status(
-                            code = Code.INVALID_ARGUMENT.index,
-                            message = err.getMessage
-                        )
-
-                        return Future.successful(
-                            GetSchemaExampleMessageResponse(
-                                status = Some(status)
-                            )
-                        )
-            case _ =>
-                val status = Status(
-                    code = Code.INVALID_ARGUMENT.index,
-                    message = "Provided schema type is not supported"
-                )
-
-                return Future.successful(
-                    GetSchemaExampleMessageResponse(
-                        status = Some(status)
+            case SchemaType.AVRO | SchemaType.JSON =>
+                generateSampleJsonByAvroSchema(schemaInfo.getSchema)
+                    .toOption
+                    .getOrElse(
+                        return completeWithFailure("Failed to generate sample json from avro schema")
                     )
-                )
+            case SchemaType.PROTOBUF_NATIVE =>
+                val jsonSchema = protobufToJsonSchema(schemaInfo.getSchema)
+                    .toOption
+                    .flatMap(generateSampleJsonByJsonSchema(_).toOption)
 
-        val status = Status(code = Code.OK.index)
-        Future.successful(
-            GetSchemaExampleMessageResponse(
-                status = Some(status),
-                exampleMessage = exampleMessage
-            )
-        )
+                jsonSchema.getOrElse(
+                    return completeWithFailure("Failed to generate sample json from protobuf schema")
+                )
+            case _ =>
+                return completeWithFailure("Provided schema type is not supported")
+
+        completeSuccessfully(exampleMessage)

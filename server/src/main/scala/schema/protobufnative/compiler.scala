@@ -10,6 +10,7 @@ import io.circe.generic.auto.*
 import io.circe.parser.*
 import org.apache.pulsar.client.impl
 import org.apache.pulsar.client.impl.schema.ProtobufNativeSchemaUtils
+import schema.utils.JsonSchema
 
 import java.lang
 import java.util.Base64
@@ -20,7 +21,6 @@ import scala.reflect.ClassTag
 import scala.sys.process.*
 
 type RelativePath = String
-type JsonSchema = String
 
 case class FileEntry(relativePath: RelativePath, content: String)
 
@@ -63,7 +63,7 @@ object compiler:
         fileProtoCache: Map[String, FileDescriptorProto]
     ): FileDescriptor = {
         val dependencyFileDescriptorList: collection.mutable.ArrayBuffer[FileDescriptor] = collection.mutable.ArrayBuffer.empty
-
+        
         currentFileProto.getDependencyList.forEach { (dependencyStr: String) =>
             def helper(dependencyStr: String) = {
                 val dependencyFileProto = fileProtoCache.get(dependencyStr)
@@ -143,7 +143,7 @@ object compiler:
 
         val schemaData = ProtoDescriptorConverter.getProtoSchemaFromDescriptor(fileDescriptor)
 
-        val protobufJsonSchemaCompilerFile = os.Path(config.dataDir.get + "/compilers", os.pwd) / "protoc-gen-jsonschema"
+        val protobufJsonSchemaCompilerFile = os.Path(config.dataDir.get + "/executables/bin", os.pwd) / "protoc-gen-jsonschema"
         val inputFile = tempDir / "schema.proto"
         val outputFile = tempDir / (descriptorName + ".json")
         val protocLogFile = tempDir / "protoc.log"
