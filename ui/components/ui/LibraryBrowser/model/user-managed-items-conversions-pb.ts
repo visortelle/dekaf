@@ -8,8 +8,8 @@ import {
   messageFilterChainModeToPb,
   dateTimeUnitFromPb,
   dateTimeUnitToPb,
-  topicsSelectorByRegexFromPb,
-  topicsSelectorByRegexToPb
+  namespacedRegexTopicSelectorFromPb,
+  namespacedRegexTopicSelectorToPb
 } from "../../../TopicPage/Messages/conversions";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
@@ -477,7 +477,7 @@ export function managedTopicsSelectorSpecFromPb(v: pb.ManagedTopicsSelectorSpec)
     case pb.ManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_BY_FQNS:
       return { topicsSelector: topicsSelectorByFqnsFromPb(v.getTopicsSelectorByFqns()!) };
     case pb.ManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_BY_REGEX:
-      return { topicsSelector: topicsSelectorByRegexFromPb(v.getTopicsSelectorByRegex()!) };
+      return { topicsSelector: namespacedRegexTopicSelectorFromPb(v.getTopicsSelectorByRegex()!) };
     default:
       throw new Error(`Unknown ManagedTopicsSelectorSpec: ${v}`);
   }
@@ -493,7 +493,7 @@ export function managedTopicsSelectorSpecToPb(v: t.ManagedTopicsSelectorSpec): p
       specPb.setTopicsSelectorByFqns(topicsSelectorByFqnsToPb(v.topicsSelector));
       break;
     case 'by-regex':
-      specPb.setTopicsSelectorByRegex(topicsSelectorByRegexToPb(v.topicsSelector));
+      specPb.setTopicsSelectorByRegex(namespacedRegexTopicSelectorToPb(v.topicsSelector));
       break;
     default:
       throw new Error(`Unknown ManagedTopicsSelectorSpec: ${v}`);

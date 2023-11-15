@@ -153,6 +153,7 @@ message ConsumerSessionEvent {
     ConsumerSessionEventTimeElapsed event_time_elapsed = 6;
     ConsumerSessionEventTopicEndReached event_topic_end_reached = 7;
     ConsumerSessionEventUnexpectedErrorOccurred event_unexpected_error_occurred = 8;
+    ConsumerSessionEventMessageId event_message_id = 9;
   }
 }
 

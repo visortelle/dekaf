@@ -58,7 +58,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
               return (
                 <Producer
                   preset={{
-                    topic: props.sessionConfig.topicsSelector.type === 'by-fqns' ? props.sessionConfig.topicsSelector.topicFqns[0] : undefined,
+                    topic: props.sessionConfig.topicsSelector.type === 'single-topic-selector' ? props.sessionConfig.topicsSelector.topicFqns[0] : undefined,
                     key: ''
                   }}
                 />
@@ -132,7 +132,7 @@ const CursorsTab: React.FC<ConsoleProps> = (props) => {
       {!(props.sessionState === 'running' || props.sessionState === 'paused') && (
         <NothingToShow content={"Run session to see cursors list."} />
       )}
-      {props.sessionConfig.topicsSelector.type === 'by-fqns' && (
+      {props.sessionConfig.topicsSelector.type === 'namespaced-regex-topic-selector' && (
         <>
           <div className={s.SubscriptionsCursors} style={{
             visibility: (props.sessionState === 'running' || props.sessionState === 'paused') ? 'visible' : 'hidden'

@@ -12,18 +12,19 @@ export type RegexSubMode =
   | "persistent-only"
   | "non-persistent-only";
 
-export type TopicsSelectorByFqns = {
-  type: "by-fqns";
-  topicFqns: string[];
+export type SingleTopicSelector = {
+  type: "single-topic-selector";
+  topicFqn: string;
 };
 
-export type TopicsSelectorByRegex = {
-  type: "by-regex";
+export type NamespacedRegexTopicSelector = {
+  type: "namespaced-regex-topic-selector";
+  namespaceFqn: string;
   pattern: string;
   regexSubscriptionMode: RegexSubMode;
 }
 
-export type TopicsSelector = TopicsSelectorByFqns | TopicsSelectorByRegex;
+export type TopicSelector = SingleTopicSelector | NamespacedRegexTopicSelector;
 
 export type DateTimeUnit = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
 
@@ -31,6 +32,53 @@ export type RelativeDateTime = {
   value: number,
   unit: DateTimeUnit
   isRoundedToUnitStart: boolean
+};
+
+export type ColoringRule = {
+  messageFilterChain: MessageFilterChain;
+  foregroundColor: string;
+  backgroundColor: string;
+};
+
+export type ColoringRuleChain = {
+  coloringRules: ColoringRule[];
+};
+
+export type MessageId = {
+  messageId: Uint8Array;
+};
+
+export type ConsumerSessionEventMessagesProcessed = { type: 'messages-processed', messageCount: number };
+export type ConsumerSessionEventMessagesDelivered = { type: 'messages-delivered', messageCount: number };
+export type ConsumerSessionEventBytesProcessed = { type: 'bytes-processed', byteCount: number };
+export type ConsumerSessionEventBytesDelivered = { type: 'bytes-delivered', byteCount: number };
+export type ConsumerSessionEventMessageDecodeFailed = { type: 'decode-failed', failCount: number };
+export type ConsumerSessionEventTimeElapsed = { type: 'time-elapsed', timeElapsedMs: number };
+export type ConsumerSessionEventTopicEndReached = { type: 'topic-end-reached' };
+export type ConsumerSessionEventUnexpectedErrorOccurred = { type: 'unexpected-error-occurred' };
+export type ConsumerSessionEventMessageId = { type: 'message-id', messageId: MessageId };
+
+export type ConsumerSessionEvent = ConsumerSessionEventMessagesProcessed |
+  ConsumerSessionEventMessagesDelivered |
+  ConsumerSessionEventBytesProcessed |
+  ConsumerSessionEventBytesDelivered |
+  ConsumerSessionEventMessageDecodeFailed |
+  ConsumerSessionEventTimeElapsed |
+  ConsumerSessionEventTopicEndReached |
+  ConsumerSessionEventUnexpectedErrorOccurred |
+  ConsumerSessionEventMessageId;
+
+export type ConsumerSessionPauseTriggerChainMode = 'all' | 'any';
+
+export type ConsumerSessionPauseTriggerChain = {
+  events: ConsumerSessionEvent[];
+  mode: ConsumerSessionPauseTriggerChainMode;
+};
+
+export type ConsumerSessionTopic = {
+  topicSelector: TopicSelector;
+  messageFilterChain: MessageFilterChain;
+  coloringRuleChain: ColoringRuleChain;
 };
 
 export type ConsumerSessionStartFrom =
@@ -47,8 +95,10 @@ export type ConsumerSessionStartFrom =
 
 export type ConsumerSessionConfig = {
   startFrom: ConsumerSessionStartFrom;
-  topicsSelector: TopicsSelector;
+  topics: ConsumerSessionTopic[];
   messageFilterChain: MessageFilterChain;
+  pauseTriggerChain: ConsumerSessionPauseTriggerChain;
+  coloringRuleChain: ColoringRuleChain;
 };
 
 type Nullable<T> = T | null;

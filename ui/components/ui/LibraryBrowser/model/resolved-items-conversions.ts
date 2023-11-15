@@ -1,5 +1,5 @@
 import { ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTime, ManagedRelativeDateTimeValOrRef, ManagedTopicsSelectorValOrRef } from "./user-managed-items";
-import { ConsumerSessionConfig, ConsumerSessionStartFrom, MessageFilter, MessageFilterChain, RegexSubMode, RelativeDateTime, TopicsSelector } from "../../../TopicPage/Messages/types";
+import { ConsumerSessionConfig, ConsumerSessionStartFrom, MessageFilter, MessageFilterChain, RegexSubMode, RelativeDateTime, TopicSelector } from "../../../TopicPage/Messages/types";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.value === undefined) {
@@ -73,13 +73,13 @@ export function consumerSessionStartFromFromValOrRef(v: ManagedConsumerSessionSt
   }
 }
 
-export function topicsSelectorFromValOrRef(v: ManagedTopicsSelectorValOrRef[], currentTopicFqn: string | undefined): TopicsSelector {
+export function topicsSelectorFromValOrRef(v: ManagedTopicsSelectorValOrRef[], currentTopicFqn: string | undefined): TopicSelector {
   if (v.some(ts => ts.value === undefined)) {
     throw new Error('TopicsSelector reference can\'t be converted to value');
   }
 
   // by-fqns and by-regex topics selectors can't be mixed together because Pulsar consumer doesn't support it.
-  let topicSelectorType: TopicsSelector['type'] = 'by-fqns';
+  let topicSelectorType: TopicSelector['type'] = 'by-fqns';
   if (v.every(ts => ts.value?.spec.topicsSelector.type === 'by-fqns' || ts.value?.spec.topicsSelector.type === 'current-topic')) {
     topicSelectorType = 'by-fqns';
   } else if (v.every(ts => ts.value?.spec.topicsSelector.type === 'by-regex')) {
