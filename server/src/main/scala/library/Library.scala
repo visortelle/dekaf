@@ -5,24 +5,6 @@ import com.typesafe.scalalogging.Logger
 import com.tools.teal.pulsar.ui.library.v1.library as pb
 import scala.util.{Failure, Success, Try}
 
-case class LibraryItemMetadata(
-    updatedAt: String,
-    tags: List[String],
-    availableForContexts: List[ResourceMatcher]
-)
-
-case class LibraryItem(
-    metadata: LibraryItemMetadata,
-    spec: ManagedItem
-)
-
-object LibraryItem:
-    def toJson(item: LibraryItem): String =
-        val itemPb = libraryItemToPb(item)
-        JsonFormat.toJsonString[pb.LibraryItem](itemPb)
-    def fromJson(json: String): LibraryItem = libraryItemFromPb(JsonFormat.fromJsonString[pb.LibraryItem](json))
-
-type LibraryItemId = String
 type FileName = String
 type TagName = String
 type LibraryScanResultEntry = Either[Throwable, LibraryItem]

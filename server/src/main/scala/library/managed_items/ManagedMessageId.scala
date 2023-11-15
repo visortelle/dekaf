@@ -2,7 +2,7 @@ package library.managed_items
 
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import _root_.consumer.start_from.MessageId
-import _root_.library.{ManagedItemMetadata, ManagedItemTrait}
+import _root_.library.{ManagedItemMetadata, ManagedItemTrait, ManagedItemReference}
 
 case class ManagedMessageIdSpec(
     messageId: MessageId
@@ -33,7 +33,7 @@ object ManagedMessageId:
 
 case class ManagedMessageIdValOrRef(
     value: Option[ManagedMessageId],
-    reference: Option[String]
+    reference: Option[ManagedItemReference]
 )
 
 object ManagedMessageIdValOrRef:

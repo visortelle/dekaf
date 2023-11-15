@@ -14,8 +14,13 @@ import _root_.consumer.session_events.{
 }
 
 case class ManagedConsumerSessionEventSpec(
-    event: ConsumerSessionEventMessagesProcessed | ConsumerSessionEventMessagesDelivered | ConsumerSessionEventBytesProcessed |
-        ConsumerSessionEventBytesDelivered | ConsumerSessionEventMessageDecodeFailed | ConsumerSessionEventTimeElapsed | ConsumerSessionEventTopicEndReached |
+    event: ConsumerSessionEventMessagesProcessed |
+        ConsumerSessionEventMessagesDelivered |
+        ConsumerSessionEventBytesProcessed |
+        ConsumerSessionEventBytesDelivered |
+        ConsumerSessionEventMessageDecodeFailed |
+        ConsumerSessionEventTimeElapsed |
+        ConsumerSessionEventTopicEndReached |
         ConsumerSessionEventUnexpectedErrorOccurred
 )
 

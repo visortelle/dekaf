@@ -1,9 +1,9 @@
 package consumer.topic
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
-import _root_.consumer.topic.topic_selector.TopicSelector
 import _root_.consumer.message_filter.MessageFilterChain
 import _root_.consumer.coloring_rules.ColoringRuleChain
+import consumer.topic.topic_selector.TopicSelector
 
 case class ConsumerSessionTopic(
     topicSelector: TopicSelector,

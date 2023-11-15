@@ -185,8 +185,26 @@ message ManagedMessageFilterChainValOrRef {
   }
 }
 
+message ManagedColoringRuleSpec {
+  ManagedMessageFilterChainValOrRef message_filter_chain = 1;
+  string foreground_color = 2;
+  string background_color = 3;
+}
+
+message ManagedColoringRule {
+  ManagedItemMetadata metadata = 1;
+  ManagedColoringRuleSpec spec = 2;
+}
+
+message ManagedColoringRuleValOrRef {
+  oneof val_or_ref {
+    ManagedColoringRule val = 1;
+    string ref = 2;
+  }
+}
+
 message ManagedColoringRuleChainSpec {
-  tools.teal.pulsar.ui.api.v1.ColoringRuleChain coloring_rule_chain = 1;
+  repeated ManagedColoringRuleValOrRef coloring_rules = 1;
 }
 
 message ManagedColoringRuleChain {
@@ -218,7 +236,7 @@ message ManagedTopicSelectorValOrRef {
 }
 
 message ManagedConsumerSessionTopicSpec {
-  ManagedTopicSelectorValOrRef topics_selector = 1;
+  ManagedTopicSelectorValOrRef topic_selector = 1;
   ManagedMessageFilterChainValOrRef message_filter_chain = 2;
   ManagedColoringRuleChainValOrRef coloring_rule_chain = 4;
 }
@@ -248,20 +266,30 @@ message ManagedConsumerSessionConfig {
   ManagedConsumerSessionConfigSpec spec = 2;
 }
 
+message ManagedConsumerSessionConfigValOrRef {
+  oneof val_or_ref {
+    ManagedConsumerSessionConfig val = 1;
+    string ref = 2;
+  }
+}
+
 message ManagedItem {
   ManagedItemMetadata metadata = 1;
   ManagedItemType item_type = 2;
   oneof spec {
-    ManagedConsumerSessionConfig spec_consumer_session_config = 10;
-    ManagedTopicSelector spec_topic_selector = 11;
-    ManagedColoringRuleChain spec_coloring_rule_chain = 12;
-    ManagedConsumerSessionStartFrom spec_consumer_session_start_from = 13;
-    ManagedConsumerSessionPauseTriggerChain spec_consumer_session_pause_trigger_chain = 14;
-    ManagedMessageId spec_message_id = 15;
-    ManagedDateTime spec_date_time = 16;
-    ManagedRelativeDateTime spec_relative_date_time = 17;
-    ManagedMessageFilter spec_message_filter = 18;
-    ManagedMessageFilterChain spec_message_filter_chain = 9;
+    ManagedColoringRule spec_coloring_rule = 3;
+    ManagedColoringRuleChain spec_coloring_rule_chain = 4;
+    ManagedConsumerSessionConfig spec_consumer_session_config = 5;
+    ManagedConsumerSessionEvent spec_consumer_session_event = 6;
+    ManagedConsumerSessionPauseTriggerChain spec_consumer_session_pause_trigger_chain = 7;
+    ManagedConsumerSessionStartFrom spec_consumer_session_start_from = 8;
+    ManagedConsumerSessionTopic spec_consumer_session_topic = 9;
+    ManagedDateTime spec_date_time = 10;
+    ManagedMessageFilter spec_message_filter = 11;
+    ManagedMessageFilterChain spec_message_filter_chain = 12;
+    ManagedMessageId spec_message_id = 13;
+    ManagedRelativeDateTime spec_relative_date_time = 14;
+    ManagedTopicSelector spec_topic_selector = 15;
   }
 }
 
