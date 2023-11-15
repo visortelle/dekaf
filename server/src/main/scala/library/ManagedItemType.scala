@@ -10,11 +10,10 @@ enum ManagedItemType:
     MarkdownDocument,
     MessageFilter,
     MessageFilterChain,
-    DataVisualizationWidget,
-    DataVisualizationDashboard,
     MessageId,
     DateTime,
-    RelativeDateTime
+    RelativeDateTime,
+    TopicSelector
 
 object ManagedItemType:
     def fromPb(v: pb.ManagedItemType): ManagedItemType =
@@ -26,9 +25,8 @@ object ManagedItemType:
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT => ManagedItemType.MarkdownDocument
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER => ManagedItemType.MessageFilter
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN => ManagedItemType.MessageFilterChain
-            case pb.ManagedItemType.MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET => ManagedItemType.DataVisualizationWidget
-            case pb.ManagedItemType.MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD => ManagedItemType.DataVisualizationDashboard
-            case _ => throw new IllegalArgumentException("Unknown user managed item type")
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR => ManagedItemType.TopicSelector
+            case _ => throw new IllegalArgumentException("Unknown ManagedItemType")
 
     def toPb(v: ManagedItemType): pb.ManagedItemType =
         v match
@@ -39,5 +37,4 @@ object ManagedItemType:
             case ManagedItemType.MarkdownDocument => pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
             case ManagedItemType.MessageFilter => pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER
             case ManagedItemType.MessageFilterChain => pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN
-            case ManagedItemType.DataVisualizationWidget => pb.ManagedItemType.MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET
-            case ManagedItemType.DataVisualizationDashboard => pb.ManagedItemType.MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD
+            case ManagedItemType.TopicSelector => pb.ManagedItemType.MANAGED_ITEM_TYPE_TOPIC_SELECTOR

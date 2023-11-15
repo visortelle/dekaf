@@ -21,7 +21,7 @@ export function managedMessageFilterChainSpecToMessageFilterChain(v: t.ManagedMe
 export function managedMessageFilterValOrRefToMessageFilter(v: t.ManagedMessageFilterValOrRef): MessageFilter {
   switch (v.type) {
     case 'value':
-      return managedMessageFilterSpecToMessageFilter(v.value.spec);
+      return managedMessageFilterSpecToMessageFilter(v.val.spec);
     case 'reference':
       throw new Error(`MessageFilter isn't resolved: ${v}`);
     default:

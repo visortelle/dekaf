@@ -51,12 +51,12 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
   const itemSpec = item.spec;
 
   const onSpecChange = (spec: ManagedConsumerSessionStartFromSpec) => {
-    const newValue: ManagedConsumerSessionStartFromValOrRef = { ...props.value, value: { ...item, spec } };
+    const newValue: ManagedConsumerSessionStartFromValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: ManagedConsumerSessionStartFromValOrRef = { type: 'value', value: item };
+    const newValue: ManagedConsumerSessionStartFromValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
@@ -69,17 +69,17 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         itemType='consumer-session-start-from'
         onPick={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as ManagedConsumerSessionStartFrom
+          ref: item.metadata.id,
+          val: item as ManagedConsumerSessionStartFrom
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as ManagedConsumerSessionStartFrom
+          ref: item.metadata.id,
+          val: item as ManagedConsumerSessionStartFrom
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
       />
       <div className={s.TypeSelect}>
         <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>
@@ -106,7 +106,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
               case 'messageId': {
                 const messageId: ManagedMessageIdValOrRef = {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'message-id' },
                     spec: { hexString: '' }
                   }
@@ -117,7 +117,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
               case 'dateTime': {
                 const dateTime: ManagedDateTimeValOrRef = {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'date-time' },
                     spec: { dateTime: new Date() }
                   }
@@ -128,7 +128,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
               case 'relativeDateTime': {
                 const relativeDateTime: ManagedRelativeDateTimeValOrRef = {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'relative-date-time' },
                     spec: {
                       unit: 'hour',
@@ -173,7 +173,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         {itemSpec.startFrom.type === 'messageId' && (
           <>
             <Input
-              value={itemSpec.startFrom.messageId.value?.spec.hexString || ''}
+              value={itemSpec.startFrom.messageId.val?.spec.hexString || ''}
               placeholder="08 c3 03 10 cd 04 20 00 30 01"
               onChange={(v) => {
                 const newItemSpec = clone(itemSpec);
@@ -182,11 +182,11 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                   return;
                 }
 
-                if (newItemSpec.startFrom.messageId.value === undefined) {
+                if (newItemSpec.startFrom.messageId.val === undefined) {
                   return;
                 }
 
-                newItemSpec.startFrom.messageId.value.spec.hexString = v;
+                newItemSpec.startFrom.messageId.val.spec.hexString = v;
                 onSpecChange(newItemSpec);
               }}
             />
@@ -195,7 +195,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         )}
         {itemSpec.startFrom.type === 'dateTime' && (
           <DatetimePicker
-            value={itemSpec.startFrom.dateTime.value?.spec.dateTime}
+            value={itemSpec.startFrom.dateTime.val?.spec.dateTime}
             onChange={(v) => {
               const newItemSpec = clone(itemSpec);
 
@@ -203,11 +203,11 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 return;
               }
 
-              if (newItemSpec.startFrom.dateTime.value === undefined) {
+              if (newItemSpec.startFrom.dateTime.val === undefined) {
                 return;
               }
 
-              newItemSpec.startFrom.dateTime.value.spec.dateTime = v || new Date();
+              newItemSpec.startFrom.dateTime.val.spec.dateTime = v || new Date();
               onSpecChange(newItemSpec);
             }}
             disabled={props.disabled}
@@ -215,7 +215,7 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         )}
         {itemSpec.startFrom.type === 'relativeDateTime' && (
           <RelativeDateTimePicker
-            value={itemSpec.startFrom.relativeDateTime.value?.spec!}
+            value={itemSpec.startFrom.relativeDateTime.val?.spec!}
             onChange={(v) => {
               const newItemSpec = clone(itemSpec);
 
@@ -223,11 +223,11 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 return;
               }
 
-              if (newItemSpec.startFrom.relativeDateTime.value === undefined) {
+              if (newItemSpec.startFrom.relativeDateTime.val === undefined) {
                 return;
               }
 
-              newItemSpec.startFrom.relativeDateTime.value.spec = v;
+              newItemSpec.startFrom.relativeDateTime.val.spec = v;
               onSpecChange(newItemSpec);
             }}
           />

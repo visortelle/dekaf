@@ -33,12 +33,12 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const itemSpec = item.spec;
 
   const onSpecChange = (spec: ManagedConsumerSessionSpec) => {
-    const newValue: ManagedConsumerSessionConfigValOrRef = { ...props.value, value: { ...item, spec } };
+    const newValue: ManagedConsumerSessionConfigValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: ManagedConsumerSessionConfigValOrRef = { type: 'value', value: item };
+    const newValue: ManagedConsumerSessionConfigValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
@@ -50,17 +50,17 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           itemType='consumer-session-config'
           onPick={(item) => props.onChange({
             type: 'reference',
-            reference: item.metadata.id,
-            value: item as ManagedConsumerSessionConfig
+            ref: item.metadata.id,
+            val: item as ManagedConsumerSessionConfig
           })}
           onSave={(item) => props.onChange({
             type: 'reference',
-            reference: item.metadata.id,
-            value: item as ManagedConsumerSessionConfig
+            ref: item.metadata.id,
+            val: item as ManagedConsumerSessionConfig
           })}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
-          managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
+          managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
         />
       </div>
 

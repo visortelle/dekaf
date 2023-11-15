@@ -38,12 +38,12 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
   const itemSpec = item.spec;
 
   const onSpecChange = (spec: ManagedMessageFilterSpec) => {
-    const newValue: ManagedMessageFilterValOrRef = { ...props.value, value: { ...item, spec } };
+    const newValue: ManagedMessageFilterValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: ManagedMessageFilterValOrRef = { type: 'value', value: item };
+    const newValue: ManagedMessageFilterValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
@@ -54,17 +54,17 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
         itemType='message-filter'
         onPick={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as ManagedMessageFilter
+          ref: item.metadata.id,
+          val: item as ManagedMessageFilter
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as ManagedMessageFilter
+          ref: item.metadata.id,
+          val: item as ManagedMessageFilter
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
       />
       <FormItem>
         <div className={s.Controls}>

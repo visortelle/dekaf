@@ -9,22 +9,16 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_UNSPECIFIED = 0;
 
   MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG = 1;
-  MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM = 11;
-  MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER = 12;
-
+  MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
+  MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT = 3;
   MANAGED_ITEM_TYPE_MESSAGE_FILTER = 4;
   MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN = 5;
-
-  MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG = 2;
-
-  MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT = 3;
-
-  MANAGED_ITEM_TYPE_DATA_VISUALIZATION_WIDGET = 6;
-  MANAGED_ITEM_TYPE_DATA_VISUALIZATION_DASHBOARD = 7;
-
-  MANAGED_ITEM_TYPE_MESSAGE_ID = 8;
-  MANAGED_ITEM_TYPE_DATE_TIME = 9;
-  MANAGED_ITEM_TYPE_RELATIVE_DATE_TIME = 10;
+  MANAGED_ITEM_TYPE_MESSAGE_ID = 6;
+  MANAGED_ITEM_TYPE_DATE_TIME = 7;
+  MANAGED_ITEM_TYPE_RELATIVE_DATE_TIME = 8;
+  MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM = 9;
+  MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER = 10;
+  MANAGED_ITEM_TYPE_TOPIC_SELECTOR = 11;
 }
 
 message ManagedItemMetadata {
@@ -219,8 +213,14 @@ message ManagedColoringRuleChainValOrRef {
   }
 }
 
+message CurrentTopicSelector {};
+
 message ManagedTopicSelectorSpec {
-  tools.teal.pulsar.ui.api.v1.TopicSelector topic_selector = 1;
+  oneof topic_selector {
+    CurrentTopicSelector current_topic_selector = 1;
+    tools.teal.pulsar.ui.api.v1.SingleTopicSelector single_topic_selector = 2;
+    tools.teal.pulsar.ui.api.v1.NamespacedRegexTopicSelector namespaced_regex_topic_selector = 3;
+  }
 }
 
 message ManagedTopicSelector {

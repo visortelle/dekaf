@@ -31,12 +31,12 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
   const itemSpec = item.spec;
 
   const onSpecChange = (spec: ManagedTopicsSelectorSpec) => {
-    const newValue: ManagedTopicsSelectorValOrRef = { ...props.value, value: { ...item, spec } };
+    const newValue: ManagedTopicsSelectorValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: ManagedTopicsSelectorValOrRef = { type: 'value', value: item };
+    const newValue: ManagedTopicsSelectorValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
@@ -44,20 +44,20 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
     <div className={s.TopicsSelectorsInput} ref={hoverRef}>
       <LibraryBrowserPanel
         itemToSave={item}
-        itemType='topics-selector'
+        itemType='topic-selector'
         onPick={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as ManagedTopicsSelector
+          ref: item.metadata.id,
+          val: item as ManagedTopicsSelector
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as ManagedTopicsSelector
+          ref: item.metadata.id,
+          val: item as ManagedTopicsSelector
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
       />
 
       <FormItem>
@@ -82,7 +82,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
                 }
               });
               return;
-            } else if (v === 'by-regex') {
+            } else if (v === 'namespaced-regex-topic-selector') {
               onSpecChange({
                 topicsSelector: {
                   type: 'by-regex',

@@ -41,18 +41,18 @@ export function useManagedItemValue<ValueT>(valOrRef: ValOrRef<ValueT>): UseMana
   };
 
   useEffect(() => {
-    if (valOrRef.type === 'reference' && valOrRef.value === undefined) {
-      fetchItem(valOrRef.reference);
+    if (valOrRef.type === 'reference' && valOrRef.val === undefined) {
+      fetchItem(valOrRef.ref);
       return;
     }
   }, [valOrRef]);
 
   if (valOrRef.type === 'value') {
-    return { type: 'success', value: valOrRef.value };
+    return { type: 'success', value: valOrRef.val };
   }
 
-  if (valOrRef.type == 'reference' && valOrRef.value !== undefined) {
-    return { type: 'success', value: valOrRef.value };
+  if (valOrRef.type == 'reference' && valOrRef.val !== undefined) {
+    return { type: 'success', value: valOrRef.val };
   }
 
   return fetchedItem;
@@ -71,7 +71,7 @@ export const UseManagedItemValueSpinner: React.FC<UseManagedItemValueSpinnerProp
         reason="error"
         content={(
           <div>
-            Unable to fetch item with id: {props.item.type === 'reference' ? props.item.reference : props.item.value.metadata.id}.
+            Unable to fetch item with id: {props.item.type === 'reference' ? props.item.ref : props.item.val.metadata.id}.
             <br />
             Make sure that the item exists in the library.
             <br />

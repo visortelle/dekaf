@@ -1,17 +1,38 @@
 package library.managed_items
 
-import _root_.consumer.topic.topic_selector.TopicSelector
+import _root_.consumer.topic.topic_selector.{NamespacedRegexTopicSelector, SingleTopicSelector, TopicSelector}
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
-import _root_.library.{ManagedItemMetadata, ManagedItemTrait, ManagedItemReference}
+import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 
-case class ManagedTopicSelectorSpec(topicSelector: TopicSelector)
+case class CurrentTopicSelector()
+
+case class ManagedTopicSelectorSpec(topicSelector: CurrentTopicSelector | SingleTopicSelector | NamespacedRegexTopicSelector)
 
 object ManagedTopicSelectorSpec:
     def fromPb(v: pb.ManagedTopicSelectorSpec): ManagedTopicSelectorSpec =
-        ManagedTopicSelectorSpec(topicSelector = TopicSelector.fromPb(v.topicSelector.get))
+        v.topicSelector match
+            case pb.ManagedTopicSelectorSpec.TopicSelector.CurrentTopicSelector(v) =>
+                ManagedTopicSelectorSpec(topicSelector = CurrentTopicSelector())
+            case pb.ManagedTopicSelectorSpec.TopicSelector.SingleTopicSelector(v) =>
+                ManagedTopicSelectorSpec(topicSelector = SingleTopicSelector.fromPb(v))
+            case pb.ManagedTopicSelectorSpec.TopicSelector.NamespacedRegexTopicSelector(v) =>
+                ManagedTopicSelectorSpec(topicSelector = NamespacedRegexTopicSelector.fromPb(v))
+            case _ => throw new Exception("Unknown ManagedTopicSelectorSpec")
 
     def toPb(v: ManagedTopicSelectorSpec): pb.ManagedTopicSelectorSpec =
-        pb.ManagedTopicSelectorSpec(topicSelector = Some(TopicSelector.toPb(v.topicSelector)))
+        v.topicSelector match
+            case CurrentTopicSelector() =>
+                pb.ManagedTopicSelectorSpec(
+                    topicSelector = pb.ManagedTopicSelectorSpec.TopicSelector.CurrentTopicSelector(pb.CurrentTopicSelector())
+                )
+            case vv: SingleTopicSelector =>
+                pb.ManagedTopicSelectorSpec(
+                    topicSelector = pb.ManagedTopicSelectorSpec.TopicSelector.SingleTopicSelector(SingleTopicSelector.toPb(vv))
+                )
+            case vv: NamespacedRegexTopicSelector =>
+                pb.ManagedTopicSelectorSpec(
+                    topicSelector = pb.ManagedTopicSelectorSpec.TopicSelector.NamespacedRegexTopicSelector(NamespacedRegexTopicSelector.toPb(vv))
+                )
 
 case class ManagedTopicSelector(
     metadata: ManagedItemMetadata,
@@ -48,6 +69,7 @@ object ManagedTopicSelectorValOrRef:
                     value = None,
                     reference = Some(v)
                 )
+            case _ => throw new Exception("Unknown ManagedTopicSelectorValOrRef")
 
     def toPb(v: ManagedTopicSelectorValOrRef): pb.ManagedTopicSelectorValOrRef =
         v.value match

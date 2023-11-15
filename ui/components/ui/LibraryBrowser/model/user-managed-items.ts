@@ -2,29 +2,30 @@ import { TopicSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode, Nam
 
 export type ValOrRef<ValueT> = {
   type: 'value',
-  value: ValueT
+  val: ValueT
 } | {
   type: 'reference',
-  reference: string,
+  ref: string,
 
   /* Value stored only in browser memory.
     Imagine a situation where you loaded two message filters with same id from library,
     and for one of them you made some changes without saving.
     */
-  value?: ValueT
+  val?: ValueT
 };
 
 export type ManagedItemType =
   "consumer-session-config" |
-  "consumer-session-pause-trigger" |
-  "consumer-session-start-from" |
-  "date-time" |
+  "producer-session-config" |
+  "markdown-document" |
   "message-filter-chain" |
   "message-filter" |
   "message-id" |
-  "producer-session-config" |
+  "date-time" |
   "relative-date-time" |
-  "topics-selector";
+  "consumer-session-start-from" |
+  "consumer-session-pause-trigger" |
+  "topic-selector";
 
 export type ManagedItemMetadata = {
   type: ManagedItemType,

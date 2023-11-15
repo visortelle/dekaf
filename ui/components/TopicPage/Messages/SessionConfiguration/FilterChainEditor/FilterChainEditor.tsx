@@ -40,12 +40,12 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   const itemSpec = item.spec;
 
   const onSpecChange = (spec: ManagedMessageFilterChainSpec) => {
-    const newValue: ManagedMessageFilterChainValOrRef = { ...props.value, value: { ...item, spec } };
+    const newValue: ManagedMessageFilterChainValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: ManagedMessageFilterChainValOrRef = { type: 'value', value: item };
+    const newValue: ManagedMessageFilterChainValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
@@ -57,17 +57,17 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
           itemToSave={item}
           onPick={(item) => props.onChange({
             type: 'reference',
-            reference: item.metadata.id,
-            value: item as ManagedMessageFilterChain
+            ref: item.metadata.id,
+            val: item as ManagedMessageFilterChain
           })}
           onSave={(item) => props.onChange({
             type: 'reference',
-            reference: item.metadata.id,
-            value: item as ManagedMessageFilterChain
+            ref: item.metadata.id,
+            val: item as ManagedMessageFilterChain
           })}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}
-          managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
+          managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
         />
         <div
           style={{
@@ -110,7 +110,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
       )}
 
       {itemSpec.filters.length !== 0 && itemSpec.filters.map((filter) => {
-        const filterId = filter.type === 'reference' ? filter.reference : filter.value.metadata.id;
+        const filterId = filter.type === 'reference' ? filter.ref : filter.val.metadata.id;
         return (
           <div key={filterId} className={s.Entry}>
             <div className={s.EntryFilter}>
@@ -118,7 +118,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 value={filter}
                 onChange={(updatedFilter) => {
                   const newFilters = itemSpec.filters.map((f) => {
-                    const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
+                    const fId = f.type === 'reference' ? f.ref : f.val.metadata.id;
                     if (fId === filterId) {
                       return updatedFilter;
                     }
@@ -128,7 +128,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 }}
                 onDelete={() => {
                   const newFilters = itemSpec.filters.filter((f) => {
-                    const fId = f.type === 'reference' ? f.reference : f.value.metadata.id;
+                    const fId = f.type === 'reference' ? f.ref : f.val.metadata.id;
                     return fId !== filterId;
                   });
                   onSpecChange({ ...itemSpec, filters: newFilters });
@@ -177,7 +177,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
                 break;
             }
 
-            const newChain = itemSpec.filters.concat([{ type: 'value', value: newFilter }]);
+            const newChain = itemSpec.filters.concat([{ type: 'value', val: newFilter }]);
             onSpecChange({ ...itemSpec, filters: newChain });
           }}
           itemName="Message Filter"

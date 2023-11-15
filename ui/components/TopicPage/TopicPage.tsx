@@ -205,7 +205,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           }}
           initialConfig={{
             type: 'value',
-            value: {
+            val: {
               metadata: {
                 id: uuid(),
                 name: '',
@@ -215,7 +215,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
               spec: {
                 topicsSelectors: [{
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: {
                       id: uuid(),
                       name: '',
@@ -231,7 +231,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                 }],
                 messageFilterChain: {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: {
                       id: uuid(),
                       name: '',
@@ -245,7 +245,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                 },
                 startFrom: {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: {
                       id: uuid(),
                       name: '',

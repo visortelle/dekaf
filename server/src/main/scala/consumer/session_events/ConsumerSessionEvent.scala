@@ -14,13 +14,13 @@ type ConsumerSessionEvent =
 
 object ConsumerSessionEvent:
     def fromPb(v: pb.ConsumerSessionEvent): ConsumerSessionEvent = v.event match
-        case pb.ConsumerSessionEvent.Event.EventBytesDelivered(evt)       => ConsumerSessionEventBytesDelivered.fromPb(evt)
-        case pb.ConsumerSessionEvent.Event.EventBytesProcessed(evt)       => ConsumerSessionEventBytesProcessed.fromPb(evt)
-        case pb.ConsumerSessionEvent.Event.EventMessageDecodeFailed(evt)  => ConsumerSessionEventMessageDecodeFailed.fromPb(evt)
-        case pb.ConsumerSessionEvent.Event.EventMessagesDelivered(evt)    => ConsumerSessionEventMessagesDelivered.fromPb(evt)
-        case pb.ConsumerSessionEvent.Event.EventMessagesProcessed(evt)    => ConsumerSessionEventMessagesProcessed.fromPb(evt)
-        case pb.ConsumerSessionEvent.Event.EventTimeElapsed(evt)          => ConsumerSessionEventTimeElapsed.fromPb(evt)
-        case pb.ConsumerSessionEvent.Event.EventTopicEndReached(evt)      => ConsumerSessionEventTopicEndReached.fromPb(evt)
+        case pb.ConsumerSessionEvent.Event.EventBytesDelivered(evt)          => ConsumerSessionEventBytesDelivered.fromPb(evt)
+        case pb.ConsumerSessionEvent.Event.EventBytesProcessed(evt)          => ConsumerSessionEventBytesProcessed.fromPb(evt)
+        case pb.ConsumerSessionEvent.Event.EventMessageDecodeFailed(evt)     => ConsumerSessionEventMessageDecodeFailed.fromPb(evt)
+        case pb.ConsumerSessionEvent.Event.EventMessagesDelivered(evt)       => ConsumerSessionEventMessagesDelivered.fromPb(evt)
+        case pb.ConsumerSessionEvent.Event.EventMessagesProcessed(evt)       => ConsumerSessionEventMessagesProcessed.fromPb(evt)
+        case pb.ConsumerSessionEvent.Event.EventTimeElapsed(evt)             => ConsumerSessionEventTimeElapsed.fromPb(evt)
+        case pb.ConsumerSessionEvent.Event.EventTopicEndReached(evt)         => ConsumerSessionEventTopicEndReached.fromPb(evt)
         case pb.ConsumerSessionEvent.Event.EventUnexpectedErrorOccurred(evt) => ConsumerSessionEventUnexpectedErrorOccurred.fromPb(evt)
 
     def toPb(v: ConsumerSessionEvent): pb.ConsumerSessionEvent =

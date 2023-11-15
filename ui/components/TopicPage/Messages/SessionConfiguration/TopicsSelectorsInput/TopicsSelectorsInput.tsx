@@ -23,11 +23,11 @@ const TopicsSelectorsInput: React.FC<TopicsSelectorsInputProps> = (props) => {
       {props.value.map((ts) => {
         return (
           <TopicsSelectorInput
-            key={ts.value?.metadata.id}
+            key={ts.val?.metadata.id}
             value={ts}
             onChange={(value) => {
               const newValue = props.value.map((ts) => {
-                if (ts.value?.metadata.id === value.value?.metadata.id) {
+                if (ts.val?.metadata.id === value.val?.metadata.id) {
                   return value;
                 }
                 return ts;
@@ -35,7 +35,7 @@ const TopicsSelectorsInput: React.FC<TopicsSelectorsInputProps> = (props) => {
               props.onChange(newValue);
             }}
             onDelete={() => {
-              const newValue = props.value.filter((ts) => ts.value?.metadata.id !== ts.value?.metadata.id);
+              const newValue = props.value.filter((ts) => ts.val?.metadata.id !== ts.val?.metadata.id);
               props.onChange(newValue);
             }}
             libraryContext={props.libraryContext}
