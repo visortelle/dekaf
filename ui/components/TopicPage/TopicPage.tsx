@@ -213,22 +213,94 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                 type: 'consumer-session-config'
               },
               spec: {
-                topicsSelectors: [{
+                pauseTriggerChain: {
                   type: 'value',
                   val: {
                     metadata: {
                       id: uuid(),
                       name: '',
                       descriptionMarkdown: '',
-                      type: 'topic-selector'
+                      type: 'consumer-session-pause-trigger-chain'
+                    },
+                    spec: {
+                      events: [],
+                      mode: 'all'
+                    }
+                  }
+                },
+                topics: [{
+                  type: 'value', val: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'consumer-session-topic'
                     },
                     spec: {
                       topicSelector: {
-                        type: 'current-topic'
+                        type: 'value',
+                        val: {
+                          metadata: {
+                            id: uuid(),
+                            name: '',
+                            descriptionMarkdown: '',
+                            type: 'topic-selector'
+                          },
+                          spec: {
+                            topicSelector: {
+                              type: 'current-topic'
+                            }
+                          }
+                        }
+                      },
+                      coloringRuleChain: {
+                        type: 'value',
+                        val: {
+                          metadata: {
+                            id: uuid(),
+                            name: '',
+                            descriptionMarkdown: '',
+                            type: 'coloring-rule-chain'
+                          },
+                          spec: {
+                            coloringRules: []
+                          }
+                        }
+                      },
+                      messageFilterChain: {
+                        type: 'value',
+                        val: {
+                          metadata: {
+                            id: uuid(),
+                            name: '',
+                            descriptionMarkdown: '',
+                            type: 'message-filter-chain'
+                          },
+                          spec: {
+                            isEnabled: true,
+                            isNegated: false,
+                            filters: [],
+                            mode: 'all'
+                          }
+                        }
                       }
                     }
                   }
                 }],
+                coloringRuleChain: {
+                  type: 'value',
+                  val: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'coloring-rule-chain'
+                    },
+                    spec: {
+                      coloringRules: []
+                    }
+                  }
+                },
                 messageFilterChain: {
                   type: 'value',
                   val: {

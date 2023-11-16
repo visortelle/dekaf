@@ -1,8 +1,6 @@
 import React from 'react';
 
 import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
-import { GetTopicsInternalStatsResponse } from '../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
-
 import s from './SessionConfiguration.module.css'
 import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
@@ -12,7 +10,6 @@ import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, Managed
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
-import TopicSelectorInput from '../topic-selector/TopicSelectorInput/TopicSelectorInput';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef;
@@ -69,7 +66,6 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             <StartFromInput
               value={itemSpec.startFrom}
               onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
-              topicsInternalStats={props.topicsInternalStats}
               libraryContext={props.libraryContext}
             />
           </FormItem>

@@ -5,7 +5,7 @@ import com.tools.teal.pulsar.ui.library.v1.managed_items.ManagedItemType
 enum ManagedItemType:
     case ConsumerSessionConfig,
     ConsumerSessionStartFrom,
-    ConsumerSessionPauseTrigger,
+    ConsumerSessionPauseTriggerChain,
     ProducerSessionConfig,
     MarkdownDocument,
     MessageFilter,
@@ -20,7 +20,7 @@ object ManagedItemType:
         v match
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG => ManagedItemType.ConsumerSessionConfig
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM => ManagedItemType.ConsumerSessionStartFrom
-            case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER => ManagedItemType.ConsumerSessionPauseTrigger
+            case pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN => ManagedItemType.ConsumerSessionPauseTriggerChain
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG => ManagedItemType.ProducerSessionConfig
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT => ManagedItemType.MarkdownDocument
             case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER => ManagedItemType.MessageFilter
@@ -32,7 +32,7 @@ object ManagedItemType:
         v match
             case ManagedItemType.ConsumerSessionConfig => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_CONFIG
             case ManagedItemType.ConsumerSessionStartFrom => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM
-            case ManagedItemType.ConsumerSessionPauseTrigger => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER
+            case ManagedItemType.ConsumerSessionPauseTriggerChain => pb.ManagedItemType.MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN
             case ManagedItemType.ProducerSessionConfig => pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG
             case ManagedItemType.MarkdownDocument => pb.ManagedItemType.MANAGED_ITEM_TYPE_MARKDOWN_DOCUMENT
             case ManagedItemType.MessageFilter => pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER

@@ -59,9 +59,9 @@ export type ConsumerSessionPauseTriggerChain = {
 };
 
 export type ConsumerSessionTopic = {
-  topicSelector: ManagedTopicSelectorValOrRef;
-  messageFilterChain: ManagedMessageFilterChainValOrRef;
-  coloringRuleChain: ManagedColoringRuleChainValOrRef;
+  topicSelector: TopicSelector;
+  messageFilterChain: MessageFilterChain;
+  coloringRuleChain: ColoringRuleChain;
 };
 
 export type ConsumerSessionStartFrom =

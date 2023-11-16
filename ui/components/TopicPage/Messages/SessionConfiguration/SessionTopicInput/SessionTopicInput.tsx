@@ -8,6 +8,7 @@ import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-cont
 import FilterChainEditor from '../FilterChainEditor/FilterChainEditor';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
+import { ManagedConsumerSessionTopic } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 
 export type SessionTopicInputProps = {
   value: ConsumerSessionTopic;

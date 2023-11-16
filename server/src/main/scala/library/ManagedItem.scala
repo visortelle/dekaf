@@ -91,4 +91,3 @@ object ManagedItem:
             case it: ManagedTopicSelector =>
                 val itPb = ManagedTopicSelector.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecTopicSelector(itPb))
-            case _ => throw new IllegalArgumentException("Unknown ManagedItem type")

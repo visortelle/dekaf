@@ -79,7 +79,6 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
 
             props.onChange({ ...props.value, spec: v.val });
           }}
-          topicsInternalStats={undefined}
           libraryContext={props.libraryContext}
         />
       );

@@ -4,13 +4,11 @@ import Select, { List } from '../../../../ui/Select/Select';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import { ConsumerSessionStartFrom } from '../../types';
 import Input from '../../../../ui/Input/Input';
-import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import RelativeDateTimePicker from '../../../../ui/RelativeDateTimePicker/RelativeDateTimePicker';
 import { v4 as uuid } from 'uuid';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromSpec, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
-import dayjs from 'dayjs';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import { clone } from 'lodash';
@@ -19,7 +17,6 @@ export type StartFromInputProps = {
   value: ManagedConsumerSessionStartFromValOrRef;
   onChange: (value: ManagedConsumerSessionStartFromValOrRef) => void;
   libraryContext: LibraryContext;
-  topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   disabled?: boolean;
 };
 
@@ -235,20 +232,6 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
       </div>
     </div >
   );
-}
-
-function hasPartitionedTopic(topicsInternalStats: GetTopicsInternalStatsResponse | undefined): boolean {
-  if (topicsInternalStats === undefined) {
-    return false;
-  }
-
-  let result = false;
-  topicsInternalStats.getStatsMap().forEach((stats) => {
-    if (stats.getPartitionedTopicStats() !== undefined) {
-      result = true;
-    }
-  });
-  return result;
 }
 
 export default StartFromInput;
