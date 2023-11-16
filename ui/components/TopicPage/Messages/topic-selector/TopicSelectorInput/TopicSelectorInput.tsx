@@ -1,6 +1,6 @@
 import React from 'react';
 import s from './TopicSelectorInput.module.css'
-import { ManagedTopicsSelector, ManagedTopicSelectorSpec, ManagedTopicsSelectorValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedTopicSelector, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
@@ -10,12 +10,12 @@ import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 import Input from '../../../../ui/Input/Input';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import * as Either from 'fp-ts/Either';
-import { RegexSubMode } from '../../types';
+import { RegexSubMode } from '../topic-selector';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 export type TopicsSelectorInputProps = {
-  value: ManagedTopicsSelectorValOrRef;
-  onChange: (value: ManagedTopicsSelectorValOrRef) => void;
+  value: ManagedTopicSelectorValOrRef;
+  onChange: (value: ManagedTopicSelectorValOrRef) => void;
   onDelete?: () => void;
   libraryContext: LibraryContext;
 };
@@ -23,7 +23,7 @@ export type TopicsSelectorInputProps = {
 const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
-  const resolveResult = useManagedItemValue<ManagedTopicsSelector>(props.value);
+  const resolveResult = useManagedItemValue<ManagedTopicSelector>(props.value);
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
@@ -32,12 +32,12 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
   const itemSpec = item.spec;
 
   const onSpecChange = (spec: ManagedTopicSelectorSpec) => {
-    const newValue: ManagedTopicsSelectorValOrRef = { ...props.value, val: { ...item, spec } };
+    const newValue: ManagedTopicSelectorValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: ManagedTopicsSelectorValOrRef = { type: 'value', val: item };
+    const newValue: ManagedTopicSelectorValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
@@ -54,12 +54,12 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         onPick={(item) => props.onChange({
           type: 'reference',
           ref: item.metadata.id,
-          val: item as ManagedTopicsSelector
+          val: item as ManagedTopicSelector
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
           ref: item.metadata.id,
-          val: item as ManagedTopicsSelector
+          val: item as ManagedTopicSelector
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}

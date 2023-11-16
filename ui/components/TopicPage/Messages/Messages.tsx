@@ -29,9 +29,6 @@ import Toolbar from './Toolbar';
 import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
-import useSWR from 'swr';
-import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
-import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { consumerSessionConfigToPb, messageDescriptorFromPb, topicsSelectorToPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
@@ -93,38 +90,6 @@ const Session: React.FC<SessionProps> = (props) => {
       return undefined;
     }
   }, [props.configValOrRef]);
-
-  const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
-      config?.topicsSelector.type === 'by-fqns' ? config.topicsSelector.topicFqns : []
-    ).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
-    async () => {
-      if (config?.topicsSelector.type !== 'by-fqns') {
-        return undefined;
-      }
-
-      const req = new GetTopicsInternalStatsRequest();
-      req.setTopicsList(config.topicsSelector.topicFqns);
-      const res = await topicServiceClient.getTopicsInternalStats(req, {})
-        .catch((err) => notifyError(`Unable to get topics internal stats. ${err}`));
-
-      if (res === undefined) {
-        return;
-      }
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get topics internal stats. ${res.getStatus()?.getMessage()}`);
-        return;
-      }
-
-      return res;
-    },
-    { refreshInterval: sessionState === 'awaiting-initial-cursor-positions' ? 150 : 1000 }
-  );
-
-  if (topicsInternalStatsError) {
-    notifyError(`Unable to get topics internal stats. ${topicsInternalStatsError}`);
-  }
 
   const scrollToBottom = () => {
     const scrollParent = tableRef.current?.children[0];
@@ -216,15 +181,8 @@ const Session: React.FC<SessionProps> = (props) => {
       const req = new CreateConsumerRequest();
 
       req.setConsumerName(consumerName.current);
-      req.setStartPaused(true);
-      req.setSubscriptionName(subscriptionName.current);
-      req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
-      req.setSubscriptionMode(SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE);
-
       const consumerSessionConfigPb = consumerSessionConfigToPb(config);
       req.setConsumerSessionConfig(consumerSessionConfigPb);
-
-      req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
       if (res === undefined) {
@@ -235,7 +193,7 @@ const Session: React.FC<SessionProps> = (props) => {
       const code = status?.getCode();
 
       if (code === Code.OK) {
-        setSessionState('awaiting-initial-cursor-positions');
+        setSessionState('running');
       }
 
       if (code !== Code.OK) {
@@ -292,15 +250,6 @@ const Session: React.FC<SessionProps> = (props) => {
         .catch((err) => notifyError(`Unable to pause consumer ${consumerName.current}. ${err}`));
 
       return;
-    }
-
-    if (sessionState === 'awaiting-initial-cursor-positions') {
-      console.info(`%cAwaiting initial cursor positions for session: ${props.sessionKey}`, consoleCss);
-    }
-
-    if (sessionState === 'got-initial-cursor-positions') {
-      console.info(`%cGot initial cursor positions for session: ${props.sessionKey}`, consoleCss);
-      setSessionState('running');
     }
 
     if (sessionState === 'running') {
@@ -400,7 +349,6 @@ const Session: React.FC<SessionProps> = (props) => {
       {currentView === 'messages' && messages.length === 0 && (
         <div className={s.NoDataToShow}>
           {sessionState === 'initializing' && 'Initializing session.'}
-          {sessionState === 'awaiting-initial-cursor-positions' && 'Awaiting for initial cursor positions.'}
           {sessionState === 'running' && 'Awaiting for new messages...'}
           {sessionState === 'paused' && 'No messages where loaded.'}
         </div>
@@ -454,7 +402,6 @@ const Session: React.FC<SessionProps> = (props) => {
           <SessionConfiguration
             value={props.configValOrRef}
             onChange={props.onConfigValOrRefChange}
-            topicsInternalStats={topicsInternalStats}
             libraryContext={props.libraryContext}
           />
         </div>
@@ -468,7 +415,6 @@ const Session: React.FC<SessionProps> = (props) => {
         onSessionStateChange={setSessionState}
         sessionConfig={config}
         sessionSubscriptionName={subscriptionName.current}
-        topicsInternalStats={topicsInternalStats}
         messages={messages}
         consumerName={consumerName.current}
       />

@@ -60,10 +60,10 @@ export const help = {
       </p>
     </div>
   ),
-  topicsSelector: (
+  topicSelector: (
     <div>
       <p>
-        <strong>Topics Selector</strong> allows to select one or more topics to use.
+        <strong>Topic Selector</strong> allows to select one or more topics.
       </p>
       <p>
         Analyzing multiple topics simultaneously can be valuable to identify message patterns that may be difficult to notice by inspecting each topic in isolation.

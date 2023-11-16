@@ -220,7 +220,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                       id: uuid(),
                       name: '',
                       descriptionMarkdown: '',
-                      type: 'topics-selector'
+                      type: 'topic-selector'
                     },
                     spec: {
                       topicSelector: {

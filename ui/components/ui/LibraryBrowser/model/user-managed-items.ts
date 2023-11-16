@@ -1,4 +1,5 @@
-import { TopicSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode, NamespacedRegexTopicSelector, MultiTopicSelector } from "../../../TopicPage/Messages/types";
+import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
+import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../../TopicPage/Messages/topic-selector/topic-selector";
 
 export type ValOrRef<ValueT> = {
   type: 'value',
@@ -22,9 +23,13 @@ export type ManagedItemType =
   "message-filter" |
   "message-id" |
   "date-time" |
+  "coloring-rule" |
+  "coloring-rule-chain" |
   "relative-date-time" |
   "consumer-session-start-from" |
-  "consumer-session-pause-trigger" |
+  "consumer-session-event" |
+  "consumer-session-pause-trigger-chain" |
+  "consumer-session-topic" |
   "topic-selector";
 
 export type ManagedItemMetadata = {
@@ -110,32 +115,113 @@ export type ManagedConsumerSessionStartFrom = {
 };
 export type ManagedConsumerSessionStartFromValOrRef = ValOrRef<ManagedConsumerSessionStartFrom>;
 
-export type ManagedConsumerSessionTopicSelectorValOrRef = ValOrRef<ManagedConsumerSessionTopicSelector>;
-
-export type TopicsSelectorCurrentTopic = { type: "current-topic" };
+export type CurrentTopicSelector = { type: "current-topic" };
 
 export type ManagedTopicSelectorSpec = {
-  topicSelector: TopicsSelectorCurrentTopic | MultiTopicSelector | NamespacedRegexTopicSelector,
+  topicSelector: CurrentTopicSelector | MultiTopicSelector | NamespacedRegexTopicSelector
 };
 
-export type ManagedTopicsSelector = {
+export type ManagedTopicSelector = {
   metadata: ManagedItemMetadata,
   spec: ManagedTopicSelectorSpec,
 };
 
-export type ManagedTopicsSelectorValOrRef = ValOrRef<ManagedTopicsSelector>;
+export type ManagedTopicSelectorValOrRef = ValOrRef<ManagedTopicSelector>;
 
-export type ManagedConsumerSessionSpec = {
+export type ManagedColoringRuleSpec = {
   messageFilterChain: ManagedMessageFilterChainValOrRef,
-  topicsSelectors: ManagedTopicsSelectorValOrRef[],
+  foregroundColor: string,
+  backgroundColor: string,
+};
+
+export type ManagedColoringRule = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedColoringRuleSpec,
+};
+
+export type ManagedColoringRuleValOrRef = ValOrRef<ManagedColoringRule>;
+
+export type ManagedColoringRuleChainSpec = {
+  coloringRules: ManagedColoringRuleValOrRef[],
+};
+
+export type ManagedColoringRuleChain = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedColoringRuleChainSpec,
+};
+
+export type ManagedColoringRuleChainValOrRef = ValOrRef<ManagedColoringRuleChain>;
+
+export type ManagedConsumerSessionEventSpec = {
+  event:
+  ConsumerSessionEventMessagesProcessed |
+  ConsumerSessionEventMessagesDelivered |
+  ConsumerSessionEventBytesProcessed |
+  ConsumerSessionEventBytesDelivered |
+  ConsumerSessionEventMessageDecodeFailed |
+  ConsumerSessionEventTimeElapsed |
+  ConsumerSessionEventTopicEndReached |
+  ConsumerSessionEventUnexpectedErrorOccurred
+};
+
+export type ManagedConsumerSessionEvent = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionEventSpec,
+};
+
+export type ManagedConsumerSessionEventValOrRef = ValOrRef<ManagedConsumerSessionEvent>;
+
+export type ManagedConsumerSessionPauseTriggerChainSpec = {
+  events: ManagedConsumerSessionEventValOrRef[],
+  mode: ConsumerSessionPauseTriggerChainMode
+};
+
+export type ManagedConsumerSessionPauseTriggerChain = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionPauseTriggerChainSpec,
+};
+
+export type ManagedConsumerSessionPauseTriggerChainValOrRef = ValOrRef<ManagedConsumerSessionPauseTriggerChain>;
+
+export type ManagedConsumerSessionTopicSpec = {
+  topicSelector: ManagedTopicSelectorValOrRef,
+  messageFilterChain: ManagedMessageFilterChainValOrRef,
+  coloringRuleChain: ManagedColoringRuleChainValOrRef,
+};
+
+export type ManagedConsumerSessionTopic = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionTopicSpec,
+};
+
+export type ManagedConsumerSessionTopicValOrRef = ValOrRef<ManagedConsumerSessionTopic>;
+
+export type ManagedConsumerSessionConfigSpec = {
   startFrom: ManagedConsumerSessionStartFromValOrRef,
+  topics: ManagedConsumerSessionTopicValOrRef[],
+  messageFilterChain: ManagedMessageFilterChainValOrRef,
+  pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
+  coloringRuleChain: ManagedColoringRuleChainValOrRef,
 };
 
 export type ManagedConsumerSessionConfig = {
   metadata: ManagedItemMetadata,
-  spec: ManagedConsumerSessionSpec,
+  spec: ManagedConsumerSessionConfigSpec,
 };
 
 export type ManagedConsumerSessionConfigValOrRef = ValOrRef<ManagedConsumerSessionConfig>;
 
-export type ManagedItem = ManagedMessageFilter | ManagedMessageFilterChain | ManagedConsumerSessionStartFrom | ManagedTopicsSelector;
+export type ManagedItem = ManagedMessageFilter |
+  ManagedMessageFilterChain |
+  ManagedConsumerSessionStartFrom |
+  ManagedTopicSelector |
+  ManagedDateTime |
+  ManagedRelativeDateTime |
+  ManagedConsumerSessionEvent |
+  ManagedConsumerSessionPauseTriggerChain |
+  ManagedConsumerSessionConfig |
+  ManagedTopicSelector |
+  ManagedColoringRule |
+  ManagedColoringRuleChain |
+  ManagedConsumerSessionTopic |
+  ManagedMessageId;

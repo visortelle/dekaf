@@ -32,8 +32,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   switch (props.sessionState) {
     case 'new': playButtonOnClick = () => props.onSessionStateChange('initializing'); break;
     case 'initializing': playButtonOnClick = () => undefined; break;
-    case 'awaiting-initial-cursor-positions': playButtonOnClick = () => undefined; break;
-    case 'got-initial-cursor-positions': playButtonOnClick = () => undefined; break;
     case 'running': playButtonOnClick = () => props.onSessionStateChange('pausing'); break;
     case 'pausing': playButtonOnClick = () => undefined; break;
     case 'paused': playButtonOnClick = () => props.onSessionStateChange('running'); break;

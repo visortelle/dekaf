@@ -1,30 +1,13 @@
+import { ManagedColoringRuleChain, ManagedColoringRuleChainValOrRef } from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/managed_items_pb";
+import { ManagedMessageFilterChain, ManagedMessageFilterChainValOrRef, ManagedTopicSelectorValOrRef } from "../../ui/LibraryBrowser/model/user-managed-items";
+import { TopicSelector } from "./topic-selector/topic-selector";
+
 export type SessionState =
   | "paused"
   | "pausing"
   | "running"
-  | "got-initial-cursor-positions"
-  | "awaiting-initial-cursor-positions"
   | "initializing"
   | "new";
-
-export type RegexSubMode =
-  | "all-topics"
-  | "persistent-only"
-  | "non-persistent-only";
-
-export type MultiTopicSelector = {
-  type: "multi-topic-selector";
-  topicFqns: string[];
-};
-
-export type NamespacedRegexTopicSelector = {
-  type: "namespaced-regex-topic-selector";
-  namespaceFqn: string;
-  pattern: string;
-  regexSubscriptionMode: RegexSubMode;
-}
-
-export type TopicSelector = MultiTopicSelector | NamespacedRegexTopicSelector;
 
 export type DateTimeUnit = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
 
@@ -76,9 +59,9 @@ export type ConsumerSessionPauseTriggerChain = {
 };
 
 export type ConsumerSessionTopic = {
-  topicSelector: TopicSelector;
-  messageFilterChain: MessageFilterChain;
-  coloringRuleChain: ColoringRuleChain;
+  topicSelector: ManagedTopicSelectorValOrRef;
+  messageFilterChain: ManagedMessageFilterChainValOrRef;
+  coloringRuleChain: ManagedColoringRuleChainValOrRef;
 };
 
 export type ConsumerSessionStartFrom =

@@ -1,5 +1,6 @@
-import { ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTime, ManagedRelativeDateTimeValOrRef, ManagedTopicsSelectorValOrRef } from "./user-managed-items";
-import { ConsumerSessionConfig, ConsumerSessionStartFrom, MessageFilter, MessageFilterChain, RegexSubMode, RelativeDateTime, TopicSelector } from "../../../TopicPage/Messages/types";
+import { ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTime, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorValOrRef } from "./user-managed-items";
+import { ConsumerSessionConfig, ConsumerSessionStartFrom, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
+import { TopicSelector, RegexSubMode } from "../../../TopicPage/Messages/topic-selector/topic-selector";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
@@ -73,13 +74,13 @@ export function consumerSessionStartFromFromValOrRef(v: ManagedConsumerSessionSt
   }
 }
 
-export function topicsSelectorFromValOrRef(v: ManagedTopicsSelectorValOrRef[], currentTopicFqn: string | undefined): TopicSelector {
+export function topicsSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef[], currentTopicFqn: string | undefined): TopicSelector {
   if (v.some(ts => ts.val === undefined)) {
     throw new Error('TopicsSelector reference can\'t be converted to value');
   }
 
   // by-fqns and by-regex topics selectors can't be mixed together because Pulsar consumer doesn't support it.
-  let topicSelectorType: TopicSelector['type'] = 'by-fqns';
+  let topicSelectorType: TopicSelector['type'] = 'multi-topic-selector';
   if (v.every(ts => ts.val?.spec.topicSelector.type === 'by-fqns' || ts.val?.spec.topicSelector.type === 'current-topic')) {
     topicSelectorType = 'by-fqns';
   } else if (v.every(ts => ts.val?.spec.topicSelector.type === 'by-regex')) {

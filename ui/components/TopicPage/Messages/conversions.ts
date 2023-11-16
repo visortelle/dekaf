@@ -12,10 +12,6 @@ import {
   MessageFilterChainMode,
   ConsumerSessionStartFrom,
   DateTimeUnit,
-  TopicSelector,
-  MultiTopicSelector,
-  NamespacedRegexTopicSelector,
-  RegexSubMode,
   ColoringRule,
   ColoringRuleChain,
   MessageId,
@@ -33,6 +29,13 @@ import {
   ConsumerSessionPauseTriggerChain,
   ConsumerSessionTopic
 } from "./types";
+
+import {
+  TopicSelector,
+  MultiTopicSelector,
+  NamespacedRegexTopicSelector,
+  RegexSubMode,
+} from './topic-selector/topic-selector';
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
@@ -165,16 +168,16 @@ export function dateTimeUnitToPb(unit: DateTimeUnit): pb.DateTimeUnit {
   }
 }
 
-export function singleTopicSelectorFromPb(v: pb.SingleTopicSelector): MultiTopicSelector {
+export function multiTopicSelectorFromPb(v: pb.MultiTopicSelector): MultiTopicSelector {
   return {
-    type: 'single-topic-selector',
-    topicFqns: v.getTopicFqn(),
+    type: 'multi-topic-selector',
+    topicFqns: v.getTopicFqnsList(),
   };
 }
 
-export function singleTopicSelectorToPb(v: MultiTopicSelector): pb.SingleTopicSelector {
-  const singleTopicSelectorPb = new pb.SingleTopicSelector();
-  singleTopicSelectorPb.setTopicFqn(v.topicFqns);
+export function multiTopicSelectorToPb(v: MultiTopicSelector): pb.MultiTopicSelector {
+  const singleTopicSelectorPb = new pb.MultiTopicSelector();
+  singleTopicSelectorPb.setTopicFqnsList(v.topicFqns);
   return singleTopicSelectorPb;
 }
 
@@ -222,8 +225,8 @@ export function namespacedRegexTopicSelectorToPb(v: NamespacedRegexTopicSelector
 
 export function topicSelectorFromPb(v: pb.TopicSelector): TopicSelector {
   switch (v.getTopicSelectorCase()) {
-    case pb.TopicSelector.TopicSelectorCase.SINGLE_TOPIC_SELECTOR: {
-      return singleTopicSelectorFromPb(v.getSingleTopicSelector()!);
+    case pb.TopicSelector.TopicSelectorCase.MULTI_TOPIC_SELECTOR: {
+      return multiTopicSelectorFromPb(v.getMultiTopicSelector()!);
     }
     case pb.TopicSelector.TopicSelectorCase.NAMESPACED_REGEX_TOPIC_SELECTOR: {
       return namespacedRegexTopicSelectorFromPb(v.getNamespacedRegexTopicSelector()!);
@@ -237,8 +240,8 @@ export function topicsSelectorToPb(v: TopicSelector): pb.TopicSelector {
   const topicsSelectorPb = new pb.TopicSelector();
 
   switch (v.type) {
-    case 'single-topic-selector':
-      topicsSelectorPb.setSingleTopicSelector(singleTopicSelectorToPb(v));
+    case 'multi-topic-selector':
+      topicsSelectorPb.setMultiTopicSelector(multiTopicSelectorToPb(v));
       break;
     case 'namespaced-regex-topic-selector':
       topicsSelectorPb.setNamespacedRegexTopicSelector(namespacedRegexTopicSelectorToPb(v));

@@ -8,16 +8,15 @@ import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
-import { ManagedConsumerSessionConfig, ManagedConsumerSessionSpec, ManagedConsumerSessionConfigValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
-import TopicsSelectorInput from './TopicSelectorInput/TopicsSelectorsInput';
+import TopicSelectorInput from '../topic-selector/TopicSelectorInput/TopicSelectorInput';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef;
   onChange: (config: ManagedConsumerSessionConfigValOrRef) => void;
-  topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   libraryContext: LibraryContext;
 };
 
@@ -32,7 +31,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: ManagedConsumerSessionSpec) => {
+  const onSpecChange = (spec: ManagedConsumerSessionConfigSpec) => {
     const newValue: ManagedConsumerSessionConfigValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
@@ -66,14 +65,6 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
 
       <div className={s.Content}>
         <div className={s.LeftColumn}>
-          <FormItem>
-            <TopicsSelectorInput
-              value={itemSpec.topicsSelectors}
-              onChange={(v) => onSpecChange({ ...itemSpec, topicsSelectors: v })}
-              libraryContext={props.libraryContext}
-            />
-          </FormItem>
-
           <FormItem>
             <StartFromInput
               value={itemSpec.startFrom}

@@ -9,7 +9,27 @@ import {
   dateTimeUnitFromPb,
   dateTimeUnitToPb,
   namespacedRegexTopicSelectorFromPb,
-  namespacedRegexTopicSelectorToPb
+  namespacedRegexTopicSelectorToPb,
+  multiTopicSelectorFromPb,
+  multiTopicSelectorToPb,
+  consumerSessionEventMessagesProcessedFromPb,
+  consumerSessionEventMessagesDeliveredFromPb,
+  consumerSessionEventBytesProcessedFromPb,
+  consumerSessionEventBytesDeliveredFromPb,
+  consumerSessionEventMessageDecodeFailedFromPb,
+  consumerSessionEventTimeElapsedFromPb,
+  consumerSessionEventTopicEndReachedFromPb,
+  consumerSessionEventUnexpectedErrorOccurredFromPb,
+  consumerSessionEventMessagesProcessedToPb,
+  consumerSessionEventMessagesDeliveredToPb,
+  consumerSessionEventBytesProcessedToPb,
+  consumerSessionEventBytesDeliveredToPb,
+  consumerSessionEventMessageDecodeFailedToPb,
+  consumerSessionEventTimeElapsedToPb,
+  consumerSessionEventTopicEndReachedToPb,
+  consumerSessionEventUnexpectedErrorOccurredToPb,
+  consumerSessionPauseTriggerChainModeFromPb,
+  consumerSessionPauseTriggerChainModeToPb,
 } from "../../../TopicPage/Messages/conversions";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
@@ -57,12 +77,15 @@ export function managedItemMetadataToPb(v: t.ManagedItemMetadata): pb.ManagedIte
 }
 
 export function managedMessageIdSpecFromPb(v: pb.ManagedMessageIdSpec): t.ManagedMessageIdSpec {
-  return { hexString: hexStringFromByteArray(v.getMessageId_asU8(), 'hex-with-space') };
+  return { hexString: hexStringFromByteArray(v.getMessageId()?.getMessageId_asU8()!, 'hex-with-space') };
 }
 
 export function managedMessageIdSpecToPb(v: t.ManagedMessageIdSpec): pb.ManagedMessageIdSpec {
   const specPb = new pb.ManagedMessageIdSpec();
-  specPb.setMessageId(v.hexString);
+  const messageIdPb = new consumerPb.MessageId();
+  messageIdPb.setMessageId(hexStringToByteArray(v.hexString));
+  specPb.setMessageId(messageIdPb);
+
   return specPb;
 }
 
@@ -81,16 +104,16 @@ export function managedMessageIdToPb(v: t.ManagedMessageId): pb.ManagedMessageId
 }
 
 export function managedMessageIdValOrRefFromPb(v: pb.ManagedMessageIdValOrRef): t.ManagedMessageIdValOrRef {
-  switch (v.getMessageIdCase()) {
-    case pb.ManagedMessageIdValOrRef.MessageIdCase.MESSAGE_ID_VALUE:
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedMessageIdValOrRef.ValOrRefCase.VAL:
       return {
         type: 'value',
-        val: managedMessageIdFromPb(v.getMessageIdValue()!)
+        val: managedMessageIdFromPb(v.getVal()!)
       };
-    case pb.ManagedMessageIdValOrRef.MessageIdCase.MESSAGE_ID_REFERENCE:
+    case pb.ManagedMessageIdValOrRef.ValOrRefCase.REF:
       return {
         type: 'reference',
-        ref: v.getMessageIdReference()
+        ref: v.getRef()
       };
     default:
       throw new Error(`Unknown ManagedMessageIdValOrRef: ${v}`);
@@ -101,10 +124,10 @@ export function managedMessageIdValOrRefToPb(v: t.ManagedMessageIdValOrRef): pb.
   const idPb = new pb.ManagedMessageIdValOrRef();
   switch (v.type) {
     case 'value':
-      idPb.setMessageIdValue(managedMessageIdToPb(v.val));
+      idPb.setVal(managedMessageIdToPb(v.val));
       break;
     case 'reference':
-      idPb.setMessageIdReference(v.ref);
+      idPb.setRef(v.ref);
       break;
     default:
       throw new Error(`Unknown ManagedMessageIdValOrRef: ${v}`);
@@ -137,16 +160,16 @@ export function managedDateTimeToPb(v: t.ManagedDateTime): pb.ManagedDateTime {
 }
 
 export function managedDateTimeValOrRefFromPb(v: pb.ManagedDateTimeValOrRef): t.ManagedDateTimeValOrRef {
-  switch (v.getDateTimeCase()) {
-    case pb.ManagedDateTimeValOrRef.DateTimeCase.DATE_TIME_VALUE:
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedDateTimeValOrRef.ValOrRefCase.VAL:
       return {
         type: 'value',
-        val: managedDateTimeFromPb(v.getDateTimeValue()!)
+        val: managedDateTimeFromPb(v.getVal()!)
       };
-    case pb.ManagedDateTimeValOrRef.DateTimeCase.DATE_TIME_REFERENCE:
+    case pb.ManagedDateTimeValOrRef.ValOrRefCase.REF:
       return {
         type: 'reference',
-        ref: v.getDateTimeReference()
+        ref: v.getRef()
       };
     default:
       throw new Error(`Unknown ManagedDateTimeValOrRef: ${v}`);
@@ -157,10 +180,10 @@ export function managedDateTimeValOrRefToPb(v: t.ManagedDateTimeValOrRef): pb.Ma
   const idPb = new pb.ManagedDateTimeValOrRef();
   switch (v.type) {
     case 'value':
-      idPb.setDateTimeValue(managedDateTimeToPb(v.val));
+      idPb.setVal(managedDateTimeToPb(v.val));
       break;
     case 'reference':
-      idPb.setDateTimeReference(v.ref);
+      idPb.setRef(v.ref);
       break;
     default:
       throw new Error(`Unknown ManagedDateTimeValOrRef: ${v}`);
@@ -199,16 +222,16 @@ export function managedRelativeDateTimeToPb(v: t.ManagedRelativeDateTime): pb.Ma
 }
 
 export function managedRelativeDateTimeValOrRefFromPb(v: pb.ManagedRelativeDateTimeValOrRef): t.ManagedRelativeDateTimeValOrRef {
-  switch (v.getRelativeDateTimeCase()) {
-    case pb.ManagedRelativeDateTimeValOrRef.RelativeDateTimeCase.RELATIVE_DATE_TIME_VALUE:
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedRelativeDateTimeValOrRef.ValOrRefCase.VAL:
       return {
         type: 'value',
-        val: managedRelativeDateTimeFromPb(v.getRelativeDateTimeValue()!)
+        val: managedRelativeDateTimeFromPb(v.getVal()!)
       };
-    case pb.ManagedRelativeDateTimeValOrRef.RelativeDateTimeCase.RELATIVE_DATE_TIME_REFERENCE:
+    case pb.ManagedRelativeDateTimeValOrRef.ValOrRefCase.REF:
       return {
         type: 'reference',
-        ref: v.getRelativeDateTimeReference()
+        ref: v.getRef()
       };
     default:
       throw new Error(`Unknown ManagedRelativeDateTimeValOrRef: ${v}`);
@@ -219,10 +242,10 @@ export function managedRelativeDateTimeValOrRefToPb(v: t.ManagedRelativeDateTime
   const idPb = new pb.ManagedRelativeDateTimeValOrRef();
   switch (v.type) {
     case 'value':
-      idPb.setRelativeDateTimeValue(managedRelativeDateTimeToPb(v.val));
+      idPb.setVal(managedRelativeDateTimeToPb(v.val));
       break;
     case 'reference':
-      idPb.setRelativeDateTimeReference(v.ref);
+      idPb.setRef(v.ref);
       break;
     default:
       throw new Error(`Unknown ManagedRelativeDateTimeValOrRef: ${v}`);
@@ -296,16 +319,16 @@ export function managedConsumerSessionStartFromToPb(v: t.ManagedConsumerSessionS
 }
 
 export function managedConsumerSessionStartFromValOrRefFromPb(v: pb.ManagedConsumerSessionStartFromValOrRef): t.ManagedConsumerSessionStartFromValOrRef {
-  switch (v.getStartFromCase()) {
-    case pb.ManagedConsumerSessionStartFromValOrRef.StartFromCase.START_FROM_VALUE:
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedConsumerSessionStartFromValOrRef.ValOrRefCase.VAL:
       return {
         type: 'value',
-        val: managedConsumerSessionStartFromFromPb(v.getStartFromValue()!)
+        val: managedConsumerSessionStartFromFromPb(v.getVal()!)
       };
-    case pb.ManagedConsumerSessionStartFromValOrRef.StartFromCase.START_FROM_REFERENCE:
+    case pb.ManagedConsumerSessionStartFromValOrRef.ValOrRefCase.REF:
       return {
         type: 'reference',
-        ref: v.getStartFromReference()
+        ref: v.getRef()
       };
     default:
       throw new Error(`Unknown ManagedConsumerSessionStartFromValOrRef: ${v}`);
@@ -316,10 +339,10 @@ export function managedConsumerSessionStartFromValOrRefToPb(v: t.ManagedConsumer
   const idPb = new pb.ManagedConsumerSessionStartFromValOrRef();
   switch (v.type) {
     case 'value':
-      idPb.setStartFromValue(managedConsumerSessionStartFromToPb(v.val));
+      idPb.setVal(managedConsumerSessionStartFromToPb(v.val));
       break;
     case 'reference':
-      idPb.setStartFromReference(v.ref);
+      idPb.setRef(v.ref);
       break;
     default:
       throw new Error(`Unknown ManagedConsumerSessionStartFromValOrRef: ${v}`);
@@ -327,11 +350,174 @@ export function managedConsumerSessionStartFromValOrRefToPb(v: t.ManagedConsumer
   return idPb;
 }
 
-export function userMangedMessageFilterSpecFromPb(v: pb.ManagedMessageFilterSpec): t.ManagedMessageFilterSpec {
+export function managedConsumerSessionEventSpecFromPb(v: pb.ManagedConsumerSessionEventSpec): t.ManagedConsumerSessionEventSpec {
+  switch (v.getEventCase()) {
+    case pb.ManagedConsumerSessionEventSpec.EventCase.EVENT_MESSAGES_PROCESSED:
+      return { event: consumerSessionEventMessagesProcessedFromPb(v.getEventMessagesProcessed()!) };
+    case pb.ManagedConsumerSessionEventSpec.EventCase.EVENT_MESSAGES_DELIVERED:
+      return { event: consumerSessionEventMessagesDeliveredFromPb(v.getEventMessagesDelivered()!) };
+    case pb.ManagedConsumerSessionEventSpec.EventCase.EVENT_BYTES_PROCESSED:
+      return { event: consumerSessionEventBytesProcessedFromPb(v.getEventBytesProcessed()!) };
+    case pb.ManagedConsumerSessionEventSpec.EventCase.EVENT_BYTES_DELIVERED:
+      return { event: consumerSessionEventBytesDeliveredFromPb(v.getEventBytesDelivered()!) };
+    case pb.ManagedConsumerSessionEventSpec.EventCase.EVENT_MESSAGE_DECODE_FAILED:
+      return { event: consumerSessionEventMessageDecodeFailedFromPb(v.getEventMessageDecodeFailed()!) };
+    case pb.ManagedConsumerSessionEventSpec.EventCase.EVENT_TIME_ELAPSED:
+      return { event: consumerSessionEventTimeElapsedFromPb(v.getEventTimeElapsed()!) };
+    case pb.ManagedConsumerSessionEventSpec.EventCase.EVENT_TOPIC_END_REACHED:
+      return { event: consumerSessionEventTopicEndReachedFromPb(v.getEventTopicEndReached()!) };
+    case pb.ManagedConsumerSessionEventSpec.EventCase.EVENT_UNEXPECTED_ERROR_OCCURRED:
+      return { event: consumerSessionEventUnexpectedErrorOccurredFromPb(v.getEventUnexpectedErrorOccurred()!) };
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionEventSpec: ${v}`);
+  }
+}
+
+export function managedConsumerSessionEventSpecToPb(v: t.ManagedConsumerSessionEventSpec): pb.ManagedConsumerSessionEventSpec {
+  const specPb = new pb.ManagedConsumerSessionEventSpec();
+  switch (v.event.type) {
+    case 'messages-processed':
+      specPb.setEventMessagesProcessed(consumerSessionEventMessagesProcessedToPb(v.event));
+      break;
+    case 'messages-delivered':
+      specPb.setEventMessagesDelivered(consumerSessionEventMessagesDeliveredToPb(v.event));
+      break;
+    case 'bytes-processed':
+      specPb.setEventBytesProcessed(consumerSessionEventBytesProcessedToPb(v.event));
+      break;
+    case 'bytes-delivered':
+      specPb.setEventBytesDelivered(consumerSessionEventBytesDeliveredToPb(v.event));
+      break;
+    case 'decode-failed':
+      specPb.setEventMessageDecodeFailed(consumerSessionEventMessageDecodeFailedToPb(v.event));
+      break;
+    case 'time-elapsed':
+      specPb.setEventTimeElapsed(consumerSessionEventTimeElapsedToPb(v.event));
+      break;
+    case 'topic-end-reached':
+      specPb.setEventTopicEndReached(consumerSessionEventTopicEndReachedToPb(v.event));
+      break;
+    case 'unexpected-error-occurred':
+      specPb.setEventUnexpectedErrorOccurred(consumerSessionEventUnexpectedErrorOccurredToPb(v.event));
+      break;
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionEventSpec: ${v}`);
+  }
+
+  return specPb;
+}
+
+export function managedConsumerSessionEventFromPb(v: pb.ManagedConsumerSessionEvent): t.ManagedConsumerSessionEvent {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedConsumerSessionEventSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedConsumerSessionEventToPb(v: t.ManagedConsumerSessionEvent): pb.ManagedConsumerSessionEvent {
+  const idPb = new pb.ManagedConsumerSessionEvent();
+  idPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  idPb.setSpec(managedConsumerSessionEventSpecToPb(v.spec));
+  return idPb;
+}
+
+export function managedConsumerSessionEventValOrRefFromPb(v: pb.ManagedConsumerSessionEventValOrRef): t.ManagedConsumerSessionEventValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedConsumerSessionEventValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedConsumerSessionEventFromPb(v.getVal()!)
+      };
+    case pb.ManagedConsumerSessionEventValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionEventValOrRef: ${v}`);
+  }
+}
+
+export function managedConsumerSessionEventValOrRefToPb(v: t.ManagedConsumerSessionEventValOrRef): pb.ManagedConsumerSessionEventValOrRef {
+  const valOrRef = new pb.ManagedConsumerSessionEventValOrRef();
+  switch (v.type) {
+    case 'value':
+      valOrRef.setVal(managedConsumerSessionEventToPb(v.val));
+      break;
+    case 'reference':
+      valOrRef.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionEventValOrRef: ${v}`);
+  }
+  return valOrRef;
+}
+
+export function managedConsumerSessionPauseTriggerChainSpecFromPb(v: pb.ManagedConsumerSessionPauseTriggerChainSpec): t.ManagedConsumerSessionPauseTriggerChainSpec {
+  return {
+    events: v.getEventsList().map(managedConsumerSessionEventValOrRefFromPb),
+    mode: consumerSessionPauseTriggerChainModeFromPb(v.getMode())
+  };
+}
+
+export function managedConsumerSessionPauseTriggerChainSpecToPb(v: t.ManagedConsumerSessionPauseTriggerChainSpec): pb.ManagedConsumerSessionPauseTriggerChainSpec {
+  const specPb = new pb.ManagedConsumerSessionPauseTriggerChainSpec();
+  specPb.setEventsList(v.events.map(managedConsumerSessionEventValOrRefToPb));
+  specPb.setMode(consumerSessionPauseTriggerChainModeToPb(v.mode));
+  return specPb;
+}
+
+export function managedConsumerSessionPauseTriggerChainFromPb(v: pb.ManagedConsumerSessionPauseTriggerChain): t.ManagedConsumerSessionPauseTriggerChain {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedConsumerSessionPauseTriggerChainSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedConsumerSessionPauseTriggerChainToPb(v: t.ManagedConsumerSessionPauseTriggerChain): pb.ManagedConsumerSessionPauseTriggerChain {
+  const idPb = new pb.ManagedConsumerSessionPauseTriggerChain();
+  idPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  idPb.setSpec(managedConsumerSessionPauseTriggerChainSpecToPb(v.spec));
+  return idPb;
+}
+
+export function managedConsumerSessionPauseTriggerChainValOrRefFromPb(v: pb.ManagedConsumerSessionPauseTriggerChainValOrRef): t.ManagedConsumerSessionPauseTriggerChainValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedConsumerSessionPauseTriggerChainValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedConsumerSessionPauseTriggerChainFromPb(v.getVal()!)
+      };
+    case pb.ManagedConsumerSessionPauseTriggerChainValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionPauseTriggerChainValOrRef: ${v}`);
+  }
+}
+
+export function managedConsumerSessionPauseTriggerChainValOrRefToPb(v: t.ManagedConsumerSessionPauseTriggerChainValOrRef): pb.ManagedConsumerSessionPauseTriggerChainValOrRef {
+  const valOrRef = new pb.ManagedConsumerSessionPauseTriggerChainValOrRef();
+  switch (v.type) {
+    case 'value':
+      valOrRef.setVal(managedConsumerSessionPauseTriggerChainToPb(v.val));
+      break;
+    case 'reference':
+      valOrRef.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionPauseTriggerChainValOrRef: ${v}`);
+  }
+  return valOrRef;
+}
+
+export function managedMessageFilterSpecFromPb(v: pb.ManagedMessageFilterSpec): t.ManagedMessageFilterSpec {
   return messageFilterFromPb(v.getMessageFilter()!)
 }
 
-export function userMangedMessageFilterSpecToPb(v: t.ManagedMessageFilterSpec): pb.ManagedMessageFilterSpec {
+export function managedMessageFilterSpecToPb(v: t.ManagedMessageFilterSpec): pb.ManagedMessageFilterSpec {
   const specPb = new pb.ManagedMessageFilterSpec();
   specPb.setMessageFilter(messageFilterToPb(v));
   return specPb;
@@ -340,28 +526,28 @@ export function userMangedMessageFilterSpecToPb(v: t.ManagedMessageFilterSpec): 
 export function managedMessageFilterFromPb(v: pb.ManagedMessageFilter): t.ManagedMessageFilter {
   return {
     metadata: managedItemMetadataFromPb(v.getMetadata()!),
-    spec: userMangedMessageFilterSpecFromPb(v.getSpec()!)
+    spec: managedMessageFilterSpecFromPb(v.getSpec()!)
   };
 }
 
 export function managedMessageFilterToPb(v: t.ManagedMessageFilter): pb.ManagedMessageFilter {
   const filterPb = new pb.ManagedMessageFilter();
   filterPb.setMetadata(managedItemMetadataToPb(v.metadata));
-  filterPb.setSpec(userMangedMessageFilterSpecToPb(v.spec));
+  filterPb.setSpec(managedMessageFilterSpecToPb(v.spec));
   return filterPb;
 }
 
 export function managedMessageFilterValOrRefFromPb(v: pb.ManagedMessageFilterValOrRef): t.ManagedMessageFilterValOrRef {
-  switch (v.getMessageFilterCase()) {
-    case pb.ManagedMessageFilterValOrRef.MessageFilterCase.MESSAGE_FILTER_VALUE:
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedMessageFilterValOrRef.ValOrRefCase.VAL:
       return {
         type: 'value',
-        val: managedMessageFilterFromPb(v.getMessageFilterValue()!)
+        val: managedMessageFilterFromPb(v.getVal()!)
       };
-    case pb.ManagedMessageFilterValOrRef.MessageFilterCase.MESSAGE_FILTER_REFERENCE:
+    case pb.ManagedMessageFilterValOrRef.ValOrRefCase.REF:
       return {
         type: 'reference',
-        ref: v.getMessageFilterReference()
+        ref: v.getRef()
       };
     default:
       throw new Error(`Unknown ManagedMessageFilterValOrRef: ${v}`);
@@ -372,10 +558,10 @@ export function managedMessageFilterValOrRefToPb(v: t.ManagedMessageFilterValOrR
   const filterPb = new pb.ManagedMessageFilterValOrRef();
   switch (v.type) {
     case 'value':
-      filterPb.setMessageFilterValue(managedMessageFilterToPb(v.val));
+      filterPb.setVal(managedMessageFilterToPb(v.val));
       break;
     case 'reference':
-      filterPb.setMessageFilterReference(v.ref);
+      filterPb.setRef(v.ref);
       break;
     default:
       throw new Error(`Unknown ManagedMessageFilterValOrRef: ${v}`);
@@ -416,16 +602,16 @@ export function managedMessageFilterChainToPb(v: t.ManagedMessageFilterChain): p
 }
 
 export function managedMessageFilterChainValOrRefFromPb(v: pb.ManagedMessageFilterChainValOrRef): t.ManagedMessageFilterChainValOrRef {
-  switch (v.getMessageFilterChainCase()) {
-    case pb.ManagedMessageFilterChainValOrRef.MessageFilterChainCase.MESSAGE_FILTER_CHAIN_VALUE:
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedMessageFilterChainValOrRef.ValOrRefCase.VAL:
       return {
         type: 'value',
-        val: managedMessageFilterChainFromPb(v.getMessageFilterChainValue()!)
+        val: managedMessageFilterChainFromPb(v.getVal()!)
       };
-    case pb.ManagedMessageFilterChainValOrRef.MessageFilterChainCase.MESSAGE_FILTER_CHAIN_REFERENCE:
+    case pb.ManagedMessageFilterChainValOrRef.ValOrRefCase.REF:
       return {
         type: 'reference',
-        ref: v.getMessageFilterChainReference()
+        ref: v.getRef()
       };
     default:
       throw new Error(`Unknown ManagedMessageFilterChainValOrRef: ${v}`);
@@ -436,10 +622,10 @@ export function managedMessageFilterChainValOrRefToPb(v: t.ManagedMessageFilterC
   const chainPb = new pb.ManagedMessageFilterChainValOrRef();
   switch (v.type) {
     case 'value':
-      chainPb.setMessageFilterChainValue(managedMessageFilterChainToPb(v.val));
+      chainPb.setVal(managedMessageFilterChainToPb(v.val));
       break;
     case 'reference':
-      chainPb.setMessageFilterChainReference(v.ref);
+      chainPb.setRef(v.ref);
       break;
     default:
       throw new Error(`Unknown ManagedMessageFilterChainValOrRef: ${v}`);
@@ -447,68 +633,369 @@ export function managedMessageFilterChainValOrRefToPb(v: t.ManagedMessageFilterC
   return chainPb;
 }
 
-export function topicsSelectorCurrentFromPb(v: pb.TopicsSelectorCurrentTopic): t.TopicsSelectorCurrentTopic {
+export function currentTopicSelectorFromPb(v: pb.CurrentTopicSelector): t.CurrentTopicSelector {
   return { type: 'current-topic' };
 }
 
-export function topicsSelectorCurrentToPb(v: t.TopicsSelectorCurrentTopic): pb.TopicsSelectorCurrentTopic {
-  return new pb.TopicsSelectorCurrentTopic();
+export function currentTopicSelectorToPb(v: t.CurrentTopicSelector): pb.CurrentTopicSelector {
+  return new pb.CurrentTopicSelector();
 }
 
-export function topicsSelectorByFqnsFromPb(v: pb.TopicsSelectorByFqns): t.TopicsSelectorByFqns {
+export function managedTopicSelectorSpecFromPb(v: pb.ManagedTopicSelectorSpec): t.ManagedTopicSelectorSpec {
+  switch (v.getTopicSelectorCase()) {
+    case pb.ManagedTopicSelectorSpec.TopicSelectorCase.CURRENT_TOPIC_SELECTOR:
+      return { topicSelector: currentTopicSelectorFromPb(v.getCurrentTopicSelector()!) };
+    case pb.ManagedTopicSelectorSpec.TopicSelectorCase.MULTI_TOPIC_SELECTOR:
+      return { topicSelector: multiTopicSelectorFromPb(v.getMultiTopicSelector()!) };
+    case pb.ManagedTopicSelectorSpec.TopicSelectorCase.NAMESPACED_REGEX_TOPIC_SELECTOR:
+      return { topicSelector: namespacedRegexTopicSelectorFromPb(v.getNamespacedRegexTopicSelector()!) };
+    default:
+      throw new Error(`Unknown ManagedTopicsSelectorSpec: ${v}`);
+  }
+}
+
+export function managedTopicSelectorSpecToPb(v: t.ManagedTopicSelectorSpec): pb.ManagedTopicSelectorSpec {
+  const specPb = new pb.ManagedTopicSelectorSpec();
+  switch (v.topicSelector.type) {
+    case 'current-topic':
+      specPb.setCurrentTopicSelector(currentTopicSelectorToPb(v.topicSelector));
+      break;
+    case 'multi-topic-selector':
+      specPb.setMultiTopicSelector(multiTopicSelectorToPb(v.topicSelector));
+      break;
+    case 'namespaced-regex-topic-selector':
+      specPb.setNamespacedRegexTopicSelector(namespacedRegexTopicSelectorToPb(v.topicSelector));
+      break;
+    default:
+      throw new Error(`Unknown ManagedTopicsSelectorSpec: ${v}`);
+  }
+  return specPb;
+}
+
+export function managedTopicSelectorFromPb(v: pb.ManagedTopicSelector): t.ManagedTopicSelector {
   return {
-    type: 'by-fqns',
-    topicFqns: v.getTopicFqnsList(),
-    isConvertPartitionedTopicToItsPartitions: v.getIsConvertPartitionedTopicToItsPartitions()
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedTopicSelectorSpecFromPb(v.getSpec()!)
   };
 }
 
-export function topicsSelectorByFqnsToPb(v: t.TopicsSelectorByFqns): pb.TopicsSelectorByFqns {
-  const specPb = new pb.TopicsSelectorByFqns();
-  specPb.setTopicFqnsList(v.topicFqns);
-  specPb.setIsConvertPartitionedTopicToItsPartitions(v.isConvertPartitionedTopicToItsPartitions);
-  return specPb;
+export function managedTopicSelectorToPb(v: t.ManagedTopicSelector): pb.ManagedTopicSelector {
+  const selectorPb = new pb.ManagedTopicSelector();
+  selectorPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  selectorPb.setSpec(managedTopicSelectorSpecToPb(v.spec));
+  return selectorPb;
 }
 
-export function managedTopicsSelectorSpecFromPb(v: pb.ManagedTopicsSelectorSpec): t.ManagedTopicSelectorSpec {
-  switch (v.getTopicsSelectorCase()) {
-    case pb.ManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_CURRENT_TOPIC:
-      return { topicSelector: topicsSelectorCurrentFromPb(v.getTopicsSelectorCurrentTopic()!) };
-    case pb.ManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_BY_FQNS:
-      return { topicSelector: topicsSelectorByFqnsFromPb(v.getTopicsSelectorByFqns()!) };
-    case pb.ManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_BY_REGEX:
-      return { topicSelector: namespacedRegexTopicSelectorFromPb(v.getTopicsSelectorByRegex()!) };
+export function managedTopicSelectorValOrRefFromPb(v: pb.ManagedTopicSelectorValOrRef): t.ManagedTopicSelectorValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedTopicSelectorValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedTopicSelectorFromPb(v.getVal()!)
+      };
+    case pb.ManagedTopicSelectorValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
     default:
-      throw new Error(`Unknown ManagedTopicsSelectorSpec: ${v}`);
+      throw new Error(`Unknown ManagedTopicSelectorValOrRef: ${v}`);
   }
 }
 
-export function managedTopicsSelectorSpecToPb(v: t.ManagedTopicSelectorSpec): pb.ManagedTopicsSelectorSpec {
-  const specPb = new pb.ManagedTopicsSelectorSpec();
-  switch (v.topicSelector.type) {
-    case 'current-topic':
-      specPb.setTopicsSelectorCurrentTopic(topicsSelectorCurrentToPb(v.topicSelector));
+export function managedTopicSelectorValOrRefToPb(v: t.ManagedTopicSelectorValOrRef): pb.ManagedTopicSelectorValOrRef {
+  const valOrRefPb = new pb.ManagedTopicSelectorValOrRef();
+  switch (v.type) {
+    case 'value':
+      valOrRefPb.setVal(managedTopicSelectorToPb(v.val));
       break;
-    case 'by-fqns':
-      specPb.setTopicsSelectorByFqns(topicsSelectorByFqnsToPb(v.topicSelector));
-      break;
-    case 'by-regex':
-      specPb.setTopicsSelectorByRegex(namespacedRegexTopicSelectorToPb(v.topicSelector));
+    case 'reference':
+      valOrRefPb.setRef(v.ref);
       break;
     default:
-      throw new Error(`Unknown ManagedTopicsSelectorSpec: ${v}`);
+      throw new Error(`Unknown ManagedTopicSelectorValOrRef: ${v}`);
   }
+  return valOrRefPb;
+}
+
+export function managedColoringRuleSpecFromPb(v: pb.ManagedColoringRuleSpec): t.ManagedColoringRuleSpec {
+  return {
+    messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
+    backgroundColor: v.getBackgroundColor(),
+    foregroundColor: v.getForegroundColor()
+  };
+}
+
+export function managedColoringRuleSpecToPb(v: t.ManagedColoringRuleSpec): pb.ManagedColoringRuleSpec {
+  const specPb = new pb.ManagedColoringRuleSpec();
+  specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
+  specPb.setBackgroundColor(v.backgroundColor);
+  specPb.setForegroundColor(v.foregroundColor);
   return specPb;
+}
+
+export function managedColoringRuleFromPb(v: pb.ManagedColoringRule): t.ManagedColoringRule {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedColoringRuleSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedColoringRuleToPb(v: t.ManagedColoringRule): pb.ManagedColoringRule {
+  const rulePb = new pb.ManagedColoringRule();
+  rulePb.setMetadata(managedItemMetadataToPb(v.metadata));
+  rulePb.setSpec(managedColoringRuleSpecToPb(v.spec));
+  return rulePb;
+}
+
+export function managedColoringRuleValOrRefFromPb(v: pb.ManagedColoringRuleValOrRef): t.ManagedColoringRuleValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedColoringRuleValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedColoringRuleFromPb(v.getVal()!)
+      };
+    case pb.ManagedColoringRuleValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedColoringRuleValOrRef: ${v}`);
+  }
+}
+
+export function managedColoringRuleValOrRefToPb(v: t.ManagedColoringRuleValOrRef): pb.ManagedColoringRuleValOrRef {
+  const valOrRefPb = new pb.ManagedColoringRuleValOrRef();
+  switch (v.type) {
+    case 'value':
+      valOrRefPb.setVal(managedColoringRuleToPb(v.val));
+      break;
+    case 'reference':
+      valOrRefPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedColoringRuleValOrRef: ${v}`);
+  }
+  return valOrRefPb;
+}
+
+export function managedColoringRuleChainSpecFromPb(v: pb.ManagedColoringRuleChainSpec): t.ManagedColoringRuleChainSpec {
+  return {
+    coloringRules: v.getColoringRulesList().map(managedColoringRuleValOrRefFromPb)
+  }
+}
+
+export function managedColoringRuleChainSpecToPb(v: t.ManagedColoringRuleChainSpec): pb.ManagedColoringRuleChainSpec {
+  const specPb = new pb.ManagedColoringRuleChainSpec();
+  specPb.setColoringRulesList(v.coloringRules.map(managedColoringRuleValOrRefToPb));
+  return specPb;
+}
+
+export function managedColoringRuleChainFromPb(v: pb.ManagedColoringRuleChain): t.ManagedColoringRuleChain {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedColoringRuleChainSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedColoringRuleChainToPb(v: t.ManagedColoringRuleChain): pb.ManagedColoringRuleChain {
+  const chainPb = new pb.ManagedColoringRuleChain();
+  chainPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  chainPb.setSpec(managedColoringRuleChainSpecToPb(v.spec));
+
+  return chainPb;
+}
+
+export function managedColoringRuleChainValOrRefFromPb(v: pb.ManagedColoringRuleChainValOrRef): t.ManagedColoringRuleChainValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedColoringRuleChainValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedColoringRuleChainFromPb(v.getVal()!)
+      };
+    case pb.ManagedColoringRuleChainValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedColoringRuleChainValOrRef: ${v}`);
+  }
+}
+
+export function managedColoringRuleChainValOrRefToPb(v: t.ManagedColoringRuleChainValOrRef): pb.ManagedColoringRuleChainValOrRef {
+  const idPb = new pb.ManagedColoringRuleChainValOrRef();
+  switch (v.type) {
+    case 'value':
+      idPb.setVal(managedColoringRuleChainToPb(v.val));
+      break;
+    case 'reference':
+      idPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedColoringRuleChainValOrRef: ${v}`);
+  }
+  return idPb;
+}
+
+export function managedConsumerSessionTopicSpecFromPb(v: pb.ManagedConsumerSessionTopicSpec): t.ManagedConsumerSessionTopicSpec {
+  return {
+    topicSelector: managedTopicSelectorValOrRefFromPb(v.getTopicSelector()!),
+    coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
+    messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
+  };
+}
+
+export function managedConsumerSessionTopicSpecToPb(v: t.ManagedConsumerSessionTopicSpec): pb.ManagedConsumerSessionTopicSpec {
+  const specPb = new pb.ManagedConsumerSessionTopicSpec();
+  specPb.setTopicSelector(managedTopicSelectorValOrRefToPb(v.topicSelector));
+  specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
+  specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
+  return specPb;
+}
+
+export function managedConsumerSessionTopicFromPb(v: pb.ManagedConsumerSessionTopic): t.ManagedConsumerSessionTopic {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedConsumerSessionTopicSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedConsumerSessionTopicToPb(v: t.ManagedConsumerSessionTopic): pb.ManagedConsumerSessionTopic {
+  const topicPb = new pb.ManagedConsumerSessionTopic();
+  topicPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  topicPb.setSpec(managedConsumerSessionTopicSpecToPb(v.spec));
+  return topicPb;
+}
+
+export function managedConsumerSessionTopicValOrRefFromPb(v: pb.ManagedConsumerSessionTopicValOrRef): t.ManagedConsumerSessionTopicValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedConsumerSessionTopicValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedConsumerSessionTopicFromPb(v.getVal()!)
+      };
+    case pb.ManagedConsumerSessionTopicValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionTopicValOrRef: ${v}`);
+  }
+}
+
+export function managedConsumerSessionTopicValOrRefToPb(v: t.ManagedConsumerSessionTopicValOrRef): pb.ManagedConsumerSessionTopicValOrRef {
+  const topicPb = new pb.ManagedConsumerSessionTopicValOrRef();
+  switch (v.type) {
+    case 'value':
+      topicPb.setVal(managedConsumerSessionTopicToPb(v.val));
+      break;
+    case 'reference':
+      topicPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionTopicValOrRef: ${v}`);
+  }
+  return topicPb;
+}
+
+export function managedConsumerSessionConfigSpecFromPb(v: pb.ManagedConsumerSessionConfigSpec): t.ManagedConsumerSessionConfigSpec {
+  return {
+    startFrom: managedConsumerSessionStartFromValOrRefFromPb(v.getStartFrom()!),
+    topics: v.getTopicsList().map(managedConsumerSessionTopicValOrRefFromPb),
+    messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
+    pauseTriggerChain: managedConsumerSessionPauseTriggerChainValOrRefFromPb(v.getPauseTriggerChain()!),
+    coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
+  };
+}
+
+export function managedConsumerSessionConfigSpecToPb(v: t.ManagedConsumerSessionConfigSpec): pb.ManagedConsumerSessionConfigSpec {
+  const specPb = new pb.ManagedConsumerSessionConfigSpec();
+  specPb.setStartFrom(managedConsumerSessionStartFromValOrRefToPb(v.startFrom));
+  specPb.setTopicsList(v.topics.map(managedConsumerSessionTopicValOrRefToPb));
+  specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
+  specPb.setPauseTriggerChain(managedConsumerSessionPauseTriggerChainValOrRefToPb(v.pauseTriggerChain));
+  specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
+
+  return specPb;
+}
+
+export function managedConsumerSessionConfigFromPb(v: pb.ManagedConsumerSessionConfig): t.ManagedConsumerSessionConfig {
+  return {
+    metadata: managedItemMetadataFromPb(v.getMetadata()!),
+    spec: managedConsumerSessionConfigSpecFromPb(v.getSpec()!)
+  };
+}
+
+export function managedConsumerSessionConfigToPb(v: t.ManagedConsumerSessionConfig): pb.ManagedConsumerSessionConfig {
+  const configPb = new pb.ManagedConsumerSessionConfig();
+  configPb.setMetadata(managedItemMetadataToPb(v.metadata));
+  configPb.setSpec(managedConsumerSessionConfigSpecToPb(v.spec));
+  return configPb;
+}
+
+export function managedConsumerSessionConfigValOrRefFromPb(v: pb.ManagedConsumerSessionConfigValOrRef): t.ManagedConsumerSessionConfigValOrRef {
+  switch (v.getValOrRefCase()) {
+    case pb.ManagedConsumerSessionConfigValOrRef.ValOrRefCase.VAL:
+      return {
+        type: 'value',
+        val: managedConsumerSessionConfigFromPb(v.getVal()!)
+      };
+    case pb.ManagedConsumerSessionConfigValOrRef.ValOrRefCase.REF:
+      return {
+        type: 'reference',
+        ref: v.getRef()
+      };
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionConfigValOrRef: ${v}`);
+  }
+}
+
+export function managedConsumerSessionConfigValOrRefToPb(v: t.ManagedConsumerSessionConfigValOrRef): pb.ManagedConsumerSessionConfigValOrRef {
+  const idPb = new pb.ManagedConsumerSessionConfigValOrRef();
+  switch (v.type) {
+    case 'value':
+      idPb.setVal(managedConsumerSessionConfigToPb(v.val));
+      break;
+    case 'reference':
+      idPb.setRef(v.ref);
+      break;
+    default:
+      throw new Error(`Unknown ManagedConsumerSessionConfigValOrRef: ${v}`);
+  }
+  return idPb;
 }
 
 export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
-  switch (v.getItemCase()) {
-    case pb.ManagedItem.ItemCase.MESSAGE_FILTER:
-      return managedMessageFilterFromPb(v.getMessageFilter()!);
-    case pb.ManagedItem.ItemCase.MESSAGE_FILTER_CHAIN:
-      return managedMessageFilterChainFromPb(v.getMessageFilterChain()!);
-    case pb.ManagedItem.ItemCase.CONSUMER_SESSION_START_FROM:
-      return managedConsumerSessionStartFromFromPb(v.getConsumerSessionStartFrom()!);
+  switch (v.getSpecCase()) {
+    case pb.ManagedItem.SpecCase.SPEC_MESSAGE_ID:
+      return managedMessageIdFromPb(v.getSpecMessageId()!);
+    case pb.ManagedItem.SpecCase.SPEC_DATE_TIME:
+      return managedDateTimeFromPb(v.getSpecDateTime()!);
+    case pb.ManagedItem.SpecCase.SPEC_RELATIVE_DATE_TIME:
+      return managedRelativeDateTimeFromPb(v.getSpecRelativeDateTime()!);
+    case pb.ManagedItem.SpecCase.SPEC_TOPIC_SELECTOR:
+      return managedTopicSelectorFromPb(v.getSpecTopicSelector()!);
+    case pb.ManagedItem.SpecCase.SPEC_COLORING_RULE:
+      return managedColoringRuleFromPb(v.getSpecColoringRule()!);
+    case pb.ManagedItem.SpecCase.SPEC_COLORING_RULE_CHAIN:
+      return managedColoringRuleChainFromPb(v.getSpecColoringRuleChain()!);
+    case pb.ManagedItem.SpecCase.SPEC_MESSAGE_FILTER:
+      return managedMessageFilterFromPb(v.getSpecMessageFilter()!);
+    case pb.ManagedItem.SpecCase.SPEC_MESSAGE_FILTER_CHAIN:
+      return managedMessageFilterChainFromPb(v.getSpecMessageFilterChain()!);
+    case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_START_FROM:
+      return managedConsumerSessionStartFromFromPb(v.getSpecConsumerSessionStartFrom()!);
+    case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_EVENT:
+      return managedConsumerSessionEventFromPb(v.getSpecConsumerSessionEvent()!);
+    case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN:
+      return managedConsumerSessionPauseTriggerChainFromPb(v.getSpecConsumerSessionPauseTriggerChain()!);
+    case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_TOPIC:
+      return managedConsumerSessionTopicFromPb(v.getSpecConsumerSessionTopic()!);
+    case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_CONFIG:
+      return managedConsumerSessionConfigFromPb(v.getSpecConsumerSessionConfig()!);
     default:
       throw new Error(`Unknown ManagedItem: ${v}`);
   }
@@ -517,6 +1004,30 @@ export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
 export function managedItemToPb(v: t.ManagedItem): pb.ManagedItem {
   const itemPb = new pb.ManagedItem();
   switch (v.metadata.type) {
+    case "message-id": {
+      itemPb.setSpecMessageId(managedMessageIdToPb(v as t.ManagedMessageId));
+      break;
+    }
+    case "date-time": {
+      itemPb.setSpecDateTime(managedDateTimeToPb(v as t.ManagedDateTime));
+      break;
+    }
+    case "relative-date-time": {
+      itemPb.setSpecRelativeDateTime(managedRelativeDateTimeToPb(v as t.ManagedRelativeDateTime));
+      break;
+    }
+    case "topic-selector": {
+      itemPb.setSpecTopicSelector(managedTopicSelectorToPb(v as t.ManagedTopicSelector));
+      break;
+    }
+    case "coloring-rule": {
+      itemPb.setSpecColoringRule(managedColoringRuleToPb(v as t.ManagedColoringRule));
+      break;
+    }
+    case "coloring-rule-chain": {
+      itemPb.setSpecColoringRuleChain(managedColoringRuleChainToPb(v as t.ManagedColoringRuleChain));
+      break;
+    }
     case "message-filter": {
       itemPb.setSpecMessageFilter(managedMessageFilterToPb(v as t.ManagedMessageFilter));
       break;
@@ -527,6 +1038,22 @@ export function managedItemToPb(v: t.ManagedItem): pb.ManagedItem {
     }
     case "consumer-session-start-from": {
       itemPb.setSpecConsumerSessionStartFrom(managedConsumerSessionStartFromToPb(v as t.ManagedConsumerSessionStartFrom));
+      break;
+    }
+    case "consumer-session-event": {
+      itemPb.setSpecConsumerSessionEvent(managedConsumerSessionEventToPb(v as t.ManagedConsumerSessionEvent));
+      break;
+    }
+    case "consumer-session-pause-trigger-chain": {
+      itemPb.setSpecConsumerSessionPauseTriggerChain(managedConsumerSessionPauseTriggerChainToPb(v as t.ManagedConsumerSessionPauseTriggerChain));
+      break;
+    }
+    case "consumer-session-topic": {
+      itemPb.setSpecConsumerSessionTopic(managedConsumerSessionTopicToPb(v as t.ManagedConsumerSessionTopic));
+      break;
+    }
+    case "consumer-session-config": {
+      itemPb.setSpecConsumerSessionConfig(managedConsumerSessionConfigToPb(v as t.ManagedConsumerSessionConfig));
       break;
     }
   }
