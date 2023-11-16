@@ -470,30 +470,30 @@ export function topicsSelectorByFqnsToPb(v: t.TopicsSelectorByFqns): pb.TopicsSe
   return specPb;
 }
 
-export function managedTopicsSelectorSpecFromPb(v: pb.ManagedTopicsSelectorSpec): t.ManagedTopicsSelectorSpec {
+export function managedTopicsSelectorSpecFromPb(v: pb.ManagedTopicsSelectorSpec): t.ManagedTopicSelectorSpec {
   switch (v.getTopicsSelectorCase()) {
     case pb.ManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_CURRENT_TOPIC:
-      return { topicsSelector: topicsSelectorCurrentFromPb(v.getTopicsSelectorCurrentTopic()!) };
+      return { topicSelector: topicsSelectorCurrentFromPb(v.getTopicsSelectorCurrentTopic()!) };
     case pb.ManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_BY_FQNS:
-      return { topicsSelector: topicsSelectorByFqnsFromPb(v.getTopicsSelectorByFqns()!) };
+      return { topicSelector: topicsSelectorByFqnsFromPb(v.getTopicsSelectorByFqns()!) };
     case pb.ManagedTopicsSelectorSpec.TopicsSelectorCase.TOPICS_SELECTOR_BY_REGEX:
-      return { topicsSelector: namespacedRegexTopicSelectorFromPb(v.getTopicsSelectorByRegex()!) };
+      return { topicSelector: namespacedRegexTopicSelectorFromPb(v.getTopicsSelectorByRegex()!) };
     default:
       throw new Error(`Unknown ManagedTopicsSelectorSpec: ${v}`);
   }
 }
 
-export function managedTopicsSelectorSpecToPb(v: t.ManagedTopicsSelectorSpec): pb.ManagedTopicsSelectorSpec {
+export function managedTopicsSelectorSpecToPb(v: t.ManagedTopicSelectorSpec): pb.ManagedTopicsSelectorSpec {
   const specPb = new pb.ManagedTopicsSelectorSpec();
-  switch (v.topicsSelector.type) {
+  switch (v.topicSelector.type) {
     case 'current-topic':
-      specPb.setTopicsSelectorCurrentTopic(topicsSelectorCurrentToPb(v.topicsSelector));
+      specPb.setTopicsSelectorCurrentTopic(topicsSelectorCurrentToPb(v.topicSelector));
       break;
     case 'by-fqns':
-      specPb.setTopicsSelectorByFqns(topicsSelectorByFqnsToPb(v.topicsSelector));
+      specPb.setTopicsSelectorByFqns(topicsSelectorByFqnsToPb(v.topicSelector));
       break;
     case 'by-regex':
-      specPb.setTopicsSelectorByRegex(namespacedRegexTopicSelectorToPb(v.topicsSelector));
+      specPb.setTopicsSelectorByRegex(namespacedRegexTopicSelectorToPb(v.topicSelector));
       break;
     default:
       throw new Error(`Unknown ManagedTopicsSelectorSpec: ${v}`);

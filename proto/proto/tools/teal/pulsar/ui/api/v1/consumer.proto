@@ -178,8 +178,8 @@ message ColoringRuleChain {
   repeated ColoringRule coloring_rules = 1;
 }
 
-message SingleTopicSelector {
-  string topic_fqn = 1;
+message MultiTopicSelector {
+  repeated string topic_fqns = 1;
 }
 
 message NamespacedRegexTopicSelector {
@@ -189,7 +189,7 @@ message NamespacedRegexTopicSelector {
 
 message TopicSelector {
   oneof topic_selector {
-    SingleTopicSelector single_topic_selector = 1;
+    MultiTopicSelector multi_topic_selector = 1;
     NamespacedRegexTopicSelector namespaced_regex_topic_selector = 2;
   }
 }

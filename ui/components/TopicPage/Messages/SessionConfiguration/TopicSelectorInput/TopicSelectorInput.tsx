@@ -1,16 +1,17 @@
 import React from 'react';
-import s from './TopicsSelectorInput.module.css'
-import { ManagedTopicsSelector, ManagedTopicsSelectorSpec, ManagedTopicsSelectorValOrRef } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
-import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
-import { useHover } from '../../../../../app/hooks/use-hover';
-import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../ui/LibraryBrowser/useManagedItemValue';
-import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
-import Select from '../../../../../ui/Select/Select';
-import ListInput from '../../../../../ui/ConfigurationTable/ListInput/ListInput';
-import Input from '../../../../../ui/Input/Input';
-import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
+import s from './TopicSelectorInput.module.css'
+import { ManagedTopicsSelector, ManagedTopicSelectorSpec, ManagedTopicsSelectorValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
+import { useHover } from '../../../../app/hooks/use-hover';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
+import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import Select from '../../../../ui/Select/Select';
+import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
+import Input from '../../../../ui/Input/Input';
+import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import * as Either from 'fp-ts/Either';
-import { RegexSubMode } from '../../../types';
+import { RegexSubMode } from '../../types';
+import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 
 export type TopicsSelectorInputProps = {
   value: ManagedTopicsSelectorValOrRef;
@@ -30,7 +31,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: ManagedTopicsSelectorSpec) => {
+  const onSpecChange = (spec: ManagedTopicSelectorSpec) => {
     const newValue: ManagedTopicsSelectorValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
@@ -39,6 +40,11 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
     const newValue: ManagedTopicsSelectorValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
+
+
+  const namespaceFqn = (props.libraryContext.pulsarResource.type === 'namespace' || props.libraryContext.pulsarResource.type === 'topic') ?
+    props.libraryContext.pulsarResource.namespace :
+    undefined;
 
   return (
     <div className={s.TopicsSelectorsInput} ref={hoverRef}>
@@ -61,59 +67,60 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
       />
 
       <FormItem>
-        <Select<ManagedTopicsSelectorSpec['topicsSelector']['type']>
+        <Select<ManagedTopicSelectorSpec['topicSelector']['type']>
           list={[
-            { type: 'item', title: 'Current topic', value: 'current-topic' },
-            { type: 'item', title: 'By topic names', value: 'by-fqns' },
+            { type: 'item', title: 'Current Topic', value: 'current-topic' },
+            { type: 'item', title: 'Single Topic', value: 'multi-topic-selector' },
+            { type: 'item', title: 'Namespaced RegExp', value: 'namespaced-regex-topic-selector' },
           ]}
           onChange={(v) => {
             if (v === 'current-topic') {
-              onSpecChange({ topicsSelector: { type: 'current-topic' } });
+              onSpecChange({ topicSelector: { type: 'current-topic' } });
               return;
-            } else if (v === 'by-fqns') {
+            } else if (v === 'multi-topic-selector') {
               const currentTopic = props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined;
               const currentTopicFqn: string | undefined = currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`;
 
               onSpecChange({
-                topicsSelector: {
-                  type: 'by-fqns',
+                topicSelector: {
+                  type: 'multi-topic-selector',
                   topicFqns: currentTopicFqn === undefined ? [] : [currentTopicFqn],
-                  isConvertPartitionedTopicToItsPartitions: false,
                 }
               });
               return;
             } else if (v === 'namespaced-regex-topic-selector') {
               onSpecChange({
-                topicsSelector: {
-                  type: 'by-regex',
-                  pattern: '',
-                  regexSubscriptionMode: 'all-topics',
+                topicSelector: {
+                  type: 'namespaced-regex-topic-selector',
+                  namespaceFqn: namespaceFqn || '',
+                  pattern: '.*',
+                  regexSubscriptionMode: 'all-topics'
                 }
               });
               return;
             }
           }}
-          value={itemSpec.topicsSelector.type}
+          value={itemSpec.topicSelector.type}
         />
       </FormItem>
 
-      {itemSpec.topicsSelector.type === 'by-fqns' && (
+      {itemSpec.topicSelector.type === 'multi-topic-selector' && (
         <FormItem>
           <ListInput<string>
-            value={itemSpec.topicsSelector.topicFqns}
+            value={itemSpec.topicSelector.topicFqns}
             onAdd={(v) => {
-              if (itemSpec.topicsSelector.type !== 'by-fqns') {
+              if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
                 return;
               }
 
-              onSpecChange({ topicsSelector: { ...itemSpec.topicsSelector, topicFqns: [...itemSpec.topicsSelector.topicFqns, v] } });
+              onSpecChange({ topicSelector: { ...itemSpec.topicSelector, topicFqns: [...itemSpec.topicSelector.topicFqns, v] } });
             }}
             onRemove={(v) => {
-              if (itemSpec.topicsSelector.type !== 'by-fqns') {
+              if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
                 return;
               }
 
-              onSpecChange({ topicsSelector: { ...itemSpec.topicsSelector, topicFqns: itemSpec.topicsSelector.topicFqns.filter((x) => x !== v) } });
+              onSpecChange({ topicSelector: { ...itemSpec.topicSelector, topicFqns: itemSpec.topicSelector.topicFqns.filter((x) => x !== v) } });
             }}
             getId={(v) => v}
             renderItem={(v) => <>{v}</>}
@@ -124,7 +131,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
             itemName="topic"
             nothingToShowContent="No topics selected."
             validate={(v, topicFqns) => {
-              if (itemSpec.topicsSelector.type !== 'by-fqns') {
+              if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
                 return Either.right(undefined);
               }
 
@@ -156,7 +163,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         </FormItem>
       )}
 
-      {itemSpec.topicsSelector.type === 'by-regex' && (
+      {itemSpec.topicSelector.type === 'namespaced-regex-topic-selector' && (
         <>
           <FormItem>
             <Select<RegexSubMode>
@@ -165,26 +172,42 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
                 { type: 'item', title: 'Persistent topics', value: 'persistent-only' },
                 { type: 'item', title: 'Non-Persistent topics', value: 'non-persistent-only' }
               ]}
-              value={itemSpec.topicsSelector.regexSubscriptionMode}
+              value={itemSpec.topicSelector.regexSubscriptionMode}
               onChange={(v) => {
-                if (itemSpec.topicsSelector.type !== 'by-regex') {
+                if (itemSpec.topicSelector.type !== 'namespaced-regex-topic-selector') {
                   return;
                 }
 
-                onSpecChange({ topicsSelector: { ...itemSpec.topicsSelector, regexSubscriptionMode: v } });
+                onSpecChange({ topicSelector: { ...itemSpec.topicSelector, regexSubscriptionMode: v } });
               }}
             />
           </FormItem>
 
           <FormItem>
+            <FormLabel content="Namespace" />
             <Input
-              value={itemSpec.topicsSelector.pattern}
+              value={itemSpec.topicSelector.namespaceFqn}
               onChange={(v) => {
-                if (itemSpec.topicsSelector.type !== 'by-regex') {
+                if (itemSpec.topicSelector.type !== 'namespaced-regex-topic-selector') {
                   return;
                 }
 
-                onSpecChange({ topicsSelector: { ...itemSpec.topicsSelector, pattern: v } });
+                onSpecChange({ topicSelector: { ...itemSpec.topicSelector, namespaceFqn: v } });
+              }}
+              placeholder='tenant/namespace'
+            />
+          </FormItem>
+
+          <FormItem>
+            <FormLabel content="Pattern" />
+            <Input
+              value={itemSpec.topicSelector.pattern}
+              onChange={(v) => {
+                if (itemSpec.topicSelector.type !== 'namespaced-regex-topic-selector') {
+                  return;
+                }
+
+                onSpecChange({ topicSelector: { ...itemSpec.topicSelector, pattern: v } });
               }}
               placeholder='.*'
             />

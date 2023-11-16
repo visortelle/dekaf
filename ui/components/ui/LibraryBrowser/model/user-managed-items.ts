@@ -1,4 +1,4 @@
-import { TopicSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode, NamespacedRegexTopicSelector } from "../../../TopicPage/Messages/types";
+import { TopicSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode, NamespacedRegexTopicSelector, MultiTopicSelector } from "../../../TopicPage/Messages/types";
 
 export type ValOrRef<ValueT> = {
   type: 'value',
@@ -114,19 +114,13 @@ export type ManagedConsumerSessionTopicSelectorValOrRef = ValOrRef<ManagedConsum
 
 export type TopicsSelectorCurrentTopic = { type: "current-topic" };
 
-export type TopicsSelectorByFqns = {
-  type: "by-fqns",
-  topicFqns: string[],
-  isConvertPartitionedTopicToItsPartitions: boolean,
-};
-
-export type ManagedTopicsSelectorSpec = {
-  topicsSelector: TopicsSelectorCurrentTopic | TopicsSelectorByFqns | NamespacedRegexTopicSelector,
+export type ManagedTopicSelectorSpec = {
+  topicSelector: TopicsSelectorCurrentTopic | MultiTopicSelector | NamespacedRegexTopicSelector,
 };
 
 export type ManagedTopicsSelector = {
   metadata: ManagedItemMetadata,
-  spec: ManagedTopicsSelectorSpec,
+  spec: ManagedTopicSelectorSpec,
 };
 
 export type ManagedTopicsSelectorValOrRef = ValOrRef<ManagedTopicsSelector>;

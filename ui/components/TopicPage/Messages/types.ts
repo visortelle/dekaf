@@ -12,9 +12,9 @@ export type RegexSubMode =
   | "persistent-only"
   | "non-persistent-only";
 
-export type SingleTopicSelector = {
-  type: "single-topic-selector";
-  topicFqn: string;
+export type MultiTopicSelector = {
+  type: "multi-topic-selector";
+  topicFqns: string[];
 };
 
 export type NamespacedRegexTopicSelector = {
@@ -24,7 +24,7 @@ export type NamespacedRegexTopicSelector = {
   regexSubscriptionMode: RegexSubMode;
 }
 
-export type TopicSelector = SingleTopicSelector | NamespacedRegexTopicSelector;
+export type TopicSelector = MultiTopicSelector | NamespacedRegexTopicSelector;
 
 export type DateTimeUnit = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
 

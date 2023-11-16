@@ -1,20 +1,20 @@
 package library.managed_items
 
-import _root_.consumer.topic.topic_selector.{NamespacedRegexTopicSelector, SingleTopicSelector, TopicSelector}
+import _root_.consumer.topic.topic_selector.{NamespacedRegexTopicSelector, MultiTopicSelector, TopicSelector}
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 
 case class CurrentTopicSelector()
 
-case class ManagedTopicSelectorSpec(topicSelector: CurrentTopicSelector | SingleTopicSelector | NamespacedRegexTopicSelector)
+case class ManagedTopicSelectorSpec(topicSelector: CurrentTopicSelector | MultiTopicSelector | NamespacedRegexTopicSelector)
 
 object ManagedTopicSelectorSpec:
     def fromPb(v: pb.ManagedTopicSelectorSpec): ManagedTopicSelectorSpec =
         v.topicSelector match
             case pb.ManagedTopicSelectorSpec.TopicSelector.CurrentTopicSelector(v) =>
                 ManagedTopicSelectorSpec(topicSelector = CurrentTopicSelector())
-            case pb.ManagedTopicSelectorSpec.TopicSelector.SingleTopicSelector(v) =>
-                ManagedTopicSelectorSpec(topicSelector = SingleTopicSelector.fromPb(v))
+            case pb.ManagedTopicSelectorSpec.TopicSelector.MultiTopicSelector(v) =>
+                ManagedTopicSelectorSpec(topicSelector = MultiTopicSelector.fromPb(v))
             case pb.ManagedTopicSelectorSpec.TopicSelector.NamespacedRegexTopicSelector(v) =>
                 ManagedTopicSelectorSpec(topicSelector = NamespacedRegexTopicSelector.fromPb(v))
             case _ => throw new Exception("Unknown ManagedTopicSelectorSpec")
@@ -25,9 +25,9 @@ object ManagedTopicSelectorSpec:
                 pb.ManagedTopicSelectorSpec(
                     topicSelector = pb.ManagedTopicSelectorSpec.TopicSelector.CurrentTopicSelector(pb.CurrentTopicSelector())
                 )
-            case vv: SingleTopicSelector =>
+            case vv: MultiTopicSelector =>
                 pb.ManagedTopicSelectorSpec(
-                    topicSelector = pb.ManagedTopicSelectorSpec.TopicSelector.SingleTopicSelector(SingleTopicSelector.toPb(vv))
+                    topicSelector = pb.ManagedTopicSelectorSpec.TopicSelector.MultiTopicSelector(MultiTopicSelector.toPb(vv))
                 )
             case vv: NamespacedRegexTopicSelector =>
                 pb.ManagedTopicSelectorSpec(

@@ -218,7 +218,7 @@ message CurrentTopicSelector {};
 message ManagedTopicSelectorSpec {
   oneof topic_selector {
     CurrentTopicSelector current_topic_selector = 1;
-    tools.teal.pulsar.ui.api.v1.SingleTopicSelector single_topic_selector = 2;
+    tools.teal.pulsar.ui.api.v1.MultiTopicSelector multi_topic_selector = 2;
     tools.teal.pulsar.ui.api.v1.NamespacedRegexTopicSelector namespaced_regex_topic_selector = 3;
   }
 }

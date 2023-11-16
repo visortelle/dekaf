@@ -58,7 +58,7 @@ const Console: React.FC<ConsoleProps> = (props) => {
               return (
                 <Producer
                   preset={{
-                    topic: props.sessionConfig.topicsSelector.type === 'single-topic-selector' ? props.sessionConfig.topicsSelector.topicFqns[0] : undefined,
+                    topic: props.sessionConfig.topicsSelector.type === 'multi-topic-selector' ? props.sessionConfig.topicsSelector.topicFqns[0] : undefined,
                     key: ''
                   }}
                 />

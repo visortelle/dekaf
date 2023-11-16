@@ -223,7 +223,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                       type: 'topics-selector'
                     },
                     spec: {
-                      topicsSelector: {
+                      topicSelector: {
                         type: 'current-topic'
                       }
                     }

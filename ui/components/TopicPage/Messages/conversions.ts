@@ -13,7 +13,7 @@ import {
   ConsumerSessionStartFrom,
   DateTimeUnit,
   TopicSelector,
-  SingleTopicSelector,
+  MultiTopicSelector,
   NamespacedRegexTopicSelector,
   RegexSubMode,
   ColoringRule,
@@ -165,16 +165,16 @@ export function dateTimeUnitToPb(unit: DateTimeUnit): pb.DateTimeUnit {
   }
 }
 
-export function singleTopicSelectorFromPb(v: pb.SingleTopicSelector): SingleTopicSelector {
+export function singleTopicSelectorFromPb(v: pb.SingleTopicSelector): MultiTopicSelector {
   return {
     type: 'single-topic-selector',
-    topicFqn: v.getTopicFqn(),
+    topicFqns: v.getTopicFqn(),
   };
 }
 
-export function singleTopicSelectorToPb(v: SingleTopicSelector): pb.SingleTopicSelector {
+export function singleTopicSelectorToPb(v: MultiTopicSelector): pb.SingleTopicSelector {
   const singleTopicSelectorPb = new pb.SingleTopicSelector();
-  singleTopicSelectorPb.setTopicFqn(v.topicFqn);
+  singleTopicSelectorPb.setTopicFqn(v.topicFqns);
   return singleTopicSelectorPb;
 }
 

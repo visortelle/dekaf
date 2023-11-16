@@ -80,17 +80,17 @@ export function topicsSelectorFromValOrRef(v: ManagedTopicsSelectorValOrRef[], c
 
   // by-fqns and by-regex topics selectors can't be mixed together because Pulsar consumer doesn't support it.
   let topicSelectorType: TopicSelector['type'] = 'by-fqns';
-  if (v.every(ts => ts.val?.spec.topicsSelector.type === 'by-fqns' || ts.val?.spec.topicsSelector.type === 'current-topic')) {
+  if (v.every(ts => ts.val?.spec.topicSelector.type === 'by-fqns' || ts.val?.spec.topicSelector.type === 'current-topic')) {
     topicSelectorType = 'by-fqns';
-  } else if (v.every(ts => ts.val?.spec.topicsSelector.type === 'by-regex')) {
+  } else if (v.every(ts => ts.val?.spec.topicSelector.type === 'by-regex')) {
     topicSelectorType = 'by-regex';
   }
 
   if (topicSelectorType === 'by-fqns') {
     const topicFqns = v.map(ts => {
-      if (ts.val?.spec.topicsSelector.type === 'by-fqns') {
-        return ts.val.spec.topicsSelector.topicFqns;
-      } else if (ts.val?.spec.topicsSelector.type === 'current-topic' && currentTopicFqn !== undefined) {
+      if (ts.val?.spec.topicSelector.type === 'by-fqns') {
+        return ts.val.spec.topicSelector.topicFqns;
+      } else if (ts.val?.spec.topicSelector.type === 'current-topic' && currentTopicFqn !== undefined) {
         return [currentTopicFqn];
       }
 
@@ -103,15 +103,15 @@ export function topicsSelectorFromValOrRef(v: ManagedTopicsSelectorValOrRef[], c
     }
   } else if (topicSelectorType === 'by-regex') {
     const patterns = v.map(ts => {
-      if (ts.val?.spec.topicsSelector.type === 'by-regex') {
-        return ts.val.spec.topicsSelector.pattern;
+      if (ts.val?.spec.topicSelector.type === 'by-regex') {
+        return ts.val.spec.topicSelector.pattern;
       }
 
       return [];
     }).flat();
 
-    const regexSubscriptionMode: RegexSubMode = v[0].val?.spec.topicsSelector.type === 'by-regex' ?
-      v[0].val?.spec.topicsSelector.regexSubscriptionMode :
+    const regexSubscriptionMode: RegexSubMode = v[0].val?.spec.topicSelector.type === 'by-regex' ?
+      v[0].val?.spec.topicSelector.regexSubscriptionMode :
       'all-topics';
 
     return {

@@ -12,7 +12,7 @@ import { ManagedConsumerSessionConfig, ManagedConsumerSessionSpec, ManagedConsum
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
-import TopicsSelectorInput from './TopicsSelectorsInput/TopicsSelectorsInput';
+import TopicsSelectorInput from './TopicSelectorInput/TopicsSelectorsInput';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef;
