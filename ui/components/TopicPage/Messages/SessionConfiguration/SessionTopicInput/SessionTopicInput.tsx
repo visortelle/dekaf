@@ -76,6 +76,7 @@ const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
       <ColoringRuleChainInput
         value={itemSpec.coloringRuleChain}
         onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
+        libraryContext={props.libraryContext}
       />
     </div>
   );

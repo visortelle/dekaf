@@ -42,7 +42,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
             onChange={(v) => onSpecChange({ ...itemSpec, foregroundColor: v })}
             width='inherit'
             height='inherit'
-            title={<>Foreground Color</>}
+            title={<>Foreground Color ({itemSpec.foregroundColor})</>}
           />
         </div>
 
@@ -52,7 +52,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
             onChange={(v) => onSpecChange({ ...itemSpec, backgroundColor: v })}
             width='inherit'
             height='inherit'
-            title={<>Background Color</>}
+            title={<>Background Color ({itemSpec.backgroundColor})</>}
           />
         </div>
 

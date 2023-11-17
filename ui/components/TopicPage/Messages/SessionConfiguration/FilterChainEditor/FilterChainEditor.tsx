@@ -50,8 +50,10 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
     props.onChange(newValue);
   };
 
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(1) opacity(0.75)';
+
   return (
-    <div className={s.FilterChainEditor} ref={ref}>
+    <div className={s.FilterChainEditor} ref={ref} style={{ filter: cssFilter }}>
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'

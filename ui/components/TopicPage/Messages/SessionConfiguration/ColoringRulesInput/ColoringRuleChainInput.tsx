@@ -1,18 +1,19 @@
 import React from 'react';
 import s from './ColoringRuleChainInput.module.css'
-import ColorPicker from './ColoringRuleInput/ColorPicker/ColorPicker';
-import { ColoringRule } from '../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import ColoringRuleInput from './ColoringRuleInput/ColoringRuleInput';
 import { ManagedColoringRuleChain, ManagedColoringRuleChainSpec, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 import { v4 as uuid } from 'uuid';
-import { colorPalette, colorsByName, themeBackgroundColorName, themeForegroundColorName } from './ColoringRuleInput/ColorPicker/color-palette';
+import { themeBackgroundColorName, themeForegroundColorName } from './ColoringRuleInput/ColorPicker/color-palette';
+import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 
 export type ColoringRuleChainInputProps = {
   value: ManagedColoringRuleChainValOrRef,
   onChange: (value: ManagedColoringRuleChainValOrRef) => void,
+  libraryContext: LibraryContext,
 };
 
 const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) => {
@@ -38,7 +39,24 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
   };
 
   return (
-    <div className={s.ColoringRuleChainInput}>
+    <div className={s.ColoringRuleChainInput} ref={hoverRef}>
+      <LibraryBrowserPanel
+        itemType='coloring-rule-chain'
+        itemToSave={item}
+        onPick={(item) => props.onChange({
+          type: 'reference',
+          ref: item.metadata.id,
+          val: item as ManagedColoringRuleChain
+        })}
+        onSave={(item) => props.onChange({
+          type: 'reference',
+          ref: item.metadata.id,
+          val: item as ManagedColoringRuleChain
+        })}
+        isForceShowButtons={isHovered}
+        libraryContext={props.libraryContext}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+      />
       <ListInput<ManagedColoringRuleValOrRef>
         value={itemSpec.coloringRules}
         getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}

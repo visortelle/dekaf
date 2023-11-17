@@ -42,6 +42,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'consumer-session-start-from' && 'Start From'}
               {props.itemType === 'topic-selector' && 'Topic Selector'}
               {props.itemType === 'consumer-session-topic' && 'Consumer Session Target'}
+              {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
             </strong>
           )}
           help={(
@@ -52,6 +53,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'consumer-session-start-from' && help.consumerSessionStartFrom}
               {props.itemType === 'topic-selector' && help.topicSelector}
               {props.itemType === 'consumer-session-topic' && help.consumerSessionTopic}
+              {props.itemType === 'coloring-rule-chain' && help.coloringRuleChain}
             </div>
           )}
         />

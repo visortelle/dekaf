@@ -79,5 +79,19 @@ export const help = {
         Consumer Session Topic(s)
       </p>
     </div>
+  ),
+  coloringRuleChain: (
+    <div>
+      <p>
+        <strong>Coloring Rule Chain</strong> is a list of coloring rules that are sequentially applied to each message.
+      </p>
+      <p>
+        First rule that matches the message will be applied.
+      </p>
+
+      <p>
+        You can save it to <strong>Library</strong> and reuse later.
+      </p>
+    </div>
   )
 } as const;
