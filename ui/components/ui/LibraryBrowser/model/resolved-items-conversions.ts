@@ -1,57 +1,58 @@
-import { UserManagedConsumerSessionConfigValueOrReference, UserManagedConsumerSessionStartFrom, UserManagedConsumerSessionStartFromValueOrReference, UserManagedDateTimeValueOrReference, UserManagedMessageFilterChainValueOrReference, UserManagedMessageFilterValueOrReference, UserManagedMessageIdValueOrReference, UserManagedRelativeDateTime, UserManagedRelativeDateTimeValueOrReference } from "./user-managed-items";
-import { ConsumerSessionConfig, ConsumerSessionStartFrom, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
+import { ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTopicValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorValOrRef } from "./user-managed-items";
+import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTopic, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
+import { TopicSelector } from "../../../TopicPage/Messages/topic-selector/topic-selector";
 
-export function messageFilterFromValueOrReference(v: UserManagedMessageFilterValueOrReference): MessageFilter {
-  if (v.value === undefined) {
+export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
+  if (v.val === undefined) {
     throw new Error('MessageFilter reference can\'t be converted to value');
   }
 
-  return v.value.spec;
+  return v.val.spec;
 }
 
-export function messageFilterChainFromValueOrReference(v: UserManagedMessageFilterChainValueOrReference): MessageFilterChain {
-  if (v.value === undefined) {
+export function messageFilterChainFromValOrRef(v: ManagedMessageFilterChainValOrRef): MessageFilterChain {
+  if (v.val === undefined) {
     throw new Error('MessageFilterChain reference can\'t be converted to value');
   }
 
   return {
-    isEnabled: v.value.spec.isEnabled,
-    isNegated: v.value.spec.isNegated,
-    filters: v.value.spec.filters.map(messageFilterFromValueOrReference),
-    mode: v.value.spec.mode
+    isEnabled: v.val.spec.isEnabled,
+    isNegated: v.val.spec.isNegated,
+    filters: v.val.spec.filters.map(messageFilterFromValOrRef),
+    mode: v.val.spec.mode
   }
 }
 
-export function messageIdFromValueOrReference(v: UserManagedMessageIdValueOrReference): string {
-  if (v.value === undefined) {
+export function messageIdFromValOrRef(v: ManagedMessageIdValOrRef): string {
+  if (v.val === undefined) {
     throw new Error('MessageId reference can\'t be value');
   }
 
-  return v.value.spec.hexString;
+  return v.val.spec.hexString;
 }
 
-export function dateTimeFromValueOrReference(v: UserManagedDateTimeValueOrReference): Date {
-  if (v.value === undefined) {
+export function dateTimeFromValOrRef(v: ManagedDateTimeValOrRef): Date {
+  if (v.val === undefined) {
     throw new Error('DateTime reference can\'t be converted to value');
   }
 
-  return v.value.spec.dateTime;
+  return v.val.spec.dateTime;
 }
 
-export function relativeDateTimeFromValueOrReference(v: UserManagedRelativeDateTimeValueOrReference): RelativeDateTime {
-  if (v.value === undefined) {
+export function relativeDateTimeFromValOrRef(v: ManagedRelativeDateTimeValOrRef): RelativeDateTime {
+  if (v.val === undefined) {
     throw new Error('RelativeDateTime reference can\'t be converted to value');
   }
 
-  return v.value.spec;
+  return v.val.spec;
 }
 
-export function consumerSessionStartFromFromValueOrReference(v: UserManagedConsumerSessionStartFromValueOrReference): ConsumerSessionStartFrom {
-  if (v.value === undefined) {
+export function consumerSessionStartFromFromValOrRef(v: ManagedConsumerSessionStartFromValOrRef): ConsumerSessionStartFrom {
+  if (v.val === undefined) {
     throw new Error('ConsumerSessionStartFrom reference can\'t be converted to value');
   }
 
-  const spec = v.value.spec;
+  const spec = v.val.spec;
 
   switch (spec.startFrom.type) {
     case 'earliestMessage': return { type: 'earliestMessage' };
@@ -60,27 +61,112 @@ export function consumerSessionStartFromFromValueOrReference(v: UserManagedConsu
     case 'nthMessageBeforeLatest': return { type: 'nthMessageBeforeLatest', n: spec.startFrom.n };
     case 'dateTime': return {
       type: 'dateTime',
-      dateTime: dateTimeFromValueOrReference(spec.startFrom.dateTime)
+      dateTime: dateTimeFromValOrRef(spec.startFrom.dateTime)
     };
     case 'messageId': return {
       type: 'messageId',
-      hexString: messageIdFromValueOrReference(spec.startFrom.messageId)
+      hexString: messageIdFromValOrRef(spec.startFrom.messageId)
     };
     case 'relativeDateTime': return {
       type: 'relativeDateTime',
-      relativeDateTime: relativeDateTimeFromValueOrReference(spec.startFrom.relativeDateTime)
+      relativeDateTime: relativeDateTimeFromValOrRef(spec.startFrom.relativeDateTime)
     }
   }
 }
 
-export function consumerSessionConfigFromValueOrReference(v: UserManagedConsumerSessionConfigValueOrReference): ConsumerSessionConfig {
-  if (v.value === undefined) {
+export function topicSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef, currentTopicFqn?: string): TopicSelector {
+  if (v.val === undefined) {
+    throw new Error('TopicSelector reference can\'t be converted to value');
+  }
+
+  const topicSelector = v.val.spec.topicSelector;
+
+  if (topicSelector.type === 'current-topic') {
+    if (currentTopicFqn === undefined) {
+      throw new Error('Current topic FQN should be defined for the CurrentTopicSelector');
+    }
+
+    return { type: 'multi-topic-selector', topicFqns: [currentTopicFqn] };
+  }
+
+  return topicSelector;
+}
+
+export function coloringRuleFromValOrRef(v: ManagedColoringRuleValOrRef): ColoringRule {
+  if (v.val === undefined) {
+    throw new Error('Coloring rule reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
+    foregroundColor: spec.foregroundColor,
+    backgroundColor: spec.backgroundColor
+  }
+}
+
+export function coloringRuleChainFromValOrRef(v: ManagedColoringRuleChainValOrRef): ColoringRuleChain {
+  if (v.val === undefined) {
+    throw new Error('Coloring rule chain reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    coloringRules: spec.coloringRules.map(coloringRuleFromValOrRef)
+  }
+}
+
+export function consumerSessionTopicFromValOrRef(v: ManagedConsumerSessionTopicValOrRef, currentTopicFqn: string | undefined): ConsumerSessionTopic {
+  if (v.val === undefined) {
+    throw new Error('Consumer session topic reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    topicSelector: topicSelectorFromValOrRef(spec.topicSelector, currentTopicFqn),
+    coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
+    messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain)
+  }
+}
+
+export function consumerSessionEventFromValOrRef(v: ManagedConsumerSessionEventValOrRef): ConsumerSessionEvent {
+  if (v.val === undefined) {
+    throw new Error('Consumer session event reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return spec.event;
+}
+
+export function consumerSessionPauseTriggerChainFromValOrRef(v: ManagedConsumerSessionPauseTriggerChainValOrRef): ConsumerSessionPauseTriggerChain {
+  if (v.val === undefined) {
+    throw new Error('Consumer session pause trigger chain reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    events: spec.events.map(consumerSessionEventFromValOrRef),
+    mode: spec.mode
+  }
+}
+
+export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfigValOrRef, currentTopicFqn: string | undefined): ConsumerSessionConfig {
+  if (v.val === undefined) {
     throw new Error('Consumer session config reference can\'t be converted to value');
   }
 
+  const spec = v.val.spec;
+
   return {
-    startFrom: consumerSessionStartFromFromValueOrReference(v.value.spec.startFrom),
-    messageFilterChain: messageFilterChainFromValueOrReference(v.value.spec.messageFilterChain),
-    topicsSelector: v.value.spec.topicsSelector
+    startFrom: consumerSessionStartFromFromValOrRef(spec.startFrom),
+    messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
+    topics: spec.topics.map(spec => consumerSessionTopicFromValOrRef(spec, currentTopicFqn)),
+    coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
+    pauseTriggerChain: consumerSessionPauseTriggerChainFromValOrRef(spec.pauseTriggerChain)
   }
 }

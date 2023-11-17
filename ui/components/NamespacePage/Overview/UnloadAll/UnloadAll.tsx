@@ -37,7 +37,7 @@ const UnloadAll: React.FC<UnloadAllProps> = ({ namespaceFqn }) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div className={s.DialogContainer}>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />

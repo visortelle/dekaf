@@ -61,7 +61,7 @@ const DeleteDialog: React.FC<DeleteTopicProps> = (props) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />

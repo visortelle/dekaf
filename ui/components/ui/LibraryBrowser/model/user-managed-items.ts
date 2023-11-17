@@ -1,126 +1,227 @@
-import { ConsumerSessionTopicsSelector, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
+import { ConsumerSessionEventBytesDelivered, ConsumerSessionEventBytesProcessed, ConsumerSessionEventMessageDecodeFailed, ConsumerSessionEventMessagesDelivered, ConsumerSessionEventMessagesProcessed, ConsumerSessionEventTimeElapsed, ConsumerSessionEventTopicEndReached, ConsumerSessionEventUnexpectedErrorOccurred, ConsumerSessionPauseTriggerChainMode, DateTimeUnit, MessageFilter, MessageFilterChainMode } from "../../../TopicPage/Messages/types";
+import { TopicSelector, MultiTopicSelector, NamespacedRegexTopicSelector } from "../../../TopicPage/Messages/topic-selector/topic-selector";
 
-export type ValueOrReference<ValueT> = {
+export type ValOrRef<ValueT> = {
   type: 'value',
-  value: ValueT
+  val: ValueT
 } | {
   type: 'reference',
-  reference: string,
+  ref: string,
 
   /* Value stored only in browser memory.
     Imagine a situation where you loaded two message filters with same id from library,
     and for one of them you made some changes without saving.
     */
-  value?: ValueT
+  val?: ValueT
 };
 
-export type UserManagedItemType =
+export type ManagedItemType =
   "consumer-session-config" |
-  "consumer-session-pause-trigger" |
-  "consumer-session-start-from" |
-  "date-time" |
+  "producer-session-config" |
+  "markdown-document" |
   "message-filter-chain" |
   "message-filter" |
   "message-id" |
-  "producer-session-config" |
-  "relative-date-time";
+  "date-time" |
+  "coloring-rule" |
+  "coloring-rule-chain" |
+  "relative-date-time" |
+  "consumer-session-start-from" |
+  "consumer-session-event" |
+  "consumer-session-pause-trigger-chain" |
+  "consumer-session-topic" |
+  "topic-selector";
 
-export type UserManagedItemMetadata = {
-  type: UserManagedItemType,
+export type ManagedItemMetadata = {
+  type: ManagedItemType,
   id: string,
   name: string,
   descriptionMarkdown: string,
 };
 
-export type UserManagedMessageFilterSpec = MessageFilter;
+export type ManagedMessageFilterSpec = MessageFilter;
 
-export type UserManagedMessageFilter = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedMessageFilterSpec,
+export type ManagedMessageFilter = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMessageFilterSpec,
 };
 
-export type UserManagedMessageFilterValueOrReference = ValueOrReference<UserManagedMessageFilter>;
+export type ManagedMessageFilterValOrRef = ValOrRef<ManagedMessageFilter>;
 
-export type UserManagedMessageFilterChainSpec = {
+export type ManagedMessageFilterChainSpec = {
   isEnabled: boolean,
   isNegated: boolean,
-  filters: UserManagedMessageFilterValueOrReference[],
+  filters: ManagedMessageFilterValOrRef[],
   mode: MessageFilterChainMode
 };
 
-export type UserManagedMessageFilterChain = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedMessageFilterChainSpec,
+export type ManagedMessageFilterChain = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMessageFilterChainSpec,
 };
 
-export type UserManagedMessageFilterChainValueOrReference = ValueOrReference<UserManagedMessageFilterChain>;
+export type ManagedMessageFilterChainValOrRef = ValOrRef<ManagedMessageFilterChain>;
 
-export type UserManagedConsumerSessionTopicSelectorSpec = ConsumerSessionTopicsSelector;
+export type ManagedConsumerSessionTopicSelectorSpec = TopicSelector;
 
-export type UserManagedConsumerSessionTopicSelector = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedConsumerSessionTopicSelectorSpec,
+export type ManagedConsumerSessionTopicSelector = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionTopicSelectorSpec,
 };
 
-export type UserManagedMessageIdSpec = {
+export type ManagedMessageIdSpec = {
   hexString: string
 };
-export type UserManagedMessageId = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedMessageIdSpec,
+export type ManagedMessageId = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedMessageIdSpec,
 }
-export type UserManagedMessageIdValueOrReference = ValueOrReference<UserManagedMessageId>;
+export type ManagedMessageIdValOrRef = ValOrRef<ManagedMessageId>;
 
-export type UserManagedDateTimeSpec = {
+export type ManagedDateTimeSpec = {
   dateTime: Date
 };
-export type UserManagedDateTime = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedDateTimeSpec,
+export type ManagedDateTime = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedDateTimeSpec,
 }
-export type UserManagedDateTimeValueOrReference = ValueOrReference<UserManagedDateTime>;
+export type ManagedDateTimeValOrRef = ValOrRef<ManagedDateTime>;
 
-export type UserManagedRelativeDateTimeSpec = {
+export type ManagedRelativeDateTimeSpec = {
   value: number,
   unit: DateTimeUnit,
   isRoundedToUnitStart: boolean,
 };
-export type UserManagedRelativeDateTime = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedRelativeDateTimeSpec,
+export type ManagedRelativeDateTime = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedRelativeDateTimeSpec,
 }
-export type UserManagedRelativeDateTimeValueOrReference = ValueOrReference<UserManagedRelativeDateTime>;
+export type ManagedRelativeDateTimeValOrRef = ValOrRef<ManagedRelativeDateTime>;
 
 export type StartFromEarliestMessage = { type: 'earliestMessage' };
 export type StartFromLatestMessage = { type: 'latestMessage' };
 export type StartFromNthMessageAfterEarliest = { type: 'nthMessageAfterEarliest', n: number };
 export type StartFromNthMessageBeforeLatest = { type: 'nthMessageBeforeLatest', n: number };
-export type StartFromMessageId = { type: 'messageId', messageId: UserManagedMessageIdValueOrReference };
-export type StartFromDateTime = { type: 'dateTime', dateTime: UserManagedDateTimeValueOrReference };
-export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: UserManagedRelativeDateTimeValueOrReference };
+export type StartFromMessageId = { type: 'messageId', messageId: ManagedMessageIdValOrRef };
+export type StartFromDateTime = { type: 'dateTime', dateTime: ManagedDateTimeValOrRef };
+export type StartFromRelativeDateTime = { type: 'relativeDateTime', relativeDateTime: ManagedRelativeDateTimeValOrRef };
 
-export type UserManagedConsumerSessionStartFromSpec = {
+export type ManagedConsumerSessionStartFromSpec = {
   startFrom: StartFromEarliestMessage | StartFromLatestMessage | StartFromNthMessageAfterEarliest | StartFromNthMessageBeforeLatest | StartFromMessageId | StartFromDateTime | StartFromRelativeDateTime,
 };
-export type UserManagedConsumerSessionStartFrom = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedConsumerSessionStartFromSpec,
+export type ManagedConsumerSessionStartFrom = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionStartFromSpec,
 };
-export type UserManagedConsumerSessionStartFromValueOrReference = ValueOrReference<UserManagedConsumerSessionStartFrom>;
+export type ManagedConsumerSessionStartFromValOrRef = ValOrRef<ManagedConsumerSessionStartFrom>;
 
-export type UserManagedConsumerSessionTopicSelectorValueOrReference = ValueOrReference<UserManagedConsumerSessionTopicSelector>;
+export type CurrentTopicSelector = { type: "current-topic" };
 
-export type UserManagedConsumerSessionSpec = {
-  messageFilterChain: UserManagedMessageFilterChainValueOrReference,
-  topicsSelector: ConsumerSessionTopicsSelector,
-  startFrom: UserManagedConsumerSessionStartFromValueOrReference,
+export type ManagedTopicSelectorSpec = {
+  topicSelector: CurrentTopicSelector | MultiTopicSelector | NamespacedRegexTopicSelector
 };
 
-export type UserManagedConsumerSessionConfig = {
-  metadata: UserManagedItemMetadata,
-  spec: UserManagedConsumerSessionSpec,
+export type ManagedTopicSelector = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedTopicSelectorSpec,
 };
 
-export type UserManagedConsumerSessionConfigValueOrReference = ValueOrReference<UserManagedConsumerSessionConfig>;
+export type ManagedTopicSelectorValOrRef = ValOrRef<ManagedTopicSelector>;
 
-export type UserManagedItem = UserManagedMessageFilter | UserManagedMessageFilterChain | UserManagedConsumerSessionStartFrom;
+export type ManagedColoringRuleSpec = {
+  messageFilterChain: ManagedMessageFilterChainValOrRef,
+  foregroundColor: string,
+  backgroundColor: string,
+};
+
+export type ManagedColoringRule = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedColoringRuleSpec,
+};
+
+export type ManagedColoringRuleValOrRef = ValOrRef<ManagedColoringRule>;
+
+export type ManagedColoringRuleChainSpec = {
+  coloringRules: ManagedColoringRuleValOrRef[],
+};
+
+export type ManagedColoringRuleChain = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedColoringRuleChainSpec,
+};
+
+export type ManagedColoringRuleChainValOrRef = ValOrRef<ManagedColoringRuleChain>;
+
+export type ManagedConsumerSessionEventSpec = {
+  event:
+  ConsumerSessionEventMessagesProcessed |
+  ConsumerSessionEventMessagesDelivered |
+  ConsumerSessionEventBytesProcessed |
+  ConsumerSessionEventBytesDelivered |
+  ConsumerSessionEventMessageDecodeFailed |
+  ConsumerSessionEventTimeElapsed |
+  ConsumerSessionEventTopicEndReached |
+  ConsumerSessionEventUnexpectedErrorOccurred
+};
+
+export type ManagedConsumerSessionEvent = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionEventSpec,
+};
+
+export type ManagedConsumerSessionEventValOrRef = ValOrRef<ManagedConsumerSessionEvent>;
+
+export type ManagedConsumerSessionPauseTriggerChainSpec = {
+  events: ManagedConsumerSessionEventValOrRef[],
+  mode: ConsumerSessionPauseTriggerChainMode
+};
+
+export type ManagedConsumerSessionPauseTriggerChain = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionPauseTriggerChainSpec,
+};
+
+export type ManagedConsumerSessionPauseTriggerChainValOrRef = ValOrRef<ManagedConsumerSessionPauseTriggerChain>;
+
+export type ManagedConsumerSessionTopicSpec = {
+  topicSelector: ManagedTopicSelectorValOrRef,
+  messageFilterChain: ManagedMessageFilterChainValOrRef,
+  coloringRuleChain: ManagedColoringRuleChainValOrRef,
+};
+
+export type ManagedConsumerSessionTopic = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionTopicSpec,
+};
+
+export type ManagedConsumerSessionTopicValOrRef = ValOrRef<ManagedConsumerSessionTopic>;
+
+export type ManagedConsumerSessionConfigSpec = {
+  startFrom: ManagedConsumerSessionStartFromValOrRef,
+  topics: ManagedConsumerSessionTopicValOrRef[],
+  messageFilterChain: ManagedMessageFilterChainValOrRef,
+  pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
+  coloringRuleChain: ManagedColoringRuleChainValOrRef,
+};
+
+export type ManagedConsumerSessionConfig = {
+  metadata: ManagedItemMetadata,
+  spec: ManagedConsumerSessionConfigSpec,
+};
+
+export type ManagedConsumerSessionConfigValOrRef = ValOrRef<ManagedConsumerSessionConfig>;
+
+export type ManagedItem = ManagedMessageFilter |
+  ManagedMessageFilterChain |
+  ManagedConsumerSessionStartFrom |
+  ManagedTopicSelector |
+  ManagedDateTime |
+  ManagedRelativeDateTime |
+  ManagedConsumerSessionEvent |
+  ManagedConsumerSessionPauseTriggerChain |
+  ManagedConsumerSessionConfig |
+  ManagedTopicSelector |
+  ManagedColoringRule |
+  ManagedColoringRuleChain |
+  ManagedConsumerSessionTopic |
+  ManagedMessageId;

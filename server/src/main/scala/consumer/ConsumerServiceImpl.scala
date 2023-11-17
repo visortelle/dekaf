@@ -1,47 +1,27 @@
 package consumer
 
-import org.apache.pulsar.client.api.{Consumer, MessageListener, PulsarClient}
-import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
-import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
-import com.tools.teal.pulsar.ui.api.v1.consumer.{
-    ConsumerServiceGrpc,
-    CreateConsumerRequest,
-    CreateConsumerResponse,
-    DeleteConsumerRequest,
-    DeleteConsumerResponse,
-    MessageFilter as MessageFilterPb,
-    MessageFilterChain,
-    PauseRequest,
-    PauseResponse,
-    ResumeRequest,
-    ResumeResponse,
-    RunCodeRequest,
-    RunCodeResponse,
-    SeekRequest,
-    SeekResponse,
-    SkipMessagesRequest,
-    SkipMessagesResponse,
-    TopicsSelector
-}
-import com.typesafe.scalalogging.Logger
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Try, Success, Failure}
-
-import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
+import _root_.consumer.session_config.ConsumerSessionConfig
+import _root_.pulsar_auth.RequestContext
 import com.google.protobuf.ByteString
-import com.google.rpc.status.Status
 import com.google.rpc.code.Code
+import com.google.rpc.status.Status
+import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
-import org.apache.pulsar.client.api.{Message, MessageId}
-import _root_.pulsar_auth.RequestContext
-import java.util.concurrent.ConcurrentHashMap
+import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, MessageFilter as MessageFilterPb}
+import com.typesafe.scalalogging.Logger
+import consumer.topic.topic_selector.MultiTopicSelector
+import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
+import org.apache.pulsar.client.api.*
 
 import java.io.ByteArrayOutputStream
-import java.util.UUID
 import java.time.Instant
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
+import scala.util.{Failure, Success, Try}
 
 type ConsumerName = String
 
@@ -143,32 +123,40 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
     override def createConsumer(request: CreateConsumerRequest): Future[CreateConsumerResponse] =
         Try {
-            val consumerName: ConsumerName = request.consumerName.getOrElse("__dekaf" + UUID.randomUUID().toString)
+            val consumerName: ConsumerName = request.consumerName
             logger.info(s"Creating consumer. Consumer: $consumerName")
+
             val pulsarClient = RequestContext.pulsarClient.get()
             val adminClient = RequestContext.pulsarAdmin.get()
 
-            val topicsToConsume = request.topicsSelector match
-                case Some(ts) =>
-                    ts.topicsSelector.byNames match
-                        case Some(bn) => bn.topics.toVector
-                case _ =>
-                    val status: Status =
-                        Status(code = Code.INVALID_ARGUMENT.index, message = "Topic selectors other than byNames are not implemented.")
-                    return Future.successful(CreateConsumerResponse(status = Some(status)))
+            val config = ConsumerSessionConfig.fromPb(request.consumerSessionConfig.get)
 
-            val config = consumerSessionConfigFromPb(request.consumerSessionConfig.get)
+            val topicsToConsume = config.topics.flatMap(t => {
+                t.topicSelector.topicSelector match
+                    case v: MultiTopicSelector => Some(v.topicFqns)
+                    case _                      => None
+            }).flatten
+
             val listener = TopicMessageListener(StreamDataHandler(onNext = _ => ()))
 
-            val consumerBuilder = buildConsumer(pulsarClient, consumerName, request, logger, listener) match
-                case Right(consumer) => consumer
+            val consumer = buildConsumer(pulsarClient, consumerName, topicsToConsume, listener) match
+                case Right(consumer) => consumer.subscribe
                 case Left(error) =>
                     logger.warn(error)
                     val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = error)
                     return Future.successful(CreateConsumerResponse(status = Some(status)))
 
-            val consumer = consumerBuilder.subscribe
-            handleStartFrom(startFrom = config.startFrom, consumer = consumer, adminClient = adminClient, topicFqn = topicsToConsume.head)
+            Try(handleStartFrom(
+                startFrom = config.startFrom,
+                consumer = consumer,
+                pulsarClient = pulsarClient,
+                adminClient = adminClient,
+                topicsToConsume = topicsToConsume
+            )) match
+                case Success(_) => // ok
+                case Failure(err) =>
+                    val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = err.getMessage)
+                    return Future.successful(CreateConsumerResponse(status = Some(status)))
 
             val schemasByTopic = getSchemasByTopic(adminClient, topicsToConsume)
 

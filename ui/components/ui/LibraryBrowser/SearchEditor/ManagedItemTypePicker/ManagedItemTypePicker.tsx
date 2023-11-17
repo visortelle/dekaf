@@ -1,18 +1,18 @@
 import React from 'react';
-import s from './UserManagedItemTypePicker.module.css'
+import s from './ManagedItemTypePicker.module.css'
 import Select from '../../../Select/Select';
-import { UserManagedItemType } from '../../model/user-managed-items';
+import { ManagedItemType } from '../../model/user-managed-items';
 
-export type UserManagedItemTypePickerProps = {
-  value: UserManagedItemType;
-  onChange: (value: UserManagedItemType) => void;
+export type ManagedItemTypePickerProps = {
+  value: ManagedItemType;
+  onChange: (value: ManagedItemType) => void;
   readOnly?: boolean;
 };
 
-const UserManagedItemTypePicker: React.FC<UserManagedItemTypePickerProps> = (props) => {
+const ManagedItemTypePicker: React.FC<ManagedItemTypePickerProps> = (props) => {
   return (
-    <div className={s.UserManagedItemTypePicker}>
-      <Select<UserManagedItemType>
+    <div className={s.ManagedItemTypePicker}>
+      <Select<ManagedItemType>
         value={props.value}
         onChange={props.onChange}
         list={[
@@ -27,4 +27,4 @@ const UserManagedItemTypePicker: React.FC<UserManagedItemTypePickerProps> = (pro
   );
 }
 
-export default UserManagedItemTypePicker;
+export default ManagedItemTypePicker;

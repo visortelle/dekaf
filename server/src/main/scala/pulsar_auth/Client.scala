@@ -21,14 +21,9 @@ import scala.util.{Failure, Success, Try}
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 
 // See https://github.com/tealtools/pulsar-ui/issues/198
-val numThreads = Runtime.getRuntime.availableProcessors
-val internalExecutorProvider = ExecutorProvider(numThreads, "shared-internal-executor")
-val externalExecutorProvider = ExecutorProvider(numThreads, "shared-external-executor")
-val scheduledExecutorProvider = ScheduledExecutorProvider(numThreads, "scheduled-pulsar-executor")
+def getThreadFactory(poolName: String) =
+    new ExecutorProvider.ExtendedThreadFactory(poolName, Thread.currentThread().isDaemon)
 val sharedTimer = new HashedWheelTimer(getThreadFactory("shared-pulsar-timer"), 1, TimeUnit.MILLISECONDS)
-val sharedEventLoopGroup: EventLoopGroup = if org.apache.commons.lang3.SystemUtils.IS_OS_LINUX
-    then new EpollEventLoopGroup() // better performance on Linux
-    else new NioEventLoopGroup()
 
 def makePulsarAdmin(pulsarAuth: PulsarAuth): Either[Throwable, PulsarAdmin] =
     var builder = PulsarAdmin.builder.serviceHttpUrl(config.pulsarHttpUrl.get)
@@ -68,11 +63,21 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
     so we need to use only one thread per client. */
     pulsarClientConfig.setNumIoThreads(1)
     pulsarClientConfig.setNumListenerThreads(1)
+    pulsarClientConfig.setConnectionsPerBroker(1)
+
     pulsarClientConfig.setServiceUrl(config.pulsarBrokerUrl.get)
 
     tls.configureClient(pulsarClientConfig, config)
 
     configureAuth(pulsarAuth, pulsarClientConfig)
+
+    // We create a single thread for each client to avoid problems with GraalJS.
+    val internalExecutorProvider = ExecutorProvider(1, "shared-internal-executor")
+    val externalExecutorProvider = ExecutorProvider(1, "shared-external-executor")
+    val scheduledExecutorProvider = ScheduledExecutorProvider(1, "scheduled-pulsar-executor")
+    val sharedEventLoopGroup: EventLoopGroup = if org.apache.commons.lang3.SystemUtils.IS_OS_LINUX
+        then new EpollEventLoopGroup() // better performance on Linux
+        else new NioEventLoopGroup()
 
     val builder = PulsarClientImpl.builder
         .conf(pulsarClientConfig)
@@ -86,9 +91,6 @@ def makePulsarClient(pulsarAuth: PulsarAuth): Either[Throwable, PulsarClient] =
         case Success(value)     => Right(value)
         case Failure(exception) => Left(new Exception("Wrong credentials for Pulsar Client"))
     }
-
-def getThreadFactory(poolName: String) =
-    new ExecutorProvider.ExtendedThreadFactory(poolName, Thread.currentThread().isDaemon)
 
 def configureAuth(pulsarAuth: PulsarAuth, pulsarClientConfig: ClientConfigurationData) =
     val pulsarCredentials = pulsarAuth.current match

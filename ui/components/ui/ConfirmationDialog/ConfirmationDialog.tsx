@@ -8,7 +8,7 @@ import Checkbox from "../Checkbox/Checkbox";
 import Input from "../Input/Input";
 
 type Props = {
-  description: ReactNode;
+  content: ReactNode;
   onConfirm: () => void;
   isConfirmDisabled?: boolean;
   onCancel: () => void;
@@ -27,7 +27,7 @@ const ConfirmationDialog = (props: Props) => {
   return (
     <DefaultProvider>
       <div className={s.ConfirmationDialog}>
-        {props.description}
+        {props.content}
 
         {props.guard && (
           <div className={`${s.Guard}`}>

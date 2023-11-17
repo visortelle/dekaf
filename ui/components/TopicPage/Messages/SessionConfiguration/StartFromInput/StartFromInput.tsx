@@ -4,22 +4,19 @@ import Select, { List } from '../../../../ui/Select/Select';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import { ConsumerSessionStartFrom } from '../../types';
 import Input from '../../../../ui/Input/Input';
-import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import RelativeDateTimePicker from '../../../../ui/RelativeDateTimePicker/RelativeDateTimePicker';
 import { v4 as uuid } from 'uuid';
 import { useHover } from '../../../../app/hooks/use-hover';
-import { UserManagedConsumerSessionStartFrom, UserManagedConsumerSessionStartFromSpec, UserManagedConsumerSessionStartFromValueOrReference, UserManagedDateTimeValueOrReference, UserManagedMessageIdValueOrReference, UserManagedRelativeDateTimeValueOrReference } from '../../../../ui/LibraryBrowser/model/user-managed-items';
-import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../ui/LibraryBrowser/useUserManagedItemValue';
-import dayjs from 'dayjs';
+import { ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromSpec, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import { clone } from 'lodash';
 
 export type StartFromInputProps = {
-  value: UserManagedConsumerSessionStartFromValueOrReference;
-  onChange: (value: UserManagedConsumerSessionStartFromValueOrReference) => void;
+  value: ManagedConsumerSessionStartFromValOrRef;
+  onChange: (value: ManagedConsumerSessionStartFromValOrRef) => void;
   libraryContext: LibraryContext;
-  topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
   disabled?: boolean;
 };
 
@@ -28,8 +25,6 @@ type StartFromType = ConsumerSessionStartFrom['type'];
 const list: List<StartFromType> = [
   { type: 'item', title: 'Earliest message', value: 'earliestMessage' },
   { type: 'item', title: 'Latest message', value: 'latestMessage' },
-  { type: 'item', title: 'n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
-  { type: 'item', title: 'n-th message before Latest message', value: 'nthMessageBeforeLatest' },
   {
     type: 'item',
     title: 'Message with specific ID',
@@ -37,29 +32,32 @@ const list: List<StartFromType> = [
   },
   { type: 'item', title: 'Specific time', value: 'dateTime' },
   { type: 'item', title: 'Relative time ago', value: 'relativeDateTime' },
+  { type: 'item', title: 'n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
+  { type: 'item', title: 'n-th message before Latest message', value: 'nthMessageBeforeLatest' }
 ];
 
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {
-  const isHasPartitionedTopic = hasPartitionedTopic(props.topicsInternalStats);
   const [hoverRef, isHovered] = useHover();
 
-  const resolveResult = useUserManagedItemValue<UserManagedConsumerSessionStartFrom>(props.value);
+  const resolveResult = useManagedItemValue<ManagedConsumerSessionStartFrom>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} />
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedConsumerSessionStartFromSpec) => {
-    const newValue: UserManagedConsumerSessionStartFromValueOrReference = { ...props.value, value: { ...item, spec } };
+  const onSpecChange = (spec: ManagedConsumerSessionStartFromSpec) => {
+    const newValue: ManagedConsumerSessionStartFromValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: UserManagedConsumerSessionStartFromValueOrReference = { type: 'value', value: item };
+    const newValue: ManagedConsumerSessionStartFromValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
+
+  const worksBestWithNonPartitionedTopic = <div style={{ padding: '12rem', borderRadius: '8rem', marginTop: '8rem', background: 'var(--surface-color)' }}>Works best with a single non-partitioned topic.</div>;
 
   return (
     <div className={s.StartFromInput} ref={hoverRef}>
@@ -68,20 +66,20 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
         itemType='consumer-session-start-from'
         onPick={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as UserManagedConsumerSessionStartFrom
+          ref: item.metadata.id,
+          val: item as ManagedConsumerSessionStartFrom
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as UserManagedConsumerSessionStartFrom
+          ref: item.metadata.id,
+          val: item as ManagedConsumerSessionStartFrom
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
       />
       <div className={s.TypeSelect}>
-        <Select<UserManagedConsumerSessionStartFromSpec['startFrom']['type']>
+        <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>
           list={list}
           value={itemSpec.startFrom.type}
           onChange={(v) => {
@@ -95,17 +93,17 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 return;
               }
               case 'nthMessageAfterEarliest': {
-                onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: 100 } });
+                onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: 5 } });
                 return;
               }
               case 'nthMessageBeforeLatest': {
-                onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: 100 } });
+                onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: 5 } });
                 return;
               }
               case 'messageId': {
-                const messageId: UserManagedMessageIdValueOrReference = {
+                const messageId: ManagedMessageIdValOrRef = {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'message-id' },
                     spec: { hexString: '' }
                   }
@@ -114,24 +112,24 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
                 return;
               };
               case 'dateTime': {
-                const dateTime: UserManagedDateTimeValueOrReference = {
+                const dateTime: ManagedDateTimeValOrRef = {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'date-time' },
-                    spec: { dateTime: dayjs(new Date()).subtract(1, 'day').toDate() }
+                    spec: { dateTime: new Date() }
                   }
                 };
                 onSpecChange({ startFrom: { type: 'dateTime', dateTime } });
                 return;
               }
               case 'relativeDateTime': {
-                const relativeDateTime: UserManagedRelativeDateTimeValueOrReference = {
+                const relativeDateTime: ManagedRelativeDateTimeValOrRef = {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'relative-date-time' },
                     spec: {
                       unit: 'hour',
-                      value: 24,
+                      value: 1,
                       isRoundedToUnitStart: false
                     }
                   }
@@ -144,8 +142,8 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           disabled={props.disabled}
         />
       </div>
-      <div className={s.AdditionalControls}>
-        {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
+      {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
+        <div className={s.AdditionalControls}>
           <Input
             value={itemSpec.startFrom.n.toString()}
             type='number'
@@ -153,8 +151,11 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             inputProps={{ disabled: props.disabled, min: 0 }}
             placeholder='n'
           />
-        )}
-        {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
+          {worksBestWithNonPartitionedTopic}
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
+        <div className={s.AdditionalControls}>
           <Input
             value={itemSpec.startFrom.n.toString()}
             type='number'
@@ -162,63 +163,77 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             inputProps={{ disabled: props.disabled, min: 0 }}
             placeholder='n'
           />
-        )}
-        {itemSpec.startFrom.type === 'messageId' && (
-          isHasPartitionedTopic ? (
-            <div style={{ color: 'var(--accent-color-red)', marginTop: '2rem' }}>
-              <strong>Can be only applied on non-partitioned topics or individual partitions.</strong>
-            </div>
-          ) : (
-            <Input
-              value={itemSpec.startFrom.messageId.value?.spec.hexString || ''}
-              placeholder="08 c3 03 10 cd 04 20 00 30 01"
-              onChange={(v) => {
-                const newItemSpec = clone(itemSpec);
+          {worksBestWithNonPartitionedTopic}
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'messageId' && (
+        <div className={s.AdditionalControls}>
+          <Input
+            value={itemSpec.startFrom.messageId.val?.spec.hexString || ''}
+            placeholder="08 c3 03 10 cd 04 20 00 30 01"
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
 
-                if (newItemSpec.startFrom.type !== 'messageId') {
-                  return;
-                }
+              if (newItemSpec.startFrom.type !== 'messageId') {
+                return;
+              }
 
-                if (newItemSpec.startFrom.messageId.value === undefined) {
-                  return;
-                }
+              if (newItemSpec.startFrom.messageId.val === undefined) {
+                return;
+              }
 
-                newItemSpec.startFrom.messageId.value.spec.hexString = v;
-                onSpecChange(newItemSpec);
-              }}
-            />
-          )
-        )}
-        {/* {props.value.spec.startFrom.type === 'dateTime' && (
+              newItemSpec.startFrom.messageId.val.spec.hexString = v;
+              onSpecChange(newItemSpec);
+            }}
+          />
+          {worksBestWithNonPartitionedTopic}
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'dateTime' && (
+        <div className={s.AdditionalControls}>
           <DatetimePicker
-            value={props.value.spec.startFrom.dateTime}
-            onChange={(v) => props.onChange({ type: 'dateTime', dateTime: v || new Date() })}
+            value={itemSpec.startFrom.dateTime.val?.spec.dateTime}
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
+
+              if (newItemSpec.startFrom.type !== 'dateTime') {
+                return;
+              }
+
+              if (newItemSpec.startFrom.dateTime.val === undefined) {
+                return;
+              }
+
+              newItemSpec.startFrom.dateTime.val.spec.dateTime = v || new Date();
+              onSpecChange(newItemSpec);
+            }}
             disabled={props.disabled}
           />
-        )}
-        {props.value.type === 'relativeDateTime' && (
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'relativeDateTime' && (
+        <div className={s.AdditionalControls}>
           <RelativeDateTimePicker
-            value={props.value.value}
-            onChange={(v) => props.onChange({ type: 'relativeDateTime', value: v })}
+            value={itemSpec.startFrom.relativeDateTime.val?.spec!}
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
+
+              if (newItemSpec.startFrom.type !== 'relativeDateTime') {
+                return;
+              }
+
+              if (newItemSpec.startFrom.relativeDateTime.val === undefined) {
+                return;
+              }
+
+              newItemSpec.startFrom.relativeDateTime.val.spec = v;
+              onSpecChange(newItemSpec);
+            }}
           />
-        )} */}
-      </div>
+        </div>
+      )}
     </div >
   );
-}
-
-function hasPartitionedTopic(topicsInternalStats: GetTopicsInternalStatsResponse | undefined): boolean {
-  if (topicsInternalStats === undefined) {
-    return false;
-  }
-
-  let result = false;
-  topicsInternalStats.getStatsMap().forEach((stats) => {
-    if (stats.getPartitionedTopicStats() !== undefined) {
-      result = true;
-    }
-  });
-  return result;
 }
 
 export default StartFromInput;

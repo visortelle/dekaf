@@ -10,23 +10,23 @@ import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
 import * as Modals from '../../app/contexts/Modals/Modals';
 import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
-import { UserManagedItem, UserManagedItemMetadata, UserManagedItemType } from './model/user-managed-items';
+import { ManagedItem, ManagedItemMetadata, ManagedItemType } from './model/user-managed-items';
 import NothingToShow from '../NothingToShow/NothingToShow';
 import { libraryItemFromPb, libraryItemToPb } from './model/library-conversions';
 import { useLibraryItem } from './useLibraryItem';
 import { LibraryContext, resourceMatcherFromContext } from './model/library-context';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import { pulsarResourceToFqn } from '../../pulsar/pulsar-resources';
-import { userManagedItemTypeToPb } from './model/user-managed-items-conversions-pb';
+import { managedItemTypeToPb } from './model/user-managed-items-conversions-pb';
 
 export type LibraryBrowserMode = {
   type: 'save';
-  item: UserManagedItem;
-  onSave: (item: UserManagedItem) => void;
+  item: ManagedItem;
+  onSave: (item: ManagedItem) => void;
 } | {
   type: 'pick';
-  itemType: UserManagedItemType;
-  onPick: (item: UserManagedItem) => void;
+  itemType: ManagedItemType;
+  onPick: (item: ManagedItem) => void;
 };
 
 export type LibraryBrowserProps = {
@@ -107,7 +107,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
   async function fetchSearchResults() {
     const req = new pb.ListLibraryItemsRequest();
     req.setContextFqnsList([pulsarResourceToFqn(props.libraryContext.pulsarResource)]);
-    req.setTypesList([userManagedItemTypeToPb(searchEditorValue.itemType)]);
+    req.setTypesList([managedItemTypeToPb(searchEditorValue.itemType)]);
     req.setTagsList(searchEditorValue.tags);
 
     const res = await libraryServiceClient.listLibraryItems(req, null)
@@ -289,19 +289,19 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
                   updatedAt: new Date().toISOString()
                 };
 
-                const userManagedItemMetadata: UserManagedItemMetadata = {
+                const managedItemMetadata: ManagedItemMetadata = {
                   ...itemToSave.spec.metadata,
                   id: selectedItem.spec.metadata.id,
                 };
 
-                const userManagedItem: UserManagedItem = {
+                const managedItem: ManagedItem = {
                   ...props.mode.item,
-                  metadata: userManagedItemMetadata
+                  metadata: managedItemMetadata
                 };
 
                 await saveLibraryItem({
                   metadata: libraryItemMetadata,
-                  spec: userManagedItem
+                  spec: managedItem
                 });
               }
 
@@ -316,7 +316,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
                   title: 'Save Library Item',
                   content: (
                     <ConfirmationDialog
-                      description={(
+                      content={(
                         <div>
                           Are you sure you want to overwrite this library item?
                           <br />

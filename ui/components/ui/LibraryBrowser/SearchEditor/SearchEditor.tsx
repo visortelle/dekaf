@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './SearchEditor.module.css'
-import UserManagedItemTypePicker from './UserManagedItemTypePicker/UserManagedItemTypePicker';
-import { UserManagedItemType } from '../model/user-managed-items';
+import ManagedItemTypePicker from './ManagedItemTypePicker/ManagedItemTypePicker';
+import { ManagedItemType } from '../model/user-managed-items';
 import FormItem from '../../ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { ResourceMatcher } from '../model/resource-matchers';
@@ -20,7 +20,7 @@ type SearchEditorMode = {
 }
 
 export type SearchEditorValue = {
-  itemType: UserManagedItemType;
+  itemType: ManagedItemType;
   resourceMatchers: ResourceMatcher[];
   tags: string[];
 }
@@ -39,7 +39,7 @@ const SearchEditor: React.FC<SearchEditorProps> = (props) => {
             content={<H3>Type</H3>}
             help={"Library item type."}
           />
-          <UserManagedItemTypePicker
+          <ManagedItemTypePicker
             value={props.mode.value.itemType}
             onChange={(v) => {
               if (props.mode.type === 'readonly') {

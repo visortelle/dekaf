@@ -6,7 +6,7 @@ import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { LibraryItem } from '../model/library';
 import FilterEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterEditor/FilterEditor';
 import FilterChainEditor from '../../../TopicPage/Messages/SessionConfiguration/FilterChainEditor/FilterChainEditor';
-import { UserManagedConsumerSessionStartFrom, UserManagedMessageFilter, UserManagedMessageFilterChain } from '../model/user-managed-items';
+import { ManagedConsumerSessionStartFrom, ManagedMessageFilter, ManagedMessageFilterChain } from '../model/user-managed-items';
 import { LibraryContext } from '../model/library-context';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import NoData from '../../NoData/NoData';
@@ -31,14 +31,14 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
         <FilterEditor
           value={{
             type: 'value',
-            value: value.spec as UserManagedMessageFilter
+            val: value.spec as ManagedMessageFilter
           }}
           onChange={v => {
             if (v.type === 'reference') {
               throw new Error('Item value shouldn\'t be a reference');
             }
 
-            props.onChange({ ...props.value, spec: v.value });
+            props.onChange({ ...props.value, spec: v.val });
           }}
           libraryContext={props.libraryContext}
         />
@@ -50,14 +50,14 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
         <FilterChainEditor
           value={{
             type: 'value',
-            value: value.spec as UserManagedMessageFilterChain
+            val: value.spec as ManagedMessageFilterChain
           }}
           onChange={v => {
             if (v.type === 'reference') {
               throw new Error('Item value shouldn\'t be a reference');
             }
 
-            props.onChange({ ...props.value, spec: v.value });
+            props.onChange({ ...props.value, spec: v.val });
           }}
           libraryContext={props.libraryContext}
           appearance="compact"
@@ -70,16 +70,15 @@ const LibraryItemEditor: React.FC<LibraryItemEditorProps> = (props) => {
         <StartFromInput
           value={{
             type: 'value',
-            value: value.spec as UserManagedConsumerSessionStartFrom
+            val: value.spec as ManagedConsumerSessionStartFrom
           }}
           onChange={v => {
             if (v.type === 'reference') {
               throw new Error('Item value shouldn\'t be a reference');
             }
 
-            props.onChange({ ...props.value, spec: v.value });
+            props.onChange({ ...props.value, spec: v.val });
           }}
-          topicsInternalStats={undefined}
           libraryContext={props.libraryContext}
         />
       );
