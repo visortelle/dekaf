@@ -41,7 +41,7 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
         try {
             if request.item.isEmpty then throw new Exception("Library item is empty")
 
-            val libraryItem = libraryItemFromPb(request.item.get)
+            val libraryItem = LibraryItem.fromPb(request.item.get)
             library.writeItem(libraryItem)
 
             val status: Status = Status(code = Code.OK.index)
@@ -82,7 +82,7 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
                 val status: Status = Status(code = Code.NOT_FOUND.index)
                 return Future.successful(pb.GetLibraryItemResponse(status = Some(status)))
 
-            val libraryItemPb = libraryItemToPb(libraryItem.get)
+            val libraryItemPb = LibraryItem.toPb(libraryItem.get)
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.GetLibraryItemResponse(status = Some(status), item = Some(libraryItemPb)))
@@ -98,13 +98,13 @@ class LibraryServiceImpl extends pb.LibraryServiceGrpc.LibraryService:
 
         try {
             val filter = ListItemsFilter(
-                types = request.types.map(userManagedItemTypeFromPb).toList,
+                types = request.types.map(ManagedItemType.fromPb).toList,
                 tags = request.tags.toList,
                 contextFqns = request.contextFqns.toList
             )
             val libraryItems = library.listItems(filter)
 
-            val libraryItemsPb = libraryItems.map(libraryItemToPb).toList
+            val libraryItemsPb = libraryItems.map(LibraryItem.toPb).toList
 
             val status: Status = Status(code = Code.OK.index)
             Future.successful(pb.ListLibraryItemsResponse(status = Some(status), items = libraryItemsPb))

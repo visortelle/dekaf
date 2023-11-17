@@ -1,7 +1,7 @@
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb";
 import * as t from "./library";
 import { resourceMatcherFromPb, resourceMatcherToPb } from "./resource-matchers-conversions-pb";
-import { userManagedItemFromPb, userManagedItemToPb } from "./user-managed-items-conversions-pb";
+import { managedItemFromPb, managedItemToPb } from "./user-managed-items-conversions-pb";
 
 export function libraryItemMetadataFromPb(v: pb.LibraryItemMetadata): t.LibraryItemMetadata {
   return {
@@ -22,13 +22,13 @@ export function libraryItemMetadataToPb(v: t.LibraryItemMetadata): pb.LibraryIte
 export function libraryItemFromPb(v: pb.LibraryItem): t.LibraryItem {
   return {
     metadata: libraryItemMetadataFromPb(v.getMetadata()!),
-    spec: userManagedItemFromPb(v.getSpec()!)
+    spec: managedItemFromPb(v.getSpec()!)
   };
 }
 
 export function libraryItemToPb(v: t.LibraryItem): pb.LibraryItem {
   const itemPb = new pb.LibraryItem();
   itemPb.setMetadata(libraryItemMetadataToPb(v.metadata));
-  itemPb.setSpec(userManagedItemToPb(v.spec));
+  itemPb.setSpec(managedItemToPb(v.spec));
   return itemPb;
 }

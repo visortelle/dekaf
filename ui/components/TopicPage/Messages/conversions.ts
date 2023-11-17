@@ -12,7 +12,30 @@ import {
   MessageFilterChainMode,
   ConsumerSessionStartFrom,
   DateTimeUnit,
+  ColoringRule,
+  ColoringRuleChain,
+  MessageId,
+  ConsumerSessionEventMessagesProcessed,
+  ConsumerSessionEventMessagesDelivered,
+  ConsumerSessionEventBytesProcessed,
+  ConsumerSessionEventBytesDelivered,
+  ConsumerSessionEventMessageDecodeFailed,
+  ConsumerSessionEventTimeElapsed,
+  ConsumerSessionEventTopicEndReached,
+  ConsumerSessionEventUnexpectedErrorOccurred,
+  ConsumerSessionEventMessageId,
+  ConsumerSessionEvent,
+  ConsumerSessionPauseTriggerChainMode,
+  ConsumerSessionPauseTriggerChain,
+  ConsumerSessionTopic
 } from "./types";
+
+import {
+  TopicSelector,
+  MultiTopicSelector,
+  NamespacedRegexTopicSelector,
+  RegexSubMode,
+} from './topic-selector/topic-selector';
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
@@ -145,6 +168,90 @@ export function dateTimeUnitToPb(unit: DateTimeUnit): pb.DateTimeUnit {
   }
 }
 
+export function multiTopicSelectorFromPb(v: pb.MultiTopicSelector): MultiTopicSelector {
+  return {
+    type: 'multi-topic-selector',
+    topicFqns: v.getTopicFqnsList(),
+  };
+}
+
+export function multiTopicSelectorToPb(v: MultiTopicSelector): pb.MultiTopicSelector {
+  const singleTopicSelectorPb = new pb.MultiTopicSelector();
+  singleTopicSelectorPb.setTopicFqnsList(v.topicFqns);
+  return singleTopicSelectorPb;
+}
+
+export function regexSubscriptionModeFromPb(v: pb.RegexSubscriptionMode): RegexSubMode {
+  switch (v) {
+    case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS:
+      return 'all-topics';
+    case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY:
+      return 'persistent-only';
+    case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY:
+      return 'non-persistent-only';
+    default:
+      throw new Error(`Unknown regex subscription mode: ${v}`);
+  }
+}
+
+export function regexSubscriptionModeToPb(v: RegexSubMode): pb.RegexSubscriptionMode {
+  switch (v) {
+    case 'all-topics':
+      return pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS;
+    case 'persistent-only':
+      return pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY;
+    case 'non-persistent-only':
+      return pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY;
+    default:
+      throw new Error(`Unknown regex subscription mode: ${v}`);
+  }
+}
+
+export function namespacedRegexTopicSelectorFromPb(v: pb.NamespacedRegexTopicSelector): NamespacedRegexTopicSelector {
+  return {
+    type: 'namespaced-regex-topic-selector',
+    namespaceFqn: v.getNamespaceFqn(),
+    pattern: v.getPattern(),
+    regexSubscriptionMode: 'all-topics'
+  };
+}
+
+export function namespacedRegexTopicSelectorToPb(v: NamespacedRegexTopicSelector): pb.NamespacedRegexTopicSelector {
+  const namespacedRegexTopicSelectorPb = new pb.NamespacedRegexTopicSelector();
+  namespacedRegexTopicSelectorPb.setNamespaceFqn(v.namespaceFqn);
+  namespacedRegexTopicSelectorPb.setPattern(v.pattern);
+  return namespacedRegexTopicSelectorPb;
+}
+
+export function topicSelectorFromPb(v: pb.TopicSelector): TopicSelector {
+  switch (v.getTopicSelectorCase()) {
+    case pb.TopicSelector.TopicSelectorCase.MULTI_TOPIC_SELECTOR: {
+      return multiTopicSelectorFromPb(v.getMultiTopicSelector()!);
+    }
+    case pb.TopicSelector.TopicSelectorCase.NAMESPACED_REGEX_TOPIC_SELECTOR: {
+      return namespacedRegexTopicSelectorFromPb(v.getNamespacedRegexTopicSelector()!);
+    }
+    default:
+      throw new Error(`Unknown TopicSelector type: ${v}`);
+  }
+}
+
+export function topicsSelectorToPb(v: TopicSelector): pb.TopicSelector {
+  const topicsSelectorPb = new pb.TopicSelector();
+
+  switch (v.type) {
+    case 'multi-topic-selector':
+      topicsSelectorPb.setMultiTopicSelector(multiTopicSelectorToPb(v));
+      break;
+    case 'namespaced-regex-topic-selector':
+      topicsSelectorPb.setNamespacedRegexTopicSelector(namespacedRegexTopicSelectorToPb(v));
+      break;
+    default:
+      throw new Error(`Unknown TopicSelector type: ${v}`);
+  }
+
+  return topicsSelectorPb;
+}
 
 export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): ConsumerSessionStartFrom {
   switch (startFrom.getStartFromCase()) {
@@ -193,6 +300,284 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): Consume
   }
 }
 
+export function coloringRuleFromPb(v: pb.ColoringRule): ColoringRule {
+  return {
+    messageFilterChain: messageFilterChainFromPb(v.getMessageFilterChain()!),
+    backgroundColor: v.getBackgroundColor(),
+    foregroundColor: v.getForegroundColor(),
+  }
+}
+
+export function coloringRuleToPb(v: ColoringRule): pb.ColoringRule {
+  const coloringRulePb = new pb.ColoringRule();
+  coloringRulePb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
+  coloringRulePb.setBackgroundColor(v.backgroundColor);
+  coloringRulePb.setForegroundColor(v.foregroundColor);
+
+  return coloringRulePb;
+}
+
+export function coloringRuleChainFromPb(v: pb.ColoringRuleChain): ColoringRuleChain {
+  return {
+    coloringRules: v.getColoringRulesList().map(coloringRuleFromPb),
+  }
+}
+
+export function coloringRuleChainToPb(v: ColoringRuleChain): pb.ColoringRuleChain {
+  const coloringRuleChainPb = new pb.ColoringRuleChain();
+  coloringRuleChainPb.setColoringRulesList(v.coloringRules.map(coloringRuleToPb));
+
+  return coloringRuleChainPb;
+}
+
+export function messageIdFromPb(v: pb.MessageId): MessageId {
+  return {
+    messageId: v.getMessageId_asU8(),
+  };
+}
+
+export function messageIdToPb(v: MessageId): pb.MessageId {
+  const messageIdPb = new pb.MessageId();
+  messageIdPb.setMessageId(v.messageId);
+
+  return messageIdPb;
+}
+
+export function consumerSessionEventMessagesProcessedFromPb(v: pb.ConsumerSessionEventMessagesProcessed): ConsumerSessionEventMessagesProcessed {
+  return {
+    type: 'messages-processed',
+    messageCount: v.getMessageCount(),
+  };
+}
+
+export function consumerSessionEventMessagesProcessedToPb(v: ConsumerSessionEventMessagesProcessed): pb.ConsumerSessionEventMessagesProcessed {
+  const messagesProcessedPb = new pb.ConsumerSessionEventMessagesProcessed();
+  messagesProcessedPb.setMessageCount(v.messageCount);
+
+  return messagesProcessedPb;
+}
+
+export function consumerSessionEventMessagesDeliveredFromPb(v: pb.ConsumerSessionEventMessagesDelivered): ConsumerSessionEventMessagesDelivered {
+  return {
+    type: 'messages-delivered',
+    messageCount: v.getMessageCount(),
+  };
+}
+
+export function consumerSessionEventMessagesDeliveredToPb(v: ConsumerSessionEventMessagesDelivered): pb.ConsumerSessionEventMessagesDelivered {
+  const messagesDeliveredPb = new pb.ConsumerSessionEventMessagesDelivered();
+  messagesDeliveredPb.setMessageCount(v.messageCount);
+
+  return messagesDeliveredPb;
+}
+
+export function consumerSessionEventBytesProcessedFromPb(v: pb.ConsumerSessionEventBytesProcessed): ConsumerSessionEventMessagesProcessed {
+  return {
+    type: 'messages-processed',
+    messageCount: v.getByteCount(),
+  };
+}
+
+export function consumerSessionEventBytesProcessedToPb(v: ConsumerSessionEventBytesProcessed): pb.ConsumerSessionEventBytesProcessed {
+  const bytesProcessedPb = new pb.ConsumerSessionEventBytesProcessed();
+  bytesProcessedPb.setByteCount(v.byteCount);
+
+  return bytesProcessedPb;
+}
+
+export function consumerSessionEventBytesDeliveredFromPb(v: pb.ConsumerSessionEventBytesDelivered): ConsumerSessionEventBytesDelivered {
+  return {
+    type: 'bytes-delivered',
+    byteCount: v.getByteCount(),
+  };
+}
+
+export function consumerSessionEventBytesDeliveredToPb(v: ConsumerSessionEventBytesDelivered): pb.ConsumerSessionEventBytesDelivered {
+  const bytesDeliveredPb = new pb.ConsumerSessionEventBytesDelivered();
+  bytesDeliveredPb.setByteCount(v.byteCount);
+
+  return bytesDeliveredPb;
+}
+
+export function consumerSessionEventMessageDecodeFailedFromPb(v: pb.ConsumerSessionEventMessageDecodeFailed): ConsumerSessionEventMessageDecodeFailed {
+  return {
+    type: 'decode-failed',
+    failCount: v.getFailCount(),
+  };
+}
+
+export function consumerSessionEventMessageDecodeFailedToPb(v: ConsumerSessionEventMessageDecodeFailed): pb.ConsumerSessionEventMessageDecodeFailed {
+  const messageDecodeFailedPb = new pb.ConsumerSessionEventMessageDecodeFailed();
+  messageDecodeFailedPb.setFailCount(v.failCount);
+
+  return messageDecodeFailedPb;
+}
+
+export function consumerSessionEventTimeElapsedFromPb(v: pb.ConsumerSessionEventTimeElapsed): ConsumerSessionEventTimeElapsed {
+  return {
+    type: 'time-elapsed',
+    timeElapsedMs: v.getTimeElapsedMs(),
+  };
+}
+
+export function consumerSessionEventTimeElapsedToPb(v: ConsumerSessionEventTimeElapsed): pb.ConsumerSessionEventTimeElapsed {
+  const timeElapsedPb = new pb.ConsumerSessionEventTimeElapsed();
+  timeElapsedPb.setTimeElapsedMs(v.timeElapsedMs);
+
+  return timeElapsedPb;
+}
+
+export function consumerSessionEventTopicEndReachedFromPb(v: pb.ConsumerSessionEventTopicEndReached): ConsumerSessionEventTopicEndReached {
+  return {
+    type: 'topic-end-reached',
+  };
+}
+
+export function consumerSessionEventTopicEndReachedToPb(v: ConsumerSessionEventTopicEndReached): pb.ConsumerSessionEventTopicEndReached {
+  return new pb.ConsumerSessionEventTopicEndReached();
+}
+
+export function consumerSessionEventUnexpectedErrorOccurredFromPb(v: pb.ConsumerSessionEventUnexpectedErrorOccurred): ConsumerSessionEventUnexpectedErrorOccurred {
+  return {
+    type: 'unexpected-error-occurred',
+  };
+}
+
+export function consumerSessionEventUnexpectedErrorOccurredToPb(v: ConsumerSessionEventUnexpectedErrorOccurred): pb.ConsumerSessionEventUnexpectedErrorOccurred {
+  return new pb.ConsumerSessionEventUnexpectedErrorOccurred();
+}
+
+export function consumerSessionEventMessageIdFromPb(v: pb.ConsumerSessionEventMessageId): ConsumerSessionEventMessageId {
+  return {
+    type: 'message-id',
+    messageId: messageIdFromPb(v.getMessageId()!),
+  };
+}
+
+export function consumerSessionEventMessageIdToPb(v: ConsumerSessionEventMessageId): pb.ConsumerSessionEventMessageId {
+  const messageIdPb = new pb.ConsumerSessionEventMessageId();
+  messageIdPb.setMessageId(messageIdToPb(v.messageId));
+
+  return messageIdPb;
+}
+
+export function consumerSessionEventFromPb(v: pb.ConsumerSessionEvent): ConsumerSessionEvent {
+  switch (v.getEventCase()) {
+    case pb.ConsumerSessionEvent.EventCase.EVENT_MESSAGES_PROCESSED:
+      return consumerSessionEventMessagesProcessedFromPb(v.getEventMessagesProcessed()!);
+    case pb.ConsumerSessionEvent.EventCase.EVENT_MESSAGES_DELIVERED:
+      return consumerSessionEventMessagesDeliveredFromPb(v.getEventMessagesDelivered()!);
+    case pb.ConsumerSessionEvent.EventCase.EVENT_BYTES_PROCESSED:
+      return consumerSessionEventBytesProcessedFromPb(v.getEventBytesProcessed()!);
+    case pb.ConsumerSessionEvent.EventCase.EVENT_BYTES_DELIVERED:
+      return consumerSessionEventBytesDeliveredFromPb(v.getEventBytesDelivered()!);
+    case pb.ConsumerSessionEvent.EventCase.EVENT_MESSAGE_DECODE_FAILED:
+      return consumerSessionEventMessageDecodeFailedFromPb(v.getEventMessageDecodeFailed()!);
+    case pb.ConsumerSessionEvent.EventCase.EVENT_TIME_ELAPSED:
+      return consumerSessionEventTimeElapsedFromPb(v.getEventTimeElapsed()!);
+    case pb.ConsumerSessionEvent.EventCase.EVENT_TOPIC_END_REACHED:
+      return consumerSessionEventTopicEndReachedFromPb(v.getEventTopicEndReached()!);
+    case pb.ConsumerSessionEvent.EventCase.EVENT_UNEXPECTED_ERROR_OCCURRED:
+      return consumerSessionEventUnexpectedErrorOccurredFromPb(v.getEventUnexpectedErrorOccurred()!);
+    case pb.ConsumerSessionEvent.EventCase.EVENT_MESSAGE_ID:
+      return consumerSessionEventMessageIdFromPb(v.getEventMessageId()!);
+    default:
+      throw new Error(`Unknown ConsumerSessionEvent type: ${v}`);
+  }
+}
+
+export function consumerSessionEventToPb(v: ConsumerSessionEvent): pb.ConsumerSessionEvent {
+  const consumerSessionEventPb = new pb.ConsumerSessionEvent();
+
+  switch (v.type) {
+    case 'messages-processed':
+      consumerSessionEventPb.setEventMessagesProcessed(consumerSessionEventMessagesProcessedToPb(v));
+      break;
+    case 'messages-delivered':
+      consumerSessionEventPb.setEventMessagesDelivered(consumerSessionEventMessagesDeliveredToPb(v));
+      break;
+    case 'bytes-processed':
+      consumerSessionEventPb.setEventBytesProcessed(consumerSessionEventBytesProcessedToPb(v));
+      break;
+    case 'bytes-delivered':
+      consumerSessionEventPb.setEventBytesDelivered(consumerSessionEventBytesDeliveredToPb(v));
+      break;
+    case 'decode-failed':
+      consumerSessionEventPb.setEventMessageDecodeFailed(consumerSessionEventMessageDecodeFailedToPb(v));
+      break;
+    case 'time-elapsed':
+      consumerSessionEventPb.setEventTimeElapsed(consumerSessionEventTimeElapsedToPb(v));
+      break;
+    case 'topic-end-reached':
+      consumerSessionEventPb.setEventTopicEndReached(consumerSessionEventTopicEndReachedToPb(v));
+      break;
+    case 'unexpected-error-occurred':
+      consumerSessionEventPb.setEventUnexpectedErrorOccurred(consumerSessionEventUnexpectedErrorOccurredToPb(v));
+      break;
+    case 'message-id':
+      consumerSessionEventPb.setEventMessageId(consumerSessionEventMessageIdToPb(v));
+      break;
+    default:
+      throw new Error(`Unknown ConsumerSessionEvent type: ${v}`);
+  }
+
+  return consumerSessionEventPb;
+}
+
+export function consumerSessionPauseTriggerChainModeFromPb(v: pb.ConsumerSessionPauseTriggerChainMode): ConsumerSessionPauseTriggerChainMode {
+  switch (v) {
+    case pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL:
+      return 'all';
+    case pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY:
+      return 'any';
+    default:
+      throw new Error(`Unknown ConsumerSessionPauseTriggerChainMode: ${v}`);
+  }
+}
+
+export function consumerSessionPauseTriggerChainModeToPb(v: ConsumerSessionPauseTriggerChainMode): pb.ConsumerSessionPauseTriggerChainMode {
+  switch (v) {
+    case 'all':
+      return pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL;
+    case 'any':
+      return pb.ConsumerSessionPauseTriggerChainMode.CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY;
+    default:
+      throw new Error(`Unknown ConsumerSessionPauseTriggerChainMode: ${v}`);
+  }
+}
+
+export function consumerSessionPauseTriggerChainFromPb(v: pb.ConsumerSessionPauseTriggerChain): ConsumerSessionPauseTriggerChain {
+  return {
+    events: v.getEventsList().map(consumerSessionEventFromPb),
+    mode: consumerSessionPauseTriggerChainModeFromPb(v.getMode()),
+  };
+}
+
+export function consumerSessionPauseTriggerChainToPb(v: ConsumerSessionPauseTriggerChain): pb.ConsumerSessionPauseTriggerChain {
+  const consumerSessionPauseTriggerChainPb = new pb.ConsumerSessionPauseTriggerChain();
+  consumerSessionPauseTriggerChainPb.setMode(consumerSessionPauseTriggerChainModeToPb(v.mode));
+  consumerSessionPauseTriggerChainPb.setEventsList(v.events.map(consumerSessionEventToPb));
+
+  return consumerSessionPauseTriggerChainPb;
+}
+
+export function consumerSessionTopicFromPb(v: pb.ConsumerSessionTopic): ConsumerSessionTopic {
+  return {
+    topicSelector: topicSelectorFromPb(v.getTopicSelector()!),
+    messageFilterChain: messageFilterChainFromPb(v.getMessageFilterChain()!),
+    coloringRuleChain: coloringRuleChainFromPb(v.getColoringRuleChain()!),
+  };
+}
+
+export function consumerSessionTopicToPb(v: ConsumerSessionTopic): pb.ConsumerSessionTopic {
+  const consumerSessionTopicPb = new pb.ConsumerSessionTopic();
+  consumerSessionTopicPb.setTopicSelector(topicsSelectorToPb(v.topicSelector));
+  consumerSessionTopicPb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
+  consumerSessionTopicPb.setColoringRuleChain(coloringRuleChainToPb(v.coloringRuleChain));
+
+  return consumerSessionTopicPb;
+}
+
 function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {
   const startFromPb = new pb.ConsumerSessionStartFrom();
 
@@ -235,11 +620,17 @@ function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionS
 
 export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.ConsumerSessionConfig {
   const startFromPb = startFromToPb(config.startFrom);
+  const topicsPb = config.topics.map(consumerSessionTopicToPb);
   const messageFilterChainPb = messageFilterChainToPb(config.messageFilterChain);
+  const pauseTriggerChainPb = consumerSessionPauseTriggerChainToPb(config.pauseTriggerChain);
+  const coloringRuleChainPb = coloringRuleChainToPb(config.coloringRuleChain);
 
   const configPb = new pb.ConsumerSessionConfig();
   configPb.setStartFrom(startFromPb);
+  configPb.setTopicsList(topicsPb);
   configPb.setMessageFilterChain(messageFilterChainPb);
+  configPb.setPauseTriggerChain(pauseTriggerChainPb);
+  configPb.setColoringRuleChain(coloringRuleChainPb);
 
   return configPb;
 }
@@ -251,7 +642,7 @@ export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
       jsMessageFilterPb.setJsCode(filter.value.jsCode);
 
       const messageFilterPb = new pb.MessageFilter();
-      messageFilterPb.setJs(jsMessageFilterPb)
+      messageFilterPb.setFilterJs(jsMessageFilterPb)
 
       messageFilterPb.setIsEnabled(filter.isEnabled);
       messageFilterPb.setIsNegated(filter.isNegated);
@@ -263,7 +654,7 @@ export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
       const basicMessageFilterPb = new pb.BasicMessageFilter();
 
       const messageFilterPb = new pb.MessageFilter();
-      messageFilterPb.setBasic(basicMessageFilterPb)
+      messageFilterPb.setFilterBasic(basicMessageFilterPb)
 
       messageFilterPb.setIsEnabled(filter.isEnabled);
       messageFilterPb.setIsNegated(filter.isNegated);
@@ -297,15 +688,15 @@ export function messageFilterChainModeToPb(mode: MessageFilterChainMode): pb.Mes
 }
 
 export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
-  switch (filter.getValueCase()) {
-    case pb.MessageFilter.ValueCase.JS:
+  switch (filter.getFilterCase()) {
+    case pb.MessageFilter.FilterCase.FILTER_JS:
       return {
         type: 'js-message-filter',
-        value: { jsCode: filter.getJs()?.getJsCode() ?? '' },
+        value: { jsCode: filter.getFilterJs()?.getJsCode() ?? '' },
         isEnabled: filter.getIsEnabled(),
         isNegated: filter.getIsNegated(),
       };
-    case pb.MessageFilter.ValueCase.BASIC: {
+    case pb.MessageFilter.FilterCase.FILTER_BASIC: {
       return {
         type: 'basic-message-filter',
         value: {},
@@ -314,7 +705,7 @@ export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
       };
     }
     default:
-      throw new Error(`Unknown MessageFilter value case. ${filter.getValueCase()}`);
+      throw new Error(`Unknown MessageFilter value case. ${filter.getFilterBasic()}`);
   }
 }
 

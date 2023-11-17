@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ValueOrReference } from "./model/user-managed-items";
+import { ValOrRef } from "./model/user-managed-items";
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/library/v1/library_pb';
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -8,7 +8,7 @@ import { libraryItemFromPb } from "./model/library-conversions";
 import NothingToShow from "../NothingToShow/NothingToShow";
 import SmallButton from "../SmallButton/SmallButton";
 
-export type UseUserManagedItemValue<ValueT> = {
+export type UseManagedItemValue<ValueT> = {
   type: 'success',
   value: ValueT
 } | {
@@ -18,10 +18,10 @@ export type UseUserManagedItemValue<ValueT> = {
   reason?: string
 };
 
-export function useUserManagedItemValue<ValueT>(valOrRef: ValueOrReference<ValueT>): UseUserManagedItemValue<ValueT> {
+export function useManagedItemValue<ValueT>(valOrRef: ValOrRef<ValueT>): UseManagedItemValue<ValueT> {
   const { libraryServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
-  const [result, setResult] = useState<UseUserManagedItemValue<ValueT>>({ type: 'pending' });
+  const [fetchedItem, setFetchedItem] = useState<UseManagedItemValue<ValueT>>({ type: 'pending' });
 
   const fetchItem = async (itemId: string) => {
     const req = new pb.GetLibraryItemRequest();
@@ -30,45 +30,48 @@ export function useUserManagedItemValue<ValueT>(valOrRef: ValueOrReference<Value
     const res = await libraryServiceClient.getLibraryItem(req, {});
     if (res.getStatus()?.getCode() !== Code.OK) {
       notifyError(`Unable to load library item with id: ${itemId}. ${res.getStatus()?.getMessage()}`);
-      setResult({ type: 'failure', reason: res.getStatus()?.getMessage() });
+      setFetchedItem({ type: 'failure', reason: res.getStatus()?.getMessage() });
       return;
     }
 
     const itemPb = res.getItem()!;
     const item = libraryItemFromPb(itemPb);
 
-    setResult({ type: 'success', value: item.spec as ValueT });
+    setFetchedItem({ type: 'success', value: item.spec as ValueT });
   };
 
   useEffect(() => {
-    if (valOrRef.type === 'reference' && valOrRef.value === undefined) {
-      fetchItem(valOrRef.reference);
-      return;
-    }
-
-    if (valOrRef.value !== undefined) {
-      setResult({ type: 'success', value: valOrRef.value });
+    if (valOrRef.type === 'reference' && valOrRef.val === undefined) {
+      fetchItem(valOrRef.ref);
       return;
     }
   }, [valOrRef]);
 
-  return result;
+  if (valOrRef.type === 'value') {
+    return { type: 'success', value: valOrRef.val };
+  }
+
+  if (valOrRef.type == 'reference' && valOrRef.val !== undefined) {
+    return { type: 'success', value: valOrRef.val };
+  }
+
+  return fetchedItem;
 }
 
-export type UseUserManagedItemValueSpinnerProps = {
-  item: ValueOrReference<any>;
-  result: UseUserManagedItemValue<any>;
+export type UseManagedItemValueSpinnerProps = {
+  item: ValOrRef<any>;
+  result: UseManagedItemValue<any>;
   onDelete?: () => void;
   onReset?: () => void;
 };
-export const UseUserManagedItemValueSpinner: React.FC<UseUserManagedItemValueSpinnerProps> = (props) => {
+export const UseManagedItemValueSpinner: React.FC<UseManagedItemValueSpinnerProps> = (props) => {
   if (props.result.type === 'failure') {
     return (
       <NothingToShow
         reason="error"
         content={(
           <div>
-            Unable to fetch item with id: {props.item.type === 'reference' ? props.item.reference : props.item.value.metadata.id}.
+            Unable to fetch item with id: {props.item.type === 'reference' ? props.item.ref : props.item.val.metadata.id}.
             <br />
             Make sure that the item exists in the library.
             <br />

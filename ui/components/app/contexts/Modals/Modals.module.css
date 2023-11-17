@@ -18,7 +18,6 @@
 .ContentContainer {
   border-radius: 12rem;
   overflow: hidden;
-  min-width: 480rem;
   box-shadow: 4rem 4rem 8rem rgba(0, 0, 0, 0.27);
   background-color: #fff;
 }

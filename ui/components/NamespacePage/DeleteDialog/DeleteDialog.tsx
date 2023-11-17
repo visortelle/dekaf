@@ -52,7 +52,7 @@ const DeleteNamespace: React.FC<DeleteNamespaceProps> = (props) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />

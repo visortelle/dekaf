@@ -16,6 +16,7 @@ import Producers from "./Producers/Producers";
 import Overview from "./Overview/Overview";
 import { matchPath, useLocation } from 'react-router-dom';
 import { PulsarTopicPersistency } from "../pulsar/pulsar-resources";
+import { createNewTarget } from "./create-new-target";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -205,7 +206,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           }}
           initialConfig={{
             type: 'value',
-            value: {
+            val: {
               metadata: {
                 id: uuid(),
                 name: '',
@@ -213,10 +214,39 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                 type: 'consumer-session-config'
               },
               spec: {
-                topicsSelector: { type: "by-names", topics: [`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`] },
+                pauseTriggerChain: {
+                  type: 'value',
+                  val: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'consumer-session-pause-trigger-chain'
+                    },
+                    spec: {
+                      events: [],
+                      mode: 'all'
+                    }
+                  }
+                },
+                topics: [createNewTarget()],
+                coloringRuleChain: {
+                  type: 'value',
+                  val: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'coloring-rule-chain'
+                    },
+                    spec: {
+                      coloringRules: []
+                    }
+                  }
+                },
                 messageFilterChain: {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: {
                       id: uuid(),
                       name: '',
@@ -230,7 +260,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                 },
                 startFrom: {
                   type: 'value',
-                  value: {
+                  val: {
                     metadata: {
                       id: uuid(),
                       name: '',

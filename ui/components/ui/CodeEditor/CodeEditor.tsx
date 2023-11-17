@@ -22,12 +22,11 @@ export type CodeEditorProps = EditorProps & {
 };
 
 const CodeEditor: React.FC<CodeEditorProps> = (props) => {
-
   const { options, autoCompleteConfig, ...restProps } = props;
 
   let register: monaco.IDisposable | null = null
 
-  const addAutoComplition = (monaco: Monaco) => {
+  const addAutoCompletion = (monaco: Monaco) => {
     if (!autoCompleteConfig) {
       return
     }
@@ -35,13 +34,13 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
     const createDependencyProposals = (range: IRange) => {
 
       const newDependencies = autoCompleteConfig.dependencies.map(dependence => {
-        return { ...dependence, range: range, 
+        return { ...dependence, range: range,
           kind: monaco.languages.CompletionItemKind[autoCompleteConfig.kind], }
       });
 
       return newDependencies;
     }
-    
+
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({ noLib: false, allowNonTsExtensions: true })
 
     register = monaco.languages.registerCompletionItemProvider(autoCompleteConfig.language, {
@@ -62,7 +61,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
         if (!match) {
           return { suggestions: [] };
         }
-        
+
         const word = model.getWordUntilPosition(position);
         const range = {
           startLineNumber: position.lineNumber,
@@ -74,7 +73,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
           suggestions: createDependencyProposals(range)
         }
       },
-      
+
     });
   }
 
@@ -89,13 +88,16 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
   return (
     <div className={s.CodeEditor}>
       <Editor
-        beforeMount={(monaco) => addAutoComplition(monaco)}
+        beforeMount={(monaco) => {
+          addAutoCompletion(monaco);
+        }}
         options={{
           minimap: { enabled: false },
-          scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false },
+          scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false, verticalScrollbarSize: 5, horizontalScrollbarSize: 5 },
           theme: 'vs',
           fontFamily: 'Fira Code',
           fontSize: parseFloat(getComputedStyle(document.documentElement).fontSize) * 14,
+          automaticLayout: true,
           ...options,
         }}
         {...restProps}

@@ -32,8 +32,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   switch (props.sessionState) {
     case 'new': playButtonOnClick = () => props.onSessionStateChange('initializing'); break;
     case 'initializing': playButtonOnClick = () => undefined; break;
-    case 'awaiting-initial-cursor-positions': playButtonOnClick = () => undefined; break;
-    case 'got-initial-cursor-positions': playButtonOnClick = () => undefined; break;
     case 'running': playButtonOnClick = () => props.onSessionStateChange('pausing'); break;
     case 'pausing': playButtonOnClick = () => undefined; break;
     case 'paused': playButtonOnClick = () => props.onSessionStateChange('running'); break;
@@ -70,14 +68,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             text="Tools"
             type={'primary'}
           />
-        </div>
-
-        <div className={s.Control}>
-          <div className={s.ConfigParamName}>Filters</div>
-          <div style={{ display: 'flex' }}>
-            <div>{props.config?.messageFilterChain.filters.length}</div>
-            <div>&nbsp;</div>
-          </div>
         </div>
       </div>
 

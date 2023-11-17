@@ -77,7 +77,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
 
     await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics]);
 
-    navigate(routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace }));
+    navigate(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: topicName, topicPersistency }));
   }
 
   const createPartitionedTopic = async () => {

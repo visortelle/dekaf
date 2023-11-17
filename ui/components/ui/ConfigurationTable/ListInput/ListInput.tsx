@@ -16,10 +16,11 @@ export type Editor<T> = {
 
 export type ListValue<T> = {
   value: T[];
-  renderItem: (value: T) => React.ReactElement;
+  renderItem: (value: T, i: number) => React.ReactElement;
   editor?: Editor<T>;
   getId: (value: T) => Id;
-  validate?: (value: T) => Either.Either<Error, void>;
+  shouldShowError?: (value: T) => boolean;
+  validate?: (value: T, list: T[]) => Either.Either<Error, void>;
   onRemove?: (id: Id) => void;
   onAdd?: (value: T) => void;
   testId?: string;
@@ -35,9 +36,14 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
     setEditorValue(props.editor?.initialValue);
   }, [props.editor?.initialValue])
 
+  let isShowError = true;
+  if (props.shouldShowError !== undefined && editorValue !== undefined) {
+    isShowError = props.shouldShowError(editorValue)
+  }
+
   let validationResult: Either.Either<Error, void> = Either.right(undefined);
   if (props.validate !== undefined) {
-    typeof editorValue === 'undefined' ? Either.left(new Error('The value is undefined')) : props.validate(editorValue);
+    validationResult = typeof editorValue === 'undefined' ? Either.right(undefined) : props.validate(editorValue, props.value);
   }
 
   const add = () => {
@@ -53,10 +59,10 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
       {props.value.length === 0 && <NothingToShow content={props.nothingToShowContent} />}
       {props.value.length !== 0 && (
         <div className={s.ListFieldValues}>
-          {props.value.map(v => {
+          {props.value.map((v, i) => {
             return (
               <div key={props.getId(v)} className={`${s.ListFieldValue} ${typeof props.onRemove === 'undefined' ? '' : s.RemovableListFieldValue}`}>
-                {props.renderItem(v)}
+                {props.renderItem(v, i)}
                 {props.onRemove && (
                   <button type="button" className={s.ListFieldRemoveValue} onClick={() => props.onRemove!(props.getId(v))}>
                     <SvgIcon svg={removeIcon} />
@@ -76,11 +82,17 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
           {props.editor?.render(editorValue!, (v) => setEditorValue(v))}
         </div>
       )}
+      {isShowError && Either.isLeft(validationResult) && (
+        <div className={s.Error}>
+          {validationResult.left.message}
+        </div>
+      )}
       {props.onAdd && (
         <div className={s.AddButton}>
           <AddButton
             onClick={add}
             itemName={props.itemName}
+            disabled={Either.isLeft(validationResult)}
           />
         </div>
       )}

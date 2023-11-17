@@ -461,7 +461,7 @@ message ListServiceAccountKeysRequest {
     KEY_TYPE_UNSPECIFIED = 0;
 
     // User-managed keys (managed and rotated by the user).
-    USER_MANAGED = 1;
+    MANAGED = 1;
 
     // System-managed keys (managed and rotated by Google).
     SYSTEM_MANAGED = 2;

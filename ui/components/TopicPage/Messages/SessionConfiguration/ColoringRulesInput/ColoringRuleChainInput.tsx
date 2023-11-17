@@ -1,0 +1,121 @@
+import React from 'react';
+import s from './ColoringRuleChainInput.module.css'
+import ColoringRuleInput from './ColoringRuleInput/ColoringRuleInput';
+import { ManagedColoringRuleChain, ManagedColoringRuleChainSpec, ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { useHover } from '../../../../app/hooks/use-hover';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
+import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
+import { v4 as uuid } from 'uuid';
+import { themeBackgroundColorName, themeForegroundColorName } from './ColoringRuleInput/ColorPicker/color-palette';
+import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
+
+export type ColoringRuleChainInputProps = {
+  value: ManagedColoringRuleChainValOrRef,
+  onChange: (value: ManagedColoringRuleChainValOrRef) => void,
+  libraryContext: LibraryContext,
+};
+
+const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) => {
+  const [hoverRef, isHovered] = useHover();
+
+  const resolveResult = useManagedItemValue<ManagedColoringRuleChain>(props.value);
+
+  if (resolveResult.type !== 'success') {
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
+  }
+
+  const item = resolveResult.value;
+  const itemSpec = item.spec;
+
+  const onSpecChange = (spec: ManagedColoringRuleChainSpec) => {
+    const newValue: ManagedColoringRuleChainValOrRef = { ...props.value, val: { ...item, spec } };
+    props.onChange(newValue);
+  };
+
+  const onConvertToValue = () => {
+    const newValue: ManagedColoringRuleChainValOrRef = { type: 'value', val: item };
+    props.onChange(newValue);
+  };
+
+  return (
+    <div className={s.ColoringRuleChainInput} ref={hoverRef}>
+      <LibraryBrowserPanel
+        itemType='coloring-rule-chain'
+        itemToSave={item}
+        onPick={(item) => props.onChange({
+          type: 'reference',
+          ref: item.metadata.id,
+          val: item as ManagedColoringRuleChain
+        })}
+        onSave={(item) => props.onChange({
+          type: 'reference',
+          ref: item.metadata.id,
+          val: item as ManagedColoringRuleChain
+        })}
+        isForceShowButtons={isHovered}
+        libraryContext={props.libraryContext}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+      />
+      <ListInput<ManagedColoringRuleValOrRef>
+        value={itemSpec.coloringRules}
+        getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
+        renderItem={(rule, i) => {
+          return (
+            <ColoringRuleInput
+              value={rule}
+              onChange={(v) => {
+                const newRules = [...itemSpec.coloringRules];
+                newRules[i] = v;
+                onSpecChange({ ...itemSpec, coloringRules: newRules });
+              }}
+            />
+          )
+        }}
+        itemName='Coloring Rule'
+        onAdd={() => {
+          const newRule: ManagedColoringRuleValOrRef = {
+            type: 'value',
+            val: {
+              metadata: {
+                id: uuid(),
+                name: 'New Rule',
+                descriptionMarkdown: '',
+                type: 'coloring-rule',
+              },
+              spec: {
+                backgroundColor: themeBackgroundColorName,
+                foregroundColor: themeForegroundColorName,
+                messageFilterChain: {
+                  type: 'value',
+                  val: {
+                    metadata: {
+                      id: uuid(),
+                      name: 'New Filter Chain',
+                      descriptionMarkdown: '',
+                      type: 'message-filter-chain',
+                    },
+                    spec: {
+                      isEnabled: true,
+                      isNegated: false,
+                      filters: [],
+                      mode: 'all'
+                    }
+                  }
+                }
+              }
+            }
+          };
+          const newRules = itemSpec.coloringRules.concat([newRule]);
+          onSpecChange({ ...itemSpec, coloringRules: newRules });
+        }}
+        onRemove={(id) => {
+          const newRules = itemSpec.coloringRules.filter((rule) => rule.type === 'reference' ? rule.ref !== id : rule.val.metadata.id !== id);
+          onSpecChange({ ...itemSpec, coloringRules: newRules });
+        }}
+      />
+    </div>
+  );
+}
+
+export default ColoringRuleChainInput;
