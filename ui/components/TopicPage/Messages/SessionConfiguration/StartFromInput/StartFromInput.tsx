@@ -142,55 +142,55 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
           disabled={props.disabled}
         />
       </div>
-      <div className={s.AdditionalControls}>
-        {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
-          <>
-            <Input
-              value={itemSpec.startFrom.n.toString()}
-              type='number'
-              onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
-              inputProps={{ disabled: props.disabled, min: 0 }}
-              placeholder='n'
-            />
-            {worksBestWithNonPartitionedTopic}
-          </>
-        )}
-        {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
-          <>
-            <Input
-              value={itemSpec.startFrom.n.toString()}
-              type='number'
-              onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
-              inputProps={{ disabled: props.disabled, min: 0 }}
-              placeholder='n'
-            />
-            {worksBestWithNonPartitionedTopic}
-          </>
-        )}
-        {itemSpec.startFrom.type === 'messageId' && (
-          <>
-            <Input
-              value={itemSpec.startFrom.messageId.val?.spec.hexString || ''}
-              placeholder="08 c3 03 10 cd 04 20 00 30 01"
-              onChange={(v) => {
-                const newItemSpec = clone(itemSpec);
+      {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
+        <div className={s.AdditionalControls}>
+          <Input
+            value={itemSpec.startFrom.n.toString()}
+            type='number'
+            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
+            inputProps={{ disabled: props.disabled, min: 0 }}
+            placeholder='n'
+          />
+          {worksBestWithNonPartitionedTopic}
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
+        <div className={s.AdditionalControls}>
+          <Input
+            value={itemSpec.startFrom.n.toString()}
+            type='number'
+            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
+            inputProps={{ disabled: props.disabled, min: 0 }}
+            placeholder='n'
+          />
+          {worksBestWithNonPartitionedTopic}
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'messageId' && (
+        <div className={s.AdditionalControls}>
+          <Input
+            value={itemSpec.startFrom.messageId.val?.spec.hexString || ''}
+            placeholder="08 c3 03 10 cd 04 20 00 30 01"
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
 
-                if (newItemSpec.startFrom.type !== 'messageId') {
-                  return;
-                }
+              if (newItemSpec.startFrom.type !== 'messageId') {
+                return;
+              }
 
-                if (newItemSpec.startFrom.messageId.val === undefined) {
-                  return;
-                }
+              if (newItemSpec.startFrom.messageId.val === undefined) {
+                return;
+              }
 
-                newItemSpec.startFrom.messageId.val.spec.hexString = v;
-                onSpecChange(newItemSpec);
-              }}
-            />
-            {worksBestWithNonPartitionedTopic}
-          </>
-        )}
-        {itemSpec.startFrom.type === 'dateTime' && (
+              newItemSpec.startFrom.messageId.val.spec.hexString = v;
+              onSpecChange(newItemSpec);
+            }}
+          />
+          {worksBestWithNonPartitionedTopic}
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'dateTime' && (
+        <div className={s.AdditionalControls}>
           <DatetimePicker
             value={itemSpec.startFrom.dateTime.val?.spec.dateTime}
             onChange={(v) => {
@@ -209,8 +209,10 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
             }}
             disabled={props.disabled}
           />
-        )}
-        {itemSpec.startFrom.type === 'relativeDateTime' && (
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'relativeDateTime' && (
+        <div className={s.AdditionalControls}>
           <RelativeDateTimePicker
             value={itemSpec.startFrom.relativeDateTime.val?.spec!}
             onChange={(v) => {
@@ -228,8 +230,8 @@ const StartFromInput: React.FC<StartFromInputProps> = (props) => {
               onSpecChange(newItemSpec);
             }}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div >
   );
 }

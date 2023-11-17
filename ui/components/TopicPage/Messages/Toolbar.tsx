@@ -69,14 +69,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
             type={'primary'}
           />
         </div>
-
-        <div className={s.Control}>
-          <div className={s.ConfigParamName}>Filters</div>
-          <div style={{ display: 'flex' }}>
-            <div>{props.config?.messageFilterChain.filters.length}</div>
-            <div>&nbsp;</div>
-          </div>
-        </div>
       </div>
 
       <div className={s.ToolbarRight}>

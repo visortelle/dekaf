@@ -5,28 +5,37 @@
   flex-direction: column;
 }
 
-.Content {
+.Columns {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  overflow: auto hidden;
   flex: 1 0;
-}
-
-.GlobalConfigContainer {
-  width: 500rem;
-  flex: 1 0;
-  overflow: hidden;
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-y: contain;
 }
 
 .GlobalConfig {
   display: flex;
   flex-direction: column;
-  gap: 24rem;
+  gap: 32rem;
   padding: 24rem 12rem;
   overflow: hidden scroll;
   height: 100%;
+  flex: 0 0 500rem;
 }
 
-.RightColumn {
-  width: 50%;
+.TargetColumn {
+  flex: 0 0 500rem;
+  overflow: hidden scroll;
+  position: relative;
+}
+
+.LastColumn {
+  padding: 24rem 12rem;
+}
+
+.DeleteTargetButton {
+  position: absolute;
+  top: 24rem;
+  right: 12rem;
+  z-index: 1;
 }

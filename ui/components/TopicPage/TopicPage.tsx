@@ -16,6 +16,7 @@ import Producers from "./Producers/Producers";
 import Overview from "./Overview/Overview";
 import { matchPath, useLocation } from 'react-router-dom';
 import { PulsarTopicPersistency } from "../pulsar/pulsar-resources";
+import { createNewTarget } from "./create-new-target";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -228,65 +229,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                     }
                   }
                 },
-                topics: [{
-                  type: 'value', val: {
-                    metadata: {
-                      id: uuid(),
-                      name: '',
-                      descriptionMarkdown: '',
-                      type: 'consumer-session-topic'
-                    },
-                    spec: {
-                      topicSelector: {
-                        type: 'value',
-                        val: {
-                          metadata: {
-                            id: uuid(),
-                            name: '',
-                            descriptionMarkdown: '',
-                            type: 'topic-selector'
-                          },
-                          spec: {
-                            topicSelector: {
-                              type: 'current-topic'
-                            }
-                          }
-                        }
-                      },
-                      coloringRuleChain: {
-                        type: 'value',
-                        val: {
-                          metadata: {
-                            id: uuid(),
-                            name: '',
-                            descriptionMarkdown: '',
-                            type: 'coloring-rule-chain'
-                          },
-                          spec: {
-                            coloringRules: []
-                          }
-                        }
-                      },
-                      messageFilterChain: {
-                        type: 'value',
-                        val: {
-                          metadata: {
-                            id: uuid(),
-                            name: '',
-                            descriptionMarkdown: '',
-                            type: 'message-filter-chain'
-                          },
-                          spec: {
-                            isEnabled: true,
-                            isNegated: false,
-                            filters: [],
-                            mode: 'all'
-                          }
-                        }
-                      }
-                    }
-                  }
-                }],
+                topics: [createNewTarget()],
                 coloringRuleChain: {
                   type: 'value',
                   val: {

@@ -41,6 +41,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'message-filter-chain' && 'Message Filter Chain'}
               {props.itemType === 'consumer-session-start-from' && 'Start From'}
               {props.itemType === 'topic-selector' && 'Topic Selector'}
+              {props.itemType === 'consumer-session-topic' && 'Consumer Session Target'}
             </strong>
           )}
           help={(
@@ -50,6 +51,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'message-filter-chain' && help.messageFilterChain}
               {props.itemType === 'consumer-session-start-from' && help.consumerSessionStartFrom}
               {props.itemType === 'topic-selector' && help.topicSelector}
+              {props.itemType === 'consumer-session-topic' && help.consumerSessionTopic}
             </div>
           )}
         />

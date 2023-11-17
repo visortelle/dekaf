@@ -38,44 +38,40 @@ const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
   };
 
   return (
-    <div className={s.SessionTopicInput} ref={hoverRef}>
-      <LibraryBrowserPanel
-        itemType='consumer-session-topic'
-        itemToSave={item}
-        onPick={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
-          val: item as ManagedConsumerSessionTopic
-        })}
-        onSave={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
-          val: item as ManagedConsumerSessionTopic
-        })}
-        isForceShowButtons={isHovered}
+    <div className={s.SessionTopicInput}>
+      <div ref={hoverRef}>
+        <LibraryBrowserPanel
+          itemType='consumer-session-topic'
+          itemToSave={item}
+          onPick={(item) => props.onChange({
+            type: 'reference',
+            ref: item.metadata.id,
+            val: item as ManagedConsumerSessionTopic
+          })}
+          onSave={(item) => props.onChange({
+            type: 'reference',
+            ref: item.metadata.id,
+            val: item as ManagedConsumerSessionTopic
+          })}
+          isForceShowButtons={isHovered}
+          libraryContext={props.libraryContext}
+          managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+        />
+      </div>
+
+      <TopicSelectorInput
+        value={itemSpec.topicSelector}
+        onChange={(v) => onSpecChange({ ...itemSpec, topicSelector: v })}
         libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
       />
 
-      <FormItem>
-        <TopicSelectorInput
-          value={itemSpec.topicSelector}
-          onChange={(v) => onSpecChange({ ...itemSpec, topicSelector: v })}
-          libraryContext={props.libraryContext}
-        />
-      </FormItem>
+      <FilterChainEditor
+        value={itemSpec.messageFilterChain}
+        onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+        libraryContext={props.libraryContext}
+      />
 
-      <FormItem>
-        <FilterChainEditor
-          value={itemSpec.messageFilterChain}
-          onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
-          libraryContext={props.libraryContext}
-        />
-      </FormItem>
-
-      <FormItem>
-        Coloring rules chain editor should be here
-      </FormItem>
+      Coloring rules chain editor should be here
     </div>
   );
 }

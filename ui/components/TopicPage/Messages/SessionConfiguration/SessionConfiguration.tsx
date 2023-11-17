@@ -2,14 +2,18 @@ import React from 'react';
 
 import FilterChainEditor from './FilterChainEditor/FilterChainEditor';
 import s from './SessionConfiguration.module.css'
-import FormItem from '../../../ui/ConfigurationTable/FormItem/FormItem';
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
-import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionTopicValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
+import SessionTopicInput from './SessionTopicInput/SessionTopicInput';
+import AddButton from '../../../ui/AddButton/AddButton';
+import { v4 as uuid } from 'uuid';
+import { createNewTarget } from '../../create-new-target';
+import DeleteButton from '../../../ui/DeleteButton/DeleteButton';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef;
@@ -19,6 +23,7 @@ export type SessionConfigurationProps = {
 
 const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
+  const columnsRef = React.useRef<HTMLDivElement>(null);
 
   const resolveResult = useManagedItemValue<ManagedConsumerSessionConfig>(props.value);
   if (resolveResult.type !== 'success') {
@@ -40,64 +45,94 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
 
   return (
     <div className={s.SessionConfiguration}>
-      <div className={s.Content}>
-        <div className={s.GlobalConfigContainer}>
-          <div className={s.GlobalConfig}>
-            <div className={s.Title} ref={hoverRef}>
-              <LibraryBrowserPanel
-                itemToSave={item}
-                itemType='consumer-session-config'
-                onPick={(item) => props.onChange({
-                  type: 'reference',
-                  ref: item.metadata.id,
-                  val: item as ManagedConsumerSessionConfig
-                })}
-                onSave={(item) => props.onChange({
-                  type: 'reference',
-                  ref: item.metadata.id,
-                  val: item as ManagedConsumerSessionConfig
-                })}
-                isForceShowButtons={isHovered}
-                libraryContext={props.libraryContext}
-                managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
-              />
-            </div>
-
-            <FormItem>
-              <StartFromInput
-                value={itemSpec.startFrom}
-                onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
-                libraryContext={props.libraryContext}
-              />
-            </FormItem>
-
-            <FormItem>
-              <FilterChainEditor
-                value={itemSpec.messageFilterChain}
-                onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
-                libraryContext={props.libraryContext}
-              />
-            </FormItem>
-
-            <FormItem>
-              <FormLabel
-                content="Pause Trigger"
-                help={(
-                  <div>
-                    The consumer will automatically pause when the specified condition is met.
-                    It useful when you want to find some specific messages in large topics.
-                  </div>
-                )}
-              />
-              <div>TODO</div>
-            </FormItem>
+      <div className={s.Columns} ref={columnsRef}>
+        <div className={s.GlobalConfig}>
+          <div className={s.Title} ref={hoverRef}>
+            <LibraryBrowserPanel
+              itemToSave={item}
+              itemType='consumer-session-config'
+              onPick={(item) => props.onChange({
+                type: 'reference',
+                ref: item.metadata.id,
+                val: item as ManagedConsumerSessionConfig
+              })}
+              onSave={(item) => props.onChange({
+                type: 'reference',
+                ref: item.metadata.id,
+                val: item as ManagedConsumerSessionConfig
+              })}
+              isForceShowButtons={isHovered}
+              libraryContext={props.libraryContext}
+              managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+            />
           </div>
-        </div>
-        <div className={s.RightColumn}>
 
+          <StartFromInput
+            value={itemSpec.startFrom}
+            onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
+            libraryContext={props.libraryContext}
+          />
+
+          <FilterChainEditor
+            value={itemSpec.messageFilterChain}
+            onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+            libraryContext={props.libraryContext}
+          />
+
+          <FormLabel
+            content="Pause Trigger"
+            help={(
+              <div>
+                The consumer will automatically pause when the specified condition is met.
+                It useful when you want to find some specific messages in large topics.
+              </div>
+            )}
+          />
+          <div>TODO</div>
+        </div>
+
+        {itemSpec.topics.map((topic, i) => {
+          return (
+            <div className={s.TargetColumn}>
+              <SessionTopicInput
+                value={topic}
+                onChange={(v) => {
+                  const newTargets = [...itemSpec.topics];
+                  newTargets[i] = v;
+                  onSpecChange({ ...itemSpec, topics: newTargets });
+                }}
+                libraryContext={props.libraryContext}
+              />
+              <div className={s.DeleteTargetButton}>
+                <DeleteButton
+                  appearance='compact'
+                  title='Remove this Consumer Session Target'
+                  onClick={() => {
+                    const newTargets = [...itemSpec.topics];
+                    newTargets.splice(i, 1);
+                    onSpecChange({ ...itemSpec, topics: newTargets });
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
+
+        <div className={s.LastColumn}>
+          <AddButton
+            text='Add Target'
+            onClick={() => {
+              const newTarget = createNewTarget();
+              const newTargets = itemSpec.topics.concat([newTarget]);
+              onSpecChange({ ...itemSpec, topics: newTargets });
+
+              setTimeout(() => {
+                columnsRef.current?.scrollTo({ left: columnsRef.current.scrollWidth, behavior: 'smooth' });
+              }, 100);
+            }}
+          />
         </div>
       </div>
-
     </div>
   );
 }

@@ -70,7 +70,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         <Select<ManagedTopicSelectorSpec['topicSelector']['type']>
           list={[
             { type: 'item', title: 'Current Topic', value: 'current-topic' },
-            { type: 'item', title: 'Single Topic', value: 'multi-topic-selector' },
+            { type: 'item', title: 'Specific Topic(s)', value: 'multi-topic-selector' },
             { type: 'item', title: 'Namespaced RegExp', value: 'namespaced-regex-topic-selector' },
           ]}
           onChange={(v) => {

@@ -72,5 +72,12 @@ export const help = {
         You can save it to <strong>Library</strong> and reuse later.
       </p>
     </div>
+  ),
+  consumerSessionTopic: (
+    <div>
+      <p>
+        Consumer Session Topic(s)
+      </p>
+    </div>
   )
 } as const;
