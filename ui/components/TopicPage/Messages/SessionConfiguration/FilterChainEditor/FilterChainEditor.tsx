@@ -82,7 +82,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             flexDirection: props.appearance === 'compact' ? 'column' : 'row',
           }}>
           <div style={{ display: 'flex', gap: '12rem', flexDirection: 'row', flex: '1' }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8rem' }}>
               <Toggle
                 label="Enabled"
                 value={itemSpec.isEnabled}

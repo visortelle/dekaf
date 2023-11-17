@@ -20,7 +20,7 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
   return (
     <div className={s.LibraryBrowserSaveButton}>
       <SmallButton
-        text='Save'
+        title='Save'
         type='primary'
         svgIcon={saveIcon}
         disabled={props.itemToSave === undefined}
