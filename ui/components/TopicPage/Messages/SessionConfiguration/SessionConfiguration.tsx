@@ -40,55 +40,61 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
 
   return (
     <div className={s.SessionConfiguration}>
-      <div className={s.Title} ref={hoverRef}>
-        <LibraryBrowserPanel
-          itemToSave={item}
-          itemType='consumer-session-config'
-          onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
-            val: item as ManagedConsumerSessionConfig
-          })}
-          onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
-            val: item as ManagedConsumerSessionConfig
-          })}
-          isForceShowButtons={isHovered}
-          libraryContext={props.libraryContext}
-          managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
-        />
-      </div>
-
       <div className={s.Content}>
-        <div className={s.LeftColumn}>
-          <FormItem>
-            <StartFromInput
-              value={itemSpec.startFrom}
-              onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
-              libraryContext={props.libraryContext}
-            />
-          </FormItem>
+        <div className={s.GlobalConfigContainer}>
+          <div className={s.GlobalConfig}>
+            <div className={s.Title} ref={hoverRef}>
+              <LibraryBrowserPanel
+                itemToSave={item}
+                itemType='consumer-session-config'
+                onPick={(item) => props.onChange({
+                  type: 'reference',
+                  ref: item.metadata.id,
+                  val: item as ManagedConsumerSessionConfig
+                })}
+                onSave={(item) => props.onChange({
+                  type: 'reference',
+                  ref: item.metadata.id,
+                  val: item as ManagedConsumerSessionConfig
+                })}
+                isForceShowButtons={isHovered}
+                libraryContext={props.libraryContext}
+                managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+              />
+            </div>
 
-          <FormItem>
-            <FormLabel
-              content="Pause Trigger"
-              help={(
-                <div>
-                  The consumer will automatically pause when the specified condition is met.
-                  It useful when you want to find some specific messages in large topics.
-                </div>
-              )}
-            />
-            <div>TODO</div>
-          </FormItem>
+            <FormItem>
+              <StartFromInput
+                value={itemSpec.startFrom}
+                onChange={(v) => onSpecChange({ ...itemSpec, startFrom: v })}
+                libraryContext={props.libraryContext}
+              />
+            </FormItem>
+
+            <FormItem>
+              <FilterChainEditor
+                value={itemSpec.messageFilterChain}
+                onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+                libraryContext={props.libraryContext}
+              />
+            </FormItem>
+
+            <FormItem>
+              <FormLabel
+                content="Pause Trigger"
+                help={(
+                  <div>
+                    The consumer will automatically pause when the specified condition is met.
+                    It useful when you want to find some specific messages in large topics.
+                  </div>
+                )}
+              />
+              <div>TODO</div>
+            </FormItem>
+          </div>
         </div>
         <div className={s.RightColumn}>
-          <FilterChainEditor
-            value={itemSpec.messageFilterChain}
-            onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
-            libraryContext={props.libraryContext}
-          />
+
         </div>
       </div>
 

@@ -21,6 +21,7 @@ export type ConsoleProps = {
   onSessionStateChange: (state: SessionState) => void;
   messages: MessageDescriptor[];
   consumerName: string;
+  currentTopic: string | undefined;
 };
 
 type TabKey = 'producer' | 'visualize' | 'filter-logs' | 'filter-repl' | 'export';
@@ -54,8 +55,8 @@ const Console: React.FC<ConsoleProps> = (props) => {
               return (
                 <Producer
                   preset={{
-                    topic: '',
-                    key: ''
+                    topic: props.currentTopic,
+                    key: props.sessionKey.toString()
                   }}
                 />
               )

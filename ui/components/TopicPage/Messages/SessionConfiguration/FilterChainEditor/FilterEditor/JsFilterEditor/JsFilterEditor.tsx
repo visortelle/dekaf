@@ -24,7 +24,7 @@ const JsFilterEditor: React.FC<JsFilterEditorProps> = (props) => {
         <CodeEditor
           value={props.value.jsCode}
           onChange={v => props.onChange({ ...props.value, jsCode: v || '' })}
-          height="180rem"
+          height="140rem"
           language="javascript"
           // TODO remove the autocomplete configuration, when it will be possible to select\configure it directly in the codeEditor.
           autoCompleteConfig={{ language: 'javascript', match: /msg\./, dependencies: autocomplete.dependencies, kind: 'Function' }}

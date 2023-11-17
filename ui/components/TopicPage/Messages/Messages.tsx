@@ -80,10 +80,11 @@ const Session: React.FC<SessionProps> = (props) => {
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
 
+  const currentTopic = useMemo(() => props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined, [props.libraryContext]);
+  const currentTopicFqn: string | undefined = useMemo(() => currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`, [currentTopic]);
+
   const config = useMemo<ConsumerSessionConfig | undefined>(() => {
     try {
-      const currentTopic = props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined;
-      const currentTopicFqn: string | undefined = currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`;
       return consumerSessionConfigFromValOrRef(props.configValOrRef, currentTopicFqn);
     } catch (err) {
       console.warn(err);
@@ -417,6 +418,7 @@ const Session: React.FC<SessionProps> = (props) => {
         sessionSubscriptionName={subscriptionName.current}
         messages={messages}
         consumerName={consumerName.current}
+        currentTopic={currentTopicFqn}
       />
     </div>
   );

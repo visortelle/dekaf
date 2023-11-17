@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import Select from '../../../../ui/Select/Select';
 import * as t from '../../types';
@@ -29,6 +29,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   const [defaultMessageFilterType, _] = useLocalStorage<t.MessageFilterType>(localStorageKeys.defaultMessageFilterType, {
     defaultValue: 'basic-message-filter',
   });
+  const ref = useRef<HTMLDivElement>(null);
 
   const resolveResult = useManagedItemValue<ManagedMessageFilterChain>(props.value);
 
@@ -50,7 +51,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
   };
 
   return (
-    <div className={s.FilterChainEditor}>
+    <div className={s.FilterChainEditor} ref={ref}>
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           itemType='message-filter-chain'
@@ -78,28 +79,32 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             paddingTop: props.appearance === 'compact' ? '8rem' : '0',
             flexDirection: props.appearance === 'compact' ? 'column' : 'row',
           }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Toggle
-              label="Enabled"
-              value={itemSpec.isEnabled}
-              onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
-              help="The whole filter chain will be disabled if this toggle is off."
-            />
-            <Toggle
-              label="Negated"
-              value={itemSpec.isNegated}
-              onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
-              help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
-            />
+          <div style={{ display: 'flex', gap: '12rem', flexDirection: 'row', flex: '1' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Toggle
+                label="Enabled"
+                value={itemSpec.isEnabled}
+                onChange={v => onSpecChange({ ...itemSpec, isEnabled: v })}
+                help="The whole filter chain will be disabled if this toggle is off."
+              />
+              <Toggle
+                label="Negated"
+                value={itemSpec.isNegated}
+                onChange={v => onSpecChange({ ...itemSpec, isNegated: v })}
+                help="This filter chain results will be reversed. Filtered messages will be passed and vice versa."
+              />
+            </div>
+            <div style={{ flex: '1', display: 'flex' }}>
+              <Select<'all' | 'any'>
+                list={[
+                  { type: 'item', title: 'All filters should match', value: 'all' },
+                  { type: 'item', title: 'Any filter should match', value: 'any' },
+                ]}
+                value={itemSpec.mode}
+                onChange={v => onSpecChange({ ...itemSpec, mode: v })}
+              />
+            </div>
           </div>
-          <Select<'all' | 'any'>
-            list={[
-              { type: 'item', title: 'All filters should match', value: 'all' },
-              { type: 'item', title: 'At least one filter should match', value: 'any' },
-            ]}
-            value={itemSpec.mode}
-            onChange={v => onSpecChange({ ...itemSpec, mode: v })}
-          />
         </div>
       </div>
 

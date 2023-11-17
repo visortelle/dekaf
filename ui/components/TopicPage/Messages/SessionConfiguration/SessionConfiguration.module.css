@@ -1,26 +1,30 @@
 .SessionConfiguration {
   flex: 1 1 auto;
-  overflow: auto;
-  padding: 24rem 12rem;
-}
-
-.Title {
-  padding-bottom: 24rem;
+  overflow: hidden;
   display: flex;
-  gap: 18rem;
+  flex-direction: column;
 }
 
 .Content {
   display: flex;
-  gap: 48rem;
-  max-width: 1000rem;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1 0;
 }
 
-.LeftColumn {
-  width: 50%;
+.GlobalConfigContainer {
+  width: 500rem;
+  flex: 1 0;
+  overflow: hidden;
+}
+
+.GlobalConfig {
   display: flex;
   flex-direction: column;
   gap: 24rem;
+  padding: 24rem 12rem;
+  overflow: hidden scroll;
+  height: 100%;
 }
 
 .RightColumn {
