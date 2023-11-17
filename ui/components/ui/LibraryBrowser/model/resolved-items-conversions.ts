@@ -1,6 +1,6 @@
-import { ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTime, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorValOrRef } from "./user-managed-items";
-import { ConsumerSessionConfig, ConsumerSessionStartFrom, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
-import { TopicSelector, RegexSubMode } from "../../../TopicPage/Messages/topic-selector/topic-selector";
+import { ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTopicValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorValOrRef } from "./user-managed-items";
+import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTopic, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
+import { TopicSelector } from "../../../TopicPage/Messages/topic-selector/topic-selector";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
   if (v.val === undefined) {
@@ -74,55 +74,85 @@ export function consumerSessionStartFromFromValOrRef(v: ManagedConsumerSessionSt
   }
 }
 
-export function topicsSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef[], currentTopicFqn: string | undefined): TopicSelector {
-  if (v.some(ts => ts.val === undefined)) {
-    throw new Error('TopicsSelector reference can\'t be converted to value');
+export function topicSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef, currentTopicFqn?: string): TopicSelector {
+  if (v.val === undefined) {
+    throw new Error('TopicSelector reference can\'t be converted to value');
   }
 
-  // by-fqns and by-regex topics selectors can't be mixed together because Pulsar consumer doesn't support it.
-  let topicSelectorType: TopicSelector['type'] = 'multi-topic-selector';
-  if (v.every(ts => ts.val?.spec.topicSelector.type === 'by-fqns' || ts.val?.spec.topicSelector.type === 'current-topic')) {
-    topicSelectorType = 'by-fqns';
-  } else if (v.every(ts => ts.val?.spec.topicSelector.type === 'by-regex')) {
-    topicSelectorType = 'by-regex';
-  }
+  const topicSelector = v.val.spec.topicSelector;
 
-  if (topicSelectorType === 'by-fqns') {
-    const topicFqns = v.map(ts => {
-      if (ts.val?.spec.topicSelector.type === 'by-fqns') {
-        return ts.val.spec.topicSelector.topicFqns;
-      } else if (ts.val?.spec.topicSelector.type === 'current-topic' && currentTopicFqn !== undefined) {
-        return [currentTopicFqn];
-      }
-
-      return [];
-    }).flat();
-
-    return {
-      type: 'by-fqns',
-      topicFqns
+  if (topicSelector.type === 'current-topic') {
+    if (currentTopicFqn === undefined) {
+      throw new Error('Current topic FQN should be defined for the CurrentTopicSelector');
     }
-  } else if (topicSelectorType === 'by-regex') {
-    const patterns = v.map(ts => {
-      if (ts.val?.spec.topicSelector.type === 'by-regex') {
-        return ts.val.spec.topicSelector.pattern;
-      }
 
-      return [];
-    }).flat();
-
-    const regexSubscriptionMode: RegexSubMode = v[0].val?.spec.topicSelector.type === 'by-regex' ?
-      v[0].val?.spec.topicSelector.regexSubscriptionMode :
-      'all-topics';
-
-    return {
-      type: 'by-regex',
-      pattern: patterns.join('|'),
-      regexSubscriptionMode
-    }
+    return { type: 'multi-topic-selector', topicFqns: [currentTopicFqn] };
   }
 
-  throw new Error('TopicsSelector reference can\'t be converted to value');
+  return topicSelector;
+}
+
+export function coloringRuleFromValOrRef(v: ManagedColoringRuleValOrRef): ColoringRule {
+  if (v.val === undefined) {
+    throw new Error('Coloring rule reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
+    foregroundColor: spec.foregroundColor,
+    backgroundColor: spec.backgroundColor
+  }
+}
+
+export function coloringRuleChainFromValOrRef(v: ManagedColoringRuleChainValOrRef): ColoringRuleChain {
+  if (v.val === undefined) {
+    throw new Error('Coloring rule chain reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    coloringRules: spec.coloringRules.map(coloringRuleFromValOrRef)
+  }
+}
+
+export function consumerSessionTopicFromValOrRef(v: ManagedConsumerSessionTopicValOrRef, currentTopicFqn: string | undefined): ConsumerSessionTopic {
+  if (v.val === undefined) {
+    throw new Error('Consumer session topic reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    topicSelector: topicSelectorFromValOrRef(spec.topicSelector, currentTopicFqn),
+    coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
+    messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain)
+  }
+}
+
+export function consumerSessionEventFromValOrRef(v: ManagedConsumerSessionEventValOrRef): ConsumerSessionEvent {
+  if (v.val === undefined) {
+    throw new Error('Consumer session event reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return spec.event;
+}
+
+export function consumerSessionPauseTriggerChainFromValOrRef(v: ManagedConsumerSessionPauseTriggerChainValOrRef): ConsumerSessionPauseTriggerChain {
+  if (v.val === undefined) {
+    throw new Error('Consumer session pause trigger chain reference can\'t be converted to value');
+  }
+
+  const spec = v.val.spec;
+
+  return {
+    events: spec.events.map(consumerSessionEventFromValOrRef),
+    mode: spec.mode
+  }
 }
 
 export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfigValOrRef, currentTopicFqn: string | undefined): ConsumerSessionConfig {
@@ -130,9 +160,13 @@ export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfi
     throw new Error('Consumer session config reference can\'t be converted to value');
   }
 
+  const spec = v.val.spec;
+
   return {
-    startFrom: consumerSessionStartFromFromValOrRef(v.val.spec.startFrom),
-    messageFilterChain: messageFilterChainFromValOrRef(v.val.spec.messageFilterChain),
-    topicsSelector: topicsSelectorFromValOrRef(v.val.spec.topicsSelectors, currentTopicFqn)
+    startFrom: consumerSessionStartFromFromValOrRef(spec.startFrom),
+    messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
+    topics: spec.topics.map(spec => consumerSessionTopicFromValOrRef(spec, currentTopicFqn)),
+    coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
+    pauseTriggerChain: consumerSessionPauseTriggerChainFromValOrRef(spec.pauseTriggerChain)
   }
 }

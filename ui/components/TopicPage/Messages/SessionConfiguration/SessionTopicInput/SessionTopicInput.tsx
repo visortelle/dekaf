@@ -1,18 +1,17 @@
 import React from 'react';
 import s from './SessionTopicInput.module.css'
-import { ConsumerSessionTopic } from '../../types';
-import { TopicSelector } from '../../topic-selector/topic-selector';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import TopicSelectorInput from '../../topic-selector/TopicSelectorInput/TopicSelectorInput';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import FilterChainEditor from '../FilterChainEditor/FilterChainEditor';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
-import { ManagedConsumerSessionTopic } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedConsumerSessionTopic, ManagedConsumerSessionTopicSpec, ManagedConsumerSessionTopicValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 
 export type SessionTopicInputProps = {
-  value: ConsumerSessionTopic;
-  onChange: (config: ConsumerSessionTopic) => void;
+  value: ManagedConsumerSessionTopicValOrRef;
+  onChange: (v: ManagedConsumerSessionTopicValOrRef) => void;
   libraryContext: LibraryContext;
 };
 
@@ -28,38 +27,55 @@ const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: ManagedMessageFilterChainSpec) => {
-    const newValue: ManagedMessageFilterChainValOrRef = { ...props.value, val: { ...item, spec } };
+  const onSpecChange = (spec: ManagedConsumerSessionTopicSpec) => {
+    const newValue: ManagedConsumerSessionTopicValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: ManagedMessageFilterChainValOrRef = { type: 'value', val: item };
+    const newValue: ManagedConsumerSessionTopicValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
-
-
   return (
-    <div className={s.SessionTopicInput}>
+    <div className={s.SessionTopicInput} ref={hoverRef}>
+      <LibraryBrowserPanel
+        itemType='consumer-session-topic'
+        itemToSave={item}
+        onPick={(item) => props.onChange({
+          type: 'reference',
+          ref: item.metadata.id,
+          val: item as ManagedConsumerSessionTopic
+        })}
+        onSave={(item) => props.onChange({
+          type: 'reference',
+          ref: item.metadata.id,
+          val: item as ManagedConsumerSessionTopic
+        })}
+        isForceShowButtons={isHovered}
+        libraryContext={props.libraryContext}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+      />
+
       <FormItem>
         <TopicSelectorInput
-          value={props.value.topicSelector}
-          onChange={(v) => onSpecChange({ ...itemSpec, topicsSelectors: v })}
+          value={itemSpec.topicSelector}
+          onChange={(v) => onSpecChange({ ...itemSpec, topicSelector: v })}
           libraryContext={props.libraryContext}
         />
       </FormItem>
 
       <FormItem>
-      <FilterChainEditor
-            value={itemSpec.messageFilterChain}
-            onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
-            libraryContext={props.libraryContext}
-          />
+        <FilterChainEditor
+          value={itemSpec.messageFilterChain}
+          onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+          libraryContext={props.libraryContext}
+        />
       </FormItem>
 
-
-      session topic input
+      <FormItem>
+        Coloring rules chain editor should be here
+      </FormItem>
     </div>
   );
 }
