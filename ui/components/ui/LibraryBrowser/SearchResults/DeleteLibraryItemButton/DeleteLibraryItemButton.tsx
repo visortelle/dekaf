@@ -25,7 +25,7 @@ const DeleteLibraryItemButton: React.FC<DeleteLibraryItemButtonProps> = (props) 
       id: 'delete-library-item',
       content: (
         <ConfirmationDialog
-          description={<p>Are you sure you want to delete this library item?</p>}
+          content={<p>Are you sure you want to delete this library item?</p>}
           onCancel={modals.pop}
           onConfirm={async () => {
             if (props.itemId === undefined) {

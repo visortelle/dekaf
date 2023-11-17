@@ -60,7 +60,7 @@ const DeleteDialog = (props: Props) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>
             This action <strong>cannot</strong> be undone.

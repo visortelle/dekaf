@@ -8,6 +8,8 @@ import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { ManagedConsumerSessionTopic, ManagedConsumerSessionTopicSpec, ManagedConsumerSessionTopicValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import ColoringRuleInput from '../ColoringRulesInput/ColoringRuleInput/ColoringRuleInput';
+import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
 
 export type SessionTopicInputProps = {
   value: ManagedConsumerSessionTopicValOrRef;
@@ -71,7 +73,10 @@ const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
         libraryContext={props.libraryContext}
       />
 
-      Coloring rules chain editor should be here
+      <ColoringRuleChainInput
+        value={itemSpec.coloringRuleChain}
+        onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
+      />
     </div>
   );
 }

@@ -16,7 +16,7 @@ export type Editor<T> = {
 
 export type ListValue<T> = {
   value: T[];
-  renderItem: (value: T) => React.ReactElement;
+  renderItem: (value: T, i: number) => React.ReactElement;
   editor?: Editor<T>;
   getId: (value: T) => Id;
   shouldShowError?: (value: T) => boolean;
@@ -59,10 +59,10 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
       {props.value.length === 0 && <NothingToShow content={props.nothingToShowContent} />}
       {props.value.length !== 0 && (
         <div className={s.ListFieldValues}>
-          {props.value.map(v => {
+          {props.value.map((v, i) => {
             return (
               <div key={props.getId(v)} className={`${s.ListFieldValue} ${typeof props.onRemove === 'undefined' ? '' : s.RemovableListFieldValue}`}>
-                {props.renderItem(v)}
+                {props.renderItem(v, i)}
                 {props.onRemove && (
                   <button type="button" className={s.ListFieldRemoveValue} onClick={() => props.onRemove!(props.getId(v))}>
                     <SvgIcon svg={removeIcon} />

@@ -316,7 +316,7 @@ const LibraryBrowser: React.FC<LibraryBrowserProps> = (props) => {
                   title: 'Save Library Item',
                   content: (
                     <ConfirmationDialog
-                      description={(
+                      content={(
                         <div>
                           Are you sure you want to overwrite this library item?
                           <br />

@@ -93,7 +93,10 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
 
         {itemSpec.topics.map((topic, i) => {
           return (
-            <div className={s.TargetColumn}>
+            <div
+              key={topic.type === 'reference' ? topic.ref : topic.val.metadata.id}
+              className={s.TargetColumn}
+            >
               <SessionTopicInput
                 value={topic}
                 onChange={(v) => {

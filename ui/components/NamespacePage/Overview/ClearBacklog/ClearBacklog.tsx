@@ -42,7 +42,7 @@ const ClearBacklog: React.FC<ClearBacklogProps> = ({ namespaceFqn }) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div className={s.DialogContainer}>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
