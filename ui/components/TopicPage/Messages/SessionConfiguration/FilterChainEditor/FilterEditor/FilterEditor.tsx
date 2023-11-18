@@ -6,8 +6,6 @@ import BasicFilterEditor from './BasicFilterEditor/BasicFilterEditor';
 import Select from '../../../../../ui/Select/Select';
 import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import Toggle from '../../../../../ui/Toggle/Toggle';
-import SmallButton from '../../../../../ui/SmallButton/SmallButton';
-import deleteIcon from '../icons/delete.svg';
 import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
@@ -19,7 +17,6 @@ import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-c
 export type FilterEditorProps = {
   value: ManagedMessageFilterValOrRef;
   onChange: (value: ManagedMessageFilterValOrRef) => void;
-  onDelete?: () => void;
   libraryContext: LibraryContext;
 };
 
@@ -31,7 +28,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
 
   const resolveResult = useManagedItemValue<ManagedMessageFilter>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} onDelete={props.onDelete} />
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const item = resolveResult.value;
@@ -111,15 +108,6 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
               }
             }}
           />
-
-          {props.onDelete && (
-            <SmallButton
-              onClick={props.onDelete}
-              type='danger'
-              svgIcon={deleteIcon}
-              title='Delete this filter'
-            />
-          )}
         </div>
       </FormItem>
 

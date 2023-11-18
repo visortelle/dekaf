@@ -72,6 +72,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
 
       <ListInput<ManagedColoringRuleValOrRef>
         value={itemSpec.coloringRules}
+        onChange={(v) => onSpecChange({ ...itemSpec, coloringRules: v })}
         getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
         renderItem={(rule, i) => {
           return (

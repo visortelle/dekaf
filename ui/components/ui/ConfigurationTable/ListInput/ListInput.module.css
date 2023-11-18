@@ -78,3 +78,28 @@
   margin-top: 4rem;
   color: var(--accent-color-red);
 }
+
+.DraggingItem {
+  box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.27);
+}
+
+.DragIcon {
+  position: absolute;
+  top: 10rem;
+  right: 32rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.DragIcon svg {
+  width: 18rem;
+  height: 18rem;
+  fill: var(--text-color);
+}
+
+.DragIcon:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+

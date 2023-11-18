@@ -6,14 +6,9 @@
   border-radius: 4rem;
   display: flex;
   position: relative;
+  flex: 1;
 }
 
 .EntryFilter {
   flex: 1 1 auto;
-}
-
-.Buttons {
-  display: flex;
-  gap: 8rem;
-  justify-content: flex-end;
 }

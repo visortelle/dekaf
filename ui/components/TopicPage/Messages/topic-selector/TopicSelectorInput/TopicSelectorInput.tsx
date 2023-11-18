@@ -108,6 +108,13 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         <FormItem>
           <ListInput<string>
             value={itemSpec.topicSelector.topicFqns}
+            onChange={(v) => {
+              if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
+                return;
+              }
+
+              onSpecChange({ topicSelector: { ...itemSpec.topicSelector, topicFqns: v } })
+            }}
             onAdd={(v) => {
               if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
                 return;
