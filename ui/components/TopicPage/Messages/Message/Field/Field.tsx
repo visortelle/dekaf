@@ -1,6 +1,7 @@
 import * as Notifications from '../../../../app/contexts/Notifications';
 import s from './Field.module.css';
 import { tooltipId } from '../../../../ui/Tooltip/Tooltip';
+import { MouseEventHandler } from 'react';
 
 export type FieldProps = {
   value?: string | React.ReactElement,
@@ -27,7 +28,12 @@ const Field: React.FC<FieldProps> = (props) => {
     <div
       className={`${s.FieldValue} ${props.rawValue === undefined ? '' : s.ClickableFieldValue}`}
       title={props.rawValue}
-      onClick={copyRawValue}
+      onClick={(event) => {
+        event.stopPropagation();
+        copyRawValue();
+      }}
+      data-tooltip-id={tooltipId}
+      data-tooltip-html={(!props.isShowTooltips || props.rawValue === undefined) ? undefined : "Click to copy"}
     >
       {valueContent}
     </div>
@@ -40,8 +46,6 @@ const Field: React.FC<FieldProps> = (props) => {
   return (
     <div
       className={s.Field}
-      data-tooltip-id={tooltipId}
-      data-tooltip-html={(!props.isShowTooltips || props.rawValue === undefined) ? undefined : "Click to copy"}
     >
       {valueElement}
     </div>

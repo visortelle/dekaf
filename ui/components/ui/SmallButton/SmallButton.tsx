@@ -45,7 +45,6 @@ const SmallButton = (props: SmallButtonProps) => {
       data-testid={props.testId}
       data-tooltip-id={tooltipId}
       data-tooltip-html={renderToStaticMarkup(<>{props.title}</>)}
-      data-tooltip-delay-show={500}
     >
       {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
       {props.text && <span className={s.Text}>{props.text}</span>}

@@ -7,10 +7,8 @@ import {
   CreateConsumerRequest,
   ResumeRequest,
   ResumeResponse,
-  SubscriptionType,
   DeleteConsumerRequest,
   PauseRequest,
-  SubscriptionMode,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
@@ -30,7 +28,7 @@ import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types'
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import { consumerSessionConfigToPb, messageDescriptorFromPb, topicsSelectorToPb } from './conversions';
+import { consumerSessionConfigToPb, messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
@@ -60,10 +58,9 @@ const displayMessagesRealTimeLimit = 250; // too many items leads to table blink
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
   const { notifyError } = Notifications.useContext();
-  const i18n = I18n.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const tableRef = useRef<HTMLDivElement>(null);
-  const { consumerServiceClient, topicServiceClient } = GrpcClient.useContext();
+  const { consumerServiceClient } = GrpcClient.useContext();
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);
@@ -103,6 +100,10 @@ const Session: React.FC<SessionProps> = (props) => {
   }, 1000);
 
   useInterval(() => {
+    scrollToBottom();
+  }, sessionState === 'running' ? 200 : false);
+
+  useInterval(() => {
     if (messagesBuffer.current.length === 0) {
       return;
     }
@@ -120,7 +121,7 @@ const Session: React.FC<SessionProps> = (props) => {
       scrollToBottom();
       return newMessages;
     });
-  }, messagesLoadedPerSecond.now > 0 ? 500 : false);
+  }, messagesLoadedPerSecond.now > 0 ? 250 : false);
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList();
@@ -286,7 +287,16 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sessionState, messagesLoadedPerSecond]);
 
   const isShowTooltips = sessionState !== 'running' && sessionState !== 'pausing';
-  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={isShowTooltips} />, [sessionState]);
+  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => {
+    return (
+      <MessageComponent
+        key={i}
+        message={message}
+        isShowTooltips={isShowTooltips}
+      />
+      );
+  }, [sessionState]);
+
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
       setSessionState('pausing');
@@ -377,7 +387,6 @@ const Session: React.FC<SessionProps> = (props) => {
               <tr>
                 <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} help={<>Message index in this view.</>} />
                 <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} help={help.publishTime} />
-                <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} help={<></>} />
                 <Th title="Key" sortKey="key" help={help.key} />
                 <Th title="Value" sortKey="value" help={help.value} />
                 <Th title="Topic" sortKey="topic" help={help.topic} />

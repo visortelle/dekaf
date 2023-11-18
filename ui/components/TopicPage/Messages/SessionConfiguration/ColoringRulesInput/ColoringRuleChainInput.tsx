@@ -92,13 +92,13 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
           )
         }}
         itemName='Coloring Rule'
-        onAdd={(v, {addUncollapsedItem}) => {
+        onAdd={(v, { addUncollapsedItem }) => {
           const newRule: ManagedColoringRuleValOrRef = {
             type: 'value',
             val: {
               metadata: {
                 id: uuid(),
-                name: 'New Rule',
+                name: '',
                 descriptionMarkdown: '',
                 type: 'coloring-rule',
               },
@@ -111,7 +111,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
                   val: {
                     metadata: {
                       id: uuid(),
-                      name: 'New Filter Chain',
+                      name: '',
                       descriptionMarkdown: '',
                       type: 'message-filter-chain',
                     },

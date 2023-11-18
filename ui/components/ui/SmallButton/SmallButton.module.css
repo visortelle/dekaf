@@ -38,12 +38,12 @@
 }
 
 .Button.Borderless:hover {
-  opacity: 0.5;
+  opacity: 0.6;
   transition: all 0.2s ease-in-out;
 }
 
 .Button.BorderlessSemitransparent {
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .Button.BorderlessSemitransparent:hover {
@@ -110,9 +110,9 @@
   margin-right: 0;
 }
 
-.Button.Button.Borderless,
-.Button.BorderlessSemitransparent {
-  background-color: transparent;
+.DisabledButton.Button.Borderless,
+.DisabledButton.Button.BorderlessSemitransparent {
+  background-color: transparent !important;
 }
 .DisabledButton {
   opacity: 1;

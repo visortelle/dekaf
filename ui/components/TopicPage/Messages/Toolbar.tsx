@@ -52,7 +52,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.Control}>
           <SmallButton
-            title={"Stop and empty current session"}
+            title={"Stop and flush the current session loaded data"}
             svgIcon={resetIcon}
             onClick={() => props.onStopSession()}
             type={'danger'}

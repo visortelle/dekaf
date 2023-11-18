@@ -135,7 +135,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
               render: (value, onChange) => <Input value={value} onChange={onChange} placeholder='persistent://tenant/namespace/topic' />,
               initialValue: ''
             }}
-            itemName="topic"
+            itemName="Topic"
             nothingToShowContent="No topics selected."
             validate={(v, topicFqns) => {
               if (itemSpec.topicSelector.type !== 'multi-topic-selector') {

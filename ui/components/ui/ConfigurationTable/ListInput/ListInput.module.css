@@ -17,6 +17,7 @@
 
 .HeaderItemName {
   font-size: 12rem;
+  opacity: 0.6;
 }
 
 
@@ -47,12 +48,11 @@
   position: relative;
   overflow: hidden;
   text-overflow: ellipsis;
-  outline: 1px solid transparent;
 }
 
 .ListFieldValue:hover {
-  outline: 1px solid var(--accent-color-blue);
-  transition: outline 0.2s ease-in-out;
+  box-shadow: 0 0 0 1px var(--accent-color-blue);
+  border-radius: 4rem;
 }
 
 .ListFieldValue:last-child {
