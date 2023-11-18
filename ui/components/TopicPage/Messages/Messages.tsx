@@ -294,7 +294,7 @@ const Session: React.FC<SessionProps> = (props) => {
         message={message}
         isShowTooltips={isShowTooltips}
       />
-      );
+    );
   }, [sessionState]);
 
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
@@ -385,7 +385,21 @@ const Session: React.FC<SessionProps> = (props) => {
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
-                <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} help={<>Message index in this view.</>} />
+                <Th
+                  title="#"
+                  sortKey="index"
+                  style={{ position: 'sticky', left: 0, zIndex: 10 }}
+                  help={(
+                    <>
+                      <p>
+                        When consuming from multiple topics or a single partitioned topic, the order of messages cannot be assured.
+                      </p>
+                      <p>
+                        The order of numbers in in this column represents the order in which messages were received by the consumer.
+                      </p>
+                    </>
+                  )}
+                />
                 <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} help={help.publishTime} />
                 <Th title="Key" sortKey="key" help={help.key} />
                 <Th title="Value" sortKey="value" help={help.value} />
