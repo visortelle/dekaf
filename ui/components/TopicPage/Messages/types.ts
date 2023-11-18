@@ -18,12 +18,14 @@ export type RelativeDateTime = {
 };
 
 export type ColoringRule = {
+  isEnabled: boolean;
   messageFilterChain: MessageFilterChain;
   foregroundColor: string;
   backgroundColor: string;
 };
 
 export type ColoringRuleChain = {
+  isEnabled: boolean;
   coloringRules: ColoringRule[];
 };
 

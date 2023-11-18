@@ -47,7 +47,7 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
     props.onChange(newValue);
   };
 
-  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(1) opacity(0.75)';
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
 
   return (
     <div className={s.FilterEditor} ref={hoverRef} style={{ filter: cssFilter }}>

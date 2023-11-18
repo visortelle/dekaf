@@ -129,6 +129,7 @@ export type ManagedTopicSelector = {
 export type ManagedTopicSelectorValOrRef = ValOrRef<ManagedTopicSelector>;
 
 export type ManagedColoringRuleSpec = {
+  isEnabled: boolean,
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   foregroundColor: string,
   backgroundColor: string,
@@ -142,6 +143,7 @@ export type ManagedColoringRule = {
 export type ManagedColoringRuleValOrRef = ValOrRef<ManagedColoringRule>;
 
 export type ManagedColoringRuleChainSpec = {
+  isEnabled: boolean,
   coloringRules: ManagedColoringRuleValOrRef[],
 };
 

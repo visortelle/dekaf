@@ -32,6 +32,10 @@
   padding-right: 32rem;
 }
 
+.RemovableListFieldValueWithoutPadding {
+  padding-right: 12rem !important;
+}
+
 .ListFieldRemoveValue {
   border: none;
   padding: 0;

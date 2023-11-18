@@ -240,6 +240,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                       type: 'coloring-rule-chain'
                     },
                     spec: {
+                      isEnabled: true,
                       coloringRules: []
                     }
                   }

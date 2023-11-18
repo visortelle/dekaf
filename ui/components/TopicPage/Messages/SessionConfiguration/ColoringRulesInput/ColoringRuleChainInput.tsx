@@ -6,9 +6,10 @@ import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 import { v4 as uuid } from 'uuid';
-import { themeBackgroundColorName, themeForegroundColorName } from './ColoringRuleInput/ColorPicker/color-palette';
+import { themeBackgroundColorName, themeForegroundColorName } from './ColoringRuleInput/ColorPickerButton/ColorPicker/color-palette';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
+import Toggle from '../../../../ui/Toggle/Toggle';
 
 export type ColoringRuleChainInputProps = {
   value: ManagedColoringRuleChainValOrRef,
@@ -38,38 +39,53 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
     props.onChange(newValue);
   };
 
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
+
   return (
-    <div className={s.ColoringRuleChainInput} ref={hoverRef}>
-      <LibraryBrowserPanel
-        itemType='coloring-rule-chain'
-        itemToSave={item}
-        onPick={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
-          val: item as ManagedColoringRuleChain
-        })}
-        onSave={(item) => props.onChange({
-          type: 'reference',
-          ref: item.metadata.id,
-          val: item as ManagedColoringRuleChain
-        })}
-        isForceShowButtons={isHovered}
-        libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+    <div className={s.ColoringRuleChainInput} style={{ filter: cssFilter }}>
+      <div ref={hoverRef}>
+        <LibraryBrowserPanel
+          itemType='coloring-rule-chain'
+          itemToSave={item}
+          onPick={(item) => props.onChange({
+            type: 'reference',
+            ref: item.metadata.id,
+            val: item as ManagedColoringRuleChain
+          })}
+          onSave={(item) => props.onChange({
+            type: 'reference',
+            ref: item.metadata.id,
+            val: item as ManagedColoringRuleChain
+          })}
+          isForceShowButtons={isHovered}
+          libraryContext={props.libraryContext}
+          managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+        />
+      </div>
+
+      <Toggle
+        value={itemSpec.isEnabled}
+        onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
+        label="Enabled"
       />
+
+
       <ListInput<ManagedColoringRuleValOrRef>
         value={itemSpec.coloringRules}
         getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
         renderItem={(rule, i) => {
           return (
-            <ColoringRuleInput
-              value={rule}
-              onChange={(v) => {
-                const newRules = [...itemSpec.coloringRules];
-                newRules[i] = v;
-                onSpecChange({ ...itemSpec, coloringRules: newRules });
-              }}
-            />
+            <div className={s.ColoringRuleInput}>
+              <ColoringRuleInput
+                value={rule}
+                onChange={(v) => {
+                  const newRules = [...itemSpec.coloringRules];
+                  newRules[i] = v;
+                  onSpecChange({ ...itemSpec, coloringRules: newRules });
+                }}
+                libraryContext={props.libraryContext}
+              />
+            </div>
           )
         }}
         itemName='Coloring Rule'
@@ -84,6 +100,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
                 type: 'coloring-rule',
               },
               spec: {
+                isEnabled: true,
                 backgroundColor: themeBackgroundColorName,
                 foregroundColor: themeForegroundColorName,
                 messageFilterChain: {
@@ -113,6 +130,8 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
           const newRules = itemSpec.coloringRules.filter((rule) => rule.type === 'reference' ? rule.ref !== id : rule.val.metadata.id !== id);
           onSpecChange({ ...itemSpec, coloringRules: newRules });
         }}
+        isHideNothingToShow
+        isContentDoesntOverlapRemoveButton
       />
     </div>
   );

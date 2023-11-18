@@ -46,7 +46,7 @@
   height: 18rem;
   box-shadow: 1rem 1rem 4rem rgba(0, 0, 0, 0.5);
   position: relative;
-  top: calc(-6rem);
+  top: calc(-5rem);
   left: calc(-9rem);
   transform: translate(0, 0);
   transition: transform 0.1s ease-in-out;

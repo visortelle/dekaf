@@ -11,9 +11,9 @@ import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context
 import StartFromInput from './StartFromInput/StartFromInput';
 import SessionTopicInput from './SessionTopicInput/SessionTopicInput';
 import AddButton from '../../../ui/AddButton/AddButton';
-import { v4 as uuid } from 'uuid';
 import { createNewTarget } from '../../create-new-target';
 import DeleteButton from '../../../ui/DeleteButton/DeleteButton';
+import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef;
@@ -76,6 +76,12 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           <FilterChainEditor
             value={itemSpec.messageFilterChain}
             onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+            libraryContext={props.libraryContext}
+          />
+
+          <ColoringRuleChainInput
+            value={itemSpec.coloringRuleChain}
+            onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
             libraryContext={props.libraryContext}
           />
 

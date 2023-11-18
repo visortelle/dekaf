@@ -19,6 +19,8 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_CONSUMER_SESSION_START_FROM = 9;
   MANAGED_ITEM_TYPE_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN = 10;
   MANAGED_ITEM_TYPE_TOPIC_SELECTOR = 11;
+  MANAGED_ITEM_TYPE_COLORING_RULE = 12;
+  MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN = 13;
 }
 
 message ManagedItemMetadata {
@@ -180,6 +182,7 @@ message ManagedMessageFilterChainValOrRef {
 }
 
 message ManagedColoringRuleSpec {
+  bool is_enabled = 4;
   ManagedMessageFilterChainValOrRef message_filter_chain = 1;
   string foreground_color = 2;
   string background_color = 3;
@@ -198,6 +201,7 @@ message ManagedColoringRuleValOrRef {
 }
 
 message ManagedColoringRuleChainSpec {
+  bool is_enabled = 2;
   repeated ManagedColoringRuleValOrRef coloring_rules = 1;
 }
 

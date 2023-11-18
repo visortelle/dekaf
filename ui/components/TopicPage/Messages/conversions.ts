@@ -302,6 +302,7 @@ export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): Consume
 
 export function coloringRuleFromPb(v: pb.ColoringRule): ColoringRule {
   return {
+    isEnabled: v.getIsEnabled(),
     messageFilterChain: messageFilterChainFromPb(v.getMessageFilterChain()!),
     backgroundColor: v.getBackgroundColor(),
     foregroundColor: v.getForegroundColor(),
@@ -310,6 +311,7 @@ export function coloringRuleFromPb(v: pb.ColoringRule): ColoringRule {
 
 export function coloringRuleToPb(v: ColoringRule): pb.ColoringRule {
   const coloringRulePb = new pb.ColoringRule();
+  coloringRulePb.setIsEnabled(v.isEnabled);
   coloringRulePb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
   coloringRulePb.setBackgroundColor(v.backgroundColor);
   coloringRulePb.setForegroundColor(v.foregroundColor);
@@ -319,12 +321,14 @@ export function coloringRuleToPb(v: ColoringRule): pb.ColoringRule {
 
 export function coloringRuleChainFromPb(v: pb.ColoringRuleChain): ColoringRuleChain {
   return {
+    isEnabled: v.getIsEnabled(),
     coloringRules: v.getColoringRulesList().map(coloringRuleFromPb),
   }
 }
 
 export function coloringRuleChainToPb(v: ColoringRuleChain): pb.ColoringRuleChain {
   const coloringRuleChainPb = new pb.ColoringRuleChain();
+  coloringRuleChainPb.setIsEnabled(v.isEnabled);
   coloringRuleChainPb.setColoringRulesList(v.coloringRules.map(coloringRuleToPb));
 
   return coloringRuleChainPb;

@@ -42,6 +42,8 @@ export function managedItemTypeFromPb(v: pb.ManagedItemType): t.ManagedItemType 
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG: return "producer-session-config";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER: return "message-filter";
     case pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN: return "message-filter-chain";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE: return "coloring-rule";
+    case pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN: return "coloring-rule-chain";
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -54,6 +56,8 @@ export function managedItemTypeToPb(v: t.ManagedItemType): pb.ManagedItemType {
     case "producer-session-config": return pb.ManagedItemType.MANAGED_ITEM_TYPE_PRODUCER_SESSION_CONFIG;
     case "message-filter": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER;
     case "message-filter-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_MESSAGE_FILTER_CHAIN;
+    case "coloring-rule": return pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE;
+    case "coloring-rule-chain": return pb.ManagedItemType.MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN;
     default: throw new Error(`Unknown ManagedItemType: ${v}`);
   }
 }
@@ -720,6 +724,7 @@ export function managedTopicSelectorValOrRefToPb(v: t.ManagedTopicSelectorValOrR
 
 export function managedColoringRuleSpecFromPb(v: pb.ManagedColoringRuleSpec): t.ManagedColoringRuleSpec {
   return {
+    isEnabled: v.getIsEnabled(),
     messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
     backgroundColor: v.getBackgroundColor(),
     foregroundColor: v.getForegroundColor()
@@ -728,6 +733,7 @@ export function managedColoringRuleSpecFromPb(v: pb.ManagedColoringRuleSpec): t.
 
 export function managedColoringRuleSpecToPb(v: t.ManagedColoringRuleSpec): pb.ManagedColoringRuleSpec {
   const specPb = new pb.ManagedColoringRuleSpec();
+  specPb.setIsEnabled(v.isEnabled);
   specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
   specPb.setBackgroundColor(v.backgroundColor);
   specPb.setForegroundColor(v.foregroundColor);
@@ -782,12 +788,14 @@ export function managedColoringRuleValOrRefToPb(v: t.ManagedColoringRuleValOrRef
 
 export function managedColoringRuleChainSpecFromPb(v: pb.ManagedColoringRuleChainSpec): t.ManagedColoringRuleChainSpec {
   return {
+    isEnabled: v.getIsEnabled(),
     coloringRules: v.getColoringRulesList().map(managedColoringRuleValOrRefFromPb)
   }
 }
 
 export function managedColoringRuleChainSpecToPb(v: t.ManagedColoringRuleChainSpec): pb.ManagedColoringRuleChainSpec {
   const specPb = new pb.ManagedColoringRuleChainSpec();
+  specPb.setIsEnabled(v.isEnabled);
   specPb.setColoringRulesList(v.coloringRules.map(managedColoringRuleValOrRefToPb));
   return specPb;
 }

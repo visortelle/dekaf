@@ -38,6 +38,7 @@ export function createNewTarget(): ManagedConsumerSessionTopicValOrRef {
               type: 'coloring-rule-chain'
             },
             spec: {
+              isEnabled: true,
               coloringRules: []
             }
           }

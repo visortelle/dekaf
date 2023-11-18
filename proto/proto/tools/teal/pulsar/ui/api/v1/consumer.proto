@@ -169,12 +169,14 @@ message ConsumerSessionPauseTriggerChain {
 }
 
 message ColoringRule {
+  bool is_enabled = 4;
   MessageFilterChain message_filter_chain = 1;
   string foreground_color = 2;
   string background_color = 3;
 }
 
 message ColoringRuleChain {
+  bool is_enabled = 2;
   repeated ColoringRule coloring_rules = 1;
 }
 

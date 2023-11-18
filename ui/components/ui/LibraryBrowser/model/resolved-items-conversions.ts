@@ -100,6 +100,7 @@ export function coloringRuleFromValOrRef(v: ManagedColoringRuleValOrRef): Colori
   const spec = v.val.spec;
 
   return {
+    isEnabled: spec.isEnabled,
     messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
     foregroundColor: spec.foregroundColor,
     backgroundColor: spec.backgroundColor
@@ -114,6 +115,7 @@ export function coloringRuleChainFromValOrRef(v: ManagedColoringRuleChainValOrRe
   const spec = v.val.spec;
 
   return {
+    isEnabled: spec.isEnabled,
     coloringRules: spec.coloringRules.map(coloringRuleFromValOrRef)
   }
 }

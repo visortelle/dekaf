@@ -25,6 +25,8 @@ export type ListValue<T> = {
   onAdd?: (value: T) => void;
   testId?: string;
   itemName?: string;
+  isHideNothingToShow?: boolean;
+  isContentDoesntOverlapRemoveButton?: boolean;
   nothingToShowContent?: React.ReactNode;
 };
 
@@ -56,12 +58,17 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
 
   return (
     <div className={s.ListField} data-testid={props.testId}>
-      {props.value.length === 0 && <NothingToShow content={props.nothingToShowContent} />}
+      {!props.isHideNothingToShow && props.value.length === 0 && <NothingToShow content={props.nothingToShowContent} />}
       {props.value.length !== 0 && (
         <div className={s.ListFieldValues}>
           {props.value.map((v, i) => {
             return (
-              <div key={props.getId(v)} className={`${s.ListFieldValue} ${typeof props.onRemove === 'undefined' ? '' : s.RemovableListFieldValue}`}>
+              <div
+                key={props.getId(v)}
+                className={`
+                  ${s.ListFieldValue} ${typeof props.onRemove === 'undefined' ? '' : s.RemovableListFieldValue}
+                  ${props.isContentDoesntOverlapRemoveButton ? s.RemovableListFieldValueWithoutPadding : ''}
+                `}>
                 {props.renderItem(v, i)}
                 {props.onRemove && (
                   <button type="button" className={s.ListFieldRemoveValue} onClick={() => props.onRemove!(props.getId(v))}>

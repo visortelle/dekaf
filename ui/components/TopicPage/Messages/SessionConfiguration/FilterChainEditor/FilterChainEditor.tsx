@@ -11,7 +11,6 @@ import { useHover } from '../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
-import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
@@ -50,7 +49,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
     props.onChange(newValue);
   };
 
-  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(1) opacity(0.75)';
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
 
   return (
     <div className={s.FilterChainEditor} ref={ref} style={{ filter: cssFilter }}>
@@ -109,12 +108,6 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
           </div>
         </div>
       </div>
-
-      {itemSpec.filters.length === 0 && (
-        <div style={{ marginBottom: '12rem' }}>
-          <NothingToShow content={<div>Click the button below to add a first filter.</div>} />
-        </div>
-      )}
 
       {itemSpec.filters.length !== 0 && itemSpec.filters.map((filter) => {
         const filterId = filter.type === 'reference' ? filter.ref : filter.val.metadata.id;
