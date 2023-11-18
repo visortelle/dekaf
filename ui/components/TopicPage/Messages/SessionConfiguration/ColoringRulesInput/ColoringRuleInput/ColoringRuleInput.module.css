@@ -8,7 +8,6 @@
 .TopRow {
   display: flex;
   gap: 12rem;
-  margin-top: -12rem;
 }
 
 .ColorPicker {

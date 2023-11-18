@@ -14,6 +14,7 @@ export type ColoringRuleInputProps = {
   value: ManagedColoringRuleValOrRef,
   onChange: (value: ManagedColoringRuleValOrRef) => void,
   libraryContext: LibraryContext
+  appearance?: 'default' | 'compact';
 };
 
 const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
@@ -42,25 +43,27 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
 
   return (
     <div className={s.ColoringRuleInput} style={{ filter: cssFilter }}>
-      <div ref={hoverRef}>
-        <LibraryBrowserPanel
-          itemType='coloring-rule'
-          itemToSave={item}
-          onPick={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
-            val: item as ManagedColoringRule
-          })}
-          onSave={(item) => props.onChange({
-            type: 'reference',
-            ref: item.metadata.id,
-            val: item as ManagedColoringRule
-          })}
-          isForceShowButtons={isHovered}
-          libraryContext={props.libraryContext}
-          managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
-        />
-      </div>
+      {props.appearance !== 'compact' && (
+        <div ref={hoverRef}>
+          <LibraryBrowserPanel
+            itemType='coloring-rule'
+            itemToSave={item}
+            onPick={(item) => props.onChange({
+              type: 'reference',
+              ref: item.metadata.id,
+              val: item as ManagedColoringRule
+            })}
+            onSave={(item) => props.onChange({
+              type: 'reference',
+              ref: item.metadata.id,
+              val: item as ManagedColoringRule
+            })}
+            isForceShowButtons={isHovered}
+            libraryContext={props.libraryContext}
+            managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+          />
+        </div>
+      )}
 
       <div className={s.TopRow}>
         <Toggle
@@ -101,13 +104,16 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
           </div>
         </div>
       </div>
-      <div>
-        <FilterChainEditor
-          value={itemSpec.messageFilterChain}
-          onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
-          libraryContext={props.libraryContext}
-        />
-      </div>
+
+      {props.appearance !== 'compact' && (
+        <div>
+          <FilterChainEditor
+            value={itemSpec.messageFilterChain}
+            onChange={(v) => onSpecChange({ ...itemSpec, messageFilterChain: v })}
+            libraryContext={props.libraryContext}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -80,7 +80,9 @@
 }
 
 .DraggingItem {
+  background-color: #fff;
   box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.27);
+  z-index: 100;
 }
 
 .DragIcon {

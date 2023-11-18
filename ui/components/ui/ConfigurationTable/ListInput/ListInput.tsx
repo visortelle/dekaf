@@ -38,7 +38,7 @@ export type Editor<T> = {
 
 export type ListValue<T> = {
   value: T[];
-  renderItem: (value: T, i: number) => React.ReactElement;
+  renderItem: (value: T, i: number, isCompact: boolean) => React.ReactElement;
   editor?: Editor<T>;
   getId: (value: T) => Id;
   shouldShowError?: (value: T) => boolean;
@@ -182,11 +182,11 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
 
   const listProps = props.listProps;
 
-  const [isShrinkMode, setIsShrinkMode] = useState(false);
+  const [isCompactMode, setIsCompactMode] = useState(false);
 
   useDndMonitor({
-    onDragStart: () => setIsShrinkMode(true),
-    onDragEnd: () => setIsShrinkMode(false)
+    onDragStart: () => setIsCompactMode(true),
+    onDragEnd: () => setIsCompactMode(false)
   });
 
   return (
@@ -198,7 +198,7 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
       `}
       ref={setNodeRef} style={style}
     >
-      {listProps.renderItem(props.value, props.index)}
+      {props.listProps.renderItem(props.value, props.index, isCompactMode)}
       {listProps.onRemove && (
         <button
           type="button"

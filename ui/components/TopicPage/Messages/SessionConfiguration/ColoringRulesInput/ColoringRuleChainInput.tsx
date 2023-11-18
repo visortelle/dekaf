@@ -74,7 +74,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
         value={itemSpec.coloringRules}
         onChange={(v) => onSpecChange({ ...itemSpec, coloringRules: v })}
         getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
-        renderItem={(rule, i) => {
+        renderItem={(rule, i, isCompact) => {
           return (
             <div className={s.ColoringRuleInput}>
               <ColoringRuleInput
@@ -85,6 +85,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
                   onSpecChange({ ...itemSpec, coloringRules: newRules });
                 }}
                 libraryContext={props.libraryContext}
+                appearance={isCompact ? 'compact' : undefined}
               />
             </div>
           )
