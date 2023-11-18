@@ -15,7 +15,7 @@
   padding: 4rem 12rem;
   border-radius: 4rem;
   box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
-  margin: 1rem;
+  margin: 0rem;
   user-select: none;
   position: relative;
   opacity: 1;
@@ -24,6 +24,31 @@
   transition: var(--transition-short);
   height: 28rem;
   min-width: 28rem;
+}
+
+.Button.Borderless,
+.Button.BorderlessSemitransparent {
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.Button.Borderless {
+  opacity: 1;
+}
+
+.Button.Borderless:hover {
+  opacity: 0.5;
+  transition: all 0.2s ease-in-out;
+}
+
+.Button.BorderlessSemitransparent {
+  opacity: 0.5;
+}
+
+.Button.BorderlessSemitransparent:hover {
+  opacity: 1;
+  transition: all 0.2s ease-in-out;
 }
 
 .Text {
@@ -85,6 +110,10 @@
   margin-right: 0;
 }
 
+.Button.Button.Borderless,
+.Button.BorderlessSemitransparent {
+  background-color: transparent;
+}
 .DisabledButton {
   opacity: 1;
   background-color: var(--surface-color) !important;

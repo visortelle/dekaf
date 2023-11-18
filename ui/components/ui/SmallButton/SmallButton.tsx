@@ -12,6 +12,7 @@ export type SmallButtonProps = {
   text?: string,
   title?: string,
   type?: 'regular' | 'primary' | 'danger',
+  appearance?: 'default' | 'borderless' | 'borderless-semitransparent',
   disabled?: boolean,
   style?: React.CSSProperties,
   className?: string,
@@ -33,6 +34,8 @@ const SmallButton = (props: SmallButtonProps) => {
         ${s.Button}
         ${props.disabled ? s.DisabledButton : ''}
         ${props.text ? '' : s.ButtonWithoutText}
+        ${props.appearance === 'borderless' ? s.Borderless : ''}
+        ${props.appearance === 'borderless-semitransparent' ? s.BorderlessSemitransparent : ''}
         ${props.className || ''}
         ${typeClassName}
         `}
@@ -42,6 +45,7 @@ const SmallButton = (props: SmallButtonProps) => {
       data-testid={props.testId}
       data-tooltip-id={tooltipId}
       data-tooltip-html={renderToStaticMarkup(<>{props.title}</>)}
+      data-tooltip-delay-show={500}
     >
       {props.svgIcon && <SvgIcon svg={props.svgIcon} />}
       {props.text && <span className={s.Text}>{props.text}</span>}

@@ -1,3 +1,25 @@
+.Header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4rem;
+  position: relative;
+}
+
+.HeaderControls {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: -5rem;
+  right: 0;
+}
+
+.HeaderItemName {
+  font-size: 12rem;
+}
+
+
 .ListField {
   position: relative;
   background-color: #fff;
@@ -10,6 +32,9 @@
 .ListFieldValues {
   border: 1px solid var(--border-color);
   border-radius: 4rem;
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .ListFieldValue {
@@ -22,6 +47,12 @@
   position: relative;
   overflow: hidden;
   text-overflow: ellipsis;
+  outline: 1px solid transparent;
+}
+
+.ListFieldValue:hover {
+  outline: 1px solid var(--accent-color-blue);
+  transition: outline 0.2s ease-in-out;
 }
 
 .ListFieldValue:last-child {
@@ -68,10 +99,14 @@
   margin-top: 0;
 }
 
-.AddButton {
+.BottomControls {
   display: flex;
   justify-content: flex-end;
   margin-top: 8rem;
+}
+
+.AddButton {
+  margin-right: -12rem;
 }
 
 .Error {
@@ -85,23 +120,27 @@
   z-index: 100;
 }
 
-.DragIcon {
+.Controls {
   position: absolute;
-  top: 10rem;
-  right: 32rem;
+  top: 4rem;
+  right: 8rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.DragIcon svg {
+.ControlsIcon {
+  opacity: 0.5;
+}
+
+.ControlsIcon svg {
   width: 18rem;
   height: 18rem;
   fill: var(--text-color);
 }
 
-.DragIcon:hover {
+.ControlsIcon:hover {
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 1;
+  transition: all 0.2s ease-in-out;
 }
-

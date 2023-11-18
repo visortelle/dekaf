@@ -43,7 +43,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
 
   return (
     <div className={s.ColoringRuleChainInput} style={{ filter: cssFilter }}>
-      <div ref={hoverRef}>
+      <div ref={hoverRef} style={{ marginBottom: '8rem' }}>
         <LibraryBrowserPanel
           itemType='coloring-rule-chain'
           itemToSave={item}
@@ -63,20 +63,21 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
         />
       </div>
 
-      <Toggle
-        value={itemSpec.isEnabled}
-        onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
-        label="Enabled"
-      />
-
+      <div style={{ marginBottom: '8rem' }}>
+        <Toggle
+          value={itemSpec.isEnabled}
+          onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
+          label="Enabled"
+        />
+      </div>
 
       <ListInput<ManagedColoringRuleValOrRef>
         value={itemSpec.coloringRules}
         onChange={(v) => onSpecChange({ ...itemSpec, coloringRules: v })}
         getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
-        renderItem={(rule, i, isCompact) => {
+        renderItem={(rule, i, isCollapsed) => {
           return (
-            <div className={s.ColoringRuleInput}>
+            <div className={`${s.ColoringRuleInput} ${isCollapsed ? s.CollapsedColoringRuleInput : ''}`}>
               <ColoringRuleInput
                 value={rule}
                 onChange={(v) => {
@@ -85,13 +86,13 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
                   onSpecChange({ ...itemSpec, coloringRules: newRules });
                 }}
                 libraryContext={props.libraryContext}
-                appearance={isCompact ? 'compact' : undefined}
+                appearance={isCollapsed ? 'compact' : undefined}
               />
             </div>
           )
         }}
         itemName='Coloring Rule'
-        onAdd={() => {
+        onAdd={(v, {addUncollapsedItem}) => {
           const newRule: ManagedColoringRuleValOrRef = {
             type: 'value',
             val: {
@@ -127,6 +128,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
           };
           const newRules = itemSpec.coloringRules.concat([newRule]);
           onSpecChange({ ...itemSpec, coloringRules: newRules });
+          addUncollapsedItem(newRule.val.metadata.id);
         }}
         onRemove={(id) => {
           const newRules = itemSpec.coloringRules.filter((rule) => rule.type === 'reference' ? rule.ref !== id : rule.val.metadata.id !== id);
@@ -134,6 +136,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
         }}
         isHideNothingToShow
         isContentDoesntOverlapRemoveButton
+        isHasCollapsedRenderer
       />
     </div>
   );

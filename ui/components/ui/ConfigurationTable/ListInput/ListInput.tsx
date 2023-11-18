@@ -1,13 +1,12 @@
 import s from './ListInput.module.css'
-import SvgIcon from '../../SvgIcon/SvgIcon';
 import removeIcon from './remove.svg';
 import { ReactElement, useEffect, useState } from "react";
 import * as Either from 'fp-ts/Either';
 import NothingToShow from '../../NothingToShow/NothingToShow';
 import AddButton from '../../AddButton/AddButton';
-import { tooltipId } from '../../Tooltip/Tooltip';
 import dragIcon from './drag.svg';
-import { renderToStaticMarkup } from 'react-dom/server';
+import collapseIcon from './collapse.svg';
+import uncollapseIcon from './uncollapse.svg';
 import {
   DndContext,
   KeyboardSensor,
@@ -27,6 +26,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { findIndex } from 'lodash';
+import SmallButton from '../../SmallButton/SmallButton';
 
 type Id = string;
 type EditorValue<T> = T | undefined;
@@ -38,23 +38,25 @@ export type Editor<T> = {
 
 export type ListValue<T> = {
   value: T[];
-  renderItem: (value: T, i: number, isCompact: boolean) => React.ReactElement;
+  renderItem: (value: T, i: number, isCollapsed: boolean) => React.ReactElement;
   editor?: Editor<T>;
   getId: (value: T) => Id;
   shouldShowError?: (value: T) => boolean;
   validate?: (value: T, list: T[]) => Either.Either<Error, void>;
   onRemove?: (id: Id) => void;
-  onAdd?: (value: T) => void;
+  onAdd?: (value: T, { addUncollapsedItem }: { addUncollapsedItem: (id: string) => void }) => void;
   onChange?: (value: T[]) => void;
   testId?: string;
   itemName?: string;
   isHideNothingToShow?: boolean;
   isContentDoesntOverlapRemoveButton?: boolean;
+  isHasCollapsedRenderer?: boolean;
   nothingToShowContent?: React.ReactNode;
 };
 
 function ListInput<T>(props: ListValue<T>): React.ReactElement {
   const [editorValue, setEditorValue] = useState<EditorValue<T>>(props.editor?.initialValue);
+  const [uncollapsedItems, setUncollapsedItems] = useState<Id[]>([]);
   const isRenderEditor = typeof props.editor?.render !== 'undefined';
 
   const sensors = useSensors(
@@ -96,7 +98,8 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
     if (Either.isLeft(validationResult)) {
       return
     }
-    props.onAdd && props.onAdd(editorValue!)
+    const addUncollapsedItem = (id: string) => setUncollapsedItems((prev) => [...prev, id]);
+    props.onAdd && props.onAdd(editorValue!, { addUncollapsedItem })
     setEditorValue(() => props.editor?.initialValue);
   }
 
@@ -109,6 +112,27 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
       autoScroll={false}
       onDragEnd={handleDragEnd}
     >
+      <div className={s.Header}>
+        <div className={s.HeaderItemName}>
+          <strong>{props.itemName === undefined ? '' : `${props.itemName}s`}: {props.value.length}</strong>
+        </div>
+        <div className={s.HeaderControls}>
+          {props.isHasCollapsedRenderer && (
+            <SmallButton
+              onClick={() => {
+                if (uncollapsedItems.length !== 0) {
+                  setUncollapsedItems([]);
+                } else {
+                  setUncollapsedItems(props.value.map((v) => props.getId(v)));
+                }
+              }}
+              svgIcon={uncollapsedItems.length !== 0 ? collapseIcon : uncollapseIcon}
+              title="Collapse or uncollapse all items"
+              appearance='borderless-semitransparent'
+            />
+          )}
+        </div>
+      </div>
       <div className={s.ListField} data-testid={props.testId}>
         {!props.isHideNothingToShow && props.value.length === 0 && <NothingToShow content={props.nothingToShowContent} />}
         {sortableItems.length !== 0 && (
@@ -125,6 +149,8 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
                     index={i}
                     listProps={props}
                     value={v.value}
+                    isCollapsed={!uncollapsedItems.includes(v.id)}
+                    onToggleCollapsed={() => setUncollapsedItems((prev) => prev.includes(v.id) ? prev.filter((id) => id !== v.id) : [...prev, v.id])}
                   />
                 );
               })}
@@ -145,15 +171,18 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
             {validationResult.left.message}
           </div>
         )}
-        {props.onAdd && (
-          <div className={s.AddButton}>
-            <AddButton
-              onClick={add}
-              itemName={props.itemName}
-              disabled={Either.isLeft(validationResult)}
-            />
-          </div>
-        )}
+
+        <div className={s.BottomControls}>
+          {props.onAdd && (
+            <div className={s.AddButton}>
+              <AddButton
+                onClick={add}
+                itemName={props.itemName}
+                disabled={Either.isLeft(validationResult)}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </DndContext>
   )
@@ -164,6 +193,8 @@ type SortableItemProps<T> = {
   value: T,
   index: number,
   listProps: ListValue<T>,
+  isCollapsed?: boolean,
+  onToggleCollapsed?: () => void,
 };
 function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
   const {
@@ -182,11 +213,11 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
 
   const listProps = props.listProps;
 
-  const [isCompactMode, setIsCompactMode] = useState(false);
+  const [isDraggingSomeItem, setIsDraggingSomeItem] = useState(false);
 
   useDndMonitor({
-    onDragStart: () => setIsCompactMode(true),
-    onDragEnd: () => setIsCompactMode(false)
+    onDragStart: () => setIsDraggingSomeItem(true),
+    onDragEnd: () => setIsDraggingSomeItem(false)
   });
 
   return (
@@ -198,25 +229,35 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
       `}
       ref={setNodeRef} style={style}
     >
-      {props.listProps.renderItem(props.value, props.index, isCompactMode)}
-      {listProps.onRemove && (
-        <button
-          type="button"
-          className={s.ListFieldRemoveValue}
-          onClick={() => listProps.onRemove!(props.id)}
-          data-tooltip-id={tooltipId}
-          data-data-tooltip-html={renderToStaticMarkup(
-            <div>
-              {listProps.itemName === undefined ? 'Remove this item' : `Remove this ${listProps.itemName}`}
-            </div>
-          )}
-        >
-          <SvgIcon svg={removeIcon} />
-        </button>
-      )}
+      {props.listProps.renderItem(props.value, props.index, isDraggingSomeItem || Boolean(props.isCollapsed))}
 
-      <div className={s.DragIcon} {...attributes} {...listeners}>
-        <SvgIcon svg={dragIcon} />
+      <div className={s.Controls}>
+        {props.listProps.isHasCollapsedRenderer && (
+          <SmallButton
+            onClick={props.onToggleCollapsed || (() => { })}
+            svgIcon={props.isCollapsed ? uncollapseIcon : collapseIcon}
+            appearance='borderless-semitransparent'
+            title="Collapse or uncollapse this item"
+          />
+        )}
+
+        <div {...attributes} {...listeners}>
+          <SmallButton
+            appearance='borderless-semitransparent'
+            svgIcon={dragIcon}
+            onClick={() => { }}
+            title="Drag this item"
+          />
+        </div>
+
+        {listProps.onRemove && (
+          <SmallButton
+            onClick={() => listProps.onRemove!(props.id)}
+            title="Remove this item"
+            svgIcon={removeIcon}
+            appearance='borderless-semitransparent'
+          />
+        )}
       </div>
     </div>
   );

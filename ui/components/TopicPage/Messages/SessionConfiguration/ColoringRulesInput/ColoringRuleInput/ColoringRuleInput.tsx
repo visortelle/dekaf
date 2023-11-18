@@ -65,7 +65,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
         </div>
       )}
 
-      <div className={s.TopRow}>
+      <div className={s.TopRow} style={{ marginBottom: props.appearance === 'compact' ? '0' : '24rem' }}>
         <Toggle
           value={itemSpec.isEnabled}
           onChange={(v) => onSpecChange({ ...itemSpec, isEnabled: v })}
@@ -79,7 +79,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
               onChange={(v) => onSpecChange({ ...itemSpec, foregroundColor: v })}
               width='inherit'
               height='inherit'
-              title={<>Foreground Color ({itemSpec.foregroundColor})</>}
+              title={<>Foreground Color: {itemSpec.foregroundColor}</>}
             />
           </div>
 
@@ -89,7 +89,7 @@ const ColoringRuleInput: React.FC<ColoringRuleInputProps> = (props) => {
               onChange={(v) => onSpecChange({ ...itemSpec, backgroundColor: v })}
               width='inherit'
               height='inherit'
-              title={<>Background Color ({itemSpec.backgroundColor})</>}
+              title={<>Background Color: {itemSpec.backgroundColor}</>}
             />
           </div>
 

@@ -21,7 +21,8 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
     <div className={s.LibraryBrowserSaveButton}>
       <SmallButton
         title='Save'
-        type='primary'
+        type='regular'
+        appearance='borderless-semitransparent'
         svgIcon={saveIcon}
         disabled={props.itemToSave === undefined}
         onClick={() => {
