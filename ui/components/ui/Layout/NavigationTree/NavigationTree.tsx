@@ -60,7 +60,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }
 
       return res;
-    }
+    },
+    { refreshInterval: 15 }
   );
 
   if (tenantsDataError) {
