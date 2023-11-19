@@ -847,7 +847,7 @@ export function managedColoringRuleChainValOrRefToPb(v: t.ManagedColoringRuleCha
   return idPb;
 }
 
-export function managedConsumerSessionTopicSpecFromPb(v: pb.ManagedConsumerSessionTopicSpec): t.ManagedConsumerSessionTopicSpec {
+export function managedConsumerSessionTargetSpecFromPb(v: pb.ManagedConsumerSessionTargetSpec): t.ManagedConsumerSessionTargetSpec {
   return {
     topicSelector: managedTopicSelectorValOrRefFromPb(v.getTopicSelector()!),
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
@@ -855,56 +855,56 @@ export function managedConsumerSessionTopicSpecFromPb(v: pb.ManagedConsumerSessi
   };
 }
 
-export function managedConsumerSessionTopicSpecToPb(v: t.ManagedConsumerSessionTopicSpec): pb.ManagedConsumerSessionTopicSpec {
-  const specPb = new pb.ManagedConsumerSessionTopicSpec();
+export function managedConsumerSessionTargetSpecToPb(v: t.ManagedConsumerSessionTargetSpec): pb.ManagedConsumerSessionTargetSpec {
+  const specPb = new pb.ManagedConsumerSessionTargetSpec();
   specPb.setTopicSelector(managedTopicSelectorValOrRefToPb(v.topicSelector));
   specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
   specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
   return specPb;
 }
 
-export function managedConsumerSessionTopicFromPb(v: pb.ManagedConsumerSessionTopic): t.ManagedConsumerSessionTopic {
+export function managedConsumerSessionTargetFromPb(v: pb.ManagedConsumerSessionTarget): t.ManagedConsumerSessionTarget {
   return {
     metadata: managedItemMetadataFromPb(v.getMetadata()!),
-    spec: managedConsumerSessionTopicSpecFromPb(v.getSpec()!)
+    spec: managedConsumerSessionTargetSpecFromPb(v.getSpec()!)
   };
 }
 
-export function managedConsumerSessionTopicToPb(v: t.ManagedConsumerSessionTopic): pb.ManagedConsumerSessionTopic {
-  const topicPb = new pb.ManagedConsumerSessionTopic();
+export function managedConsumerSessionTargetToPb(v: t.ManagedConsumerSessionTarget): pb.ManagedConsumerSessionTarget {
+  const topicPb = new pb.ManagedConsumerSessionTarget();
   topicPb.setMetadata(managedItemMetadataToPb(v.metadata));
-  topicPb.setSpec(managedConsumerSessionTopicSpecToPb(v.spec));
+  topicPb.setSpec(managedConsumerSessionTargetSpecToPb(v.spec));
   return topicPb;
 }
 
-export function managedConsumerSessionTopicValOrRefFromPb(v: pb.ManagedConsumerSessionTopicValOrRef): t.ManagedConsumerSessionTopicValOrRef {
+export function managedConsumerSessionTargetValOrRefFromPb(v: pb.ManagedConsumerSessionTargetValOrRef): t.ManagedConsumerSessionTargetValOrRef {
   switch (v.getValOrRefCase()) {
-    case pb.ManagedConsumerSessionTopicValOrRef.ValOrRefCase.VAL:
+    case pb.ManagedConsumerSessionTargetValOrRef.ValOrRefCase.VAL:
       return {
         type: 'value',
-        val: managedConsumerSessionTopicFromPb(v.getVal()!)
+        val: managedConsumerSessionTargetFromPb(v.getVal()!)
       };
-    case pb.ManagedConsumerSessionTopicValOrRef.ValOrRefCase.REF:
+    case pb.ManagedConsumerSessionTargetValOrRef.ValOrRefCase.REF:
       return {
         type: 'reference',
         ref: v.getRef()
       };
     default:
-      throw new Error(`Unknown ManagedConsumerSessionTopicValOrRef: ${v}`);
+      throw new Error(`Unknown ManagedConsumerSessionTargetValOrRef: ${v}`);
   }
 }
 
-export function managedConsumerSessionTopicValOrRefToPb(v: t.ManagedConsumerSessionTopicValOrRef): pb.ManagedConsumerSessionTopicValOrRef {
-  const topicPb = new pb.ManagedConsumerSessionTopicValOrRef();
+export function managedConsumerSessionTargetValOrRefToPb(v: t.ManagedConsumerSessionTargetValOrRef): pb.ManagedConsumerSessionTargetValOrRef {
+  const topicPb = new pb.ManagedConsumerSessionTargetValOrRef();
   switch (v.type) {
     case 'value':
-      topicPb.setVal(managedConsumerSessionTopicToPb(v.val));
+      topicPb.setVal(managedConsumerSessionTargetToPb(v.val));
       break;
     case 'reference':
       topicPb.setRef(v.ref);
       break;
     default:
-      throw new Error(`Unknown ManagedConsumerSessionTopicValOrRef: ${v}`);
+      throw new Error(`Unknown ManagedConsumerSessionTargetValOrRef: ${v}`);
   }
   return topicPb;
 }
@@ -912,7 +912,7 @@ export function managedConsumerSessionTopicValOrRefToPb(v: t.ManagedConsumerSess
 export function managedConsumerSessionConfigSpecFromPb(v: pb.ManagedConsumerSessionConfigSpec): t.ManagedConsumerSessionConfigSpec {
   return {
     startFrom: managedConsumerSessionStartFromValOrRefFromPb(v.getStartFrom()!),
-    topics: v.getTopicsList().map(managedConsumerSessionTopicValOrRefFromPb),
+    targets: v.getTargetsList().map(managedConsumerSessionTargetValOrRefFromPb),
     messageFilterChain: managedMessageFilterChainValOrRefFromPb(v.getMessageFilterChain()!),
     pauseTriggerChain: managedConsumerSessionPauseTriggerChainValOrRefFromPb(v.getPauseTriggerChain()!),
     coloringRuleChain: managedColoringRuleChainValOrRefFromPb(v.getColoringRuleChain()!),
@@ -922,7 +922,7 @@ export function managedConsumerSessionConfigSpecFromPb(v: pb.ManagedConsumerSess
 export function managedConsumerSessionConfigSpecToPb(v: t.ManagedConsumerSessionConfigSpec): pb.ManagedConsumerSessionConfigSpec {
   const specPb = new pb.ManagedConsumerSessionConfigSpec();
   specPb.setStartFrom(managedConsumerSessionStartFromValOrRefToPb(v.startFrom));
-  specPb.setTopicsList(v.topics.map(managedConsumerSessionTopicValOrRefToPb));
+  specPb.setTargetsList(v.targets.map(managedConsumerSessionTargetValOrRefToPb));
   specPb.setMessageFilterChain(managedMessageFilterChainValOrRefToPb(v.messageFilterChain));
   specPb.setPauseTriggerChain(managedConsumerSessionPauseTriggerChainValOrRefToPb(v.pauseTriggerChain));
   specPb.setColoringRuleChain(managedColoringRuleChainValOrRefToPb(v.coloringRuleChain));
@@ -1000,8 +1000,8 @@ export function managedItemFromPb(v: pb.ManagedItem): t.ManagedItem {
       return managedConsumerSessionEventFromPb(v.getSpecConsumerSessionEvent()!);
     case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN:
       return managedConsumerSessionPauseTriggerChainFromPb(v.getSpecConsumerSessionPauseTriggerChain()!);
-    case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_TOPIC:
-      return managedConsumerSessionTopicFromPb(v.getSpecConsumerSessionTopic()!);
+    case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_TARGET:
+      return managedConsumerSessionTargetFromPb(v.getSpecConsumerSessionTarget()!);
     case pb.ManagedItem.SpecCase.SPEC_CONSUMER_SESSION_CONFIG:
       return managedConsumerSessionConfigFromPb(v.getSpecConsumerSessionConfig()!);
     default:
@@ -1057,7 +1057,7 @@ export function managedItemToPb(v: t.ManagedItem): pb.ManagedItem {
       break;
     }
     case "consumer-session-topic": {
-      itemPb.setSpecConsumerSessionTopic(managedConsumerSessionTopicToPb(v as t.ManagedConsumerSessionTopic));
+      itemPb.setSpecConsumerSessionTarget(managedConsumerSessionTargetToPb(v as t.ManagedConsumerSessionTarget));
       break;
     }
     case "consumer-session-config": {

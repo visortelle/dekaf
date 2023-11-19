@@ -1,4 +1,4 @@
-package consumer.topic.topic_selector
+package consumer.session_target.topic_selector
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 

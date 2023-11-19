@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
-import { ManagedConsumerSessionTopicValOrRef } from "../ui/LibraryBrowser/model/user-managed-items";
+import { ManagedConsumerSessionTargetValOrRef } from "../ui/LibraryBrowser/model/user-managed-items";
 
-export function createNewTarget(): ManagedConsumerSessionTopicValOrRef {
+export function createNewTarget(): ManagedConsumerSessionTargetValOrRef {
   return {
     type: 'value',
     val: {

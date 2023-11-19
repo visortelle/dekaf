@@ -10,7 +10,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
 import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, MessageFilter as MessageFilterPb}
 import com.typesafe.scalalogging.Logger
-import consumer.topic.topic_selector.MultiTopicSelector
+import consumer.session_target.topic_selector.MultiTopicSelector
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import org.apache.pulsar.client.api.*
 
@@ -131,7 +131,7 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
             val config = ConsumerSessionConfig.fromPb(request.consumerSessionConfig.get)
 
-            val topicsToConsume = config.topics.flatMap(t => {
+            val topicsToConsume = config.targets.flatMap(t => {
                 t.topicSelector.topicSelector match
                     case v: MultiTopicSelector => Some(v.topicFqns)
                     case _                      => None

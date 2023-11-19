@@ -196,7 +196,7 @@ message TopicSelector {
   }
 }
 
-message ConsumerSessionTopic {
+message ConsumerSessionTarget {
   TopicSelector topic_selector = 1;
   MessageFilterChain message_filter_chain = 2;
   ColoringRuleChain coloring_rule_chain = 3;
@@ -204,7 +204,7 @@ message ConsumerSessionTopic {
 
 message ConsumerSessionConfig {
   ConsumerSessionStartFrom start_from = 1;
-  repeated ConsumerSessionTopic topics = 2;
+  repeated ConsumerSessionTarget targets = 2;
   MessageFilterChain message_filter_chain = 3;
   ConsumerSessionPauseTriggerChain pause_trigger_chain = 4;
   ColoringRuleChain coloring_rule_chain = 5;

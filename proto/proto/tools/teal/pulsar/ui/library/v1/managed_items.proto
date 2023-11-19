@@ -21,6 +21,7 @@ enum ManagedItemType {
   MANAGED_ITEM_TYPE_TOPIC_SELECTOR = 11;
   MANAGED_ITEM_TYPE_COLORING_RULE = 12;
   MANAGED_ITEM_TYPE_COLORING_RULE_CHAIN = 13;
+  MANAGED_ITEM_TYPE_CONSUMER_SESSION_TARGET = 14;
 }
 
 message ManagedItemMetadata {
@@ -217,7 +218,7 @@ message ManagedColoringRuleChainValOrRef {
   }
 }
 
-message CurrentTopicSelector {};
+message CurrentTopicSelector {}
 
 message ManagedTopicSelectorSpec {
   oneof topic_selector {
@@ -239,27 +240,27 @@ message ManagedTopicSelectorValOrRef {
   }
 }
 
-message ManagedConsumerSessionTopicSpec {
+message ManagedConsumerSessionTargetSpec {
   ManagedTopicSelectorValOrRef topic_selector = 1;
   ManagedMessageFilterChainValOrRef message_filter_chain = 2;
   ManagedColoringRuleChainValOrRef coloring_rule_chain = 4;
 }
 
-message ManagedConsumerSessionTopic {
+message ManagedConsumerSessionTarget {
   ManagedItemMetadata metadata = 1;
-  ManagedConsumerSessionTopicSpec spec = 2;
+  ManagedConsumerSessionTargetSpec spec = 2;
 }
 
-message ManagedConsumerSessionTopicValOrRef {
+message ManagedConsumerSessionTargetValOrRef {
   oneof val_or_ref {
-    ManagedConsumerSessionTopic val = 1;
+    ManagedConsumerSessionTarget val = 1;
     string ref = 2;
   }
 }
 
 message ManagedConsumerSessionConfigSpec {
   ManagedConsumerSessionStartFromValOrRef start_from = 1;
-  repeated ManagedConsumerSessionTopicValOrRef topics = 2;
+  repeated ManagedConsumerSessionTargetValOrRef targets = 2;
   ManagedMessageFilterChainValOrRef message_filter_chain = 3;
   ManagedConsumerSessionPauseTriggerChainValOrRef pause_trigger_chain = 4;
   ManagedColoringRuleChainValOrRef coloring_rule_chain = 5;
@@ -287,7 +288,7 @@ message ManagedItem {
     ManagedConsumerSessionEvent spec_consumer_session_event = 6;
     ManagedConsumerSessionPauseTriggerChain spec_consumer_session_pause_trigger_chain = 7;
     ManagedConsumerSessionStartFrom spec_consumer_session_start_from = 8;
-    ManagedConsumerSessionTopic spec_consumer_session_topic = 9;
+    ManagedConsumerSessionTarget spec_consumer_session_target = 9;
     ManagedDateTime spec_date_time = 10;
     ManagedMessageFilter spec_message_filter = 11;
     ManagedMessageFilterChain spec_message_filter_chain = 12;

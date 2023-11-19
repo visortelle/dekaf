@@ -60,7 +60,7 @@ export type ConsumerSessionPauseTriggerChain = {
   mode: ConsumerSessionPauseTriggerChainMode;
 };
 
-export type ConsumerSessionTopic = {
+export type ConsumerSessionTarget = {
   topicSelector: TopicSelector;
   messageFilterChain: MessageFilterChain;
   coloringRuleChain: ColoringRuleChain;
@@ -80,7 +80,7 @@ export type ConsumerSessionStartFrom =
 
 export type ConsumerSessionConfig = {
   startFrom: ConsumerSessionStartFrom;
-  topics: ConsumerSessionTopic[];
+  targets: ConsumerSessionTarget[];
   messageFilterChain: MessageFilterChain;
   pauseTriggerChain: ConsumerSessionPauseTriggerChain;
   coloringRuleChain: ColoringRuleChain;

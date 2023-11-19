@@ -53,7 +53,7 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'message-filter-chain' && help.messageFilterChain}
               {props.itemType === 'consumer-session-start-from' && help.consumerSessionStartFrom}
               {props.itemType === 'topic-selector' && help.topicSelector}
-              {props.itemType === 'consumer-session-topic' && help.consumerSessionTopic}
+              {props.itemType === 'consumer-session-topic' && help.consumerSessionTarget}
               {props.itemType === 'coloring-rule' && help.coloringRule}
               {props.itemType === 'coloring-rule-chain' && help.coloringRuleChain}
             </div>

@@ -3,15 +3,15 @@ import SmallButton, { SmallButtonProps } from '../SmallButton/SmallButton';
 import deleteIcon from './delete.svg';
 
 export type DeleteButtonProps = SmallButtonProps & {
-  itemName?: string;
-  appearance?: 'default' | 'compact'
+  itemName?: string,
+  isHideText?: boolean
 };
 
 const DeleteButton: React.FC<DeleteButtonProps> = (props) => {
   return (
     <SmallButton
       svgIcon={deleteIcon}
-      text={props.appearance === 'compact' ? undefined : `Delete${props.itemName ? ' ' + props.itemName : ''}`}
+      text={props.isHideText ? undefined : `Delete${props.itemName ? ' ' + props.itemName : ''}`}
       type="danger"
       {...props}
     />

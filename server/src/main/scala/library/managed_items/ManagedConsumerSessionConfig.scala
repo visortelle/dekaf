@@ -5,7 +5,7 @@ import library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 
 case class ManagedConsumerSessionConfigSpec(
     startFrom: ManagedConsumerSessionStartFromValOrRef,
-    topics: Vector[ManagedConsumerSessionTopicValOrRef],
+    targets: Vector[ManagedConsumerSessionTargetValOrRef],
     messageFilterChain: ManagedMessageFilterChainValOrRef,
     pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
     coloringRuleChain: ManagedColoringRuleChainValOrRef
@@ -15,7 +15,7 @@ object ManagedConsumerSessionConfigSpec:
     def fromPb(v: pb.ManagedConsumerSessionConfigSpec): ManagedConsumerSessionConfigSpec =
         ManagedConsumerSessionConfigSpec(
             startFrom = ManagedConsumerSessionStartFromValOrRef.fromPb(v.startFrom.get),
-            topics = v.topics.map(ManagedConsumerSessionTopicValOrRef.fromPb).toVector,
+            targets = v.targets.map(ManagedConsumerSessionTargetValOrRef.fromPb).toVector,
             messageFilterChain = ManagedMessageFilterChainValOrRef.fromPb(v.messageFilterChain.get),
             pauseTriggerChain = ManagedConsumerSessionPauseTriggerChainValOrRef.fromPb(v.pauseTriggerChain.get),
             coloringRuleChain = ManagedColoringRuleChainValOrRef.fromPb(v.coloringRuleChain.get)
@@ -24,7 +24,7 @@ object ManagedConsumerSessionConfigSpec:
     def toPb(v: ManagedConsumerSessionConfigSpec): pb.ManagedConsumerSessionConfigSpec =
         pb.ManagedConsumerSessionConfigSpec(
             startFrom = Some(ManagedConsumerSessionStartFromValOrRef.toPb(v.startFrom)),
-            topics = v.topics.map(ManagedConsumerSessionTopicValOrRef.toPb),
+            targets = v.targets.map(ManagedConsumerSessionTargetValOrRef.toPb),
             messageFilterChain = Some(ManagedMessageFilterChainValOrRef.toPb(v.messageFilterChain)),
             pauseTriggerChain = Some(ManagedConsumerSessionPauseTriggerChainValOrRef.toPb(v.pauseTriggerChain)),
             coloringRuleChain = Some(ManagedColoringRuleChainValOrRef.toPb(v.coloringRuleChain))

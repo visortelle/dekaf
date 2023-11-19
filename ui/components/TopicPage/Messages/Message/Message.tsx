@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Modals from '../../../app/contexts/Modals/Modals';
-import { AccumulatorField, BrokerPublishTimeField, EventTimeField, help, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from './fields';
+import { AccumulatorField, BrokerPublishTimeField, EventTimeField, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from './fields';
 import s from './Message.module.css';
 import cts from "../../../ui/ChildrenTable/ChildrenTable.module.css";
 import { MessageDescriptor } from '../types';

@@ -73,7 +73,7 @@ export const help = {
       </p>
     </div>
   ),
-  consumerSessionTopic: (
+  consumerSessionTarget: (
     <div>
       <p>
         Consumer Session Topic(s)

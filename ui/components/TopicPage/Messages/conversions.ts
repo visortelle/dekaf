@@ -27,7 +27,7 @@ import {
   ConsumerSessionEvent,
   ConsumerSessionPauseTriggerChainMode,
   ConsumerSessionPauseTriggerChain,
-  ConsumerSessionTopic
+  ConsumerSessionTarget
 } from "./types";
 
 import {
@@ -236,21 +236,21 @@ export function topicSelectorFromPb(v: pb.TopicSelector): TopicSelector {
   }
 }
 
-export function topicsSelectorToPb(v: TopicSelector): pb.TopicSelector {
-  const topicsSelectorPb = new pb.TopicSelector();
+export function topicSelectorToPb(v: TopicSelector): pb.TopicSelector {
+  const topicSelectorPb = new pb.TopicSelector();
 
   switch (v.type) {
     case 'multi-topic-selector':
-      topicsSelectorPb.setMultiTopicSelector(multiTopicSelectorToPb(v));
+      topicSelectorPb.setMultiTopicSelector(multiTopicSelectorToPb(v));
       break;
     case 'namespaced-regex-topic-selector':
-      topicsSelectorPb.setNamespacedRegexTopicSelector(namespacedRegexTopicSelectorToPb(v));
+      topicSelectorPb.setNamespacedRegexTopicSelector(namespacedRegexTopicSelectorToPb(v));
       break;
     default:
       throw new Error(`Unknown TopicSelector type: ${v}`);
   }
 
-  return topicsSelectorPb;
+  return topicSelectorPb;
 }
 
 export function startFromFromPb(startFrom: pb.ConsumerSessionStartFrom): ConsumerSessionStartFrom {
@@ -565,7 +565,7 @@ export function consumerSessionPauseTriggerChainToPb(v: ConsumerSessionPauseTrig
   return consumerSessionPauseTriggerChainPb;
 }
 
-export function consumerSessionTopicFromPb(v: pb.ConsumerSessionTopic): ConsumerSessionTopic {
+export function consumerSessionTargetFromPb(v: pb.ConsumerSessionTarget): ConsumerSessionTarget {
   return {
     topicSelector: topicSelectorFromPb(v.getTopicSelector()!),
     messageFilterChain: messageFilterChainFromPb(v.getMessageFilterChain()!),
@@ -573,13 +573,13 @@ export function consumerSessionTopicFromPb(v: pb.ConsumerSessionTopic): Consumer
   };
 }
 
-export function consumerSessionTopicToPb(v: ConsumerSessionTopic): pb.ConsumerSessionTopic {
-  const consumerSessionTopicPb = new pb.ConsumerSessionTopic();
-  consumerSessionTopicPb.setTopicSelector(topicsSelectorToPb(v.topicSelector));
-  consumerSessionTopicPb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
-  consumerSessionTopicPb.setColoringRuleChain(coloringRuleChainToPb(v.coloringRuleChain));
+export function consumerSessionTargetToPb(v: ConsumerSessionTarget): pb.ConsumerSessionTarget {
+  const consumerSessionTargetPb = new pb.ConsumerSessionTarget();
+  consumerSessionTargetPb.setTopicSelector(topicSelectorToPb(v.topicSelector));
+  consumerSessionTargetPb.setMessageFilterChain(messageFilterChainToPb(v.messageFilterChain));
+  consumerSessionTargetPb.setColoringRuleChain(coloringRuleChainToPb(v.coloringRuleChain));
 
-  return consumerSessionTopicPb;
+  return consumerSessionTargetPb;
 }
 
 function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionStartFrom {
@@ -624,14 +624,14 @@ function startFromToPb(startFrom: ConsumerSessionStartFrom): pb.ConsumerSessionS
 
 export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.ConsumerSessionConfig {
   const startFromPb = startFromToPb(config.startFrom);
-  const topicsPb = config.topics.map(consumerSessionTopicToPb);
+  const targetsPb = config.targets.map(consumerSessionTargetToPb);
   const messageFilterChainPb = messageFilterChainToPb(config.messageFilterChain);
   const pauseTriggerChainPb = consumerSessionPauseTriggerChainToPb(config.pauseTriggerChain);
   const coloringRuleChainPb = coloringRuleChainToPb(config.coloringRuleChain);
 
   const configPb = new pb.ConsumerSessionConfig();
   configPb.setStartFrom(startFromPb);
-  configPb.setTopicsList(topicsPb);
+  configPb.setTargetsList(targetsPb);
   configPb.setMessageFilterChain(messageFilterChainPb);
   configPb.setPauseTriggerChain(pauseTriggerChainPb);
   configPb.setColoringRuleChain(coloringRuleChainPb);

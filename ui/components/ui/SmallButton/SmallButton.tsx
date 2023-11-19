@@ -12,7 +12,7 @@ export type SmallButtonProps = {
   text?: string,
   title?: string,
   type?: 'regular' | 'primary' | 'danger',
-  appearance?: 'default' | 'borderless' | 'borderless-semitransparent',
+  appearance?: 'regular' | 'borderless' | 'borderless-semitransparent',
   disabled?: boolean,
   style?: React.CSSProperties,
   className?: string,

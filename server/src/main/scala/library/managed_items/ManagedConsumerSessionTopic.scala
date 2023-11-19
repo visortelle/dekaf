@@ -3,70 +3,70 @@ package library.managed_items
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 
-case class ManagedConsumerSessionTopicSpec(
+case class ManagedConsumerSessionTargetSpec(
     topicSelector: ManagedTopicSelectorValOrRef,
     messageFilterChain: ManagedMessageFilterChainValOrRef,
     coloringRuleChain: ManagedColoringRuleChainValOrRef
 )
 
-object ManagedConsumerSessionTopicSpec:
-    def fromPb(v: pb.ManagedConsumerSessionTopicSpec): ManagedConsumerSessionTopicSpec =
-        ManagedConsumerSessionTopicSpec(
+object ManagedConsumerSessionTargetSpec:
+    def fromPb(v: pb.ManagedConsumerSessionTargetSpec): ManagedConsumerSessionTargetSpec =
+        ManagedConsumerSessionTargetSpec(
             topicSelector = ManagedTopicSelectorValOrRef.fromPb(v.topicSelector.get),
             messageFilterChain = ManagedMessageFilterChainValOrRef.fromPb(v.messageFilterChain.get),
             coloringRuleChain = ManagedColoringRuleChainValOrRef.fromPb(v.coloringRuleChain.get)
         )
 
-    def toPb(v: ManagedConsumerSessionTopicSpec): pb.ManagedConsumerSessionTopicSpec =
-        pb.ManagedConsumerSessionTopicSpec(
+    def toPb(v: ManagedConsumerSessionTargetSpec): pb.ManagedConsumerSessionTargetSpec =
+        pb.ManagedConsumerSessionTargetSpec(
             topicSelector = Some(ManagedTopicSelectorValOrRef.toPb(v.topicSelector)),
             messageFilterChain = Some(ManagedMessageFilterChainValOrRef.toPb(v.messageFilterChain)),
             coloringRuleChain = Some(ManagedColoringRuleChainValOrRef.toPb(v.coloringRuleChain))
         )
 
-case class ManagedConsumerSessionTopic(
+case class ManagedConsumerSessionTarget(
     metadata: ManagedItemMetadata,
-    spec: ManagedConsumerSessionTopicSpec
+    spec: ManagedConsumerSessionTargetSpec
 ) extends ManagedItemTrait
 
-object ManagedConsumerSessionTopic:
-    def fromPb(v: pb.ManagedConsumerSessionTopic): ManagedConsumerSessionTopic =
-        ManagedConsumerSessionTopic(
+object ManagedConsumerSessionTarget:
+    def fromPb(v: pb.ManagedConsumerSessionTarget): ManagedConsumerSessionTarget =
+        ManagedConsumerSessionTarget(
             metadata = ManagedItemMetadata.fromPb(v.metadata.get),
-            spec = ManagedConsumerSessionTopicSpec.fromPb(v.spec.get)
+            spec = ManagedConsumerSessionTargetSpec.fromPb(v.spec.get)
         )
-    def toPb(v: ManagedConsumerSessionTopic): pb.ManagedConsumerSessionTopic =
-        pb.ManagedConsumerSessionTopic(
+    def toPb(v: ManagedConsumerSessionTarget): pb.ManagedConsumerSessionTarget =
+        pb.ManagedConsumerSessionTarget(
             metadata = Some(ManagedItemMetadata.toPb(v.metadata)),
-            spec = Some(ManagedConsumerSessionTopicSpec.toPb(v.spec))
+            spec = Some(ManagedConsumerSessionTargetSpec.toPb(v.spec))
         )
 
-case class ManagedConsumerSessionTopicValOrRef(
-    value: Option[ManagedConsumerSessionTopic],
+case class ManagedConsumerSessionTargetValOrRef(
+    value: Option[ManagedConsumerSessionTarget],
     reference: Option[ManagedItemReference]
 )
 
-object ManagedConsumerSessionTopicValOrRef:
-    def fromPb(v: pb.ManagedConsumerSessionTopicValOrRef): ManagedConsumerSessionTopicValOrRef =
+object ManagedConsumerSessionTargetValOrRef:
+    def fromPb(v: pb.ManagedConsumerSessionTargetValOrRef): ManagedConsumerSessionTargetValOrRef =
         v.valOrRef match
-            case pb.ManagedConsumerSessionTopicValOrRef.ValOrRef.Val(v) =>
-                ManagedConsumerSessionTopicValOrRef(
-                    value = Some(ManagedConsumerSessionTopic.fromPb(v)),
+            case pb.ManagedConsumerSessionTargetValOrRef.ValOrRef.Val(v) =>
+                ManagedConsumerSessionTargetValOrRef(
+                    value = Some(ManagedConsumerSessionTarget.fromPb(v)),
                     reference = None
                 )
-            case pb.ManagedConsumerSessionTopicValOrRef.ValOrRef.Ref(v) =>
-                ManagedConsumerSessionTopicValOrRef(
+            case pb.ManagedConsumerSessionTargetValOrRef.ValOrRef.Ref(v) =>
+                ManagedConsumerSessionTargetValOrRef(
                     value = None,
                     reference = Some(v)
                 )
 
-    def toPb(v: ManagedConsumerSessionTopicValOrRef): pb.ManagedConsumerSessionTopicValOrRef =
+    def toPb(v: ManagedConsumerSessionTargetValOrRef): pb.ManagedConsumerSessionTargetValOrRef =
         v.value match
             case Some(v) =>
-                pb.ManagedConsumerSessionTopicValOrRef(
-                    valOrRef = pb.ManagedConsumerSessionTopicValOrRef.ValOrRef.Val(ManagedConsumerSessionTopic.toPb(v))
+                pb.ManagedConsumerSessionTargetValOrRef(
+                    valOrRef = pb.ManagedConsumerSessionTargetValOrRef.ValOrRef.Val(ManagedConsumerSessionTarget.toPb(v))
                 )
             case None =>
-                pb.ManagedConsumerSessionTopicValOrRef(
-                    valOrRef = pb.ManagedConsumerSessionTopicValOrRef.ValOrRef.Ref(v.reference.get)
+                pb.ManagedConsumerSessionTargetValOrRef(
+                    valOrRef = pb.ManagedConsumerSessionTargetValOrRef.ValOrRef.Ref(v.reference.get)
                 )
