@@ -77,17 +77,25 @@ class PulsarAuthInterceptor extends ServerInterceptor:
         metadata: Metadata,
         next: ServerCallHandler[ReqT, RespT]
     ): ServerCall.Listener[ReqT] =
-        // java.net.HttpCookie.parse parses the cookie string as a single cookie, so we need to split it first
-        val headerCookiesSeparated = metadata.get(Metadata.Key.of("cookie", Metadata.ASCII_STRING_MARSHALLER))
-            .split(";")
-            .map(_.trim)
-            .map(_ + ";")
+        
+        val pulsarAuth: PulsarAuth =
+        try
+            // java.net.HttpCookie.parse parses the cookie string as a single cookie, so we need to split it first
+            val headerCookiesSeparated = metadata.get(Metadata.Key.of("cookie", Metadata.ASCII_STRING_MARSHALLER))
+                .split(";")
+                .map(_.trim)
+                .map(_ + ";")
 
-        val pulsarAuthCookie = headerCookiesSeparated
-            .flatMap(java.net.HttpCookie.parse(_).asScala)
-            .find(_.getName == "pulsar_auth")
-            .map(_.getValue)
-        val pulsarAuth = parsePulsarAuthCookie(pulsarAuthCookie).getOrElse(defaultPulsarAuth)
+            val pulsarAuthCookie = headerCookiesSeparated
+                .flatMap(java.net.HttpCookie.parse(_).asScala)
+                .find(_.getName == "pulsar_auth")
+                .map(_.getValue)
+
+            parsePulsarAuthCookie(pulsarAuthCookie).getOrElse(defaultPulsarAuth)
+        catch
+            case e: Throwable =>
+                defaultPulsarAuth
+
 
         var ctx = Context.current().withValue(RequestContext.pulsarAuth, pulsarAuth)
 
