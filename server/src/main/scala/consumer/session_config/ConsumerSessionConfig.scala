@@ -2,13 +2,13 @@ package consumer.session_config
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import _root_.consumer.start_from.{ConsumerSessionStartFrom, EarliestMessage}
-import _root_.consumer.topic.ConsumerSessionTopic
+import _root_.consumer.session_target.ConsumerSessionTarget
 import _root_.consumer.message_filter.MessageFilterChain
 import _root_.consumer.pause_trigger.ConsumerSessionPauseTriggerChain
 
 case class ConsumerSessionConfig(
     startFrom: ConsumerSessionStartFrom,
-    topics: Vector[ConsumerSessionTopic],
+    targets: Vector[ConsumerSessionTarget],
     messageFilterChain: MessageFilterChain,
     pauseTriggerChain: ConsumerSessionPauseTriggerChain
 )
@@ -17,7 +17,7 @@ object ConsumerSessionConfig:
     def fromPb(v: pb.ConsumerSessionConfig): ConsumerSessionConfig =
         ConsumerSessionConfig(
             startFrom = v.startFrom.map(ConsumerSessionStartFrom.fromPb).getOrElse(EarliestMessage()),
-            topics = v.topics.map(ConsumerSessionTopic.fromPb).toVector,
+            targets = v.targets.map(ConsumerSessionTarget.fromPb).toVector,
             messageFilterChain = v.messageFilterChain
                 .map(MessageFilterChain.fromPb)
                 .getOrElse(MessageFilterChain.empty),

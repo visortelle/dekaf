@@ -73,10 +73,20 @@ export const help = {
       </p>
     </div>
   ),
-  consumerSessionTopic: (
+  consumerSessionTarget: (
     <div>
       <p>
         Consumer Session Topic(s)
+      </p>
+    </div>
+  ),
+  coloringRule: (
+    <div>
+      <p>
+        <strong>Coloring Rule</strong> allows you to highlight messages that match a certain condition.
+      </p>
+      <p>
+        You can save it to <strong>Library</strong> and reuse later.
       </p>
     </div>
   ),

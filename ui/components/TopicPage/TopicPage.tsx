@@ -229,7 +229,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                     }
                   }
                 },
-                topics: [createNewTarget()],
+                targets: [createNewTarget()],
                 coloringRuleChain: {
                   type: 'value',
                   val: {
@@ -240,6 +240,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
                       type: 'coloring-rule-chain'
                     },
                     spec: {
+                      isEnabled: true,
                       coloringRules: []
                     }
                   }

@@ -4,6 +4,7 @@ import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 
 case class ManagedColoringRuleSpec(
+    isEnabled: Boolean,
     messageFilterChain: ManagedMessageFilterChainValOrRef,
     foregroundColor: String,
     backgroundColor: String
@@ -12,6 +13,7 @@ case class ManagedColoringRuleSpec(
 object ManagedColoringRuleSpec:
     def fromPb(v: pb.ManagedColoringRuleSpec): ManagedColoringRuleSpec =
         ManagedColoringRuleSpec(
+            isEnabled = v.isEnabled,
             messageFilterChain = ManagedMessageFilterChainValOrRef.fromPb(v.messageFilterChain.get),
             foregroundColor = v.foregroundColor,
             backgroundColor = v.backgroundColor
@@ -19,6 +21,7 @@ object ManagedColoringRuleSpec:
 
     def toPb(v: ManagedColoringRuleSpec): pb.ManagedColoringRuleSpec =
         pb.ManagedColoringRuleSpec(
+            isEnabled = v.isEnabled,
             messageFilterChain = Some(ManagedMessageFilterChainValOrRef.toPb(v.messageFilterChain)),
             foregroundColor = v.foregroundColor,
             backgroundColor = v.backgroundColor

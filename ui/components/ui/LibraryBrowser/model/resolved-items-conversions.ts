@@ -1,5 +1,5 @@
-import { ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTopicValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorValOrRef } from "./user-managed-items";
-import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTopic, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
+import { ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from "./user-managed-items";
+import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
 import { TopicSelector } from "../../../TopicPage/Messages/topic-selector/topic-selector";
 
 export function messageFilterFromValOrRef(v: ManagedMessageFilterValOrRef): MessageFilter {
@@ -74,12 +74,8 @@ export function consumerSessionStartFromFromValOrRef(v: ManagedConsumerSessionSt
   }
 }
 
-export function topicSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef, currentTopicFqn?: string): TopicSelector {
-  if (v.val === undefined) {
-    throw new Error('TopicSelector reference can\'t be converted to value');
-  }
-
-  const topicSelector = v.val.spec.topicSelector;
+export function topicSelectorFromManagedSpec(spec: ManagedTopicSelectorSpec, currentTopicFqn?: string): TopicSelector {
+  const topicSelector = spec.topicSelector;
 
   if (topicSelector.type === 'current-topic') {
     if (currentTopicFqn === undefined) {
@@ -92,6 +88,14 @@ export function topicSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef, curre
   return topicSelector;
 }
 
+export function topicSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef, currentTopicFqn?: string): TopicSelector {
+  if (v.val === undefined) {
+    throw new Error('TopicSelector reference can\'t be converted to value');
+  }
+
+  return topicSelectorFromManagedSpec(v.val.spec, currentTopicFqn);
+}
+
 export function coloringRuleFromValOrRef(v: ManagedColoringRuleValOrRef): ColoringRule {
   if (v.val === undefined) {
     throw new Error('Coloring rule reference can\'t be converted to value');
@@ -100,6 +104,7 @@ export function coloringRuleFromValOrRef(v: ManagedColoringRuleValOrRef): Colori
   const spec = v.val.spec;
 
   return {
+    isEnabled: spec.isEnabled,
     messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
     foregroundColor: spec.foregroundColor,
     backgroundColor: spec.backgroundColor
@@ -114,11 +119,12 @@ export function coloringRuleChainFromValOrRef(v: ManagedColoringRuleChainValOrRe
   const spec = v.val.spec;
 
   return {
+    isEnabled: spec.isEnabled,
     coloringRules: spec.coloringRules.map(coloringRuleFromValOrRef)
   }
 }
 
-export function consumerSessionTopicFromValOrRef(v: ManagedConsumerSessionTopicValOrRef, currentTopicFqn: string | undefined): ConsumerSessionTopic {
+export function consumerSessionTargetFromValOrRef(v: ManagedConsumerSessionTargetValOrRef, currentTopicFqn: string | undefined): ConsumerSessionTarget {
   if (v.val === undefined) {
     throw new Error('Consumer session topic reference can\'t be converted to value');
   }
@@ -165,7 +171,7 @@ export function consumerSessionConfigFromValOrRef(v: ManagedConsumerSessionConfi
   return {
     startFrom: consumerSessionStartFromFromValOrRef(spec.startFrom),
     messageFilterChain: messageFilterChainFromValOrRef(spec.messageFilterChain),
-    topics: spec.topics.map(spec => consumerSessionTopicFromValOrRef(spec, currentTopicFqn)),
+    targets: spec.targets.map(spec => consumerSessionTargetFromValOrRef(spec, currentTopicFqn)),
     coloringRuleChain: coloringRuleChainFromValOrRef(spec.coloringRuleChain),
     pauseTriggerChain: consumerSessionPauseTriggerChainFromValOrRef(spec.pauseTriggerChain)
   }

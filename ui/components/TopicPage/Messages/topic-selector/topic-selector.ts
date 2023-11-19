@@ -1,4 +1,4 @@
-export type RegexSubMode =
+export type RegexSubscriptionMode =
   | "all-topics"
   | "persistent-only"
   | "non-persistent-only";
@@ -12,7 +12,7 @@ export type NamespacedRegexTopicSelector = {
   type: "namespaced-regex-topic-selector";
   namespaceFqn: string;
   pattern: string;
-  regexSubscriptionMode: RegexSubMode;
+  regexSubscriptionMode: RegexSubscriptionMode;
 }
 
 export type TopicSelector = MultiTopicSelector | NamespacedRegexTopicSelector;

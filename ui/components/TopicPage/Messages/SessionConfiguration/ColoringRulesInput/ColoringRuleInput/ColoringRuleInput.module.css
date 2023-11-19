@@ -1,3 +1,15 @@
+.ColoringRuleInput {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 12rem;
+}
+
+.TopRow {
+  display: flex;
+  gap: 12rem;
+}
+
 .ColorPicker {
   width: 24rem;
   height: 24rem;
@@ -6,6 +18,7 @@
 .Colors {
   display: flex;
   gap: 12rem;
+  flex: 1;
 }
 
 .ColorsPreview {

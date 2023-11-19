@@ -56,13 +56,6 @@ enum SubscriptionType {
   SUBSCRIPTION_TYPE_KEY_SHARED = 4;
 }
 
-enum RegexSubscriptionMode {
-  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
-  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
-  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2;
-  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
-}
-
 enum DateTimeUnit {
   DATE_TIME_UNIT_UNSPECIFIED = 0;
   DATE_TIME_UNIT_YEAR = 1;
@@ -169,12 +162,14 @@ message ConsumerSessionPauseTriggerChain {
 }
 
 message ColoringRule {
+  bool is_enabled = 4;
   MessageFilterChain message_filter_chain = 1;
   string foreground_color = 2;
   string background_color = 3;
 }
 
 message ColoringRuleChain {
+  bool is_enabled = 2;
   repeated ColoringRule coloring_rules = 1;
 }
 
@@ -182,9 +177,17 @@ message MultiTopicSelector {
   repeated string topic_fqns = 1;
 }
 
+enum RegexSubscriptionMode {
+  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
+  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
+  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2;
+  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
+}
+
 message NamespacedRegexTopicSelector {
   string namespace_fqn = 1;
   string pattern = 2;
+  RegexSubscriptionMode regex_subscription_mode = 3;
 }
 
 message TopicSelector {
@@ -194,7 +197,7 @@ message TopicSelector {
   }
 }
 
-message ConsumerSessionTopic {
+message ConsumerSessionTarget {
   TopicSelector topic_selector = 1;
   MessageFilterChain message_filter_chain = 2;
   ColoringRuleChain coloring_rule_chain = 3;
@@ -202,7 +205,7 @@ message ConsumerSessionTopic {
 
 message ConsumerSessionConfig {
   ConsumerSessionStartFrom start_from = 1;
-  repeated ConsumerSessionTopic topics = 2;
+  repeated ConsumerSessionTarget targets = 2;
   MessageFilterChain message_filter_chain = 3;
   ConsumerSessionPauseTriggerChain pause_trigger_chain = 4;
   ColoringRuleChain coloring_rule_chain = 5;
@@ -307,6 +310,14 @@ message RunCodeResponse {
   google.protobuf.StringValue result = 2;
 }
 
+message ResolveTopicSelectorRequest {
+  TopicSelector topic_selector = 1;
+}
+message ResolveTopicSelectorResponse {
+  google.rpc.Status status = 1;
+  repeated string topic_fqns = 2;
+}
+
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
@@ -315,4 +326,5 @@ service ConsumerService {
   rpc Seek(SeekRequest) returns (SeekResponse);
   rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
+  rpc ResolveTopicSelector(ResolveTopicSelectorRequest) returns (ResolveTopicSelectorResponse);
 }

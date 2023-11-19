@@ -42,7 +42,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       <div className={s.ToolbarLeft}>
         <div className={s.Control}>
           <SmallButton
-            title={props.sessionState ? "Resume" : "Pause"}
+            title={props.sessionState ? "Start or Resume" : "Pause"}
             svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
             onClick={playButtonOnClick}
             type={'primary'}
@@ -52,7 +52,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.Control}>
           <SmallButton
-            title={"Stop and empty current session"}
+            title={"Stop and flush the current session loaded data"}
             svgIcon={resetIcon}
             onClick={() => props.onStopSession()}
             type={'danger'}

@@ -11,7 +11,7 @@ const AddButton: React.FC<AddButtonProps> = (props) => {
     <SmallButton
       svgIcon={addIcon}
       text={`Add${props.itemName ? ' ' + props.itemName : ''}`}
-      type="primary"
+      appearance='borderless-semitransparent'
       {...props}
     />
   );
