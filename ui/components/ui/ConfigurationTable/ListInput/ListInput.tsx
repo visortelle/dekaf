@@ -38,7 +38,7 @@ export type Editor<T> = {
 
 export type ListValue<T> = {
   value: T[];
-  renderItem: (value: T, i: number, isCollapsed: boolean) => React.ReactElement;
+  renderItem: (value: T, i: number, props: { isCollapsed: boolean, isDragging: boolean, isDraggingSomeItem: boolean }) => React.ReactElement;
   editor?: Editor<T>;
   getId: (value: T) => Id;
   shouldShowError?: (value: T) => boolean;
@@ -229,7 +229,7 @@ function SortableItem<T>(props: SortableItemProps<T>): ReactElement {
       `}
       ref={setNodeRef} style={style}
     >
-      {props.listProps.renderItem(props.value, props.index, isDraggingSomeItem || Boolean(props.isCollapsed))}
+      {props.listProps.renderItem(props.value, props.index, { isCollapsed: Boolean(props.isCollapsed), isDragging, isDraggingSomeItem })}
 
       <div className={s.Controls}>
         {props.listProps.isHasCollapsedRenderer && (
