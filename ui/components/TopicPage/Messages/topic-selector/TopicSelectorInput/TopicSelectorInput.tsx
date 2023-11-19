@@ -10,7 +10,7 @@ import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 import Input from '../../../../ui/Input/Input';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import * as Either from 'fp-ts/Either';
-import { RegexSubMode } from '../topic-selector';
+import { RegexSubscriptionMode } from '../topic-selector';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import TopicSelectorInfo from './TopicSelectorInfo/TopicSelectorInfo';
 import { topicSelectorFromManagedSpec } from '../../../../ui/LibraryBrowser/model/resolved-items-conversions';
@@ -179,7 +179,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
       {itemSpec.topicSelector.type === 'namespaced-regex-topic-selector' && (
         <>
           <FormItem>
-            <Select<RegexSubMode>
+            <Select<RegexSubscriptionMode>
               list={[
                 { type: 'item', title: 'All topics', value: 'all-topics' },
                 { type: 'item', title: 'Persistent topics', value: 'persistent-only' },

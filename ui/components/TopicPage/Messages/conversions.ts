@@ -34,7 +34,7 @@ import {
   TopicSelector,
   MultiTopicSelector,
   NamespacedRegexTopicSelector,
-  RegexSubMode,
+  RegexSubscriptionMode,
 } from './topic-selector/topic-selector';
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
@@ -181,7 +181,7 @@ export function multiTopicSelectorToPb(v: MultiTopicSelector): pb.MultiTopicSele
   return singleTopicSelectorPb;
 }
 
-export function regexSubscriptionModeFromPb(v: pb.RegexSubscriptionMode): RegexSubMode {
+export function regexSubscriptionModeFromPb(v: pb.RegexSubscriptionMode): RegexSubscriptionMode {
   switch (v) {
     case pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS:
       return 'all-topics';
@@ -194,7 +194,7 @@ export function regexSubscriptionModeFromPb(v: pb.RegexSubscriptionMode): RegexS
   }
 }
 
-export function regexSubscriptionModeToPb(v: RegexSubMode): pb.RegexSubscriptionMode {
+export function regexSubscriptionModeToPb(v: RegexSubscriptionMode): pb.RegexSubscriptionMode {
   switch (v) {
     case 'all-topics':
       return pb.RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS;
@@ -212,15 +212,16 @@ export function namespacedRegexTopicSelectorFromPb(v: pb.NamespacedRegexTopicSel
     type: 'namespaced-regex-topic-selector',
     namespaceFqn: v.getNamespaceFqn(),
     pattern: v.getPattern(),
-    regexSubscriptionMode: 'all-topics'
+    regexSubscriptionMode: regexSubscriptionModeFromPb(v.getRegexSubscriptionMode()),
   };
 }
 
 export function namespacedRegexTopicSelectorToPb(v: NamespacedRegexTopicSelector): pb.NamespacedRegexTopicSelector {
-  const namespacedRegexTopicSelectorPb = new pb.NamespacedRegexTopicSelector();
-  namespacedRegexTopicSelectorPb.setNamespaceFqn(v.namespaceFqn);
-  namespacedRegexTopicSelectorPb.setPattern(v.pattern);
-  return namespacedRegexTopicSelectorPb;
+  const selectorPb = new pb.NamespacedRegexTopicSelector();
+  selectorPb.setNamespaceFqn(v.namespaceFqn);
+  selectorPb.setPattern(v.pattern);
+  selectorPb.setRegexSubscriptionMode(regexSubscriptionModeToPb(v.regexSubscriptionMode));
+  return selectorPb;
 }
 
 export function topicSelectorFromPb(v: pb.TopicSelector): TopicSelector {

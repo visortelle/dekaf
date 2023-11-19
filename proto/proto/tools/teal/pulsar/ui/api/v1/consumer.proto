@@ -56,13 +56,6 @@ enum SubscriptionType {
   SUBSCRIPTION_TYPE_KEY_SHARED = 4;
 }
 
-enum RegexSubscriptionMode {
-  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
-  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
-  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2;
-  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
-}
-
 enum DateTimeUnit {
   DATE_TIME_UNIT_UNSPECIFIED = 0;
   DATE_TIME_UNIT_YEAR = 1;
@@ -184,9 +177,17 @@ message MultiTopicSelector {
   repeated string topic_fqns = 1;
 }
 
+enum RegexSubscriptionMode {
+  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
+  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
+  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2;
+  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
+}
+
 message NamespacedRegexTopicSelector {
   string namespace_fqn = 1;
   string pattern = 2;
+  RegexSubscriptionMode regex_subscription_mode = 3;
 }
 
 message TopicSelector {
