@@ -309,6 +309,14 @@ message RunCodeResponse {
   google.protobuf.StringValue result = 2;
 }
 
+message ResolveTopicSelectorRequest {
+  TopicSelector topic_selector = 1;
+}
+message ResolveTopicSelectorResponse {
+  google.rpc.Status status = 1;
+  repeated string topic_fqns = 2;
+}
+
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
@@ -317,4 +325,5 @@ service ConsumerService {
   rpc Seek(SeekRequest) returns (SeekResponse);
   rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
+  rpc ResolveTopicSelector(ResolveTopicSelectorRequest) returns (ResolveTopicSelectorResponse);
 }

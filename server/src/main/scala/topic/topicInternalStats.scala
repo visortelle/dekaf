@@ -3,7 +3,8 @@ package topic
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import com.tools.teal.pulsar.ui.topic.v1.topic as topicPb
 import org.apache.pulsar.client.admin.PulsarAdmin
-import scala.util.{Success, Failure, Try}
+import scala.jdk.CollectionConverters.*
+import scala.util.{Failure, Success, Try}
 
 type TopicInternalStatsPb = topicPb.PersistentTopicInternalStats | topicPb.PartitionedTopicInternalStats
 def getTopicInternalStatsPb(pulsarAdmin: PulsarAdmin, topic: String): Either[String, TopicInternalStatsPb] =
@@ -22,27 +23,31 @@ enum TopicPartitioning:
     case Partitioned, NonPartitioned
 
 def getIsPartitionedTopic(pulsarAdmin: PulsarAdmin, topicFqn: String): TopicPartitioning =
-    // XXX - Pulsar admin .lookup() is truthy both for partitioned and non-partitioned topics.
-    // Therefore, the order of lookups matters here.
     val isPartitioned =
         try {
-            pulsarAdmin.lookups().lookupPartitionedTopic(topicFqn)
-            true
+            pulsarAdmin.topics().getPartitionedTopicMetadata(topicFqn).partitions > 0
         } catch {
-            case _ => false
+            case _: Throwable => false
         }
     if isPartitioned then return TopicPartitioning.Partitioned
 
     val isNonPartitioned =
-        try {
-            pulsarAdmin.lookups().lookupTopic(topicFqn)
+        try
+            pulsarAdmin.topics().getStats(topicFqn)
             true
-        } catch {
-            case _ => false
+        catch {
+            case _: Throwable => false
         }
     if isNonPartitioned then return TopicPartitioning.NonPartitioned
+    throw new Exception(s"Topic \"$topicFqn\" not found")
 
-    throw new Exception(s"Topic \"${topicFqn}\" not found")
+def getTopicPartitions(pulsarAdmin: PulsarAdmin, topicFqn: String): Vector[String] =
+    val Array(topicPersistency, restFqn) = topicFqn.split("://")
+    val Array(tenant, namespace, topic) = restFqn.split("/")
+    val namespaceFqn = s"$tenant/$namespace"
+    val nonPartitionedTopics = pulsarAdmin.topics.getList(namespaceFqn).asScala.toVector
+    val partitionRegex = s"^$topicPersistency:\\/\\/$tenant/$namespace/$topic-partition-[0-9]+$$".r
+    nonPartitionedTopics.filter(t => partitionRegex.matches(t))
 
 def getNonPartitionedTopicInternalStats(pulsarAdmin: PulsarAdmin, topic: String): Either[String, PersistentTopicInternalStats] =
     try {

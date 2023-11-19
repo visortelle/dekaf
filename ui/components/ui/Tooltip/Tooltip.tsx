@@ -8,7 +8,7 @@ export const tooltipId = `pulsar-ui-react-tooltip`;
 const Tooltip: React.FC = () => {
   return createPortal(
     <div className={s.TooltipRoot}>
-      <ReactTooltip id={tooltipId} className={s.Tooltip} clickable />
+      <ReactTooltip id={tooltipId} className={s.Tooltip} clickable delayHide={100}/>
     </div>,
     document.body
   );

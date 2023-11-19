@@ -1,4 +1,4 @@
-import { ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorValOrRef } from "./user-managed-items";
+import { ManagedColoringRuleChainValOrRef, ManagedColoringRuleValOrRef, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionEventValOrRef, ManagedConsumerSessionPauseTriggerChainValOrRef, ManagedConsumerSessionStartFromValOrRef, ManagedConsumerSessionTargetValOrRef, ManagedDateTimeValOrRef, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef, ManagedTopicSelectorSpec, ManagedTopicSelectorValOrRef } from "./user-managed-items";
 import { ColoringRule, ColoringRuleChain, ConsumerSessionConfig, ConsumerSessionEvent, ConsumerSessionPauseTriggerChain, ConsumerSessionStartFrom, ConsumerSessionTarget, MessageFilter, MessageFilterChain, RelativeDateTime } from "../../../TopicPage/Messages/types";
 import { TopicSelector } from "../../../TopicPage/Messages/topic-selector/topic-selector";
 
@@ -74,12 +74,8 @@ export function consumerSessionStartFromFromValOrRef(v: ManagedConsumerSessionSt
   }
 }
 
-export function topicSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef, currentTopicFqn?: string): TopicSelector {
-  if (v.val === undefined) {
-    throw new Error('TopicSelector reference can\'t be converted to value');
-  }
-
-  const topicSelector = v.val.spec.topicSelector;
+export function topicSelectorFromManagedSpec(spec: ManagedTopicSelectorSpec, currentTopicFqn?: string): TopicSelector {
+  const topicSelector = spec.topicSelector;
 
   if (topicSelector.type === 'current-topic') {
     if (currentTopicFqn === undefined) {
@@ -90,6 +86,14 @@ export function topicSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef, curre
   }
 
   return topicSelector;
+}
+
+export function topicSelectorFromValOrRef(v: ManagedTopicSelectorValOrRef, currentTopicFqn?: string): TopicSelector {
+  if (v.val === undefined) {
+    throw new Error('TopicSelector reference can\'t be converted to value');
+  }
+
+  return topicSelectorFromManagedSpec(v.val.spec, currentTopicFqn);
 }
 
 export function coloringRuleFromValOrRef(v: ManagedColoringRuleValOrRef): ColoringRule {

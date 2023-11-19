@@ -114,7 +114,7 @@ function ListInput<T>(props: ListValue<T>): React.ReactElement {
     >
       <div className={s.Header}>
         <div className={s.HeaderItemName}>
-          <strong>{props.itemName === undefined ? '' : `${props.itemName}s`}: {props.value.length}</strong>
+          {props.itemName === undefined ? '' : `${props.itemName}s`}: <strong>{props.value.length}</strong>
         </div>
         <div className={s.HeaderControls}>
           {props.isHasCollapsedRenderer && (

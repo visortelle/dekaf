@@ -5,7 +5,7 @@ import s from './SessionConfiguration.module.css'
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
-import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionTargetValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
