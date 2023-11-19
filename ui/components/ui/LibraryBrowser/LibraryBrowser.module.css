@@ -1,0 +1,46 @@
+.LibraryBrowser {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.Content {
+  display: flex;
+  overflow: hidden;
+}
+
+.SearchEditor {
+  width: 360rem;
+  border-right: 1px solid var(--border-color);
+  padding: 12rem 24rem 48rem 24rem;
+  overflow: auto;
+}
+
+.SearchResults {
+  width: 480rem;
+  border-right: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+}
+
+.SearchResultsNothingToShow {
+  flex: 1;
+  padding: 12rem;
+}
+
+.LibraryItemEditor {
+  overflow: auto;
+  width: 500rem;
+}
+
+.Footer {
+  display: flex;
+  height: 64rem;
+  padding: 12rem;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  background-color: var(--surface-color);
+  border-top: 1px solid var(--border-color);
+  gap: 8rem;
+}

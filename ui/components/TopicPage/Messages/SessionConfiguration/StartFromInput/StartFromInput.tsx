@@ -1,173 +1,239 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import s from './StartFromInput.module.css'
 import Select, { List } from '../../../../ui/Select/Select';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
-import { StartFrom } from '../../types';
-import { QuickDate, quickDateToDate } from './quick-date';
+import { ConsumerSessionStartFrom } from '../../types';
 import Input from '../../../../ui/Input/Input';
-import SmallButton from '../../../../ui/SmallButton/SmallButton';
-import { timestampToDate } from './timestamp-to-date';
-import { GetTopicsInternalStatsResponse } from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
+import RelativeDateTimePicker from '../../../../ui/RelativeDateTimePicker/RelativeDateTimePicker';
+import { v4 as uuid } from 'uuid';
+import { useHover } from '../../../../app/hooks/use-hover';
+import { ManagedConsumerSessionStartFrom, ManagedConsumerSessionStartFromSpec, ManagedConsumerSessionStartFromValOrRef, ManagedDateTimeValOrRef, ManagedMessageIdValOrRef, ManagedRelativeDateTimeValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
+import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
+import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
+import { clone } from 'lodash';
 
 export type StartFromInputProps = {
-  value: StartFrom;
-  onChange: (value: StartFrom) => void;
+  value: ManagedConsumerSessionStartFromValOrRef;
+  onChange: (value: ManagedConsumerSessionStartFromValOrRef) => void;
+  libraryContext: LibraryContext;
   disabled?: boolean;
-  topicsInternalStats: GetTopicsInternalStatsResponse | undefined;
 };
 
-type StartFromVariants = StartFrom['type'] | QuickDate;
+type StartFromType = ConsumerSessionStartFrom['type'];
 
-const list: List<StartFromVariants> = [
+const list: List<StartFromType> = [
+  { type: 'item', title: 'Earliest message', value: 'earliestMessage' },
+  { type: 'item', title: 'Latest message', value: 'latestMessage' },
   {
-    type: 'group', title: 'Subscription position', items: [
-      { type: 'item', title: 'Latest', value: 'latest' },
-      { type: 'item', title: 'Earliest', value: 'earliest' },
-    ]
+    type: 'item',
+    title: 'Message with specific ID',
+    value: 'messageId'
   },
-  {
-    type: 'group', title: 'Specific message', items: [
-      {
-        type: 'item',
-        title: 'Message with specific id',
-        value: 'messageId'
-      },
-    ]
-  },
-  {
-    type: 'group',
-    title: 'Custom date',
-    items: [
-      { type: 'item', title: 'Date', value: 'date' },
-      { type: 'item', title: 'Timestamp', value: 'timestamp' },
-    ]
-  },
-  {
-    type: 'group',
-    title: 'Quick date',
-    items: [
-      { type: 'item', title: 'Now', value: 'now' },
-      { type: 'item', title: '5 minutes ago', value: '5-minutes-ago' },
-      { type: 'item', title: '15 minutes ago', value: '15-minutes-ago' },
-      { type: 'item', title: '30 minutes ago', value: '30-minutes-ago' },
-      { type: 'item', title: '1 hour ago', value: '1-hour-ago' },
-      { type: 'item', title: '3 hours ago', value: '3-hour-ago' },
-      { type: 'item', title: '6 hours ago', value: '6-hour-ago' },
-      { type: 'item', title: '12 hours ago', value: '12-hours-ago' },
-      { type: 'item', title: '24 hours ago', value: '24-hours-ago' },
-      { type: 'item', title: '2 days ago', value: 'last-2-days' },
-      { type: 'item', title: '7 days ago', value: '7-days-ago' },
-      { type: 'item', title: '30 days ago', value: '30-days-ago' },
-      { type: 'item', title: '90 days ago', value: '90-days-ago' },
-      { type: 'item', title: '6 months ago', value: '6-months-ago' },
-      { type: 'item', title: '1 year ago', value: '1-year-ago' },
-      { type: 'item', title: '2 years ago', value: '2-years-ago' },
-      { type: 'item', title: '5 years ago', value: 'last-5-years' },
-      { type: 'item', title: 'Yesterday', value: 'yesterday' },
-      { type: 'item', title: 'Day before yesterday', value: 'day-before-yesterday' },
-      { type: 'item', title: 'This day last week', value: 'this-day-last-week' },
-      { type: 'item', title: 'Previous week', value: 'previous-week' },
-      { type: 'item', title: 'Previous month', value: 'previous-month' },
-    ]
-  }
+  { type: 'item', title: 'Specific time', value: 'dateTime' },
+  { type: 'item', title: 'Relative time ago', value: 'relativeDateTime' },
+  { type: 'item', title: 'n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
+  { type: 'item', title: 'n-th message before Latest message', value: 'nthMessageBeforeLatest' }
 ];
 
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {
-  const [latestSelectedDate, setLatestSelectedDate] = React.useState<Date>(new Date());
+  const [hoverRef, isHovered] = useHover();
 
-  useEffect(() => {
-    switch (props.value.type) {
-      case 'date': setLatestSelectedDate(props.value.date); break;
-      case 'timestamp': setLatestSelectedDate(timestampToDate(props.value.ts) || latestSelectedDate); break;
-      case 'quickDate': setLatestSelectedDate(quickDateToDate(props.value.quickDate, latestSelectedDate)); break;
-    }
-  }, [props.value]);
+  const resolveResult = useManagedItemValue<ManagedConsumerSessionStartFrom>(props.value);
+  if (resolveResult.type !== 'success') {
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
+  }
 
-  const isHasPartitionedTopic = hasPartitionedTopic(props.topicsInternalStats);
+  const item = resolveResult.value;
+  const itemSpec = item.spec;
+
+  const onSpecChange = (spec: ManagedConsumerSessionStartFromSpec) => {
+    const newValue: ManagedConsumerSessionStartFromValOrRef = { ...props.value, val: { ...item, spec } };
+    props.onChange(newValue);
+  };
+
+  const onConvertToValue = () => {
+    const newValue: ManagedConsumerSessionStartFromValOrRef = { type: 'value', val: item };
+    props.onChange(newValue);
+  };
+
+  const worksBestWithNonPartitionedTopic = <div style={{ padding: '12rem', borderRadius: '8rem', marginTop: '8rem', background: 'var(--surface-color)' }}>Works best with a single non-partitioned topic.</div>;
 
   return (
-    <div className={s.StartFromInput}>
+    <div className={s.StartFromInput} ref={hoverRef}>
+      <LibraryBrowserPanel
+        itemToSave={item}
+        itemType='consumer-session-start-from'
+        onPick={(item) => props.onChange({
+          type: 'reference',
+          ref: item.metadata.id,
+          val: item as ManagedConsumerSessionStartFrom
+        })}
+        onSave={(item) => props.onChange({
+          type: 'reference',
+          ref: item.metadata.id,
+          val: item as ManagedConsumerSessionStartFrom
+        })}
+        isForceShowButtons={isHovered}
+        libraryContext={props.libraryContext}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+      />
       <div className={s.TypeSelect}>
-        <Select
+        <Select<ManagedConsumerSessionStartFromSpec['startFrom']['type']>
           list={list}
-          value={props.value.type === 'quickDate' ? props.value.quickDate : props.value.type}
+          value={itemSpec.startFrom.type}
           onChange={(v) => {
-            switch (v as StartFromVariants) {
-              case 'earliest': props.onChange({ type: 'earliest' }); return;
-              case 'latest': props.onChange({ type: 'latest' }); return;
-              case 'date': props.onChange({ type: 'date', date: latestSelectedDate }); return;
-              case 'timestamp': props.onChange({ type: 'timestamp', ts: new Date().getTime().toString() }); return;
-              case 'messageId': props.onChange({ type: 'messageId', hexString: "" }); return;
-              default: {
-                const relativeTo = new Date();
-                setLatestSelectedDate(relativeTo);
-                props.onChange({ type: 'quickDate', quickDate: v as QuickDate, relativeTo });
-              }; return;
+            switch (v as StartFromType) {
+              case 'earliestMessage': {
+                onSpecChange({ startFrom: { type: 'earliestMessage' } });
+                return;
+              }
+              case 'latestMessage': {
+                onSpecChange({ startFrom: { type: 'latestMessage' } });
+                return;
+              }
+              case 'nthMessageAfterEarliest': {
+                onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: 5 } });
+                return;
+              }
+              case 'nthMessageBeforeLatest': {
+                onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: 5 } });
+                return;
+              }
+              case 'messageId': {
+                const messageId: ManagedMessageIdValOrRef = {
+                  type: 'value',
+                  val: {
+                    metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'message-id' },
+                    spec: { hexString: '' }
+                  }
+                }
+                onSpecChange({ startFrom: { type: 'messageId', messageId } });
+                return;
+              };
+              case 'dateTime': {
+                const dateTime: ManagedDateTimeValOrRef = {
+                  type: 'value',
+                  val: {
+                    metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'date-time' },
+                    spec: { dateTime: new Date() }
+                  }
+                };
+                onSpecChange({ startFrom: { type: 'dateTime', dateTime } });
+                return;
+              }
+              case 'relativeDateTime': {
+                const relativeDateTime: ManagedRelativeDateTimeValOrRef = {
+                  type: 'value',
+                  val: {
+                    metadata: { id: uuid(), name: '', descriptionMarkdown: '', type: 'relative-date-time' },
+                    spec: {
+                      unit: 'hour',
+                      value: 1,
+                      isRoundedToUnitStart: false
+                    }
+                  }
+                };
+                onSpecChange({ startFrom: { type: 'relativeDateTime', relativeDateTime } });
+                return;
+              }
             }
           }}
           disabled={props.disabled}
         />
       </div>
-      <div className={s.AdditionalControls}>
-        {props.value.type === 'messageId' && (
-          isHasPartitionedTopic ? (
-            <div style={{ color: 'var(--accent-color-red)', marginTop: '2rem' }}>
-              <strong>Can be only applied on non-partitioned topics or individual partitions.</strong>
-            </div>
-          ) : (
-            <Input
-              value={props.value.hexString}
-              placeholder="08 c3 03 10 cd 04 20 00 30 01"
-              onChange={(v) => props.onChange({ type: 'messageId', hexString: v })}
-            />
-          )
-        )}
-      {props.value.type === 'date' && (
-        <DatetimePicker
-          value={props.value.date}
-          onChange={(v) => props.onChange({ type: 'date', date: v || new Date() })}
-          disabled={props.disabled}
-        />
+      {itemSpec.startFrom.type === 'nthMessageAfterEarliest' && (
+        <div className={s.AdditionalControls}>
+          <Input
+            value={itemSpec.startFrom.n.toString()}
+            type='number'
+            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageAfterEarliest', n: parseInt(v) } })}
+            inputProps={{ disabled: props.disabled, min: 0 }}
+            placeholder='n'
+          />
+          {worksBestWithNonPartitionedTopic}
+        </div>
       )}
-      {props.value.type === 'timestamp' && (
-        <Input
-          value={props.value.ts}
-          placeholder="UNIX timestamp in ms, or ISO-8601"
-          onChange={(v) => props.onChange({ type: 'timestamp', ts: v })}
-        />
+      {itemSpec.startFrom.type === 'nthMessageBeforeLatest' && (
+        <div className={s.AdditionalControls}>
+          <Input
+            value={itemSpec.startFrom.n.toString()}
+            type='number'
+            onChange={(v) => onSpecChange({ startFrom: { type: 'nthMessageBeforeLatest', n: parseInt(v) } })}
+            inputProps={{ disabled: props.disabled, min: 0 }}
+            placeholder='n'
+          />
+          {worksBestWithNonPartitionedTopic}
+        </div>
       )}
-      {props.value.type === 'quickDate' && (
-        <SmallButton
-          onClick={() => {
-            if (props.value.type !== 'quickDate') {
-              return;
-            }
+      {itemSpec.startFrom.type === 'messageId' && (
+        <div className={s.AdditionalControls}>
+          <Input
+            value={itemSpec.startFrom.messageId.val?.spec.hexString || ''}
+            placeholder="08 c3 03 10 cd 04 20 00 30 01"
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
 
-            const relativeTo = new Date();
-            setLatestSelectedDate(relativeTo);
-            props.onChange({ ...props.value, relativeTo });
-          }}
-          type='primary'
-          text='Actualize'
-        />
+              if (newItemSpec.startFrom.type !== 'messageId') {
+                return;
+              }
+
+              if (newItemSpec.startFrom.messageId.val === undefined) {
+                return;
+              }
+
+              newItemSpec.startFrom.messageId.val.spec.hexString = v;
+              onSpecChange(newItemSpec);
+            }}
+          />
+          {worksBestWithNonPartitionedTopic}
+        </div>
       )}
-    </div>
+      {itemSpec.startFrom.type === 'dateTime' && (
+        <div className={s.AdditionalControls}>
+          <DatetimePicker
+            value={itemSpec.startFrom.dateTime.val?.spec.dateTime}
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
+
+              if (newItemSpec.startFrom.type !== 'dateTime') {
+                return;
+              }
+
+              if (newItemSpec.startFrom.dateTime.val === undefined) {
+                return;
+              }
+
+              newItemSpec.startFrom.dateTime.val.spec.dateTime = v || new Date();
+              onSpecChange(newItemSpec);
+            }}
+            disabled={props.disabled}
+          />
+        </div>
+      )}
+      {itemSpec.startFrom.type === 'relativeDateTime' && (
+        <div className={s.AdditionalControls}>
+          <RelativeDateTimePicker
+            value={itemSpec.startFrom.relativeDateTime.val?.spec!}
+            onChange={(v) => {
+              const newItemSpec = clone(itemSpec);
+
+              if (newItemSpec.startFrom.type !== 'relativeDateTime') {
+                return;
+              }
+
+              if (newItemSpec.startFrom.relativeDateTime.val === undefined) {
+                return;
+              }
+
+              newItemSpec.startFrom.relativeDateTime.val.spec = v;
+              onSpecChange(newItemSpec);
+            }}
+          />
+        </div>
+      )}
     </div >
   );
-}
-
-function hasPartitionedTopic(topicsInternalStats: GetTopicsInternalStatsResponse | undefined): boolean {
-  if (topicsInternalStats === undefined) {
-    return false;
-  }
-
-  let result = false;
-  topicsInternalStats.getStatsMap().forEach((stats) => {
-    if (stats.getPartitionedTopicStats() !== undefined) {
-      result = true;
-    }
-  });
-  return result;
 }
 
 export default StartFromInput;

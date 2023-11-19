@@ -2,6 +2,7 @@ import React from "react";
 
 import * as Modals from "../app/contexts/Modals/Modals";
 import { BreadCrumbsAtPageTop, Crumb } from "../ui/BreadCrumbs/BreadCrumbs";
+import { v4 as uuid } from 'uuid';
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
 import Session from "./Messages/Messages";
@@ -14,6 +15,8 @@ import { useNavigate } from "react-router";
 import Producers from "./Producers/Producers";
 import Overview from "./Overview/Overview";
 import { matchPath, useLocation } from 'react-router-dom';
+import { PulsarTopicPersistency } from "../pulsar/pulsar-resources";
+import { createNewTarget } from "./create-new-target";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -30,7 +33,7 @@ export type TopicPageProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
 };
 
 const TopicPage: React.FC<TopicPageProps> = (props) => {
@@ -39,17 +42,17 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   const { pathname } = useLocation();
   let extraCrumbs: Crumb[] = [];
-  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.path, pathname)) {
+  if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'messages', value: 'Messages' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.path, pathname)) {
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.path, pathname)) {
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'producers', value: 'Producers' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.path + '*', pathname)) {
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '*', pathname)) {
     extraCrumbs = [{ type: 'link', id: 'schema', value: 'Schema' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.path, pathname)) {
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'policies', value: 'Policies' }]
-  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.path, pathname)) {
+  } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.path, pathname)) {
     extraCrumbs = [{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]
   }
 
@@ -57,76 +60,82 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   let buttons: ToolbarButtonProps[] = [
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
-        topicType: props.topicType,
-      }),
-      text: "Messages",
-      onClick: () => { },
-      type: "regular",
-    },
-    {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.overview._.get({
-        tenant: props.tenant,
-        namespace: props.namespace,
-        topic: props.topic,
-        topicType: props.topicType,
+        topicPersistency: props.topicPersistency,
       }),
       text: "Overview",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname))
     },
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
-        topicType: props.topicType,
+        topicPersistency: props.topicPersistency,
+      }),
+      text: "Messages",
+      onClick: () => { },
+      type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.path, pathname))
+    },
+    {
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
+        tenant: props.tenant,
+        namespace: props.namespace,
+        topic: props.topic,
+        topicPersistency: props.topicPersistency,
       }),
       text: "Subscriptions",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.path, pathname))
     },
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
-        topicType: props.topicType,
+        topicPersistency: props.topicPersistency,
       }),
       text: "Producers",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname))
     },
     {
-      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.schema._.get({
+      linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.get({
         tenant: props.tenant,
         namespace: props.namespace,
         topic: props.topic,
-        topicType: props.topicType,
+        topicPersistency: props.topicPersistency,
       }),
       text: "Schema",
       onClick: () => { },
       type: "regular",
+      active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '/*', pathname))
     },
   ];
 
   // Topic policies aren't supported for non-persistent topics yet (Pulsar v2.11.0)
-  if (props.topicType === "persistent") {
+  if (props.topicPersistency === "persistent") {
     buttons = buttons.concat([
       {
-        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.policies._.get({
+        linkTo: routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.get({
           tenant: props.tenant,
           namespace: props.namespace,
           topic: props.topic,
-          topicType: props.topicType,
+          topicPersistency: props.topicPersistency,
         }),
         text: "Policies",
         onClick: () => { },
         type: "regular",
         testId: "topic-policies-button",
+        active: Boolean(matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname))
       },
     ]);
   }
@@ -139,13 +148,13 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       onClick: () =>
         modals.push({
           id: "delete-topic",
-          title: `Delete topic`,
+          title: `Delete Topic`,
           content: (
             <DeleteDialog
               tenant={props.tenant}
               namespace={props.namespace}
               topic={props.topic}
-              topicType={props.topicType}
+              topicPersistency={props.topicPersistency}
               navigate={navigate}
             />
           ),
@@ -176,7 +185,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           {
             id: `topic-${props.topic}`,
             value: props.topic,
-            type: props.topicType === "persistent" ? "persistent-topic" : "non-persistent-topic",
+            type: props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic",
           },
           ...extraCrumbs
         ]}
@@ -186,10 +195,86 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
       {props.view.type === "messages" && (
         <Session
           key={key}
-          config={{
-            topicsSelector: { type: "by-names", topics: [`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`] },
-            startFrom: { type: "latest" },
-            messageFilter: { filters: {}, disabledFilters: [], mode: "all" },
+          libraryContext={{
+            pulsarResource: {
+              type: 'topic',
+              topicPersistency: props.topicPersistency,
+              tenant: props.tenant,
+              namespace: props.namespace,
+              topic: props.topic,
+            }
+          }}
+          initialConfig={{
+            type: 'value',
+            val: {
+              metadata: {
+                id: uuid(),
+                name: '',
+                descriptionMarkdown: '',
+                type: 'consumer-session-config'
+              },
+              spec: {
+                pauseTriggerChain: {
+                  type: 'value',
+                  val: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'consumer-session-pause-trigger-chain'
+                    },
+                    spec: {
+                      events: [],
+                      mode: 'all'
+                    }
+                  }
+                },
+                targets: [createNewTarget()],
+                coloringRuleChain: {
+                  type: 'value',
+                  val: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'coloring-rule-chain'
+                    },
+                    spec: {
+                      isEnabled: true,
+                      coloringRules: []
+                    }
+                  }
+                },
+                messageFilterChain: {
+                  type: 'value',
+                  val: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'message-filter-chain'
+                    },
+                    spec: {
+                      filters: [], mode: "all", isEnabled: true, isNegated: false
+                    }
+                  }
+                },
+                startFrom: {
+                  type: 'value',
+                  val: {
+                    metadata: {
+                      id: uuid(),
+                      name: '',
+                      descriptionMarkdown: '',
+                      type: 'consumer-session-start-from'
+                    },
+                    spec: {
+                      startFrom: { type: 'earliestMessage' }
+                    }
+                  }
+                }
+              },
+            }
           }}
         />
       )}
@@ -200,7 +285,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicPersistency={props.topicPersistency}
           view={{ type: "initial-screen" }}
         />
       )}
@@ -210,7 +295,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicPersistency={props.topicPersistency}
           view={{ type: "create-schema" }}
         />
       )}
@@ -220,21 +305,21 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           tenant={props.tenant}
           namespace={props.namespace}
           topic={props.topic}
-          topicType={props.topicType}
+          topicPersistency={props.topicPersistency}
           view={{ type: "view-schema", schemaVersion: props.view.schemaVersion }}
         />
       )}
       {props.view.type === "overview" && (
-        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
+        <Overview key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
       )}
       {props.view.type === "policies" && (
-        <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
+        <Policies key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
       )}
       {props.view.type === "producers" && (
-        <Producers key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
+        <Producers key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
       )}
       {props.view.type === "subscriptions" && (
-        <Subscriptions key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicType={props.topicType} />
+        <Subscriptions key={key} tenant={props.tenant} namespace={props.namespace} topic={props.topic} topicPersistency={props.topicPersistency} />
       )}
     </div>
   );

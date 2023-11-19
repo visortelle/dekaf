@@ -14,12 +14,15 @@ import Statistics from './Statistics/Statistics';
 import Td from '../../ui/SimpleTable/Td';
 import InternalStatistics from './InternalStatistics/InternalStatistics';
 import JsonView from "../../ui/JsonView/JsonView";
+import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
+import KeyValueEditor, { recordToIndexedKv } from '../../ui/KeyValueEditor/KeyValueEditor';
+import { mapToObject } from '../../../proto-utils/proto-utils';
 
 export type OverviewProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
 };
 
 type TabKey = 'stats' | 'stats-internal';
@@ -32,7 +35,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
   const i18n = I18n.useContext();
   const [activeTab, setActiveTab] = React.useState<TabKey>('stats');
 
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const { data: statsResponse, error: statsError, isLoading: isStatsLoading } = useSwr(
     swrKeys.pulsar.customApi.metrics.topicsStats._([topicFqn]),
@@ -108,8 +111,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
   const partitionsCount = partitionedTopicMetadata?.getPartitions()?.getValue();
   let properties = propertiesResponse &&
     propertiesResponse.getTopicPropertiesMap().get(topicFqn) &&
-    propertiesResponse.getTopicPropertiesMap().get(topicFqn)?.getPropertiesMap() ||
-    new Map<string, string>
+    propertiesResponse.getTopicPropertiesMap().get(topicFqn)?.getPropertiesMap();
 
   return (
     <div className={s.Overview}>
@@ -126,7 +128,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Persistency</td>
-              <Td>{props.topicType}</Td>
+              <Td>{props.topicPersistency}</Td>
             </tr>
             <tr className={st.Row}>
               <td className={st.HighlightedCell}>Partitioning</td>
@@ -153,10 +155,11 @@ const Overview: React.FC<OverviewProps> = (props) => {
       <div style={{ marginBottom: '24rem' }}>
         <strong>Properties</strong>
         <div className={s.JsonViewer}>
-          <JsonView
-            value={Object.fromEntries(properties.entries())}
-            height={'110rem'}
-            width={'100%'}
+          <KeyValueEditor
+            value={properties === undefined ? [] : recordToIndexedKv(mapToObject(properties))}
+            mode='readonly'
+            onChange={() => { }}
+            height='240rem'
           />
         </div>
       </div>
@@ -175,7 +178,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                       tenant={props.tenant}
                       namespace={props.namespace}
                       topic={props.topic}
-                      topicType={props.topicType}
+                      topicPersistency={props.topicPersistency}
                       topicsStatsRes={statsResponse}
                     />
                   </div>
@@ -189,7 +192,7 @@ const Overview: React.FC<OverviewProps> = (props) => {
                       tenant={props.tenant}
                       namespace={props.namespace}
                       topic={props.topic}
-                      topicType={props.topicType}
+                      topicPersistency={props.topicPersistency}
                     />
                   </div>
                 )

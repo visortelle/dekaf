@@ -2,7 +2,7 @@ import { MessageDescriptor } from '../types';
 import * as I18n from '../../../app/contexts/I18n/I18n';
 import Field from './Field/Field';
 import { routes } from '../../../routes';
-import { parseTopic } from '../../../pulsar/parse-topic';
+import { PulsarTopicResource, pulsarResourceFromFqn } from '../../../pulsar/pulsar-resources';
 
 export type FieldName =
   'messageId' |
@@ -86,10 +86,10 @@ export const ValueField: React.FC<FieldProps> = (props) => {
 
 export const TopicField: React.FC<FieldProps> = (props) => {
   const topic = props.message.topic === null ? undefined : props.message.topic;
-  const topicPath = props.message.topic === null ? undefined : parseTopic(props.message.topic);
-  const topicHref = topicPath === undefined ?
+  const topicResource = props.message.topic === null ? undefined : pulsarResourceFromFqn<PulsarTopicResource>(props.message.topic);
+  const topicHref = topicResource === undefined ?
     undefined :
-    routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: topicPath.tenant, namespace: topicPath.namespace, topic: topicPath.topic, topicType: topicPath.topicType });
+    routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: topicResource.tenant, namespace: topicResource.namespace, topic: topicResource.topic, topicPersistency: topicResource.topicPersistency });
 
   return <Field isShowTooltips={props.isShowTooltips} value={topic} valueHref={topicHref} tooltip={help.topic} />
 }

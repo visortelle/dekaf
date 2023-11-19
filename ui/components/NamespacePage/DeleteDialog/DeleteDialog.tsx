@@ -52,16 +52,16 @@ const DeleteNamespace: React.FC<DeleteNamespaceProps> = (props) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently delete the {props.namespace} namespace and all its topics.</div>
+          <div>It will permanently delete the <strong>{props.namespace}</strong> namespace and all its topics.</div>
         </div>
       }
       forceDelete={forceDelete}
       switchForceDelete={switchForceDelete}
-      forceDeleteInfo="Delete namespace forcefully by force deleting all topics under it."
+      forceDeleteInfo="Delete namespace forcefully by deleting all topics under it."
       onConfirm={deleteNamespace}
       onCancel={modals.pop}
       guard={props.namespace}

@@ -3,18 +3,11 @@ syntax = "proto3";
 package tools.teal.pulsar.ui.api.v1;
 
 import "google/protobuf/timestamp.proto";
-import "google/rpc/status.proto";
 import "google/protobuf/wrappers.proto";
-
-message MessageId {
-  int64 ledger_id = 1;
-  int64 entry_id = 2;
-  int32 batch_id = 3;
-  int32 partition_idx = 4;
-}
+import "google/rpc/status.proto";
 
 message Message {
-   // Message value as raw bytes.
+  // Message value as raw bytes.
   google.protobuf.BytesValue raw_value = 4;
 
   // Message value serialized as JSON.
@@ -63,10 +56,125 @@ enum SubscriptionType {
   SUBSCRIPTION_TYPE_KEY_SHARED = 4;
 }
 
-enum SubscriptionInitialPosition {
-  SUBSCRIPTION_INITIAL_POSITION_UNSPECIFIED = 0;
-  SUBSCRIPTION_INITIAL_POSITION_EARLIEST = 1;
-  SUBSCRIPTION_INITIAL_POSITION_LATEST = 2;
+enum DateTimeUnit {
+  DATE_TIME_UNIT_UNSPECIFIED = 0;
+  DATE_TIME_UNIT_YEAR = 1;
+  DATE_TIME_UNIT_MONTH = 2;
+  DATE_TIME_UNIT_WEEK = 3;
+  DATE_TIME_UNIT_DAY = 4;
+  DATE_TIME_UNIT_HOUR = 5;
+  DATE_TIME_UNIT_MINUTE = 6;
+  DATE_TIME_UNIT_SECOND = 7;
+}
+
+message EarliestMessage {}
+message LatestMessage {}
+
+message NthMessageBeforeLatest {
+  int64 n = 1;
+}
+
+message NthMessageAfterEarliest {
+  int64 n = 1;
+}
+
+message MessageId {
+  bytes message_id = 1;
+}
+
+message DateTime {
+  google.protobuf.Timestamp date_time = 1;
+}
+
+message RelativeDateTime {
+  int32 value = 1;
+  DateTimeUnit unit = 2;
+  bool is_rounded_to_unit_start = 3;
+}
+
+message ConsumerSessionStartFrom {
+  oneof start_from {
+    EarliestMessage start_from_earliest_message = 1;
+    LatestMessage start_from_latest_message = 2;
+    NthMessageAfterEarliest start_from_nth_message_after_earliest = 6;
+    NthMessageBeforeLatest start_from_nth_message_before_latest = 7;
+    MessageId start_from_message_id = 3;
+    DateTime start_from_date_time = 4;
+    RelativeDateTime start_from_relative_date_time = 5;
+  }
+}
+
+message ConsumerSessionEventMessagesProcessed {
+  int64 message_count = 1;
+}
+
+message ConsumerSessionEventMessagesDelivered {
+  int64 message_count = 1;
+}
+
+message ConsumerSessionEventBytesProcessed {
+  int64 byte_count = 1;
+}
+
+message ConsumerSessionEventBytesDelivered {
+  int64 byte_count = 1;
+}
+
+message ConsumerSessionEventMessageDecodeFailed {
+  int64 fail_count = 1;
+}
+
+message ConsumerSessionEventTimeElapsed {
+  int64 time_elapsed_ms = 1;
+}
+
+message ConsumerSessionEventTopicEndReached {}
+
+message ConsumerSessionEventUnexpectedErrorOccurred {}
+
+message ConsumerSessionEventMessageId {
+  MessageId message_id = 1;
+}
+
+message ConsumerSessionEvent {
+  oneof event {
+    ConsumerSessionEventMessagesProcessed event_messages_processed = 1;
+    ConsumerSessionEventMessagesDelivered event_messages_delivered = 2;
+    ConsumerSessionEventBytesProcessed event_bytes_processed = 3;
+    ConsumerSessionEventBytesDelivered event_bytes_delivered = 4;
+    ConsumerSessionEventMessageDecodeFailed event_message_decode_failed = 5;
+    ConsumerSessionEventTimeElapsed event_time_elapsed = 6;
+    ConsumerSessionEventTopicEndReached event_topic_end_reached = 7;
+    ConsumerSessionEventUnexpectedErrorOccurred event_unexpected_error_occurred = 8;
+    ConsumerSessionEventMessageId event_message_id = 9;
+  }
+}
+
+enum ConsumerSessionPauseTriggerChainMode {
+  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_UNSPECIFIED = 0;
+  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ALL = 1;
+  CONSUMER_SESSION_PAUSE_TRIGGER_CHAIN_MODE_ANY = 2;
+}
+
+message ConsumerSessionPauseTriggerChain {
+  repeated ConsumerSessionEvent events = 1;
+  ConsumerSessionPauseTriggerChainMode mode = 2;
+}
+
+message ColoringRule {
+  bool is_enabled = 4;
+  MessageFilterChain message_filter_chain = 1;
+  string foreground_color = 2;
+  string background_color = 3;
+}
+
+message ColoringRuleChain {
+  bool is_enabled = 2;
+  repeated ColoringRule coloring_rules = 1;
+}
+
+message MultiTopicSelector {
+  repeated string topic_fqns = 1;
 }
 
 enum RegexSubscriptionMode {
@@ -76,36 +184,36 @@ enum RegexSubscriptionMode {
   REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
 }
 
-message TopicsSelectorByNames {
-    repeated string topics = 1;
+message NamespacedRegexTopicSelector {
+  string namespace_fqn = 1;
+  string pattern = 2;
+  RegexSubscriptionMode regex_subscription_mode = 3;
 }
 
-message TopicsSelectorByRegex {
-  optional string pattern = 2;
-  optional RegexSubscriptionMode regex_subscription_mode = 3;
-}
-
-message TopicsSelector {
-  oneof topics_selector {
-    TopicsSelectorByNames by_names = 1;
-    TopicsSelectorByRegex by_regex = 2;
+message TopicSelector {
+  oneof topic_selector {
+    MultiTopicSelector multi_topic_selector = 1;
+    NamespacedRegexTopicSelector namespaced_regex_topic_selector = 2;
   }
 }
 
+message ConsumerSessionTarget {
+  TopicSelector topic_selector = 1;
+  MessageFilterChain message_filter_chain = 2;
+  ColoringRuleChain coloring_rule_chain = 3;
+}
+
+message ConsumerSessionConfig {
+  ConsumerSessionStartFrom start_from = 1;
+  repeated ConsumerSessionTarget targets = 2;
+  MessageFilterChain message_filter_chain = 3;
+  ConsumerSessionPauseTriggerChain pause_trigger_chain = 4;
+  ColoringRuleChain coloring_rule_chain = 5;
+}
+
 message CreateConsumerRequest {
-  TopicsSelector topics_selector = 100;
-  optional string consumer_name = 1;
-  optional string subscription_name = 2;
-  optional int32 priority_level = 3;
-  optional bool start_paused = 4;
-  optional SubscriptionMode subscription_mode = 5;
-  optional SubscriptionType subscription_type = 6;
-  optional SubscriptionInitialPosition subscription_initial_position = 7;
-  optional int64 ack_timeout_ms = 8;
-  optional int64 ack_timeout_tick_time_ms = 9;
-  optional int64 expire_time_of_incomplete_chunked_message_ms = 10;
-  optional int64 acknowledgment_group_time_ms = 11;
-  optional int64 negative_ack_redelivery_delay_ms = 12;
+  string consumer_name = 1;
+  ConsumerSessionConfig consumer_session_config = 2;
 }
 
 message CreateConsumerResponse {
@@ -120,8 +228,19 @@ message DeleteConsumerResponse {
   google.rpc.Status status = 1;
 }
 
+message JsMessageFilter {
+  string js_code = 1;
+}
+
+message BasicMessageFilter {}
+
 message MessageFilter {
-  string value = 1;
+  bool is_enabled = 10;
+  bool is_negated = 11;
+  oneof filter {
+    JsMessageFilter filter_js = 1;
+    BasicMessageFilter filter_basic = 2;
+  }
 }
 
 enum MessageFilterChainMode {
@@ -131,18 +250,18 @@ enum MessageFilterChainMode {
 }
 
 message MessageFilterChain {
-  map<string, MessageFilter> filters = 1;
+  bool is_enabled = 10;
+  bool is_negated = 11;
+  repeated MessageFilter filters = 1;
   MessageFilterChainMode mode = 2;
 }
 
 message ResumeRequest {
   string consumer_name = 1;
   bool include_consumer_stats = 2;
-  optional MessageFilterChain message_filter_chain = 3;
 }
 
-message ConsumerStats {
-}
+message ConsumerStats {}
 
 message ResumeResponse {
   optional google.rpc.Status status = 1;
@@ -191,6 +310,14 @@ message RunCodeResponse {
   google.protobuf.StringValue result = 2;
 }
 
+message ResolveTopicSelectorRequest {
+  TopicSelector topic_selector = 1;
+}
+message ResolveTopicSelectorResponse {
+  google.rpc.Status status = 1;
+  repeated string topic_fqns = 2;
+}
+
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
@@ -199,4 +326,5 @@ service ConsumerService {
   rpc Seek(SeekRequest) returns (SeekResponse);
   rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
+  rpc ResolveTopicSelector(ResolveTopicSelectorRequest) returns (ResolveTopicSelectorResponse);
 }

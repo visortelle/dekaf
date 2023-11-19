@@ -11,6 +11,7 @@ import { swrKeys } from '../../../swrKeys';
 import * as pb from '../../../../grpc-web/tools/teal/pulsar/ui/topicpolicies/v1/topicpolicies_pb';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import WithUpdateConfirmation from '../../../ui/ConfigurationTable/UpdateConfirmation/WithUpdateConfirmation';
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 const policy = 'maxMessageSize';
 
@@ -22,7 +23,7 @@ type PolicyValue = { type: 'inherited-from-namespace-config' } | {
 };
 
 export type FieldInputProps = {
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -34,7 +35,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { mutate } = useSWRConfig()
 
-  const swrKey = props.topicType === 'persistent' ?
+  const swrKey = props.topicPersistency === 'persistent' ?
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal }) :
     swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics.policies.policy({ tenant: props.tenant, namespace: props.namespace, policy, isGlobal: props.isGlobal });
 
@@ -42,7 +43,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
     swrKey,
     async () => {
       const req = new pb.GetMaxMessageSizeRequest();
-      req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+      req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
       req.setIsGlobal(props.isGlobal);
       const res = await topicPoliciesServiceClient.getMaxMessageSize(req, {});
       if (res === undefined) {
@@ -87,7 +88,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
         switch (value.type) {
           case 'inherited-from-namespace-config': {
             const req = new pb.RemoveMaxMessageSizeRequest();
-            req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+            req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
 
             const res = await topicPoliciesServiceClient.removeMaxMessageSize(req, {});
@@ -104,7 +105,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
           case 'specified-for-this-topic': {
             const req = new pb.SetMaxMessageSizeRequest();
-            req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+            req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
             req.setMaxMessageSize(Math.floor(value.sizeBytes));
 
@@ -121,7 +122,7 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
           }
           case 'infinite': {
             const req = new pb.SetMaxMessageSizeRequest();
-            req.setTopic(`${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`);
+            req.setTopic(`${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`);
             req.setIsGlobal(props.isGlobal);
             req.setMaxMessageSize(0);
 

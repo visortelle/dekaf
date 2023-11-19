@@ -22,6 +22,9 @@ import { remToPx } from '../../rem-to-px';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
 import collapseAllIcon from './collapse-all.svg';
+import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
+import { tooltipId } from '../../Tooltip/Tooltip';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -39,7 +42,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
-  const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(5000);
+  const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(10_000);
   const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
@@ -268,12 +271,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       const namespace = treePath.getNamespace(path)!;
 
       const topicName = node.name;
-      const topicType = node.type === 'persistent-topic' ? 'persistent' : 'non-persistent';
+      const topicPersistency: PulsarTopicPersistency = node.type === 'persistent-topic' ? 'persistent' : 'non-persistent';
 
       const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
         treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) &&
         treePath.areNodesEqual(
-          treePath.getTopic(props.selectedNodePath)!, { name: topicName, type: topicType === 'persistent' ? 'persistent-topic' : 'non-persistent-topic' }
+          treePath.getTopic(props.selectedNodePath)!, { name: topicName, type: topicPersistency === 'persistent' ? 'persistent-topic' : 'non-persistent-topic' }
         );
 
       nodeContent = (
@@ -283,7 +286,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           topic={topicName}
           leftIndent={leftIndent}
           onDoubleClick={toggleNodeExpanded}
-          topicType={topicType}
+          topicPersistency={topicPersistency}
           isActive={isActive}
           isFetchData={isExpanded || treePath.getTopic(filterPath)?.name === node.name}
         />
@@ -293,7 +296,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           isExpandable={false}
           isExpanded={false}
           onClick={() => undefined}
-          topicType={topicType}
+          topicPersistency={topicPersistency}
         />
       )
     }
@@ -311,13 +314,26 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     const pathStr = stringify(path);
 
-    return <div key={`tree-node-${pathStr}`} className={s.Node} onClick={handleNodeClick} title={node.path.map(p => p.name).join('/')}>
-      <div className={s.NodeContent}>
-        <span>&nbsp;</span>
-        <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
-        <span className={s.NodeTextContent}>{nodeContent}</span>
+    return (
+      <div
+        key={`tree-node-${pathStr}`}
+        className={s.Node}
+        onClick={handleNodeClick}
+        data-tooltip-id={tooltipId}
+        data-tooltip-delay-show={1000}
+        data-tooltip-html={renderToStaticMarkup(
+          <div>
+            <strong>Tree path:</strong> {node.path.map(p => p.name).join('/')}
+          </div>
+        )}
+      >
+        <div className={s.NodeContent}>
+          <span>&nbsp;</span>
+          <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
+          <span className={s.NodeTextContent}>{nodeContent}</span>
+        </div>
       </div>
-    </div>
+    );
   }
 
   const isTreeInStuckState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;

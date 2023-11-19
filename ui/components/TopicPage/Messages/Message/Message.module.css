@@ -1,11 +1,18 @@
 .Message {
   overflow: hidden;
-  padding: 4rem 0;
+  padding: 0rem 0;
   border-bottom: 1px solid var(--border-color);
 }
 
 .ShowMoreButton {
   display: none;
+}
+
+tr:has(> .Td:hover) {
+  outline: 2px solid var(--accent-color-blue);
+  z-index: 999;
+  position: relative;
+  cursor: pointer;
 }
 
 /* Fields */

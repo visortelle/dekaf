@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import {mutate, useSWRConfig} from 'swr';
+import { mutate, useSWRConfig } from 'swr';
 
 import * as Modals from '../../app/contexts/Modals/Modals';
 import * as Notifications from '../../app/contexts/Notifications';
@@ -53,11 +53,11 @@ const DeleteDialog: React.FC<DeleteTenantProps> = (props) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently delete the {props.tenant} tenant and all its namespaces.</div>
+          <div>It will permanently delete the <strong>{props.tenant}</strong> tenant and all its namespaces.</div>
         </div>
       }
       forceDelete={forceDelete}

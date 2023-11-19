@@ -44,11 +44,11 @@ const RevokeDialog = (props: Props) => {
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
-          <div>It will permanently delete the {props.role} role.</div>
+          <div>It will permanently revoke permissions for the <strong>{props.role}</strong> role.</div>
         </div>
       }
       onConfirm={revoke}

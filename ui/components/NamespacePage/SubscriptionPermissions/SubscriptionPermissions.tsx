@@ -11,7 +11,7 @@ import Input from '../../ui/Input/Input';
 import { H1, H3 } from '../../ui/H/H';
 import Button from '../../ui/Button/Button';
 import { swrKeys } from '../../swrKeys';
-import { mapToObject } from '../../../pbUtils/pbUtils';
+import { mapToObject } from '../../../proto-utils/proto-utils';
 
 import s from './SubscriptionPermissions.module.css';
 
@@ -282,7 +282,6 @@ const SubscriptionPermissions: React.FC<PermissionsProps> = (props) => {
             type='text'
             value={newPermission?.subscription || ''}
             onChange={(v) => setNewPermission({ ...newPermission, subscription: v })}
-            placeholder='subscription-on-produce'
             inputProps={{
               onKeyDown: (e) => {
                 if (

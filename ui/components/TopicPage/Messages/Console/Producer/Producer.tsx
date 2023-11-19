@@ -12,7 +12,7 @@ import { CreateProducerRequest, DeleteProducerRequest, MessageFormat, ProducerMe
 import { Code } from '../../../../../grpc-web/google/rpc/code_pb';
 import DatetimePicker from '../../../../ui/DatetimePicker/DatetimePicker';
 import CodeEditor from '../../../../ui/CodeEditor/CodeEditor';
-import KeyValueEditor from '../../../../ui/KeyValueEditor/KeyValueEditor';
+import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from '../../../../ui/KeyValueEditor/KeyValueEditor';
 
 import sendIcon from './icons/send.svg';
 
@@ -33,7 +33,7 @@ const Producer: React.FC<ProducerProps> = (props) => {
   const [key, setKey] = React.useState<string>(props.preset.key);
   const [valueType, setValueType] = React.useState<ValueType>('json');
   const [value, setValue] = React.useState<string>('');
-  const producerName = React.useRef<string>(`__pulsocat_` + nanoid());
+  const producerName = React.useRef<string>(`__dekaf_` + nanoid());
   const [eventTime, setEventTime] = React.useState<Date | undefined>(undefined);
   const [propertiesJsonMap, setPropertiesJsonMap] = React.useState<string>("{}");
   const { notifyError, notifySuccess } = Notifications.useContext();
@@ -128,6 +128,8 @@ const Producer: React.FC<ProducerProps> = (props) => {
       return;
     }
 
+    console.log('props.preset', props.preset);
+
     const createProducerReq: CreateProducerRequest = new CreateProducerRequest();
     createProducerReq.setProducerName(producerName.current);
     createProducerReq.setTopic(props.preset.topic);
@@ -183,8 +185,8 @@ const Producer: React.FC<ProducerProps> = (props) => {
             <div className={s.FormControl}>
               <strong>Properties</strong>
               <KeyValueEditor
-                value={JSON.parse(propertiesJsonMap)}
-                onChange={v => changePropertiesJsonMap(JSON.stringify(v) || '')}
+                value={recordToIndexedKv(JSON.parse(propertiesJsonMap))}
+                onChange={v => changePropertiesJsonMap(JSON.stringify(recordFromIndexedKv(v)) || '')}
                 height="320rem"
               />
             </div>

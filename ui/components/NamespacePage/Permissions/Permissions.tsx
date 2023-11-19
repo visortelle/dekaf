@@ -11,10 +11,12 @@ import Checkbox from '../../ui/Checkbox/Checkbox';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import Input from '../../ui/Input/Input';
 import { swrKeys } from '../../swrKeys';
-import { mapToObject } from '../../../pbUtils/pbUtils';
+import { mapToObject } from '../../../proto-utils/proto-utils';
 
 import s from './Permissions.module.css';
+import ts from '../../ui/SimpleTable/SimpleTable.module.css';
 import RevokeDialog from './RevokeDialog/RevokeDialog';
+import { H1 } from '../../ui/H/H';
 
 export const actionsList = ['produce', 'consume', 'functions', 'sources', 'sinks', 'packages'];
 export type AuthAction = typeof actionsList[number];
@@ -191,29 +193,32 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
 
   return (
     <div>
-      <div className={s.ConfigurationTable}>
-        <table className={s.Table}>
+      <div className={s.Title}>
+        <H1>Permissions</H1>
+      </div>
+      <div className={s.TableContainer}>
+        <table className={ts.Table}>
           <thead>
-            <tr className={s.Row}>
-              <th className={s.Cell} style={{ minWidth: '10ch' }}>Role</th>
-              <th className={s.Cell}>Produce</th>
-              <th className={s.Cell}>Consume</th>
-              <th className={s.Cell}>Functions</th>
-              <th className={s.Cell}>Sources</th>
-              <th className={s.Cell}>Sinks</th>
-              <th className={s.Cell}>Packages</th>
-              <th className={s.Cell} />
+            <tr className={ts.Row}>
+              <th className={ts.HeaderCell} style={{ minWidth: '10ch' }}>Role</th>
+              <th className={ts.HeaderCell}>Produce</th>
+              <th className={ts.HeaderCell}>Consume</th>
+              <th className={ts.HeaderCell}>Functions</th>
+              <th className={ts.HeaderCell}>Sources</th>
+              <th className={ts.HeaderCell}>Sinks</th>
+              <th className={ts.HeaderCell}>Packages</th>
+              <th className={ts.HeaderCell} />
             </tr>
           </thead>
           <tbody>
             {permissions && permissionsList?.map((permission, index) => (
-              <tr key={permission.role} className={s.Row}>
-                <td title={`${permission.role}`} className={`${s.Cell} ${s.RoleField}`}>
+              <tr key={permission.role} className={ts.Row}>
+                <td title={`${permission.role}`} className={`${ts.Cell} ${s.RoleField}`}>
                   {permission.role}
                 </td>
                 {actionsList.map(action => (
-                  <td key={action} className={`${s.Cell}`}>
-                    <div className={`${s.ButtonBlock}`}>
+                  <td key={action} className={`${ts.Cell}`}>
+                    <div className={`${s.CheckboxCell}`}>
                       <Checkbox
                         checked={permission.actions[action]}
                         onChange={(value) => {
@@ -234,7 +239,7 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                     </div>
                   </td>
                 ))}
-                <td className={`${s.Cell}`}>
+                <td className={`${ts.Cell}`}>
                   <div className={`${s.Buttons}`}>
                     <SmallButton
                       onClick={() => grant(permission)}
@@ -267,8 +272,8 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
             ))}
 
             {formValue &&
-              <tr className={s.Row}>
-                <td className={`${s.Cell} ${s.NewRoleInputCell}`}>
+              <tr className={ts.Row}>
+                <td className={`${ts.Cell} ${s.NewRoleInputCell}`}>
                   <Input
                     type='text'
                     value={formValue.role || ''}
@@ -281,11 +286,12 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                         }
                       }
                     }}
+                    appearance='no-borders'
                   />
                 </td>
                 {actionsList.map(action => (
-                  <td key={action} className={`${s.Cell}`}>
-                    <div className={`${s.ButtonBlock}`}>
+                  <td key={action} className={`${ts.Cell}`}>
+                    <div className={`${s.CheckboxCell}`}>
                       <Checkbox
                         checked={formValue.actions[action]}
                         onChange={(value) => {
@@ -298,16 +304,14 @@ const Permissions: React.FC<PermissionsProps> = (props) => {
                     </div>
                   </td>
                 ))}
-                <td className={`${s.Cell}`}>
-                  <div className={s.ButtonBlock}>
-                    <SmallButton
-                      onClick={() => grant(formValue, true)}
-                      type='primary'
-                      text='Grant'
-                      disabled={formValue.role.length < 1}
-                      className={s.Button}
-                    />
-                  </div>
+                <td className={`${ts.Cell}`}>
+                  <SmallButton
+                    onClick={() => grant(formValue, true)}
+                    type='primary'
+                    text='Grant'
+                    disabled={formValue.role.length < 1}
+                    className={s.Button}
+                  />
                 </td>
               </tr>
             }

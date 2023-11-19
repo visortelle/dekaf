@@ -1,3 +1,26 @@
+.Header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4rem;
+  position: relative;
+}
+
+.HeaderControls {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: -5rem;
+  right: 0;
+}
+
+.HeaderItemName {
+  font-size: 12rem;
+  opacity: 0.6;
+}
+
+
 .ListField {
   position: relative;
   background-color: #fff;
@@ -10,6 +33,9 @@
 .ListFieldValues {
   border: 1px solid var(--border-color);
   border-radius: 4rem;
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .ListFieldValue {
@@ -24,12 +50,21 @@
   text-overflow: ellipsis;
 }
 
+.ListFieldValue:hover {
+  box-shadow: 0 0 0 1px var(--accent-color-blue);
+  border-radius: 4rem;
+}
+
 .ListFieldValue:last-child {
   border-bottom: none;
 }
 
 .RemovableListFieldValue {
-  padding-right: 32rem;
+  padding-right: 64rem;
+}
+
+.RemovableListFieldValueWithoutPadding {
+  padding-right: 12rem !important;
 }
 
 .ListFieldRemoveValue {
@@ -57,51 +92,55 @@
 }
 
 .Editor {
-  margin-top: 18rem;
+  margin-top: 8rem;
 }
 
 .Editor:first-child {
   margin-top: 0;
 }
 
-.AddButton {
-  border: 0;
-  padding: 0;
-  font-size: 14rem;
+.BottomControls {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 8rem;
-  margin-left: auto;
-  height: 32rem;
-  padding: 0 12rem;
+}
 
-  background-color: var(--accent-color-blue);
+.AddButton {
+  margin-right: -12rem;
+}
+
+.Error {
+  margin-top: 4rem;
+  color: var(--accent-color-red);
+}
+
+.DraggingItem {
+  background-color: #fff;
+  box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.27);
+  z-index: 100;
+}
+
+.Controls {
+  position: absolute;
+  top: 4rem;
+  right: 8rem;
   display: flex;
   align-items: center;
-  justify-self: center;
-  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.27);
-  border-radius: 3rem;
-  line-height: 1;
-  color: #fff;
-  user-select: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.27);
+  justify-content: center;
 }
 
-.AddButton svg {
-  fill: #fff;
-  width: 14rem;
-  height: 14rem;
-}
-
-.AddButtonEnabled {
-  opacity: 1;
-}
-
-.AddButtonEnabled:hover {
+.ControlsIcon {
   opacity: 0.5;
+}
+
+.ControlsIcon svg {
+  width: 18rem;
+  height: 18rem;
+  fill: var(--text-color);
+}
+
+.ControlsIcon:hover {
   cursor: pointer;
-}
-
-.AddButtonDisabled {
-  opacity: 0.5;
-  border-bottom: none;
-  box-shadow: none;
+  opacity: 1;
+  transition: all 0.2s ease-in-out;
 }

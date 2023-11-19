@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package tools.teal.pulsar.ui.library.v1;
+
+import "google/rpc/status.proto";
+import "tools/teal/pulsar/ui/library/v1/resource_matchers.proto";
+import "tools/teal/pulsar/ui/library/v1/managed_items.proto";
+
+message LibraryItemMetadata {
+  string updated_at = 4;
+  repeated string tags = 8;
+  repeated ResourceMatcher available_for_contexts = 9;
+}
+
+message LibraryItem {
+  LibraryItemMetadata metadata = 1;
+  ManagedItem spec = 2;
+}
+
+message DeleteLibraryItemRequest {
+  string id = 1;
+}
+
+message DeleteLibraryItemResponse {
+  google.rpc.Status status = 1;
+}
+
+message SaveLibraryItemRequest {
+  LibraryItem item = 1;
+}
+
+message SaveLibraryItemResponse {
+  google.rpc.Status status = 1;
+}
+
+message GetLibraryItemRequest {
+  string id = 1;
+}
+
+message GetLibraryItemResponse {
+  google.rpc.Status status = 1;
+  LibraryItem item = 2;
+}
+
+message ListLibraryItemsRequest {
+  repeated ManagedItemType types = 1;
+  repeated string context_fqns = 2;
+  repeated string tags = 3;
+}
+
+message ListLibraryItemsResponse {
+  google.rpc.Status status = 1;
+  repeated LibraryItem items = 2; // resource spec is omitted in response to reduce it's size
+}
+
+service LibraryService {
+  rpc SaveLibraryItem(SaveLibraryItemRequest) returns (SaveLibraryItemResponse);
+  rpc DeleteLibraryItem(DeleteLibraryItemRequest) returns (DeleteLibraryItemResponse);
+  rpc GetLibraryItem(GetLibraryItemRequest) returns (GetLibraryItemResponse);
+  rpc ListLibraryItems(ListLibraryItemsRequest) returns (ListLibraryItemsResponse);
+}

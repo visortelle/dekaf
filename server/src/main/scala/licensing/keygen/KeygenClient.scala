@@ -35,7 +35,7 @@ class KeygenClient(
                     if err.errors.getOrElse(List()).exists(err => err.code.getOrElse("") == "MACHINE_LIMIT_EXCEEDED")
                     then
                         val errMessage =
-                            "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://pulsocat.com"
+                            "Your license restricts the number of application instances that can run simultaneously, and this limit has been surpassed. You can increase the limit at https://dekaf.com"
                         ZIO.fail(new Exception(errMessage))
                     else ZIO.fail(new Exception(err.errors.asJson.toString))
                 case Right(v) => ZIO.succeed(v)
@@ -79,12 +79,14 @@ class KeygenClient(
         result <- ZIO.fromEither(res.body)
     } yield result
 
-    def licenseHeartbeatPing(machineId: String, onFail: Task[Unit]): Task[Unit] = for {
+    def licenseHeartbeatPing(machineId: String): Task[Unit] = for {
         _ <- ZIO.logInfo("License session heartbeat ping.")
         httpBackend <- HttpClientZioBackend()
         res <- basicRequest
             .post(uri"$keygenApiBase/machines/$machineId/actions/ping-heartbeat")
             .headers(headers)
             .send(httpBackend)
-        _ <- onFail.unless(res.code.isSuccess)
+        _ <- ZIO
+            .fail(new Exception("License session heartbeat ping failed."))
+            .unless(res.code.isSuccess)
     } yield ()

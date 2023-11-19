@@ -1,3 +1,0 @@
-name: pulsocat
-runtime: nodejs
-description: A Kubernetes cluster that manages our core services.

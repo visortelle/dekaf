@@ -9,7 +9,7 @@ import { help } from './help';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
-import * as pbUtils from '../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../proto-utils/proto-utils';
 
 export type ColumnKey =
   'namespaceName' |
@@ -60,7 +60,7 @@ const Namespaces: React.FC<NamespacesProps> = (props) => {
             namespaceName: {
               title: 'Name',
               render: (de) => i18n.withVoidDefault(de.namespaceName, v => (
-                <Link to={`${routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: de.namespaceName })}`}>
+                <Link to={`${routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: de.namespaceName })}`}>
                   {v}
                 </Link>
               )),

@@ -10,6 +10,7 @@ export type ButtonProps = {
   testId?: string,
   size?: 'regular' | 'small',
   disabled?: boolean,
+  active?: boolean,
   buttonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>,
 }
 const Button: React.FC<ButtonProps> = (props) => {
@@ -26,6 +27,7 @@ const Button: React.FC<ButtonProps> = (props) => {
       className={`
         ${s.Button}
         ${props.disabled ? s.DisabledButton : ''}
+        ${props.active ? s.ActiveButton : ''}
         ${props.text ? '' : s.ButtonWithoutText}
         ${props.size === 'small' ? s.SmallSize : ''}
         ${typeClassName}

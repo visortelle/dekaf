@@ -1,6 +1,7 @@
 .Toggle {
   display: inline-flex;
   align-items: center;
+  padding: 0 5rem;
 }
 
 .Toggle:hover {
@@ -8,8 +9,8 @@
 }
 
 .Body {
-  height: 16rem;
-  width: 42rem;
+  height: 12rem;
+  width: 32rem;
   border-radius: 99999px;
   background-color: #aaa;
   border: 2rem solid #aaa;
@@ -34,23 +35,24 @@
 }
 
 .Label {
-  margin-left: 12rem;
+  margin-left: 10rem;
+  user-select: none;
 }
 
 .Circle {
   background-color: #fff;
   border-radius: 50%;
-  width: 20rem;
-  height: 20rem;
-  box-shadow: 1rem 1rem 2rem rgba(0, 0, 0, 0.4);
+  width: 18rem;
+  height: 18rem;
+  box-shadow: 1rem 1rem 4rem rgba(0, 0, 0, 0.5);
   position: relative;
   top: calc(-5rem);
-  left: calc(-6rem);
+  left: calc(-10rem);
   transform: translate(0, 0);
   transition: transform 0.1s ease-in-out;
 }
 
 .True .Circle {
-  transform: translate(32rem, 0);
+  transform: translate(28rem, 0);
   transition: transform 0.1s ease-in-out;
 }

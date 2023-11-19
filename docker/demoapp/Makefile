@@ -2,10 +2,6 @@
 build:
 	./build.sh
 
-.PHONY: push
-push:
-	./push.sh
-
-.PHONY: run
-run:
-	./run.sh
+.PHONY: create-multiarch-docker-manifest
+create-multiarch-docker-manifest:
+	./create-multiarch-docker-manifest.sh

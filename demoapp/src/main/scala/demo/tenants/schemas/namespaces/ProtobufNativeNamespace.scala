@@ -96,17 +96,17 @@ object ProtobufNativeNamespace:
                         ),
                     mkSchemaInfos = _ => List(protobufNativeMessageSchema.getSchemaInfo)
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"messages-1k-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Encoders.toProto(ProtobufNativeDemoMessage.random()),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
-                        ),
-                    mkSchemaInfos = _ => List(protobufNativeMessageSchema.getSchemaInfo)
-                )
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"messages-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => Encoders.toProto(ProtobufNativeDemoMessage.random()),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = _ => List(protobufNativeMessageSchema.getSchemaInfo)
+//                )
             )
 
         NamespacePlanGenerator.make(

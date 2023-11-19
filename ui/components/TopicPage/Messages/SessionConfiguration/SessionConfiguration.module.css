@@ -1,23 +1,42 @@
 .SessionConfiguration {
   flex: 1 1 auto;
-  overflow: auto;
+  overflow: hidden;
   display: flex;
+  flex-direction: column;
 }
 
-.LeftColumn,
-.RightColumn {
-  padding: 12rem;
+.Columns {
+  display: flex;
+  overflow: auto hidden;
+  flex: 1 0;
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-y: contain;
 }
 
-.LeftColumn {
-  width: 33.33333333333%;
+.GlobalConfig {
+  display: flex;
+  flex-direction: column;
+  gap: 32rem;
+  padding: 24rem 12rem;
+  overflow: hidden scroll;
+  height: 100%;
+  flex: 0 0 500rem;
 }
 
-.RightColumn {
-  width: 66.66666666666%;
+.TargetColumn {
+  flex: 0 0 500rem;
+  overflow: hidden scroll;
+  position: relative;
 }
 
-.ControlLabel {
-  font-weight: var(--font-weight-bold);
-  margin-bottom: 4rem;
+.LastColumn {
+  padding: 24rem 12rem;
+  padding-right: 24rem;
+}
+
+.DeleteTargetButton {
+  position: absolute;
+  top: 24rem;
+  right: 12rem;
+  z-index: 1;
 }

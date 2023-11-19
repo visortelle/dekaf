@@ -1,6 +1,6 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import SvgIcon from '../../../ui/SvgIcon/SvgIcon';
 import { H2 } from '../../../ui/H/H';
@@ -9,18 +9,19 @@ import closeIcon from './close.svg';
 
 import s from './Modals.module.css'
 
-type ModalStackEntry = {
+export type ModalStackEntry = {
   id: string,
   title: string,
   content: ReactNode,
   styleMode?: 'no-content-padding',
 }
 
-type ModalStack = ModalStackEntry[];
+export type ModalStack = ModalStackEntry[];
 
 export type Value = {
   stack: ModalStack,
   push: (entry: ModalStackEntry) => void,
+  update: (id: string, entry: ModalStackEntry) => void,
   pop: () => void,
   clear: () => void,
 };
@@ -28,6 +29,7 @@ export type Value = {
 const defaultValue: Value = {
   stack: [],
   push: () => undefined,
+  update: () => undefined,
   pop: () => undefined,
   clear: () => undefined,
 };
@@ -39,18 +41,27 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
 
   const pop = () => setValue((value) => ({ ...value, stack: value.stack.slice(0, value.stack.length - 1) }));
   const push = (entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: [...value.stack, entry] }));
+  const update = (id: string, entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: value.stack.map((e) => e.id === id ? entry : e) }));
   const clear = () => setValue((value) => ({ ...value, stack: [] }));
 
   const modalPortal = ReactDOM.createPortal(
-    <ModalElement
-      stack={value.stack}
-      onClose={pop}
-    />,
+    <>
+      <AnimatePresence>
+        {value.stack.map((entry, i) => (
+          <ModalElement
+            key={entry.id}
+            entry={entry}
+            onClose={pop}
+            isVisible={i === value.stack.length - 1}
+          />
+        ))}
+      </AnimatePresence>
+    </>,
     document.body
   );
 
   return (
-    <Context.Provider value={{ ...value, pop, push, clear }}>
+    <Context.Provider value={{ ...value, pop, push, clear, update: update }}>
       {modalPortal}
       {children}
     </Context.Provider>
@@ -58,28 +69,33 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
 };
 
 type ModalElementProps = {
-  stack: ModalStackEntry[];
+  entry: ModalStackEntry;
+  isVisible: boolean;
   onClose: () => void;
 }
 
 const ModalElement: React.FC<ModalElementProps> = (props) => {
-  const isVisible = props.stack.length > 0;
-  const rootRef = React.useRef<HTMLDivElement>(null);
+  const isVisible = props.isVisible;
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    rootRef.current?.focus();
-  }, [props.stack]);
-
-  const currentModal = props.stack[props.stack.length - 1];
+    if (props.isVisible) {
+      rootRef.current?.focus();
+    }
+  }, [props.isVisible]);
 
   return (
     <motion.div
       ref={rootRef}
       className={s.Root}
-      key={'modal'}
-      initial={{ y: '-100%' }}
-      animate={{ y: isVisible ? '0' : '-100%' }}
-      transition={{ duration: 0.33 }}
+      key={props.entry.id}
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{
+        opacity: isVisible ? 1 : 0,
+        scale: isVisible ? 1 : 0.5
+      }}
+      exit={{ opacity: 0, scale: 0.5 }}
+      transition={{ duration: 0.25, ease: 'easeInOut' }}
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
@@ -90,12 +106,12 @@ const ModalElement: React.FC<ModalElementProps> = (props) => {
       <div className={s.ContentContainer}>
         <div className={s.TopBar}>
           <div className={s.TopBarTitle}>
-            <H2>{currentModal?.title}</H2>
+            <H2>{props.entry.title}</H2>
           </div>
           <div className={s.TopBarClose} onClick={props.onClose}><SvgIcon svg={closeIcon} /></div>
         </div>
-        {isVisible && (
-          <div className={`${s.Content} ${currentModal.styleMode === 'no-content-padding' ? s.NoContentPadding : ''}`}>{currentModal.content}</div>
+        {(
+          <div className={`${s.Content} ${props.entry.styleMode === 'no-content-padding' ? s.NoContentPadding : ''}`}>{props.entry.content}</div>
         )}
       </div>
     </motion.div>

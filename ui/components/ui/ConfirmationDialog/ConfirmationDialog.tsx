@@ -8,13 +8,14 @@ import Checkbox from "../Checkbox/Checkbox";
 import Input from "../Input/Input";
 
 type Props = {
-  description: ReactNode;
+  content: ReactNode;
   onConfirm: () => void;
+  isConfirmDisabled?: boolean;
   onCancel: () => void;
-  switchForceDelete?: () => void;
-  forceDelete?: boolean;
-  forceDeleteInfo?: React.ReactNode;
-  guard?: string;
+  switchForceDelete?: () => void; // TECH_DEBT_SMALL: remove this property
+  forceDelete?: boolean; // TECH_DEBT_SMALL: remove this property
+  forceDeleteInfo?: React.ReactNode; // TECH_DEBT_SMALL: remove this property
+  guard?: string; // TECH_DEBT_SMALL: rename ???
   type?: 'normal' | 'danger',
 }
 
@@ -26,7 +27,7 @@ const ConfirmationDialog = (props: Props) => {
   return (
     <DefaultProvider>
       <div className={s.ConfirmationDialog}>
-        {props.description}
+        {props.content}
 
         {props.guard && (
           <div className={`${s.Guard}`}>
@@ -56,7 +57,7 @@ const ConfirmationDialog = (props: Props) => {
             type={props.type === 'danger' ? 'danger': 'primary'}
             text={`Confirm`}
             onClick={() => props.onConfirm()}
-            disabled={props.guard !== undefined && props.guard !== guard}
+            disabled={(props.guard !== undefined && props.guard !== guard) || props.isConfirmDisabled}
             testId="confirmation-dialog-confirm-button"
           />
         </div>

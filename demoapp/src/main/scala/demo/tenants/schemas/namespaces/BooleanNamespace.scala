@@ -20,17 +20,17 @@ object BooleanNamespace:
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"trues-1k-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(1.toByte),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"trues-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => Array(1.toByte),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
@@ -41,17 +41,17 @@ object BooleanNamespace:
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"falses-1k-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => Array(0.toByte),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"falses-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => Array(0.toByte),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
@@ -62,19 +62,19 @@ object BooleanNamespace:
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"tic-tac-1k-mps",
-                    mkProducersCount = _ => 1,
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload =
-                                _ => messageIndex => if messageIndex % 2 == 0 then Array(1.toByte) else Array(0.toByte),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                ),
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"tic-tac-100-mps",
+//                    mkProducersCount = _ => 1,
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload =
+//                                _ => messageIndex => if messageIndex % 2 == 0 then Array(1.toByte) else Array(0.toByte),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                ),
                 TopicPlanGenerator.make(
                     mkTenant = () => tenantName,
                     mkNamespace = () => namespaceName,
@@ -85,17 +85,17 @@ object BooleanNamespace:
                         ),
                     mkSchemaInfos = mkSchemaInfos
                 ),
-                TopicPlanGenerator.make(
-                    mkTenant = () => tenantName,
-                    mkNamespace = () => namespaceName,
-                    mkName = _ => s"random-1k-mps",
-                    mkProducerGenerator = _ =>
-                        ProducerPlanGenerator.make(
-                            mkPayload = _ => _ => if faker.bool().bool then Array(1.toByte) else Array(0.toByte),
-                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(1))
-                        ),
-                    mkSchemaInfos = mkSchemaInfos
-                )
+//                TopicPlanGenerator.make(
+//                    mkTenant = () => tenantName,
+//                    mkNamespace = () => namespaceName,
+//                    mkName = _ => s"random-100-mps",
+//                    mkProducerGenerator = _ =>
+//                        ProducerPlanGenerator.make(
+//                            mkPayload = _ => _ => if faker.bool().bool then Array(1.toByte) else Array(0.toByte),
+//                            mkSchedule = _ => Schedule.fixed(Duration.fromMillis(10))
+//                        ),
+//                    mkSchemaInfos = mkSchemaInfos
+//                )
             )
 
         NamespacePlanGenerator.make(

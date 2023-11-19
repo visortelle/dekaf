@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import s from './SubscriptionsCursors.module.css'
 import { CursorStats, GetTopicsInternalStatsResponse, ManagedLedgerInternalStats, TopicInternalStats } from '../../../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
-import { SessionConfig, SessionState } from '../../types';
+import { ConsumerSessionConfig, SessionState } from '../../types';
 import SubscriptionCursor, { SubscriptionCursorProps, Cursor } from './SubscriptionCursor/SubscriptionCursor';
 
 type TopicName = string;
@@ -18,7 +18,7 @@ type SubscriptionsCursorStats = Record<SubscriptionName, CursorStats>
 
 export type SubscriptionsCursorsProps = {
   sessionKey: number;
-  sessionConfig: SessionConfig;
+  sessionConfig: ConsumerSessionConfig;
   selector: CursorSelector;
   sessionState: SessionState;
   sessionSubscriptionName: string;
@@ -32,28 +32,6 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
   const topics = useMemo(() => Object.keys(props.selector), [props.selector]);
 
   useEffect(() => {
-    if (props.sessionState !== 'awaiting-initial-cursor-positions' || props.topicsInternalStats === undefined) {
-      return;
-    }
-
-    if (props.sessionConfig.topicsSelector.type !== 'by-names') {
-      props.onSessionStateChange('got-initial-cursor-positions');
-      return;
-    }
-
-    const gotInitialCursorsPositions = props.sessionConfig.topicsSelector.topics.every(topic => {
-      if (props.topicsInternalStats === undefined) {
-        return;
-      }
-
-      const hasCursor = getCursorForSubscription(props.topicsInternalStats.getStatsMap(), topic, { type: 'any-partition' }, props.sessionSubscriptionName);
-      return hasCursor;
-    });
-
-    if (gotInitialCursorsPositions) {
-      setSessionStartStats(props.topicsInternalStats.getStatsMap());
-      props.onSessionStateChange('got-initial-cursor-positions');
-    }
   }, [props.topicsInternalStats, props.sessionState, props.sessionConfig]);
 
   const statsMapPb = props.topicsInternalStats?.getStatsMap();
@@ -318,7 +296,7 @@ function getCursorForSubscription(
   if (partitionSelector.type === 'any-partition') {
     const nonPartitionedTopicCursor = stats.get(topic)?.getTopicStats()?.getManagedLedgerInternalStats()?.getCursorsMap()?.get(subscription);
     if (nonPartitionedTopicCursor !== undefined) {
-      return  nonPartitionedTopicCursor;
+      return nonPartitionedTopicCursor;
     }
 
     const partitions = stats.get(topic)?.getPartitionedTopicStats()?.getPartitionsMap();

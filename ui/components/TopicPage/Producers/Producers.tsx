@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import * as pb from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import Table from '../../ui/Table/Table';
 import { help } from './help';
+import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
 export type ColumnKey =
   'producerName' |
@@ -41,14 +42,14 @@ export type ProducersProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
 };
 const Producers: React.FC<ProducersProps> = (props) => {
   const { topicServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
   const i18n = I18n.useContext();
 
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const dataLoaderCacheKey = [`producers-${topicFqn}`];
   const dataLoader = async () => {

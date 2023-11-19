@@ -18,9 +18,10 @@ import { H1 } from "../../../ui/H/H";
 import Policies from "../Policies/Policies";
 import Pre from "../../../ui/Pre/Pre";
 import HelpIcon from "../../../ui/ConfigurationTable/HelpIcon/HelpIcon";
+import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
 
 export type CreateSchemaProps = {
-  topicType: "persistent" | "non-persistent";
+  topicPersistency: PulsarTopicPersistency;
   tenant: string;
   namespace: string;
   topic: string;
@@ -46,7 +47,7 @@ type Schema = {
 const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const { schemaServiceClient } = GrpcClient.useContext();
   const { notifySuccess, notifyError } = Notifications.useContext();
-  const topicFqn = `${props.topicType}://${props.tenant}/${props.namespace}/${props.topic}`;
+  const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
   const [schema, setSchema] = useState<Schema>({
     type: props.defaultSchemaType,

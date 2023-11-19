@@ -75,7 +75,7 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
 
   return (
     <Link
-      to={routes.tenants.tenant.namespaces._.get({ tenant: props.tenant })}
+      to={routes.tenants.tenant.overview._.get({ tenant: props.tenant })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
@@ -163,7 +163,7 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 
   return (
     <Link
-      to={routes.tenants.tenant.namespaces.namespace.topics._.get({ tenant: props.tenant, namespace: props.namespace })}
+      to={routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: props.namespace })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
@@ -177,7 +177,7 @@ export type PulsarTopicProps = {
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: 'persistent' | 'non-persistent';
   leftIndent: string;
   onDoubleClick: () => void;
   isActive: boolean;
@@ -188,7 +188,7 @@ export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
 
   return (
     <Link
-      to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({ tenant: props.tenant, namespace: props.namespace, topic: topicName, topicType: props.topicType })}
+      to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: topicName, topicPersistency: props.topicPersistency })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}

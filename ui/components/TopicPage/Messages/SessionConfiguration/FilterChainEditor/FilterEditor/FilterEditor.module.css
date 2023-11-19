@@ -1,0 +1,5 @@
+.Controls {
+  display: flex;
+  gap: 6rem;
+  align-items: center;
+}

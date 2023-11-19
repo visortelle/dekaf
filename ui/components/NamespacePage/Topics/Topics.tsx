@@ -11,7 +11,7 @@ import { partition, uniq } from 'lodash';
 import { help } from './help';
 import Link from '../../ui/Link/Link';
 import { routes } from '../../routes';
-import * as pbUtils from '../../../pbUtils/pbUtils';
+import * as pbUtils from '../../../proto-utils/proto-utils';
 import {
   GetTopicPropertiesResponse,
   GetTopicsStatsResponse,
@@ -19,6 +19,7 @@ import {
   TopicProperties,
   TopicStats
 } from "../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
+import {customTopicsNamesSort} from "./sorting";
 
 export type ColumnKey =
   'topicName' |
@@ -60,7 +61,8 @@ type DataEntry = {
   name: string,
   partitioning: 'partitioned' | 'non-partitioned' | 'partition',
   persistency: 'persistent' | 'non-persistent',
-}
+};
+
 type LazyDataEntry = {
   stats: pb.TopicStats,
   partitionedTopicMetadata?: pb.PartitionedTopicMetadata,
@@ -181,26 +183,26 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 title: 'Name',
                 render: (de) => (
                   <Link
-                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.messages._.get({
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistency,
+                      topicPersistency: de.persistency,
                     })}
                   >
                     {de.name}
                   </Link>
                 ),
-                sortFn: (a, b) => a.data.name.localeCompare(b.data.name, 'en', { numeric: true }),
+                sortFn: (a, b) => customTopicsNamesSort(a.data.name, b.data.name),
                 filter: {
                   descriptor: {
                     type: 'string',
-                    defaultValue: { type: 'string', value: '' }
+                    defaultValue: {type: 'string', value: ''}
                   },
                   testFn: (de, _, filterValue) => {
                     if (filterValue.type !== 'string') {
                       return true
-                    };
+                    }
 
                     return de.name.toLowerCase().includes(filterValue.value.toLowerCase());
                   },
@@ -216,11 +218,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 isLazy: true,
                 render: (de, ld) => i18n.withVoidDefault(ld?.stats.getPublishersList()?.length, v => (
                   <Link
-                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.producers._.get({
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.get({
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistency,
+                      topicPersistency: de.persistency,
                     })}
                   >
                     {v}
@@ -232,11 +234,11 @@ const Topics: React.FC<TopicsProps> = (props) => {
                 isLazy: true,
                 render: (de, ld) => i18n.withVoidDefault(ld?.stats.getSubscriptionsMap()?.getLength(), v => (
                   <Link
-                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicType.topic.subscriptions._.get({
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.get({
                       tenant: props.tenant,
                       namespace: props.namespace,
                       topic: de.name,
-                      topicType: de.persistency,
+                      topicPersistency: de.persistency,
                     })}
                   >
                     {v}

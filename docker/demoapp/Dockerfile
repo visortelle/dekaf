@@ -30,10 +30,10 @@ RUN cp ./demoapp/config.yaml /demoapp/
 
 FROM ghcr.io/graalvm/graalvm-community:20.0.2
 
-RUN useradd --user-group --system --create-home --no-log-init pulsocat
-USER pulsocat
+RUN useradd --user-group --system --create-home --no-log-init dekaf
+USER dekaf
 WORKDIR /workdir
 
-COPY --from=builder --chown=pulsocat:pulsocat /demoapp .
+COPY --from=builder --chown=dekaf:dekaf /demoapp .
 
-ENTRYPOINT [ "/workdir/bin/pulsocat" ]
+ENTRYPOINT [ "/workdir/bin/demoapp" ]

@@ -18,7 +18,6 @@
 .ContentContainer {
   border-radius: 12rem;
   overflow: hidden;
-  min-width: 480rem;
   box-shadow: 4rem 4rem 8rem rgba(0, 0, 0, 0.27);
   background-color: #fff;
 }
@@ -26,13 +25,13 @@
 .Content {
   padding: 12rem 24rem;
   max-height: calc(100vh - 96rem);
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-y: contain;
 }
 
 .TopBar {
-  height: 80rem;
+  height: 72rem;
   background-color: #fff;
   display: flex;
   align-items: center;

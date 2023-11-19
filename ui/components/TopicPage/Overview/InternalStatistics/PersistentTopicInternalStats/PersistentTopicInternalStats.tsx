@@ -5,13 +5,14 @@ import Ledgers from './ManagedLedgerInternalStats/Ledgers/Ledgers';
 import ManagedLedgerInternalStats from './ManagedLedgerInternalStats/ManagedLedgerInternalStats';
 import { H3 } from '../../../../ui/H/H';
 import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
+import { PulsarTopicPersistency } from '../../../../pulsar/pulsar-resources';
 
 export type PersistentTopicInternalStatsProps = {
   stats: pb.PersistentTopicInternalStats;
   tenant: string;
   namespace: string;
   topic: string;
-  topicType: 'persistent' | 'non-persistent';
+  topicPersistency: PulsarTopicPersistency;
 };
 
 const PersistentTopicInternalStats: React.FC<PersistentTopicInternalStatsProps> = (props) => {
@@ -31,7 +32,7 @@ const PersistentTopicInternalStats: React.FC<PersistentTopicInternalStatsProps> 
             tenant={props.tenant}
             namespace={props.namespace}
             topic={props.topic}
-            topicType={props.topicType}
+            topicPersistency={props.topicPersistency}
           />
         </div>
       )}
@@ -40,7 +41,7 @@ const PersistentTopicInternalStats: React.FC<PersistentTopicInternalStatsProps> 
         <div className={s.SectionTitle}>
           <H3>Schema Ledgers</H3>
         </div>
-        <div className={s.SchemaLedgers} style={schemaLedgers.length === 0 ? { height: 'auto'} : undefined}>
+        <div className={s.SchemaLedgers} style={schemaLedgers.length === 0 ? { height: 'auto' } : undefined}>
           <Ledgers ledgers={schemaLedgers} />
         </div>
       </div>
