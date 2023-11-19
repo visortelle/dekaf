@@ -6,21 +6,21 @@ import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-cont
 import FilterChainEditor from '../FilterChainEditor/FilterChainEditor';
 import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
-import { ManagedConsumerSessionTopic, ManagedConsumerSessionTopicSpec, ManagedConsumerSessionTopicValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedConsumerSessionTarget, ManagedConsumerSessionTargetSpec, ManagedConsumerSessionTargetValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import ColoringRuleInput from '../ColoringRulesInput/ColoringRuleInput/ColoringRuleInput';
 import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
 
 export type SessionTopicInputProps = {
-  value: ManagedConsumerSessionTopicValOrRef;
-  onChange: (v: ManagedConsumerSessionTopicValOrRef) => void;
+  value: ManagedConsumerSessionTargetValOrRef;
+  onChange: (v: ManagedConsumerSessionTargetValOrRef) => void;
   libraryContext: LibraryContext;
 };
 
 const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
-  const resolveResult = useManagedItemValue<ManagedConsumerSessionTopic>(props.value);
+  const resolveResult = useManagedItemValue<ManagedConsumerSessionTarget>(props.value);
 
   if (resolveResult.type !== 'success') {
     return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
@@ -29,13 +29,13 @@ const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: ManagedConsumerSessionTopicSpec) => {
-    const newValue: ManagedConsumerSessionTopicValOrRef = { ...props.value, val: { ...item, spec } };
+  const onSpecChange = (spec: ManagedConsumerSessionTargetSpec) => {
+    const newValue: ManagedConsumerSessionTargetValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: ManagedConsumerSessionTopicValOrRef = { type: 'value', val: item };
+    const newValue: ManagedConsumerSessionTargetValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
@@ -48,12 +48,12 @@ const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
           onPick={(item) => props.onChange({
             type: 'reference',
             ref: item.metadata.id,
-            val: item as ManagedConsumerSessionTopic
+            val: item as ManagedConsumerSessionTarget
           })}
           onSave={(item) => props.onChange({
             type: 'reference',
             ref: item.metadata.id,
-            val: item as ManagedConsumerSessionTopic
+            val: item as ManagedConsumerSessionTarget
           })}
           isForceShowButtons={isHovered}
           libraryContext={props.libraryContext}

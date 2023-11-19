@@ -4,17 +4,20 @@ import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 
 case class ManagedColoringRuleChainSpec(
+    isEnabled: Boolean,
     coloringRules: Vector[ManagedColoringRuleValOrRef]
 )
 
 object ManagedColoringRuleChainSpec:
     def fromPb(v: pb.ManagedColoringRuleChainSpec): ManagedColoringRuleChainSpec =
         ManagedColoringRuleChainSpec(
+            isEnabled = v.isEnabled,
             coloringRules = v.coloringRules.map(ManagedColoringRuleValOrRef.fromPb).toVector
         )
 
     def toPb(v: ManagedColoringRuleChainSpec): pb.ManagedColoringRuleChainSpec =
         pb.ManagedColoringRuleChainSpec(
+            isEnabled = v.isEnabled,
             coloringRules = v.coloringRules.map(ManagedColoringRuleValOrRef.toPb)
         )
 

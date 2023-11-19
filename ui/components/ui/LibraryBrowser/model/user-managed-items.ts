@@ -62,11 +62,11 @@ export type ManagedMessageFilterChain = {
 
 export type ManagedMessageFilterChainValOrRef = ValOrRef<ManagedMessageFilterChain>;
 
-export type ManagedConsumerSessionTopicSelectorSpec = TopicSelector;
+export type ManagedConsumerSessionTargetSelectorSpec = TopicSelector;
 
-export type ManagedConsumerSessionTopicSelector = {
+export type ManagedConsumerSessionTargetSelector = {
   metadata: ManagedItemMetadata,
-  spec: ManagedConsumerSessionTopicSelectorSpec,
+  spec: ManagedConsumerSessionTargetSelectorSpec,
 };
 
 export type ManagedMessageIdSpec = {
@@ -129,6 +129,7 @@ export type ManagedTopicSelector = {
 export type ManagedTopicSelectorValOrRef = ValOrRef<ManagedTopicSelector>;
 
 export type ManagedColoringRuleSpec = {
+  isEnabled: boolean,
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   foregroundColor: string,
   backgroundColor: string,
@@ -142,6 +143,7 @@ export type ManagedColoringRule = {
 export type ManagedColoringRuleValOrRef = ValOrRef<ManagedColoringRule>;
 
 export type ManagedColoringRuleChainSpec = {
+  isEnabled: boolean,
   coloringRules: ManagedColoringRuleValOrRef[],
 };
 
@@ -183,22 +185,22 @@ export type ManagedConsumerSessionPauseTriggerChain = {
 
 export type ManagedConsumerSessionPauseTriggerChainValOrRef = ValOrRef<ManagedConsumerSessionPauseTriggerChain>;
 
-export type ManagedConsumerSessionTopicSpec = {
+export type ManagedConsumerSessionTargetSpec = {
   topicSelector: ManagedTopicSelectorValOrRef,
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   coloringRuleChain: ManagedColoringRuleChainValOrRef,
 };
 
-export type ManagedConsumerSessionTopic = {
+export type ManagedConsumerSessionTarget = {
   metadata: ManagedItemMetadata,
-  spec: ManagedConsumerSessionTopicSpec,
+  spec: ManagedConsumerSessionTargetSpec,
 };
 
-export type ManagedConsumerSessionTopicValOrRef = ValOrRef<ManagedConsumerSessionTopic>;
+export type ManagedConsumerSessionTargetValOrRef = ValOrRef<ManagedConsumerSessionTarget>;
 
 export type ManagedConsumerSessionConfigSpec = {
   startFrom: ManagedConsumerSessionStartFromValOrRef,
-  topics: ManagedConsumerSessionTopicValOrRef[],
+  targets: ManagedConsumerSessionTargetValOrRef[],
   messageFilterChain: ManagedMessageFilterChainValOrRef,
   pauseTriggerChain: ManagedConsumerSessionPauseTriggerChainValOrRef,
   coloringRuleChain: ManagedColoringRuleChainValOrRef,
@@ -215,6 +217,7 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedMessageFilterChain |
   ManagedConsumerSessionStartFrom |
   ManagedTopicSelector |
+  ManagedConsumerSessionTarget |
   ManagedDateTime |
   ManagedRelativeDateTime |
   ManagedConsumerSessionEvent |
@@ -223,5 +226,5 @@ export type ManagedItem = ManagedMessageFilter |
   ManagedTopicSelector |
   ManagedColoringRule |
   ManagedColoringRuleChain |
-  ManagedConsumerSessionTopic |
+  ManagedConsumerSessionTarget |
   ManagedMessageId;

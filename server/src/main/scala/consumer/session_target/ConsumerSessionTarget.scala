@@ -1,26 +1,26 @@
-package consumer.topic
+package consumer.session_target
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import _root_.consumer.message_filter.MessageFilterChain
 import _root_.consumer.coloring_rules.ColoringRuleChain
-import consumer.topic.topic_selector.TopicSelector
+import consumer.session_target.topic_selector.TopicSelector
 
-case class ConsumerSessionTopic(
+case class ConsumerSessionTarget(
     topicSelector: TopicSelector,
     messageFilterChain: MessageFilterChain,
     coloringRuleChain: ColoringRuleChain
 )
 
-object ConsumerSessionTopic:
-    def fromPb(v: pb.ConsumerSessionTopic): ConsumerSessionTopic =
-        ConsumerSessionTopic(
+object ConsumerSessionTarget:
+    def fromPb(v: pb.ConsumerSessionTarget): ConsumerSessionTarget =
+        ConsumerSessionTarget(
             topicSelector = TopicSelector.fromPb(v.getTopicSelector),
             messageFilterChain = MessageFilterChain.fromPb(v.getMessageFilterChain),
             coloringRuleChain = ColoringRuleChain.fromPb(v.getColoringRuleChain)
         )
 
-    def toPb(v: ConsumerSessionTopic): pb.ConsumerSessionTopic =
-        pb.ConsumerSessionTopic(
+    def toPb(v: ConsumerSessionTarget): pb.ConsumerSessionTarget =
+        pb.ConsumerSessionTarget(
             topicSelector = Some(TopicSelector.toPb(v.topicSelector)),
             messageFilterChain = Some(MessageFilterChain.toPb(v.messageFilterChain)),
             coloringRuleChain = Some(ColoringRuleChain.toPb(v.coloringRuleChain))

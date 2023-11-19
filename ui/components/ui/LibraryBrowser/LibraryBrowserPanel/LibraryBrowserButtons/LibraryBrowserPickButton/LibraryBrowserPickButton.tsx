@@ -22,6 +22,7 @@ const LibraryBrowserPickButton: React.FC<LibraryBrowserPickButtonProps> = (props
         title='Load'
         type='regular'
         svgIcon={pickIcon}
+        appearance='borderless-semitransparent'
         onClick={() => {
           const modal = mkLibraryBrowserModal({
             libraryBrowserProps: {

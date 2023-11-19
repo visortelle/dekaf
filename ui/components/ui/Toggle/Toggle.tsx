@@ -22,6 +22,9 @@ const Toggle: React.FC<ToggleProps> = (props) => {
         bodyRef.current?.focus();
         toggle();
       }}
+      data-tooltip-id={tooltipId}
+      data-tooltip-html={renderToStaticMarkup(<>{props.help}</>)}
+      data-tooltip-delay-show={500}
     >
       <div
         ref={bodyRef}
@@ -36,11 +39,7 @@ const Toggle: React.FC<ToggleProps> = (props) => {
       >
         <div className={s.Circle} />
       </div>
-      <div
-        className={s.Label}
-        data-tooltip-id={tooltipId}
-        data-tooltip-html={renderToStaticMarkup(<>{props.help}</>)}
-      >
+      <div className={s.Label}>
         {props.label}
       </div>
     </div>

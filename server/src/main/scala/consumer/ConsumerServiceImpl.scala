@@ -8,11 +8,32 @@ import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import com.tools.teal.pulsar.ui.api.v1.consumer.MessageFilterChainMode.{MESSAGE_FILTER_CHAIN_MODE_ALL, MESSAGE_FILTER_CHAIN_MODE_ANY}
 import com.tools.teal.pulsar.ui.api.v1.consumer.SeekRequest.Seek
-import com.tools.teal.pulsar.ui.api.v1.consumer.{ConsumerServiceGrpc, CreateConsumerRequest, CreateConsumerResponse, DeleteConsumerRequest, DeleteConsumerResponse, MessageFilterChain, PauseRequest, PauseResponse, ResumeRequest, ResumeResponse, RunCodeRequest, RunCodeResponse, SeekRequest, SeekResponse, SkipMessagesRequest, SkipMessagesResponse, MessageFilter as MessageFilterPb}
+import com.tools.teal.pulsar.ui.api.v1.consumer.{
+    ConsumerServiceGrpc,
+    CreateConsumerRequest,
+    CreateConsumerResponse,
+    DeleteConsumerRequest,
+    DeleteConsumerResponse,
+    MessageFilter as MessageFilterPb,
+    MessageFilterChain,
+    PauseRequest,
+    PauseResponse,
+    ResolveTopicSelectorRequest,
+    ResolveTopicSelectorResponse,
+    ResumeRequest,
+    ResumeResponse,
+    RunCodeRequest,
+    RunCodeResponse,
+    SeekRequest,
+    SeekResponse,
+    SkipMessagesRequest,
+    SkipMessagesResponse
+}
 import com.typesafe.scalalogging.Logger
-import consumer.topic.topic_selector.MultiTopicSelector
+import consumer.session_target.topic_selector.MultiTopicSelector
 import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import org.apache.pulsar.client.api.*
+import _root_.consumer.session_target.topic_selector.TopicSelector
 
 import java.io.ByteArrayOutputStream
 import java.time.Instant
@@ -131,11 +152,11 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
 
             val config = ConsumerSessionConfig.fromPb(request.consumerSessionConfig.get)
 
-            val topicsToConsume = config.topics.flatMap(t => {
+            val topicsToConsume = config.targets.flatMap { t =>
                 t.topicSelector.topicSelector match
                     case v: MultiTopicSelector => Some(v.topicFqns)
-                    case _                      => None
-            }).flatten
+                    case _                     => None
+            }.flatten
 
             val listener = TopicMessageListener(StreamDataHandler(onNext = _ => ()))
 
@@ -256,3 +277,16 @@ class ConsumerServiceImpl extends ConsumerServiceGrpc.ConsumerService:
         val status: Status = Status(code = Code.OK.index)
         val response = RunCodeResponse(status = Some(status), result = Some(result))
         Future.successful(response)
+
+    override def resolveTopicSelector(request: ResolveTopicSelectorRequest): Future[ResolveTopicSelectorResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+        val topicSelector = TopicSelector.fromPb(request.topicSelector.get)
+
+        Try(topicSelector.getNonPartitionedTopics(adminClient)) match
+            case Success(topicFqns) =>
+                val status: Status = Status(code = Code.OK.index)
+                val response = ResolveTopicSelectorResponse(status = Some(status), topicFqns = topicFqns)
+                Future.successful(response)
+            case Failure(err) =>
+                val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = err.getMessage)
+                Future.successful(ResolveTopicSelectorResponse(status = Some(status)))

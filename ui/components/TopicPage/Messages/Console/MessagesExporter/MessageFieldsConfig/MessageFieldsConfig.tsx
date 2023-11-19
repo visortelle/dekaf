@@ -47,7 +47,6 @@ const MessageFieldsConfig: React.FC<MessageFieldsConfigProps> = (props) => {
 
     if (active.id !== over?.id) {
       props.onChange({ fields: getNewItems(props.value.fields) });
-
     }
   }
 

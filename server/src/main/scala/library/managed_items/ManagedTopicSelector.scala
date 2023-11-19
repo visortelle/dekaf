@@ -1,6 +1,6 @@
 package library.managed_items
 
-import _root_.consumer.topic.topic_selector.{NamespacedRegexTopicSelector, MultiTopicSelector, TopicSelector}
+import _root_.consumer.session_target.topic_selector.{NamespacedRegexTopicSelector, MultiTopicSelector, TopicSelector}
 import com.tools.teal.pulsar.ui.library.v1.managed_items as pb
 import _root_.library.{ManagedItemMetadata, ManagedItemReference, ManagedItemTrait}
 

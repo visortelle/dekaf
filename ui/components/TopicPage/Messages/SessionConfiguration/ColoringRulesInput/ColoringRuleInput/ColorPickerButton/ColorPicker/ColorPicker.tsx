@@ -1,10 +1,9 @@
 import React from 'react';
 import s from './ColorPicker.module.css'
 import { colorPalette, colorsByName, themeBackgroundColorName, themeForegroundColorName } from './color-palette';
-import { tooltipId } from '../../../../../../ui/Tooltip/Tooltip';
-import FormLabel from '../../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
-import FormItem from '../../../../../../ui/ConfigurationTable/FormItem/FormItem';
-import { boolean } from 'fp-ts';
+import { tooltipId } from '../../../../../../../ui/Tooltip/Tooltip';
+import FormLabel from '../../../../../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import FormItem from '../../../../../../../ui/ConfigurationTable/FormItem/FormItem';
 
 export type ColorPickerProps = {
   value: string;

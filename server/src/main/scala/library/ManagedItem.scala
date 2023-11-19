@@ -7,7 +7,7 @@ import _root_.library.managed_items.{
     ManagedConsumerSessionEvent,
     ManagedConsumerSessionPauseTriggerChain,
     ManagedConsumerSessionStartFrom,
-    ManagedConsumerSessionTopic,
+    ManagedConsumerSessionTarget,
     ManagedDateTime,
     ManagedMessageFilter,
     ManagedMessageFilterChain,
@@ -24,7 +24,7 @@ type ManagedItem =
     ManagedConsumerSessionEvent |
     ManagedConsumerSessionPauseTriggerChain |
     ManagedConsumerSessionStartFrom |
-    ManagedConsumerSessionTopic |
+    ManagedConsumerSessionTarget |
     ManagedDateTime |
     ManagedMessageFilter |
     ManagedMessageFilterChain |
@@ -41,7 +41,7 @@ object ManagedItem:
             case it: pb.ManagedItem.Spec.SpecConsumerSessionEvent => ManagedConsumerSessionEvent.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecConsumerSessionPauseTriggerChain => ManagedConsumerSessionPauseTriggerChain.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecConsumerSessionStartFrom => ManagedConsumerSessionStartFrom.fromPb(it.value)
-            case it: pb.ManagedItem.Spec.SpecConsumerSessionTopic => ManagedConsumerSessionTopic.fromPb(it.value)
+            case it: pb.ManagedItem.Spec.SpecConsumerSessionTarget => ManagedConsumerSessionTarget.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecDateTime => ManagedDateTime.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecMessageFilter => ManagedMessageFilter.fromPb(it.value)
             case it: pb.ManagedItem.Spec.SpecMessageFilterChain => ManagedMessageFilterChain.fromPb(it.value)
@@ -70,9 +70,9 @@ object ManagedItem:
             case it: ManagedConsumerSessionStartFrom =>
                 val itPb = ManagedConsumerSessionStartFrom.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecConsumerSessionStartFrom(itPb))
-            case it: ManagedConsumerSessionTopic =>
-                val itPb = ManagedConsumerSessionTopic.toPb(it)
-                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecConsumerSessionTopic(itPb))
+            case it: ManagedConsumerSessionTarget =>
+                val itPb = ManagedConsumerSessionTarget.toPb(it)
+                pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecConsumerSessionTarget(itPb))
             case it: ManagedDateTime =>
                 val itPb = ManagedDateTime.toPb(it)
                 pb.ManagedItem(spec = pb.ManagedItem.Spec.SpecDateTime(itPb))

@@ -10,8 +10,10 @@ import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 import Input from '../../../../ui/Input/Input';
 import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
 import * as Either from 'fp-ts/Either';
-import { RegexSubMode } from '../topic-selector';
+import { RegexSubscriptionMode } from '../topic-selector';
 import FormLabel from '../../../../ui/ConfigurationTable/FormLabel/FormLabel';
+import TopicSelectorInfo from './TopicSelectorInfo/TopicSelectorInfo';
+import { topicSelectorFromManagedSpec } from '../../../../ui/LibraryBrowser/model/resolved-items-conversions';
 
 export type TopicsSelectorInputProps = {
   value: ManagedTopicSelectorValOrRef;
@@ -41,9 +43,13 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
     props.onChange(newValue);
   };
 
+  const topicFqn = (props.libraryContext.pulsarResource.type === 'topic') ?
+    `${props.libraryContext.pulsarResource.topicPersistency}://${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}/${props.libraryContext.pulsarResource.topic}` :
+    undefined;
+
 
   const namespaceFqn = (props.libraryContext.pulsarResource.type === 'namespace' || props.libraryContext.pulsarResource.type === 'topic') ?
-    props.libraryContext.pulsarResource.namespace :
+    `${props.libraryContext.pulsarResource.tenant}/${props.libraryContext.pulsarResource.namespace}` :
     undefined;
 
   return (
@@ -64,6 +70,10 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
         managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
+      />
+
+      <TopicSelectorInfo
+        topicSelector={topicSelectorFromManagedSpec(itemSpec, topicFqn)}
       />
 
       <FormItem>
@@ -108,6 +118,13 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
         <FormItem>
           <ListInput<string>
             value={itemSpec.topicSelector.topicFqns}
+            onChange={(v) => {
+              if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
+                return;
+              }
+
+              onSpecChange({ topicSelector: { ...itemSpec.topicSelector, topicFqns: v } })
+            }}
             onAdd={(v) => {
               if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
                 return;
@@ -123,13 +140,19 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
               onSpecChange({ topicSelector: { ...itemSpec.topicSelector, topicFqns: itemSpec.topicSelector.topicFqns.filter((x) => x !== v) } });
             }}
             getId={(v) => v}
-            renderItem={(v) => <>{v}</>}
+            renderItem={(v) => (
+              <span
+                title={v}
+                style={{ overflow: 'auto', whiteSpace: 'nowrap', textOverflow: 'ellipsis', scrollbarWidth: 'thin' }}
+              >
+                {v}
+              </span>)}
             editor={{
               render: (value, onChange) => <Input value={value} onChange={onChange} placeholder='persistent://tenant/namespace/topic' />,
               initialValue: ''
             }}
-            itemName="topic"
-            nothingToShowContent="No topics selected."
+            itemName="Topic"
+            isHideNothingToShow
             validate={(v, topicFqns) => {
               if (itemSpec.topicSelector.type !== 'multi-topic-selector') {
                 return Either.right(undefined);
@@ -140,20 +163,10 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
                 return Either.left(new Error('The topic is already in the list.'));
               }
 
-              const pulsarTopicFqnRegex = /^(persistent|non-persistent):\/\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)$/;
+              const pulsarTopicFqnRegex = /^(persistent|non-persistent):\/\/([\w-]+)\/([\w-]+)\/([\w-]+)$/;
 
               if (!v.match(pulsarTopicFqnRegex)) {
                 return Either.left(new Error('Expected following topic name format: persistent://tenant/namespace/topic'))
-              }
-
-              const isMixesTopicsAndItsPartitions = topicFqns.concat([v]).some((topicFqn) => {
-                return topicFqns.some((maybePartition) => {
-                  return maybePartition.startsWith(`${topicFqn}-partition-`) && /\d+$/.test(maybePartition);
-                });
-              });
-
-              if (isMixesTopicsAndItsPartitions) {
-                return Either.left(new Error('You can\'t mix topics and its partitions.'));
               }
 
               return Either.right(undefined);
@@ -166,7 +179,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
       {itemSpec.topicSelector.type === 'namespaced-regex-topic-selector' && (
         <>
           <FormItem>
-            <Select<RegexSubMode>
+            <Select<RegexSubscriptionMode>
               list={[
                 { type: 'item', title: 'All topics', value: 'all-topics' },
                 { type: 'item', title: 'Persistent topics', value: 'persistent-only' },
@@ -184,7 +197,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
           </FormItem>
 
           <FormItem>
-            <FormLabel content="Namespace" />
+            <FormLabel content="Namespace FQN" help={<>Fully Qualified Namespace Name in the following form: <code>tenant/namespace</code></>} />
             <Input
               value={itemSpec.topicSelector.namespaceFqn}
               onChange={(v) => {

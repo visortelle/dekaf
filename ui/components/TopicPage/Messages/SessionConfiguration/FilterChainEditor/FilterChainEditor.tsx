@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import Select from '../../../../ui/Select/Select';
 import * as t from '../../types';
-import { ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedItemMetadata, ManagedMessageFilter, ManagedMessageFilterChain, ManagedMessageFilterChainSpec, ManagedMessageFilterChainValOrRef, ManagedMessageFilterValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import FilterEditor from './FilterEditor/FilterEditor';
 
 import s from './FilterChainEditor.module.css';
@@ -11,11 +11,10 @@ import { useHover } from '../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../local-storage-keys';
 import { defaultJsFilterValue } from './FilterEditor/JsFilterEditor/JsFilterEditor';
-import NothingToShow from '../../../../ui/NothingToShow/NothingToShow';
 import Toggle from '../../../../ui/Toggle/Toggle';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
-import AddButton from '../../../../ui/AddButton/AddButton';
+import ListInput from '../../../../ui/ConfigurationTable/ListInput/ListInput';
 
 export type FilterChainEditorProps = {
   value: ManagedMessageFilterChainValOrRef;
@@ -50,7 +49,7 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
     props.onChange(newValue);
   };
 
-  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(1) opacity(0.75)';
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
 
   return (
     <div className={s.FilterChainEditor} ref={ref} style={{ filter: cssFilter }}>
@@ -110,86 +109,79 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
         </div>
       </div>
 
-      {itemSpec.filters.length === 0 && (
-        <div style={{ marginBottom: '12rem' }}>
-          <NothingToShow content={<div>Click the button below to add a first filter.</div>} />
-        </div>
-      )}
-
-      {itemSpec.filters.length !== 0 && itemSpec.filters.map((filter) => {
-        const filterId = filter.type === 'reference' ? filter.ref : filter.val.metadata.id;
-        return (
-          <div key={filterId} className={s.Entry}>
-            <div className={s.EntryFilter}>
-              <FilterEditor
-                value={filter}
-                onChange={(updatedFilter) => {
-                  const newFilters = itemSpec.filters.map((f) => {
-                    const fId = f.type === 'reference' ? f.ref : f.val.metadata.id;
-                    if (fId === filterId) {
-                      return updatedFilter;
-                    }
-                    return f;
-                  });
-                  onSpecChange({ ...itemSpec, filters: newFilters });
-                }}
-                onDelete={() => {
-                  const newFilters = itemSpec.filters.filter((f) => {
-                    const fId = f.type === 'reference' ? f.ref : f.val.metadata.id;
-                    return fId !== filterId;
-                  });
-                  onSpecChange({ ...itemSpec, filters: newFilters });
-                }}
-                libraryContext={props.libraryContext}
-              />
+      <ListInput<ManagedMessageFilterValOrRef>
+        getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
+        value={itemSpec.filters}
+        onChange={(filters) => onSpecChange({ ...itemSpec, filters })}
+        renderItem={(filter) => {
+          const filterId = filter.type === 'reference' ? filter.ref : filter.val.metadata.id
+          return (
+            <div className={s.Entry}>
+              <div className={s.EntryFilter}>
+                <FilterEditor
+                  value={filter}
+                  onChange={(updatedFilter) => {
+                    const newFilters = itemSpec.filters.map((f) => {
+                      const fId = f.type === 'reference' ? f.ref : f.val.metadata.id;
+                      if (fId === filterId) {
+                        return updatedFilter;
+                      }
+                      return f;
+                    });
+                    onSpecChange({ ...itemSpec, filters: newFilters });
+                  }}
+                  libraryContext={props.libraryContext}
+                />
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        }}
+        onAdd={() => {
+          const metadata: ManagedItemMetadata = {
+            id: uuid(),
+            name: '',
+            descriptionMarkdown: '',
+            type: 'message-filter'
+          };
 
-      <div className={`${s.Buttons}`}>
-        <AddButton
-          onClick={() => {
-            const metadata: ManagedItemMetadata = {
-              id: uuid(),
-              name: '',
-              descriptionMarkdown: '',
-              type: 'message-filter'
-            };
+          let newFilter: ManagedMessageFilter;
 
-            let newFilter: ManagedMessageFilter;
-
-            switch (defaultMessageFilterType) {
-              case 'basic-message-filter':
-                newFilter = {
-                  metadata,
-                  spec: {
-                    isEnabled: true,
-                    isNegated: false,
-                    type: 'basic-message-filter',
-                    value: {}
-                  }
-                };
-                break;
-              case 'js-message-filter':
-                newFilter = {
-                  metadata,
-                  spec: {
-                    isEnabled: true,
-                    isNegated: false,
-                    type: 'js-message-filter',
-                    value: defaultJsFilterValue
-                  }
+          switch (defaultMessageFilterType) {
+            case 'basic-message-filter':
+              newFilter = {
+                metadata,
+                spec: {
+                  isEnabled: true,
+                  isNegated: false,
+                  type: 'basic-message-filter',
+                  value: {}
                 }
-                break;
-            }
+              };
+              break;
+            case 'js-message-filter':
+              newFilter = {
+                metadata,
+                spec: {
+                  isEnabled: true,
+                  isNegated: false,
+                  type: 'js-message-filter',
+                  value: defaultJsFilterValue
+                }
+              }
+              break;
+          }
 
-            const newChain = itemSpec.filters.concat([{ type: 'value', val: newFilter }]);
-            onSpecChange({ ...itemSpec, filters: newChain });
-          }}
-          itemName="Message Filter"
-        />
-      </div>
+          const newChain = itemSpec.filters.concat([{ type: 'value', val: newFilter }]);
+          onSpecChange({ ...itemSpec, filters: newChain });
+        }}
+        onRemove={(id) => {
+          const newChain = itemSpec.filters.filter((f) => f.type === 'reference' ? f.ref !== id : f.val.metadata.id !== id);
+          onSpecChange({ ...itemSpec, filters: newChain });
+        }}
+        itemName='Message Filter'
+        isHideNothingToShow
+        isContentDoesntOverlapRemoveButton
+      />
     </div>
   );
 }

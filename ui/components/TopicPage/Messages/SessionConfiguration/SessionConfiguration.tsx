@@ -5,15 +5,15 @@ import s from './SessionConfiguration.module.css'
 import FormLabel from '../../../ui/ConfigurationTable/FormLabel/FormLabel';
 import LibraryBrowserPanel from '../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../app/hooks/use-hover';
-import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef, ManagedConsumerSessionTopicValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
+import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, ManagedConsumerSessionConfigValOrRef } from '../../../ui/LibraryBrowser/model/user-managed-items';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
 import SessionTopicInput from './SessionTopicInput/SessionTopicInput';
 import AddButton from '../../../ui/AddButton/AddButton';
-import { v4 as uuid } from 'uuid';
 import { createNewTarget } from '../../create-new-target';
 import DeleteButton from '../../../ui/DeleteButton/DeleteButton';
+import ColoringRuleChainInput from './ColoringRulesInput/ColoringRuleChainInput';
 
 export type SessionConfigurationProps = {
   value: ManagedConsumerSessionConfigValOrRef;
@@ -79,6 +79,12 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             libraryContext={props.libraryContext}
           />
 
+          <ColoringRuleChainInput
+            value={itemSpec.coloringRuleChain}
+            onChange={(v) => onSpecChange({ ...itemSpec, coloringRuleChain: v })}
+            libraryContext={props.libraryContext}
+          />
+
           <FormLabel
             content="Pause Trigger"
             help={(
@@ -91,7 +97,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
           <div>TODO</div>
         </div>
 
-        {itemSpec.topics.map((topic, i) => {
+        {itemSpec.targets.map((topic, i) => {
           return (
             <div
               key={topic.type === 'reference' ? topic.ref : topic.val.metadata.id}
@@ -100,21 +106,21 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               <SessionTopicInput
                 value={topic}
                 onChange={(v) => {
-                  const newTargets = [...itemSpec.topics];
+                  const newTargets = [...itemSpec.targets];
                   newTargets[i] = v;
-                  onSpecChange({ ...itemSpec, topics: newTargets });
+                  onSpecChange({ ...itemSpec, targets: newTargets });
                 }}
                 libraryContext={props.libraryContext}
               />
               <div className={s.DeleteTargetButton}>
                 <DeleteButton
-                  appearance='compact'
                   title='Remove this Consumer Session Target'
                   onClick={() => {
-                    const newTargets = [...itemSpec.topics];
+                    const newTargets = [...itemSpec.targets];
                     newTargets.splice(i, 1);
-                    onSpecChange({ ...itemSpec, topics: newTargets });
+                    onSpecChange({ ...itemSpec, targets: newTargets });
                   }}
+                  isHideText
                 />
               </div>
             </div>
@@ -126,8 +132,8 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
             text='Add Target'
             onClick={() => {
               const newTarget = createNewTarget();
-              const newTargets = itemSpec.topics.concat([newTarget]);
-              onSpecChange({ ...itemSpec, topics: newTargets });
+              const newTargets = itemSpec.targets.concat([newTarget]);
+              onSpecChange({ ...itemSpec, targets: newTargets });
 
               setTimeout(() => {
                 columnsRef.current?.scrollTo({ left: columnsRef.current.scrollWidth, behavior: 'smooth' });

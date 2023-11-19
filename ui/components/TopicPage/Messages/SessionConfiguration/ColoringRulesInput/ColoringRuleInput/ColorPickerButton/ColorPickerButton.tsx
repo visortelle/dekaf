@@ -1,8 +1,8 @@
 import React from 'react';
 import s from './ColorPickerButton.module.css'
-import ColorPicker from '../ColorPicker/ColorPicker';
+import ColorPicker from './ColorPicker/ColorPicker';
 import * as Modals from '../../../../../../app/contexts/Modals/Modals';
-import { colorsByName } from '../ColorPicker/color-palette';
+import { colorsByName } from './ColorPicker/color-palette';
 import { tooltipId } from '../../../../../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 

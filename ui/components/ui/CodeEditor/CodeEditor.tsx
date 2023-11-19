@@ -95,7 +95,6 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
           minimap: { enabled: false },
           scrollbar: { alwaysConsumeMouseWheel: false, useShadows: false, verticalScrollbarSize: 5, horizontalScrollbarSize: 5 },
           theme: 'vs',
-          fontFamily: 'Fira Code',
           fontSize: parseFloat(getComputedStyle(document.documentElement).fontSize) * 14,
           automaticLayout: true,
           ...options,
