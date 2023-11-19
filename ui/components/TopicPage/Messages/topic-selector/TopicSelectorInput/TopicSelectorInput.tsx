@@ -143,7 +143,7 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
             renderItem={(v) => (
               <span
                 title={v}
-                style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                style={{ overflow: 'auto', whiteSpace: 'nowrap', textOverflow: 'ellipsis', scrollbarWidth: 'thin' }}
               >
                 {v}
               </span>)}
