@@ -5,7 +5,6 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse
 import _root_.consumer.session_target.ConsumerSessionTarget
 import com.typesafe.scalalogging.Logger
 import consumer.coloring_rules.ColoringRuleChain
-import consumer.session_runner.ConsumerSessionRunner
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
 import org.apache.pulsar.client.api.Consumer
@@ -91,6 +90,7 @@ case class ConsumerSessionTargetRunner(
 object ConsumerSessionTargetRunner:
     def make(
         sessionName: String,
+        targetName: String,
         sessionContext: ConsumerSessionContext,
         targetConfig: ConsumerSessionTarget,
         grpcResponseObserver: Option[io.grpc.stub.StreamObserver[ResumeResponse]],
@@ -103,9 +103,11 @@ object ConsumerSessionTargetRunner:
             val listener = TopicMessageListener(StreamDataHandler(onNext = _ => ()))
 
             val consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]] = nonPartitionedTopicFqns.map { topicFqn =>
+                val consumerName = s"$sessionName-$targetName"
+                
                 buildConsumer(
                     pulsarClient = pulsarClient,
-                    consumerName = sessionName,
+                    consumerName = consumerName,
                     topicsToConsume = Vector(topicFqn),
                     listener = listener
                 ) match

@@ -37,8 +37,11 @@ object ConsumerSessionRunner:
         val sessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = new ByteArrayOutputStream()))
 
         var targets = sessionConfig.targets.zipWithIndex.map { case (targetConfig, i) =>
-            i.toString -> ConsumerSessionTargetRunner.make(
+            val targetName = s"target-$i"
+
+            targetName -> ConsumerSessionTargetRunner.make(
                 sessionName = sessionName,
+                targetName = targetName,
                 pulsarClient = pulsarClient,
                 adminClient = adminClient,
                 schemasByTopic = Map.empty,

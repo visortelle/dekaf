@@ -142,7 +142,6 @@ def handleStartFrom(
 
         case v: NthMessageBeforeLatest =>
             val n = v.n
-            println(s"--------------------------NNNNNNNNNNNNN: $n")
             if getIsSingleNonPartitionedTopic(adminClient, nonPartitionedTopicFqns) then
                 findNthMessage(adminClient, nonPartitionedTopicFqns.head, "latest", n) match
                     case Some(message) => consumers.foreach(_.seek(message.getMessageId))
