@@ -32,8 +32,8 @@ const list: List<StartFromType> = [
   },
   { type: 'item', title: 'Specific time', value: 'dateTime' },
   { type: 'item', title: 'Relative time ago', value: 'relativeDateTime' },
-  { type: 'item', title: 'n-th message after Earliest message', value: 'nthMessageAfterEarliest' },
-  { type: 'item', title: 'n-th message before Latest message', value: 'nthMessageBeforeLatest' }
+  { type: 'item', title: 'Skip fist n messages', value: 'nthMessageAfterEarliest' },
+  { type: 'item', title: 'Latest n messages', value: 'nthMessageBeforeLatest' }
 ];
 
 const StartFromInput: React.FC<StartFromInputProps> = (props) => {

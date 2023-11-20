@@ -48,12 +48,22 @@ object ConsumerSessionRunner:
             )
         }.toMap
 
-        val topicsToConsume = targets.values.flatMap(_.nonPartitionedTopicFqns).toVector
-        val schemasByTopic = getSchemasByTopic(adminClient, topicsToConsume)
+        val nonPartitionedTopicFqns = targets.values.flatMap(_.nonPartitionedTopicFqns).toVector
+        val schemasByTopic = getSchemasByTopic(adminClient, nonPartitionedTopicFqns)
 
         targets = targets.map { case (targetId, target) =>
             targetId -> target.copy(schemasByTopic = schemasByTopic)
         }
+
+        val consumers = targets.values.flatMap(_.consumers).map(_._2).toVector
+
+        handleStartFrom(
+            startFrom = sessionConfig.startFrom,
+            consumers = consumers,
+            adminClient = adminClient,
+            pulsarClient = pulsarClient,
+            nonPartitionedTopicFqns = nonPartitionedTopicFqns
+        )
 
         ConsumerSessionRunner(
             sessionName = sessionName,

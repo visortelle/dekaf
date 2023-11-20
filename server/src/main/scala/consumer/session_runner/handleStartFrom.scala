@@ -1,17 +1,25 @@
-package consumer
+package consumer.session_runner
 
 import org.apache.pulsar.client.admin.PulsarAdmin
 
 import java.time.ZonedDateTime
 import org.apache.pulsar.client.api.{Consumer, Message as PulsarMessage, MessageId as PulsarMessageId, PulsarClient}
 import _root_.topic.{getIsPartitionedTopic, TopicPartitioning}
-import _root_.consumer.start_from.{ConsumerSessionStartFrom, EarliestMessage, LatestMessage, MessageId, DateTime, RelativeDateTime, NthMessageAfterEarliest, NthMessageBeforeLatest, DateTimeUnit}
+import _root_.consumer.start_from.{
+    ConsumerSessionStartFrom,
+    DateTime,
+    DateTimeUnit,
+    EarliestMessage,
+    LatestMessage,
+    MessageId,
+    NthMessageAfterEarliest,
+    NthMessageBeforeLatest,
+    RelativeDateTime
+}
 
 import scala.util.{Failure, Success, Try}
 import scala.jdk.CollectionConverters.*
 import com.typesafe.scalalogging.Logger
-
-val logger: Logger = Logger(getClass.getName)
 
 def getPartitions(adminClient: PulsarAdmin, topicFqn: String): Vector[String] =
     val tenant = topicFqn.split('/')(2)
@@ -97,10 +105,10 @@ def topicsToNonPartitionedTopic(pulsarAdmin: PulsarAdmin, topics: Vector[String]
 def getMessageByIdMultiTopic(
     pulsarAdmin: PulsarAdmin,
     pulsarClient: PulsarClient,
-    topics: Vector[String],
+    nonPartitionedTopicFqns: Vector[String],
     messageId: Array[Byte]
 ): Option[PulsarMessage[Array[Byte]]] =
-    val messageIds = topicsToNonPartitionedTopic(pulsarAdmin, topics).flatMap(topicFqn => getMessageById(pulsarClient, topicFqn, messageId))
+    val messageIds = nonPartitionedTopicFqns.flatMap(topicFqn => getMessageById(pulsarClient, topicFqn, messageId))
 
     messageIds match
         case Vector()    => None
@@ -109,58 +117,60 @@ def getMessageByIdMultiTopic(
 
 def handleStartFrom(
     startFrom: ConsumerSessionStartFrom,
-    consumer: Consumer[Array[Byte]],
+    consumers: Vector[Consumer[Array[Byte]]],
     adminClient: PulsarAdmin,
     pulsarClient: PulsarClient,
-    topicsToConsume: Vector[String]
+    nonPartitionedTopicFqns: Vector[String]
 ): Unit =
-    consumer.resume()
+    consumers.foreach(_.resume())
+
     startFrom match
         case _: EarliestMessage =>
-            consumer.seek(PulsarMessageId.earliest)
+            consumers.foreach(_.seek(PulsarMessageId.earliest))
         case _: LatestMessage =>
-            consumer.seek(PulsarMessageId.latest)
+            consumers.foreach(_.seek(PulsarMessageId.latest))
         case v: NthMessageAfterEarliest =>
             val n = v.n
-            if getIsSingleNonPartitionedTopic(adminClient, topicsToConsume) then
-                findNthMessage(adminClient, topicsToConsume.head, "earliest", n) match
-                    case Some(message) => consumer.seek(message.getMessageId)
-                    case None          => consumer.seek(PulsarMessageId.latest)
+            if getIsSingleNonPartitionedTopic(adminClient, nonPartitionedTopicFqns) then
+                findNthMessage(adminClient, nonPartitionedTopicFqns.head, "earliest", n) match
+                    case Some(message) => consumers.foreach(_.seek(message.getMessageId))
+                    case None          => consumers.foreach(_.seek(PulsarMessageId.latest))
             else
-                findNthMessageMultiTopic(adminClient, topicsToConsume, "earliest", n) match
-                    case Some(message) => consumer.seek(message.getPublishTime)
-                    case None          => consumer.seek(PulsarMessageId.latest)
+                findNthMessageMultiTopic(adminClient, nonPartitionedTopicFqns, "earliest", n) match
+                    case Some(message) => consumers.foreach(_.seek(message.getPublishTime))
+                    case None          => consumers.foreach(_.seek(PulsarMessageId.latest))
 
         case v: NthMessageBeforeLatest =>
             val n = v.n
-            if getIsSingleNonPartitionedTopic(adminClient, topicsToConsume) then
-                findNthMessage(adminClient, topicsToConsume.head, "latest", n) match
-                    case Some(message) => consumer.seek(message.getMessageId)
-                    case None          => consumer.seek(PulsarMessageId.earliest)
+            println(s"--------------------------NNNNNNNNNNNNN: $n")
+            if getIsSingleNonPartitionedTopic(adminClient, nonPartitionedTopicFqns) then
+                findNthMessage(adminClient, nonPartitionedTopicFqns.head, "latest", n) match
+                    case Some(message) => consumers.foreach(_.seek(message.getMessageId))
+                    case None          => consumers.foreach(_.seek(PulsarMessageId.earliest))
             else
-                findNthMessageMultiTopic(adminClient, topicsToConsume, "latest", n) match
-                    case Some(message) => consumer.seek(message.getPublishTime)
-                    case None          => consumer.seek(PulsarMessageId.earliest)
+                findNthMessageMultiTopic(adminClient, nonPartitionedTopicFqns, "latest", n) match
+                    case Some(message) => consumers.foreach(_.seek(message.getPublishTime))
+                    case None          => consumers.foreach(_.seek(PulsarMessageId.earliest))
         case v: MessageId =>
-            if getIsSingleNonPartitionedTopic(adminClient, topicsToConsume) then
+            if getIsSingleNonPartitionedTopic(adminClient, nonPartitionedTopicFqns) then
                 val messageId = Try(PulsarMessageId.fromByteArray(v.messageId)) match
                     case Success(messageId) => messageId
                     case Failure(_) =>
                         throw new RuntimeException(s"Failed to parse message ID.")
 
-                val topicFqn = topicsToConsume.head
+                val topicFqn = nonPartitionedTopicFqns.head
 
                 getMessageById(pulsarClient, topicFqn, messageId.toByteArray) match
-                    case Some(message) => consumer.seek(message.getMessageId)
-                    case None          => throw new RuntimeException(s"Message with such ID not found in the topic: ${topicFqn}.")
+                    case Some(message) => consumers.foreach(_.seek(message.getMessageId))
+                    case None          => throw new RuntimeException(s"Message with such ID not found in the topic: $topicFqn.")
             else
-                getMessageByIdMultiTopic(adminClient, pulsarClient, topicsToConsume, v.messageId) match
+                getMessageByIdMultiTopic(adminClient, pulsarClient, nonPartitionedTopicFqns, v.messageId) match
                     case Some(message) =>
-                        consumer.seek(message.getPublishTime)
-                    case None          => throw new RuntimeException(s"Message with such ID not found.")
+                        consumers.foreach(_.seek(message.getPublishTime))
+                    case None => throw new RuntimeException(s"Message with such ID not found.")
         case v: DateTime =>
             val timestamp = v.dateTime.toEpochMilli
-            consumer.seek(timestamp)
+            consumers.foreach(_.seek(timestamp))
         case v: RelativeDateTime =>
             val now = ZonedDateTime.now()
             val dateTime = v.unit match
@@ -185,6 +195,6 @@ def handleStartFrom(
                 case DateTimeUnit.Second =>
                     val dt = now.minusSeconds(v.value)
                     if v.isRoundedToUnitStart then dt.truncatedTo(java.time.temporal.ChronoUnit.SECONDS) else dt
-            consumer.seek(dateTime.toInstant.toEpochMilli)
+            consumers.foreach(_.seek(dateTime.toInstant.toEpochMilli))
 
-    consumer.pause()
+    consumers.foreach(_.pause())
