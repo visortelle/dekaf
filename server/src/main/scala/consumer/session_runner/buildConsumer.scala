@@ -1,15 +1,11 @@
-package consumer
+package consumer.session_runner
 
-import _root_.consumer.session_config.ConsumerSessionConfig
-import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.*
-
-import scala.concurrent.duration.{MILLISECONDS, SECONDS}
 import scala.jdk.CollectionConverters.*
 
 def buildConsumer(
     pulsarClient: PulsarClient,
-    consumerName: ConsumerName,
+    consumerName: String,
     topicsToConsume: Vector[String],
     listener: MessageListener[Array[Byte]]
 ): Either[String, ConsumerBuilder[Array[Byte]]] =

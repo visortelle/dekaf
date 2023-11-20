@@ -1,4 +1,4 @@
-package consumer
+package consumer.session_runner
 
 import com.typesafe.scalalogging.Logger
 import org.apache.pulsar.client.api.MessageListener

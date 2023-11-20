@@ -10,29 +10,12 @@ import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 import org.apache.pulsar.client.api.{Message, Schema}
 import org.apache.pulsar.client.api.schema.SchemaDefinition
 import org.apache.pulsar.client.impl.{MessageImpl, TypedMessageBuilderImpl}
-import org.apache.pulsar.client.impl.schema.{
-    AvroSchema,
-    BooleanSchema,
-    ByteSchema,
-    BytesSchema,
-    DoubleSchema,
-    FloatSchema,
-    InstantSchema,
-    IntSchema,
-    JSONSchema,
-    LongSchema,
-    ProtobufNativeSchema,
-    ProtobufNativeSchemaUtils,
-    ProtobufSchema,
-    SchemaDefinitionImpl,
-    SchemaUtils,
-    ShortSchema,
-    StringSchema,
-}
+import org.apache.pulsar.client.impl.schema.{AvroSchema, BooleanSchema, ByteSchema, BytesSchema, DoubleSchema, FloatSchema, InstantSchema, IntSchema, JSONSchema, LongSchema, ProtobufNativeSchema, ProtobufNativeSchemaUtils, ProtobufSchema, SchemaDefinitionImpl, SchemaUtils, ShortSchema, StringSchema}
 import _root_.schema.avro
 import _root_.schema.protobufnative
 import com.google.protobuf.Descriptors
 import com.google.protobuf.descriptor.FileDescriptorProto
+import consumer.session_runner.converters
 import org.apache.pulsar.client.impl.schema.generic.{GenericAvroReader, GenericAvroWriter, GenericProtobufNativeRecord, GenericProtobufNativeSchema}
 import org.apache.pulsar.client.impl.schema.writer.AvroWriter
 import org.apache.pulsar.client.impl.schema.util.SchemaUtil

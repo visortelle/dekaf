@@ -1,14 +1,14 @@
-package consumer
-
-import com.tools.teal.pulsar.ui.api.v1.consumer as pb
-import com.typesafe.scalalogging.Logger
-import org.graalvm.polyglot.Context
-import org.graalvm.polyglot.proxy.*
-import io.circe.syntax.*
-import io.circe.generic.auto.*
+package consumer.session_runner
 
 import _root_.config.readConfigAsync
-import _root_.consumer.message_filter.{BasicMessageFilter, JsMessageFilter, MessageFilter, MessageFilterChain, MessageFilterChainMode}
+import _root_.consumer.message_filter.*
+import com.tools.teal.pulsar.ui.api.v1.consumer as pb
+import com.typesafe.scalalogging.Logger
+import io.circe.generic.auto.*
+import io.circe.syntax.*
+import org.graalvm.polyglot.{Context}
+import org.graalvm.polyglot.proxy.*
+
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
 
@@ -21,11 +21,11 @@ val JsonAccumulatorVarName = "accum"
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.dataDir.get, os.pwd) / "js" / "dist" / "libs.js")
 
-case class MessageFilterContextConfig(
+case class ConsumerSessionContextConfig(
     stdout: java.io.ByteArrayOutputStream
 )
 
-class MessageFilterContext(config: MessageFilterContextConfig):
+class ConsumerSessionContext(config: ConsumerSessionContextConfig):
     private val context = Context
         .newBuilder("js")
         .out(config.stdout)
@@ -141,7 +141,7 @@ def testJsFilter(context: Context, filter: JsMessageFilter, jsonMessage: JsonMes
 
 def getFilterTestResult(
     filter: MessageFilter,
-    messageFilterContext: MessageFilterContext,
+    messageFilterContext: ConsumerSessionContext,
     jsonMessage: JsonMessage,
     jsonValue: MessageValueToJsonResult
 ): FilterTestResult =
@@ -149,7 +149,7 @@ def getFilterTestResult(
 
 def getFilterChainTestResult(
     filterChain: MessageFilterChain,
-    messageFilterContext: MessageFilterContext,
+    consumerSessionContext: ConsumerSessionContext,
     jsonMessage: JsonMessage,
     jsonValue: MessageValueToJsonResult
 ): FilterTestResult =
@@ -174,7 +174,7 @@ def getFilterChainTestResult(
 
     val filterResults = chain.filters
         .filter(_.isEnabled)
-        .map(f => getFilterTestResult(f, messageFilterContext, jsonMessage, jsonValue))
+        .map(f => getFilterTestResult(f, consumerSessionContext, jsonMessage, jsonValue))
 
     val maybeErr = filterResults.find(fr => fr._1.isLeft)
     val filterChainResult = {
