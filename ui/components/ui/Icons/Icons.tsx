@@ -48,7 +48,7 @@ export type TopicIconProps = {
   isExpandable?: boolean;
   className?: string;
   isGray?: boolean;
-  isPartition?: boolean;
+  isPartitioned?: boolean;
   topicPersistency?: PulsarTopicPersistency;
 }
 export const TopicIcon: React.FC<TopicIconProps> = (props) => {
@@ -73,7 +73,7 @@ export const TopicIcon: React.FC<TopicIconProps> = (props) => {
       className={props.className}
       isGray={props.isGray}
       style={style}
-      addon={props.isPartition ? 'P' : undefined}
+      addon={props.isPartitioned ? 'P' : undefined}
     />
   );
 }

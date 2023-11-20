@@ -311,6 +311,14 @@ message GetTopicsStatsResponse {
   map<string, PartitionedTopicStats> partitioned_topic_stats = 3;
 }
 
+message GetIsPartitionedTopicRequest {
+  string topic_fqn = 1;
+}
+message GetIsPartitionedTopicResponse {
+  google.rpc.Status status = 1;
+  bool is_partitioned = 2;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
@@ -321,4 +329,5 @@ service TopicService {
   rpc GetTopicProperties(GetTopicPropertiesRequest) returns (GetTopicPropertiesResponse);
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
+  rpc GetIsPartitionedTopic(GetIsPartitionedTopicRequest) returns (GetIsPartitionedTopicResponse);
 }

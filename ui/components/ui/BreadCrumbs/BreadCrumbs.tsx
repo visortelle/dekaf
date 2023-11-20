@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./BreadCrumbs.module.css";
-import {TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon, PageNotFoundIcon} from "../Icons/Icons";
+import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon, PageNotFoundIcon } from "../Icons/Icons";
 import * as AppContext from '../../app/contexts/AppContext';
 import * as Notifications from "../../app/contexts/Notifications";
 import SvgIcon from "../SvgIcon/SvgIcon";
@@ -19,9 +19,9 @@ export type CrumbType =
   "tenant" |
   "namespace" |
   "persistent-topic" |
-  "persistent-topic-partition" |
+  "persistent-topic-partitioned" |
   "non-persistent-topic" |
-  "non-persistent-topic-partition" |
+  "non-persistent-topic-partitioned" |
   "subscription" |
   "page-not-found" |
   "link";
@@ -61,14 +61,14 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       case "persistent-topic":
         icon = <TopicIcon topicPersistency='persistent' />;
         break;
-      case "persistent-topic-partition":
-        icon = <TopicIcon topicPersistency='persistent' isPartition />;
+      case "persistent-topic-partitioned":
+        icon = <TopicIcon topicPersistency='persistent' isPartitioned />;
         break;
       case "non-persistent-topic":
         icon = <TopicIcon topicPersistency='non-persistent' />;
         break;
-      case "non-persistent-topic-partition":
-        icon = <TopicIcon topicPersistency='non-persistent' isPartition />;
+      case "non-persistent-topic-partitioned":
+        icon = <TopicIcon topicPersistency='non-persistent' isPartitioned />;
         break;
       case "subscription":
         icon = <SubscriptionIcon />;

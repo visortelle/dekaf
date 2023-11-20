@@ -20,6 +20,7 @@ import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, Pe
 import org.apache.pulsar.common.naming.TopicDomain
 import org.apache.pulsar.client.admin.ListTopicsOptions
 import pulsar_auth.RequestContext
+import topic.TopicPartitioning.NonPartitioned
 
 import scala.util.{Failure, Success, Try}
 
@@ -235,3 +236,20 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(pb.SetTopicPropertiesResponse(status = Some(status)))
         }
+
+    override def getIsPartitionedTopic(request: pb.GetIsPartitionedTopicRequest): Future[pb.GetIsPartitionedTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        val isPartitioned =
+            try
+                _root_.topic.getIsPartitionedTopic(adminClient, request.topicFqn) match
+                    case TopicPartitioning.Partitioned => true
+                    case TopicPartitioning.NonPartitioned => false
+            catch {
+                case err: Throwable =>
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    return Future.successful(pb.GetIsPartitionedTopicResponse(status = Some(status)))
+            }
+
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(pb.GetIsPartitionedTopicResponse(status = Some(status), isPartitioned))

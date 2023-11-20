@@ -331,7 +331,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         <TopicIcon
           isExpandable={isPartitioned}
           isExpanded={isExpanded}
-          isPartition={topic.partitioning.type === 'partition'}
+          isPartitioned={isPartitioned}
           onClick={isPartitioned ? toggleNodeExpanded : undefined}
           topicPersistency={topic.persistency}
         />

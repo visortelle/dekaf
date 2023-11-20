@@ -40,22 +40,22 @@
 
 .NodeIconAddon {
   color: #fff;
-  font-size: 10rem;
+  font-size: 8rem;
   font-weight: bold;
   white-space: no-wrap;
   background-color: var(--text-color);
-  width: 12rem;
+  min-width: 12rem;
+  padding: 0 1rem;
   align-items: center;
   border-radius: 3rem;
   justify-content: center;
-  height: 14rem;
+  height: 12rem;
   display: flex;
   line-height: 1;
   position: absolute;
   bottom: 0;
   left: 0;
-  transform: translate(163%, -106%);
-  box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.5);
+  transform: translate(153%, -129%);
 }
 
 .SvgIcon svg {
