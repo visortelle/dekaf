@@ -278,28 +278,6 @@ message PauseResponse {
   google.rpc.Status status = 1;
 }
 
-message SeekRequest {
-  string consumer_name = 1;
-  oneof seek {
-    google.protobuf.Timestamp timestamp = 2;
-    bytes message_id = 3;
-  }
-}
-
-message SeekResponse {
-  google.rpc.Status status = 1;
-}
-
-message SkipMessagesRequest {
-  string consumer_name = 1;
-  string subscription_name = 2;
-  int64 count = 3;
-}
-
-message SkipMessagesResponse {
-  google.rpc.Status status = 1;
-}
-
 message RunCodeRequest {
   string consumer_name = 1;
   string code = 2;
@@ -323,8 +301,6 @@ service ConsumerService {
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
   rpc Resume(ResumeRequest) returns (stream ResumeResponse);
   rpc Pause(PauseRequest) returns (PauseResponse);
-  rpc Seek(SeekRequest) returns (SeekResponse);
-  rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
   rpc ResolveTopicSelector(ResolveTopicSelectorRequest) returns (ResolveTopicSelectorResponse);
 }

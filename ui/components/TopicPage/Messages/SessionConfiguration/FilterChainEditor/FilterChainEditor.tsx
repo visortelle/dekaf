@@ -98,8 +98,8 @@ const FilterChainEditor: React.FC<FilterChainEditorProps> = (props) => {
             <div style={{ flex: '1', display: 'flex' }}>
               <Select<'all' | 'any'>
                 list={[
-                  { type: 'item', title: 'All filters should match', value: 'all' },
-                  { type: 'item', title: 'Any filter should match', value: 'any' },
+                  { type: 'item', title: 'Every filter match', value: 'all' },
+                  { type: 'item', title: 'Some filter match', value: 'any' },
                 ]}
                 value={itemSpec.mode}
                 onChange={v => onSpecChange({ ...itemSpec, mode: v })}

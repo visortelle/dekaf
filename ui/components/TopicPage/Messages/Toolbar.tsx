@@ -62,11 +62,12 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.Control}>
           <SmallButton
-            title={"Show tools"}
+            title={"Session Inspector"}
             svgIcon={consoleIcon}
             onClick={props.onToggleConsoleClick}
-            text="Tools"
-            type={'primary'}
+            text={"Tools"}
+            type="regular"
+            // appearance="borderless-semitransparent"
           />
         </div>
       </div>

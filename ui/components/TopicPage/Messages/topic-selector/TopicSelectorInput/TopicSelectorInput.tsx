@@ -140,10 +140,17 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
               onSpecChange({ topicSelector: { ...itemSpec.topicSelector, topicFqns: itemSpec.topicSelector.topicFqns.filter((x) => x !== v) } });
             }}
             getId={(v) => v}
-            renderItem={(v) => (
+            renderItem={(v, _, { isDraggingSomeItem }) => (
               <span
                 title={v}
-                style={{ overflow: 'auto', whiteSpace: 'nowrap', textOverflow: 'ellipsis', scrollbarWidth: 'thin' }}
+                style={{
+                  whiteSpace: isDraggingSomeItem ? 'nowrap' : 'unset',
+                  wordBreak: isDraggingSomeItem ? 'unset' : 'break-all',
+                  overflow: isDraggingSomeItem ? 'hidden' : 'unset',
+                  textOverflow: 'ellipsis',
+                  scrollbarWidth: 'thin',
+                  padding: '4rem 0'
+                }}
               >
                 {v}
               </span>)}

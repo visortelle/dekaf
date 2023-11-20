@@ -75,9 +75,9 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
         value={itemSpec.coloringRules}
         onChange={(v) => onSpecChange({ ...itemSpec, coloringRules: v })}
         getId={(item) => item.type === 'reference' ? item.ref : item.val.metadata.id}
-        renderItem={(rule, i, isCollapsed) => {
+        renderItem={(rule, i, { isCollapsed, isDraggingSomeItem }) => {
           return (
-            <div className={`${s.ColoringRuleInput} ${isCollapsed ? s.CollapsedColoringRuleInput : ''}`}>
+            <div className={`${s.ColoringRuleInput} ${(isCollapsed || isDraggingSomeItem) ? s.CollapsedColoringRuleInput : ''}`}>
               <ColoringRuleInput
                 value={rule}
                 onChange={(v) => {
@@ -86,7 +86,7 @@ const ColoringRuleChainInput: React.FC<ColoringRuleChainInputProps> = (props) =>
                   onSpecChange({ ...itemSpec, coloringRules: newRules });
                 }}
                 libraryContext={props.libraryContext}
-                appearance={isCollapsed ? 'compact' : undefined}
+                appearance={(isCollapsed || isDraggingSomeItem) ? 'compact' : undefined}
               />
             </div>
           )
