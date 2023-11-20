@@ -20,6 +20,14 @@ message ListTopicsResponse {
   repeated string topics = 2;
 }
 
+message ListPartitionedTopicsRequest {
+  string namespace = 1;
+}
+message ListPartitionedTopicsResponse {
+  google.rpc.Status status = 1;
+  repeated string topics = 2;
+}
+
 message PartitionedTopicMetadata {
   google.protobuf.Int32Value partitions = 1;
   map<string, string> properties = 2;
@@ -308,6 +316,7 @@ service TopicService {
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
   rpc GetTopicsInternalStats(GetTopicsInternalStatsRequest) returns (GetTopicsInternalStatsResponse);
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
+  rpc ListPartitionedTopics(ListPartitionedTopicsRequest) returns (ListPartitionedTopicsResponse);
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse);
   rpc GetTopicProperties(GetTopicPropertiesRequest) returns (GetTopicPropertiesResponse);
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);

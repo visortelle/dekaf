@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import useSWR, { SWRConfiguration } from 'swr';
 import s from './NavigationTree.module.css'
 import * as AppContext from '../../../app/contexts/AppContext';
@@ -12,8 +12,43 @@ import { routes } from '../../../routes';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import SmallButton from '../../SmallButton/SmallButton';
 import copyIcon from './copy.svg';
+import { TopicTreeNode, TreeNode } from './TreeView';
+import { partition } from 'lodash';
+import { customTopicsNamesSort } from '../../../NamespacePage/Topics/sorting';
 
 const swrConfiguration: SWRConfiguration = { dedupingInterval: 10000 };
+
+const parseTopicFqn = (topicFqn: string): { persistency: 'persistent' | 'non-persistent', tenant: string, namespace: string, topic: string } => {
+  const [persistency, rest] = topicFqn.split("://");
+  const [tenant, namespace, topic] = rest.split("/");
+  return {
+    persistency: persistency as 'persistent' | 'non-persistent',
+    tenant,
+    namespace,
+    topic
+  }
+}
+
+const partitionRegexp = /.*-partition-\d+$/;
+const topicTreeNodeFromFqn = (topicFqn: string, isPartitioned: boolean): TopicTreeNode => {
+  const { persistency, tenant, namespace, topic } = parseTopicFqn(topicFqn);
+  const isPartition = isPartitioned ? false : partitionRegexp.test(topicFqn);
+
+  let partitioning: TopicTreeNode['partitioning'] = isPartitioned ? { type: "partitioned" } : { type: "non-partitioned" };
+  if (isPartition) {
+    partitioning = { type: "partition" };
+  }
+
+  return {
+    type: 'topic',
+    partitioning,
+    persistency,
+    tenant,
+    namespace,
+    topic,
+    topicFqn
+  }
+};
 
 export type PulsarInstanceProps = {
   forceReloadKey: number;
@@ -75,6 +110,8 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
     notifyError(`Unable to fetch namespaces. ${namespacesError.toString()}`);
   }
 
+  const resourceFqn = props.tenant;
+
   return (
     <Link
       to={routes.tenants.tenant.overview._.get({ tenant: props.tenant })}
@@ -89,13 +126,12 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
-            const resourceFqn = props.tenant;
             navigator.clipboard.writeText(resourceFqn);
             notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
           }}
           svgIcon={copyIcon}
           type={"regular"}
-          title="Copy fully qualified resource name to clipboard."
+          title={`Copy resource FQN: ${resourceFqn}`}
           appearance="borderless-semitransparent"
         />
       </div>
@@ -103,39 +139,30 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   );
 }
 
-function getTopicName(tn: string): string {
-  const topicUrlParts = tn.split('/');
-  return topicUrlParts[topicUrlParts.length - 1];
-};
 type PulsarNamespaceProps = {
   forceReloadKey: number,
   tenant: string;
   namespace: string;
-  onTopics: (topics: { persistent: string[], nonPersistent: string[] }) => void;
+  onTopics: (topics: { persistent: TopicTreeNode[], nonPersistent: TopicTreeNode[] }) => void;
   leftIndent: string;
   onDoubleClick: () => void;
   isActive: boolean;
   isFetchData: boolean;
 }
-function squashPartitionedTopics(topics: string[]): string[] {
-  return Array.from(
-    new Set(topics.map((topic: string) => topic.replace(/-partition-\d+$/, "")))
-  );
-}
+
 export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
   const { notifyError, notifySuccess } = Notifications.useContext();
   const { topicServiceClient } = GrpcClient.useContext();
 
-  const { data: _persistentTopics, error: persistentTopicsError } = useSWR<string[]>(
-    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
+  const { data: nonPartitionedTopicFqns, error: nonPartitionedTopicFqnsError } = useSWR<string[]>(
+    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
     async () => {
       const req = new topicsPb.ListTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-      req.setTopicDomain(topicsPb.TopicDomain.TOPIC_DOMAIN_PERSISTENT);
 
       const res = await topicServiceClient.listTopics(req, null);
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to fetch persistent topics. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to fetch non-partitioned topics. ${res.getStatus()?.getMessage()}`);
         return [];
       }
 
@@ -143,42 +170,52 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
     },
     swrConfiguration
   );
-  const persistentTopics = useMemo(() => (_persistentTopics || []).map(tn => getTopicName(tn)), [_persistentTopics]);
 
-  if (persistentTopicsError) {
-    notifyError(`Unable to fetch persistent topics topics. ${persistentTopicsError.toString()}`);
+  if (nonPartitionedTopicFqnsError) {
+    notifyError(`Unable to fetch non-partitioned topics. ${nonPartitionedTopicFqnsError.toString()}`);
   }
 
-  const { data: _nonPersistentTopics, error: nonPersistentTopicsError } = useSWR<string[]>(
-    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
+  const { data: partitionedTopicFqns, error: partitionedTopicFqnsError } = useSWR<string[]>(
+    props.isFetchData ? swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: props.tenant, namespace: props.namespace }) : null,
     async () => {
-      const req = new topicsPb.ListTopicsRequest();
+      const req = new topicsPb.ListPartitionedTopicsRequest();
       req.setNamespace(`${props.tenant}/${props.namespace}`);
-      req.setTopicDomain(topicsPb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT);
 
-      const res = await topicServiceClient.listTopics(req, null);
+      const res = await topicServiceClient.listPartitionedTopics(req, null);
       if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to fetch non-persistent topics. ${res.getStatus()?.getMessage()}`);
+        notifyError(`Unable to fetch partitioned topics. ${res.getStatus()?.getMessage()}`);
+        return [];
       }
 
       return res.getTopicsList();
     },
     swrConfiguration
   );
-  const nonPersistentTopics = useMemo(() => (_nonPersistentTopics || []).map(tn => getTopicName(tn)), [_nonPersistentTopics]);
 
-  if (nonPersistentTopicsError) {
-    notifyError(`Unable to fetch non-persistent topics. ${persistentTopicsError.toString()}`);
+  if (partitionedTopicFqnsError) {
+    notifyError(`Unable to fetch partitioned topics. ${partitionedTopicFqnsError.toString()}`);
   }
+
+  const [persistentPartitionedTopics, nonPersistentPartitionedTopics] = partition(partitionedTopicFqns, (t) => t.startsWith('persistent'))
+  const [persistentNonPartitionedTopics, nonPersistentNonPartitionedTopics] = partition(nonPartitionedTopicFqns, (t) => t.startsWith('persistent'));
+
+  const persistentTreeNodes = persistentPartitionedTopics.map(t => topicTreeNodeFromFqn(t, true))
+    .concat(persistentNonPartitionedTopics.map(t => topicTreeNodeFromFqn(t, false)))
+    .sort((a, b) => customTopicsNamesSort(a.topicFqn, b.topicFqn));
+
+  const nonPersistentTreeNodes = nonPersistentPartitionedTopics.map(t => topicTreeNodeFromFqn(t, true))
+    .concat(nonPersistentNonPartitionedTopics.map(t => topicTreeNodeFromFqn(t, false)))
+    .sort((a, b) => customTopicsNamesSort(a.topicFqn, b.topicFqn));
 
   useEffect(
     () => props.onTopics({
-      persistent: squashPartitionedTopics((persistentTopics || [])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })),
-      nonPersistent: squashPartitionedTopics((nonPersistentTopics || [])).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+      persistent: persistentTreeNodes,
+      nonPersistent: nonPersistentTreeNodes
     }),
-    [persistentTopics, nonPersistentTopics, props.forceReloadKey]
+    [nonPartitionedTopicFqns, partitionedTopicFqns, props.forceReloadKey]
   );
 
+  const resourceFqn = `${props.tenant}/${props.namespace}`;
   return (
     <Link
       to={routes.tenants.tenant.namespaces.namespace.overview._.get({ tenant: props.tenant, namespace: props.namespace })}
@@ -193,13 +230,12 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
-            const resourceFqn = `${props.tenant}/${props.namespace}`;
             navigator.clipboard.writeText(resourceFqn);
             notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
           }}
           svgIcon={copyIcon}
           type={"regular"}
-          title="Copy fully qualified resource name to clipboard."
+          title={`Copy resource FQN: ${resourceFqn}`}
           appearance="borderless-semitransparent"
         />
       </div>
@@ -208,40 +244,43 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
 }
 
 export type PulsarTopicProps = {
-  tenant: string;
-  namespace: string;
-  topic: string;
-  topicPersistency: 'persistent' | 'non-persistent';
+  treeNode: TreeNode,
   leftIndent: string;
   onDoubleClick: () => void;
   isActive: boolean;
   isFetchData: boolean;
 }
+const replacePartitionRegexp = /(.*)-(partition-\d+$)/;
 export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
-  const topicName = getTopicName(props.topic);
+  const treeNode = props.treeNode;
+  if (treeNode.type !== 'topic') {
+    return <></>;
+  }
+
   const { notifySuccess } = Notifications.useContext();
+
+  const resourceFqn = `${treeNode.persistency}://${treeNode.tenant}/${treeNode.namespace}/${treeNode.topic}`;
 
   return (
     <Link
-      to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: topicName, topicPersistency: props.topicPersistency })}
+      to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: treeNode.tenant, namespace: treeNode.namespace, topic: treeNode.topic, topicPersistency: treeNode.persistency })}
       className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span className={s.NodeLinkText}>{topicName}</span>
+      <span className={s.NodeLinkText}>{treeNode.topic.replace(replacePartitionRegexp, "$2")}</span>
 
       <div className={s.CopyResourceFqnButton}>
         <SmallButton
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
-            const resourceFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
             navigator.clipboard.writeText(resourceFqn);
             notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
           }}
           svgIcon={copyIcon}
           type={"regular"}
-          title="Copy fully qualified resource name to clipboard."
+          title={`Copy resource FQN: ${resourceFqn}`}
           appearance="borderless-semitransparent"
         />
       </div>

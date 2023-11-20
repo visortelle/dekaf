@@ -1,4 +1,4 @@
-import React, { MouseEventHandler } from 'react';
+import React, { MouseEventHandler, ReactElement } from 'react';
 
 import SvgIcon from '../SvgIcon/SvgIcon';
 
@@ -10,7 +10,7 @@ export type SmallButtonProps = {
   onClick: MouseEventHandler<HTMLButtonElement>,
   svgIcon?: string,
   text?: string,
-  title?: string,
+  title?: ReactElement | string,
   type?: 'regular' | 'primary' | 'danger',
   appearance?: 'regular' | 'borderless' | 'borderless-semitransparent',
   disabled?: boolean,

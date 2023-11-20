@@ -116,8 +116,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
           mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant }));
           break;
         case "namespace": {
-          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant, namespace }));
-          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant, namespace }));
+          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant, namespace }));
+          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant, namespace }));
         }
           break;
       }
@@ -143,23 +143,23 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     );
   };
 
-  const qualifiedResourceName = crumbsToQualifiedName(props.crumbs);
+  const resourceFqn = crumbsToQualifiedName(props.crumbs);
   return (
     <>
       <Favicons crumbs={props.crumbs} />
       <div className={s.BreadCrumbs}>
-        {qualifiedResourceName !== undefined && (
+        {resourceFqn !== undefined && (
           <div className={s.CopyNameButton}>
             <SmallButton
               onClick={() => {
-                if (qualifiedResourceName !== undefined) {
-                  navigator.clipboard.writeText(qualifiedResourceName);
-                  notifySuccess(<div>Fully qualified resource name copied to clipboard: {qualifiedResourceName}</div>);
+                if (resourceFqn !== undefined) {
+                  navigator.clipboard.writeText(resourceFqn);
+                  notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>);
                 }
               }}
               svgIcon={copyIcon}
               type={"regular"}
-              title="Copy fully qualified resource name to clipboard."
+              title={`Copy FQN: ${resourceFqn}`}
               appearance="borderless-semitransparent"
             />
           </div>

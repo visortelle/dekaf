@@ -88,10 +88,10 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   );
 
   const postCreateTopic = async () => {
-    const mutatePersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
-    const mutateNonPersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
+    const mutatePartitionedTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: props.tenant, namespace: props.namespace }));
+    const mutateNonPartitionedTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: props.tenant, namespace: props.namespace }));
 
-    await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics]);
+    await Promise.all([mutatePartitionedTopics, mutateNonPartitionedTopics]);
 
     navigate(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: props.tenant, namespace: props.namespace, topic: topicName, topicPersistency }));
   }

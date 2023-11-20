@@ -306,13 +306,14 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   const tenant: TreeNode | undefined =
     currentRoute?.params?.tenant === undefined
       ? undefined
-      : { type: "tenant", name: currentRoute?.params?.tenant || "unknown" };
+      : { type: "tenant", tenant: currentRoute?.params?.tenant || "unknown" };
   const namespace: TreeNode | undefined =
     currentRoute?.params?.namespace === undefined
       ? undefined
       : {
         type: "namespace",
-        name: currentRoute?.params?.namespace || "unknown",
+        tenant: currentRoute?.params?.tenant || "unknown",
+        namespace: currentRoute?.params?.namespace || "unknown",
       };
   const topicPersistency: PulsarTopicPersistency = currentRoute?.params
     ?.topicPersistency as PulsarTopicPersistency;
@@ -320,11 +321,12 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
     topicPersistency === undefined || currentRoute?.params?.topic === undefined
       ? undefined
       : {
-        type:
-          topicPersistency === "persistent"
-            ? "persistent-topic"
-            : "non-persistent-topic",
-        name: currentRoute?.params?.topic || "unknown",
+        type: "topic",
+        persistency: "persistent",
+        tenant: currentRoute?.params?.tenant || "unknown",
+        namespace: currentRoute?.params?.namespace || "unknown",
+        topic: currentRoute?.params?.topic || "unknown",
+        partitioning: {type: "non-partitioned" } // doesn't matter here
       };
 
   const withLayoutProps: WithLayoutProps = {

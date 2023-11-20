@@ -1,31 +1,86 @@
 import { isEqual, uniqWith } from 'lodash';
+import { DetectPartitionedTopicsResult, detectPartitionedTopics } from '../../../NamespacePage/Topics/Topics';
 
 export type Tree = {
   subForest: Tree[];
   rootLabel: TreeNode;
 }
 
-export type TreeNodeType = "instance" | "tenant" | "namespace" | "persistent-topic" | "non-persistent-topic"
+export type TopicPartitioning = {
+  type: 'partitioned',
+} | {
+  type: 'non-partitioned'
+} | {
+  type: 'partition'
+};
 
-export type TreeNode = { type: TreeNodeType, name: string };
+export function getTopicPartitioning(topicFqn: string, detectPartitionedTopicsResult: DetectPartitionedTopicsResult): TopicPartitioning {
+  const { partitionedTopics, nonPartitionedTopics } = detectPartitionedTopicsResult;
+
+  const maybePartitioned = partitionedTopics.find(t => t.topicFqn === topicFqn);
+  if (maybePartitioned !== undefined) {
+    return {
+      type: 'partitioned'
+    }
+  }
+
+  if (nonPartitionedTopics.find(t => t.topicFqn === topicFqn) !== undefined) {
+    return {
+      type: 'non-partitioned'
+    }
+  }
+
+  return { type: 'partition' }
+}
+
+export type TopicPersistency = 'persistent' | 'non-persistent';
+
+export type InstanceTreeNode = {
+  type: 'instance',
+  name: string
+};
+
+export type TenantTreeNode = {
+  type: 'tenant',
+  tenant: string,
+};
+
+export type NamespaceTreeNode = {
+  type: 'namespace',
+  tenant: string,
+  namespace: string
+};
+
+export type TopicTreeNode = {
+  type: 'topic',
+  partitioning: TopicPartitioning,
+  persistency: TopicPersistency,
+  tenant: string,
+  namespace: string,
+  topic: string,
+  topicFqn: string
+};
+
+
+export type TreeNode = InstanceTreeNode | TenantTreeNode | NamespaceTreeNode | TopicTreeNode;
+
+type TreeNodeType = TreeNode['type'];
 
 export type TreePath = TreeNode[];
 
 export const treePath = {
-  getTenant: (path: TreePath) => path.find(node => node.type === "tenant"),
-  getNamespace: (path: TreePath) => path.find(node => node.type === "namespace"),
-  getTopic: (path: TreePath) => path.find(node => node.type === "persistent-topic" || node.type === "non-persistent-topic"),
+  getTenant: (path: TreePath): TenantTreeNode => path.find(node => node.type === "tenant") as TenantTreeNode,
+  getNamespace: (path: TreePath): NamespaceTreeNode => path.find(node => node.type === "namespace") as NamespaceTreeNode,
+  getTopic: (path: TreePath): TopicTreeNode => path.find(node => node.type === "topic") as TopicTreeNode,
 
   isTenant: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "tenant",
   isNamespace: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "namespace",
-  isPersistentTopic: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "persistent-topic",
-  isNonPersistentTopic: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "non-persistent-topic",
+  isTopic: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "topic",
 
   getType: (path: TreePath): TreeNodeType | undefined => {
     if (treePath.isTenant(path)) return "tenant";
     if (treePath.isNamespace(path)) return "namespace";
-    if (treePath.isPersistentTopic(path)) return "persistent-topic";
-    if (treePath.isNonPersistentTopic(path)) return "non-persistent-topic";
+    if (treePath.isTopic(path)) return "topic";
   },
 
   hasPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.arePathsEqual(p, path)),
@@ -63,6 +118,19 @@ export type TreeToPlainTreeProps = {
   },
   alterTree: (tree: Tree, path: TreePath) => Tree,
 }
+
+export function getRootLabelName(treeNode: TreeNode): string {
+  switch (treeNode.type) {
+    case "instance":
+      return treeNode.name;
+    case "tenant":
+      return treeNode.tenant;
+    case "namespace":
+      return treeNode.namespace;
+    case "topic":
+      return treeNode.topic;
+  }
+}
 function treeToPlainTree(props: TreeToPlainTreeProps): PlainTreeNode[] {
   const { alterTree, getVisibility } = props;
   const tree = alterTree(props.tree, props.path);
@@ -74,7 +142,7 @@ function treeToPlainTree(props: TreeToPlainTreeProps): PlainTreeNode[] {
 
   const rootLabelNode: PlainTreeNode | undefined = visibility.rootLabel ? {
     type: props.rootLabel.type,
-    name: props.rootLabel.name,
+    name: getRootLabelName(props.rootLabel),
     path: props.path
   } : undefined;
 
