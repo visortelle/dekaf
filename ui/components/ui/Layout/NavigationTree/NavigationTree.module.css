@@ -93,6 +93,7 @@
 .TreeScrollParent {
   flex: 1;
   overflow: auto;
+  scrollbar-width: thin;
   padding-bottom: 24rem;
 }
 

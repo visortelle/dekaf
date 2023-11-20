@@ -1,14 +1,14 @@
-package consumer
+package consumer.session_runner
 
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.common.schema.SchemaInfo
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
 import scala.jdk.FutureConverters.*
+import scala.jdk.OptionConverters.*
 
 type TopicName = String
 type SchemasByVersion = Map[Long, SchemaInfo]

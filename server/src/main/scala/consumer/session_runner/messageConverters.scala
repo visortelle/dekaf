@@ -1,32 +1,17 @@
-package consumer
+package consumer.session_runner
 
+import _root_.conversions.primitiveConv.*
+import _root_.schema.{avro, protobufnative}
+import com.google.protobuf.{ByteString, timestamp}
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
-import _root_.schema.avro
-import _root_.schema.protobufnative
-import _root_.conversions.primitiveConv.{
-    bytesToBoolean,
-    bytesToFloat32,
-    bytesToFloat64,
-    bytesToInt16,
-    bytesToInt32,
-    bytesToInt64,
-    bytesToInt8,
-    bytesToJson,
-    bytesToJsonString,
-    bytesToString,
-    leftPad
-}
-
-import scala.jdk.CollectionConverters.*
-import scala.jdk.OptionConverters.*
-import com.google.protobuf.ByteString
-import com.google.protobuf.timestamp
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
 
 import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 import java.time.Instant
+import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
 
 type JsonValue = String
 type MessageValueToJsonResult = Either[Throwable, JsonValue]

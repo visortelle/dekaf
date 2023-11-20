@@ -8,6 +8,7 @@
 .Columns {
   display: flex;
   overflow: auto hidden;
+  scrollbar-width: thin;
   flex: 1 0;
   overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
   overscroll-behavior-y: contain;
@@ -19,6 +20,7 @@
   gap: 32rem;
   padding: 24rem 12rem;
   overflow: hidden scroll;
+  scrollbar-width: thin;
   height: 100%;
   flex: 0 0 500rem;
 }
@@ -26,6 +28,7 @@
 .TargetColumn {
   flex: 0 0 500rem;
   overflow: hidden scroll;
+  scrollbar-width: thin;
   position: relative;
 }
 
