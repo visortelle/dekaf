@@ -315,24 +315,26 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
         tenant: currentRoute?.params?.tenant || "unknown",
         namespace: currentRoute?.params?.namespace || "unknown",
       };
-  const topicPersistency: PulsarTopicPersistency = currentRoute?.params
-    ?.topicPersistency as PulsarTopicPersistency;
-  const topic: TreeNode | undefined =
-    topicPersistency === undefined || currentRoute?.params?.topic === undefined
+  const persistency: PulsarTopicPersistency = currentRoute?.params
+    ?.topicPersistency! as PulsarTopicPersistency;
+  const topic = currentRoute?.params?.topic || "unknown";
+  const topicNode: TreeNode | undefined =
+    persistency === undefined || currentRoute?.params?.topic === undefined
       ? undefined
       : {
         type: "topic",
-        persistency: "persistent",
-        tenant: currentRoute?.params?.tenant || "unknown",
-        namespace: currentRoute?.params?.namespace || "unknown",
-        topic: currentRoute?.params?.topic || "unknown",
-        partitioning: {type: "non-partitioned" } // doesn't matter here
+        persistency,
+        tenant: tenant?.tenant!,
+        namespace: namespace?.namespace!,
+        topic,
+        partitioning: {type: "non-partitioned" }, // doesn't matter here
+        topicFqn: `${persistency}://${tenant?.tenant}/${namespace?.namespace}/${topic}`
       };
 
   const withLayoutProps: WithLayoutProps = {
     layout: {
       navigationTree: {
-        selectedNodePath: [tenant, namespace, topic].filter(
+        selectedNodePath: [tenant, namespace, topicNode].filter(
           (n) => n !== undefined
         ) as TreeNode[],
       },

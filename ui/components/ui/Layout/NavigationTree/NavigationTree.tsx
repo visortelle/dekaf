@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
-import treeToPlainTree, { getRootLabelName, PlainTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
+import treeToPlainTree, { getRootLabelName, PlainTreeNode, TopicTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as tenantPb from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
@@ -207,6 +207,13 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             return getRootLabelName(tree.rootLabel).includes(filterQueryDebounced)
           }
 
+          if (tree.rootLabel.type === "topic" && tree.rootLabel.partitioning.type === "partition") {
+            return expandedPaths.filter(p => treePath.isTopic(p)).some(p => {
+              const topic = treePath.getTopic(p)!;
+              return (tree.rootLabel as TopicTreeNode).topicFqn.startsWith(topic.topicFqn);
+            });
+          }
+
           return path.length === 1 ? true : treePath.hasPath(expandedPaths, path.slice(0, path.length - 1));
         })(),
         subForest: (() => {
@@ -234,7 +241,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     let leftIndent = '0';
     if (node.type === 'instance') {
-      leftIndent === '5ch'
+      leftIndent = '5ch'
     } else if (node.type === 'topic' && partitionRegexp.test(node.name)) {
       leftIndent = `${((path.length + 1) * 3 - 1) + 3}ch`;
     } else {
@@ -318,11 +325,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           isFetchData={isExpanded || treePath.getTopic(filterPath)?.topic === node.name}
         />
       );
+
+      const isPartitioned = topic.partitioning.type === 'partitioned';
       nodeIcon = (
         <TopicIcon
-          isExpandable={false}
-          isExpanded={false}
-          onClick={() => undefined}
+          isExpandable={isPartitioned}
+          isExpanded={isExpanded}
+          isPartition={topic.partitioning.type === 'partition'}
+          onClick={isPartitioned ? toggleNodeExpanded : undefined}
           topicPersistency={topic.persistency}
         />
       )
@@ -362,6 +372,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }
 
   const isTreeInStuckState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
+
+  console.log("scrollToNode", scrollToPath);
 
   return (
     <div className={s.NavigationTree}>

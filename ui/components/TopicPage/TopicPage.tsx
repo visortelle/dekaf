@@ -36,24 +36,38 @@ export type TopicPageProps = {
   topicPersistency: PulsarTopicPersistency;
 };
 
+const partitionRegexp = /^(.*)-(partition-\d+)$/;
+
 const TopicPage: React.FC<TopicPageProps> = (props) => {
   const modals = Modals.useContext();
   const navigate = useNavigate();
 
   const { pathname } = useLocation();
-  let extraCrumbs: Crumb[] = [];
+
+  const isPartition = partitionRegexp.test(props.topic);
+  const topicName = isPartition ? props.topic.replace(partitionRegexp, "$1") : props.topic;
+  const partitionName = isPartition ? props.topic.replace(partitionRegexp, "$2") : undefined;
+
+  let extraCrumbs: Crumb[] = isPartition ?
+    [{
+      type: props.topicPersistency === "persistent" ? "persistent-topic-partition" : "non-persistent-topic-partition",
+      id: isPartition ? partitionName! : topicName,
+      value: isPartition ? partitionName! : topicName,
+    }] :
+    [];
+
   if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'messages', value: 'Messages' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'messages', value: 'Messages' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'overview', value: 'Overview' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'producers', value: 'Producers' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'producers', value: 'Producers' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '*', pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'schema', value: 'Schema' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'schema', value: 'Schema' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'policies', value: 'Policies' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'policies', value: 'Policies' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]);
   }
 
   const key = `${props.tenant}-${props.namespace}-${props.topic}`;
@@ -184,7 +198,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           },
           {
             id: `topic-${props.topic}`,
-            value: props.topic,
+            value: topicName,
             type: props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic",
           },
           ...extraCrumbs

@@ -104,6 +104,7 @@
   flex: 1;
   overflow: auto;
   position: relative;
+  padding-bottom: 24rem;
 }
 
 .TreeScrollParent {

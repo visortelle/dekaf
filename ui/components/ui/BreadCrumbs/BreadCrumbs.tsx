@@ -19,7 +19,9 @@ export type CrumbType =
   "tenant" |
   "namespace" |
   "persistent-topic" |
+  "persistent-topic-partition" |
   "non-persistent-topic" |
+  "non-persistent-topic-partition" |
   "subscription" |
   "page-not-found" |
   "link";
@@ -39,6 +41,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
   const tenant = props.crumbs[1]?.value;
   const namespace = props.crumbs[2]?.value;
   const topic = props.crumbs[3]?.value;
+  const topicPartition = props.crumbs[4]?.value;
+
   const { notifySuccess } = Notifications.useContext();
   const { pathname } = useLocation();
 
@@ -57,8 +61,14 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       case "persistent-topic":
         icon = <TopicIcon topicPersistency='persistent' />;
         break;
+      case "persistent-topic-partition":
+        icon = <TopicIcon topicPersistency='persistent' isPartition />;
+        break;
       case "non-persistent-topic":
         icon = <TopicIcon topicPersistency='non-persistent' />;
+        break;
+      case "non-persistent-topic-partition":
+        icon = <TopicIcon topicPersistency='non-persistent' isPartition />;
         break;
       case "subscription":
         icon = <SubscriptionIcon />;
@@ -90,11 +100,27 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
           topicPersistency: "persistent",
         });
         break;
-      case "non-persistent-topic":
+      case "persistent-topic-partition":
         href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
           tenant,
           namespace,
           topic,
+          topicPersistency: "persistent",
+        });
+        break;
+      case "non-persistent-topic":
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
+          tenant,
+          namespace,
+          topic: `${topic}-${topicPartition}`,
+          topicPersistency: "non-persistent",
+        });
+        break;
+      case "non-persistent-topic-partition":
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
+          tenant,
+          namespace,
+          topic: `${topic}-${topicPartition}`,
           topicPersistency: "non-persistent",
         });
         break;
@@ -175,6 +201,7 @@ export function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
   const tenant = crumbs[1]?.value;
   const namespace = crumbs[2]?.value;
   const topic = crumbs[3]?.value;
+  const topicPartition = crumbs[4]?.value;
 
   const currentResource = crumbs.findLast((crumb) => crumb.type !== "link");
 
@@ -187,6 +214,10 @@ export function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
       return `${"persistent"}://${tenant}/${namespace}/${topic}`;
     case "non-persistent-topic":
       return `${"non-persistent"}://${tenant}/${namespace}/${topic}`;
+    case "persistent-topic-partition":
+      return `${"persistent"}://${tenant}/${namespace}/${topic}-${topicPartition}`;
+    case "non-persistent-topic-partition":
+      return `${"non-persistent"}://${tenant}/${namespace}/${topic}-${topicPartition}`;
     default:
       return undefined;
   }

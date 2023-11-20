@@ -259,8 +259,6 @@ export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
 
   const { notifySuccess } = Notifications.useContext();
 
-  const resourceFqn = `${treeNode.persistency}://${treeNode.tenant}/${treeNode.namespace}/${treeNode.topic}`;
-
   return (
     <Link
       to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: treeNode.tenant, namespace: treeNode.namespace, topic: treeNode.topic, topicPersistency: treeNode.persistency })}
@@ -275,12 +273,12 @@ export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
-            navigator.clipboard.writeText(resourceFqn);
-            notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
+            navigator.clipboard.writeText(treeNode.topicFqn);
+            notifySuccess(<div>Fully qualified resource name copied to clipboard: {treeNode.topicFqn}</div>, Date.now().toString());
           }}
           svgIcon={copyIcon}
           type={"regular"}
-          title={`Copy resource FQN: ${resourceFqn}`}
+          title={`Copy resource FQN: ${treeNode.topicFqn}`}
           appearance="borderless-semitransparent"
         />
       </div>
