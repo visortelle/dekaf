@@ -23,8 +23,6 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
 import collapseAllIcon from './collapse-all.svg';
 import { PulsarTopicPersistency } from '../../../pulsar/pulsar-resources';
-import { tooltipId } from '../../Tooltip/Tooltip';
-import { renderToStaticMarkup } from 'react-dom/server';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -60,8 +58,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       }
 
       return res;
-    },
-    { refreshInterval: 15 }
+    }
   );
 
   if (tenantsDataError) {
@@ -319,17 +316,15 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         key={`tree-node-${pathStr}`}
         className={s.Node}
         onClick={handleNodeClick}
-        data-tooltip-id={tooltipId}
-        data-tooltip-delay-show={1000}
-        data-tooltip-html={renderToStaticMarkup(
-          <div>
-            <strong>Tree path:</strong> {node.path.map(p => p.name).join('/')}
-          </div>
-        )}
       >
         <div className={s.NodeContent}>
           <span>&nbsp;</span>
-          <div className={s.NodeIcon} style={{ marginLeft: leftIndent }}>{nodeIcon}</div>
+          <div
+            className={s.NodeIcon}
+            style={{ marginLeft: leftIndent }}
+          >
+            {nodeIcon}
+          </div>
           <span className={s.NodeTextContent}>{nodeContent}</span>
         </div>
       </div>

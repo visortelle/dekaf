@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mutate } from 'swr';
 
 import * as GrpcClient from '../../app/contexts/GrpcClient/GrpcClient';
 import * as Notifications from '../../app/contexts/Notifications';
+import * as BrokersConfig from '../../app/contexts/BrokersConfig';
 import { CreateNonPartitionedTopicRequest, CreatePartitionedTopicRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
 import { Code } from '../../../grpc-web/google/rpc/code_pb';
 import ConfigurationTable from '../../ui/ConfigurationTable/ConfigurationTable';
@@ -15,7 +16,7 @@ import { swrKeys } from '../../swrKeys';
 import { routes } from '../../routes';
 
 import s from './CreateTopic.module.css'
-import {help} from "../Topics/help";
+import { help } from "../Topics/help";
 import KeyValueEditor, { recordFromIndexedKv, recordToIndexedKv } from "../../ui/KeyValueEditor/KeyValueEditor";
 
 export type CreateTopicProps = {
@@ -29,13 +30,23 @@ type TopicPartitioning = 'partitioned' | 'non-partitioned';
 const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   const { notifyError } = Notifications.useContext();
   const { topicServiceClient } = GrpcClient.useContext();
+  const brokersConfig = BrokersConfig.useContext();
   const navigate = useNavigate();
 
   const [topicName, setTopicName] = React.useState('');
   const [topicPersistency, setTopicPersistency] = React.useState<TopicPersistency>('persistent');
-  const [topicPartitioning, setTopicPartitioning] = React.useState<TopicPartitioning>('non-partitioned');
-  const [numPartitions, setNumPartitions] = React.useState(2);
+  const [topicPartitioning, setTopicPartitioning] = React.useState<TopicPartitioning>('partitioned');
+  const [numPartitions, setNumPartitions] = React.useState(-1);
   const [properties, setProperties] = React.useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    try {
+      const defaultNumPartitions = parseInt(brokersConfig.get('defaultNumPartitions')?.value || '1')
+      setNumPartitions(defaultNumPartitions);
+    } catch (_) {
+      // ignore
+    }
+  }, [brokersConfig]);
 
   const topicNameInput = <Input value={topicName} onChange={setTopicName} focusOnMount />
   const topicPersistencyInput = (
@@ -60,7 +71,12 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
     />
   );
 
-  const numPartitionsInput = <Input type='number' value={numPartitions.toString()} onChange={v => setNumPartitions(parseInt(v))} />
+  const numPartitionsInput = <Input
+    type='number'
+    value={numPartitions.toString()}
+    onChange={v => setNumPartitions(parseInt(v))}
+    inputProps={{ min: 1 }}
+  />
 
   const propertiesEditorInput = (
     <KeyValueEditor
@@ -72,7 +88,7 @@ const CreateTopic: React.FC<CreateTopicProps> = (props) => {
   );
 
   const postCreateTopic = async () => {
-    const mutatePersistentTopics =  mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
+    const mutatePersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
     const mutateNonPersistentTopics = mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant: props.tenant, namespace: props.namespace }));
 
     await Promise.all([mutatePersistentTopics, mutateNonPersistentTopics]);

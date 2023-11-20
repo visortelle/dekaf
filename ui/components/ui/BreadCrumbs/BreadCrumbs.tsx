@@ -160,6 +160,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
               svgIcon={copyIcon}
               type={"regular"}
               title="Copy fully qualified resource name to clipboard."
+              appearance="borderless-semitransparent"
             />
           </div>
         )}
@@ -170,7 +171,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
   );
 };
 
-function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
+export function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
   const tenant = crumbs[1]?.value;
   const namespace = crumbs[2]?.value;
   const topic = crumbs[3]?.value;

@@ -10,6 +10,8 @@ import Link from '../../Link/Link';
 import { swrKeys } from '../../../swrKeys';
 import { routes } from '../../../routes';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
+import SmallButton from '../../SmallButton/SmallButton';
+import copyIcon from './copy.svg';
 
 const swrConfiguration: SWRConfiguration = { dedupingInterval: 10000 };
 
@@ -44,7 +46,7 @@ export type PulsarTenantProps = {
   isFetchData: boolean;
 }
 export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
-  const { notifyError } = Notifications.useContext();
+  const { notifyError, notifySuccess } = Notifications.useContext();
   const { namespaceServiceClient } = GrpcClient.useContext();
 
   const { data: namespaces, error: namespacesError } = useSWR<string[]>(
@@ -81,6 +83,22 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
       onDoubleClick={props.onDoubleClick}
     >
       <span className={s.NodeLinkText}>{props.tenant}</span>
+
+      <div className={s.CopyResourceFqnButton}>
+        <SmallButton
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const resourceFqn = props.tenant;
+            navigator.clipboard.writeText(resourceFqn);
+            notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
+          }}
+          svgIcon={copyIcon}
+          type={"regular"}
+          title="Copy fully qualified resource name to clipboard."
+          appearance="borderless-semitransparent"
+        />
+      </div>
     </Link>
   );
 }
@@ -105,7 +123,7 @@ function squashPartitionedTopics(topics: string[]): string[] {
   );
 }
 export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
-  const { notifyError } = Notifications.useContext();
+  const { notifyError, notifySuccess } = Notifications.useContext();
   const { topicServiceClient } = GrpcClient.useContext();
 
   const { data: _persistentTopics, error: persistentTopicsError } = useSWR<string[]>(
@@ -169,6 +187,22 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
       onDoubleClick={props.onDoubleClick}
     >
       <span className={s.NodeLinkText}>{props.namespace}</span>
+
+      <div className={s.CopyResourceFqnButton}>
+        <SmallButton
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const resourceFqn = `${props.tenant}/${props.namespace}`;
+            navigator.clipboard.writeText(resourceFqn);
+            notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
+          }}
+          svgIcon={copyIcon}
+          type={"regular"}
+          title="Copy fully qualified resource name to clipboard."
+          appearance="borderless-semitransparent"
+        />
+      </div>
     </Link>
   );
 }
@@ -185,6 +219,7 @@ export type PulsarTopicProps = {
 }
 export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
   const topicName = getTopicName(props.topic);
+  const { notifySuccess } = Notifications.useContext();
 
   return (
     <Link
@@ -194,6 +229,22 @@ export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
       onDoubleClick={props.onDoubleClick}
     >
       <span className={s.NodeLinkText}>{topicName}</span>
+
+      <div className={s.CopyResourceFqnButton}>
+        <SmallButton
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const resourceFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
+            navigator.clipboard.writeText(resourceFqn);
+            notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
+          }}
+          svgIcon={copyIcon}
+          type={"regular"}
+          title="Copy fully qualified resource name to clipboard."
+          appearance="borderless-semitransparent"
+        />
+      </div>
     </Link>
   );
 }
