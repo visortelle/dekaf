@@ -1,30 +1,21 @@
-package consumer
+package consumer.session_runner
 
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
-import zio.test.TestAspect.*
 
-import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
-import org.apache.pulsar.client.api.{Message, Schema}
+import org.apache.pulsar.client.api.Schema
 import org.apache.pulsar.client.api.schema.SchemaDefinition
-import org.apache.pulsar.client.impl.{MessageImpl, TypedMessageBuilderImpl}
+import org.apache.pulsar.client.impl.MessageImpl
 import org.apache.pulsar.client.impl.schema.{AvroSchema, BooleanSchema, ByteSchema, BytesSchema, DoubleSchema, FloatSchema, InstantSchema, IntSchema, JSONSchema, LongSchema, ProtobufNativeSchema, ProtobufNativeSchemaUtils, ProtobufSchema, SchemaDefinitionImpl, SchemaUtils, ShortSchema, StringSchema}
 import _root_.schema.avro
 import _root_.schema.protobufnative
-import com.google.protobuf.Descriptors
-import com.google.protobuf.descriptor.FileDescriptorProto
-import consumer.session_runner.converters
-import org.apache.pulsar.client.impl.schema.generic.{GenericAvroReader, GenericAvroWriter, GenericProtobufNativeRecord, GenericProtobufNativeSchema}
-import org.apache.pulsar.client.impl.schema.writer.AvroWriter
-import org.apache.pulsar.client.impl.schema.util.SchemaUtil
 import org.apache.pulsar.common.api.proto.MessageMetadata
 import schema.protobufnative.FileEntry
 import io.circe.parser.parse as parseJson
 
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 
 object convertersTest extends ZIOSpecDefault:
     def spec = suite(s"${this.getClass.toString} - messageValueToJson()")(

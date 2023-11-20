@@ -2,7 +2,6 @@ package consumer
 
 import _root_.consumer.session_config.ConsumerSessionConfig
 import _root_.pulsar_auth.RequestContext
-import com.google.protobuf.ByteString
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
@@ -13,8 +12,6 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.{
     CreateConsumerResponse,
     DeleteConsumerRequest,
     DeleteConsumerResponse,
-    MessageFilter as MessageFilterPb,
-    MessageFilterChain,
     PauseRequest,
     PauseResponse,
     ResolveTopicSelectorRequest,
@@ -25,13 +22,9 @@ import com.tools.teal.pulsar.ui.api.v1.consumer.{
     RunCodeResponse
 }
 import com.typesafe.scalalogging.Logger
-import org.apache.pulsar.client.admin.{PulsarAdmin, PulsarAdminException}
 import _root_.consumer.session_target.topic_selector.TopicSelector
 import consumer.session_runner.ConsumerSessionRunner
-import org.apache.pulsar.client.api.Message
 
-import java.time.Instant
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import scala.concurrent.Future
 import scala.jdk.OptionConverters.*

@@ -2,14 +2,13 @@ package consumer.session_runner
 
 import _root_.conversions.primitiveConv.*
 import _root_.schema.{avro, protobufnative}
-import com.google.protobuf.{ByteString, timestamp}
+import com.google.protobuf.ByteString
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
-import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
+import org.apache.pulsar.common.schema.SchemaType
+import io.circe.syntax.*
 
 import java.nio.charset.StandardCharsets
-import java.nio.{ByteBuffer, ByteOrder}
-import java.time.Instant
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
@@ -126,13 +125,13 @@ object converters:
             case SchemaType.PROTOBUF_NATIVE =>
                 protobufnative.converters.toJson(schemaInfo.getSchema, msgData).map(String(_, StandardCharsets.UTF_8))
             case SchemaType.KEY_VALUE       => Left(new Exception(s"Unsupported schema type: ${schemaInfo.getType}"))
-            case SchemaType.BOOLEAN         => bytesToBoolean(msgData).map(v => if v then "true" else "false")
-            case SchemaType.INT8            => bytesToInt8(msgData).map(_.toString)
-            case SchemaType.INT16           => bytesToInt16(msgData).map(_.toString)
-            case SchemaType.INT32           => bytesToInt32(msgData).map(_.toString)
-            case SchemaType.INT64           => bytesToInt64(msgData).map("\"" + _.toString + "\"")
-            case SchemaType.FLOAT           => bytesToFloat32(msgData).map(_.toString)
-            case SchemaType.DOUBLE          => bytesToFloat64(msgData).map(_.toString)
+            case SchemaType.BOOLEAN         => bytesToBoolean(msgData).map(_.asJson.toString)
+            case SchemaType.INT8            => bytesToInt8(msgData).map(_.asJson.toString)
+            case SchemaType.INT16           => bytesToInt16(msgData).map(_.asJson.toString)
+            case SchemaType.INT32           => bytesToInt32(msgData).map(_.asJson.toString)
+            case SchemaType.INT64           => bytesToInt64(msgData).map(_.asJson.toString)
+            case SchemaType.FLOAT           => bytesToFloat32(msgData).map(_.asJson.asNumber.get.toString)
+            case SchemaType.DOUBLE          => bytesToFloat64(msgData).map(_.asJson.asNumber.get.toString)
             case SchemaType.STRING          => Right(bytesToJsonString(msgData))
             case SchemaType.BYTES           => bytesToJson(msgData)
             case SchemaType.NONE            => bytesToJson(msgData)
