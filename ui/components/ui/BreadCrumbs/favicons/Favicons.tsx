@@ -13,7 +13,8 @@ export type FaviconsProps = {
 };
 
 const Favicons: React.FC<FaviconsProps> = (props) => {
-  const crumb = props.crumbs.findLast((crumb) => crumb.type !== "link");
+  const crumbIndex = props.crumbs.findLastIndex((crumb) => crumb.type !== "link");
+  const crumb = props.crumbs[crumbIndex];
 
   if (crumb === undefined) {
     return null;
@@ -33,16 +34,32 @@ const Favicons: React.FC<FaviconsProps> = (props) => {
     case "persistent-topic":
       favicon = persistentTopicFavicon;
       break;
+    case "persistent-topic-partition":
+      favicon = persistentTopicFavicon;
+      break;
+    case "persistent-topic-partitioned":
+      favicon = persistentTopicFavicon;
+      break;
     case "non-persistent-topic":
+      favicon = nonPersistentTopicFavicon;
+      break;
+    case "non-persistent-topic-partition":
+      favicon = nonPersistentTopicFavicon;
+      break;
+    case "non-persistent-topic-partitioned":
       favicon = nonPersistentTopicFavicon;
       break;
     default:
       favicon = undefined;
   }
 
+  const pageTitle = crumb.type === 'persistent-topic-partition' || crumb.type === 'non-persistent-topic-partition' ?
+    `${props.crumbs[crumbIndex - 1].value}-${crumb.value}` :
+    crumb.value;
+
   return (
     <Helmet>
-      {crumb && <title>{crumb.value}</title>}
+      {crumb && <title>{pageTitle}</title>}
       {favicon && <link rel="icon" type="image/png" href={`data:image/png;base64,${favicon}`} />}
     </Helmet>
   );

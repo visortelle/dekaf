@@ -73,7 +73,7 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
 
   let extraCrumbs: Crumb[] = isPartition ?
     [{
-      type: props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic",
+      type: props.topicPersistency === "persistent" ? "persistent-topic-partition" : "non-persistent-topic-partition",
       id: isPartition ? partitionName! : topicName,
       value: isPartition ? partitionName! : topicName,
     }] :
