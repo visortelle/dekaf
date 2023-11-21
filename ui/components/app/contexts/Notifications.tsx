@@ -3,7 +3,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import s from './Notifications.module.css';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import copyIcon from './copy.svg';
-import * as Notifications from "../../app/contexts/Notifications";
 import { renderToStaticMarkup } from 'react-dom/server';
 
 export const toastContainerId = '__dekaf__toast-container';
@@ -49,8 +48,6 @@ const defaultValue: Value = {
 const Context = React.createContext<Value>(defaultValue);
 
 export const DefaultProvider = ({ children }: { children: ReactElement }) => {
-  const { notifySuccess } = Notifications.useContext();
-
   return (
     <Context.Provider value={defaultValue}>
       <ToastContainer

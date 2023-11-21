@@ -25,6 +25,8 @@ type NavigationTreeProps = {
   selectedNodePath: TreePath;
 }
 
+const partitionRegexp = /^(.*)-(partition-\d+)$/g;
+const pulsarTopicFqnRegex = /^(persistent|non-persistent):\/\/([\w-]+)\/([\w-]+)\/([\w-]+)$/;
 const filterQuerySep = '/' as const;
 function filterQueryToTreePath(query: string): TreePath {
 
@@ -32,7 +34,6 @@ function filterQueryToTreePath(query: string): TreePath {
   const [tenant, namespace, topic, topicPartition] = queryParts;
 
   let treePath: TreePath = [];
-  console.log('qp', queryParts);
   switch (queryParts.length) {
     case 1: {
       treePath = [{ type: "tenant", tenant: tenant! }]
@@ -49,9 +50,34 @@ function filterQueryToTreePath(query: string): TreePath {
         { type: "namespace", tenant: tenant!, namespace: namespace! },
         {
           type: "topic",
-          tenant,
-          namespace,
-          topic,
+          tenant: tenant!,
+          namespace: namespace!,
+          topic: topic!,
+          persistency: "persistent", // doesn't matter here
+          partitioning: { type: 'non-partitioned' }, // doesn't matter here
+          topicFqn: "" // doesn't matter here
+        }
+      ]
+    }; break;
+    case 4: {
+      treePath = [
+        { type: "tenant", tenant: tenant! },
+        { type: "namespace", tenant: tenant!, namespace: namespace! },
+        {
+          type: "topic",
+          tenant: tenant!,
+          namespace: namespace!,
+          topic: topic!,
+          persistency: "persistent", // doesn't matter here
+          partitioning: { type: 'non-partitioned' }, // doesn't matter here
+          topicFqn: "" // doesn't matter here
+        },
+        {
+          type: "topic-partition",
+          tenant: tenant!,
+          namespace: namespace!,
+          topic: topic!,
+          partition: topicPartition!,
           persistency: "persistent", // doesn't matter here
           partitioning: { type: 'non-partitioned' }, // doesn't matter here
           topicFqn: "" // doesn't matter here
@@ -59,8 +85,6 @@ function filterQueryToTreePath(query: string): TreePath {
       ]
     }; break;
   }
-
-  console.log('tree path', treePath);
 
   return treePath;
 }
@@ -111,6 +135,23 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     const treePath = filterQueryToTreePath(filterQueryDebounced);
     setFilterPath(treePath);
   }, [filterQueryDebounced]);
+
+  useEffect(() => {
+    const isTopicFqn = pulsarTopicFqnRegex.test(filterQuery.trim());
+    if (!isTopicFqn) {
+      return;
+    }
+
+    const [_, rest] = filterQuery.split("://");
+
+    const [tenant, namespace, topic]: (string | undefined)[] = rest.split(filterQuerySep);
+    const isPartition = partitionRegexp.test(filterQuery);
+    const partition = topic.replace(partitionRegexp, "$2");
+    const topicName = isPartition ? topic.replace(partitionRegexp, "$1") : topic;
+
+    const newFilterQuery = partition === undefined ? `${tenant}/${namespace}/${topicName}` : `${tenant}/${namespace}/${topicName}/${partition}`;
+    setFilterQuery(newFilterQuery);
+  }, [filterQuery]);
 
   const navigateToPath = (path: TreePath) => {
     setScrollToPath((scrollToPath) => ({ ...scrollToPath, path, cursor: 0, state: 'in-progress' }));
@@ -207,18 +248,25 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           }
 
           if (filterPath.length !== 0) {
-            const a = path.every((pathPart, i) => {
+            return path.every((pathPart, i) => {
               const name = getRootLabelName(pathPart);
+              const filterPathPart = filterPath[i] as TreeNode | undefined;
+              const filterPathPartName = filterPathPart === undefined ? undefined : getRootLabelName(filterPathPart)
 
-              return i === filterPath.length - 1 ?
-                name.includes(getRootLabelName(filterPath[filterPath.length - 1])) :
-                name === getRootLabelName(filterPath[i]);
+              if (filterQueryDebounced.endsWith(filterQuerySep) && filterPathPartName === undefined && i === filterPath.length) {
+                return true;
+              }
+
+              if (filterPathPartName !== undefined && !filterQueryDebounced.endsWith(filterQuerySep) && name.startsWith(filterPathPartName)) {
+                return true;
+              }
+
+              if (filterPathPartName !== undefined && filterQueryDebounced.endsWith(filterQuerySep) && name === filterPathPartName) {
+                return true;
+              }
+
+              return false;
             });
-
-            const b = path.length === filterPath.length && getRootLabelName(filterPath[filterPath.length - 1]) === '' && getRootLabelName(filterPath[filterPath.length - 2]) === getRootLabelName(path[path.length - 2]);
-            return a || b;
-
-            // return getRootLabelName(tree.rootLabel).includes(filterQueryDebounced)
           }
 
           return path.length === 1 ? true : treePath.hasPath(expandedPaths, path.slice(0, path.length - 1));
