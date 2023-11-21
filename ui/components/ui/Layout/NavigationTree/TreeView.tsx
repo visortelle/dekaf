@@ -99,17 +99,17 @@ export const treePath = {
   }
 }
 
-export type PlainTreeNode = {
+export type FlattenTreeNode = {
   type: TreeNodeType;
   name: string;
   path: TreePath;
 }
 
-export type TreeToPlainTreeProps = {
+export type TreeToFlattenTreeProps = {
   tree: Tree;
   path: TreePath;
   getPathPart: (tree: Tree) => TreeNode;
-  plainTree: PlainTreeNode[];
+  plainTree: FlattenTreeNode[];
   rootLabel: TreeNode;
   getVisibility: (tree: Tree, path: TreePath) => {
     tree: boolean,
@@ -131,7 +131,7 @@ export function getRootLabelName(treeNode: TreeNode): string {
       return treeNode.topic;
   }
 }
-function treeToPlainTree(props: TreeToPlainTreeProps): PlainTreeNode[] {
+function treeToFlattenTree(props: TreeToFlattenTreeProps): FlattenTreeNode[] {
   const { alterTree, getVisibility } = props;
   const tree = alterTree(props.tree, props.path);
   const visibility = getVisibility(tree, props.path);
@@ -140,17 +140,17 @@ function treeToPlainTree(props: TreeToPlainTreeProps): PlainTreeNode[] {
     return props.plainTree;
   }
 
-  const rootLabelNode: PlainTreeNode | undefined = visibility.rootLabel ? {
+  const rootLabelNode: FlattenTreeNode | undefined = visibility.rootLabel ? {
     type: props.rootLabel.type,
     name: getRootLabelName(props.rootLabel),
     path: props.path
   } : undefined;
 
-  const subForestNodes: PlainTreeNode[] = tree.subForest.map<PlainTreeNode[]>((tree) => {
+  const subForestNodes: FlattenTreeNode[] = tree.subForest.map<FlattenTreeNode[]>((tree) => {
     const pathPart = props.getPathPart(tree);
     const path = props.path.concat([pathPart]);
 
-    const t = treeToPlainTree({
+    const t = treeToFlattenTree({
       ...props,
       tree,
       path,
@@ -160,7 +160,7 @@ function treeToPlainTree(props: TreeToPlainTreeProps): PlainTreeNode[] {
     return t;
   }).flat();
 
-  return [rootLabelNode].concat(subForestNodes).filter(node => node !== undefined) as PlainTreeNode[];
+  return [rootLabelNode].concat(subForestNodes).filter(node => node !== undefined) as FlattenTreeNode[];
 }
 
-export default treeToPlainTree;
+export default treeToFlattenTree;

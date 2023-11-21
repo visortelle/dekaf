@@ -16,7 +16,9 @@ import { TopicTreeNode, TreeNode } from './TreeView';
 import { partition } from 'lodash';
 import { customTopicsNamesSort } from '../../../NamespacePage/Topics/sorting';
 
-const swrConfiguration: SWRConfiguration = { dedupingInterval: 10000 };
+const swrConfiguration: SWRConfiguration = {
+  dedupingInterval: 10000,
+};
 
 const parseTopicFqn = (topicFqn: string): { persistency: 'persistent' | 'non-persistent', tenant: string, namespace: string, topic: string } => {
   const [persistency, rest] = topicFqn.split("://");

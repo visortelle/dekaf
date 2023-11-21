@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
-import treeToPlainTree, { getRootLabelName, PlainTreeNode, TopicTreeNode, Tree, TreePath, treePath, TreeToPlainTreeProps } from './TreeView';
+import treeToFlattenTree, { getRootLabelName, FlattenTreeNode, TopicTreeNode, Tree, TreePath, treePath, TreeToFlattenTreeProps } from './TreeView';
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as tenantPb from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
@@ -34,14 +34,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const scrollParentRef = useRef(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const [tree, setTree] = useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
-  const [plainTree, setPlainTree] = useState<PlainTreeNode[]>([]);
+  const [flattenTree, setFlattenTree] = useState<FlattenTreeNode[]>([]);
   const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
   const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(15_000);
-  const [itemsRendered, setItemsRendered] = useState<ListItem<PlainTreeNode>[]>([]);
+  const [itemsRendered, setItemsRendered] = useState<ListItem<FlattenTreeNode>[]>([]);
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const { tenantServiceClient } = GrpcClient.useContext();
@@ -135,7 +135,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     if (scrollToPath.state === 'in-progress') {
       const pathToFind = scrollToPath.path.slice(0, scrollToPath.cursor + 1);
-      const nodeIndex = plainTree.findIndex(p => treePath.arePathsEqual(p.path, pathToFind));
+      const nodeIndex = flattenTree.findIndex(p => treePath.arePathsEqual(p.path, pathToFind));
 
       const isNotFound = nodeIndex === -1 && scrollToPath.cursor === scrollToPath.path.length - 1;
       if (isNotFound) {
@@ -157,7 +157,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         setScrollToPath((scrollToPath) => ({ ...scrollToPath, cursor: nextCursor }));
       }
     }
-  }, [plainTree, scrollToPath]);
+  }, [flattenTree, scrollToPath]);
 
   // XXX - Handle scroll to selected node. It can be quite buggy. Re-test it carefully.
   useEffect(() => {
@@ -177,7 +177,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }, [isTimedOutScrollToPathTimeout]);
 
   useEffect(() => {
-    const treeToPlainTreeProps: TreeToPlainTreeProps = {
+    const treeToFlattenTreeProps: TreeToFlattenTreeProps = {
       tree,
       plainTree: [],
       path: [],
@@ -231,10 +231,10 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         })(),
       }),
     }
-    setPlainTree(() => treeToPlainTree(treeToPlainTreeProps));
+    setFlattenTree(() => treeToFlattenTree(treeToFlattenTreeProps));
   }, [expandedPaths, filterPath, filterQueryDebounced, tree]);
 
-  const renderTreeItem = (node: PlainTreeNode) => {
+  const renderTreeItem = (node: FlattenTreeNode) => {
     const { path } = node;
     let nodeContent: React.ReactNode = null;
     let nodeIcon = null;
@@ -371,9 +371,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     );
   }
 
-  const isTreeInStuckState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
-
-  console.log("scrollToNode", scrollToPath);
+  const isTreeInUndefinedState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
 
   return (
     <div className={s.NavigationTree}>
@@ -402,12 +400,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       </div>
 
       <div className={s.TreeContainer}>
-        {!isTreeInStuckState && scrollToPath.state !== 'finished' && (
+        {!isTreeInUndefinedState && scrollToPath.state !== 'finished' && (
           <div className={s.Loading}>
             <span>Navigating to the selected resource...</span>
           </div>
         )}
-        {isTreeInStuckState && (
+        {isTreeInUndefinedState && (
           <div className={s.Loading}>
             <span>The tree is in a stuck state. Please decide:</span>
             <SmallButton
@@ -424,16 +422,16 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             />
           </div>
         )}
-        {!isTreeInStuckState && (
+        {!isTreeInUndefinedState && (
           <div
             ref={scrollParentRef}
             className={s.TreeScrollParent}
             style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
           >
-            <Virtuoso<PlainTreeNode>
+            <Virtuoso<FlattenTreeNode>
               ref={virtuosoRef}
               itemContent={(_, item) => renderTreeItem(item)}
-              data={plainTree}
+              data={flattenTree}
               customScrollParent={scrollParentRef.current || undefined}
               defaultItemHeight={remToPx(40)}
               fixedItemHeight={remToPx(40)}
@@ -442,14 +440,18 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
                   <span>No items found. <br />Try another filter query.</span>
                 </div>
               }}
-              increaseViewportBy={{ top: window.innerHeight / 2, bottom: window.innerHeight / 2 }}
-              totalCount={plainTree.length}
+              increaseViewportBy={{
+                top: window.innerHeight * 10, // otherwise we experiencing accidental tree nodes collapsing when fast-scrolling large lists.
+                bottom: window.innerHeight * 10 // otherwise we experiencing accidental tree nodes collapsing when fast-scrolling large lists.
+              }}
+              totalCount={flattenTree.length}
               itemsRendered={(items) => {
                 const isShouldUpdate = scrollToPath.state === 'finished' && !isEqual(itemsRendered, items)
                 if (isShouldUpdate) {
                   setItemsRendered(() => items);
                 }
               }}
+              computeItemKey={(_, item) => JSON.stringify(item.path)}
             />
           </div>
         )}
