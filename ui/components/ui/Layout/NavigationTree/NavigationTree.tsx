@@ -22,6 +22,9 @@ import { remToPx } from '../../rem-to-px';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
 import collapseAllIcon from './collapse-all.svg';
+import focusIcon from './focus.svg';
+import { usePrevious } from '../../../app/hooks/use-previous';
+import { boolean } from 'fp-ts';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -38,12 +41,13 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [filterQueryDebounced] = useDebounce(filterQuery, 400);
   const [filterPath, setFilterPath] = useState<TreePath>([]);
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
-  const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished' }>({ path: [], cursor: 0, state: 'pending' });
+  const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished', isBeenFinishedOnce: boolean }>({ path: [], cursor: 0, state: 'pending', isBeenFinishedOnce: false });
   const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(15_000);
   const [itemsRendered, setItemsRendered] = useState<ListItem<FlattenTreeNode>[]>([]);
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const { tenantServiceClient } = GrpcClient.useContext();
+  const previousSelectedNodePath = usePrevious(props.selectedNodePath);
   const navigate = useNavigate();
 
   const { data: tenantsData, error: tenantsDataError } = useSWR(
@@ -108,6 +112,11 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     setFilterPath(() => fp);
   }, [filterQueryDebounced]);
 
+  const navigateToPath = (path: TreePath) => {
+    setScrollToPath((scrollToPath) => ({ ...scrollToPath, path, cursor: 0, state: 'in-progress' }));
+    setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(path)]));
+  }
+
   // // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
     if (scrollToPath.state === 'finished') {
@@ -116,13 +125,12 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
 
     if (props.selectedNodePath.length === 0) {
       // Immediately finish scrolling workflow (!?) if no selected node specified.
-      setScrollToPath((scrollToPath) => ({ ...scrollToPath, state: 'finished' }));
+      setScrollToPath((scrollToPath) => ({ ...scrollToPath, state: 'finished', isBeenFinishedOnce: true }));
       return;
     }
 
     if (scrollToPath.cursor === 0) {
-      setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: props.selectedNodePath, cursor: 0, state: 'in-progress' }));
-      setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(props.selectedNodePath)]));
+      navigateToPath(props.selectedNodePath);
     }
   }, [props.selectedNodePath]);
 
@@ -149,7 +157,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         setTimeout(() => virtuosoRef.current?.scrollToIndex(nodeIndex));
 
         if (nextCursor === scrollToPath.path.length) {
-          setScrollToPath((scrollToPath) => ({ ...scrollToPath, state: 'finished' }));
+          setScrollToPath((scrollToPath) => ({ ...scrollToPath, state: 'finished', isBeenFinishedOnce: true }));
           return;
         }
 
@@ -170,7 +178,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     }
 
     navigate('/');
-    setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished' }));
+    setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished', isBeenFinishedOnce: true }));
     setExpandedPaths([]);
     virtuosoRef.current?.scrollToIndex(0);
   }, [isTimedOutScrollToPathTimeout]);
@@ -448,16 +456,23 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             appearance='borderless-semitransparent'
             type='regular'
           />
+          <SmallButton
+            title="Select Current Resource"
+            svgIcon={focusIcon}
+            onClick={() => navigateToPath(props.selectedNodePath)}
+            appearance='borderless-semitransparent'
+            type='regular'
+          />
         </div>
       </div>
 
       <div className={s.TreeContainer}>
-        {!isTreeInUndefinedState && scrollToPath.state !== 'finished' && (
+        {(!isTreeInUndefinedState && !scrollToPath.isBeenFinishedOnce) && scrollToPath.state !== 'finished' && (
           <div className={s.Loading}>
-            <span>Navigating to the selected resource...</span>
+            <span>Navigating o the selected resource...</span>
           </div>
         )}
-        {isTreeInUndefinedState && (
+        {isTreeInUndefinedState && !scrollToPath.isBeenFinishedOnce && (
           <div className={s.Loading}>
             <span>The tree is in a stuck state. Please decide:</span>
             <SmallButton
@@ -468,13 +483,13 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             <SmallButton
               text="Apply filter"
               onClick={() => {
-                setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished' }));
+                setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished', isBeenFinishedOnce: true }));
               }}
               type='primary'
             />
           </div>
         )}
-        {!isTreeInUndefinedState && (
+        {(!isTreeInUndefinedState || scrollToPath.isBeenFinishedOnce) && (
           <div
             ref={scrollParentRef}
             className={s.TreeScrollParent}
