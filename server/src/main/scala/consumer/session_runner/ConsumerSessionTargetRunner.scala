@@ -15,8 +15,6 @@ import org.apache.pulsar.client.api.Message
 
 import scala.util.{Failure, Success, Try}
 
-case class StreamDataHandler(var onNext: (msg: Message[Array[Byte]]) => Unit)
-
 type NonPartitionedTopicFqn = String
 
 val logger: Logger = Logger(getClass.getName)
@@ -28,23 +26,20 @@ case class ConsumerSessionTargetRunner(
     schemasByTopic: SchemasByTopic,
     consumerSessionContext: ConsumerSessionContext,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
-    var listener: TopicMessageListener,
-    var processedMessagesCount: Long,
-    var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[ResumeResponse]]
+    var consumerListener: ConsumerListener,
+    var stats: ConsumerSessionTargetStats
 ) {
     def resume(
-        grpcResponseObserver: io.grpc.stub.StreamObserver[ResumeResponse]
+        onNext: (msg: Option[consumerPb.Message], stats: ConsumerSessionTargetStats, errors: List[String]) => Unit
     ): Unit =
         val thisTarget = this
 
-        this.grpcResponseObserver = Some(grpcResponseObserver)
-
-        val listener = thisTarget.listener
-        val streamDataHandler = listener.streamDataHandler
+        val listener = thisTarget.consumerListener
+        val targetMessageHandler = listener.targetMessageHandler
         val consumerSessionContext = thisTarget.consumerSessionContext
 
-        streamDataHandler.onNext = (msg: Message[Array[Byte]]) =>
-            thisTarget.processedMessagesCount += 1
+        targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
+            thisTarget.stats.messagesProcessed += 1
 
             val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(thisTarget.schemasByTopic, msg)
 
@@ -57,27 +52,30 @@ case class ConsumerSessionTargetRunner(
                 .withAccumulator(jsonAccumulator)
                 .withDebugStdout(consumerSessionContext.getStdout())
 
-            val messages = filterResult match
-                case Right(true) => Seq(messageToSend)
-                case _           => Seq()
+            val maybeMessage = filterResult match
+                case Right(true) => Some(messageToSend)
+                case _           => None
 
-            val status: Status = filterResult match
-                case Right(_)  => Status(code = Code.OK.index)
-                case Left(err) => Status(code = Code.INVALID_ARGUMENT.index, message = err)
+            val serializationErrors = messageValueToJsonResult match
+                case Left(err) => List(err.getMessage)
+                case _         => List.empty
+            val filterErrors = filterResult match
+                case Left(err) => List(err)
+                case _         => List.empty
+            val errors = serializationErrors ++ filterErrors
 
-            val resumeResponse = ResumeResponse(
-                status = Some(status),
-                messages = messages,
-                processedMessages = thisTarget.processedMessagesCount
+            onNext(
+                msg = maybeMessage,
+                stats = stats,
+                errors = errors
             )
-            grpcResponseObserver.onNext(resumeResponse)
 
         listener.startAcceptingNewMessages()
         consumers.foreach((_, consumer) => consumer.resume())
 
     def pause(): Unit =
         consumers.foreach((_, consumer) => consumer.pause())
-        listener.stopAcceptingNewMessages()
+        consumerListener.stopAcceptingNewMessages()
 
     def stop(): Unit =
         consumers.foreach((_, consumer) =>
@@ -93,18 +91,17 @@ object ConsumerSessionTargetRunner:
         targetName: String,
         sessionContext: ConsumerSessionContext,
         targetConfig: ConsumerSessionTarget,
-        grpcResponseObserver: Option[io.grpc.stub.StreamObserver[ResumeResponse]],
         schemasByTopic: SchemasByTopic,
         adminClient: PulsarAdmin,
         pulsarClient: PulsarClient
     ): ConsumerSessionTargetRunner =
         Try {
             val nonPartitionedTopicFqns = targetConfig.topicSelector.getNonPartitionedTopics(adminClient = adminClient)
-            val listener = TopicMessageListener(StreamDataHandler(onNext = _ => ()))
+            val listener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ()))
 
             val consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]] = nonPartitionedTopicFqns.map { topicFqn =>
                 val consumerName = s"$sessionName-$targetName"
-                
+
                 buildConsumer(
                     pulsarClient = pulsarClient,
                     consumerName = consumerName,
@@ -124,10 +121,11 @@ object ConsumerSessionTargetRunner:
                 consumers = consumers,
                 messageFilterChain = targetConfig.messageFilterChain,
                 coloringRuleChain = targetConfig.coloringRuleChain,
-                grpcResponseObserver = grpcResponseObserver,
-                listener = listener,
+                consumerListener = listener,
                 schemasByTopic = schemasByTopic,
-                processedMessagesCount = 0
+                stats = ConsumerSessionTargetStats(
+                    messagesProcessed = 0
+                )
             )
         } match {
             case Success(runner) => runner

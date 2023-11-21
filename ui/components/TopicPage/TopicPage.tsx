@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import * as Modals from "../app/contexts/Modals/Modals";
-import { BreadCrumbsAtPageTop, Crumb } from "../ui/BreadCrumbs/BreadCrumbs";
+import { BreadCrumbsAtPageTop, Crumb, CrumbType } from "../ui/BreadCrumbs/BreadCrumbs";
 import { v4 as uuid } from 'uuid';
 import s from "./TopicPage.module.css";
 import Toolbar, { ToolbarButtonProps } from "../ui/Toolbar/Toolbar";
@@ -17,6 +17,8 @@ import Overview from "./Overview/Overview";
 import { matchPath, useLocation } from 'react-router-dom';
 import { PulsarTopicPersistency } from "../pulsar/pulsar-resources";
 import { createNewTarget } from "./create-new-target";
+import * as GrpcClient from '../app/contexts/GrpcClient/GrpcClient';
+import * as pb from "../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb";
 
 export type TopicPageView =
   | { type: "messages" }
@@ -36,24 +38,59 @@ export type TopicPageProps = {
   topicPersistency: PulsarTopicPersistency;
 };
 
+const partitionRegexp = /^(.*)-(partition-\d+)$/;
+
 const TopicPage: React.FC<TopicPageProps> = (props) => {
   const modals = Modals.useContext();
   const navigate = useNavigate();
+  const { topicServiceClient } = GrpcClient.useContext();
 
   const { pathname } = useLocation();
-  let extraCrumbs: Crumb[] = [];
+
+  const [isPartitioned, setIsPartitioned] = useState<boolean>();
+
+  useEffect(() => {
+    setIsPartitioned(false);
+
+    const req = new pb.GetIsPartitionedTopicRequest();
+    const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`.replace(partitionRegexp, "$1");
+    req.setTopicFqn(topicFqn);
+    topicServiceClient.getIsPartitionedTopic(req, null)
+      .then(res => setIsPartitioned(res.getIsPartitioned()))
+      .catch(() => { });
+  }, [props]);
+
+  const isPartition = partitionRegexp.test(props.topic);
+  const topicName = isPartition ? props.topic.replace(partitionRegexp, "$1") : props.topic;
+  const partitionName = isPartition ? props.topic.replace(partitionRegexp, "$2") : undefined;
+
+  let topicCrumbType: CrumbType;
+  if (isPartitioned) {
+    topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic-partitioned" : "non-persistent-topic-partitioned"
+  } else {
+    topicCrumbType = props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic"
+  }
+
+  let extraCrumbs: Crumb[] = isPartition ?
+    [{
+      type: props.topicPersistency === "persistent" ? "persistent-topic-partition" : "non-persistent-topic-partition",
+      id: isPartition ? partitionName! : topicName,
+      value: isPartition ? partitionName! : topicName,
+    }] :
+    [];
+
   if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.messages._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'messages', value: 'Messages' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'messages', value: 'Messages' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'overview', value: 'Overview' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'overview', value: 'Overview' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.producers._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'producers', value: 'Producers' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'producers', value: 'Producers' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema._.path + '*', pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'schema', value: 'Schema' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'schema', value: 'Schema' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.policies._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'policies', value: 'Policies' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'policies', value: 'Policies' }]);
   } else if (matchPath(routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.subscriptions._.path, pathname)) {
-    extraCrumbs = [{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]
+    extraCrumbs = extraCrumbs.concat([{ type: 'link', id: 'subscriptions', value: 'Subscriptions' }]);
   }
 
   const key = `${props.tenant}-${props.namespace}-${props.topic}`;
@@ -184,8 +221,8 @@ const TopicPage: React.FC<TopicPageProps> = (props) => {
           },
           {
             id: `topic-${props.topic}`,
-            value: props.topic,
-            type: props.topicPersistency === "persistent" ? "persistent-topic" : "non-persistent-topic",
+            value: topicName,
+            type: topicCrumbType,
           },
           ...extraCrumbs
         ]}

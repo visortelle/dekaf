@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./BreadCrumbs.module.css";
-import {TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon, PageNotFoundIcon} from "../Icons/Icons";
+import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon, SubscriptionIcon, PageNotFoundIcon } from "../Icons/Icons";
 import * as AppContext from '../../app/contexts/AppContext';
 import * as Notifications from "../../app/contexts/Notifications";
 import SvgIcon from "../SvgIcon/SvgIcon";
@@ -19,7 +19,11 @@ export type CrumbType =
   "tenant" |
   "namespace" |
   "persistent-topic" |
+  "persistent-topic-partitioned" |
+  "persistent-topic-partition" |
   "non-persistent-topic" |
+  "non-persistent-topic-partitioned" |
+  "non-persistent-topic-partition" |
   "subscription" |
   "page-not-found" |
   "link";
@@ -39,6 +43,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
   const tenant = props.crumbs[1]?.value;
   const namespace = props.crumbs[2]?.value;
   const topic = props.crumbs[3]?.value;
+  const topicPartition = props.crumbs[4]?.value;
+
   const { notifySuccess } = Notifications.useContext();
   const { pathname } = useLocation();
 
@@ -57,7 +63,19 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
       case "persistent-topic":
         icon = <TopicIcon topicPersistency='persistent' />;
         break;
+      case "persistent-topic-partitioned":
+        icon = <TopicIcon topicPersistency='persistent' isPartitioned />;
+        break;
+      case "persistent-topic-partition":
+        icon = <TopicIcon topicPersistency='persistent' />;
+        break;
       case "non-persistent-topic":
+        icon = <TopicIcon topicPersistency='non-persistent' />;
+        break;
+      case "non-persistent-topic-partitioned":
+        icon = <TopicIcon topicPersistency='non-persistent' isPartitioned />;
+        break;
+     case "non-persistent-topic-partition":
         icon = <TopicIcon topicPersistency='non-persistent' />;
         break;
       case "subscription":
@@ -90,11 +108,43 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
           topicPersistency: "persistent",
         });
         break;
+      case "persistent-topic-partitioned":
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
+          tenant,
+          namespace,
+          topic,
+          topicPersistency: "persistent",
+        });
+        break;
+      case "persistent-topic-partition":
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
+          tenant,
+          namespace,
+          topic: `${topic}-${topicPartition}`,
+          topicPersistency: "persistent",
+        });
+        break;
       case "non-persistent-topic":
         href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
           tenant,
           namespace,
           topic,
+          topicPersistency: "non-persistent",
+        });
+        break;
+      case "non-persistent-topic-partitioned":
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
+          tenant,
+          namespace,
+          topic,
+          topicPersistency: "non-persistent",
+        });
+        break;
+      case "non-persistent-topic-partition":
+        href = routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({
+          tenant,
+          namespace,
+          topic: `${topic}-${topicPartition}`,
           topicPersistency: "non-persistent",
         });
         break;
@@ -116,8 +166,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
           mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant }));
           break;
         case "namespace": {
-          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.persistentTopics._({ tenant, namespace }));
-          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPersistentTopics._({ tenant, namespace }));
+          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant, namespace }));
+          mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant, namespace }));
         }
           break;
       }
@@ -143,23 +193,24 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
     );
   };
 
-  const qualifiedResourceName = crumbsToQualifiedName(props.crumbs);
+  const resourceFqn = crumbsToQualifiedName(props.crumbs);
   return (
     <>
       <Favicons crumbs={props.crumbs} />
       <div className={s.BreadCrumbs}>
-        {qualifiedResourceName !== undefined && (
+        {resourceFqn !== undefined && (
           <div className={s.CopyNameButton}>
             <SmallButton
               onClick={() => {
-                if (qualifiedResourceName !== undefined) {
-                  navigator.clipboard.writeText(qualifiedResourceName);
-                  notifySuccess(<div>Fully qualified resource name copied to clipboard: {qualifiedResourceName}</div>);
+                if (resourceFqn !== undefined) {
+                  navigator.clipboard.writeText(resourceFqn);
+                  notifySuccess(<span>Fully qualified resource name copied to clipboard:<br /><strong>{resourceFqn}</strong></span>, Date.now().toString());
                 }
               }}
               svgIcon={copyIcon}
               type={"regular"}
-              title="Copy fully qualified resource name to clipboard."
+              title={<span>Copy resource FQN:<br /><strong>{resourceFqn}</strong></span>}
+              appearance="borderless-semitransparent"
             />
           </div>
         )}
@@ -170,10 +221,11 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
   );
 };
 
-function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
+export function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
   const tenant = crumbs[1]?.value;
   const namespace = crumbs[2]?.value;
   const topic = crumbs[3]?.value;
+  const topicPartition = crumbs[4]?.value;
 
   const currentResource = crumbs.findLast((crumb) => crumb.type !== "link");
 
@@ -186,6 +238,14 @@ function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
       return `${"persistent"}://${tenant}/${namespace}/${topic}`;
     case "non-persistent-topic":
       return `${"non-persistent"}://${tenant}/${namespace}/${topic}`;
+    case "persistent-topic-partitioned":
+      return `${"persistent"}://${tenant}/${namespace}/${topic}`;
+    case "non-persistent-topic-partitioned":
+      return `${"non-persistent"}://${tenant}/${namespace}/${topic}`;
+    case "persistent-topic-partition":
+      return `${"persistent"}://${tenant}/${namespace}/${topic}-${topicPartition}`;
+    case "non-persistent-topic-partition":
+      return `${"non-persistent"}://${tenant}/${namespace}/${topic}-${topicPartition}`;
     default:
       return undefined;
   }

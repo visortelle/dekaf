@@ -27,5 +27,5 @@ export function customTopicsNamesSort(a: string, b: string): number {
     return itemA.partition - itemB.partition;
   }
 
-  return itemA.base.localeCompare(itemB.base);
+  return itemA.base.localeCompare(itemB.base, 'en', { numeric: true });
 }

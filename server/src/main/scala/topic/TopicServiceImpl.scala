@@ -18,7 +18,9 @@ import java.util.concurrent.{CompletableFuture, TimeUnit}
 import scala.concurrent.duration.Duration
 import org.apache.pulsar.common.policies.data.{PartitionedTopicInternalStats, PersistentTopicInternalStats}
 import org.apache.pulsar.common.naming.TopicDomain
+import org.apache.pulsar.client.admin.ListTopicsOptions
 import pulsar_auth.RequestContext
+import topic.TopicPartitioning.NonPartitioned
 
 import scala.util.{Failure, Success, Try}
 
@@ -57,23 +59,44 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
         logger.debug(s"List topics for namespace: ${request.namespace}")
         val adminClient = RequestContext.pulsarAdmin.get()
 
+        val options = ListTopicsOptions.builder().includeSystemTopic(true).build()
         val topics =
             try
                 request.topicDomain match
                     case pb.TopicDomain.TOPIC_DOMAIN_PERSISTENT =>
-                        adminClient.topics.getList(request.namespace, TopicDomain.persistent)
+                        adminClient.topics.getList(request.namespace, TopicDomain.persistent, options).asScala.toVector
                     case pb.TopicDomain.TOPIC_DOMAIN_NON_PERSISTENT =>
-                        adminClient.topics.getList(request.namespace, TopicDomain.non_persistent)
+                        adminClient.topics.getList(request.namespace, TopicDomain.non_persistent, options).asScala.toVector
                     case _ =>
-                        adminClient.topics.getList(request.namespace)
+                        val persistent = adminClient.topics.getList(request.namespace, TopicDomain.persistent, options).asScala.toVector
+                        val nonPersistent = adminClient.topics.getList(request.namespace, TopicDomain.non_persistent, options).asScala.toVector
+                        persistent ++ nonPersistent
             catch {
-                case err =>
+                case err: Throwable =>
                     val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                     return Future.successful(pb.ListTopicsResponse(status = Some(status)))
             }
 
         val status: Status = Status(code = Code.OK.index)
-        Future.successful(pb.ListTopicsResponse(status = Some(status), topics = topics.asScala.toSeq))
+        Future.successful(pb.ListTopicsResponse(status = Some(status), topics = topics))
+
+    override def listPartitionedTopics(request: pb.ListPartitionedTopicsRequest): Future[pb.ListPartitionedTopicsResponse] =
+        logger.debug(s"List partitioned topics for namespace: ${request.namespace}")
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        val topics =
+            try
+                val options = ListTopicsOptions.builder().includeSystemTopic(true).build()
+                adminClient.topics.getPartitionedTopicList(request.namespace, options)
+            catch {
+                case err: Throwable =>
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    return Future.successful(pb.ListPartitionedTopicsResponse(status = Some(status)))
+            }
+
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(pb.ListPartitionedTopicsResponse(status = Some(status), topics = topics.asScala.toSeq))
+
 
     override def getTopicsInternalStats(request: pb.GetTopicsInternalStatsRequest): Future[pb.GetTopicsInternalStatsResponse] =
         val adminClient = RequestContext.pulsarAdmin.get()
@@ -213,3 +236,20 @@ class TopicServiceImpl extends pb.TopicServiceGrpc.TopicService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(pb.SetTopicPropertiesResponse(status = Some(status)))
         }
+
+    override def getIsPartitionedTopic(request: pb.GetIsPartitionedTopicRequest): Future[pb.GetIsPartitionedTopicResponse] =
+        val adminClient = RequestContext.pulsarAdmin.get()
+
+        val isPartitioned =
+            try
+                _root_.topic.getIsPartitionedTopic(adminClient, request.topicFqn) match
+                    case TopicPartitioning.Partitioned => true
+                    case TopicPartitioning.NonPartitioned => false
+            catch {
+                case err: Throwable =>
+                    val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
+                    return Future.successful(pb.GetIsPartitionedTopicResponse(status = Some(status)))
+            }
+
+        val status: Status = Status(code = Code.OK.index)
+        Future.successful(pb.GetIsPartitionedTopicResponse(status = Some(status), isPartitioned))
