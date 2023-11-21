@@ -29,8 +29,7 @@ const Button: React.FC<ButtonProps> = (props) => {
       }
 
       return res.getName()?.getValue();
-    },
-    {refreshInterval: 15}
+    }
   );
 
   if (currentCredentialsError) {

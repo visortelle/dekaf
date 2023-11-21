@@ -295,6 +295,8 @@ const prepareRoutes = (): {
   };
 };
 
+const partitionRegexp = /^(.*)-(partition-\d+)$/g;
+
 const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   const { paths, getRoutes } = prepareRoutes();
 
@@ -306,31 +308,52 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   const tenant: TreeNode | undefined =
     currentRoute?.params?.tenant === undefined
       ? undefined
-      : { type: "tenant", name: currentRoute?.params?.tenant || "unknown" };
+      : { type: "tenant", tenant: currentRoute?.params?.tenant || "unknown" };
   const namespace: TreeNode | undefined =
     currentRoute?.params?.namespace === undefined
       ? undefined
       : {
         type: "namespace",
-        name: currentRoute?.params?.namespace || "unknown",
+        tenant: currentRoute?.params?.tenant || "unknown",
+        namespace: currentRoute?.params?.namespace || "unknown",
       };
-  const topicPersistency: PulsarTopicPersistency = currentRoute?.params
-    ?.topicPersistency as PulsarTopicPersistency;
-  const topic: TreeNode | undefined =
-    topicPersistency === undefined || currentRoute?.params?.topic === undefined
-      ? undefined
-      : {
-        type:
-          topicPersistency === "persistent"
-            ? "persistent-topic"
-            : "non-persistent-topic",
-        name: currentRoute?.params?.topic || "unknown",
+  const persistency: PulsarTopicPersistency = currentRoute?.params
+    ?.topicPersistency! as PulsarTopicPersistency;
+
+  const topicName = currentRoute?.params?.topic || "unknown";
+  const isPartition = partitionRegexp.test(topicName);
+  const topic = isPartition ? topicName.replace(partitionRegexp, "$1") : topicName;
+
+  const topicNode: TreeNode | undefined =
+    persistency === undefined || currentRoute?.params?.topic === undefined
+      ? undefined : {
+        type: "topic",
+        persistency,
+        tenant: tenant?.tenant!,
+        namespace: namespace?.namespace!,
+        topic,
+        partitioning: { type: "non-partitioned" }, // doesn't matter here
+        topicFqn: `${persistency}://${tenant?.tenant}/${namespace?.namespace}/${topic}`
       };
+
+  const topicPartitionNode: TreeNode | undefined =
+    persistency === undefined || currentRoute?.params?.topic === undefined || !isPartition ?
+      undefined :
+      {
+        type: "topic-partition",
+        persistency,
+        tenant: tenant?.tenant!,
+        namespace: namespace?.namespace!,
+        topic,
+        partition: topicName.replace(partitionRegexp, "$2"),
+        partitioning: { type: "non-partitioned" }, // doesn't matter here
+        topicFqn: `${persistency}://${tenant?.tenant}/${namespace?.namespace}/${topic}`
+      }
 
   const withLayoutProps: WithLayoutProps = {
     layout: {
       navigationTree: {
-        selectedNodePath: [tenant, namespace, topic].filter(
+        selectedNodePath: [tenant, namespace, topicNode, topicPartitionNode].filter(
           (n) => n !== undefined
         ) as TreeNode[],
       },

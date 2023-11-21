@@ -6,6 +6,7 @@
 :host {
   font-size: 0.9px;
   font-family: "Inter", sans-serif;
+  font-feature-settings: "lnum";
   --font-weight-normal: 300;
   --font-weight-bold: 500;
   font-weight: var(--font-weight-normal);

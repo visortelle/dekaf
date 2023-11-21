@@ -146,3 +146,12 @@
   height: 36rem;
   padding: 0 6rem 0 12rem;
 }
+
+.Picker :global(.react-datetime-picker__clock) {
+  box-shadow: 1rem 1rem 4rem rgba(0, 0, 0, 0.27) !important;
+  border-radius: 8rem !important;
+  border: none !important;
+  width: unset !important;
+  height: unset !important;
+  padding: 12rem !important;
+}

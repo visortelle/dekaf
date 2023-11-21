@@ -25,7 +25,8 @@ const DatetimePicker: React.FC<DatetimePickerProps> = (props) => {
         calendarClassName={s.Calendar}
         calendarIcon={<div className={s.SvgIcon}><SvgIcon svg={calendarIcon} /></div>}
         clearIcon={props.clearable ? <div className={s.SvgIcon}><SvgIcon svg={clearIcon} /></div> : null}
-        disableClock={true}
+        locale="en-GB"
+        use12Hours={false}
         showLeadingZeros={true}
         maxDetail="second"
         disabled={props.disabled}
