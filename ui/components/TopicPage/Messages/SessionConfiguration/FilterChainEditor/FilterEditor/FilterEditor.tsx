@@ -6,20 +6,17 @@ import BasicFilterEditor from './BasicFilterEditor/BasicFilterEditor';
 import Select from '../../../../../ui/Select/Select';
 import FormItem from '../../../../../ui/ConfigurationTable/FormItem/FormItem';
 import Toggle from '../../../../../ui/Toggle/Toggle';
-import SmallButton from '../../../../../ui/SmallButton/SmallButton';
-import deleteIcon from '../icons/delete.svg';
 import LibraryBrowserPanel from '../../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
 import { useHover } from '../../../../../app/hooks/use-hover';
 import useLocalStorage from "use-local-storage-state";
 import { localStorageKeys } from '../../../../../local-storage-keys';
-import { UserManagedMessageFilter, UserManagedMessageFilterSpec, UserManagedMessageFilterValueOrReference } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
-import { UseUserManagedItemValueSpinner, useUserManagedItemValue } from '../../../../../ui/LibraryBrowser/useUserManagedItemValue';
+import { ManagedMessageFilter, ManagedMessageFilterSpec, ManagedMessageFilterValOrRef } from '../../../../../ui/LibraryBrowser/model/user-managed-items';
+import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../../../ui/LibraryBrowser/model/library-context';
 
 export type FilterEditorProps = {
-  value: UserManagedMessageFilterValueOrReference;
-  onChange: (value: UserManagedMessageFilterValueOrReference) => void;
-  onDelete?: () => void;
+  value: ManagedMessageFilterValOrRef;
+  onChange: (value: ManagedMessageFilterValOrRef) => void;
   libraryContext: LibraryContext;
 };
 
@@ -29,42 +26,44 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
     defaultValue: 'basic-message-filter',
   });
 
-  const resolveResult = useUserManagedItemValue<UserManagedMessageFilter>(props.value);
+  const resolveResult = useManagedItemValue<ManagedMessageFilter>(props.value);
   if (resolveResult.type !== 'success') {
-    return <UseUserManagedItemValueSpinner item={props.value} result={resolveResult} onDelete={props.onDelete} />
+    return <UseManagedItemValueSpinner item={props.value} result={resolveResult} />
   }
 
   const item = resolveResult.value;
   const itemSpec = item.spec;
 
-  const onSpecChange = (spec: UserManagedMessageFilterSpec) => {
-    const newValue: UserManagedMessageFilterValueOrReference = { ...props.value, value: { ...item, spec } };
+  const onSpecChange = (spec: ManagedMessageFilterSpec) => {
+    const newValue: ManagedMessageFilterValOrRef = { ...props.value, val: { ...item, spec } };
     props.onChange(newValue);
   };
 
   const onConvertToValue = () => {
-    const newValue: UserManagedMessageFilterValueOrReference = { type: 'value', value: item };
+    const newValue: ManagedMessageFilterValOrRef = { type: 'value', val: item };
     props.onChange(newValue);
   };
 
+  const cssFilter = itemSpec.isEnabled ? undefined : 'grayscale(0.5) opacity(0.75)';
+
   return (
-    <div className={s.FilterEditor} ref={hoverRef}>
+    <div className={s.FilterEditor} ref={hoverRef} style={{ filter: cssFilter }}>
       <LibraryBrowserPanel
         itemToSave={item}
         itemType='message-filter'
         onPick={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as UserManagedMessageFilter
+          ref: item.metadata.id,
+          val: item as ManagedMessageFilter
         })}
         onSave={(item) => props.onChange({
           type: 'reference',
-          reference: item.metadata.id,
-          value: item as UserManagedMessageFilter
+          ref: item.metadata.id,
+          val: item as ManagedMessageFilter
         })}
         isForceShowButtons={isHovered}
         libraryContext={props.libraryContext}
-        managedItemReference={props.value.type === 'reference' ? { id: props.value.reference, onConvertToValue } : undefined}
+        managedItemReference={props.value.type === 'reference' ? { id: props.value.ref, onConvertToValue } : undefined}
       />
       <FormItem>
         <div className={s.Controls}>
@@ -109,15 +108,6 @@ const FilterEditor: React.FC<FilterEditorProps> = (props) => {
               }
             }}
           />
-
-          {props.onDelete && (
-            <SmallButton
-              onClick={props.onDelete}
-              type='danger'
-              svgIcon={deleteIcon}
-              title='Delete this filter'
-            />
-          )}
         </div>
       </FormItem>
 

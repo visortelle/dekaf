@@ -56,29 +56,6 @@ enum SubscriptionType {
   SUBSCRIPTION_TYPE_KEY_SHARED = 4;
 }
 
-enum RegexSubscriptionMode {
-  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
-  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
-  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2;
-  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
-}
-
-message TopicsSelectorByNames {
-  repeated string topics = 1;
-}
-
-message TopicsSelectorByRegex {
-  optional string pattern = 2;
-  optional RegexSubscriptionMode regex_subscription_mode = 3;
-}
-
-message TopicsSelector {
-  oneof topics_selector {
-    TopicsSelectorByNames by_names = 1;
-    TopicsSelectorByRegex by_regex = 2;
-  }
-}
-
 enum DateTimeUnit {
   DATE_TIME_UNIT_UNSPECIFIED = 0;
   DATE_TIME_UNIT_YEAR = 1;
@@ -147,7 +124,7 @@ message ConsumerSessionEventMessageDecodeFailed {
   int64 fail_count = 1;
 }
 
-message ConsumerSessionEventTimeElapsedMs {
+message ConsumerSessionEventTimeElapsed {
   int64 time_elapsed_ms = 1;
 }
 
@@ -159,21 +136,17 @@ message ConsumerSessionEventMessageId {
   MessageId message_id = 1;
 }
 
-message ConsumerSessionEventMessageFilterChainPassed {
-  MessageFilterChain message_filter_chain = 1;
-}
-
 message ConsumerSessionEvent {
   oneof event {
     ConsumerSessionEventMessagesProcessed event_messages_processed = 1;
     ConsumerSessionEventMessagesDelivered event_messages_delivered = 2;
     ConsumerSessionEventBytesProcessed event_bytes_processed = 3;
     ConsumerSessionEventBytesDelivered event_bytes_delivered = 4;
-    ConsumerSessionEventMessageDecodeFailed event_message_decoding_failed = 5;
-    ConsumerSessionEventTimeElapsedMs event_time_elapsed_ms = 6;
+    ConsumerSessionEventMessageDecodeFailed event_message_decode_failed = 5;
+    ConsumerSessionEventTimeElapsed event_time_elapsed = 6;
     ConsumerSessionEventTopicEndReached event_topic_end_reached = 7;
     ConsumerSessionEventUnexpectedErrorOccurred event_unexpected_error_occurred = 8;
-    ConsumerSessionEventMessageFilterChainPassed event_message_filter_chain_passed = 10;
+    ConsumerSessionEventMessageId event_message_id = 9;
   }
 }
 
@@ -188,26 +161,59 @@ message ConsumerSessionPauseTriggerChain {
   ConsumerSessionPauseTriggerChainMode mode = 2;
 }
 
+message ColoringRule {
+  bool is_enabled = 4;
+  MessageFilterChain message_filter_chain = 1;
+  string foreground_color = 2;
+  string background_color = 3;
+}
+
+message ColoringRuleChain {
+  bool is_enabled = 2;
+  repeated ColoringRule coloring_rules = 1;
+}
+
+message MultiTopicSelector {
+  repeated string topic_fqns = 1;
+}
+
+enum RegexSubscriptionMode {
+  REGEX_SUBSCRIPTION_MODE_UNSPECIFIED = 0;
+  REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY = 1;
+  REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY = 2;
+  REGEX_SUBSCRIPTION_MODE_ALL_TOPICS = 3;
+}
+
+message NamespacedRegexTopicSelector {
+  string namespace_fqn = 1;
+  string pattern = 2;
+  RegexSubscriptionMode regex_subscription_mode = 3;
+}
+
+message TopicSelector {
+  oneof topic_selector {
+    MultiTopicSelector multi_topic_selector = 1;
+    NamespacedRegexTopicSelector namespaced_regex_topic_selector = 2;
+  }
+}
+
+message ConsumerSessionTarget {
+  TopicSelector topic_selector = 1;
+  MessageFilterChain message_filter_chain = 2;
+  ColoringRuleChain coloring_rule_chain = 3;
+}
+
 message ConsumerSessionConfig {
   ConsumerSessionStartFrom start_from = 1;
-  MessageFilterChain message_filter_chain = 2;
-  ConsumerSessionPauseTriggerChain pause_trigger_chain = 3;
+  repeated ConsumerSessionTarget targets = 2;
+  MessageFilterChain message_filter_chain = 3;
+  ConsumerSessionPauseTriggerChain pause_trigger_chain = 4;
+  ColoringRuleChain coloring_rule_chain = 5;
 }
 
 message CreateConsumerRequest {
-  TopicsSelector topics_selector = 100;
-  optional string consumer_name = 1;
-  optional string subscription_name = 2;
-  optional int32 priority_level = 3;
-  optional bool start_paused = 4;
-  optional SubscriptionMode subscription_mode = 5;
-  optional SubscriptionType subscription_type = 6;
-  optional int64 ack_timeout_ms = 8;
-  optional int64 ack_timeout_tick_time_ms = 9;
-  optional int64 expire_time_of_incomplete_chunked_message_ms = 10;
-  optional int64 acknowledgment_group_time_ms = 11;
-  optional int64 negative_ack_redelivery_delay_ms = 12;
-  ConsumerSessionConfig consumer_session_config = 13;
+  string consumer_name = 1;
+  ConsumerSessionConfig consumer_session_config = 2;
 }
 
 message CreateConsumerResponse {
@@ -231,9 +237,9 @@ message BasicMessageFilter {}
 message MessageFilter {
   bool is_enabled = 10;
   bool is_negated = 11;
-  oneof value {
-    JsMessageFilter js = 1;
-    BasicMessageFilter basic = 2;
+  oneof filter {
+    JsMessageFilter filter_js = 1;
+    BasicMessageFilter filter_basic = 2;
   }
 }
 
@@ -272,28 +278,6 @@ message PauseResponse {
   google.rpc.Status status = 1;
 }
 
-message SeekRequest {
-  string consumer_name = 1;
-  oneof seek {
-    google.protobuf.Timestamp timestamp = 2;
-    bytes message_id = 3;
-  }
-}
-
-message SeekResponse {
-  google.rpc.Status status = 1;
-}
-
-message SkipMessagesRequest {
-  string consumer_name = 1;
-  string subscription_name = 2;
-  int64 count = 3;
-}
-
-message SkipMessagesResponse {
-  google.rpc.Status status = 1;
-}
-
 message RunCodeRequest {
   string consumer_name = 1;
   string code = 2;
@@ -304,12 +288,19 @@ message RunCodeResponse {
   google.protobuf.StringValue result = 2;
 }
 
+message ResolveTopicSelectorRequest {
+  TopicSelector topic_selector = 1;
+}
+message ResolveTopicSelectorResponse {
+  google.rpc.Status status = 1;
+  repeated string topic_fqns = 2;
+}
+
 service ConsumerService {
   rpc CreateConsumer(CreateConsumerRequest) returns (CreateConsumerResponse);
   rpc DeleteConsumer(DeleteConsumerRequest) returns (DeleteConsumerResponse);
   rpc Resume(ResumeRequest) returns (stream ResumeResponse);
   rpc Pause(PauseRequest) returns (PauseResponse);
-  rpc Seek(SeekRequest) returns (SeekResponse);
-  rpc SkipMessages(SkipMessagesRequest) returns (SkipMessagesResponse);
   rpc RunCode(RunCodeRequest) returns (RunCodeResponse);
+  rpc ResolveTopicSelector(ResolveTopicSelectorRequest) returns (ResolveTopicSelectorResponse);
 }

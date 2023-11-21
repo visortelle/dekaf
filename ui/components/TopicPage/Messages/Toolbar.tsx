@@ -32,8 +32,6 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   switch (props.sessionState) {
     case 'new': playButtonOnClick = () => props.onSessionStateChange('initializing'); break;
     case 'initializing': playButtonOnClick = () => undefined; break;
-    case 'awaiting-initial-cursor-positions': playButtonOnClick = () => undefined; break;
-    case 'got-initial-cursor-positions': playButtonOnClick = () => undefined; break;
     case 'running': playButtonOnClick = () => props.onSessionStateChange('pausing'); break;
     case 'pausing': playButtonOnClick = () => undefined; break;
     case 'paused': playButtonOnClick = () => props.onSessionStateChange('running'); break;
@@ -44,7 +42,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       <div className={s.ToolbarLeft}>
         <div className={s.Control}>
           <SmallButton
-            title={props.sessionState ? "Resume" : "Pause"}
+            title={props.sessionState ? "Start or Resume" : "Pause"}
             svgIcon={playButtonState === 'play' ? resumeIcon : pauseIcon}
             onClick={playButtonOnClick}
             type={'primary'}
@@ -54,7 +52,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.Control}>
           <SmallButton
-            title={"Stop and empty current session"}
+            title={"Stop and flush the current session loaded data"}
             svgIcon={resetIcon}
             onClick={() => props.onStopSession()}
             type={'danger'}
@@ -64,20 +62,13 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
         <div className={s.Control}>
           <SmallButton
-            title={"Show tools"}
+            title={"Session Inspector"}
             svgIcon={consoleIcon}
             onClick={props.onToggleConsoleClick}
-            text="Tools"
-            type={'primary'}
+            text={"Tools"}
+            type="regular"
+            // appearance="borderless-semitransparent"
           />
-        </div>
-
-        <div className={s.Control}>
-          <div className={s.ConfigParamName}>Filters</div>
-          <div style={{ display: 'flex' }}>
-            <div>{props.config?.messageFilterChain.filters.length}</div>
-            <div>&nbsp;</div>
-          </div>
         </div>
       </div>
 

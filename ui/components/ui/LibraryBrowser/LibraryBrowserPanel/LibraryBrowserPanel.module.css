@@ -4,7 +4,6 @@
 }
 
 .ItemName {
-
 }
 
 .ReferenceIcon {
@@ -24,8 +23,8 @@
 .Buttons {
   position: absolute;
   display: inline-flex;
-  right: -12rem;
-  top: -7rem;
+  right: -6rem;
+  top: -5rem;
   transform: translate(100%, 0);
   background-color: #fff;
   z-index: 10;

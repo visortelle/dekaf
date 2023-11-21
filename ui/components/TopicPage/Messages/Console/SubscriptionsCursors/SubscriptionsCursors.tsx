@@ -32,28 +32,6 @@ const SubscriptionsCursors: React.FC<SubscriptionsCursorsProps> = (props) => {
   const topics = useMemo(() => Object.keys(props.selector), [props.selector]);
 
   useEffect(() => {
-    if (props.sessionState !== 'awaiting-initial-cursor-positions' || props.topicsInternalStats === undefined) {
-      return;
-    }
-
-    if (props.sessionConfig.topicsSelector.type !== 'by-names') {
-      props.onSessionStateChange('got-initial-cursor-positions');
-      return;
-    }
-
-    const gotInitialCursorsPositions = props.sessionConfig.topicsSelector.topics.every(topic => {
-      if (props.topicsInternalStats === undefined) {
-        return;
-      }
-
-      const hasCursor = getCursorForSubscription(props.topicsInternalStats.getStatsMap(), topic, { type: 'any-partition' }, props.sessionSubscriptionName);
-      return hasCursor;
-    });
-
-    if (gotInitialCursorsPositions) {
-      setSessionStartStats(props.topicsInternalStats.getStatsMap());
-      props.onSessionStateChange('got-initial-cursor-positions');
-    }
   }, [props.topicsInternalStats, props.sessionState, props.sessionConfig]);
 
   const statsMapPb = props.topicsInternalStats?.getStatsMap();

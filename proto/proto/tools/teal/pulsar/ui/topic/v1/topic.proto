@@ -20,6 +20,14 @@ message ListTopicsResponse {
   repeated string topics = 2;
 }
 
+message ListPartitionedTopicsRequest {
+  string namespace = 1;
+}
+message ListPartitionedTopicsResponse {
+  google.rpc.Status status = 1;
+  repeated string topics = 2;
+}
+
 message PartitionedTopicMetadata {
   google.protobuf.Int32Value partitions = 1;
   map<string, string> properties = 2;
@@ -303,13 +311,23 @@ message GetTopicsStatsResponse {
   map<string, PartitionedTopicStats> partitioned_topic_stats = 3;
 }
 
+message GetIsPartitionedTopicRequest {
+  string topic_fqn = 1;
+}
+message GetIsPartitionedTopicResponse {
+  google.rpc.Status status = 1;
+  bool is_partitioned = 2;
+}
+
 service TopicService {
   rpc CreatePartitionedTopic(CreatePartitionedTopicRequest) returns (CreatePartitionedTopicResponse);
   rpc CreateNonPartitionedTopic(CreateNonPartitionedTopicRequest) returns (CreateNonPartitionedTopicResponse);
   rpc GetTopicsInternalStats(GetTopicsInternalStatsRequest) returns (GetTopicsInternalStatsResponse);
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
+  rpc ListPartitionedTopics(ListPartitionedTopicsRequest) returns (ListPartitionedTopicsResponse);
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse);
   rpc GetTopicProperties(GetTopicPropertiesRequest) returns (GetTopicPropertiesResponse);
   rpc SetTopicProperties(SetTopicPropertiesRequest) returns (SetTopicPropertiesResponse);
   rpc GetTopicsStats(GetTopicsStatsRequest) returns (GetTopicsStatsResponse);
+  rpc GetIsPartitionedTopic(GetIsPartitionedTopicRequest) returns (GetIsPartitionedTopicResponse);
 }

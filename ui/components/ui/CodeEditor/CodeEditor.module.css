@@ -1,6 +1,7 @@
 .CodeEditor {
   border-radius: 4rem;
   border: 1px solid var(--border-color);
-  overflow: hidden;
   flex: 1;
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-y: contain;
 }

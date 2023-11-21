@@ -1,8 +1,8 @@
 import { useRef, useState, useEffect, RefObject } from 'react';
 
-export const useHover = (): [RefObject<HTMLDivElement>, boolean] => {
+export const useHover = (): [RefObject<any>, boolean] => {
   const [isHovered, setIsHovered] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<any>(null);
 
   const handlePointerOver = () => setIsHovered(true);
   const handlePointerOut = () => setIsHovered(false);

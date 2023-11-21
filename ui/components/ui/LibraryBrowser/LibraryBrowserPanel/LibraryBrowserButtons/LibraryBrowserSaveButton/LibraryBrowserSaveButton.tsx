@@ -4,14 +4,14 @@ import SmallButton from '../../../../SmallButton/SmallButton';
 import * as Modals from '../../../../../app/contexts/Modals/Modals';
 import { mkLibraryBrowserModal } from '../../../modals';
 import saveIcon from './save.svg';
-import { UserManagedItem } from '../../../model/user-managed-items';
+import { ManagedItem } from '../../../model/user-managed-items';
 import { LibraryContext } from '../../../model/library-context';
 
 
 export type LibraryBrowserSaveButtonProps = {
-  itemToSave: UserManagedItem | undefined;
+  itemToSave: ManagedItem | undefined;
   libraryContext: LibraryContext;
-  onSave: (item: UserManagedItem) => void;
+  onSave: (item: ManagedItem) => void;
 };
 
 const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props) => {
@@ -20,8 +20,9 @@ const LibraryBrowserSaveButton: React.FC<LibraryBrowserSaveButtonProps> = (props
   return (
     <div className={s.LibraryBrowserSaveButton}>
       <SmallButton
-        text='Save'
-        type='primary'
+        title='Save'
+        type='regular'
+        appearance='borderless-semitransparent'
         svgIcon={saveIcon}
         disabled={props.itemToSave === undefined}
         onClick={() => {

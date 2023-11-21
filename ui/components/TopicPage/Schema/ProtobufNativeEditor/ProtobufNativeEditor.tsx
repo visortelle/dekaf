@@ -23,7 +23,7 @@ const defaultCodeEditorValue = `syntax = "proto3";
 message ExampleSchema {
   string name = 1;
   int32 age = 2;
-  bool items = 3;
+  repeated string items = 3;
 }
 `
 

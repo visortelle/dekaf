@@ -59,5 +59,49 @@ export const help = {
         You can save it to <strong>Library</strong> and reuse later.
       </p>
     </div>
+  ),
+  topicSelector: (
+    <div>
+      <p>
+        <strong>Topic Selector</strong> allows to select one or more topics.
+      </p>
+      <p>
+        Analyzing multiple topics simultaneously can be valuable to identify message patterns that may be difficult to notice by inspecting each topic in isolation.
+      </p>
+      <p>
+        You can save it to <strong>Library</strong> and reuse later.
+      </p>
+    </div>
+  ),
+  consumerSessionTarget: (
+    <div>
+      <p>
+        Consumer Session Topic(s)
+      </p>
+    </div>
+  ),
+  coloringRule: (
+    <div>
+      <p>
+        <strong>Coloring Rule</strong> allows you to highlight messages that match a certain condition.
+      </p>
+      <p>
+        You can save it to <strong>Library</strong> and reuse later.
+      </p>
+    </div>
+  ),
+  coloringRuleChain: (
+    <div>
+      <p>
+        <strong>Coloring Rule Chain</strong> is a list of coloring rules that are sequentially applied to each message.
+      </p>
+      <p>
+        First rule that matches the message will be applied.
+      </p>
+
+      <p>
+        You can save it to <strong>Library</strong> and reuse later.
+      </p>
+    </div>
   )
 } as const;

@@ -6,7 +6,7 @@ import * as Modals from "../../../app/contexts/Modals/Modals";
 import * as Notifications from "../../../app/contexts/Notifications";
 import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import ConfirmationDialog from "../../../ui/ConfirmationDialog/ConfirmationDialog";
-import Select, {List, ListItem} from "../../../ui/Select/Select";
+import Select, { List, ListItem } from "../../../ui/Select/Select";
 import Checkbox from "../../../ui/Checkbox/Checkbox";
 import * as BrokerConfig from "../../../app/contexts/BrokersConfig";
 import s from "./SplitBundle.module.css";
@@ -57,11 +57,12 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
   } as SplitParams);
 
 
-  const list: List<string> =  [
-    {type: 'item', value: "default-algorithm", title: `Default algorithm (${defaultAlgorithm})`},
-    {type: 'item', value: "custom-algorithm", title: "Custom algorithm"},
-    {type: 'group', title: "Supported algorithms", items: [
-        ...supportedAlgorithms.map(x => ({type: 'item', value: x, title: x} as ListItem<string>))
+  const list: List<string> = [
+    { type: 'item', value: "default-algorithm", title: `Default algorithm (${defaultAlgorithm})` },
+    { type: 'item', value: "custom-algorithm", title: "Custom algorithm" },
+    {
+      type: 'group', title: "Supported algorithms", items: [
+        ...supportedAlgorithms.map(x => ({ type: 'item', value: x, title: x } as ListItem<string>))
       ]
     },
   ]
@@ -110,7 +111,7 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
 
   return (
     <ConfirmationDialog
-      description={
+      content={
         <div>
           <div>This action <strong>cannot</strong> be undone.</div>
           <br />
@@ -119,7 +120,7 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
             value={splitParams.splitAlgorithm}
             list={list}
             onChange={v => setSplitParams(prevState => {
-              return {...prevState, splitAlgorithm: v}
+              return { ...prevState, splitAlgorithm: v }
             })}
           />
           {splitParams.splitAlgorithm === "custom-algorithm" && (
@@ -130,14 +131,14 @@ const SplitBundle: React.FC<SplitBundleProps> = ({ namespaceFqn, bundleKey }) =>
             />
           )
           }
-          <br/>
+          <br />
           <div className={s.UnloadSplitBundlesCheckbox}>
             <Checkbox
               isInline
               id="unloadSplitBundles"
               checked={splitParams.unloadSplitBundles}
               onChange={() => setSplitParams(prevState => {
-                return {...prevState, unloadSplitBundles: !splitParams.unloadSplitBundles}
+                return { ...prevState, unloadSplitBundles: !splitParams.unloadSplitBundles }
               })}
             />
             <div>Unload split bundles</div>

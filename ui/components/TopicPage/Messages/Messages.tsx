@@ -7,14 +7,8 @@ import {
   CreateConsumerRequest,
   ResumeRequest,
   ResumeResponse,
-  SubscriptionType,
-  TopicsSelector,
   DeleteConsumerRequest,
   PauseRequest,
-  RegexSubscriptionMode,
-  TopicsSelectorByNames,
-  TopicsSelectorByRegex,
-  SubscriptionMode,
 } from '../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import cts from "../../ui/ChildrenTable/ChildrenTable.module.css";
 import arrowDownIcon from '../../ui/ChildrenTable/arrow-down.svg';
@@ -33,9 +27,6 @@ import Toolbar from './Toolbar';
 import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types';
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
-import useSWR from 'swr';
-import { GetTopicsInternalStatsRequest } from '../../../grpc-web/tools/teal/pulsar/ui/topic/v1/topic_pb';
-import { swrKeys } from '../../swrKeys';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
 import { consumerSessionConfigToPb, messageDescriptorFromPb } from './conversions';
 import { SortKey, Sort, sortMessages } from './sort';
@@ -43,16 +34,16 @@ import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
 import { tooltipId } from '../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { UserManagedConsumerSessionConfigValueOrReference } from '../../ui/LibraryBrowser/model/user-managed-items';
-import { consumerSessionConfigFromValueOrReference } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
+import { ManagedConsumerSessionConfigValOrRef } from '../../ui/LibraryBrowser/model/user-managed-items';
+import { consumerSessionConfigFromValOrRef } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
 export type SessionProps = {
   sessionKey: number;
-  config: UserManagedConsumerSessionConfigValueOrReference;
-  onConfigChange: (config: UserManagedConsumerSessionConfigValueOrReference) => void;
+  configValOrRef: ManagedConsumerSessionConfigValOrRef;
+  onConfigValOrRefChange: (config: ManagedConsumerSessionConfigValOrRef) => void;
   onStopSession: () => void;
   isShowConsole: boolean;
   onSetIsShowConsole: (v: boolean) => void;
@@ -67,10 +58,9 @@ const displayMessagesRealTimeLimit = 250; // too many items leads to table blink
 const Session: React.FC<SessionProps> = (props) => {
   const appContext = AppContext.useContext();
   const { notifyError } = Notifications.useContext();
-  const i18n = I18n.useContext();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const tableRef = useRef<HTMLDivElement>(null);
-  const { consumerServiceClient, topicServiceClient } = GrpcClient.useContext();
+  const { consumerServiceClient } = GrpcClient.useContext();
   const [sessionState, setSessionState] = useState<SessionState>('new');
   const [sessionStateBeforeWindowBlur, setSessionStateBeforeWindowBlur] = useState<SessionState>(sessionState);
   const prevSessionState = usePrevious(sessionState);
@@ -86,48 +76,18 @@ const Session: React.FC<SessionProps> = (props) => {
   const messagesBuffer = useRef<Message[]>([]);
   const [messages, setMessages] = useState<MessageDescriptor[]>([]);
   const [sort, setSort] = useState<Sort>({ key: 'publishTime', direction: 'asc' });
-  const [config, setConfig] = useState<ConsumerSessionConfig | undefined>(undefined);
 
-  useEffect(() => {
+  const currentTopic = useMemo(() => props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined, [props.libraryContext]);
+  const currentTopicFqn: string | undefined = useMemo(() => currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`, [currentTopic]);
+
+  const config = useMemo<ConsumerSessionConfig | undefined>(() => {
     try {
-      setConfig(consumerSessionConfigFromValueOrReference(props.config));
+      return consumerSessionConfigFromValOrRef(props.configValOrRef, currentTopicFqn);
     } catch (err) {
       console.warn(err);
-      setConfig(undefined);
+      return undefined;
     }
-  }, [props.config]);
-
-  const { data: topicsInternalStats, error: topicsInternalStatsError } = useSWR(
-    swrKeys.pulsar.customApi.metrics.topicsInternalStats._(
-      config?.topicsSelector.type === 'by-names' ? config.topicsSelector.topics : []
-    ).concat([props.sessionKey.toString()]), // In case we cache the response, there cases where initial cursor position is from previous session.
-    async () => {
-      if (config?.topicsSelector.type !== 'by-names') {
-        return undefined;
-      }
-
-      const req = new GetTopicsInternalStatsRequest();
-      req.setTopicsList(config.topicsSelector.topics);
-      const res = await topicServiceClient.getTopicsInternalStats(req, {})
-        .catch((err) => notifyError(`Unable to get topics internal stats. ${err}`));
-
-      if (res === undefined) {
-        return;
-      }
-
-      if (res.getStatus()?.getCode() !== Code.OK) {
-        notifyError(`Unable to get topics internal stats. ${res.getStatus()?.getMessage()}`);
-        return;
-      }
-
-      return res;
-    },
-    { refreshInterval: sessionState === 'awaiting-initial-cursor-positions' ? 150 : 1000 }
-  );
-
-  if (topicsInternalStatsError) {
-    notifyError(`Unable to get topics internal stats. ${topicsInternalStatsError}`);
-  }
+  }, [props.configValOrRef]);
 
   const scrollToBottom = () => {
     const scrollParent = tableRef.current?.children[0];
@@ -138,6 +98,10 @@ const Session: React.FC<SessionProps> = (props) => {
     setMessagesLoadedPerSecond(() => ({ prev: messagesLoaded, now: messagesLoaded - messagesLoadedPerSecond.prev }));
     setMessagesProcessedPerSecond(() => ({ prev: messagesProcessed.current, now: messagesProcessed.current - messagesProcessedPerSecond.prev }));
   }, 1000);
+
+  useInterval(() => {
+    scrollToBottom();
+  }, sessionState === 'running' ? 200 : false);
 
   useInterval(() => {
     if (messagesBuffer.current.length === 0) {
@@ -157,7 +121,7 @@ const Session: React.FC<SessionProps> = (props) => {
       scrollToBottom();
       return newMessages;
     });
-  }, messagesLoadedPerSecond.now > 0 ? 500 : false);
+  }, messagesLoadedPerSecond.now > 0 ? 250 : false);
 
   const streamDataHandler = useCallback((res: ResumeResponse) => {
     const newMessages = res.getMessagesList();
@@ -216,43 +180,11 @@ const Session: React.FC<SessionProps> = (props) => {
         return;
       }
 
-      const topicsSelector = config.topicsSelector;
-
       const req = new CreateConsumerRequest();
-      const topicsSelectorPb = new TopicsSelector();
 
-      if (topicsSelector.type === 'by-names') {
-        const selector = new TopicsSelectorByNames();
-        selector.setTopicsList(topicsSelector.topics);
-        topicsSelectorPb.setByNames(selector);
-      }
-
-      if (topicsSelector.type === 'by-regex') {
-        const selector = new TopicsSelectorByRegex();
-        selector.setPattern(topicsSelector.pattern);
-
-        let regexSubscriptionMode: RegexSubscriptionMode;
-        switch (topicsSelector.regexSubscriptionMode) {
-          case 'persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_PERSISTENT_ONLY; break;
-          case 'non-persistent-only': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_NON_PERSISTENT_ONLY; break;
-          case 'all-topics': regexSubscriptionMode = RegexSubscriptionMode.REGEX_SUBSCRIPTION_MODE_ALL_TOPICS; break;
-        }
-
-        selector.setRegexSubscriptionMode(regexSubscriptionMode);
-        topicsSelectorPb.setByRegex(selector);
-      }
-
-      req.setTopicsSelector(topicsSelectorPb)
       req.setConsumerName(consumerName.current);
-      req.setStartPaused(true);
-      req.setSubscriptionName(subscriptionName.current);
-      req.setSubscriptionType(SubscriptionType.SUBSCRIPTION_TYPE_EXCLUSIVE);
-      req.setSubscriptionMode(SubscriptionMode.SUBSCRIPTION_MODE_NON_DURABLE);
-
       const consumerSessionConfigPb = consumerSessionConfigToPb(config);
       req.setConsumerSessionConfig(consumerSessionConfigPb);
-
-      req.setPriorityLevel(1000);
 
       const res = await consumerServiceClient.createConsumer(req, {}).catch(err => notifyError(`Unable to create consumer ${consumerName.current}. ${err}`));
       if (res === undefined) {
@@ -263,7 +195,7 @@ const Session: React.FC<SessionProps> = (props) => {
       const code = status?.getCode();
 
       if (code === Code.OK) {
-        setSessionState('awaiting-initial-cursor-positions');
+        setSessionState('running');
       }
 
       if (code !== Code.OK) {
@@ -322,15 +254,6 @@ const Session: React.FC<SessionProps> = (props) => {
       return;
     }
 
-    if (sessionState === 'awaiting-initial-cursor-positions') {
-      console.info(`%cAwaiting initial cursor positions for session: ${props.sessionKey}`, consoleCss);
-    }
-
-    if (sessionState === 'got-initial-cursor-positions') {
-      console.info(`%cGot initial cursor positions for session: ${props.sessionKey}`, consoleCss);
-      setSessionState('running');
-    }
-
     if (sessionState === 'running') {
       console.info(`%cRunning session: ${props.sessionKey}`, consoleCss);
 
@@ -346,7 +269,7 @@ const Session: React.FC<SessionProps> = (props) => {
     if (sessionState && prevSessionState === undefined) {
       console.info(`%c--------------------`, consoleCss);
       console.info(`%cStarting new consumer session: ${props.sessionKey}`, consoleCss);
-      console.info('%cSession config: %o', consoleCss, props.config);
+      console.info('%cSession config: %o', consoleCss, props.configValOrRef);
       console.info('%cConsumer name:', consoleCss, consumerName.current);
       console.info('%cSubscription name:', consoleCss, subscriptionName.current);
     }
@@ -364,7 +287,16 @@ const Session: React.FC<SessionProps> = (props) => {
   }, [sessionState, messagesLoadedPerSecond]);
 
   const isShowTooltips = sessionState !== 'running' && sessionState !== 'pausing';
-  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => <MessageComponent key={i} message={message} isShowTooltips={isShowTooltips} />, [sessionState]);
+  const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => {
+    return (
+      <MessageComponent
+        key={i}
+        message={message}
+        isShowTooltips={isShowTooltips}
+      />
+    );
+  }, [sessionState]);
+
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
       setSessionState('pausing');
@@ -428,7 +360,6 @@ const Session: React.FC<SessionProps> = (props) => {
       {currentView === 'messages' && messages.length === 0 && (
         <div className={s.NoDataToShow}>
           {sessionState === 'initializing' && 'Initializing session.'}
-          {sessionState === 'awaiting-initial-cursor-positions' && 'Awaiting for initial cursor positions.'}
           {sessionState === 'running' && 'Awaiting for new messages...'}
           {sessionState === 'paused' && 'No messages where loaded.'}
         </div>
@@ -454,9 +385,22 @@ const Session: React.FC<SessionProps> = (props) => {
             followOutput={sessionState === 'running'}
             fixedHeaderContent={() => (
               <tr>
-                <Th title="#" sortKey="index" style={{ position: 'sticky', left: 0, zIndex: 10 }} help={<>Message index in this view.</>} />
+                <Th
+                  title="#"
+                  sortKey="index"
+                  style={{ position: 'sticky', left: 0, zIndex: 10 }}
+                  help={(
+                    <>
+                      <p>
+                        When consuming from multiple topics or a single partitioned topic, the order of messages cannot be assured.
+                      </p>
+                      <p>
+                        The order of numbers in in this column represents the order in which messages were received by the consumer.
+                      </p>
+                    </>
+                  )}
+                />
                 <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} help={help.publishTime} />
-                <Th title="" style={{ position: 'sticky', left: remToPx(285), zIndex: 10 }} help={<></>} />
                 <Th title="Key" sortKey="key" help={help.key} />
                 <Th title="Value" sortKey="value" help={help.value} />
                 <Th title="Topic" sortKey="topic" help={help.topic} />
@@ -480,9 +424,8 @@ const Session: React.FC<SessionProps> = (props) => {
       {currentView === 'configuration' && (
         <div className={s.SessionConfiguration}>
           <SessionConfiguration
-            value={props.config}
-            onChange={props.onConfigChange}
-            topicsInternalStats={topicsInternalStats}
+            value={props.configValOrRef}
+            onChange={props.onConfigValOrRefChange}
             libraryContext={props.libraryContext}
           />
         </div>
@@ -496,21 +439,21 @@ const Session: React.FC<SessionProps> = (props) => {
         onSessionStateChange={setSessionState}
         sessionConfig={config}
         sessionSubscriptionName={subscriptionName.current}
-        topicsInternalStats={topicsInternalStats}
         messages={messages}
         consumerName={consumerName.current}
+        currentTopic={currentTopicFqn}
       />
     </div>
   );
 }
 
 type SessionControllerProps = {
-  initialConfig: UserManagedConsumerSessionConfigValueOrReference;
+  initialConfig: ManagedConsumerSessionConfigValOrRef;
   libraryContext: LibraryContext;
 };
 const SessionController: React.FC<SessionControllerProps> = (props) => {
   const [sessionKey, setSessionKey] = useState<number>(0);
-  const [config, setConfig] = useState<UserManagedConsumerSessionConfigValueOrReference>(props.initialConfig);
+  const [config, setConfig] = useState<ManagedConsumerSessionConfigValOrRef>(props.initialConfig);
   const [isShowConsole, setIsShowConsole] = useState<boolean>(false);
 
   return (
@@ -521,8 +464,8 @@ const SessionController: React.FC<SessionControllerProps> = (props) => {
       onSetIsShowConsole={() => setIsShowConsole(!isShowConsole)}
       {...props}
       onStopSession={() => setSessionKey(n => n + 1)}
-      config={config}
-      onConfigChange={setConfig}
+      configValOrRef={config}
+      onConfigValOrRefChange={setConfig}
       libraryContext={props.libraryContext}
     />
   );

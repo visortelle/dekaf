@@ -1,0 +1,13 @@
+.ColoringRuleChainInput {
+  display: flex;
+  flex-direction: column;
+}
+
+.ColoringRuleInput {
+  padding: 8rem 0 24rem 0;
+  flex: 1;
+}
+
+.ColoringRuleInput.CollapsedColoringRuleInput {
+  padding: 6rem 0;
+}

@@ -5,12 +5,9 @@ import com.typesafe.scalalogging.Logger
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.tools.teal.pulsar.ui.api.v1.producer.{CreateProducerRequest, CreateProducerResponse, DeleteProducerRequest, DeleteProducerResponse, GetStatsRequest, GetStatsResponse, MessageFormat, ProducerServiceGrpc, SendRequest, SendResponse, Stats}
-import org.apache.pulsar.client.api.schema.SchemaInfoProvider
-import org.apache.pulsar.client.impl.schema.{AutoProduceBytesSchema, AvroSchema}
+import org.apache.pulsar.client.impl.schema.AutoProduceBytesSchema
 import _root_.schema.avro
 import _root_.schema.protobufnative
-import com.google.protobuf
-import com.google.protobuf.ByteString
 
 import scala.jdk.CollectionConverters.*
 import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
@@ -20,9 +17,9 @@ import io.circe.*
 import io.circe.parser.parse as parseJson
 import pulsar_auth.RequestContext
 
-import java.nio.charset.Charset
-import java.nio.{ByteBuffer, ByteOrder}
+import java.nio.ByteBuffer
 import scala.concurrent.Future
+import scala.util.boundary, boundary.break
 
 type ProducerName = String
 
@@ -76,7 +73,7 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"No such producer: $producerName")
                 Future.successful(DeleteProducerResponse(status = Some(status)))
 
-    override def send(request: SendRequest): Future[SendResponse] =
+    override def send(request: SendRequest): Future[SendResponse] = boundary:
         val producerName: ProducerName = request.producerName
         logger.info(s"Sending message. Producer: $producerName")
         val adminClient = RequestContext.pulsarAdmin.get()
@@ -85,7 +82,7 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
             case Some(p) => p
             case _ =>
                 val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = s"No such producer: $producerName")
-                return Future.successful(SendResponse(status = Some(status)))
+                break(Future.successful(SendResponse(status = Some(status))))
 
         val messages: Seq[Either[Throwable, Message]] = request.format match
             case MessageFormat.MESSAGE_FORMAT_JSON =>
@@ -96,7 +93,7 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
                         case _: PulsarAdminException.NotFoundException => None
                         case err =>
                             val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                            return Future.successful(SendResponse(status = Some(status)))
+                            break(Future.successful(SendResponse(status = Some(status))))
                     }
 
                 schemaInfo match
@@ -137,11 +134,11 @@ class ProducerServiceImpl extends ProducerServiceGrpc.ProducerService:
                     } catch {
                         case err =>
                             val status: Status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
-                            return Future.successful(SendResponse(status = Some(status)))
+                            break(Future.successful(SendResponse(status = Some(status))))
                     }
                 case Left(err) =>
                     val status: Status = Status(code = Code.INVALID_ARGUMENT.index, message = err.getMessage)
-                    return Future.successful(SendResponse(status = Some(status)))
+                    break(Future.successful(SendResponse(status = Some(status))))
         )
 
         val status: Status = Status(code = Code.OK.index)

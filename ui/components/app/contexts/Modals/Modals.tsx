@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -21,6 +21,7 @@ export type ModalStack = ModalStackEntry[];
 export type Value = {
   stack: ModalStack,
   push: (entry: ModalStackEntry) => void,
+  update: (id: string, entry: ModalStackEntry) => void,
   pop: () => void,
   clear: () => void,
 };
@@ -28,6 +29,7 @@ export type Value = {
 const defaultValue: Value = {
   stack: [],
   push: () => undefined,
+  update: () => undefined,
   pop: () => undefined,
   clear: () => undefined,
 };
@@ -39,6 +41,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
 
   const pop = () => setValue((value) => ({ ...value, stack: value.stack.slice(0, value.stack.length - 1) }));
   const push = (entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: [...value.stack, entry] }));
+  const update = (id: string, entry: ModalStackEntry) => setValue((value) => ({ ...value, stack: value.stack.map((e) => e.id === id ? entry : e) }));
   const clear = () => setValue((value) => ({ ...value, stack: [] }));
 
   const modalPortal = ReactDOM.createPortal(
@@ -58,7 +61,7 @@ export const DefaultProvider = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <Context.Provider value={{ ...value, pop, push, clear }}>
+    <Context.Provider value={{ ...value, pop, push, clear, update: update }}>
       {modalPortal}
       {children}
     </Context.Provider>
@@ -73,7 +76,7 @@ type ModalElementProps = {
 
 const ModalElement: React.FC<ModalElementProps> = (props) => {
   const isVisible = props.isVisible;
-  const rootRef = React.useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (props.isVisible) {

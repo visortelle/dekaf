@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MouseEventHandler, ReactElement } from 'react';
 
 import SvgIcon from '../SvgIcon/SvgIcon';
 
@@ -7,11 +7,12 @@ import { tooltipId } from '../Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 export type SmallButtonProps = {
-  onClick: () => void,
+  onClick: MouseEventHandler<HTMLButtonElement>,
   svgIcon?: string,
   text?: string,
-  title?: string,
+  title?: ReactElement | string,
   type?: 'regular' | 'primary' | 'danger',
+  appearance?: 'regular' | 'borderless' | 'borderless-semitransparent',
   disabled?: boolean,
   style?: React.CSSProperties,
   className?: string,
@@ -33,6 +34,8 @@ const SmallButton = (props: SmallButtonProps) => {
         ${s.Button}
         ${props.disabled ? s.DisabledButton : ''}
         ${props.text ? '' : s.ButtonWithoutText}
+        ${props.appearance === 'borderless' ? s.Borderless : ''}
+        ${props.appearance === 'borderless-semitransparent' ? s.BorderlessSemitransparent : ''}
         ${props.className || ''}
         ${typeClassName}
         `}

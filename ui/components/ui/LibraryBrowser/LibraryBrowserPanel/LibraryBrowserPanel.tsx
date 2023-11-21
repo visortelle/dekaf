@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './LibraryBrowserPanel.module.css'
 import LibraryBrowserButtons from './LibraryBrowserButtons/LibraryBrowserButtons';
-import { UserManagedItem, UserManagedItemType } from '../model/user-managed-items';
+import { ManagedItem, ManagedItemType } from '../model/user-managed-items';
 import { H3 } from '../../H/H';
 import FormLabel from '../../ConfigurationTable/FormLabel/FormLabel';
 import { help } from './help';
@@ -14,10 +14,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import * as Notifications from '../../../app/contexts/Notifications';
 
 export type LibraryBrowserPanelProps = {
-  itemType: UserManagedItemType;
-  itemToSave: UserManagedItem | undefined;
-  onPick: (item: UserManagedItem) => void;
-  onSave: (item: UserManagedItem) => void;
+  itemType: ManagedItemType;
+  itemToSave: ManagedItem | undefined;
+  onPick: (item: ManagedItem) => void;
+  onSave: (item: ManagedItem) => void;
   libraryContext: LibraryContext;
   isForceShowButtons?: boolean;
   managedItemReference?: {
@@ -40,6 +40,10 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'message-filter' && 'Message Filter'}
               {props.itemType === 'message-filter-chain' && 'Message Filter Chain'}
               {props.itemType === 'consumer-session-start-from' && 'Start From'}
+              {props.itemType === 'topic-selector' && 'Topic Selector'}
+              {props.itemType === 'consumer-session-topic' && 'Consumer Session Target'}
+              {props.itemType === 'coloring-rule' && 'Coloring Rule'}
+              {props.itemType === 'coloring-rule-chain' && 'Coloring Rule Chain'}
             </strong>
           )}
           help={(
@@ -48,6 +52,10 @@ const LibraryBrowserPanel: React.FC<LibraryBrowserPanelProps> = (props) => {
               {props.itemType === 'message-filter' && help.messageFilter}
               {props.itemType === 'message-filter-chain' && help.messageFilterChain}
               {props.itemType === 'consumer-session-start-from' && help.consumerSessionStartFrom}
+              {props.itemType === 'topic-selector' && help.topicSelector}
+              {props.itemType === 'consumer-session-topic' && help.consumerSessionTarget}
+              {props.itemType === 'coloring-rule' && help.coloringRule}
+              {props.itemType === 'coloring-rule-chain' && help.coloringRuleChain}
             </div>
           )}
         />

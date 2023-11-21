@@ -1,5 +1,5 @@
 import { ResourceMatcher } from './resource-matchers';
-import { UserManagedItem } from './user-managed-items';
+import { ManagedItem } from './user-managed-items';
 
 export type LibraryItemMetadata = {
   updatedAt: string,
@@ -9,5 +9,5 @@ export type LibraryItemMetadata = {
 
 export type LibraryItem = {
   metadata: LibraryItemMetadata,
-  spec: UserManagedItem,
+  spec: ManagedItem,
 };

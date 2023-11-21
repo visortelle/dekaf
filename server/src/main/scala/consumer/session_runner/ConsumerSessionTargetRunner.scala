@@ -1,0 +1,134 @@
+package consumer.session_runner
+
+import _root_.consumer.message_filter.MessageFilterChain
+import com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse
+import _root_.consumer.session_target.ConsumerSessionTarget
+import com.typesafe.scalalogging.Logger
+import consumer.coloring_rules.ColoringRuleChain
+import org.apache.pulsar.client.admin.PulsarAdmin
+import org.apache.pulsar.client.api.PulsarClient
+import org.apache.pulsar.client.api.Consumer
+import com.google.rpc.code.Code
+import com.google.rpc.status.Status
+import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
+import org.apache.pulsar.client.api.Message
+
+import scala.util.{Failure, Success, Try}
+
+type NonPartitionedTopicFqn = String
+
+val logger: Logger = Logger(getClass.getName)
+
+case class ConsumerSessionTargetRunner(
+    nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
+    messageFilterChain: MessageFilterChain,
+    coloringRuleChain: ColoringRuleChain,
+    schemasByTopic: SchemasByTopic,
+    consumerSessionContext: ConsumerSessionContext,
+    var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
+    var consumerListener: ConsumerListener,
+    var stats: ConsumerSessionTargetStats
+) {
+    def resume(
+        onNext: (msg: Option[consumerPb.Message], stats: ConsumerSessionTargetStats, errors: List[String]) => Unit
+    ): Unit =
+        val thisTarget = this
+
+        val listener = thisTarget.consumerListener
+        val targetMessageHandler = listener.targetMessageHandler
+        val consumerSessionContext = thisTarget.consumerSessionContext
+
+        targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
+            thisTarget.stats.messagesProcessed += 1
+
+            val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+
+            val messageFilterChain = thisTarget.messageFilterChain
+
+            val (filterResult, jsonAccumulator) =
+                getFilterChainTestResult(messageFilterChain, consumerSessionContext, jsonMessage, messageValueToJsonResult)
+
+            val messageToSend = messagePb
+                .withAccumulator(jsonAccumulator)
+                .withDebugStdout(consumerSessionContext.getStdout())
+
+            val maybeMessage = filterResult match
+                case Right(true) => Some(messageToSend)
+                case _           => None
+
+            val serializationErrors = messageValueToJsonResult match
+                case Left(err) => List(err.getMessage)
+                case _         => List.empty
+            val filterErrors = filterResult match
+                case Left(err) => List(err)
+                case _         => List.empty
+            val errors = serializationErrors ++ filterErrors
+
+            onNext(
+                msg = maybeMessage,
+                stats = stats,
+                errors = errors
+            )
+
+        listener.startAcceptingNewMessages()
+        consumers.foreach((_, consumer) => consumer.resume())
+
+    def pause(): Unit =
+        consumers.foreach((_, consumer) => consumer.pause())
+        consumerListener.stopAcceptingNewMessages()
+
+    def stop(): Unit =
+        consumers.foreach((_, consumer) =>
+            Try(consumer.unsubscribe()) match
+                case Success(_)   => ()
+                case Failure(err) => println(s"Failed to unsubscribe consumer. ${err.getMessage}")
+        )
+}
+
+object ConsumerSessionTargetRunner:
+    def make(
+        sessionName: String,
+        targetName: String,
+        sessionContext: ConsumerSessionContext,
+        targetConfig: ConsumerSessionTarget,
+        schemasByTopic: SchemasByTopic,
+        adminClient: PulsarAdmin,
+        pulsarClient: PulsarClient
+    ): ConsumerSessionTargetRunner =
+        Try {
+            val nonPartitionedTopicFqns = targetConfig.topicSelector.getNonPartitionedTopics(adminClient = adminClient)
+            val listener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ()))
+
+            val consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]] = nonPartitionedTopicFqns.map { topicFqn =>
+                val consumerName = s"$sessionName-$targetName"
+
+                buildConsumer(
+                    pulsarClient = pulsarClient,
+                    consumerName = consumerName,
+                    topicsToConsume = Vector(topicFqn),
+                    listener = listener
+                ) match
+                    case Right(consumerBuilder) =>
+                        val consumer = consumerBuilder.subscribe()
+                        topicFqn -> consumer
+                    case Left(err) =>
+                        throw new RuntimeException(s"Failed to build consumer for topic $topicFqn. $err")
+            }.toMap
+
+            ConsumerSessionTargetRunner(
+                consumerSessionContext = sessionContext,
+                nonPartitionedTopicFqns = nonPartitionedTopicFqns,
+                consumers = consumers,
+                messageFilterChain = targetConfig.messageFilterChain,
+                coloringRuleChain = targetConfig.coloringRuleChain,
+                consumerListener = listener,
+                schemasByTopic = schemasByTopic,
+                stats = ConsumerSessionTargetStats(
+                    messagesProcessed = 0
+                )
+            )
+        } match {
+            case Success(runner) => runner
+            case Failure(err) =>
+                throw new RuntimeException(s"Failed make topics for consumer session target. ${err.getMessage}")
+        }

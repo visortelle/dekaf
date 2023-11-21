@@ -1,6 +1,16 @@
 .ToastContainer {
   max-width: calc(100vw - 24rem) !important;
   padding: 8rem !important;
+  position: relative;
+}
+
+.ToastContainer :global(.Toastify__close-button) {
+  color: var(--text-color) !important;
+  opacity: 0.6 !important;
+}
+
+.ToastContainer :global(.Toastify__close-button:hover) {
+  opacity: 1 !important;
 }
 
 .Toast {
@@ -15,5 +25,13 @@
   padding: 0 !important;
   margin: 0 !important;
   overflow: auto !important;
+  scrollbar-width: thin;
   max-height: 640rem !important;
+}
+
+.CopyButton {
+  position: absolute;
+  bottom: 4rem;
+  right: 2rem;
+  display: inline-flex;
 }

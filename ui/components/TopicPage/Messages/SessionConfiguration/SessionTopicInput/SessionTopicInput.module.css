@@ -1,0 +1,6 @@
+.SessionTopicInput {
+  display: flex;
+  flex-direction: column;
+  gap: 32rem;
+  padding: 24rem 12rem;
+}

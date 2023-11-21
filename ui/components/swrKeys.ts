@@ -185,6 +185,26 @@ export const swrKeys = {
                 "subscriptionPermissions",
               ],
             },
+            nonPartitionedTopics: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "nonPartitionedTopics",
+              ],
+            },
+            partitionedTopics: {
+              _: (props: { tenant: string; namespace: string }) => [
+                "pulsar",
+                "tenants",
+                props.tenant,
+                "namespaces",
+                props.namespace,
+                "partitionedTopics",
+              ],
+            },
             nonPersistentTopics: {
               _: (props: { tenant: string; namespace: string }) => [
                 "pulsar",
@@ -264,7 +284,7 @@ export const swrKeys = {
                 "namespaces",
                 props.namespace,
                 "bundles",
-                ],
+              ],
             },
             statistics: {
               _: (props: { tenant: string; namespace: string }) => [
@@ -274,7 +294,7 @@ export const swrKeys = {
                 "namespaces",
                 props.namespace,
                 "statistics",
-                ],
+              ],
             }
           },
         },

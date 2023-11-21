@@ -1,27 +1,13 @@
+import { ManagedColoringRuleChain, ManagedColoringRuleChainValOrRef } from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/managed_items_pb";
+import { ManagedMessageFilterChain, ManagedMessageFilterChainValOrRef, ManagedTopicSelectorValOrRef } from "../../ui/LibraryBrowser/model/user-managed-items";
+import { TopicSelector } from "./topic-selector/topic-selector";
+
 export type SessionState =
   | "paused"
   | "pausing"
   | "running"
-  | "got-initial-cursor-positions"
-  | "awaiting-initial-cursor-positions"
   | "initializing"
   | "new";
-
-type RegexSubMode =
-  | "all-topics"
-  | "persistent-only"
-  | "non-persistent-only";
-
-export type ConsumerSessionTopicsSelector =
-  | {
-    type: "by-names";
-    topics: string[];
-  }
-  | {
-    type: "by-regex";
-    pattern: string;
-    regexSubscriptionMode: RegexSubMode;
-  };
 
 export type DateTimeUnit = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
 
@@ -29,6 +15,55 @@ export type RelativeDateTime = {
   value: number,
   unit: DateTimeUnit
   isRoundedToUnitStart: boolean
+};
+
+export type ColoringRule = {
+  isEnabled: boolean;
+  messageFilterChain: MessageFilterChain;
+  foregroundColor: string;
+  backgroundColor: string;
+};
+
+export type ColoringRuleChain = {
+  isEnabled: boolean;
+  coloringRules: ColoringRule[];
+};
+
+export type MessageId = {
+  messageId: Uint8Array;
+};
+
+export type ConsumerSessionEventMessagesProcessed = { type: 'messages-processed', messageCount: number };
+export type ConsumerSessionEventMessagesDelivered = { type: 'messages-delivered', messageCount: number };
+export type ConsumerSessionEventBytesProcessed = { type: 'bytes-processed', byteCount: number };
+export type ConsumerSessionEventBytesDelivered = { type: 'bytes-delivered', byteCount: number };
+export type ConsumerSessionEventMessageDecodeFailed = { type: 'decode-failed', failCount: number };
+export type ConsumerSessionEventTimeElapsed = { type: 'time-elapsed', timeElapsedMs: number };
+export type ConsumerSessionEventTopicEndReached = { type: 'topic-end-reached' };
+export type ConsumerSessionEventUnexpectedErrorOccurred = { type: 'unexpected-error-occurred' };
+export type ConsumerSessionEventMessageId = { type: 'message-id', messageId: MessageId };
+
+export type ConsumerSessionEvent = ConsumerSessionEventMessagesProcessed |
+  ConsumerSessionEventMessagesDelivered |
+  ConsumerSessionEventBytesProcessed |
+  ConsumerSessionEventBytesDelivered |
+  ConsumerSessionEventMessageDecodeFailed |
+  ConsumerSessionEventTimeElapsed |
+  ConsumerSessionEventTopicEndReached |
+  ConsumerSessionEventUnexpectedErrorOccurred |
+  ConsumerSessionEventMessageId;
+
+export type ConsumerSessionPauseTriggerChainMode = 'all' | 'any';
+
+export type ConsumerSessionPauseTriggerChain = {
+  events: ConsumerSessionEvent[];
+  mode: ConsumerSessionPauseTriggerChainMode;
+};
+
+export type ConsumerSessionTarget = {
+  topicSelector: TopicSelector;
+  messageFilterChain: MessageFilterChain;
+  coloringRuleChain: ColoringRuleChain;
 };
 
 export type ConsumerSessionStartFrom =
@@ -45,8 +80,10 @@ export type ConsumerSessionStartFrom =
 
 export type ConsumerSessionConfig = {
   startFrom: ConsumerSessionStartFrom;
-  topicsSelector: ConsumerSessionTopicsSelector;
+  targets: ConsumerSessionTarget[];
   messageFilterChain: MessageFilterChain;
+  pauseTriggerChain: ConsumerSessionPauseTriggerChain;
+  coloringRuleChain: ColoringRuleChain;
 };
 
 type Nullable<T> = T | null;
