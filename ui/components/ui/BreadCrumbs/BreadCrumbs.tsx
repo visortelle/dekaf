@@ -238,6 +238,10 @@ export function crumbsToQualifiedName(crumbs: Crumb[]): string | undefined {
       return `${"persistent"}://${tenant}/${namespace}/${topic}`;
     case "non-persistent-topic":
       return `${"non-persistent"}://${tenant}/${namespace}/${topic}`;
+    case "persistent-topic-partitioned":
+      return `${"persistent"}://${tenant}/${namespace}/${topic}`;
+    case "non-persistent-topic-partitioned":
+      return `${"non-persistent"}://${tenant}/${namespace}/${topic}`;
     case "persistent-topic-partition":
       return `${"persistent"}://${tenant}/${namespace}/${topic}-${topicPartition}`;
     case "non-persistent-topic-partition":

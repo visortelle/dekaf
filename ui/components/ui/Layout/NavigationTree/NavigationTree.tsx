@@ -25,7 +25,45 @@ type NavigationTreeProps = {
   selectedNodePath: TreePath;
 }
 
-const filterQuerySep = '/';
+const filterQuerySep = '/' as const;
+function filterQueryToTreePath(query: string): TreePath {
+
+  const queryParts: (string | undefined)[] = query.split(filterQuerySep).filter(p => p.length !== 0);
+  const [tenant, namespace, topic, topicPartition] = queryParts;
+
+  let treePath: TreePath = [];
+  console.log('qp', queryParts);
+  switch (queryParts.length) {
+    case 1: {
+      treePath = [{ type: "tenant", tenant: tenant! }]
+    }; break;
+    case 2: {
+      treePath = [
+        { type: "tenant", tenant: tenant! },
+        { type: "namespace", tenant: tenant!, namespace: namespace! }
+      ]
+    }; break;
+    case 3: {
+      treePath = [
+        { type: "tenant", tenant: tenant! },
+        { type: "namespace", tenant: tenant!, namespace: namespace! },
+        {
+          type: "topic",
+          tenant,
+          namespace,
+          topic,
+          persistency: "persistent", // doesn't matter here
+          partitioning: { type: 'non-partitioned' }, // doesn't matter here
+          topicFqn: "" // doesn't matter here
+        }
+      ]
+    }; break;
+  }
+
+  console.log('tree path', treePath);
+
+  return treePath;
+}
 
 const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [tree, setTree] = useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
@@ -70,38 +108,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   }, [tenants]);
 
   useEffect(() => {
-    const parts = filterQueryDebounced.split(filterQuerySep);
-
-    const tenant = parts[0];
-    const namespace = parts[1];
-    const topic = parts[2];
-
-    let fp: TreePath = [];
-    switch (parts.length) {
-      case 1: {
-        fp = [{ type: "tenant", tenant }]
-      }; break;
-      case 2: {
-        fp = [{ type: "tenant", tenant }, { type: "namespace", tenant, namespace }]
-      }; break;
-      case 3: {
-        fp = [
-          { type: "tenant", tenant },
-          { type: "namespace", tenant, namespace },
-          {
-            type: "topic",
-            tenant,
-            namespace,
-            topic,
-            persistency: "persistent", // doesn't matter here
-            partitioning: { type: 'non-partitioned' }, // doesn't matter here
-            topicFqn: "" // doesn't matter here
-          }
-        ]
-      }; break;
-    }
-
-    setFilterPath(() => fp);
+    const treePath = filterQueryToTreePath(filterQueryDebounced);
+    setFilterPath(treePath);
   }, [filterQueryDebounced]);
 
   const navigateToPath = (path: TreePath) => {
@@ -198,27 +206,19 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             return filterQueryDebounced.length === 0;
           }
 
-          if (filterQueryDebounced.length !== 0) {
-            if (filterQueryDebounced.includes(filterQuerySep)) {
-              const a = path.every((part, i) => {
-                const name = getRootLabelName(part);
-                return i === filterPath.length - 1 ?
-                  name.includes(getRootLabelName(filterPath[filterPath.length - 1])) :
-                  name === getRootLabelName(filterPath[i]);
-              });
+          if (filterPath.length !== 0) {
+            const a = path.every((pathPart, i) => {
+              const name = getRootLabelName(pathPart);
 
-              const b = path.length === filterPath.length && getRootLabelName(filterPath[filterPath.length - 1]) === '' && getRootLabelName(filterPath[filterPath.length - 2]) === getRootLabelName(path[path.length - 2]);
-              return a || b;
-            }
-
-            return getRootLabelName(tree.rootLabel).includes(filterQueryDebounced)
-          }
-
-          if (tree.rootLabel.type === "topic-partition") {
-            return expandedPaths.filter(p => treePath.isTopic(p)).some(p => {
-              const topic = treePath.getTopic(p)!;
-              return (tree.rootLabel as TopicTreeNode).topicFqn.startsWith(topic.topicFqn);
+              return i === filterPath.length - 1 ?
+                name.includes(getRootLabelName(filterPath[filterPath.length - 1])) :
+                name === getRootLabelName(filterPath[i]);
             });
+
+            const b = path.length === filterPath.length && getRootLabelName(filterPath[filterPath.length - 1]) === '' && getRootLabelName(filterPath[filterPath.length - 2]) === getRootLabelName(path[path.length - 2]);
+            return a || b;
+
+            // return getRootLabelName(tree.rootLabel).includes(filterQueryDebounced)
           }
 
           return path.length === 1 ? true : treePath.hasPath(expandedPaths, path.slice(0, path.length - 1));
