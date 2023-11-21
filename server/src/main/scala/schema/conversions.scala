@@ -2,8 +2,8 @@ package schema
 
 import scala.jdk.CollectionConverters.*
 import com.google.protobuf.ByteString
-import org.apache.pulsar.common.schema.{SchemaInfo, SchemaType}
-import com.tools.teal.pulsar.ui.api.v1.schema.{SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
+import org.apache.pulsar.common.schema.{KeyValueEncodingType, SchemaInfo, SchemaType}
+import com.tools.teal.pulsar.ui.api.v1.schema.{KeyValueEncodingType as KeyValueEncodingTypePb, SchemaInfo as SchemaInfoPb, SchemaType as SchemaTypePb}
 
 def schemaInfoToPb(s: SchemaInfo): SchemaInfoPb =
     SchemaInfoPb(
@@ -88,4 +88,14 @@ def schemaTypeToPb(schemaType: SchemaType): SchemaTypePb =
 
         case _ => SchemaTypePb.SCHEMA_TYPE_NONE
 
-
+def keyValueEncodingTypeFromPb(pb: KeyValueEncodingTypePb): KeyValueEncodingType =
+    pb match
+        case KeyValueEncodingTypePb.KEY_VALUE_ENCODING_TYPE_SEPARATED => KeyValueEncodingType.SEPARATED
+        case KeyValueEncodingTypePb.KEY_VALUE_ENCODING_TYPE_INLINE => KeyValueEncodingType.INLINE
+        case _ => KeyValueEncodingType.INLINE
+        
+def keyValueEncodingTypeToPb(keyValueEncodingType: KeyValueEncodingType): KeyValueEncodingTypePb =
+    keyValueEncodingType match
+        case KeyValueEncodingType.SEPARATED => KeyValueEncodingTypePb.KEY_VALUE_ENCODING_TYPE_SEPARATED
+        case KeyValueEncodingType.INLINE => KeyValueEncodingTypePb.KEY_VALUE_ENCODING_TYPE_INLINE
+        case _ => KeyValueEncodingTypePb.KEY_VALUE_ENCODING_TYPE_INLINE

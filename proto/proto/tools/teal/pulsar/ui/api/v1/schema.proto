@@ -66,14 +66,43 @@ message CreateSchemaResponse {
   google.rpc.Status status = 1;
 }
 
+enum KeyValueEncodingType {
+  KEY_VALUE_ENCODING_TYPE_UNSPECIFIED = 0;
+  KEY_VALUE_ENCODING_TYPE_INLINE = 1;
+  KEY_VALUE_ENCODING_TYPE_SEPARATED = 2;
+}
+
+message CreateKeyValueSchemaRequest {
+  string topic = 1;
+  string schema_name = 2;
+  SchemaInfo key_schema_info = 3;
+  SchemaInfo value_schema_info = 4;
+  KeyValueEncodingType encoding_type = 5;
+}
+
+message CreateKeyValueSchemaResponse {
+  google.rpc.Status status = 1;
+}
+
+message DecodeKeyValueSchemaInfoRequest {
+  SchemaInfo key_value_schema_info = 2;
+}
+
+message DecodeKeyValueSchemaInfoResponse {
+  google.rpc.Status status = 1;
+  string schema_name = 2;
+  SchemaInfo key_schema_info = 3;
+  SchemaInfo value_schema_info = 4;
+  KeyValueEncodingType encoding_type = 5;
+}
+
 message GetLatestSchemaInfoRequest {
   string topic = 1;
 }
 
 message GetLatestSchemaInfoResponse {
   google.rpc.Status status = 1;
-  SchemaInfo schema_info = 2;
-  optional int64 schema_version = 3;
+  SchemaInfoWithVersion schema_info_with_version = 2;
 }
 
 message DeleteSchemaRequest {
@@ -128,6 +157,8 @@ message GetHumanReadableSchemaResponse {
 
 service SchemaService {
   rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse);
+  rpc CreateKeyValueSchema(CreateKeyValueSchemaRequest) returns (CreateKeyValueSchemaResponse);
+  rpc DecodeKeyValueSchemaInfo(DecodeKeyValueSchemaInfoRequest) returns (DecodeKeyValueSchemaInfoResponse);
   rpc GetLatestSchemaInfo(GetLatestSchemaInfoRequest) returns (GetLatestSchemaInfoResponse);
   rpc DeleteSchema(DeleteSchemaRequest) returns (DeleteSchemaResponse);
   rpc ListSchemas(ListSchemasRequest) returns (ListSchemasResponse);

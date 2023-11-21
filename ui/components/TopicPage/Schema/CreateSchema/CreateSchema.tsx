@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
-  CreateSchemaRequest,
+  CreateKeyValueSchemaRequest,
+  CreateSchemaRequest, KeyValueEncodingType,
   SchemaInfo,
   SchemaType,
   TestCompatibilityRequest,
 } from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb";
 import Button from "../../../ui/Button/Button";
-import ProtobufNativeEditor from "../ProtobufNativeEditor/ProtobufNativeEditor";
-import AvroEditor from "../AvroEditor/AvroEditor";
-import { SchemaTypeT } from "../types";
+import {KeyValueSchema, KeyValueSchemaDefinition, SchemaDefinition, SchemaTypeT} from "../types";
 import * as GrpcClient from "../../../app/contexts/GrpcClient/GrpcClient";
 import * as Notifications from "../../../app/contexts/Notifications";
 import s from "./CreateSchema.module.css";
@@ -19,6 +18,7 @@ import Policies from "../Policies/Policies";
 import Pre from "../../../ui/Pre/Pre";
 import HelpIcon from "../../../ui/ConfigurationTable/HelpIcon/HelpIcon";
 import { PulsarTopicPersistency } from "../../../pulsar/pulsar-resources";
+import SchemaEditor from "../SchemaEditor/SchemaEditor";
 
 export type CreateSchemaProps = {
   topicPersistency: PulsarTopicPersistency;
@@ -27,20 +27,21 @@ export type CreateSchemaProps = {
   topic: string;
   isTopicHasAnySchema: boolean;
   defaultSchemaType: SchemaTypeT;
-  defaultSchemaDefinition: string | undefined;
+  defaultSchemaDefinition: SchemaDefinition | undefined;
   onCreateSuccess: () => void;
 };
 
-type SchemaCompatibility = {
+export type SchemaCompatibility = {
   isCompatible: boolean;
   strategy: string;
   incompatibleReason: string;
   incompatibleReasonFull: string;
 };
 
-type Schema = {
+export type SchemaForView = {
   type: SchemaTypeT;
   definition: Uint8Array | undefined;
+  keyValueSchema?: KeyValueSchema,
   updateState: "in-progress" | "ready";
 };
 
@@ -49,7 +50,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   const { notifySuccess, notifyError } = Notifications.useContext();
   const topicFqn = `${props.topicPersistency}://${props.tenant}/${props.namespace}/${props.topic}`;
 
-  const [schema, setSchema] = useState<Schema>({
+  const [schema, setSchema] = useState<SchemaForView>({
     type: props.defaultSchemaType,
     definition: undefined,
     updateState: isSchemaShouldHaveDefinition(props.defaultSchemaType) ? "in-progress" : "ready",
@@ -66,7 +67,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
     const schemaInfo = new SchemaInfo();
 
     if (schemaShouldHaveDefinition && schema.definition !== undefined) {
-      schemaInfo.setSchema(schema.definition);
+      schemaInfo.setSchema(schema.definition as Uint8Array);
     }
     schemaInfo.setType(SchemaType[schema.type]);
 
@@ -97,7 +98,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
       setSchemaCompatibility(undefined);
     }
 
-    if (schema.updateState === "ready") {
+    if (schema.updateState === "ready" && schema.type !== "SCHEMA_TYPE_KEY_VALUE") {
       checkSchemaCompatibility();
     }
   }, [schema]);
@@ -131,6 +132,18 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               </span>
             </div>
           )}
+
+          {schema.type === "SCHEMA_TYPE_KEY_VALUE" && (
+            <div style={{ maxWidth: "480rem", color: "var(--accent-color-blue)" }}>
+              <span>
+                  At present, checking compatibility for <code>KEY_VALUE</code> schemas prior to creation is not available.
+                  <br />
+                  Additionally, retrieving the correct version of a <code>KEY_VALUE</code> schema is currently not supported.
+                  <br />
+                  Stay tuned for updates!
+              </span>
+            </div>
+          )}
         </div>
 
         <div className={s.FormControl}>
@@ -157,47 +170,41 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
         </div>
 
         <div className={s.FormControl}>
-          {schema.type === "SCHEMA_TYPE_KEY_VALUE" && (
-            <div style={{ color: "var(--accent-color-red)" }}>
-              Support of KEY_VALUE schema type is coming in further releases. Stay tuned.
-            </div>
-          )}
-          {schema.type === "SCHEMA_TYPE_PROTOBUF_NATIVE" && (
-            // https://github.com/apache/pulsar/blob/c01b1eeda3221bdbf863bf0f3f8373e93d90adef/pulsar-client/src/test/java/org/apache/pulsar/client/impl/schema/ProtobufNativeSchemaTest.java
-            // fileDescriptorSet: "CtMDCgpUZXN0LnByb3RvEgVwcm90bxoSRXh0ZXJuYWxUZXN0LnByb3RvImUKClN1Yk1lc3NhZ2USCwoDZm9vGAEgASgJEgsKA2JhchgCIAEoARo9Cg1OZXN0ZWRNZXNzYWdlEgsKA3VybBgBIAEoCRINCgV0aXRsZRgCIAEoCRIQCghzbmlwcGV0cxgDIAMoCSLlAQoLVGVzdE1lc3NhZ2USEwoLc3RyaW5nRmllbGQYASABKAkSEwoLZG91YmxlRmllbGQYAiABKAESEAoIaW50RmllbGQYBiABKAUSIQoIdGVzdEVudW0YBCABKA4yDy5wcm90by5UZXN0RW51bRImCgtuZXN0ZWRGaWVsZBgFIAEoCzIRLnByb3RvLlN1Yk1lc3NhZ2USFQoNcmVwZWF0ZWRGaWVsZBgKIAMoCRI4Cg9leHRlcm5hbE1lc3NhZ2UYCyABKAsyHy5wcm90by5leHRlcm5hbC5FeHRlcm5hbE1lc3NhZ2UqJAoIVGVzdEVudW0SCgoGU0hBUkVEEAASDAoIRkFJTE9WRVIQAUItCiVvcmcuYXBhY2hlLnB1bHNhci5jbGllbnQuc2NoZW1hLnByb3RvQgRUZXN0YgZwcm90bzMKoAEKEkV4dGVybmFsVGVzdC5wcm90bxIOcHJvdG8uZXh0ZXJuYWwiOwoPRXh0ZXJuYWxNZXNzYWdlEhMKC3N0cmluZ0ZpZWxkGAEgASgJEhMKC2RvdWJsZUZpZWxkGAIgASgBQjUKJW9yZy5hcGFjaGUucHVsc2FyLmNsaWVudC5zY2hlbWEucHJvdG9CDEV4dGVybmFsVGVzdGIGcHJvdG8z"
-            // rootFileDescriptorName: "Test.proto"
-            // rootMessageTypeName: "proto.TestMessage"
-            <div className={s.FormControl}>
-              <ProtobufNativeEditor
-                onSchemaDefinition={(v) => setSchema((schema) => ({ ...schema, definition: v, updateState: "ready" }))}
-                onSchemaDefinitionError={() => {
-                  setSchema((schema) => ({ ...schema, definition: undefined, updateState: "in-progress" }));
-                  setSchemaCompatibility(undefined);
-                }}
-              />
-            </div>
-          )}
+          <SchemaEditor
+            schemaType={schema.type}
+            defaultSchemaDefinition={props.defaultSchemaDefinition}
+            onSchemaDefinition={(v) => {
+              if (v === undefined) {
+                setSchema((schema) => ({ ...schema, definition: undefined, updateState: "in-progress" }));
+                setSchemaCompatibility(undefined);
+                return;
+              }
 
-          {(schema.type === "SCHEMA_TYPE_AVRO" || schema.type === "SCHEMA_TYPE_JSON" || schema.type === "SCHEMA_TYPE_PROTOBUF") && (
-            <div className={s.FormControl}>
-              <AvroEditor
-                key={schema.type}
-                defaultSchemaDefinition={props.defaultSchemaDefinition}
-                onSchemaDefinition={(v) => {
-                  if (v === undefined) {
-                    setSchema((schema) => ({ ...schema, definition: undefined, updateState: "in-progress" }));
-                    setSchemaCompatibility(undefined);
-                    return;
-                  }
+              setSchema((schema) => ({ ...schema, definition: v, updateState: "ready" }));
+            }}
+            onKeyValueSchemaDefinition={(v) => {
+              if (v?.keySchemaInfo?.getSchema_asU8() === undefined) {
+                setSchema((schema) => ({ ...schema, keyValueSchema: undefined, updateState: "in-progress" }));
+                setSchemaCompatibility(undefined);
+                return;
+              }
 
-                  setSchema((schema) => ({ ...schema, definition: v, updateState: "ready" }));
-                }}
-              />
-            </div>
-          )}
+              if (v.valueSchemaInfo?.getSchema_asU8() === undefined) {
+                setSchema((schema) => ({ ...schema, keyValueSchema: undefined, updateState: "in-progress" }));
+                setSchemaCompatibility(undefined);
+                return;
+              }
+
+              setSchema((schema) => ({ ...schema, keyValueSchema: v, updateState: "ready" }));
+            }}
+            onSchemaDefinitionError={() => {
+              setSchema((schema) => ({ ...schema, definition: undefined, updateState: "in-progress" }));
+              setSchemaCompatibility(undefined);
+            }}
+          />
         </div>
 
-        {schemaCompatibility !== undefined && (
+        {schemaCompatibility !== undefined && schema.type !== "SCHEMA_TYPE_KEY_VALUE" && (
           <div className={s.FormControl}>
             <div>
               <strong>Compatibility: </strong>
@@ -224,7 +231,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
           </div>
         )}
 
-        {schemaCompatibility !== undefined && !schemaCompatibility.isCompatible && (
+        {schemaCompatibility !== undefined && !schemaCompatibility.isCompatible && schema.type !== "SCHEMA_TYPE_KEY_VALUE" && (
           <div style={{ marginTop: "-8rem", marginBottom: "12rem" }}>
             <strong>Details:</strong>
             <Pre>{schemaCompatibility.incompatibleReasonFull}</Pre>
@@ -235,30 +242,83 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
           <Button
             text='Create'
             type='primary'
-            disabled={!schemaCompatibility?.isCompatible}
+            disabled={!schemaCompatibility?.isCompatible && schema.type !== "SCHEMA_TYPE_KEY_VALUE"}
             onClick={async () => {
-              const schemaInfo = new SchemaInfo();
-              schemaInfo.setType(SchemaType[schema.type]);
+              const createSchema = async (schemaDefinition: Uint8Array, schemaType: SchemaTypeT) => {
+                const schemaInfo = new SchemaInfo();
+                schemaInfo.setType(SchemaType[schemaType]);
 
-              if (schemaShouldHaveDefinition && schema.definition !== undefined) {
-                schemaInfo.setSchema(schema.definition);
-              }
+                if (schemaShouldHaveDefinition && schema.definition !== undefined) {
+                  schemaInfo.setSchema(schemaDefinition);
+                }
 
-              const req = new CreateSchemaRequest();
-              req.setTopic(topicFqn);
-              req.setSchemaInfo(schemaInfo);
+                const req = new CreateSchemaRequest();
+                req.setTopic(topicFqn);
+                req.setSchemaInfo(schemaInfo);
 
-              const res = await schemaServiceClient.createSchema(req, {}).catch((err) => notifyError(`Unable to create schema. ${err}`));
-              if (res === undefined) {
-                return;
-              }
+                const res = await schemaServiceClient.createSchema(req, {})
+                  .catch((err) => notifyError(`Unable to create schema. ${err}`));
+                if (res === undefined) {
+                  return;
+                }
 
-              if (res.getStatus()?.getCode() === Code.OK) {
-                props.onCreateSuccess();
-                checkSchemaCompatibility();
-                notifySuccess(`Schema successfully created.`);
+                if (res.getStatus()?.getCode() === Code.OK) {
+                  props.onCreateSuccess();
+
+                  checkSchemaCompatibility();
+                  notifySuccess(`Schema successfully created.`);
+                } else {
+                  notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);
+                }
+              };
+
+              const createKeyValueSchema = async (keyValueSchema: KeyValueSchema) => {
+                const keySchemaInfo = new SchemaInfo();
+                keySchemaInfo.setType(SchemaType[keyValueSchema.keyType]);
+
+                const keySchemaShouldHaveDefinition = isSchemaShouldHaveDefinition(keyValueSchema.keyType);
+                if (keySchemaShouldHaveDefinition) {
+                  keySchemaInfo.setSchema(keyValueSchema.keySchemaInfo?.getSchema_asU8() || new Uint8Array());
+                }
+
+                const valueSchemaInfo = new SchemaInfo();
+                valueSchemaInfo.setType(SchemaType[keyValueSchema.valueType]);
+
+                const valueSchemaShouldHaveDefinition = isSchemaShouldHaveDefinition(keyValueSchema.valueType);
+                if (valueSchemaShouldHaveDefinition) {
+                  valueSchemaInfo.setSchema(keyValueSchema.valueSchemaInfo?.getSchema_asU8() || new Uint8Array());
+                }
+
+                const encodingTypePb = keyValueSchema.encodingType === "KEY_VALUE_ENCODING_TYPE_SEPARATED" ?
+                  KeyValueEncodingType.KEY_VALUE_ENCODING_TYPE_SEPARATED :
+                  KeyValueEncodingType.KEY_VALUE_ENCODING_TYPE_INLINE;
+
+                const req = new CreateKeyValueSchemaRequest();
+                req.setTopic(topicFqn);
+                req.setKeySchemaInfo(keySchemaInfo);
+                req.setValueSchemaInfo(valueSchemaInfo);
+                req.setEncodingType(encodingTypePb);
+
+                const res = await schemaServiceClient.createKeyValueSchema(req, {})
+                  .catch((err) => notifyError(`Unable to create key value schema. ${err}`));
+
+                if (res === undefined) {
+                  return;
+                }
+
+                if (res.getStatus()?.getCode() === Code.OK) {
+                  props.onCreateSuccess();
+
+                  notifySuccess(`Schema successfully created.`);
+                } else {
+                  notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);
+                }
+              };
+
+              if (schema.type === "SCHEMA_TYPE_KEY_VALUE" && schema.keyValueSchema !== undefined) {
+                await createKeyValueSchema(schema.keyValueSchema);
               } else {
-                notifyError(`Unable to create schema. ${res.getStatus()?.getMessage()}`);
+                await createSchema(schema.definition as Uint8Array, schema.type);
               }
             }}
           />
@@ -268,7 +328,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
   );
 };
 
-function isSchemaShouldHaveDefinition(schemaType: SchemaTypeT): boolean {
+export function isSchemaShouldHaveDefinition(schemaType: SchemaTypeT): boolean {
   return (
     schemaType === "SCHEMA_TYPE_PROTOBUF" ||
     schemaType === "SCHEMA_TYPE_PROTOBUF_NATIVE" ||

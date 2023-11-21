@@ -2,27 +2,40 @@ import React from 'react';
 import s from './SchemaTypeInput.module.css'
 import Select from '../../../ui/Select/Select';
 import { SchemaTypeT } from '../types';
+import {SchemaType} from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/schema_pb";
 
 
 export type SchemaTypeInputProps = {
   onChange: (schemaType: SchemaTypeT) => void
   value: SchemaTypeT
+  withoutKeyValue?: boolean
 };
 
+type SchemaTypeOption = {
+  type: "item";
+  value: SchemaTypeT;
+  title: string;
+}
+
 const SchemaTypeInput: React.FC<SchemaTypeInputProps> = (props) => {
+  let complexTypes: SchemaTypeOption[] = [
+    { type: 'item', title: 'AVRO', value: 'SCHEMA_TYPE_AVRO' },
+    { type: 'item', title: 'PROTOBUF', value: 'SCHEMA_TYPE_PROTOBUF' },
+    { type: 'item', title: 'PROTOBUF_NATIVE', value: 'SCHEMA_TYPE_PROTOBUF_NATIVE' },
+    { type: 'item', title: 'JSON', value: 'SCHEMA_TYPE_JSON' },
+  ];
+
+  if(!props.withoutKeyValue) {
+    complexTypes.push({ type: 'item', title: 'KEY_VALUE', value: 'SCHEMA_TYPE_KEY_VALUE' } as SchemaTypeOption);
+  }
+
   return (
     <div className={s.SchemaTypeInput}>
       <Select<SchemaTypeT>
         list={[
           { type: 'item', title: 'None', value: 'SCHEMA_TYPE_NONE' },
           {
-            type: 'group', title: 'Complex type', items: [
-              { type: 'item', title: 'AVRO', value: 'SCHEMA_TYPE_AVRO' },
-              { type: 'item', title: 'PROTOBUF', value: 'SCHEMA_TYPE_PROTOBUF' },
-              { type: 'item', title: 'PROTOBUF_NATIVE', value: 'SCHEMA_TYPE_PROTOBUF_NATIVE' },
-              { type: 'item', title: 'JSON', value: 'SCHEMA_TYPE_JSON' },
-              { type: 'item', title: 'KEY_VALUE', value: 'SCHEMA_TYPE_KEY_VALUE' },
-            ]
+            type: 'group', title: 'Complex type', items: complexTypes
           },
           {
             type: 'group', title: 'Primitive type', items: [
