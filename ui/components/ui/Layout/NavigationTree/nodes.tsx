@@ -16,9 +16,7 @@ import { TopicPartitionTreeNode, TopicTreeNode, TreeNode } from './TreeView';
 import { partition } from 'lodash';
 import { customTopicsNamesSort } from '../../../NamespacePage/Topics/sorting';
 
-const swrConfiguration: SWRConfiguration = {
-  dedupingInterval: 10000,
-};
+const swrConfiguration: SWRConfiguration = {};
 
 const parseTopicFqn = (topicFqn: string): { persistency: 'persistent' | 'non-persistent', tenant: string, namespace: string, topic: string } => {
   const [persistency, rest] = topicFqn.split("://");
@@ -113,7 +111,14 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
   );
 
   useEffect(
-    () => props.onNamespaces(namespaces ? namespaces.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) : []),
+    () => {
+      if (namespaces === undefined) {
+        return;
+      }
+
+      const sortedNamespaces = namespaces.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+      props.onNamespaces(sortedNamespaces)
+    },
     [namespaces, props.forceReloadKey]
   );
 

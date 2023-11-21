@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import useSWR, { mutate } from 'swr';
 import s from './NavigationTree.module.css'
-import treeToFlattenTree, { getRootLabelName, FlattenTreeNode, TopicTreeNode, Tree, TreePath, treePath, TreeToFlattenTreeProps } from './TreeView';
+import treeToFlattenTree, { getRootLabelName, FlattenTreeNode, TopicTreeNode, Tree, TreePath, treePath, TreeToFlattenTreeProps, TreeNode } from './TreeView';
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as tenantPb from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
@@ -388,129 +388,128 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           topicPersistency={topicPartition.persistency}
         />
       )
-  }
-
-  const handleNodeClick = async () => {
-    switch (node.type) {
-      case 'instance': await mutate(swrKeys.pulsar.tenants.listTenants._()); break;
-      case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.tenant })); break;
-      case 'namespace': {
-        await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: treePath.getTenant(path)!.tenant, namespace: treePath.getNamespace(path)!.namespace }));
-        await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: treePath.getTenant(path)!.tenant, namespace: treePath.getNamespace(path)!.namespace }));
-      }; break;
     }
+
+    const handleNodeClick = async () => {
+      switch (node.type) {
+        case 'instance': await mutate(swrKeys.pulsar.tenants.listTenants._()); break;
+        case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.tenant })); break;
+        case 'namespace': {
+          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: treePath.getTenant(path)!.tenant, namespace: treePath.getNamespace(path)!.namespace }));
+          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: treePath.getTenant(path)!.tenant, namespace: treePath.getNamespace(path)!.namespace }));
+        }; break;
+      }
+    }
+
+    const pathStr = stringify(path);
+
+    return (
+      <div
+        key={`tree-node-${pathStr}`}
+        className={s.Node}
+        onClick={handleNodeClick}
+      >
+        <div className={s.NodeContent}>
+          <span>&nbsp;</span>
+          <div
+            className={s.NodeIcon}
+            style={{ marginLeft: leftIndent }}
+          >
+            {nodeIcon}
+          </div>
+          <span className={s.NodeTextContent}>{nodeContent}</span>
+        </div>
+      </div>
+    );
   }
 
-  const pathStr = stringify(path);
+  const isTreeInUndefinedState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
 
   return (
-    <div
-      key={`tree-node-${pathStr}`}
-      className={s.Node}
-      onClick={handleNodeClick}
-    >
-      <div className={s.NodeContent}>
-        <span>&nbsp;</span>
-        <div
-          className={s.NodeIcon}
-          style={{ marginLeft: leftIndent }}
-        >
-          {nodeIcon}
-        </div>
-        <span className={s.NodeTextContent}>{nodeContent}</span>
-      </div>
-    </div>
-  );
-}
-
-const isTreeInUndefinedState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
-
-return (
-  <div className={s.NavigationTree}>
-    <div className={s.FilterQueryInput}>
-      <Input
-        placeholder="tenant/namespace/topic"
-        value={filterQuery}
-        onChange={v => setFilterQuery(v)}
-        clearable={true}
-        focusOnMount={true}
-      />
-    </div>
-    <div className={s.TreeControlButtons}>
-      <div>
-        <CredentialsButton />
-      </div>
-      <div>
-        <SmallButton
-          title="Collapse All"
-          svgIcon={collapseAllIcon}
-          onClick={() => setExpandedPaths([])}
-          appearance='borderless-semitransparent'
-          type='regular'
+    <div className={s.NavigationTree}>
+      <div className={s.FilterQueryInput}>
+        <Input
+          placeholder="tenant/namespace/topic"
+          value={filterQuery}
+          onChange={v => setFilterQuery(v)}
+          clearable={true}
+          focusOnMount={true}
         />
       </div>
-    </div>
-
-    <div className={s.TreeContainer}>
-      {!isTreeInUndefinedState && scrollToPath.state !== 'finished' && (
-        <div className={s.Loading}>
-          <span>Navigating to the selected resource...</span>
+      <div className={s.TreeControlButtons}>
+        <div>
+          <CredentialsButton />
         </div>
-      )}
-      {isTreeInUndefinedState && (
-        <div className={s.Loading}>
-          <span>The tree is in a stuck state. Please decide:</span>
+        <div>
           <SmallButton
-            text="Scroll to the selected resource"
-            onClick={() => setFilterQuery('')}
-            type='primary'
-          />
-          <SmallButton
-            text="Apply filter"
-            onClick={() => {
-              setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished' }));
-            }}
-            type='primary'
+            title="Collapse All"
+            svgIcon={collapseAllIcon}
+            onClick={() => setExpandedPaths([])}
+            appearance='borderless-semitransparent'
+            type='regular'
           />
         </div>
-      )}
-      {!isTreeInUndefinedState && (
-        <div
-          ref={scrollParentRef}
-          className={s.TreeScrollParent}
-          style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
-        >
-          <Virtuoso<FlattenTreeNode>
-            ref={virtuosoRef}
-            itemContent={(_, item) => renderTreeItem(item)}
-            data={flattenTree}
-            customScrollParent={scrollParentRef.current || undefined}
-            defaultItemHeight={remToPx(40)}
-            fixedItemHeight={remToPx(40)}
-            components={{
-              EmptyPlaceholder: () => <div className={s.Loading} style={{ width: 'calc(100% - 24rem)' }}>
-                <span>No items found. <br />Try another filter query.</span>
-              </div>
-            }}
-            increaseViewportBy={{
-              top: window.innerHeight, // otherwise we experiencing accidental tree nodes collapsing when fast-scrolling large lists.
-              bottom: window.innerHeight // otherwise we experiencing accidental tree nodes collapsing when fast-scrolling large lists.
-            }}
-            totalCount={flattenTree.length}
-            itemsRendered={(items) => {
-              const isShouldUpdate = scrollToPath.state === 'finished' && !isEqual(itemsRendered, items)
-              if (isShouldUpdate) {
-                setItemsRendered(() => items);
-              }
-            }}
-            computeItemKey={(_, item) => JSON.stringify(item.path)}
-          />
-        </div>
-      )}
-    </div>
+      </div>
 
-  </div>
-);
+      <div className={s.TreeContainer}>
+        {!isTreeInUndefinedState && scrollToPath.state !== 'finished' && (
+          <div className={s.Loading}>
+            <span>Navigating to the selected resource...</span>
+          </div>
+        )}
+        {isTreeInUndefinedState && (
+          <div className={s.Loading}>
+            <span>The tree is in a stuck state. Please decide:</span>
+            <SmallButton
+              text="Scroll to the selected resource"
+              onClick={() => setFilterQuery('')}
+              type='primary'
+            />
+            <SmallButton
+              text="Apply filter"
+              onClick={() => {
+                setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished' }));
+              }}
+              type='primary'
+            />
+          </div>
+        )}
+        {!isTreeInUndefinedState && (
+          <div
+            ref={scrollParentRef}
+            className={s.TreeScrollParent}
+            style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
+          >
+            <Virtuoso<FlattenTreeNode>
+              ref={virtuosoRef}
+              itemContent={(_, item) => renderTreeItem(item)}
+              data={flattenTree}
+              customScrollParent={scrollParentRef.current || undefined}
+              defaultItemHeight={remToPx(40)}
+              fixedItemHeight={remToPx(40)}
+              components={{
+                EmptyPlaceholder: () => <div className={s.Loading} style={{ width: 'calc(100% - 24rem)' }}>
+                  <span>No items found. <br />Try another filter query.</span>
+                </div>
+              }}
+              increaseViewportBy={{
+                top: window.innerHeight,
+                bottom: window.innerHeight
+              }}
+              totalCount={flattenTree.length}
+              itemsRendered={(items) => {
+                const isShouldUpdate = scrollToPath.state === 'finished' && !isEqual(itemsRendered, items)
+                if (isShouldUpdate) {
+                  setItemsRendered(() => items);
+                }
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
 }
 
 export default NavigationTree;
