@@ -1,6 +1,5 @@
 import cloneDeep from "lodash/cloneDeep";
-import { NamespaceTreeNode, TenantTreeNode, TopicTreeNode, Tree, TreeNode, TreePath, getRootLabelName, getTopicPartitioning } from "./TreeView";
-import { detectPartitionedTopics } from "../../../NamespacePage/Topics/Topics";
+import { TenantTreeNode, TopicPartitionTreeNode, TopicTreeNode, Tree, TreeNode, TreePath, getRootLabelName } from "./TreeView";
 
 export function setTenants(props: { tree: Tree; tenants: string[] }): Tree {
   let _tree = cloneDeep(props.tree);
@@ -41,8 +40,8 @@ export function setNamespaceTopics(props: {
   tree: Tree;
   tenant: string;
   namespace: string;
-  persistentTopics: TopicTreeNode[];
-  nonPersistentTopics: TopicTreeNode[];
+  persistentTopics: (TopicTreeNode | TopicPartitionTreeNode)[];
+  nonPersistentTopics: (TopicTreeNode | TopicPartitionTreeNode)[];
 }): Tree {
   let _tree = cloneDeep(props.tree);
   _tree.subForest = _tree.subForest.map((tenantNode) => {
@@ -61,10 +60,18 @@ export function setNamespaceTopics(props: {
 
         return {
           ...namespaceNode,
-          subForest: allTopics.map(t => {
+          subForest: allTopics.filter(t => t.partitioning.type !== "partition").map(t => {
+            const isPartitionedTopic = t.partitioning.type === "partitioned";
+            const partitions: Tree[] = allTopics
+              .filter(t2 => t2.partitioning.type === "partition" && t2.topic === t.topic)
+              .map(t3 => ({
+                rootLabel: t3,
+                subForest: [],
+              }));
+
             return {
               rootLabel: t,
-              subForest: []
+              subForest: isPartitionedTopic ? partitions : []
             }
           }),
         };

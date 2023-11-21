@@ -12,7 +12,7 @@ import { routes } from '../../../routes';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import SmallButton from '../../SmallButton/SmallButton';
 import copyIcon from './copy.svg';
-import { TopicTreeNode, TreeNode } from './TreeView';
+import { TopicPartitionTreeNode, TopicTreeNode, TreeNode } from './TreeView';
 import { partition } from 'lodash';
 import { customTopicsNamesSort } from '../../../NamespacePage/Topics/sorting';
 
@@ -31,14 +31,23 @@ const parseTopicFqn = (topicFqn: string): { persistency: 'persistent' | 'non-per
   }
 }
 
-const partitionRegexp = /.*-partition-\d+$/;
-const topicTreeNodeFromFqn = (topicFqn: string, isPartitioned: boolean): TopicTreeNode => {
+const partitionRegexp = /(.*)-(partition-\d+)$/;
+const topicTreeNodeFromFqn = (topicFqn: string, isPartitioned: boolean): TopicTreeNode | TopicPartitionTreeNode => {
   const { persistency, tenant, namespace, topic } = parseTopicFqn(topicFqn);
   const isPartition = isPartitioned ? false : partitionRegexp.test(topicFqn);
 
   let partitioning: TopicTreeNode['partitioning'] = isPartitioned ? { type: "partitioned" } : { type: "non-partitioned" };
   if (isPartition) {
-    partitioning = { type: "partition" };
+    return {
+      type: 'topic-partition',
+      partitioning: { type: "partition" },
+      persistency,
+      tenant,
+      namespace,
+      topic: topic.replace(partitionRegexp, "$1"),
+      partition: topic.replace(partitionRegexp, "$2"),
+      topicFqn
+    }
   }
 
   return {
@@ -145,7 +154,7 @@ type PulsarNamespaceProps = {
   forceReloadKey: number,
   tenant: string;
   namespace: string;
-  onTopics: (topics: { persistent: TopicTreeNode[], nonPersistent: TopicTreeNode[] }) => void;
+  onTopics: (topics: { persistent: (TopicTreeNode | TopicPartitionTreeNode)[], nonPersistent: (TopicTreeNode | TopicPartitionTreeNode)[] }) => void;
   leftIndent: string;
   onDoubleClick: () => void;
   isActive: boolean;
@@ -250,9 +259,7 @@ export type PulsarTopicProps = {
   leftIndent: string;
   onDoubleClick: () => void;
   isActive: boolean;
-  isFetchData: boolean;
 }
-const replacePartitionRegexp = /(.*)-(partition-\d+$)/;
 export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
   const treeNode = props.treeNode;
   if (treeNode.type !== 'topic') {
@@ -268,7 +275,48 @@ export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
       style={{ paddingLeft: props.leftIndent }}
       onDoubleClick={props.onDoubleClick}
     >
-      <span className={s.NodeLinkText}>{treeNode.topic.replace(replacePartitionRegexp, "$2")}</span>
+      <span className={s.NodeLinkText}>{treeNode.topic}</span>
+
+      <div className={s.CopyResourceFqnButton}>
+        <SmallButton
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            navigator.clipboard.writeText(treeNode.topicFqn);
+            notifySuccess(<div>Fully qualified resource name copied to clipboard: {treeNode.topicFqn}</div>, Date.now().toString());
+          }}
+          svgIcon={copyIcon}
+          type={"regular"}
+          title={`Copy resource FQN: ${treeNode.topicFqn}`}
+          appearance="borderless-semitransparent"
+        />
+      </div>
+    </Link>
+  );
+}
+
+export type PulsarTopicPartitionProps = {
+  treeNode: TreeNode,
+  leftIndent: string;
+  onDoubleClick: () => void;
+  isActive: boolean;
+}
+export const PulsarTopicPartition: React.FC<PulsarTopicPartitionProps> = (props) => {
+  const treeNode = props.treeNode;
+  if (treeNode.type !== 'topic-partition') {
+    return <></>;
+  }
+
+  const { notifySuccess } = Notifications.useContext();
+
+  return (
+    <Link
+      to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: treeNode.tenant, namespace: treeNode.namespace, topic: `${treeNode.topic}-${treeNode.partition}`, topicPersistency: treeNode.persistency })}
+      className={`${s.NodeLink} ${props.isActive ? s.NodeLinkActive : ''}`}
+      style={{ paddingLeft: props.leftIndent }}
+      onDoubleClick={props.onDoubleClick}
+    >
+      <span className={s.NodeLinkText}>{treeNode.partition}</span>
 
       <div className={s.CopyResourceFqnButton}>
         <SmallButton

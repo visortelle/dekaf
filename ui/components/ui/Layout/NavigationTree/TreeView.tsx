@@ -1,5 +1,5 @@
 import { isEqual, uniqWith } from 'lodash';
-import { DetectPartitionedTopicsResult, detectPartitionedTopics } from '../../../NamespacePage/Topics/Topics';
+import { DetectPartitionedTopicsResult } from '../../../NamespacePage/Topics/Topics';
 
 export type Tree = {
   subForest: Tree[];
@@ -61,32 +61,66 @@ export type TopicTreeNode = {
   topicFqn: string
 };
 
+export type TopicPartitionTreeNode = {
+  type: 'topic-partition',
+  partitioning: TopicPartitioning,
+  persistency: TopicPersistency,
+  tenant: string,
+  namespace: string,
+  topic: string,
+  partition: string,
+  topicFqn: string
+};
 
-export type TreeNode = InstanceTreeNode | TenantTreeNode | NamespaceTreeNode | TopicTreeNode;
+export type TreeNode = InstanceTreeNode | TenantTreeNode | NamespaceTreeNode | TopicTreeNode | TopicPartitionTreeNode;
 
 type TreeNodeType = TreeNode['type'];
 
 export type TreePath = TreeNode[];
 
 export const treePath = {
-  getTenant: (path: TreePath): TenantTreeNode => path.find(node => node.type === "tenant") as TenantTreeNode,
-  getNamespace: (path: TreePath): NamespaceTreeNode => path.find(node => node.type === "namespace") as NamespaceTreeNode,
-  getTopic: (path: TreePath): TopicTreeNode => path.find(node => node.type === "topic") as TopicTreeNode,
+  getTenant: (path: TreePath): TenantTreeNode | undefined => path.find(node => node.type === "tenant") as TenantTreeNode | undefined,
+  getNamespace: (path: TreePath): NamespaceTreeNode | undefined => path.find(node => node.type === "namespace") as NamespaceTreeNode | undefined,
+  getTopic: (path: TreePath): TopicTreeNode | undefined => path.find(node => node.type === "topic") as TopicTreeNode | undefined,
+  getTopicPartition: (path: TreePath): TopicPartitionTreeNode | undefined => path.find(node => node.type === "topic-partition") as TopicPartitionTreeNode | undefined,
 
   isTenant: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "tenant",
   isNamespace: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "namespace",
   isTopic: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "topic",
+  isTopicPartition: (path: TreePath) => path.length > 0 && path[path.length - 1].type === "topic-partition",
 
   getType: (path: TreePath): TreeNodeType | undefined => {
     if (treePath.isTenant(path)) return "tenant";
     if (treePath.isNamespace(path)) return "namespace";
     if (treePath.isTopic(path)) return "topic";
+    if (treePath.isTopicPartition(path)) return "topic-partition";
   },
 
   hasPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.arePathsEqual(p, path)),
   uniquePaths: (paths: TreePath[]) => uniqWith(paths, treePath.arePathsEqual),
-  arePathsEqual: (pathA: TreePath, pathB: TreePath) => isEqual(pathA, pathB),
-  areNodesEqual: (nodeA: TreeNode, nodeB: TreeNode) => isEqual(nodeA, nodeB),
+  arePathsEqual: (pathA: TreePath, pathB: TreePath) => {
+    if (pathA.length !== pathB.length) {
+      return false;
+    }
+
+    return pathA.every((node, i) => treePath.areNodesEqual(node, pathB[i]));
+  },
+  areNodesEqual: (nodeA: TreeNode, nodeB: TreeNode) => {
+    function normalizeTreeNode(node: TreeNode): { type: TreeNodeType, name: string } {
+      switch (node.type) {
+        case "instance": return { type: "instance", name: "unknown" };
+        case "tenant": return { type: "tenant", name: node.tenant };
+        case "namespace": return { type: "namespace", name: node.namespace };
+        case "topic": return { type: "topic", name: node.topic };
+        case "topic-partition": return { type: "topic-partition", name: node.partition };
+      }
+    }
+
+    const a = normalizeTreeNode(nodeA);
+    const b = normalizeTreeNode(nodeB);
+
+    return isEqual(a, b);
+  },
 
   isPathExpanded: (paths: TreePath[], path: TreePath) => paths.some((p) => treePath.arePathsEqual(path, p)),
   expandAncestors: (path: TreePath): TreePath[] => {
@@ -129,6 +163,8 @@ export function getRootLabelName(treeNode: TreeNode): string {
       return treeNode.namespace;
     case "topic":
       return treeNode.topic;
+    case "topic-partition":
+      return treeNode.partition;
   }
 }
 function treeToFlattenTree(props: TreeToFlattenTreeProps): FlattenTreeNode[] {

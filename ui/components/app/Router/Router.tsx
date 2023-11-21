@@ -295,6 +295,8 @@ const prepareRoutes = (): {
   };
 };
 
+const partitionRegexp = /^(.*)-(partition-\d+)$/g;
+
 const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
   const { paths, getRoutes } = prepareRoutes();
 
@@ -317,24 +319,41 @@ const Routes: React.FC<{ withLayout: WithLayout }> = ({ withLayout }) => {
       };
   const persistency: PulsarTopicPersistency = currentRoute?.params
     ?.topicPersistency! as PulsarTopicPersistency;
-  const topic = currentRoute?.params?.topic || "unknown";
+
+  const topicName = currentRoute?.params?.topic || "unknown";
+  const isPartition = partitionRegexp.test(topicName);
+  const topic = isPartition ? topicName.replace(partitionRegexp, "$1") : topicName;
+
   const topicNode: TreeNode | undefined =
     persistency === undefined || currentRoute?.params?.topic === undefined
-      ? undefined
-      : {
+      ? undefined : {
         type: "topic",
         persistency,
         tenant: tenant?.tenant!,
         namespace: namespace?.namespace!,
         topic,
-        partitioning: {type: "non-partitioned" }, // doesn't matter here
+        partitioning: { type: "non-partitioned" }, // doesn't matter here
         topicFqn: `${persistency}://${tenant?.tenant}/${namespace?.namespace}/${topic}`
       };
+
+  const topicPartitionNode: TreeNode | undefined =
+    persistency === undefined || currentRoute?.params?.topic === undefined || !isPartition ?
+      undefined :
+      {
+        type: "topic-partition",
+        persistency,
+        tenant: tenant?.tenant!,
+        namespace: namespace?.namespace!,
+        topic,
+        partition: topicName.replace(partitionRegexp, "$2"),
+        partitioning: { type: "non-partitioned" }, // doesn't matter here
+        topicFqn: `${persistency}://${tenant?.tenant}/${namespace?.namespace}/${topic}`
+      }
 
   const withLayoutProps: WithLayoutProps = {
     layout: {
       navigationTree: {
-        selectedNodePath: [tenant, namespace, topicNode].filter(
+        selectedNodePath: [tenant, namespace, topicNode, topicPartitionNode].filter(
           (n) => n !== undefined
         ) as TreeNode[],
       },

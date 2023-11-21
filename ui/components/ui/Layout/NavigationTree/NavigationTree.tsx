@@ -9,7 +9,7 @@ import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-muta
 import Input from '../../Input/Input';
 import SmallButton from '../../SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../../Icons/Icons';
-import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic } from './nodes';
+import { PulsarInstance, PulsarTenant, PulsarNamespace, PulsarTopic, PulsarTopicPartition } from './nodes';
 import { swrKeys } from '../../../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce';
@@ -28,7 +28,6 @@ type NavigationTreeProps = {
 }
 
 const filterQuerySep = '/';
-const partitionRegexp = /.*-partition-\d+$/;
 
 const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const scrollParentRef = useRef(null);
@@ -207,7 +206,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             return getRootLabelName(tree.rootLabel).includes(filterQueryDebounced)
           }
 
-          if (tree.rootLabel.type === "topic" && tree.rootLabel.partitioning.type === "partition") {
+          if (tree.rootLabel.type === "topic-partition") {
             return expandedPaths.filter(p => treePath.isTopic(p)).some(p => {
               const topic = treePath.getTopic(p)!;
               return (tree.rootLabel as TopicTreeNode).topicFqn.startsWith(topic.topicFqn);
@@ -242,8 +241,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     let leftIndent = '0';
     if (node.type === 'instance') {
       leftIndent = '5ch'
-    } else if (node.type === 'topic' && partitionRegexp.test(node.name)) {
-      leftIndent = `${((path.length + 1) * 3 - 1) + 3}ch`;
     } else {
       leftIndent = `${((path.length + 1) * 3 - 1)}ch`;
     }
@@ -268,15 +265,19 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       );
       nodeIcon = <InstanceIcon onClick={toggleNodeExpanded} isExpandable={false} isExpanded={isExpanded} />;
     } else if (node.type === 'tenant') {
-      const tenant = treePath.getTenant(path)!;
+      const tenantNode = treePath.getTenant(path)!;
+      const selectedTenantNode = props.selectedNodePath === undefined ? undefined : treePath.getTenant(props.selectedNodePath);
 
-      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) && treePath.getNamespace(props.selectedNodePath) === undefined;
+      const isActive =
+        selectedTenantNode !== undefined &&
+        treePath.areNodesEqual(selectedTenantNode, tenantNode) &&
+        treePath.getNamespace(props.selectedNodePath) === undefined;
 
       nodeContent = (
         <PulsarTenant
           forceReloadKey={forceReloadKey}
           tenant={node.name}
-          onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant: tenant.tenant, namespaces }))}
+          onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant: tenantNode.tenant, namespaces }))}
           leftIndent={leftIndent}
           onDoubleClick={toggleNodeExpanded}
           isActive={isActive}
@@ -288,9 +289,15 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     } else if (node.type === 'namespace') {
       const tenant = treePath.getTenant(path)!;
       const namespace = treePath.getNamespace(path)!;
+      const selectedTenantNode = props.selectedNodePath === undefined ? undefined : treePath.getTenant(props.selectedNodePath);
+      const selectedNamespaceNode = props.selectedNodePath === undefined ? undefined : treePath.getNamespace(props.selectedNodePath);
 
-      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
-        treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) && treePath.getTopic(props.selectedNodePath) === undefined;
+      const isActive =
+        selectedTenantNode !== undefined &&
+        selectedNamespaceNode !== undefined &&
+        treePath.areNodesEqual(selectedTenantNode, tenant) &&
+        treePath.areNodesEqual(selectedNamespaceNode, namespace) &&
+        treePath.getTopic(props.selectedNodePath) === undefined;
 
       nodeContent = (
         <PulsarNamespace
@@ -311,10 +318,18 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
       const tenant = treePath.getTenant(path)!;
       const namespace = treePath.getNamespace(path)!;
       const topic = treePath.getTopic(path)!;
+      const selectedTenantNode = props.selectedNodePath === undefined ? undefined : treePath.getTenant(props.selectedNodePath);
+      const selectedNamespaceNode = props.selectedNodePath === undefined ? undefined : treePath.getNamespace(props.selectedNodePath);
+      const selectedTopicNode = props.selectedNodePath === undefined ? undefined : treePath.getTopic(props.selectedNodePath);
 
-      const isActive = treePath.areNodesEqual(treePath.getTenant(props.selectedNodePath)!, tenant) &&
-        treePath.areNodesEqual(treePath.getNamespace(props.selectedNodePath)!, namespace) &&
-        treePath.areNodesEqual(treePath.getTopic(props.selectedNodePath)!, topic);
+      const isActive =
+        selectedTenantNode !== undefined &&
+        selectedNamespaceNode !== undefined &&
+        selectedTopicNode !== undefined &&
+        treePath.areNodesEqual(selectedTenantNode, tenant) &&
+        treePath.areNodesEqual(selectedNamespaceNode, namespace) &&
+        treePath.areNodesEqual(selectedTopicNode, topic) &&
+        treePath.getTopicPartition(props.selectedNodePath) === undefined;
 
       nodeContent = (
         <PulsarTopic
@@ -322,7 +337,6 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           leftIndent={leftIndent}
           onDoubleClick={toggleNodeExpanded}
           isActive={isActive}
-          isFetchData={isExpanded || treePath.getTopic(filterPath)?.topic === node.name}
         />
       );
 
@@ -336,129 +350,167 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           topicPersistency={topic.persistency}
         />
       )
-    }
+    } else if (node.type === 'topic-partition') {
+      const tenant = treePath.getTenant(path)!;
+      const namespace = treePath.getNamespace(path)!;
+      const topic = treePath.getTopic(path)!;
+      const topicPartition = treePath.getTopicPartition(path)!;
+      const selectedTenantNode = props.selectedNodePath === undefined ? undefined : treePath.getTenant(props.selectedNodePath);
+      const selectedNamespaceNode = props.selectedNodePath === undefined ? undefined : treePath.getNamespace(props.selectedNodePath);
+      const selectedTopicNode = props.selectedNodePath === undefined ? undefined : treePath.getTopic(props.selectedNodePath);
+      const selectedTopicPartitionNode = props.selectedNodePath === undefined ? undefined : treePath.getTopicPartition(props.selectedNodePath);
 
-    const handleNodeClick = async () => {
-      switch (node.type) {
-        case 'instance': await mutate(swrKeys.pulsar.tenants.listTenants._()); break;
-        case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.tenant })); break;
-        case 'namespace': {
-          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: treePath.getTenant(path)!.tenant, namespace: treePath.getNamespace(path)!.namespace }));
-          await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: treePath.getTenant(path)!.tenant, namespace: treePath.getNamespace(path)!.namespace }));
-        }; break;
-      }
-    }
+      const isActive =
+        selectedTenantNode !== undefined &&
+        selectedNamespaceNode !== undefined &&
+        selectedTopicNode !== undefined &&
+        selectedTopicPartitionNode !== undefined &&
+        treePath.areNodesEqual(selectedTenantNode, tenant) &&
+        treePath.areNodesEqual(selectedNamespaceNode, namespace) &&
+        treePath.areNodesEqual(selectedTopicNode, topic) &&
+        treePath.areNodesEqual(selectedTopicPartitionNode, topicPartition);
 
-    const pathStr = stringify(path);
+      nodeContent = (
+        <PulsarTopicPartition
+          treeNode={topicPartition}
+          leftIndent={leftIndent}
+          onDoubleClick={toggleNodeExpanded}
+          isActive={isActive}
+        />
+      );
 
-    return (
-      <div
-        key={`tree-node-${pathStr}`}
-        className={s.Node}
-        onClick={handleNodeClick}
-      >
-        <div className={s.NodeContent}>
-          <span>&nbsp;</span>
-          <div
-            className={s.NodeIcon}
-            style={{ marginLeft: leftIndent }}
-          >
-            {nodeIcon}
-          </div>
-          <span className={s.NodeTextContent}>{nodeContent}</span>
-        </div>
-      </div>
-    );
+      nodeIcon = (
+        <TopicIcon
+          isExpandable={false}
+          isExpanded={isExpanded}
+          isPartitioned={false}
+          onClick={undefined}
+          topicPersistency={topicPartition.persistency}
+        />
+      )
   }
 
-  const isTreeInUndefinedState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
+  const handleNodeClick = async () => {
+    switch (node.type) {
+      case 'instance': await mutate(swrKeys.pulsar.tenants.listTenants._()); break;
+      case 'tenant': await mutate(swrKeys.pulsar.tenants.tenant.namespaces._({ tenant: treePath.getTenant(path)!.tenant })); break;
+      case 'namespace': {
+        await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.partitionedTopics._({ tenant: treePath.getTenant(path)!.tenant, namespace: treePath.getNamespace(path)!.namespace }));
+        await mutate(swrKeys.pulsar.tenants.tenant.namespaces.namespace.nonPartitionedTopics._({ tenant: treePath.getTenant(path)!.tenant, namespace: treePath.getNamespace(path)!.namespace }));
+      }; break;
+    }
+  }
+
+  const pathStr = stringify(path);
 
   return (
-    <div className={s.NavigationTree}>
-      <div className={s.FilterQueryInput}>
-        <Input
-          placeholder="tenant/namespace/topic"
-          value={filterQuery}
-          onChange={v => setFilterQuery(v)}
-          clearable={true}
-          focusOnMount={true}
-        />
-      </div>
-      <div className={s.TreeControlButtons}>
-        <div>
-          <CredentialsButton />
+    <div
+      key={`tree-node-${pathStr}`}
+      className={s.Node}
+      onClick={handleNodeClick}
+    >
+      <div className={s.NodeContent}>
+        <span>&nbsp;</span>
+        <div
+          className={s.NodeIcon}
+          style={{ marginLeft: leftIndent }}
+        >
+          {nodeIcon}
         </div>
-        <div>
-          <SmallButton
-            title="Collapse All"
-            svgIcon={collapseAllIcon}
-            onClick={() => setExpandedPaths([])}
-            appearance='borderless-semitransparent'
-            type='regular'
-          />
-        </div>
+        <span className={s.NodeTextContent}>{nodeContent}</span>
       </div>
-
-      <div className={s.TreeContainer}>
-        {!isTreeInUndefinedState && scrollToPath.state !== 'finished' && (
-          <div className={s.Loading}>
-            <span>Navigating to the selected resource...</span>
-          </div>
-        )}
-        {isTreeInUndefinedState && (
-          <div className={s.Loading}>
-            <span>The tree is in a stuck state. Please decide:</span>
-            <SmallButton
-              text="Scroll to the selected resource"
-              onClick={() => setFilterQuery('')}
-              type='primary'
-            />
-            <SmallButton
-              text="Apply filter"
-              onClick={() => {
-                setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished' }));
-              }}
-              type='primary'
-            />
-          </div>
-        )}
-        {!isTreeInUndefinedState && (
-          <div
-            ref={scrollParentRef}
-            className={s.TreeScrollParent}
-            style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
-          >
-            <Virtuoso<FlattenTreeNode>
-              ref={virtuosoRef}
-              itemContent={(_, item) => renderTreeItem(item)}
-              data={flattenTree}
-              customScrollParent={scrollParentRef.current || undefined}
-              defaultItemHeight={remToPx(40)}
-              fixedItemHeight={remToPx(40)}
-              components={{
-                EmptyPlaceholder: () => <div className={s.Loading} style={{ width: 'calc(100% - 24rem)' }}>
-                  <span>No items found. <br />Try another filter query.</span>
-                </div>
-              }}
-              increaseViewportBy={{
-                top: window.innerHeight * 10, // otherwise we experiencing accidental tree nodes collapsing when fast-scrolling large lists.
-                bottom: window.innerHeight * 10 // otherwise we experiencing accidental tree nodes collapsing when fast-scrolling large lists.
-              }}
-              totalCount={flattenTree.length}
-              itemsRendered={(items) => {
-                const isShouldUpdate = scrollToPath.state === 'finished' && !isEqual(itemsRendered, items)
-                if (isShouldUpdate) {
-                  setItemsRendered(() => items);
-                }
-              }}
-              computeItemKey={(_, item) => JSON.stringify(item.path)}
-            />
-          </div>
-        )}
-      </div>
-
     </div>
   );
+}
+
+const isTreeInUndefinedState = scrollToPath.state === 'in-progress' && scrollToPath.path.length !== 0 && filterQueryDebounced.length !== 0;
+
+return (
+  <div className={s.NavigationTree}>
+    <div className={s.FilterQueryInput}>
+      <Input
+        placeholder="tenant/namespace/topic"
+        value={filterQuery}
+        onChange={v => setFilterQuery(v)}
+        clearable={true}
+        focusOnMount={true}
+      />
+    </div>
+    <div className={s.TreeControlButtons}>
+      <div>
+        <CredentialsButton />
+      </div>
+      <div>
+        <SmallButton
+          title="Collapse All"
+          svgIcon={collapseAllIcon}
+          onClick={() => setExpandedPaths([])}
+          appearance='borderless-semitransparent'
+          type='regular'
+        />
+      </div>
+    </div>
+
+    <div className={s.TreeContainer}>
+      {!isTreeInUndefinedState && scrollToPath.state !== 'finished' && (
+        <div className={s.Loading}>
+          <span>Navigating to the selected resource...</span>
+        </div>
+      )}
+      {isTreeInUndefinedState && (
+        <div className={s.Loading}>
+          <span>The tree is in a stuck state. Please decide:</span>
+          <SmallButton
+            text="Scroll to the selected resource"
+            onClick={() => setFilterQuery('')}
+            type='primary'
+          />
+          <SmallButton
+            text="Apply filter"
+            onClick={() => {
+              setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished' }));
+            }}
+            type='primary'
+          />
+        </div>
+      )}
+      {!isTreeInUndefinedState && (
+        <div
+          ref={scrollParentRef}
+          className={s.TreeScrollParent}
+          style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
+        >
+          <Virtuoso<FlattenTreeNode>
+            ref={virtuosoRef}
+            itemContent={(_, item) => renderTreeItem(item)}
+            data={flattenTree}
+            customScrollParent={scrollParentRef.current || undefined}
+            defaultItemHeight={remToPx(40)}
+            fixedItemHeight={remToPx(40)}
+            components={{
+              EmptyPlaceholder: () => <div className={s.Loading} style={{ width: 'calc(100% - 24rem)' }}>
+                <span>No items found. <br />Try another filter query.</span>
+              </div>
+            }}
+            increaseViewportBy={{
+              top: window.innerHeight, // otherwise we experiencing accidental tree nodes collapsing when fast-scrolling large lists.
+              bottom: window.innerHeight // otherwise we experiencing accidental tree nodes collapsing when fast-scrolling large lists.
+            }}
+            totalCount={flattenTree.length}
+            itemsRendered={(items) => {
+              const isShouldUpdate = scrollToPath.state === 'finished' && !isEqual(itemsRendered, items)
+              if (isShouldUpdate) {
+                setItemsRendered(() => items);
+              }
+            }}
+            computeItemKey={(_, item) => JSON.stringify(item.path)}
+          />
+        </div>
+      )}
+    </div>
+
+  </div>
+);
 }
 
 export default NavigationTree;
