@@ -14,17 +14,12 @@ import { swrKeys } from '../../../swrKeys';
 import { useQueryParam, withDefault, StringParam } from 'use-query-params';
 import { useDebounce } from 'use-debounce';
 import stringify from 'safe-stable-stringify';
-import { isEqual } from 'lodash';
-import { ListItem, Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { useNavigate } from 'react-router';
 import { useTimeout } from '@react-hook/timeout';
-import { remToPx } from '../../rem-to-px';
 import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
 import collapseAllIcon from './collapse-all.svg';
 import focusIcon from './focus.svg';
-import { usePrevious } from '../../../app/hooks/use-previous';
-import { boolean } from 'fp-ts';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -33,8 +28,6 @@ type NavigationTreeProps = {
 const filterQuerySep = '/';
 
 const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
-  const scrollParentRef = useRef(null);
-  const virtuosoRef = useRef<VirtuosoHandle>(null);
   const [tree, setTree] = useState<Tree>({ rootLabel: { name: "/", type: 'instance' }, subForest: [] });
   const [flattenTree, setFlattenTree] = useState<FlattenTreeNode[]>([]);
   const [filterQuery, setFilterQuery] = useQueryParam('q', withDefault(StringParam, ''));
@@ -43,11 +36,10 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const [expandedPaths, setExpandedPaths] = useState<TreePath[]>([]);
   const [scrollToPath, setScrollToPath] = useState<{ path: TreePath, cursor: number, state: 'pending' | 'in-progress' | 'finished', isBeenFinishedOnce: boolean }>({ path: [], cursor: 0, state: 'pending', isBeenFinishedOnce: false });
   const [isTimedOutScrollToPathTimeout, startScrollToPathTimeout, resetScrollToPathTimeout] = useTimeout(15_000);
-  const [itemsRendered, setItemsRendered] = useState<ListItem<FlattenTreeNode>[]>([]);
+  const itemsContainerRef = useRef<HTMLDivElement>(null);
   const [forceReloadKey] = useState<number>(0);
   const { notifyError } = Notifications.useContext();
   const { tenantServiceClient } = GrpcClient.useContext();
-  const previousSelectedNodePath = usePrevious(props.selectedNodePath);
   const navigate = useNavigate();
 
   const { data: tenantsData, error: tenantsDataError } = useSWR(
@@ -117,6 +109,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     setExpandedPaths((expandedPaths) => treePath.uniquePaths([...expandedPaths, ...treePath.expandAncestors(path)]));
   }
 
+  const scrollToItem = (index: number) => {
+    if (!itemsContainerRef.current) {
+      return;
+    }
+
+    Array.from(itemsContainerRef.current.children)[index].scrollIntoView(true);
+  }
+
   // // XXX - Handle scroll to selected node. It can be quite buggy. Please re-test it carefully.
   useEffect(() => {
     if (scrollToPath.state === 'finished') {
@@ -154,7 +154,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         const nextCursor = scrollToPath.cursor + 1;
 
         // XXX - get rid of setTimeout somehow if you can.
-        setTimeout(() => virtuosoRef.current?.scrollToIndex(nodeIndex));
+        setTimeout(() => scrollToItem(nodeIndex));
 
         if (nextCursor === scrollToPath.path.length) {
           setScrollToPath((scrollToPath) => ({ ...scrollToPath, state: 'finished', isBeenFinishedOnce: true }));
@@ -180,7 +180,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
     navigate('/');
     setScrollToPath((scrollToPath) => ({ ...scrollToPath, path: [], cursor: 0, state: 'finished', isBeenFinishedOnce: true }));
     setExpandedPaths([]);
-    virtuosoRef.current?.scrollToIndex(0);
+    scrollToItem(0);
   }, [isTimedOutScrollToPathTimeout]);
 
   useEffect(() => {
@@ -491,34 +491,11 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         )}
         {(!isTreeInUndefinedState || scrollToPath.isBeenFinishedOnce) && (
           <div
-            ref={scrollParentRef}
             className={s.TreeScrollParent}
             style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
+            ref={itemsContainerRef}
           >
-            <Virtuoso<FlattenTreeNode>
-              ref={virtuosoRef}
-              itemContent={(_, item) => renderTreeItem(item)}
-              data={flattenTree}
-              customScrollParent={scrollParentRef.current || undefined}
-              defaultItemHeight={remToPx(40)}
-              fixedItemHeight={remToPx(40)}
-              components={{
-                EmptyPlaceholder: () => <div className={s.Loading} style={{ width: 'calc(100% - 24rem)' }}>
-                  <span>No items found. <br />Try another filter query.</span>
-                </div>
-              }}
-              increaseViewportBy={{
-                top: window.innerHeight,
-                bottom: window.innerHeight
-              }}
-              totalCount={flattenTree.length}
-              itemsRendered={(items) => {
-                const isShouldUpdate = scrollToPath.state === 'finished' && !isEqual(itemsRendered, items)
-                if (isShouldUpdate) {
-                  setItemsRendered(() => items);
-                }
-              }}
-            />
+            {flattenTree.map(renderTreeItem)}
           </div>
         )}
       </div>
