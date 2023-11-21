@@ -143,11 +143,11 @@ export const PulsarTenant: React.FC<PulsarTenantProps> = (props) => {
             event.preventDefault();
             event.stopPropagation();
             navigator.clipboard.writeText(resourceFqn);
-            notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
+            notifySuccess(<span>Fully qualified resource name copied to clipboard:<br /><strong>{resourceFqn}</strong></span>, Date.now().toString());
           }}
           svgIcon={copyIcon}
           type={"regular"}
-          title={`Copy resource FQN: ${resourceFqn}`}
+          title={<span>Copy resource FQN:<br /><strong>{resourceFqn}</strong></span>}
           appearance="borderless-semitransparent"
         />
       </div>
@@ -247,11 +247,11 @@ export const PulsarNamespace: React.FC<PulsarNamespaceProps> = (props) => {
             event.preventDefault();
             event.stopPropagation();
             navigator.clipboard.writeText(resourceFqn);
-            notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>, Date.now().toString());
+            notifySuccess(<span>Fully qualified resource name copied to clipboard:<br /><strong>{resourceFqn}</strong></span>, Date.now().toString());
           }}
           svgIcon={copyIcon}
           type={"regular"}
-          title={`Copy resource FQN: ${resourceFqn}`}
+          title={<span>Copy resource FQN:<br /><strong>{resourceFqn}</strong></span>}
           appearance="borderless-semitransparent"
         />
       </div>
@@ -273,6 +273,8 @@ export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
 
   const { notifySuccess } = Notifications.useContext();
 
+  const resourceFqn = treeNode.topicFqn;
+
   return (
     <Link
       to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: treeNode.tenant, namespace: treeNode.namespace, topic: treeNode.topic, topicPersistency: treeNode.persistency })}
@@ -287,12 +289,12 @@ export const PulsarTopic: React.FC<PulsarTopicProps> = (props) => {
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
-            navigator.clipboard.writeText(treeNode.topicFqn);
-            notifySuccess(<div>Fully qualified resource name copied to clipboard: {treeNode.topicFqn}</div>, Date.now().toString());
+            navigator.clipboard.writeText(resourceFqn);
+            notifySuccess(<span>Fully qualified resource name copied to clipboard:<br /><strong>{resourceFqn}</strong></span>, Date.now().toString());
           }}
           svgIcon={copyIcon}
           type={"regular"}
-          title={`Copy resource FQN: ${treeNode.topicFqn}`}
+          title={<span>Copy resource FQN:<br /><strong>{resourceFqn}</strong></span>}
           appearance="borderless-semitransparent"
         />
       </div>
@@ -314,6 +316,8 @@ export const PulsarTopicPartition: React.FC<PulsarTopicPartitionProps> = (props)
 
   const { notifySuccess } = Notifications.useContext();
 
+  const resourceFqn = treeNode.topicFqn;
+
   return (
     <Link
       to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.overview._.get({ tenant: treeNode.tenant, namespace: treeNode.namespace, topic: `${treeNode.topic}-${treeNode.partition}`, topicPersistency: treeNode.persistency })}
@@ -328,12 +332,12 @@ export const PulsarTopicPartition: React.FC<PulsarTopicPartitionProps> = (props)
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
-            navigator.clipboard.writeText(treeNode.topicFqn);
-            notifySuccess(<div>Fully qualified resource name copied to clipboard: {treeNode.topicFqn}</div>, Date.now().toString());
+            navigator.clipboard.writeText(resourceFqn);
+            notifySuccess(<span>Fully qualified resource name copied to clipboard:<br /><strong>{resourceFqn}</strong></span>, Date.now().toString());
           }}
           svgIcon={copyIcon}
           type={"regular"}
-          title={`Copy resource FQN: ${treeNode.topicFqn}`}
+          title={<span>Copy resource FQN:<br /><strong>{resourceFqn}</strong></span>}
           appearance="borderless-semitransparent"
         />
       </div>

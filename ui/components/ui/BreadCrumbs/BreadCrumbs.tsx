@@ -204,12 +204,12 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = (props) => {
               onClick={() => {
                 if (resourceFqn !== undefined) {
                   navigator.clipboard.writeText(resourceFqn);
-                  notifySuccess(<div>Fully qualified resource name copied to clipboard: {resourceFqn}</div>);
+                  notifySuccess(<span>Fully qualified resource name copied to clipboard:<br /><strong>{resourceFqn}</strong></span>, Date.now().toString());
                 }
               }}
               svgIcon={copyIcon}
               type={"regular"}
-              title={`Copy FQN: ${resourceFqn}`}
+              title={<span>Copy resource FQN:<br /><strong>{resourceFqn}</strong></span>}
               appearance="borderless-semitransparent"
             />
           </div>

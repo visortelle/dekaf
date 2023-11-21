@@ -111,6 +111,8 @@
   overflow: auto;
   scrollbar-width: thin;
   padding-bottom: 24rem;
+  overscroll-behavior-x: contain; /* Prevent accidental pages history navigation using touch-pad gestures. */
+  overscroll-behavior-y: contain;
 }
 
 .Loading {
