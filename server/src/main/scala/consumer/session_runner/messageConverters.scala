@@ -100,8 +100,7 @@ object converters:
 
     def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
         val msgData = msg.getData
-        val topicName = PartitionedTopicSuffixRegexp.replaceAllIn(msg.getTopicName, "")
-        val schemasByVersion = schemas.get(topicName)
+        val schemasByVersion = schemas.get(msg.getTopicName)
 
         if schemasByVersion.isEmpty
         then return Right(bytesToJsonString(msgData))
