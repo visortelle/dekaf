@@ -42,26 +42,22 @@ case class ConsumerSessionRunner(
                     createAndSendResponse(Seq.empty, errors)
 
                 case Some(msg) =>
-                    val (filterResult, jsonAccumulator) = getFilterChainTestResult(
+                    val messageFilterChainResult = sessionContext.testMessageFilterChain(
                         sessionConfig.messageFilterChain,
-                        sessionContext,
                         msg.messageJson,
                         msg.messageValueToJsonResult
                     )
 
-                    filterResult match
-                        case Left(err) =>
-                            createAndSendResponse(Seq.empty, List(err))
+                    if !messageFilterChainResult.isOk then
+                        createAndSendResponse(Seq.empty)
 
-                        case Right(isFilterPassed) =>
-                            if !isFilterPassed then
-                                createAndSendResponse(Seq.empty)
+                    val sessionContextState = sessionContext.getState()
+                    val messageToSendPb = msg.messagePb
+                        .withSessionContextState(sessionContextState.getOrElse(s"[ERROR] Unable to get session context state."))
+                        .withDebugStdout(sessionContext.getStdout())
+                        .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
 
-                            val messageToSendPb = msg.messagePb
-                                .withAccumulator(jsonAccumulator)
-                                .withDebugStdout(sessionContext.getStdout())
-
-                            createAndSendResponse(Seq(messageToSendPb))
+                    createAndSendResponse(Seq(messageToSendPb))
 
         targets.values.foreach(_.resume(onNext = onNext))
     def pause(): Unit =

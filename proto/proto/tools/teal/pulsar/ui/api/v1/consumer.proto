@@ -6,6 +6,15 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
 
+message TestResult {
+  bool is_ok = 1;
+  google.protobuf.StringValue error = 2;
+}
+message ChainTestResult {
+  bool is_ok = 1;
+  repeated TestResult results = 2;
+}
+
 message Message {
   // Message value as raw bytes.
   google.protobuf.BytesValue raw_value = 4;
@@ -15,7 +24,7 @@ message Message {
 
   // The state, accumulated during applying message filters for all messages sequentially.
   // Not a part of Pulsar message.
-  google.protobuf.StringValue accumulator = 50;
+  google.protobuf.StringValue session_context_state = 50;
 
   // Evaluated message filter code can produce logs or errors.
   // We need to store them in the message to be able to show them in the UI.
@@ -23,10 +32,10 @@ message Message {
   google.protobuf.StringValue debug_stdout = 51;
 
   google.protobuf.Int32Value session_target_index = 52;
-  google.protobuf.Int32Value matched_session_color_rule_index = 53;
-  google.protobuf.Int32Value matched_session_target_color_rule_index = 54;
-  google.protobuf.Int32Value matched_session_message_filter_index = 55;
-  google.protobuf.Int32Value matched_session_target_message_filter_index = 56;
+  ChainTestResult session_color_rule_chain_test_result = 53;
+  ChainTestResult session_target_color_rule_chain_test_result = 54;
+  ChainTestResult session_message_filter_chain_test_result = 55;
+  ChainTestResult session_target_message_filter_chain_test_result = 56;
 
   map<string, string> properties = 1;
 

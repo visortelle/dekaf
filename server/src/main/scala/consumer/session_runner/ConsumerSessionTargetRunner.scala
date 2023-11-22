@@ -22,7 +22,7 @@ case class ConsumerSessionTargetRunner(
     messageFilterChain: MessageFilterChain,
     coloringRuleChain: ColoringRuleChain,
     schemasByTopic: SchemasByTopic,
-    consumerSessionContext: ConsumerSessionContext,
+    sessionContext: ConsumerSessionContext,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
     var consumerListener: ConsumerListener,
     var stats: ConsumerSessionTargetStats
@@ -34,7 +34,7 @@ case class ConsumerSessionTargetRunner(
 
         val listener = thisTarget.consumerListener
         val targetMessageHandler = listener.targetMessageHandler
-        val consumerSessionContext = thisTarget.consumerSessionContext
+        val sessionContext = thisTarget.sessionContext
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
             thisTarget.stats.messagesProcessed += 1
@@ -45,24 +45,24 @@ case class ConsumerSessionTargetRunner(
 
             val messageFilterChain = thisTarget.messageFilterChain
 
-            val (filterResult, _) =
-                getFilterChainTestResult(messageFilterChain, consumerSessionContext, messageJson, messageValueToJsonResult)
+            val messageFilterChainResult =
+                sessionContext.testMessageFilterChain(messageFilterChain, messageJson, messageValueToJsonResult)
 
-            var msgToSend = filterResult match
-                case Right(true) => Some(consumerSessionMessage)
-                case _           => None
+            var msgToSend = if messageFilterChainResult.isOk then
+                Some(consumerSessionMessage)
+            else
+                None
 
             val serializationErrors = messageValueToJsonResult match
                 case Left(err) => List(err.getMessage)
                 case _         => List.empty
-            val filterErrors = filterResult match
-                case Left(err) => List(err)
-                case _         => List.empty
-            val errors = serializationErrors ++ filterErrors
+            val errors = serializationErrors
 
             msgToSend = msgToSend.map(m =>
                 m.copy(
-                    messagePb = m.messagePb.withSessionTargetIndex(targetIndex)
+                    messagePb = m.messagePb
+                        .withSessionTargetIndex(targetIndex)
+                        .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                 )
             )
 
@@ -119,7 +119,7 @@ object ConsumerSessionTargetRunner:
 
             ConsumerSessionTargetRunner(
                 targetIndex = targetIndex,
-                consumerSessionContext = sessionContext,
+                sessionContext = sessionContext,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
                 messageFilterChain = targetConfig.messageFilterChain,

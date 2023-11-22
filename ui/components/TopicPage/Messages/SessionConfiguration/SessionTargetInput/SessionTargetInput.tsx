@@ -40,7 +40,7 @@ const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
 
   return (
     <div className={s.SessionTargetInput}>
-      <div className={s.TargetIndex}>Target {props.targetIndex}</div>
+      <div className={s.TargetIndex}>Target {props.targetIndex + 1}</div>
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           itemType='consumer-session-topic'
