@@ -1,15 +1,12 @@
 package consumer.session_runner
 
 import _root_.consumer.message_filter.MessageFilterChain
-import com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse
 import _root_.consumer.session_target.ConsumerSessionTarget
 import com.typesafe.scalalogging.Logger
 import consumer.coloring_rules.ColoringRuleChain
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
 import org.apache.pulsar.client.api.Consumer
-import com.google.rpc.code.Code
-import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
 
