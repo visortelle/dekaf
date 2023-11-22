@@ -27,7 +27,7 @@ case class ConsumerSessionTargetRunner(
     var stats: ConsumerSessionTargetStats
 ) {
     def resume(
-        onNext: (msg: Option[consumerPb.Message], stats: ConsumerSessionTargetStats, errors: List[String]) => Unit
+        onNext: (msg: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: List[String]) => Unit
     ): Unit =
         val thisTarget = this
 
@@ -38,19 +38,17 @@ case class ConsumerSessionTargetRunner(
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
             thisTarget.stats.messagesProcessed += 1
 
-            val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+            val consumerSessionMessage = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+            val messageJson = consumerSessionMessage.messageJson
+            val messageValueToJsonResult = consumerSessionMessage.messageValueToJsonResult
 
             val messageFilterChain = thisTarget.messageFilterChain
 
-            val (filterResult, jsonAccumulator) =
-                getFilterChainTestResult(messageFilterChain, consumerSessionContext, jsonMessage, messageValueToJsonResult)
+            val (filterResult, _) =
+                getFilterChainTestResult(messageFilterChain, consumerSessionContext, messageJson, messageValueToJsonResult)
 
-            val messageToSend = messagePb
-                .withAccumulator(jsonAccumulator)
-                .withDebugStdout(consumerSessionContext.getStdout())
-
-            val maybeMessage = filterResult match
-                case Right(true) => Some(messageToSend)
+            val msgToSend = filterResult match
+                case Right(true) => Some(consumerSessionMessage)
                 case _           => None
 
             val serializationErrors = messageValueToJsonResult match
@@ -62,7 +60,7 @@ case class ConsumerSessionTargetRunner(
             val errors = serializationErrors ++ filterErrors
 
             onNext(
-                msg = maybeMessage,
+                msg = msgToSend,
                 stats = stats,
                 errors = errors
             )

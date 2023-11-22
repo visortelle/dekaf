@@ -7,6 +7,7 @@ import org.apache.pulsar.client.api.{Consumer, PulsarClient}
 import java.io.ByteArrayOutputStream
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
+import scala.util.boundary, boundary.break
 
 type ConsumerSessionTargetId = String
 
@@ -23,17 +24,44 @@ case class ConsumerSessionRunner(
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
 
-        def onNext(msg: Option[consumerPb.Message], stats: ConsumerSessionTargetStats, errors: List[String]): Unit =
-            val statusPb: Status = errors.length match
-                case 0 => Status(code = Code.OK.index)
-                case _ => Status(code = Code.INVALID_ARGUMENT.index, message = errors.mkString("\n"))
+        def onNext(messageFromTarget: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: List[String]): Unit = boundary:
+            def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: List[String] = List.empty): Unit =
+                val allErrors = errors ++ additionalErrors
+                val status = Status(code = Code.OK.index, message = allErrors.mkString("\n"))
 
-            val resumeResponsePb = consumerPb.ResumeResponse(
-                messages = Seq.from(msg),
-                processedMessages = 0,
-                status = Some(statusPb),
-            )
-            grpcResponseObserver.onNext(resumeResponsePb)
+                val response = consumerPb.ResumeResponse(
+                    messages = messages,
+                    processedMessages = 0,
+                    status = Some(status)
+                )
+                grpcResponseObserver.onNext(response)
+                boundary.break(())
+
+            messageFromTarget match
+                case None =>
+                    createAndSendResponse(Seq.empty, errors)
+
+                case Some(msg) =>
+                    val (filterResult, jsonAccumulator) = getFilterChainTestResult(
+                        sessionConfig.messageFilterChain,
+                        sessionContext,
+                        msg.messageJson,
+                        msg.messageValueToJsonResult
+                    )
+
+                    filterResult match
+                        case Left(err) =>
+                            createAndSendResponse(Seq.empty, List(err))
+
+                        case Right(isPassed) =>
+                            if !isPassed then
+                                createAndSendResponse(Seq.empty)
+
+                            val messageToSendPb = msg.messagePb
+                                .withAccumulator(jsonAccumulator)
+                                .withDebugStdout(sessionContext.getStdout())
+
+                            createAndSendResponse(Seq(messageToSendPb))
 
         targets.values.foreach(_.resume(onNext = onNext))
     def pause(): Unit =

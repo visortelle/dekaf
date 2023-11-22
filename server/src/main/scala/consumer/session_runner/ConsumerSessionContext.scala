@@ -71,7 +71,7 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
         config.stdout.reset()
         logs
 
-    def test(filter: MessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
+    def test(filter: MessageFilter, jsonMessage: MessageJson, jsonValue: MessageValueToJsonResult): FilterTestResult =
         val result = filter.value match
             case f: BasicMessageFilter => testBasicFilter(context, f, jsonMessage, jsonValue)
             case f: JsMessageFilter    => testJsFilter(context, f, jsonMessage, jsonValue)
@@ -91,7 +91,7 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
-def testBasicFilter(context: Context, filter: BasicMessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
+def testBasicFilter(context: Context, filter: BasicMessageFilter, jsonMessage: MessageJson, jsonValue: MessageValueToJsonResult): FilterTestResult =
     val evalCode =
         s"""
            | (() => {
@@ -115,7 +115,7 @@ def testBasicFilter(context: Context, filter: BasicMessageFilter, jsonMessage: J
     val cumulativeJsonState = context.eval("js", s"stringify(globalThis.$JsonAccumulatorVarName)").asString
     (testResult, cumulativeJsonState)
 
-def testJsFilter(context: Context, filter: JsMessageFilter, jsonMessage: JsonMessage, jsonValue: MessageValueToJsonResult): FilterTestResult =
+def testJsFilter(context: Context, filter: JsMessageFilter, jsonMessage: MessageJson, jsonValue: MessageValueToJsonResult): FilterTestResult =
     val evalCode =
         s"""
           | (() => {
@@ -140,18 +140,18 @@ def testJsFilter(context: Context, filter: JsMessageFilter, jsonMessage: JsonMes
     (testResult, cumulativeJsonState)
 
 def getFilterTestResult(
-    filter: MessageFilter,
-    messageFilterContext: ConsumerSessionContext,
-    jsonMessage: JsonMessage,
-    jsonValue: MessageValueToJsonResult
+                           filter: MessageFilter,
+                           messageFilterContext: ConsumerSessionContext,
+                           jsonMessage: MessageJson,
+                           jsonValue: MessageValueToJsonResult
 ): FilterTestResult =
     messageFilterContext.test(filter, jsonMessage, jsonValue)
 
 def getFilterChainTestResult(
-    filterChain: MessageFilterChain,
-    consumerSessionContext: ConsumerSessionContext,
-    jsonMessage: JsonMessage,
-    jsonValue: MessageValueToJsonResult
+                                filterChain: MessageFilterChain,
+                                consumerSessionContext: ConsumerSessionContext,
+                                jsonMessage: MessageJson,
+                                jsonValue: MessageValueToJsonResult
 ): FilterTestResult =
     var chain = filterChain
 

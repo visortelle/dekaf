@@ -15,7 +15,7 @@ import scala.jdk.OptionConverters.*
 type JsonValue = String
 type MessageValueToJsonResult = Either[Throwable, JsonValue]
 
-case class JsonMessage(
+case class MessageJson(
     eventTime: Option[Long],
     publishTime: Option[Long],
     brokerPublishTime: Option[Long],
@@ -34,8 +34,8 @@ case class JsonMessage(
 )
 
 object converters:
-    def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): (consumerPb.Message, JsonMessage, MessageValueToJsonResult) =
-        val jsonValue = messageValueToJson(schemas, msg)
+    def serializeMessage(schemas: SchemasByTopic, msg: Message[Array[Byte]]): ConsumerSessionMessage =
+        val messageValueToJsonResult = messageValueToJson(schemas, msg)
 
         val properties = Option(msg.getProperties) match
             case Some(v) => v.asScala.toMap
@@ -57,7 +57,7 @@ object converters:
         val isReplicated = Option(msg.isReplicated)
         val replicatedFrom = Option(msg.getReplicatedFrom)
 
-        val jsonMessage = JsonMessage(
+        val messageJson = MessageJson(
             properties = properties,
             eventTime = eventTime,
             publishTime = publishTime,
@@ -78,7 +78,7 @@ object converters:
         val messagePb = consumerPb.Message(
             properties = properties,
             rawValue = Option(msg.getValue).map(ByteString.copyFrom),
-            value = jsonValue.toOption,
+            value = messageValueToJsonResult.toOption,
             eventTime = eventTime,
             publishTime = publishTime,
             brokerPublishTime = brokerPublishTime,
@@ -94,9 +94,7 @@ object converters:
             replicatedFrom = replicatedFrom,
             size = size
         )
-        (messagePb, jsonMessage, jsonValue)
-
-    private val PartitionedTopicSuffixRegexp = "-partition-\\d+$".r
+        ConsumerSessionMessage(messagePb, messageJson, messageValueToJsonResult)
 
     def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
         val msgData = msg.getData
