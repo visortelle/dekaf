@@ -96,6 +96,12 @@ export const treePath = {
     if (treePath.isTopicPartition(path)) return "topic-partition";
   },
 
+  isAllAncestorsExpanded: (expandedPaths: TreePath[], path: TreePath) => {
+    const ancestorNodes = path.slice(0, path.length - 1);
+    const ancestorPaths = ancestorNodes.map((_, i)=> path.slice(0, i + 1));
+    return ancestorPaths.every(ap => treePath.hasPath(expandedPaths, ap))
+  },
+  hasAncestorPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.arePathsEqual(p, path.slice(0, path.length - 1))),
   hasPath: (paths: TreePath[], path: TreePath) => paths.some(p => treePath.arePathsEqual(p, path)),
   uniquePaths: (paths: TreePath[]) => uniqWith(paths, treePath.arePathsEqual),
   arePathsEqual: (pathA: TreePath, pathB: TreePath) => {
@@ -106,13 +112,13 @@ export const treePath = {
     return pathA.every((node, i) => treePath.areNodesEqual(node, pathB[i]));
   },
   areNodesEqual: (nodeA: TreeNode, nodeB: TreeNode) => {
-    function normalizeTreeNode(node: TreeNode): { type: TreeNodeType, name: string } {
+    function normalizeTreeNode(node: TreeNode): { type: TreeNodeType, fqn: string } {
       switch (node.type) {
-        case "instance": return { type: "instance", name: "unknown" };
-        case "tenant": return { type: "tenant", name: node.tenant };
-        case "namespace": return { type: "namespace", name: node.namespace };
-        case "topic": return { type: "topic", name: node.topic };
-        case "topic-partition": return { type: "topic-partition", name: node.partition };
+        case "instance": return { type: "instance", fqn: "unknown" };
+        case "tenant": return { type: "tenant", fqn: node.tenant };
+        case "namespace": return { type: "namespace", fqn: `${node.tenant}/${node.namespace}` };
+        case "topic": return { type: "topic", fqn: `${node.persistency}://${node.tenant}/${node.namespace}/${node.topic}` };
+        case "topic-partition": return { type: "topic-partition", fqn: `${node.persistency}://${node.tenant}/${node.namespace}/${node.topic}-${node.partition}` };
       }
     }
 
