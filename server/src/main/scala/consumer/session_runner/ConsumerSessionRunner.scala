@@ -51,11 +51,24 @@ case class ConsumerSessionRunner(
                     if !messageFilterChainResult.isOk then
                         createAndSendResponse(Seq.empty)
 
+                    val coloringRuleChainResult: Vector[ChainTestResult] = if sessionConfig.coloringRuleChain.isEnabled then
+                        sessionConfig.coloringRuleChain.coloringRules
+                            .filter(cr => cr.isEnabled)
+                            .map(cr => sessionContext.testMessageFilterChain(
+                                cr.messageFilterChain,
+                                msg.messageJson,
+                                msg.messageValueToJsonResult
+                            ))
+                    else
+                        Vector.empty
+
+
                     val sessionContextState = sessionContext.getState()
                     val messageToSendPb = msg.messagePb
                         .withSessionContextState(sessionContextState.getOrElse(s"[ERROR] Unable to get session context state."))
                         .withDebugStdout(sessionContext.getStdout())
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
+                        .withSessionColorRuleChainTestResult(coloringRuleChainResult.map(ChainTestResult.toPb))
 
                     createAndSendResponse(Seq(messageToSendPb))
 

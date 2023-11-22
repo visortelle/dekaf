@@ -32,8 +32,8 @@ message Message {
   google.protobuf.StringValue debug_stdout = 51;
 
   google.protobuf.Int32Value session_target_index = 52;
-  ChainTestResult session_color_rule_chain_test_result = 53;
-  ChainTestResult session_target_color_rule_chain_test_result = 54;
+  repeated ChainTestResult session_color_rule_chain_test_result = 53;
+  repeated ChainTestResult session_target_color_rule_chain_test_result = 54;
   ChainTestResult session_message_filter_chain_test_result = 55;
   ChainTestResult session_target_message_filter_chain_test_result = 56;
 
