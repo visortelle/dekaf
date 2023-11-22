@@ -20,6 +20,7 @@ import { Code } from '../../../../grpc-web/google/rpc/code_pb';
 import CredentialsButton from '../../../app/pulsar-auth/Button/Button';
 import collapseAllIcon from './collapse-all.svg';
 import focusIcon from './focus.svg';
+import NothingToShow from '../../NothingToShow/NothingToShow';
 
 type NavigationTreeProps = {
   selectedNodePath: TreePath;
@@ -536,6 +537,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             style={{ opacity: scrollToPath.state === 'finished' ? 1 : 0 }}
             ref={itemsContainerRef}
           >
+            {flattenTree.length === 0 && <div style={{ padding: '12rem' }}><NothingToShow /></div>}
             {flattenTree.map(renderTreeItem)}
           </div>
         )}
