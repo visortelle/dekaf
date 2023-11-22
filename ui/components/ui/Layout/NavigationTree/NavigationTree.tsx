@@ -5,7 +5,7 @@ import treeToFlattenTree, { getRootLabelName, FlattenTreeNode, TopicTreeNode, Tr
 import * as Notifications from '../../../app/contexts/Notifications';
 import * as GrpcClient from '../../../app/contexts/GrpcClient/GrpcClient';
 import * as tenantPb from '../../../../grpc-web/tools/teal/pulsar/ui/tenant/v1/tenant_pb';
-import { setTenants, setTenantNamespaces, setNamespaceTopics } from './tree-mutations';
+import { updateTenants, updateTenantNamespaces, updateNamespaceTopics } from './tree-mutations';
 import Input from '../../Input/Input';
 import SmallButton from '../../SmallButton/SmallButton';
 import { TenantIcon, NamespaceIcon, TopicIcon, InstanceIcon } from '../../Icons/Icons';
@@ -125,7 +125,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
   const tenants = useMemo(() => tenantsData === undefined ? [] : tenantsData.getTenantsList(), [tenantsData]);
 
   useEffect(() => {
-    setTree((tree) => setTenants({
+    setTree((tree) => updateTenants({
       tree,
       tenants: tenants ? tenants.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })) : []
     }));
@@ -253,7 +253,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
               const filterPathPart = filterPath[i] as TreeNode | undefined;
               const filterPathPartName = filterPathPart === undefined ? undefined : getRootLabelName(filterPathPart)
 
-              if (filterQueryDebounced.endsWith(filterQuerySep) && filterPathPartName === undefined && i === filterPath.length) {
+              if (filterPathPartName === undefined && filterQueryDebounced.endsWith(filterQuerySep) && i === filterPath.length) {
                 return true;
               }
 
@@ -269,21 +269,14 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
             });
           }
 
-          return path.length === 1 ? true : treePath.hasPath(expandedPaths, path.slice(0, path.length - 1));
-        })(),
-        subForest: (() => {
-          if (path.length === 0) {
+          if (path.length === 1) {
             return true;
           }
 
-          const a = filterPath[path.length - 1];
-          const b = path[path.length - 1];
-          if (filterPath.length > 0 && a !== undefined && getRootLabelName(a) === getRootLabelName(b)) {
-            return true;
-          }
-
-          return treePath.isPathExpanded(expandedPaths, path);
+          const isHasPath = treePath.isAllAncestorsExpanded(expandedPaths, path);
+          return isHasPath;
         })(),
+        subForest: (() => true)(),
       }),
     }
     setFlattenTree(() => treeToFlattenTree(treeToFlattenTreeProps));
@@ -333,7 +326,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
         <PulsarTenant
           forceReloadKey={forceReloadKey}
           tenant={node.name}
-          onNamespaces={(namespaces) => setTree((tree) => setTenantNamespaces({ tree, tenant: tenantNode.tenant, namespaces }))}
+          onNamespaces={(namespaces) => setTree((tree) => updateTenantNamespaces({ tree, tenant: tenantNode.tenant, namespaces }))}
           leftIndent={leftIndent}
           onDoubleClick={toggleNodeExpanded}
           isActive={isActive}
@@ -361,7 +354,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props) => {
           tenant={tenant.tenant}
           namespace={namespace.namespace}
           onTopics={(topics) => setTree((tree) => {
-            return setNamespaceTopics({ tree, tenant: tenant.tenant, namespace: namespace.namespace, persistentTopics: topics.persistent, nonPersistentTopics: topics.nonPersistent })
+            return updateNamespaceTopics({ tree, tenant: tenant.tenant, namespace: namespace.namespace, persistentTopics: topics.persistent, nonPersistentTopics: topics.nonPersistent })
           })}
           leftIndent={leftIndent}
           onDoubleClick={toggleNodeExpanded}
