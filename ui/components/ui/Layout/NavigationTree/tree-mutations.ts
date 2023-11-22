@@ -1,7 +1,7 @@
 import cloneDeep from "lodash/cloneDeep";
 import { TenantTreeNode, TopicPartitionTreeNode, TopicTreeNode, Tree, TreeNode, TreePath, getRootLabelName } from "./TreeView";
 
-export function setTenants(props: { tree: Tree; tenants: string[] }): Tree {
+export function updateTenants(props: { tree: Tree; tenants: string[] }): Tree {
   let _tree = cloneDeep(props.tree);
   _tree.subForest = props.tenants.map((tenant) => ({
     rootLabel: { type: "tenant", tenant },
@@ -10,7 +10,7 @@ export function setTenants(props: { tree: Tree; tenants: string[] }): Tree {
   return _tree;
 }
 
-export function setTenantNamespaces(props: {
+export function updateTenantNamespaces(props: {
   tree: Tree;
   tenant: string;
   namespaces: string[];
@@ -36,7 +36,7 @@ export function setTenantNamespaces(props: {
   return _tree;
 }
 
-export function setNamespaceTopics(props: {
+export function updateNamespaceTopics(props: {
   tree: Tree;
   tenant: string;
   namespace: string;
