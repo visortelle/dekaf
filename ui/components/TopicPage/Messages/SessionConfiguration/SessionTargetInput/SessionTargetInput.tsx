@@ -1,6 +1,5 @@
 import React from 'react';
-import s from './SessionTopicInput.module.css'
-import FormItem from '../../../../ui/ConfigurationTable/FormItem/FormItem';
+import s from './SessionTargetInput.module.css'
 import TopicSelectorInput from '../../topic-selector/TopicSelectorInput/TopicSelectorInput';
 import { LibraryContext } from '../../../../ui/LibraryBrowser/model/library-context';
 import FilterChainEditor from '../FilterChainEditor/FilterChainEditor';
@@ -8,16 +7,16 @@ import { useHover } from '../../../../app/hooks/use-hover';
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../../ui/LibraryBrowser/useManagedItemValue';
 import { ManagedConsumerSessionTarget, ManagedConsumerSessionTargetSpec, ManagedConsumerSessionTargetValOrRef } from '../../../../ui/LibraryBrowser/model/user-managed-items';
 import LibraryBrowserPanel from '../../../../ui/LibraryBrowser/LibraryBrowserPanel/LibraryBrowserPanel';
-import ColoringRuleInput from '../ColoringRulesInput/ColoringRuleInput/ColoringRuleInput';
 import ColoringRuleChainInput from '../ColoringRulesInput/ColoringRuleChainInput';
 
-export type SessionTopicInputProps = {
+export type SessionTargetInputProps = {
+  targetIndex: number,
   value: ManagedConsumerSessionTargetValOrRef;
   onChange: (v: ManagedConsumerSessionTargetValOrRef) => void;
   libraryContext: LibraryContext;
 };
 
-const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
+const SessionTargetInput: React.FC<SessionTargetInputProps> = (props) => {
   const [hoverRef, isHovered] = useHover();
 
   const resolveResult = useManagedItemValue<ManagedConsumerSessionTarget>(props.value);
@@ -40,7 +39,8 @@ const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
   };
 
   return (
-    <div className={s.SessionTopicInput}>
+    <div className={s.SessionTargetInput}>
+      <div className={s.TargetIndex}>Target {props.targetIndex}</div>
       <div ref={hoverRef}>
         <LibraryBrowserPanel
           itemType='consumer-session-topic'
@@ -82,4 +82,4 @@ const SessionTopicInput: React.FC<SessionTopicInputProps> = (props) => {
   );
 }
 
-export default SessionTopicInput;
+export default SessionTargetInput;

@@ -9,7 +9,7 @@ import com.google.rpc.code.Code
 import com.google.rpc.status.Status
 import scala.util.boundary, boundary.break
 
-type ConsumerSessionTargetId = String
+type ConsumerSessionTargetIndex = Int
 
 case class ConsumerSessionRunner(
     sessionName: String,
@@ -17,7 +17,7 @@ case class ConsumerSessionRunner(
     sessionContext: ConsumerSessionContext,
     var grpcResponseObserver: Option[io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]],
     var schemasByTopic: SchemasByTopic,
-    var targets: Map[ConsumerSessionTargetId, ConsumerSessionTargetRunner]
+    var targets: Map[ConsumerSessionTargetIndex, ConsumerSessionTargetRunner]
 ) {
     def resume(
         grpcResponseObserver: io.grpc.stub.StreamObserver[consumerPb.ResumeResponse]
@@ -53,8 +53,8 @@ case class ConsumerSessionRunner(
                         case Left(err) =>
                             createAndSendResponse(Seq.empty, List(err))
 
-                        case Right(isPassed) =>
-                            if !isPassed then
+                        case Right(isFilterPassed) =>
+                            if !isFilterPassed then
                                 createAndSendResponse(Seq.empty)
 
                             val messageToSendPb = msg.messagePb
@@ -80,11 +80,9 @@ object ConsumerSessionRunner:
         val sessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = new ByteArrayOutputStream()))
 
         var targets = sessionConfig.targets.zipWithIndex.map { case (targetConfig, i) =>
-            val targetName = s"target-$i"
-
-            targetName -> ConsumerSessionTargetRunner.make(
+            i -> ConsumerSessionTargetRunner.make(
                 sessionName = sessionName,
-                targetName = targetName,
+                targetIndex = i,
                 pulsarClient = pulsarClient,
                 adminClient = adminClient,
                 schemasByTopic = Map.empty,
@@ -96,8 +94,8 @@ object ConsumerSessionRunner:
         val nonPartitionedTopicFqns = targets.values.flatMap(_.nonPartitionedTopicFqns).toVector
         val schemasByTopic = getSchemasByTopic(adminClient, nonPartitionedTopicFqns)
 
-        targets = targets.map { case (targetId, target) =>
-            targetId -> target.copy(schemasByTopic = schemasByTopic)
+        targets = targets.map { case (targetIndex, target) =>
+            targetIndex -> target.copy(schemasByTopic = schemasByTopic)
         }
 
         val consumers = targets.values.flatMap(_.consumers).map(_._2).toVector

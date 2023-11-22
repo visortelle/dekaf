@@ -1,5 +1,3 @@
-import { ManagedColoringRuleChain, ManagedColoringRuleChainValOrRef } from "../../../grpc-web/tools/teal/pulsar/ui/library/v1/managed_items_pb";
-import { ManagedMessageFilterChain, ManagedMessageFilterChainValOrRef, ManagedTopicSelectorValOrRef } from "../../ui/LibraryBrowser/model/user-managed-items";
 import { TopicSelector } from "./topic-selector/topic-selector";
 
 export type SessionState =
@@ -104,11 +102,17 @@ export type MessageDescriptor = {
   replicatedFrom: Nullable<string>;
   properties: Record<string, string>;
 
+  // Fields below aren't a part of Pulsar message.
   rawValue: Nullable<Uint8Array>;
   value: Nullable<string>; // JSON string
   accum: Nullable<string>; // JSON string
-  index: number; // Not a part of Pulsar message.
-  debugStdout: Nullable<string>; // Not a part of Pulsar message.
+  index: number;
+  debugStdout: Nullable<string>;
+  sessionTargetIndex: Nullable<number>,
+  matchedSessionColorRuleIndex: Nullable<number>,
+  matchedSessionTargetColorRuleIndex: Nullable<number>,
+  matchedSessionMessageFilterIndex: Nullable<number>,
+  matchedSessionTargetMessageFilterIndex: Nullable<number>
 };
 
 export type PartialMessageDescriptor = Partial<MessageDescriptor>;

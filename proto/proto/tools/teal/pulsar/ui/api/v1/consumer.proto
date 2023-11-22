@@ -13,7 +13,7 @@ message Message {
   // Message value serialized as JSON.
   google.protobuf.StringValue value = 5;
 
-  // The state, accumulated during applying message filters for all messages sequencially.
+  // The state, accumulated during applying message filters for all messages sequentially.
   // Not a part of Pulsar message.
   google.protobuf.StringValue accumulator = 50;
 
@@ -21,6 +21,12 @@ message Message {
   // We need to store them in the message to be able to show them in the UI.
   // Both, stdout and stderr are stored in the same field.
   google.protobuf.StringValue debug_stdout = 51;
+
+  google.protobuf.Int32Value session_target_index = 52;
+  google.protobuf.Int32Value matched_session_color_rule_index = 53;
+  google.protobuf.Int32Value matched_session_target_color_rule_index = 54;
+  google.protobuf.Int32Value matched_session_message_filter_index = 55;
+  google.protobuf.Int32Value matched_session_target_message_filter_index = 56;
 
   map<string, string> properties = 1;
 

@@ -17,6 +17,7 @@ type NonPartitionedTopicFqn = String
 val logger: Logger = Logger(getClass.getName)
 
 case class ConsumerSessionTargetRunner(
+    targetIndex: Int,
     nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
     messageFilterChain: MessageFilterChain,
     coloringRuleChain: ColoringRuleChain,
@@ -47,7 +48,7 @@ case class ConsumerSessionTargetRunner(
             val (filterResult, _) =
                 getFilterChainTestResult(messageFilterChain, consumerSessionContext, messageJson, messageValueToJsonResult)
 
-            val msgToSend = filterResult match
+            var msgToSend = filterResult match
                 case Right(true) => Some(consumerSessionMessage)
                 case _           => None
 
@@ -58,6 +59,12 @@ case class ConsumerSessionTargetRunner(
                 case Left(err) => List(err)
                 case _         => List.empty
             val errors = serializationErrors ++ filterErrors
+
+            msgToSend = msgToSend.map(m =>
+                m.copy(
+                    messagePb = m.messagePb.withSessionTargetIndex(targetIndex)
+                )
+            )
 
             onNext(
                 msg = msgToSend,
@@ -83,7 +90,7 @@ case class ConsumerSessionTargetRunner(
 object ConsumerSessionTargetRunner:
     def make(
         sessionName: String,
-        targetName: String,
+        targetIndex: Int,
         sessionContext: ConsumerSessionContext,
         targetConfig: ConsumerSessionTarget,
         schemasByTopic: SchemasByTopic,
@@ -95,7 +102,7 @@ object ConsumerSessionTargetRunner:
             val listener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ()))
 
             val consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]] = nonPartitionedTopicFqns.map { topicFqn =>
-                val consumerName = s"$sessionName-$targetName"
+                val consumerName = s"$sessionName-$targetIndex"
 
                 buildConsumer(
                     pulsarClient = pulsarClient,
@@ -111,6 +118,7 @@ object ConsumerSessionTargetRunner:
             }.toMap
 
             ConsumerSessionTargetRunner(
+                targetIndex = targetIndex,
                 consumerSessionContext = sessionContext,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,

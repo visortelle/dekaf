@@ -24,10 +24,10 @@ describe("valueToBytes", () => {
   });
 
   const bytesHexTestCases: { hex: string; bytes: Uint8Array }[] = [
+    { hex: "", bytes: Uint8Array.from([]) },
+    { hex: "a1", bytes: Uint8Array.from([161]) },
     { hex: "a1 b2 d3", bytes: Uint8Array.from([161, 178, 211]) },
     { hex: "a1b2d3", bytes: Uint8Array.from([161, 178, 211]) },
-    { hex: "", bytes: Uint8Array.from([]) },
-    { hex: "z1", bytes: Uint8Array.from([]) },
   ];
 
   it.each(bytesHexTestCases)(

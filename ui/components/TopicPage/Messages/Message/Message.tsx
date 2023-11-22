@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Modals from '../../../app/contexts/Modals/Modals';
-import { AccumulatorField, BrokerPublishTimeField, EventTimeField, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from './fields';
+import { AccumulatorField, BrokerPublishTimeField, EventTimeField, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField, SessionTargetIndexField } from './fields';
 import s from './Message.module.css';
 import cts from "../../../ui/ChildrenTable/ChildrenTable.module.css";
 import { MessageDescriptor } from '../types';
@@ -52,6 +52,13 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         onClick={showMessageDetails}
       >
         <ValueField isShowTooltips={props.isShowTooltips} message={props.message} />
+      </Td>
+
+      <Td
+        width='5ch'
+        onClick={showMessageDetails}
+      >
+        <SessionTargetIndexField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td

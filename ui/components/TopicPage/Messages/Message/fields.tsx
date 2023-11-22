@@ -28,6 +28,7 @@ export const help = {
   key: <span>Messages are optionally tagged with keys, which is useful for things like topic compaction.</span>,
   propertiesMap: <span>An optional key/value map of user-defined properties.</span>,
   producerName: <span>The name of the producer who produces the message. If you do not specify a producer name, the default name is used.</span>,
+  sessionTargetIndex: <span>Consumer Session may have multiple targets, where each target can consume from one or multiple topics. By using this column's value you can find out by which Target this message been consumed.</span>,
   topic: <span>The name of the topic that the message is published to.</span>,
   schemaVersion: <span>The version number of the schema that the message is produced with.</span>,
   sequenceId: (
@@ -82,6 +83,11 @@ export const KeyField: React.FC<FieldProps> = (props) => {
 export const ValueField: React.FC<FieldProps> = (props) => {
   const value = props.message.value === null ? undefined : limitString(props.message.value, 100);
   return <Field isShowTooltips={props.isShowTooltips} title="Value" value={value} rawValue={value} tooltip={help.value} />
+}
+
+export const SessionTargetIndexField: React.FC<FieldProps> = (props) => {
+  const sessionTargetIndex = props.message.sessionTargetIndex === null ? undefined : props.message.sessionTargetIndex;
+  return <Field isShowTooltips={props.isShowTooltips} value={sessionTargetIndex === undefined ? undefined : (sessionTargetIndex + 1).toString()} tooltip={help.sessionTargetIndex} />
 }
 
 export const TopicField: React.FC<FieldProps> = (props) => {

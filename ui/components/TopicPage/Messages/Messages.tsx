@@ -403,6 +403,7 @@ const Session: React.FC<SessionProps> = (props) => {
                 <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} help={help.publishTime} />
                 <Th title="Key" sortKey="key" help={help.key} />
                 <Th title="Value" sortKey="value" help={help.value} />
+                <Th title="Target" sortKey="sessionTargetIndex" help={help.sessionTargetIndex} />
                 <Th title="Topic" sortKey="topic" help={help.topic} />
                 <Th title="Producer" sortKey="producerName" help={help.producerName} />
                 <Th title="Schema version" sortKey="schemaVersion" help={help.schemaVersion} />

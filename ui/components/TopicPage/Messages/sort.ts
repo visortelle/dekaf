@@ -5,6 +5,7 @@ export type SortKey =
   | "index"
   | "publishTime"
   | "key"
+  | "sessionTargetIndex"
   | "topic"
   | "producerName"
   | "value"
@@ -55,6 +56,12 @@ export const sortMessages = (
   if (sort.key === "key") {
     const sortFn: SortFn = (a, b) =>
       (a.key || "").localeCompare(b.key || "", "en", { numeric: true });
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === "sessionTargetIndex") {
+    const sortFn: SortFn = (a, b) =>
+      (a.sessionTargetIndex || 0) - (b.sessionTargetIndex || 0)
     return s(messages, [], sortFn);
   }
 

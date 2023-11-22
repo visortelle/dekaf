@@ -5,8 +5,6 @@ import {
   MessageDescriptor,
   PartialMessageDescriptor,
   ConsumerSessionConfig,
-  BasicMessageFilter,
-  JsMessageFilter,
   MessageFilter,
   MessageFilterChain,
   MessageFilterChainMode,
@@ -61,6 +59,11 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
     topic: message.getTopic()?.getValue() ?? null,
     accum: message.getAccumulator()?.getValue() ?? null,
     debugStdout: message.getDebugStdout()?.getValue() ?? null,
+    matchedSessionColorRuleIndex: message.getMatchedSessionColorRuleIndex()?.getValue() ?? null,
+    matchedSessionMessageFilterIndex: message.getMatchedSessionMessageFilterIndex()?.getValue() ?? null,
+    matchedSessionTargetColorRuleIndex: message.getMatchedSessionTargetColorRuleIndex()?.getValue() ?? null,
+    matchedSessionTargetMessageFilterIndex: message.getMatchedSessionTargetMessageFilterIndex()?.getValue() ?? null,
+    sessionTargetIndex: message.getSessionTargetIndex()?.getValue() ?? null
   };
 }
 
