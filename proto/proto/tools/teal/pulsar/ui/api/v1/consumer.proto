@@ -247,7 +247,200 @@ message JsMessageFilter {
   string js_code = 1;
 }
 
-message BasicMessageFilter {}
+message TestOpIsNull {}
+
+message TestOpIsDefined {}
+
+message TestOpBoolEquals {
+  bool equals = 1;
+}
+
+message TestOpNumberEquals {
+  string equals = 1; // Number encoded as a string. Having "." char means float number.
+}
+
+message TestOpNumberLt {
+  string lt = 1; // Number encoded as a string. Having "." char means float number.
+}
+
+message TestOpNumberLte {
+  string lte = 1; // Number encoded as a string. Having "." char means float number.
+}
+
+message TestOpNumberGt {
+  string gt = 1; // Number encoded as a string. Having "." char means float number.
+}
+
+message TestOpNumberGte {
+  string gte = 1; // Number encoded as a string. Having "." char means float number.
+}
+
+message TestOpStringEquals {
+  string equals = 1;
+}
+
+message TestOpStringIncludes {
+  string includes = 1;
+  bool is_case_sensitive = 2;
+}
+
+message TestOpStartsWith {
+  string starts_with = 1;
+  bool is_case_sensitive = 2;
+}
+
+message TestOpStringEndsWith {
+  string ends_with = 1;
+  bool is_case_sensitive = 3;
+}
+
+message TestOpStringMatchesRegex {
+  string regexp = 1;
+}
+
+message TestOpArrayContains {
+  AnyTestOp test_item_op = 1;
+  NumberTestOp matched_items_count_compare_op = 2;
+  int32 matched_items_count_compare_num = 2;
+}
+
+message TestOpArraySize {
+  NumberTestOp op = 1;
+}
+
+message TestOpArrayAny {
+  AnyTestOp op = 1;
+}
+
+message TestOpArrayAll {
+  AnyTestOp op = 1;
+}
+
+message TestOpObjectAnyKey {
+  StringTestOp op = 1;
+}
+
+message TestOpObjectAllKeys {
+  StringTestOp op = 1;
+}
+
+message TestOpObjectAnyValue {
+  AnyTestOp op = 1;
+}
+
+message TestOpObjectAllValues {
+}
+
+message TestOpObjectValueByKey {
+  string key = 1;
+  AnyTestOp op = 2;
+}
+
+message TestOpObjectSize {
+  NumberTestOp op = 1;
+}
+
+message AnyBoolTestOp {
+  oneof op {
+    TestOpBoolEquals op_bool_equals = 1;
+  }
+}
+
+message AnyArrayTestOp {
+  oneof op {
+    TestOpArrayContains op_array_contains = 1;
+    TestOpArraySize op_array_size = 2;
+    TestOpArrayEvery op_array_every = 3;
+    TestOpArrayAny op_array_any = 4;
+    TestOpArrayAll op_array_all = 5;
+  }
+}
+
+message AnyObjectTestOp {
+  oneof op {
+    TestOpObjectAnyKey op_object_any_key = 1;
+    TestOpObjectAllKeys op_object_all_keys = 2;
+    TestOpObjectAnyValue op_object_any_value = 3;
+    TestOpObjectAllValue op_object_all_values = 4;
+    TestOpObjectValueByKey op_object_value_by_key = 5;
+    TestOpObjectHasValueAtKey op_object_has_value_at_key = 6;
+    TestOpObjectSize op_object_size = 7;
+  }
+}
+
+message AnyNumberTestOp {
+  oneof op {
+    TestOpNumberEquals op_number_equals = 2;
+    TestOpNumberLt op_number_lt = 3;
+    TestOpNumberLte op_number_lte = 4;
+    TestOpNumberGt op_number_gt = 5;
+    TestOpNumberGte op_number_gte = 6;
+  }
+}
+
+message AnyStringTestOp {
+  TestOpStringEquals op_string_equals = 7;
+  TestOpStringIncludes op_string_includes = 8;
+  TestOpStartsWith op_string_starts_with = 9;
+  TestOpStringEndsWith op_string_ends_with = 10;
+  TestOpStringMatchesRegex op_string_matches_regex = 11;
+}
+
+message AnyTestOp {
+  oneof op {
+    TestOpIsDefined op_is_defined = 1;
+    TestOpIsNull op_is_null = 2;
+    AnyBoolTestOp op_any_bool = 3;
+    AnyObjectTestOp op_any_object = 4;
+    AnyStringTestOp op_any_string = 5;
+    AnyNumberTestOp op_any_number = 6;
+  }
+}
+
+message BasicMessageFilterKeyTarget {
+  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+}
+
+message BasicMessageFilterValueTarget {
+  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+}
+
+message BasicMessageFilterPropertyTarget {
+  string property_key = 1;
+}
+
+message BasicMessageFilterSessionContextStateTarget {
+  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+}
+
+message BasicMessageFilterTarget {
+  BASIC_MESSAGE_FILTER_TARGET_UNSPECIFIED = 0;
+  BASIC_MESSAGE_FILTER_TARGET_KEY = 1;
+  BASIC_MESSAGE_FILTER_TARGET_VALUE = 2;
+  BASIC_MESSAGE_FILTER_TARGET_PROPERTIES = 3;
+  BASIC_MESSAGE_FILTER_TARGET_SESSION_CONTEXT_STATE = 4;
+}
+
+message JsonFieldSelector {
+  string json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+}
+
+message BasicMessageFilter {
+  BasicMessageFilterTarget target = 1;
+
+  oneof operation {
+    BasicMessageFilterOperationContains contains = 10;
+    BasicMessageFilterOperationEquals equals = 11;
+    BasicMessageFilterOperationStartsWith starts_with = 12;
+    BasicMessageFilterOperationEndsWith ends_with = 13;
+    BasicMessageFilterOperationRegex regex = 14;
+    BasicMessageFilterOperationGreaterThan greater_than = 15;
+    BasicMessageFilterOperationGreaterThanOrEquals greater_than_or_equals = 16;
+    BasicMessageFilterOperationLessThan less_than = 17;
+    BasicMessageFilterOperationLessThanOrEquals less_than_or_equals = 18;
+    BasicMessageFilterOperationIsNull is_null = 20;
+  }
+}
 
 message MessageFilter {
   bool is_enabled = 10;
