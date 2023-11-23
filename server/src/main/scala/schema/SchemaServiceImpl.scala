@@ -184,15 +184,30 @@ class SchemaServiceImpl extends SchemaServiceGrpc.SchemaService:
         try {
             val schemaInfos = adminClient.schemas.getAllSchemas(request.topic).asScala.toList
 
-            val getVersionFutures = schemaInfos
-                .map(si =>
-                    val f: Future[java.lang.Long] = if si.getType == SchemaType.KEY_VALUE then
-                        Future.successful(UUID.randomUUID().getMostSignificantBits)
-                    else
-                        adminClient.schemas.getVersionBySchemaAsync(request.topic, si).asScala
+            val getVersionFutures =
+                if schemaInfos.nonEmpty && schemaInfos.last.getType == SchemaType.KEY_VALUE then
+                    val lastSchemaVersion = adminClient.schemas.getSchemaInfoWithVersion(request.topic).getVersion
 
-                    f
-                )
+                    schemaInfos
+                        .map(si =>
+                            val f: Future[java.lang.Long] = if si.getType == SchemaType.KEY_VALUE then
+                                if schemaInfos.last == si then
+                                    Future.successful(lastSchemaVersion)
+                                else
+                                    // Here we are giving the versions for non-latest schemas (for correct sorting at the UI)
+                                    Future.successful(
+                                        lastSchemaVersion - (schemaInfos.length - 1 - schemaInfos.indexOf(si))
+                                    )
+                            else
+                                adminClient.schemas.getVersionBySchemaAsync(request.topic, si).asScala
+
+                            f
+                        )
+                else
+                    schemaInfos
+                        .map(si => adminClient.schemas.getVersionBySchemaAsync(request.topic, si))
+                        .map(_.asScala)
+
 
             val schemaVersions = Await.result(Future.sequence(getVersionFutures), Duration(1, TimeUnit.MINUTES))
 

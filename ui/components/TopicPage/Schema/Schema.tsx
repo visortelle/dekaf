@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import useSWR, {mutate} from "swr";
 
 import * as Modals from "../../app/contexts/Modals/Modals";
@@ -32,6 +32,8 @@ import Link from "../../ui/Link/Link";
 import s from "./Schema.module.css";
 import {useNavigate} from "react-router";
 import {PulsarTopicPersistency} from "../../pulsar/pulsar-resources";
+import HelpIcon from "../../ui/ConfigurationTable/HelpIcon/HelpIcon";
+import {decodeKeyValueSchema} from "./key-value-schema-utils";
 
 export type SchemaProps = {
   tenant: string;
@@ -46,7 +48,6 @@ export type View = { type: "initial-screen" } | { type: "create-schema" } | { ty
 const Schema: React.FC<SchemaProps> = (props) => {
   const [defaultNewSchemaType, setDefaultNewSchemaType] = useState<SchemaTypeT>("SCHEMA_TYPE_NONE");
   const [defaultSchemaDefinition, setDefaultSchemaDefinition] = useState<SchemaDefinition | undefined>(undefined);
-  const [keyValueSchema, setKeyValueSchema] = useState<KeyValueSchema | undefined>(undefined);
 
   const { schemaServiceClient } = GrpcClient.useContext();
   const { notifyError } = Notifications.useContext();
@@ -91,36 +92,9 @@ const Schema: React.FC<SchemaProps> = (props) => {
     notifyError(`Unable to get schemas. ${schemas?.getStatus()?.getMessage()}`);
   }
 
-  const decodeKeyValueSchema = async (schemaInfo: SchemaInfo, schemaVersion?: number) => {
-    const req = new DecodeKeyValueSchemaInfoRequest();
-    req.setKeyValueSchemaInfo(schemaInfo);
-
-    const res = await schemaServiceClient.decodeKeyValueSchemaInfo(req, {})
-      .catch((err) => notifyError(err));
-
-    if (res === undefined) {
-      return;
-    }
-    if(res.getStatus()?.getCode() !== Code.OK) {
-      notifyError(`Unable to decode key-value schema info. ${res.getStatus()?.getMessage()}`);
-      return;
-    }
-
-    const keySchemaInfo = res.getKeySchemaInfo();
-    const valueSchemaInfo = res.getValueSchemaInfo();
-    const keyValueEncodingType: KeyValueEncodingType = res.getEncodingType() === KeyValueEncodingTypePb.KEY_VALUE_ENCODING_TYPE_SEPARATED ?
-      "KEY_VALUE_ENCODING_TYPE_SEPARATED" :
-      "KEY_VALUE_ENCODING_TYPE_INLINE";
-
-    return {
-      keyType: keySchemaInfo?.getType() ? schemaTypes[keySchemaInfo.getType()] : "SCHEMA_TYPE_UNSPECIFIED",
-      keySchemaInfo: keySchemaInfo,
-      valueType: valueSchemaInfo?.getType() ? schemaTypes[valueSchemaInfo.getType()] : "SCHEMA_TYPE_UNSPECIFIED",
-      valueSchemaInfo: valueSchemaInfo,
-      encodingType: keyValueEncodingType,
-      schemaVersion: schemaVersion
-    } as KeyValueSchema;
-  }
+  const sortedSchemas = useMemo(() => {
+    return schemas?.getSchemasList().sort((a, b) => b.getSchemaVersion() - a.getSchemaVersion())
+  }, [schemas]);
 
   useEffect(() => {
     if (isLatestSchemaInfoLoading) {
@@ -128,27 +102,6 @@ const Schema: React.FC<SchemaProps> = (props) => {
     }
 
     const schemaInfo = latestSchemaInfo?.getSchemaInfoWithVersion()?.getSchemaInfo();
-
-    if (latestSchemaInfo !== undefined && latestSchemaInfo.getStatus()?.getCode() === Code.OK) {
-      const schemaInfo = latestSchemaInfo?.getSchemaInfoWithVersion()?.getSchemaInfo();
-      const schemaVersion = latestSchemaInfo?.getSchemaInfoWithVersion()?.getSchemaVersion() || -1;
-      if (schemaInfo !== undefined) {
-        const schemaType = (Object.entries(SchemaType).find(([, i]) => i === schemaInfo.getType()) || [])[0] as SchemaTypeT;
-        if (schemaType !== undefined) {
-          setDefaultNewSchemaType(schemaType);
-        }
-        if (schemaType === "SCHEMA_TYPE_AVRO" || schemaType === "SCHEMA_TYPE_JSON" || schemaType === "SCHEMA_TYPE_PROTOBUF") {
-          setDefaultSchemaDefinition(schemaInfo?.getSchema_asU8() ? (
-            Array.from(schemaInfo.getSchema_asU8())
-              .map((b) => String.fromCharCode(b))
-              .join("")
-          ) : undefined);
-        }
-        if (schemaType === "SCHEMA_TYPE_KEY_VALUE") {
-          decodeKeyValueSchema(schemaInfo, schemaVersion).then(r => setKeyValueSchema(r));
-        }
-      }
-    }
 
     // Redirect to the "Create schema" page if there is no schema.
     if (props.view.type === "initial-screen" && schemaInfo === undefined) {
@@ -184,18 +137,48 @@ const Schema: React.FC<SchemaProps> = (props) => {
   }, [latestSchemaInfo, props.view]);
 
   useEffect(() => {
-    const newDefaultSchemaDefinition = (keyValueSchema?.keySchemaInfo?.getSchema_asU8() || keyValueSchema?.valueSchemaInfo?.getSchema_asU8()) ? (
-      {
-        keyType: keyValueSchema?.keySchemaInfo?.getType() ? schemaTypes[keyValueSchema?.keySchemaInfo.getType()] : "SCHEMA_TYPE_UNSPECIFIED",
-        keyDefinition: Array.from(keyValueSchema?.keySchemaInfo?.getSchema_asU8() || new Uint8Array()).map((b) => String.fromCharCode(b)).join(""),
-        valueType: keyValueSchema?.valueSchemaInfo?.getType() ? schemaTypes[keyValueSchema?.valueSchemaInfo.getType()] : "SCHEMA_TYPE_UNSPECIFIED",
-        valueDefinition: Array.from(keyValueSchema?.valueSchemaInfo?.getSchema_asU8() || new Uint8Array()).map((b) => String.fromCharCode(b)).join(""),
-        encodingType: keyValueSchema?.encodingType || "KEY_VALUE_ENCODING_TYPE_INLINE",
-      } as KeyValueSchemaDefinition
-    ) : undefined;
+    if (isLatestSchemaInfoLoading) {
+      return;
+    }
 
-    setDefaultSchemaDefinition(newDefaultSchemaDefinition);
-  }, [keyValueSchema]);
+    const schemaInfo = latestSchemaInfo?.getSchemaInfoWithVersion()?.getSchemaInfo();
+
+    if (latestSchemaInfo !== undefined && latestSchemaInfo.getStatus()?.getCode() === Code.OK) {
+      const schemaInfo = latestSchemaInfo?.getSchemaInfoWithVersion()?.getSchemaInfo();
+      const schemaVersion = latestSchemaInfo?.getSchemaInfoWithVersion()?.getSchemaVersion() || -1;
+      if (schemaInfo !== undefined) {
+        const schemaTypeT = schemaTypes[schemaInfo.getType()];
+
+        if (schemaTypeT !== undefined) {
+          setDefaultNewSchemaType(schemaTypeT);
+        }
+
+        if (schemaTypeT === "SCHEMA_TYPE_AVRO" || schemaTypeT === "SCHEMA_TYPE_JSON" || schemaTypeT === "SCHEMA_TYPE_PROTOBUF") {
+          setDefaultSchemaDefinition(schemaInfo?.getSchema_asU8() ? (
+            Array.from(schemaInfo.getSchema_asU8())
+              .map((b) => String.fromCharCode(b))
+              .join("")
+          ) : undefined);
+        }
+
+        if (schemaTypeT === "SCHEMA_TYPE_KEY_VALUE") {
+          decodeKeyValueSchema(schemaInfo, schemaServiceClient, notifyError, schemaVersion).then(schema => {
+            const newDefaultSchemaDefinition = (schema?.keySchemaInfo?.getSchema_asU8() || s.valueSchemaInfo?.getSchema_asU8()) ? (
+              {
+                keyType: schema?.keySchemaInfo?.getType() ? schemaTypes[schema?.keySchemaInfo.getType()] : "SCHEMA_TYPE_UNSPECIFIED",
+                keyDefinition: Array.from(schema?.keySchemaInfo?.getSchema_asU8() || new Uint8Array()).map((b) => String.fromCharCode(b)).join(""),
+                valueType: schema?.valueSchemaInfo?.getType() ? schemaTypes[schema?.valueSchemaInfo.getType()] : "SCHEMA_TYPE_UNSPECIFIED",
+                valueDefinition: Array.from(schema?.valueSchemaInfo?.getSchema_asU8() || new Uint8Array()).map((b) => String.fromCharCode(b)).join(""),
+                encodingType: schema?.encodingType || "KEY_VALUE_ENCODING_TYPE_INLINE",
+              } as KeyValueSchemaDefinition
+            ) : undefined;
+
+            setDefaultSchemaDefinition(newDefaultSchemaDefinition);
+          });
+        }
+      }
+    }
+  }, [latestSchemaInfo]);
 
   const refetchData = async () => {
     await mutate(swrKeys.pulsar.schemas.getLatestSchemaInfo._(topicFqn), undefined, { revalidate: true });
@@ -255,14 +238,37 @@ const Schema: React.FC<SchemaProps> = (props) => {
 
         <div className={s.SchemaList}>
           {schemas?.getSchemasList().length === 0 && <div style={{ padding: "8rem 12rem" }}>No schemas registered for this topic.</div>}
-          {schemas
-            ?.getSchemasList()
-            .sort((a, b) => b.getSchemaVersion() - a.getSchemaVersion())
-            .map((schema) => {
+          {sortedSchemas
+            ?.map((schema) => {
               const schemaInfo = schema.getSchemaInfo();
               const schemaVersion = schema.getSchemaVersion();
               if (schemaInfo === undefined) {
                 return null;
+              }
+
+              const sortedSchemas = schemas?.getSchemasList().sort((a, b) => b.getSchemaVersion() - a.getSchemaVersion())
+              if (sortedSchemas?.at(0) !== schema && schemaTypes[schema.getSchemaInfo()?.getType()!] == "SCHEMA_TYPE_KEY_VALUE" ) {
+                return (
+                  <Link
+                    key={schemaVersion}
+                    isNormalizeStyle
+                    to={routes.tenants.tenant.namespaces.namespace.topics.anyTopicPersistency.topic.schema.view._.get({
+                      topicPersistency: props.topicPersistency,
+                      tenant: props.tenant,
+                      namespace: props.namespace,
+                      topic: props.topic,
+                      schemaVersion,
+                    })}
+                  >
+                    <SchemaListEntry
+                      schemaInfo={schemaInfo}
+                      version={`${schemaVersion} ± X`}
+                      isOldKeyValueSchema={true}
+                      isSelected={props.view.type === "view-schema" && props.view.schemaVersion === schemaVersion}
+                      onClick={() => undefined}
+                    />
+                  </Link>
+                );
               }
 
               return (
@@ -327,24 +333,32 @@ const Schema: React.FC<SchemaProps> = (props) => {
                 return <></>;
               }
 
-              return (
-                keyValueSchema !== undefined && schemaInfo.getType() == SchemaType.SCHEMA_TYPE_KEY_VALUE ? (
+              const sortedSchemaInfos = sortedSchemas?.map(s => s.getSchemaInfo());
+              if (sortedSchemaInfos?.at(0) &&
+                sortedSchemaInfos?.at(0) !== schemaInfo &&
+                schemaTypes[schemaInfo?.getType()!] == "SCHEMA_TYPE_KEY_VALUE") {
+                return (
                   <SchemaEntry
                     key={`${topicFqn}/schemas/${props.view.schemaVersion}`}
                     topic={topicFqn}
-                    schemaVersion={props.view.schemaVersion}
-                    keyValueSchema={keyValueSchema}
-                    view={props.view}
-                  />
-                ) : (
-                  <SchemaEntry
-                    key={`${topicFqn}/schemas/${props.view.schemaVersion}`}
-                    topic={topicFqn}
-                    schemaVersion={props.view.schemaVersion}
                     schemaInfo={schemaInfo}
+                    schemaVersion={props.view.schemaVersion}
+                    isKeyValueSchema={schemaTypes[schemaInfo.getType()] == "SCHEMA_TYPE_KEY_VALUE"}
                     view={props.view}
+                    isOldKeyValueSchema={true}
                   />
-                )
+                );
+              }
+
+              return (
+                <SchemaEntry
+                  key={`${topicFqn}/schemas/${props.view.schemaVersion}`}
+                  topic={topicFqn}
+                  schemaInfo={schemaInfo}
+                  schemaVersion={props.view.schemaVersion}
+                  isKeyValueSchema={schemaTypes[schemaInfo.getType()] == "SCHEMA_TYPE_KEY_VALUE"}
+                  view={props.view}
+                />
               );
             })()}
         </div>
@@ -355,15 +369,30 @@ const Schema: React.FC<SchemaProps> = (props) => {
 
 type SchemaListEntryProps = {
   schemaInfo: SchemaInfo;
-  version: number;
+  version: number | string;
   isSelected: boolean;
+  isOldKeyValueSchema?: boolean;
   onClick: () => void;
 };
 const SchemaListEntry: React.FC<SchemaListEntryProps> = (props) => {
   return (
     <div className={`${s.SchemaListEntry} ${props.isSelected ? s.SchemaListEntrySelected : ""}`} onClick={props.onClick}>
-      <div>
-        <strong>Version:</strong> {props.schemaInfo.getType() === SchemaType.SCHEMA_TYPE_KEY_VALUE ? "-" : props.version}
+      <div className={s.SchemaListEntryVersionWrapper}>
+        <strong>Version:</strong> &nbsp;
+        <span>{props.version}</span>
+        {props.isOldKeyValueSchema &&
+          <span style={{marginLeft: "auto"}}>
+            <HelpIcon
+              help={
+                <div>
+                  Retrieving the correct version of all but the latest <code>KEY_VALUE</code> schemas is currently not supported.
+                  <br/>
+                  For ease of use, we display an approximate version of the KEY_VALUE schema, where <code>X</code> represents the potential deviation in versions.
+                </div>
+              }
+            />
+          </span>
+        }
       </div>
       <div>
         <strong>Type:</strong> {schemaTypes[props.schemaInfo.getType()].replace("SCHEMA_TYPE_", "")}

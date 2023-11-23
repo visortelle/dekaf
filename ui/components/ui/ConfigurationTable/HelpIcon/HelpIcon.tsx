@@ -16,7 +16,7 @@ const HelpIcon: React.FC<HelpIconProps> = (props) => {
       data-tooltip-html={renderToStaticMarkup(<>{props.help}</>)}
       className={s.HelpIcon}
     >
-      <SvgIcon svg={helpIcon} />
+      <SvgIcon svg={helpIcon} className={s.SvgIcon}/>
     </div>
   );
 };

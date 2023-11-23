@@ -113,22 +113,24 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
             <div style={{ maxWidth: "480rem", color: "var(--accent-color-blue)" }}>
               <span>
                 Consider using <code>PROTOBUF_NATIVE</code> schema type instead of <code>PROTOBUF</code> schema type.&nbsp;
-                <HelpIcon
-                  help={
-                    <ul>
-                      <li>
-                        <code>PROTOBUF</code> schema type uses Avro schema definition format and Protobuf 3 serialization format.
+                <span className={s.ProtobufInfoHelpIconWrapper}>
+                  <HelpIcon
+                    help={
+                      <ul>
+                        <li>
+                          <code>PROTOBUF</code> schema type uses Avro schema definition format and Protobuf 3 serialization format.
+                          <br />
+                          <code>PROTOBUF_NATIVE</code> schema type uses Protobuf 3 for both - schema definition and serialization.
+                        </li>
+                        <li>
+                          We don't support producing and consuming messages to the topics with PROTOBUF schema because topics with the
+                          <code>PROTOBUF</code> schema don't support <code>AUTO_CONSUME</code> and <code>AUTO_PRODUCE</code> features.
+                        </li>
                         <br />
-                        <code>PROTOBUF_NATIVE</code> schema type uses Protobuf 3 for both - schema definition and serialization.
-                      </li>
-                      <li>
-                        We don't support producing and consuming messages to the topics with PROTOBUF schema because topics with the
-                        <code>PROTOBUF</code> schema don't support <code>AUTO_CONSUME</code> and <code>AUTO_PRODUCE</code> features.
-                      </li>
-                      <br />
-                    </ul>
-                  }
-                />
+                      </ul>
+                    }
+                  />
+                </span>
               </span>
             </div>
           )}
@@ -138,7 +140,7 @@ const CreateSchema: React.FC<CreateSchemaProps> = (props) => {
               <span>
                   At present, checking compatibility for <code>KEY_VALUE</code> schemas prior to creation is not available.
                   <br />
-                  Additionally, retrieving the correct version of a <code>KEY_VALUE</code> schema is currently not supported.
+                  Additionally, retrieving the correct version of all but the latest <code>KEY_VALUE</code> schemas is currently not supported.
                   <br />
                   Stay tuned for updates!
               </span>

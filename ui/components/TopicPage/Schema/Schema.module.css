@@ -27,6 +27,12 @@
   transition: var(--transition-short);
 }
 
+.SchemaListEntryVersionWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 .SchemaListEntrySelected {
   background-color: var(--surface-color);
 }

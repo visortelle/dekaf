@@ -13,3 +13,8 @@
   display: inline;
   vertical-align: middle;
 }
+
+.SvgIcon {
+  padding-bottom: 2rem;
+  display: flex;
+}

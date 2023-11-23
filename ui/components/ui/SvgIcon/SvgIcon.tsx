@@ -1,7 +1,7 @@
 import React from 'react'
 import s from './SvgIcon.module.css'
 
-export type SvgIconProps = {
+export type SvgIconProps = React.HTMLAttributes<HTMLDivElement> & {
   svg: string
 }
 
