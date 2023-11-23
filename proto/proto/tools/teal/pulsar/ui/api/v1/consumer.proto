@@ -300,12 +300,12 @@ message TestOpStringMatchesRegex {
 
 message TestOpArrayContains {
   AnyTestOp test_item_op = 1;
-  NumberTestOp matched_items_count_compare_op = 2;
-  int32 matched_items_count_compare_num = 2;
+  AnyNumberTestOp matched_items_count_compare_op = 2;
+  int32 matched_items_count_compare_num = 3;
 }
 
 message TestOpArraySize {
-  NumberTestOp op = 1;
+  AnyNumberTestOp op = 1;
 }
 
 message TestOpArrayAny {
@@ -317,11 +317,11 @@ message TestOpArrayAll {
 }
 
 message TestOpObjectAnyKey {
-  StringTestOp op = 1;
+  AnyStringTestOp op = 1;
 }
 
 message TestOpObjectAllKeys {
-  StringTestOp op = 1;
+  AnyStringTestOp op = 1;
 }
 
 message TestOpObjectAnyValue {
@@ -337,7 +337,7 @@ message TestOpObjectValueByKey {
 }
 
 message TestOpObjectSize {
-  NumberTestOp op = 1;
+  AnyNumberTestOp op = 1;
 }
 
 message AnyBoolTestOp {
@@ -350,9 +350,8 @@ message AnyArrayTestOp {
   oneof op {
     TestOpArrayContains op_array_contains = 1;
     TestOpArraySize op_array_size = 2;
-    TestOpArrayEvery op_array_every = 3;
-    TestOpArrayAny op_array_any = 4;
-    TestOpArrayAll op_array_all = 5;
+    TestOpArrayAny op_array_any = 3;
+    TestOpArrayAll op_array_all = 4;
   }
 }
 
@@ -361,9 +360,9 @@ message AnyObjectTestOp {
     TestOpObjectAnyKey op_object_any_key = 1;
     TestOpObjectAllKeys op_object_all_keys = 2;
     TestOpObjectAnyValue op_object_any_value = 3;
-    TestOpObjectAllValue op_object_all_values = 4;
+    TestOpObjectAllValues op_object_all_values = 4;
     TestOpObjectValueByKey op_object_value_by_key = 5;
-    TestOpObjectHasValueAtKey op_object_has_value_at_key = 6;
+    TestOpObjectValueByKey op_object_has_value_at_key = 6;
     TestOpObjectSize op_object_size = 7;
   }
 }
@@ -414,11 +413,12 @@ message BasicMessageFilterSessionContextStateTarget {
 }
 
 message BasicMessageFilterTarget {
-  BASIC_MESSAGE_FILTER_TARGET_UNSPECIFIED = 0;
-  BASIC_MESSAGE_FILTER_TARGET_KEY = 1;
-  BASIC_MESSAGE_FILTER_TARGET_VALUE = 2;
-  BASIC_MESSAGE_FILTER_TARGET_PROPERTIES = 3;
-  BASIC_MESSAGE_FILTER_TARGET_SESSION_CONTEXT_STATE = 4;
+  oneof target {
+    BasicMessageFilterKeyTarget target_key = 1;
+    BasicMessageFilterValueTarget target_value = 2;
+    BasicMessageFilterPropertyTarget target_property = 3;
+    BasicMessageFilterSessionContextStateTarget target_session_context_state = 4;
+  }
 }
 
 message JsonFieldSelector {
@@ -427,19 +427,7 @@ message JsonFieldSelector {
 
 message BasicMessageFilter {
   BasicMessageFilterTarget target = 1;
-
-  oneof operation {
-    BasicMessageFilterOperationContains contains = 10;
-    BasicMessageFilterOperationEquals equals = 11;
-    BasicMessageFilterOperationStartsWith starts_with = 12;
-    BasicMessageFilterOperationEndsWith ends_with = 13;
-    BasicMessageFilterOperationRegex regex = 14;
-    BasicMessageFilterOperationGreaterThan greater_than = 15;
-    BasicMessageFilterOperationGreaterThanOrEquals greater_than_or_equals = 16;
-    BasicMessageFilterOperationLessThan less_than = 17;
-    BasicMessageFilterOperationLessThanOrEquals less_than_or_equals = 18;
-    BasicMessageFilterOperationIsNull is_null = 20;
-  }
+  AnyTestOp op = 2;
 }
 
 message MessageFilter {
@@ -472,10 +460,10 @@ message ResumeRequest {
 message ConsumerStats {}
 
 message ResumeResponse {
-  optional google.rpc.Status status = 1;
+  google.rpc.Status status = 1;
   repeated Message messages = 2;
   int64 processed_messages = 3;
-  optional ConsumerStats consumer_stats = 4;
+  ConsumerStats consumer_stats = 4;
 }
 
 message PauseRequest {

@@ -28,7 +28,7 @@ case class ConsumerSessionTargetRunner(
     var stats: ConsumerSessionTargetStats
 ) {
     def resume(
-        onNext: (msg: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: List[String]) => Unit
+        onNext: (msg: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: Vector[String]) => Unit
     ): Unit =
         val thisTarget = this
 
@@ -59,9 +59,11 @@ case class ConsumerSessionTargetRunner(
                 None
 
             val serializationErrors = messageValueToJsonResult match
-                case Left(err) => List(err.getMessage)
-                case _         => List.empty
-            val errors = serializationErrors
+                case Left(err) => Vector(err.getMessage)
+                case _         => Vector.empty
+            val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
+            val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
+            val errors = serializationErrors ++ messageFilterChainErrors ++ coloringRuleChainErrors
 
             msgToSend = msgToSend.map(m =>
                 m.copy(

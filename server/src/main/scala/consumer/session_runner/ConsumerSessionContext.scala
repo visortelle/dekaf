@@ -3,18 +3,17 @@ package consumer.session_runner
 import _root_.config.readConfigAsync
 import _root_.consumer.message_filter.*
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
+import consumer.message_filter.basic_message_filter.BasicMessageFilter
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.proxy.*
-import scala.util.{Try, Success, Failure}
 
+import scala.util.{Failure, Success, Try}
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, SECONDS}
 
-type JsonString = String
-
-type JsonStateValue = JsonString // Cumulative state to produce user-defined calculations, preserved between messages.
+type JsonStateValue = JsonValue // Cumulative state to produce user-defined calculations, preserved between messages.
 val JsonStateVarName = "state"
 
 val config = Await.result(readConfigAsync, Duration(10, SECONDS))
@@ -25,7 +24,7 @@ case class ConsumerSessionContextConfig(
 )
 
 class ConsumerSessionContext(config: ConsumerSessionContextConfig):
-    private val context = Context
+    val context: Context = Context
         .newBuilder("js")
         .out(config.stdout)
         .err(config.stdout)
@@ -70,11 +69,10 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
         config.stdout.reset()
         logs
 
-    def testMessageFilter(filter: MessageFilter, jsonMessage: MessageJson, jsonValue: MessageValueToJsonResult): TestResult =
+    def testMessageFilter(filter: MessageFilter, jsonMessage: JsonValue, jsonValue: MessageValueToJsonResult): TestResult =
         val result = filter.value match
             case f: BasicMessageFilter => testBasicMessageFilter(f, jsonMessage, jsonValue)
             case f: JsMessageFilter    => testJsMessageFilter(f, jsonMessage, jsonValue)
-
 
         if filter.isNegated then result.isOk = !result.isOk
         result
@@ -86,15 +84,15 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
             case err: Throwable => s"[ERROR] ${err.getMessage}"
         }
 
-    def testBasicMessageFilter(filter: BasicMessageFilter, jsonMessage: MessageJson, jsonValue: MessageValueToJsonResult): TestResult = ???
+    def testBasicMessageFilter(filter: BasicMessageFilter, jsonMessage: JsonValue, jsonValue: MessageValueToJsonResult): TestResult = ???
 
-    def testJsMessageFilter(filter: JsMessageFilter, jsonMessage: MessageJson, jsonValue: MessageValueToJsonResult): TestResult =
+    def testJsMessageFilter(filter: JsMessageFilter, jsonMessage: JsonValue, jsonValue: MessageValueToJsonResult): TestResult =
         val evalCode =
             s"""
               | (() => {
-              |    const message = ${jsonMessage.asJson};
+              |    const message = ${jsonMessage};
               |    message.value = ${jsonValue.getOrElse("undefined")};
-              |    message.accum = globalThis.$JsonStateVarName;
+              |    message.state = globalThis.$JsonStateVarName;
               |
               |    globalThis.lastMessage = message; // For debug on the client side.
               |
@@ -119,7 +117,7 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
 
     def testMessageFilterChain(
         filterChain: MessageFilterChain,
-        jsonMessage: MessageJson,
+        jsonMessage: JsonValue,
         jsonValue: MessageValueToJsonResult
     ): ChainTestResult =
         val filterResults = filterChain.filters

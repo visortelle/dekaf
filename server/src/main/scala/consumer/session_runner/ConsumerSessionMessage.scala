@@ -5,6 +5,6 @@ import org.apache.pulsar.client.api.Message
 
 case class ConsumerSessionMessage(
     messagePb: consumerPb.Message,
-    messageJson: MessageJson,
+    messageJson: JsonValue,
     messageValueToJsonResult: MessageValueToJsonResult
 )

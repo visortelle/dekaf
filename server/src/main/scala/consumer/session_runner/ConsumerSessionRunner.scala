@@ -24,10 +24,13 @@ case class ConsumerSessionRunner(
     ): Unit =
         this.grpcResponseObserver = Some(grpcResponseObserver)
 
-        def onNext(messageFromTarget: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: List[String]): Unit = boundary:
-            def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: List[String] = List.empty): Unit =
+        def onNext(messageFromTarget: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: Vector[String]): Unit = boundary:
+            def createAndSendResponse(messages: Seq[consumerPb.Message], additionalErrors: Vector[String] = Vector.empty): Unit =
                 val allErrors = errors ++ additionalErrors
-                val status = Status(code = Code.OK.index, message = allErrors.mkString("\n"))
+
+                val status = allErrors.size match
+                    case 0 => Status(code = Code.OK.index)
+                    case _ => Status(code = Code.UNKNOWN.index, message = allErrors.mkString("\n\n"))
 
                 val response = consumerPb.ResumeResponse(
                     messages = messages,
@@ -62,13 +65,17 @@ case class ConsumerSessionRunner(
                     else
                         Vector.empty
 
+                    val messageFilterChainErrors = messageFilterChainResult.results.flatMap(r => r.error)
+                    val coloringRuleChainErrors = coloringRuleChainResult.flatMap(r => r.results.flatMap(r2 => r2.error))
+                    val errors = messageFilterChainErrors ++ coloringRuleChainErrors
+
                     val messageToSendPb = msg.messagePb
                         .withSessionContextStateJson(sessionContext.getState())
                         .withDebugStdout(sessionContext.getStdout())
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
 
-                    createAndSendResponse(Seq(messageToSendPb))
+                    createAndSendResponse(Seq(messageToSendPb), errors)
 
         targets.values.foreach(_.resume(onNext = onNext))
     def pause(): Unit =

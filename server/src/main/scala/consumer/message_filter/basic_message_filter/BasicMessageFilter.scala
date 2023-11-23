@@ -1,4 +1,4 @@
-package consumer.message_filter
+package consumer.message_filter.basic_message_filter
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
@@ -10,3 +10,5 @@ object BasicMessageFilter:
 
     def toPb(filter: BasicMessageFilter): pb.BasicMessageFilter =
         pb.BasicMessageFilter()
+
+//    def test():

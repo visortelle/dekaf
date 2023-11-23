@@ -26,7 +26,6 @@ const withCopyButton = (content: ReactNode) => {
           const text = div.innerText;
           navigator.clipboard.writeText(text);
           toast.success(<span>The message has been copied to clipboard.</span>, { containerId: toastContainerId });
-          document.removeChild(div);
         }}
         svgIcon={copyIcon}
         type={"regular"}

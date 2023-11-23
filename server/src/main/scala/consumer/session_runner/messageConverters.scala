@@ -7,6 +7,7 @@ import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
 import org.apache.pulsar.common.schema.SchemaType
 import io.circe.syntax.*
+import io.circe.generic.auto.*
 
 import java.nio.charset.StandardCharsets
 import scala.jdk.CollectionConverters.*
@@ -94,7 +95,7 @@ object converters:
             replicatedFrom = replicatedFrom,
             size = size
         )
-        ConsumerSessionMessage(messagePb, messageJson, messageValueToJsonResult)
+        ConsumerSessionMessage(messagePb, messageJson.asJson.toString, messageValueToJsonResult)
 
     def messageValueToJson(schemas: SchemasByTopic, msg: Message[Array[Byte]]): MessageValueToJsonResult =
         val msgData = msg.getData
