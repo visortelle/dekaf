@@ -9,7 +9,7 @@ import { ManagedConsumerSessionConfig, ManagedConsumerSessionConfigSpec, Managed
 import { UseManagedItemValueSpinner, useManagedItemValue } from '../../../ui/LibraryBrowser/useManagedItemValue';
 import { LibraryContext } from '../../../ui/LibraryBrowser/model/library-context';
 import StartFromInput from './StartFromInput/StartFromInput';
-import SessionTopicInput from './SessionTopicInput/SessionTopicInput';
+import SessionTargetInput from './SessionTargetInput/SessionTargetInput';
 import AddButton from '../../../ui/AddButton/AddButton';
 import { createNewTarget } from '../../create-new-target';
 import DeleteButton from '../../../ui/DeleteButton/DeleteButton';
@@ -103,7 +103,8 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
               key={topic.type === 'reference' ? topic.ref : topic.val.metadata.id}
               className={s.TargetColumn}
             >
-              <SessionTopicInput
+              <SessionTargetInput
+                targetIndex={i}
                 value={topic}
                 onChange={(v) => {
                   const newTargets = [...itemSpec.targets];
@@ -120,6 +121,7 @@ const SessionConfiguration: React.FC<SessionConfigurationProps> = (props) => {
                     newTargets.splice(i, 1);
                     onSpecChange({ ...itemSpec, targets: newTargets });
                   }}
+                  appearance="borderless-semitransparent"
                   isHideText
                 />
               </div>

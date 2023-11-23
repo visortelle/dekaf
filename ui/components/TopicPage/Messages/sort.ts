@@ -5,6 +5,7 @@ export type SortKey =
   | "index"
   | "publishTime"
   | "key"
+  | "sessionTargetIndex"
   | "topic"
   | "producerName"
   | "value"
@@ -17,7 +18,7 @@ export type SortKey =
   | "sequenceId"
   | "orderingKey"
   | "redeliveryCount"
-  | "accumulator";
+  | "sessionContextStateJson";
 
 export type Sort = { key: SortKey; direction: "asc" | "desc" };
 
@@ -55,6 +56,12 @@ export const sortMessages = (
   if (sort.key === "key") {
     const sortFn: SortFn = (a, b) =>
       (a.key || "").localeCompare(b.key || "", "en", { numeric: true });
+    return s(messages, [], sortFn);
+  }
+
+  if (sort.key === "sessionTargetIndex") {
+    const sortFn: SortFn = (a, b) =>
+      (a.sessionTargetIndex || 0) - (b.sessionTargetIndex || 0)
     return s(messages, [], sortFn);
   }
 
@@ -131,10 +138,10 @@ export const sortMessages = (
     return s(messages, [], sortFn);
   }
 
-  if (sort.key === "accumulator") {
+  if (sort.key === "sessionContextStateJson") {
     const sortFn: SortFn = (a, b) => {
-      const aStr = JSON.stringify(a.accum);
-      const bStr = JSON.stringify(b.accum);
+      const aStr = JSON.stringify(a.sessionContextStateJson);
+      const bStr = JSON.stringify(b.sessionContextStateJson);
       return aStr.localeCompare(bStr, "en", { numeric: true });
     };
 

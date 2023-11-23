@@ -13,6 +13,22 @@
   overflow: auto;
 }
 
+.Th {
+  border-right: none !important;
+  border-left: none !important;
+  position: relative;
+}
+
+.Th::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--border-color);
+}
+
 .NoDataToShow {
   background-color: var(--surface-color);
   display: flex;

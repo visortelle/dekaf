@@ -7,7 +7,7 @@ import * as t from '../../../../types';
 import s from './JsFilterEditor.module.css'
 
 export const defaultJsFilterValue: t.JsMessageFilter = {
-  jsCode: `({ key, value, accum }) => {
+  jsCode: `({ key, value, state }) => {
   return true;
 }`
 };

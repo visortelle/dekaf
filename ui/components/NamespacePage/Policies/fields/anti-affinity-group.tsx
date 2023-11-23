@@ -41,7 +41,8 @@ export const FieldInput: React.FC<FieldInputProps> = (props) => {
 
       const group = res.getNamespaceAntiAffinityGroup();
       return group.length > 0 ? { type: 'specified', group } : { type: 'not-specified' };
-    }
+    },
+    {}
   );
 
   if (initialValueError) {

@@ -37,6 +37,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ManagedConsumerSessionConfigValOrRef } from '../../ui/LibraryBrowser/model/user-managed-items';
 import { consumerSessionConfigFromValOrRef } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
+import { getColoring } from './coloring';
+import { cons } from 'fp-ts/lib/ReadonlyNonEmptyArray';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
@@ -288,14 +290,17 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const isShowTooltips = sessionState !== 'running' && sessionState !== 'pausing';
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => {
+    const coloring = config === undefined ? undefined : getColoring(config, message);
+
     return (
       <MessageComponent
         key={i}
         message={message}
         isShowTooltips={isShowTooltips}
+        coloring={coloring}
       />
     );
-  }, [sessionState]);
+  }, [sessionState, config]);
 
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
@@ -317,7 +322,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     return (
-      <th className={cts.Th} style={props.style} onClick={handleColumnHeaderClick}>
+      <th className={`${cts.Th} ${s.Th}`} style={props.style} onClick={handleColumnHeaderClick}>
         <div
           className={props.sortKey === undefined ? '' : cts.SortableTh}
           data-tooltip-id={tooltipId}
@@ -403,6 +408,7 @@ const Session: React.FC<SessionProps> = (props) => {
                 <Th title="Publish time" sortKey="publishTime" style={{ position: 'sticky', left: remToPx(60), zIndex: 10 }} help={help.publishTime} />
                 <Th title="Key" sortKey="key" help={help.key} />
                 <Th title="Value" sortKey="value" help={help.value} />
+                <Th title="Target" sortKey="sessionTargetIndex" help={help.sessionTargetIndex} />
                 <Th title="Topic" sortKey="topic" help={help.topic} />
                 <Th title="Producer" sortKey="producerName" help={help.producerName} />
                 <Th title="Schema version" sortKey="schemaVersion" help={help.schemaVersion} />
@@ -414,7 +420,7 @@ const Session: React.FC<SessionProps> = (props) => {
                 <Th title="Sequence Id" sortKey="sequenceId" help={help.sequenceId} />
                 <Th title="Ordering key" help={help.orderingKey} />
                 <Th title="Redelivery count" sortKey="redeliveryCount" help={help.redeliveryCount} />
-                <Th title="Accumulator" sortKey="accumulator" help={help.accumulator} />
+                <Th title="Session Context State" sortKey="sessionContextStateJson" help={help.sessionContextStateJson} />
               </tr>
             )}
           />

@@ -7,7 +7,7 @@ export function genMessageDescriptor(
   override?: Partial<MessageDescriptor>
 ): MessageDescriptor {
   return {
-    accum: faker.datatype.json(),
+    sessionContextStateJson: faker.datatype.json(),
     brokerPublishTime: faker.date.past().getTime(),
     rawValue: textEncoder.encode(faker.datatype.json()),
     debugStdout: faker.datatype.string(),
@@ -27,6 +27,11 @@ export function genMessageDescriptor(
     size: faker.datatype.number(),
     topic: faker.name.firstName(),
     value: faker.datatype.string(),
+    sessionTargetIndex: faker.datatype.number(),
+    sessionColorRuleChainTestResults: [],
+    sessionTargetColorRuleChainTestResults: [],
+    sessionMessageFilterChainTestResult: undefined,
+    sessionTargetMessageFilterChainTestResult: undefined,
     ...override,
   };
 }
@@ -37,7 +42,7 @@ export function genEmptyMessageDescriptor(
   return {
     value: "",
     rawValue: Uint8Array.from([]),
-    accum: "",
+    sessionContextStateJson: "",
     orderingKey: null,
     brokerPublishTime: 0,
     debugStdout: "",
@@ -55,6 +60,11 @@ export function genEmptyMessageDescriptor(
     schemaVersion: 0,
     sequenceId: 0,
     topic: "",
+    sessionTargetIndex: 0,
+    sessionColorRuleChainTestResults: [],
+    sessionTargetColorRuleChainTestResults: [],
+    sessionMessageFilterChainTestResult: undefined,
+    sessionTargetMessageFilterChainTestResult: undefined,
     ...override,
   };
 }

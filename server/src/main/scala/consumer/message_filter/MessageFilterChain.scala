@@ -6,7 +6,7 @@ case class MessageFilterChain(
     isEnabled: Boolean,
     isNegated: Boolean,
     mode: MessageFilterChainMode,
-    filters: List[MessageFilter]
+    filters: Vector[MessageFilter]
 )
 
 object MessageFilterChain:
@@ -14,7 +14,7 @@ object MessageFilterChain:
         MessageFilterChain(
             isEnabled = chain.isEnabled,
             isNegated = chain.isNegated,
-            filters = chain.filters.map(MessageFilter.fromPb).toList,
+            filters = chain.filters.map(MessageFilter.fromPb).toVector,
             mode = MessageFilterChainMode.fromPb(chain.mode)
         )
 
@@ -29,6 +29,6 @@ object MessageFilterChain:
     def empty: MessageFilterChain = MessageFilterChain(
         isEnabled = true,
         isNegated = false,
-        filters = List.empty,
+        filters = Vector.empty,
         mode = MessageFilterChainMode.All
     )
