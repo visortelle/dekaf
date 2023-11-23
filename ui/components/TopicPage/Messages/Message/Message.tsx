@@ -1,14 +1,16 @@
 import React from 'react';
 import * as Modals from '../../../app/contexts/Modals/Modals';
-import { AccumulatorField, BrokerPublishTimeField, EventTimeField, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from './fields';
+import { SessionContextStateJsonField, BrokerPublishTimeField, EventTimeField, ValueField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField, SessionTargetIndexField } from './fields';
 import s from './Message.module.css';
 import cts from "../../../ui/ChildrenTable/ChildrenTable.module.css";
 import { MessageDescriptor } from '../types';
 import MessageDetails from './MessageDetails/MessageDetails';
+import { Coloring } from '../coloring';
 
 export type MessageProps = {
   isShowTooltips: boolean;
   message: MessageDescriptor;
+  coloring: Coloring;
 };
 
 const MessageComponent: React.FC<MessageProps> = (props) => {
@@ -25,9 +27,10 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   return (
     <>
       <Td
-        width="35rem"
+        width="36rem"
         className={s.IndexField}
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         {props.message.index}
       </Td>
@@ -36,6 +39,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
         width="200rem"
         className={s.PublishTimeField}
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <PublishTimeField isShowTooltips={props.isShowTooltips} message={msg} />
       </Td>
@@ -43,6 +47,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='20ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <KeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -50,13 +55,23 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='30ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <ValueField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
 
       <Td
+        width='5ch'
+        onClick={showMessageDetails}
+        coloring={props.coloring}
+      >
+        <SessionTargetIndexField isShowTooltips={props.isShowTooltips} message={props.message} />
+      </Td>
+
+      <Td
         width='60ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <TopicField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -64,6 +79,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='50ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <ProducerNameField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -71,6 +87,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='8ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <SchemaVersionField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -78,6 +95,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='12ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <SizeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -85,6 +103,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='30ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <PropertiesField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -92,6 +111,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='30ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <EventTimeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -99,6 +119,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='30ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <BrokerPublishTimeField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -106,6 +127,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='40ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <MessageIdField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -113,6 +135,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='10ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <SequenceIdField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -120,6 +143,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='10ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <OrderingKeyField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -127,6 +151,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='10ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
         <RedeliveryCountField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
@@ -134,22 +159,36 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
       <Td
         width='50ch'
         onClick={showMessageDetails}
+        coloring={props.coloring}
       >
-        <AccumulatorField isShowTooltips={props.isShowTooltips} message={props.message} />
+        <SessionContextStateJsonField isShowTooltips={props.isShowTooltips} message={props.message} />
       </Td>
     </>
   );
 }
 
-type TdProps = { children: React.ReactNode, width?: string } & React.ThHTMLAttributes<HTMLTableCellElement>;
+type TdProps = {
+  children: React.ReactNode,
+  width?: string,
+  coloring: Coloring,
+} & React.ThHTMLAttributes<HTMLTableCellElement>;
 const Td: React.FC<TdProps> = (props) => {
-  const { children, className, width, ...restProps } = props;
+  const { children, className, width, coloring, ...restProps } = props;
 
-  return <td className={`${cts.Td} ${s.Td} ${className || ''}`} {...restProps}>
-    <div style={{ width, textOverflow: 'ellipsis', display: 'flex' }} >
-      {children}
-    </div>
-  </td>;
+  return (
+    <td
+      className={`${cts.Td} ${s.Td} ${className || ''}`}
+      style={{
+        color: props.coloring?.foregroundColor,
+        backgroundColor: props.coloring?.backgroundColor
+      }}
+      {...restProps}
+    >
+      <div style={{ width, textOverflow: 'ellipsis', display: 'flex' }} >
+        {children}
+      </div>
+    </td>
+  );
 };
 
 export default MessageComponent;

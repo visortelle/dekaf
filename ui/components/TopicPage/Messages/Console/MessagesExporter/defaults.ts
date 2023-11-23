@@ -20,7 +20,7 @@ export const defaultFieldsConfig: MessageFieldsConfig = {
     { id: "replicatedFrom", name: "Replicated From", isActive: true },
     { id: "properties", name: "Properties", isActive: true },
     { id: "rawValue", name: "Raw Value", isActive: true },
-    { id: "accum", name: "Accum", isActive: true },
+    { id: "sessionContextStateJson", name: "Consumer Session State", isActive: true },
   ],
 };
 

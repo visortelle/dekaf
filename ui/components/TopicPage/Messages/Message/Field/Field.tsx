@@ -1,7 +1,6 @@
 import * as Notifications from '../../../../app/contexts/Notifications';
 import s from './Field.module.css';
 import { tooltipId } from '../../../../ui/Tooltip/Tooltip';
-import { MouseEventHandler } from 'react';
 
 export type FieldProps = {
   value?: string | React.ReactElement,
@@ -24,6 +23,14 @@ const Field: React.FC<FieldProps> = (props) => {
     notifySuccess(`${props.title} value copied to clipboard.`);
   }
 
+  const dataTooltipProps = props.isShowTooltips ? {
+      // It looks like React-tooltip has some bug,
+      // that affects the app responsiveness sometimes,
+      // if we pass the data-* attributes directly on frequently-changing items.
+      "data-tooltip-id": tooltipId,
+      "data-tooltip-html": (!props.isShowTooltips || props.rawValue === undefined) ? undefined : "Click to copy"
+  } : {};
+
   let valueElement = (
     <div
       className={`${s.FieldValue} ${props.rawValue === undefined ? '' : s.ClickableFieldValue}`}
@@ -32,8 +39,7 @@ const Field: React.FC<FieldProps> = (props) => {
         event.stopPropagation();
         copyRawValue();
       }}
-      data-tooltip-id={tooltipId}
-      data-tooltip-html={(!props.isShowTooltips || props.rawValue === undefined) ? undefined : "Click to copy"}
+      {...dataTooltipProps}
     >
       {valueContent}
     </div>

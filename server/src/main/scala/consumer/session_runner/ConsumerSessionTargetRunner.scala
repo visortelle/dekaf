@@ -1,15 +1,12 @@
 package consumer.session_runner
 
 import _root_.consumer.message_filter.MessageFilterChain
-import com.tools.teal.pulsar.ui.api.v1.consumer.ResumeResponse
 import _root_.consumer.session_target.ConsumerSessionTarget
 import com.typesafe.scalalogging.Logger
 import consumer.coloring_rules.ColoringRuleChain
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
 import org.apache.pulsar.client.api.Consumer
-import com.google.rpc.code.Code
-import com.google.rpc.status.Status
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import org.apache.pulsar.client.api.Message
 
@@ -20,52 +17,63 @@ type NonPartitionedTopicFqn = String
 val logger: Logger = Logger(getClass.getName)
 
 case class ConsumerSessionTargetRunner(
+    targetIndex: Int,
     nonPartitionedTopicFqns: Vector[NonPartitionedTopicFqn],
     messageFilterChain: MessageFilterChain,
     coloringRuleChain: ColoringRuleChain,
     schemasByTopic: SchemasByTopic,
-    consumerSessionContext: ConsumerSessionContext,
+    sessionContext: ConsumerSessionContext,
     var consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]],
     var consumerListener: ConsumerListener,
     var stats: ConsumerSessionTargetStats
 ) {
     def resume(
-        onNext: (msg: Option[consumerPb.Message], stats: ConsumerSessionTargetStats, errors: List[String]) => Unit
+        onNext: (msg: Option[ConsumerSessionMessage], stats: ConsumerSessionTargetStats, errors: List[String]) => Unit
     ): Unit =
         val thisTarget = this
 
         val listener = thisTarget.consumerListener
         val targetMessageHandler = listener.targetMessageHandler
-        val consumerSessionContext = thisTarget.consumerSessionContext
+        val sessionContext = thisTarget.sessionContext
 
         targetMessageHandler.onNext = (msg: Message[Array[Byte]]) =>
             thisTarget.stats.messagesProcessed += 1
 
-            val (messagePb, jsonMessage, messageValueToJsonResult) = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+            val consumerSessionMessage = converters.serializeMessage(thisTarget.schemasByTopic, msg)
+            val messageJson = consumerSessionMessage.messageJson
+            val messageValueToJsonResult = consumerSessionMessage.messageValueToJsonResult
 
-            val messageFilterChain = thisTarget.messageFilterChain
+            val messageFilterChainResult: ChainTestResult =
+                sessionContext.testMessageFilterChain(thisTarget.messageFilterChain, messageJson, messageValueToJsonResult)
 
-            val (filterResult, jsonAccumulator) =
-                getFilterChainTestResult(messageFilterChain, consumerSessionContext, jsonMessage, messageValueToJsonResult)
+            val coloringRuleChainResult: Vector[ChainTestResult] = if thisTarget.coloringRuleChain.isEnabled then
+                thisTarget.coloringRuleChain.coloringRules
+                    .filter(cr => cr.isEnabled)
+                    .map(cr => sessionContext.testMessageFilterChain(cr.messageFilterChain, messageJson, messageValueToJsonResult))
+            else
+                Vector.empty
 
-            val messageToSend = messagePb
-                .withAccumulator(jsonAccumulator)
-                .withDebugStdout(consumerSessionContext.getStdout())
-
-            val maybeMessage = filterResult match
-                case Right(true) => Some(messageToSend)
-                case _           => None
+            var msgToSend = if messageFilterChainResult.isOk then
+                Some(consumerSessionMessage)
+            else
+                None
 
             val serializationErrors = messageValueToJsonResult match
                 case Left(err) => List(err.getMessage)
                 case _         => List.empty
-            val filterErrors = filterResult match
-                case Left(err) => List(err)
-                case _         => List.empty
-            val errors = serializationErrors ++ filterErrors
+            val errors = serializationErrors
+
+            msgToSend = msgToSend.map(m =>
+                m.copy(
+                    messagePb = m.messagePb
+                        .withSessionTargetIndex(targetIndex)
+                        .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
+                        .withSessionTargetColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
+                )
+            )
 
             onNext(
-                msg = maybeMessage,
+                msg = msgToSend,
                 stats = stats,
                 errors = errors
             )
@@ -88,7 +96,7 @@ case class ConsumerSessionTargetRunner(
 object ConsumerSessionTargetRunner:
     def make(
         sessionName: String,
-        targetName: String,
+        targetIndex: Int,
         sessionContext: ConsumerSessionContext,
         targetConfig: ConsumerSessionTarget,
         schemasByTopic: SchemasByTopic,
@@ -100,7 +108,7 @@ object ConsumerSessionTargetRunner:
             val listener = ConsumerListener(ConsumerSessionTargetMessageHandler(onNext = _ => ()))
 
             val consumers: Map[NonPartitionedTopicFqn, Consumer[Array[Byte]]] = nonPartitionedTopicFqns.map { topicFqn =>
-                val consumerName = s"$sessionName-$targetName"
+                val consumerName = s"$sessionName-$targetIndex"
 
                 buildConsumer(
                     pulsarClient = pulsarClient,
@@ -116,7 +124,8 @@ object ConsumerSessionTargetRunner:
             }.toMap
 
             ConsumerSessionTargetRunner(
-                consumerSessionContext = sessionContext,
+                targetIndex = targetIndex,
+                sessionContext = sessionContext,
                 nonPartitionedTopicFqns = nonPartitionedTopicFqns,
                 consumers = consumers,
                 messageFilterChain = targetConfig.messageFilterChain,

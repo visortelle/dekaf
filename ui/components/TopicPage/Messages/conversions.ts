@@ -5,8 +5,6 @@ import {
   MessageDescriptor,
   PartialMessageDescriptor,
   ConsumerSessionConfig,
-  BasicMessageFilter,
-  JsMessageFilter,
   MessageFilter,
   MessageFilterChain,
   MessageFilterChainMode,
@@ -27,7 +25,9 @@ import {
   ConsumerSessionEvent,
   ConsumerSessionPauseTriggerChainMode,
   ConsumerSessionPauseTriggerChain,
-  ConsumerSessionTarget
+  ConsumerSessionTarget,
+  TestResult,
+  ChainTestResult
 } from "./types";
 
 import {
@@ -36,9 +36,12 @@ import {
   NamespacedRegexTopicSelector,
   RegexSubscriptionMode,
 } from './topic-selector/topic-selector';
+import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
+  const sessionMessageFilterChainTestResultPb = message.getSessionMessageFilterChainTestResult();
+  const sessionTargetMessageFilterChainTestResultPb = message.getSessionTargetMessageFilterChainTestResult();
 
   return {
     index: -1, // This value will be set in another place.
@@ -59,8 +62,17 @@ export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor 
     sequenceId: message.getSequenceId()?.getValue() ?? null,
     size: message.getSize()?.getValue() ?? null,
     topic: message.getTopic()?.getValue() ?? null,
-    accum: message.getAccumulator()?.getValue() ?? null,
+    sessionContextStateJson: message.getSessionContextStateJson()?.getValue() ?? null,
     debugStdout: message.getDebugStdout()?.getValue() ?? null,
+    sessionColorRuleChainTestResults: message.getSessionColorRuleChainTestResultsList().map(chainTestResultFromPb),
+    sessionTargetColorRuleChainTestResults: message.getSessionTargetColorRuleChainTestResultsList().map(chainTestResultFromPb),
+    sessionMessageFilterChainTestResult: sessionMessageFilterChainTestResultPb === undefined ?
+      undefined :
+      chainTestResultFromPb(sessionMessageFilterChainTestResultPb),
+    sessionTargetMessageFilterChainTestResult: sessionTargetMessageFilterChainTestResultPb === undefined ?
+      undefined :
+      chainTestResultFromPb(sessionTargetMessageFilterChainTestResultPb),
+    sessionTargetIndex: message.getSessionTargetIndex()?.getValue() ?? null
   };
 }
 
@@ -79,9 +91,9 @@ export function partialMessageDescriptorToSerializable(message: PartialMessageDe
     value = JSON.parse(message.value);
   }
 
-  let accum: undefined | null | any;
-  if (message.accum !== undefined && message.accum !== null) {
-    accum = JSON.parse(message.accum);
+  let sessionContextStateJson: undefined | null | any;
+  if (message.sessionContextStateJson !== undefined && message.sessionContextStateJson !== null) {
+    sessionContextStateJson = JSON.parse(message.sessionContextStateJson);
   }
 
   let rawValue: undefined | null | number[];
@@ -122,7 +134,7 @@ export function partialMessageDescriptorToSerializable(message: PartialMessageDe
     sequenceId: message.sequenceId,
     size: message.size,
     topic: message.topic,
-    accum,
+    sessionContextStateJson,
   };
 }
 
@@ -734,4 +746,40 @@ export function messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFil
   chainPb.setFiltersList(messageFiltersPb);
 
   return chainPb;
+}
+
+export function testResultFromPb(v: pb.TestResult): TestResult {
+  return {
+    isOk: v.getIsOk(),
+    error: v.getError()?.getValue()
+  };
+}
+
+export function testResultToPb(v: TestResult): pb.TestResult {
+  const resultPb = new pb.TestResult();
+  resultPb.setIsOk(v.isOk);
+
+  if (v.error !== undefined) {
+    const errorPb = new StringValue();
+    errorPb.setValue(v.error);
+  }
+
+  return resultPb;
+}
+
+export function chainTestResultFromPb(v: pb.ChainTestResult): ChainTestResult {
+  return {
+    isOk: v.getIsOk(),
+    results: v.getResultsList().map(testResultFromPb)
+  }
+}
+
+export function chainTestResultToPb(v: ChainTestResult): pb.ChainTestResult {
+  const resultPb = new pb.ChainTestResult();
+  resultPb.setIsOk(v.isOk);
+
+  const resultsPb = v.results.map(testResultToPb);
+  resultPb.setResultsList(resultsPb);
+
+  return resultPb;
 }

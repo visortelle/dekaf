@@ -26,13 +26,13 @@ val authentication: Option[Authentication] = config.auth match
 
 val adminClient =
     val builder = PulsarAdmin.builder
-        .serviceHttpUrl(config.webServiceUrl)
+        .serviceHttpUrl(config.pulsarHttpUrl.get)
     authentication.foreach(builder.authentication)
     builder.build
 
 val pulsarClient =
     val builder = PulsarClient.builder
-        .serviceUrl(config.brokerServiceUrl)
+        .serviceUrl(config.pulsarBrokerUrl.get)
         .connectionsPerBroker(16)
     authentication.foreach(builder.authentication)
     builder.build

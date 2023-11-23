@@ -2,13 +2,23 @@ package consumer.coloring_rules
 
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 import _root_.consumer.message_filter.MessageFilterChain
+import _root_.consumer.session_runner.{ConsumerSessionContext, MessageJson, MessageValueToJsonResult}
 
 case class ColoringRule(
     isEnabled: Boolean,
     messageFilterChain: MessageFilterChain,
     foregroundColor: String,
     backgroundColor: String
-)
+):
+    def test(
+        consumerSessionContext: ConsumerSessionContext,
+        jsonMessage: MessageJson,
+        jsonValue: MessageValueToJsonResult
+    ): Vector[Int] =
+        if !isEnabled then
+            return Vector.empty
+
+        Vector(2)
 
 object ColoringRule:
     def fromPb(v: pb.ColoringRule): ColoringRule =

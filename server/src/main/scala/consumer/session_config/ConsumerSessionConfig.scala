@@ -5,11 +5,13 @@ import _root_.consumer.start_from.{ConsumerSessionStartFrom, EarliestMessage}
 import _root_.consumer.session_target.ConsumerSessionTarget
 import _root_.consumer.message_filter.MessageFilterChain
 import _root_.consumer.pause_trigger.ConsumerSessionPauseTriggerChain
+import _root_.consumer.coloring_rules.ColoringRuleChain
 
 case class ConsumerSessionConfig(
     startFrom: ConsumerSessionStartFrom,
     targets: Vector[ConsumerSessionTarget],
     messageFilterChain: MessageFilterChain,
+    coloringRuleChain: ColoringRuleChain,
     pauseTriggerChain: ConsumerSessionPauseTriggerChain
 )
 
@@ -21,6 +23,9 @@ object ConsumerSessionConfig:
             messageFilterChain = v.messageFilterChain
                 .map(MessageFilterChain.fromPb)
                 .getOrElse(MessageFilterChain.empty),
+            coloringRuleChain = v.coloringRuleChain
+                .map(ColoringRuleChain.fromPb)
+                .getOrElse(ColoringRuleChain.empty),
             pauseTriggerChain = v.pauseTriggerChain
                 .map(ConsumerSessionPauseTriggerChain.fromPb)
                 .getOrElse(ConsumerSessionPauseTriggerChain.empty)
@@ -30,6 +35,7 @@ object ConsumerSessionConfig:
         pb.ConsumerSessionConfig(
             startFrom = Some(ConsumerSessionStartFrom.toPb(v.startFrom)),
             messageFilterChain = Some(MessageFilterChain.toPb(v.messageFilterChain)),
+            coloringRuleChain = Some(ColoringRuleChain.toPb(v.coloringRuleChain)),
             pauseTriggerChain = Some(
                 pb.ConsumerSessionPauseTriggerChain(
                     events = Vector.empty,

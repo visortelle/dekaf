@@ -2,7 +2,7 @@ import React, { ReactElement, ReactNode } from 'react';
 import s from './MessageDetails.module.css'
 import { MessageDescriptor } from '../../types';
 import JsonView from '../../../../ui/JsonView/JsonView';
-import { AccumulatorField, BrokerPublishTimeField, EventTimeField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from '../fields';
+import { SessionContextStateJsonField, BrokerPublishTimeField, EventTimeField, KeyField, MessageIdField, OrderingKeyField, ProducerNameField, PropertiesField, PublishTimeField, RedeliveryCountField, SchemaVersionField, SequenceIdField, SizeField, TopicField } from '../fields';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { tooltipId } from '../../../../ui/Tooltip/Tooltip';
 import { help } from '../fields';
@@ -28,7 +28,7 @@ const MessageDetails: React.FC<MessageDetailsProps> = (props) => {
         <Field title={'Sequence Id'} value={<SequenceIdField isShowTooltips={true} message={props.message} />} help={help.sequenceId} />
         <Field title={'Ordering key'} value={<OrderingKeyField isShowTooltips={true} message={props.message} />} help={help.orderingKey} />
         <Field title={'Redelivery count'} value={<RedeliveryCountField isShowTooltips={true} message={props.message} />} help={help.redeliveryCount} />
-        <Field title={'Accumulator'} value={<AccumulatorField isShowTooltips={true} message={props.message} />} help={help.accumulator} />
+        <Field title={'Session Context State Json'} value={<SessionContextStateJsonField isShowTooltips={true} message={props.message} />} help={help.sessionContextStateJson} />
       </div>
       <div className={s.RightColumn}>
         <Field
