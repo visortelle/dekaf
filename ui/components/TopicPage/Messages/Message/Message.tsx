@@ -27,7 +27,7 @@ const MessageComponent: React.FC<MessageProps> = (props) => {
   return (
     <>
       <Td
-        width="35rem"
+        width="36rem"
         className={s.IndexField}
         onClick={showMessageDetails}
         coloring={props.coloring}

@@ -8,8 +8,17 @@
   display: none;
 }
 
+.Td {
+  position: relative;
+  border: none;
+}
+
+tr:has(> .Td:hover) .Td {
+  background-color: var(--surface-color) !important;
+  color: var(--text-color) !important;
+}
+
 tr:has(> .Td:hover) {
-  outline: 2px solid var(--accent-color-blue);
   z-index: 999;
   position: relative;
   cursor: pointer;

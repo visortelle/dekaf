@@ -322,7 +322,7 @@ const Session: React.FC<SessionProps> = (props) => {
     }
 
     return (
-      <th className={cts.Th} style={props.style} onClick={handleColumnHeaderClick}>
+      <th className={`${cts.Th} ${s.Th}`} style={props.style} onClick={handleColumnHeaderClick}>
         <div
           className={props.sortKey === undefined ? '' : cts.SortableTh}
           data-tooltip-id={tooltipId}

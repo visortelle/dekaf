@@ -88,13 +88,10 @@ const TopicsSelectorInput: React.FC<TopicsSelectorInputProps> = (props) => {
               onSpecChange({ topicSelector: { type: 'current-topic' } });
               return;
             } else if (v === 'multi-topic-selector') {
-              const currentTopic = props.libraryContext.pulsarResource.type === 'topic' ? props.libraryContext.pulsarResource : undefined;
-              const currentTopicFqn: string | undefined = currentTopic === undefined ? undefined : `${currentTopic.topicPersistency}://${currentTopic.tenant}/${currentTopic.namespace}/${currentTopic.topic}`;
-
               onSpecChange({
                 topicSelector: {
                   type: 'multi-topic-selector',
-                  topicFqns: currentTopicFqn === undefined ? [] : [currentTopicFqn],
+                  topicFqns: []
                 }
               });
               return;
