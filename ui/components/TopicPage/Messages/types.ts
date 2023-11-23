@@ -105,14 +105,14 @@ export type MessageDescriptor = {
   // Fields below aren't a part of Pulsar message.
   rawValue: Nullable<Uint8Array>;
   value: Nullable<string>; // JSON string
-  accum: Nullable<string>; // JSON string
+  sessionContextStateJson: Nullable<string>; // JSON string
   index: number;
   debugStdout: Nullable<string>;
   sessionTargetIndex: Nullable<number>,
-  matchedSessionColorRuleIndex: Nullable<number>,
-  matchedSessionTargetColorRuleIndex: Nullable<number>,
-  matchedSessionMessageFilterIndex: Nullable<number>,
-  matchedSessionTargetMessageFilterIndex: Nullable<number>
+  sessionColorRuleChainTestResults: ChainTestResult[],
+  sessionTargetColorRuleChainTestResults: ChainTestResult[],
+  sessionMessageFilterChainTestResult: ChainTestResult | undefined,
+  sessionTargetMessageFilterChainTestResult: ChainTestResult | undefined
 };
 
 export type PartialMessageDescriptor = Partial<MessageDescriptor>;
@@ -146,3 +146,13 @@ export type MessageFilterChain = {
 }
 
 export type MessageFilterType = MessageFilter['type'];
+
+export type TestResult = {
+  isOk: boolean,
+  error: string | undefined
+};
+
+export type ChainTestResult = {
+  isOk: boolean,
+  results: TestResult[]
+};

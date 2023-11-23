@@ -17,7 +17,7 @@ describe("genFile", () => {
         messages: [
           {
             key: "key2",
-            accum: JSON.stringify({ a: 1, b: { c: 3 } }),
+            sessionContextStateJson: JSON.stringify({ a: 1, b: { c: 3 } }),
             brokerPublishTime: 543,
             rawValue: null,
             debugStdout: "hello\nworld",
@@ -39,7 +39,7 @@ describe("genFile", () => {
           },
           {
             key: "key1",
-            accum: JSON.stringify({ a: 1, b: { c: 3 } }),
+            sessionContextStateJson: JSON.stringify({ a: 1, b: { c: 3 } }),
             brokerPublishTime: 123,
             rawValue: Uint8Array.from([1, 2, 3]),
             debugStdout: "hello\nworld",
@@ -70,7 +70,7 @@ describe("genFile", () => {
     expectedParsedJson: [
       {
         key: "key2",
-        accum: { a: 1, b: { c: 3 } },
+        sessionContextStateJson: { a: 1, b: { c: 3 } },
         brokerPublishTime: 543,
         rawValue: null,
         debugStdout: "hello\nworld",
@@ -91,7 +91,7 @@ describe("genFile", () => {
       },
       {
         key: "key1",
-        accum: { a: 1, b: { c: 3 } },
+        sessionContextStateJson: { a: 1, b: { c: 3 } },
         brokerPublishTime: 123,
         rawValue: [1, 2, 3],
         debugStdout: "hello\nworld",

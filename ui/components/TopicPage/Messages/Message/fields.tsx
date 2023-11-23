@@ -21,7 +21,7 @@ export type FieldName =
   'schemaVersion' |
   'sequenceId' |
   'size' |
-  'accumulator' |
+  'sessionContextStateJson' |
   'topic';
 
 export const help = {
@@ -61,7 +61,7 @@ export const help = {
     </div>
   ),
   replicatedFrom: <span>Name of cluster, from which the message is replicated.</span>, // TODO - geo replication
-  accumulator: <span>Cumulative state to produce user-defined calculations, preserved between messages.</span>
+  sessionContextStateJson: <span>Cumulative state to produce user-defined calculations, preserved between messages.</span>
 } as const;
 
 type FieldProps = {
@@ -151,8 +151,8 @@ export const RedeliveryCountField: React.FC<FieldProps> = (props) => {
   return <Field isShowTooltips={props.isShowTooltips} title="Redelivery count" value={props.message.redeliveryCount === null ? undefined : i18n.formatLongNumber(props.message.redeliveryCount)} rawValue={props.message.redeliveryCount === null ? undefined : String(props.message.redeliveryCount)} tooltip={help.redeliveryCount} />
 }
 
-export const AccumulatorField: React.FC<FieldProps> = (props) => {
-  return <Field isShowTooltips={props.isShowTooltips} title="Accumulator" value={props.message.accum === null ? undefined : props.message.accum} rawValue={props.message.accum === null ? undefined : props.message.accum} tooltip={help.accumulator} />
+export const SessionContextStateJsonField: React.FC<FieldProps> = (props) => {
+  return <Field isShowTooltips={props.isShowTooltips} title="Session Context State" value={props.message.sessionContextStateJson === null ? undefined : props.message.sessionContextStateJson} rawValue={props.message.sessionContextStateJson === null ? undefined : props.message.sessionContextStateJson} tooltip={help.sessionContextStateJson} />
 }
 
 function limitString(str: string, limit: number): string {

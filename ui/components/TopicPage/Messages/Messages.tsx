@@ -37,6 +37,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ManagedConsumerSessionConfigValOrRef } from '../../ui/LibraryBrowser/model/user-managed-items';
 import { consumerSessionConfigFromValOrRef } from '../../ui/LibraryBrowser/model/resolved-items-conversions';
 import { LibraryContext } from '../../ui/LibraryBrowser/model/library-context';
+import { getColoring } from './coloring';
+import { cons } from 'fp-ts/lib/ReadonlyNonEmptyArray';
 
 const consoleCss = "color: #276ff4; font-weight: var(--font-weight-bold);";
 
@@ -288,14 +290,17 @@ const Session: React.FC<SessionProps> = (props) => {
 
   const isShowTooltips = sessionState !== 'running' && sessionState !== 'pausing';
   const itemContent = useCallback<ItemContent<MessageDescriptor, undefined>>((i, message) => {
+    const coloring = config === undefined ? undefined : getColoring(config, message);
+
     return (
       <MessageComponent
         key={i}
         message={message}
         isShowTooltips={isShowTooltips}
+        coloring={coloring}
       />
     );
-  }, [sessionState]);
+  }, [sessionState, config]);
 
   const onWheel = useCallback<React.WheelEventHandler<HTMLDivElement>>((e) => {
     if (e.deltaY < 0 && sessionState === 'running') {
@@ -415,7 +420,7 @@ const Session: React.FC<SessionProps> = (props) => {
                 <Th title="Sequence Id" sortKey="sequenceId" help={help.sequenceId} />
                 <Th title="Ordering key" help={help.orderingKey} />
                 <Th title="Redelivery count" sortKey="redeliveryCount" help={help.redeliveryCount} />
-                <Th title="Accumulator" sortKey="accumulator" help={help.accumulator} />
+                <Th title="Session Context State" sortKey="sessionContextStateJson" help={help.sessionContextStateJson} />
               </tr>
             )}
           />

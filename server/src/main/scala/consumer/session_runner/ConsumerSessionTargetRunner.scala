@@ -68,7 +68,7 @@ case class ConsumerSessionTargetRunner(
                     messagePb = m.messagePb
                         .withSessionTargetIndex(targetIndex)
                         .withSessionTargetMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
-                        .withSessionTargetColorRuleChainTestResult(coloringRuleChainResult.map(ChainTestResult.toPb))
+                        .withSessionTargetColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
                 )
             )
 

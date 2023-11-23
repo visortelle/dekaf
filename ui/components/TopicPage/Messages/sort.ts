@@ -18,7 +18,7 @@ export type SortKey =
   | "sequenceId"
   | "orderingKey"
   | "redeliveryCount"
-  | "accumulator";
+  | "sessionContextStateJson";
 
 export type Sort = { key: SortKey; direction: "asc" | "desc" };
 
@@ -138,10 +138,10 @@ export const sortMessages = (
     return s(messages, [], sortFn);
   }
 
-  if (sort.key === "accumulator") {
+  if (sort.key === "sessionContextStateJson") {
     const sortFn: SortFn = (a, b) => {
-      const aStr = JSON.stringify(a.accum);
-      const bStr = JSON.stringify(b.accum);
+      const aStr = JSON.stringify(a.sessionContextStateJson);
+      const bStr = JSON.stringify(b.sessionContextStateJson);
       return aStr.localeCompare(bStr, "en", { numeric: true });
     };
 

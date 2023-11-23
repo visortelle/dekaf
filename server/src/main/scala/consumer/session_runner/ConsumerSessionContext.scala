@@ -3,7 +3,6 @@ package consumer.session_runner
 import _root_.config.readConfigAsync
 import _root_.consumer.message_filter.*
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
-import com.typesafe.scalalogging.Logger
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.graalvm.polyglot.Context
@@ -113,43 +112,24 @@ class ConsumerSessionContext(config: ConsumerSessionContextConfig):
 
         testResult
 
-    def getState(): Either[String, JsonStateValue] =
+    def getState(): JsonStateValue =
         Try(context.eval("js", s"stringify(globalThis.$JsonStateVarName)").asString) match
-            case Failure(err) => Left(err.getMessage)
-            case Success(v) => Right(v)
+            case Failure(_) => "{}"
+            case Success(v) => v
 
     def testMessageFilterChain(
         filterChain: MessageFilterChain,
         jsonMessage: MessageJson,
         jsonValue: MessageValueToJsonResult
     ): ChainTestResult =
-        var chain = filterChain
-
-        // Each message filters mutate global state.
-        // For example: it stores the last message in the global variable `lastMessage`.
-        // To make it work properly, at least one filter should always present.
-        if (chain.filters.isEmpty || !chain.isEnabled)
-            chain = MessageFilterChain(
-                isEnabled = true,
-                isNegated = false,
-                mode = MessageFilterChainMode.All,
-                filters = Vector(
-                    MessageFilter(
-                        isEnabled = true,
-                        isNegated = false,
-                        value = JsMessageFilter(jsCode = "() => true")
-                    )
-                )
-            )
-
-        val filterResults = chain.filters
+        val filterResults = filterChain.filters
             .filter(_.isEnabled)
             .map(f => testMessageFilter(f, jsonMessage, jsonValue))
 
-        var isOk = chain.mode match {
+        var isOk = filterChain.mode match {
             case MessageFilterChainMode.All => filterResults.forall(fr => fr.isOk)
             case MessageFilterChainMode.Any => filterResults.exists(fr => fr.isOk)
         }
-        if chain.isNegated then isOk = !isOk
+        if filterChain.isNegated then isOk = !isOk
 
         ChainTestResult(isOk = isOk, results = filterResults)
