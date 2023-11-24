@@ -3,7 +3,7 @@ package consumer.session_runner
 import com.tools.teal.pulsar.ui.api.v1.consumer as consumerPb
 import consumer.session_config.ConsumerSessionConfig
 import org.apache.pulsar.client.admin.PulsarAdmin
-import org.apache.pulsar.client.api.{Consumer, PulsarClient}
+import org.apache.pulsar.client.api.PulsarClient
 import java.io.ByteArrayOutputStream
 import com.google.rpc.code.Code
 import com.google.rpc.status.Status
@@ -47,8 +47,8 @@ case class ConsumerSessionRunner(
                 case Some(msg) =>
                     val messageFilterChainResult = sessionContext.testMessageFilterChain(
                         sessionConfig.messageFilterChain,
-                        msg.messageJson,
-                        msg.messageValueToJsonResult
+                        msg.messageAsJsonOmittingValue,
+                        msg.messageValueAsJson
                     )
 
                     if !messageFilterChainResult.isOk then
@@ -59,8 +59,8 @@ case class ConsumerSessionRunner(
                             .filter(cr => cr.isEnabled)
                             .map(cr => sessionContext.testMessageFilterChain(
                                 cr.messageFilterChain,
-                                msg.messageJson,
-                                msg.messageValueToJsonResult
+                                msg.messageAsJsonOmittingValue,
+                                msg.messageValueAsJson
                             ))
                     else
                         Vector.empty
@@ -70,8 +70,8 @@ case class ConsumerSessionRunner(
                     val errors = messageFilterChainErrors ++ coloringRuleChainErrors
 
                     val messageToSendPb = msg.messagePb
-                        .withSessionContextStateJson(sessionContext.getState())
-                        .withDebugStdout(sessionContext.getStdout())
+                        .withSessionContextStateJson(sessionContext.getState)
+                        .withDebugStdout(sessionContext.getStdout)
                         .withSessionMessageFilterChainTestResult(ChainTestResult.toPb(messageFilterChainResult))
                         .withSessionColorRuleChainTestResults(coloringRuleChainResult.map(ChainTestResult.toPb))
 

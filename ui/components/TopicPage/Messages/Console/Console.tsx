@@ -24,7 +24,7 @@ export type ConsoleProps = {
   currentTopic: string | undefined;
 };
 
-type TabKey = 'producer' | 'visualize' | 'filter-logs' | 'filter-repl' | 'export';
+type TabKey = 'producer' | 'visualize' | 'context-logs' | 'context-repl' | 'export';
 
 const Console: React.FC<ConsoleProps> = (props) => {
   const [activeTab, setActiveTab] = React.useState<TabKey>('export');
@@ -73,25 +73,25 @@ const Console: React.FC<ConsoleProps> = (props) => {
               />
             )
           },
-          'filter-repl': {
-            title: 'Filter REPL',
+          'context-repl': {
+            title: 'Context REPL',
             isRenderAlways: true,
             render: () => (
               <ExpressionInspector
                 consumerName={props.consumerName}
                 sessionState={props.sessionState}
-                isVisible={activeTab === 'filter-repl'}
+                isVisible={activeTab === 'context-repl'}
               />
             )
           },
-          'filter-logs': {
-            title: 'Filter logs',
+          'context-logs': {
+            title: 'Context Logs',
             isRenderAlways: true,
             render: () => (
               <DebugLogs
                 messages={props.messages}
                 sessionState={props.sessionState}
-                isVisible={activeTab === 'filter-logs'}
+                isVisible={activeTab === 'context-logs'}
               />
             )
           },

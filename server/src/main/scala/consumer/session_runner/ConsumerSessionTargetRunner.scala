@@ -40,8 +40,8 @@ case class ConsumerSessionTargetRunner(
             thisTarget.stats.messagesProcessed += 1
 
             val consumerSessionMessage = converters.serializeMessage(thisTarget.schemasByTopic, msg)
-            val messageJson = consumerSessionMessage.messageJson
-            val messageValueToJsonResult = consumerSessionMessage.messageValueToJsonResult
+            val messageJson = consumerSessionMessage.messageAsJsonOmittingValue
+            val messageValueToJsonResult = consumerSessionMessage.messageValueAsJson
 
             val messageFilterChainResult: ChainTestResult =
                 sessionContext.testMessageFilterChain(thisTarget.messageFilterChain, messageJson, messageValueToJsonResult)

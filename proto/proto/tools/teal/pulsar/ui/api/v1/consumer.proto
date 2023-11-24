@@ -275,6 +275,10 @@ message TestOpNumberGte {
   string gte = 1; // Number encoded as a string. Having "." char means float number.
 }
 
+message TestOpNumberRemainderEquals {
+  string remainder_equals = 1; // Number encoded as a string. Having "." char means float number.
+}
+
 message TestOpStringEquals {
   string equals = 1;
 }
@@ -374,6 +378,7 @@ message AnyNumberTestOp {
     TestOpNumberLte op_number_lte = 4;
     TestOpNumberGt op_number_gt = 5;
     TestOpNumberGte op_number_gte = 6;
+    TestOpNumberRemainderEquals op_number_remainder_equals = 7;
   }
 }
 
@@ -409,7 +414,7 @@ message BasicMessageFilterPropertyTarget {
 }
 
 message BasicMessageFilterSessionContextStateTarget {
-  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+  string json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
 message BasicMessageFilterTarget {
