@@ -4,4 +4,14 @@ import consumer.message_filter.basic_message_filter.targets.{BasicMessageFilterT
 
 case class TestOpArrayAny(op: AnyTestOp) extends TestOpTrait:
     override def genJsCode(target: BasicMessageFilterTargetTrait): String =
-        s"""${target.resolveVarName()}.every(v => ${op.op.genJsCode(target = BasicMessageFilterVarTarget("v"))})"""
+        val varName = target.resolveVarName()
+        s"""(() => {
+           |    if (!Array.isArray(${varName})) {
+           |        return false;
+           |    }
+           |
+           |    return ${varName}.some(v => {
+           |        return ${op.op.genJsCode(target = BasicMessageFilterVarTarget("v"))}
+           |    });
+           |    })()
+           |""".stripMargin

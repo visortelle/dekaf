@@ -15,9 +15,6 @@ case class BasicMessageFilter(
         val evalCode =
             s"""
                |(() => {
-               |
-               |  console.info('Current message:', JSON.stringify(${CurrentMessageVarName}, null, 4))
-               |
                |  return ${opEvalCode}
                |})();
                |""".stripMargin
