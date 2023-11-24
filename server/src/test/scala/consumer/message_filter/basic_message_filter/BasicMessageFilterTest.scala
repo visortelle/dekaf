@@ -230,5 +230,120 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |[[], [1, 2, 3], [["abc"]], ["abc"], 4, 5, 6, null]
                       |""".stripMargin
             )))
+        },
+        /*
+        ==================
+         * TestOpArrayAll *
+        ==================
+         */
+        test(TestOpArrayAll.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpArrayAll(op = AnyTestOp(op = TestOpStringEquals(equals = "abc"))),
+                messageValueAsJson =
+                    """
+                      |{}
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAll.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpArrayAll(op = AnyTestOp(op = TestOpStringEquals(equals = "abc"))),
+                messageValueAsJson =
+                    """
+                      |[]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAll.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpArrayAll(op = AnyTestOp(op = TestOpStringEquals(equals = "abc"))),
+                messageValueAsJson =
+                    """
+                      |["abc"]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAll.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpArrayAll(op = AnyTestOp(op = TestOpStringEquals(equals = "abc"))),
+                messageValueAsJson =
+                    """
+                      |["xyz", "abc", "hello"]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAll.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpArrayAll(op = AnyTestOp(op = TestOpStringEquals(equals = "abc"))),
+                messageValueAsJson =
+                    """
+                      |["xyz", "hello"]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAll.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpArrayAll(op =
+                    AnyTestOp(op =
+                        TestOpArrayAll(
+                            op = AnyTestOp(op = TestOpStringEquals(equals = "abc"))
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[[], [1, 2, 3], [["abc"]], 4, 5, 6, null]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAll.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpArrayAll(
+                    op = AnyTestOp(
+                        op = TestOpArrayAll(
+                            op = AnyTestOp(
+                                op = TestOpStringEquals(equals = "abc")
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[[], ["abc"], ["abc", "abc"]]
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpArrayAll.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpArrayAll(
+                    op = AnyTestOp(
+                        op = TestOpArrayAll(
+                            op = AnyTestOp(
+                                op = TestOpArrayAll(
+                                    op = AnyTestOp(
+                                        op = TestOpStringEquals(equals = "abc")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |[[], [["abc"]], [["abc"], ["abc", "abc"]]]
+                      |""".stripMargin
+            )))
         }
     )
