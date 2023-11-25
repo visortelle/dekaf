@@ -247,9 +247,12 @@ message JsMessageFilter {
   string js_code = 1;
 }
 
-message TestOpIsNull {}
+message TestOpAlwaysOk {}
 
 message TestOpIsDefined {}
+
+message TestOpIsNull {}
+
 
 message TestOpBoolEquals {
   bool equals = 1;
@@ -289,7 +292,7 @@ message TestOpStringIncludes {
   bool is_case_insensitive = 2;
 }
 
-message TestOpStartsWith {
+message TestOpStringStartsWith {
   string starts_with = 1;
   bool is_case_insensitive = 2;
 }
@@ -305,12 +308,12 @@ message TestOpStringMatchesRegex {
 }
 
 message TestOpArraySize {
-  AnyNumberTestOp op = 1;
+  BasicMessageFilterOp op = 1;
 }
 
-message TestOpArrayContains {
-  MessageFilterChain item_filter_chain = 1;
-  AnyNumberTestOp matched_items_count_compare_op = 2;
+message TestOpArrayItemsCount {
+  BasicMessageFilterOp item_filter_op = 1;
+  BasicMessageFilterOp matched_items_count_compare_op = 2;
 }
 
 message TestOpArrayAny {
@@ -321,73 +324,51 @@ message TestOpArrayAll {
   BasicMessageFilterOp op = 1;
 }
 
-message TestOpObjectValue {
+message TestOpObjectHasKey {
+  BasicMessageFilterOp key_compare_op = 1;
+}
+
+message TestOpObjectHasValue {
   string key = 1;
-  AnyTestOp op = 2;
+  BasicMessageFilterOp value_compare_op = 2;
 }
 
 message TestOpObjectSize {
-  AnyNumberTestOp op = 1;
+  BasicMessageFilterOp op = 1;
 }
 
-message AnyBoolTestOp {
-  oneof op {
-    TestOpBoolEquals op_bool_equals = 1;
-  }
-}
-
-message AnyArrayTestOp {
-  oneof op {
-    TestOpArrayContains op_array_contains = 1;
-    TestOpArraySize op_array_size = 2;
-    TestOpArrayAny op_array_any = 3;
-    TestOpArrayAll op_array_all = 4;
-  }
-}
-
-message AnyObjectTestOp {
-  oneof op {
-    AnyArrayTestOp op_object_keys = 1;
-    AnyArrayTestOp op_object_values = 2;
-    TestOpObjectValue op_object_value_key = 3;
-    TestOpObjectSize op_object_size = 4;
-  }
-}
-
-message AnyNumberTestOp {
-  oneof op {
-    TestOpNumberEquals op_number_equals = 2;
-    TestOpNumberLt op_number_lt = 3;
-    TestOpNumberLte op_number_lte = 4;
-    TestOpNumberGt op_number_gt = 5;
-    TestOpNumberGte op_number_gte = 6;
-    TestOpNumberRemainderEquals op_number_remainder_equals = 7;
-  }
-}
-
-message AnyStringTestOp {
-  TestOpStringEquals op_string_equals = 7;
-  TestOpStringIncludes op_string_includes = 8;
-  TestOpStartsWith op_string_starts_with = 9;
-  TestOpStringEndsWith op_string_ends_with = 10;
-  TestOpStringMatchesRegex op_string_matches_regex = 11;
-}
 
 message AnyTestOp {
   oneof op {
-    TestOpIsDefined op_is_defined = 1;
-    TestOpIsNull op_is_null = 2;
-    AnyBoolTestOp op_any_bool = 3;
-    AnyObjectTestOp op_any_object = 4;
-    AnyStringTestOp op_any_string = 5;
-    AnyNumberTestOp op_any_number = 6;
+    TestOpAlwaysOk op_always_ok = 50;
+    TestOpIsDefined op_is_defined = 1; // done
+    TestOpIsNull op_is_null = 2; // done
+    TestOpBoolEquals op_bool_equals = 3; // done
+    TestOpNumberEquals op_number_equals = 4;
+    TestOpNumberLt op_number_lt = 5;
+    TestOpNumberLte op_number_lte = 6;
+    TestOpNumberGt op_number_gt = 7;
+    TestOpNumberGte op_number_gte = 8;
+    TestOpNumberRemainderEquals op_number_remainder_equals = 9;
+    TestOpStringEquals op_string_equals = 10; // done
+    TestOpStringIncludes op_string_includes = 11; // done
+    TestOpStringStartsWith op_string_starts_with = 12; // done
+    TestOpStringEndsWith op_string_ends_with = 13; // done
+    TestOpStringMatchesRegex op_string_matches_regex = 14; // done
+    TestOpArraySize op_array_size = 15;
+    TestOpArrayItemsCount op_array_items_count = 16;
+    TestOpArrayAny op_array_any = 17; // done
+    TestOpArrayAll op_array_all = 18; // done
+    TestOpObjectHasKey op_object_has_key = 19;
+    TestOpObjectHasValue op_object_has_value = 20;
+    TestOpObjectSize op_object_size = 21;
   }
 }
 
 enum BasicMessageFilterBracesMode {
   BASIC_MESSAGE_FILTER_BRACES_MODE_UNSPECIFIED = 0;
-  BASIC_MESSAGE_FILTER_BRACES_MODE_AND = 1;
-  BASIC_MESSAGE_FILTER_BRACES_MODE_OR = 2;
+  BASIC_MESSAGE_FILTER_BRACES_MODE_ALL = 1;
+  BASIC_MESSAGE_FILTER_BRACES_MODE_ANY = 2;
 }
 
 message BasicMessageFilterBraces {

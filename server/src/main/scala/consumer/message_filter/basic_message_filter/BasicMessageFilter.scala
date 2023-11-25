@@ -20,8 +20,9 @@ case class BasicMessageFilter(
                |})();
                |""".stripMargin
 
-        println(s"DEBUG EVAL CODE")
-        println(evalCode)
+//        Don't remove the following lines until the basic filters feature isn't ready
+//        println(s"DEBUG EVAL CODE")
+//        println(evalCode)
 
         val testResult =
             try

@@ -3,7 +3,6 @@ package consumer.message_filter.basic_message_filter.logic
 import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterBracesMode.All
 import consumer.message_filter.basic_message_filter.operations.AnyTestOp
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTargetTrait
-import io.circe.syntax.*
 
 case class BasicMessageFilterOp(
     isEnabled: Boolean = true,
