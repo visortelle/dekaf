@@ -281,43 +281,43 @@ message TestOpNumberRemainderEquals {
 
 message TestOpStringEquals {
   string equals = 1;
+  bool is_case_insensitive = 2;
 }
 
 message TestOpStringIncludes {
   string includes = 1;
-  bool is_case_sensitive = 2;
+  bool is_case_insensitive = 2;
 }
 
 message TestOpStartsWith {
   string starts_with = 1;
-  bool is_case_sensitive = 2;
+  bool is_case_insensitive = 2;
 }
 
 message TestOpStringEndsWith {
   string ends_with = 1;
-  bool is_case_sensitive = 3;
+  bool is_case_insensitive = 3;
 }
 
 message TestOpStringMatchesRegex {
   string regexp = 1;
 }
 
-message TestOpArrayContains {
-  AnyTestOp test_item_op = 1;
-  AnyNumberTestOp matched_items_count_compare_op = 2;
-  int32 matched_items_count_compare_num = 3;
-}
-
 message TestOpArraySize {
   AnyNumberTestOp op = 1;
 }
 
+message TestOpArrayContains {
+  MessageFilterChain item_filter_chain = 1;
+  AnyNumberTestOp matched_items_count_compare_op = 2;
+}
+
 message TestOpArrayAny {
-  AnyTestOp op = 1;
+  MessageFilterChain item_filter_chain = 1;
 }
 
 message TestOpArrayAll {
-  AnyTestOp op = 1;
+  MessageFilterChain item_filter_chain = 1;
 }
 
 message TestOpObjectAnyKey {

@@ -4,15 +4,15 @@ import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTa
 import org.apache.commons.text.StringEscapeUtils
 import io.circe.syntax.*
 
-case class TestOpStringEquals(equals: String, isCaseInsensitive: Boolean = false) extends TestOpTrait:
-    private val escapedString = StringEscapeUtils.escapeJson(equals)
+case class TestOpStringStartsWith(startsWith: String, isCaseInsensitive: Boolean = false) extends TestOpTrait:
+    private val escapedString = StringEscapeUtils.escapeJson(startsWith)
 
     override def genJsCode(target: BasicMessageFilterTargetTrait): String =
         s"""(() => {
            |    if (${isCaseInsensitive.asJson}) {
-           |        return ${target.resolveVarName()}.toLowerCase() === "${escapedString}".toLowerCase();
+           |        return ${target.resolveVarName()}.toLowerCase().startsWith("${escapedString}".toLowerCase());
            |    }
            |
-           |    return ${target.resolveVarName()} === "${escapedString}"
+           |    return ${target.resolveVarName()}.startsWith("${escapedString}");
            |})()
            |""".stripMargin
