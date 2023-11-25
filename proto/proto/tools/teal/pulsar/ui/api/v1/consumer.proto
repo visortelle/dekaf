@@ -314,11 +314,11 @@ message TestOpArrayContains {
 }
 
 message TestOpArrayAny {
-  MessageFilterChain item_filter_chain = 1;
+  BasicMessageFilterOp op = 1;
 }
 
 message TestOpArrayAll {
-  MessageFilterChain item_filter_chain = 1;
+  BasicMessageFilterOp op = 1;
 }
 
 message TestOpObjectValue {
@@ -384,6 +384,26 @@ message AnyTestOp {
   }
 }
 
+enum BasicMessageFilterBracesMode {
+  BASIC_MESSAGE_FILTER_BRACES_MODE_UNSPECIFIED = 0;
+  BASIC_MESSAGE_FILTER_BRACES_MODE_ALL = 1;
+  BASIC_MESSAGE_FILTER_BRACES_MODE_ANY = 2;
+}
+
+message BasicMessageFilterBraces {
+  BasicMessageFilterBracesMode mode = 1;
+  repeated BasicMessageFilterOp ops = 2;
+}
+
+message BasicMessageFilterOp {
+  bool is_enabled = 1;
+  bool is_negated = 2;
+  oneof op {
+    AnyTestOp op_any_test_op = 3;
+    BasicMessageFilterBraces op_braces = 4;
+  }
+}
+
 message BasicMessageFilterKeyTarget {
   google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
@@ -415,7 +435,7 @@ message JsonFieldSelector {
 
 message BasicMessageFilter {
   BasicMessageFilterTarget target = 1;
-  AnyTestOp op = 2;
+  BasicMessageFilterOp op = 2;
 }
 
 message MessageFilter {

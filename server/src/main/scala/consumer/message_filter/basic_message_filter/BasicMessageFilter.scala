@@ -2,16 +2,17 @@ package consumer.message_filter.basic_message_filter
 
 import org.graalvm.polyglot.Context
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTargetTrait
+import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterOp
 import consumer.message_filter.basic_message_filter.operations.TestOpTrait
 import consumer.session_runner.{ConsumerSessionContext, CurrentMessageVarName, JsonValue, MessageValueAsJson, TestResult}
 import com.tools.teal.pulsar.ui.api.v1.consumer as pb
 
 case class BasicMessageFilter(
     target: BasicMessageFilterTargetTrait,
-    op: TestOpTrait
+    op: BasicMessageFilterOp
 ):
     def test(polyglotContext: Context): TestResult =
-        val opEvalCode = op.genJsCode(target)
+        val opEvalCode = op.genJsFnCode(target) + "()"
         val evalCode =
             s"""
                |(() => {
