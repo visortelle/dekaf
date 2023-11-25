@@ -14,5 +14,4 @@ case class TestOpStringEndsWith(endsWith: String, isCaseInsensitive: Boolean = f
            |    }
            |
            |    return ${target.resolveVarName()}.endsWith("${escapedString}");
-           |})();
-           |""".stripMargin
+           |})();""".stripMargin

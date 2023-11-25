@@ -7,5 +7,4 @@ case class TestOpIsNull() extends TestOpTrait:
         val varName = target.resolveVarName()
         s"""(() => {
                |    return $varName === null;
-               |    })();
-               |""".stripMargin
+               |})();""".stripMargin

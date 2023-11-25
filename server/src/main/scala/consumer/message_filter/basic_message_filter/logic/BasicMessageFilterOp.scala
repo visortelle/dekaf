@@ -1,5 +1,6 @@
 package consumer.message_filter.basic_message_filter.logic
 
+import consumer.message_filter.basic_message_filter.logic.BasicMessageFilterBracesMode.All
 import consumer.message_filter.basic_message_filter.operations.AnyTestOp
 import consumer.message_filter.basic_message_filter.targets.BasicMessageFilterTargetTrait
 import io.circe.syntax.*
@@ -14,31 +15,16 @@ case class BasicMessageFilterOp(
             case anyTestOp: AnyTestOp =>
                 s"""(() => {
                    |    const result = ${anyTestOp.op.genJsCode(target)}
-                   |
-                   |    if (${isNegated.asJson}) {
-                   |        return !result;
-                   |    }
-                   |
-                   |    return result;
-                   |})
-                   |""".stripMargin
+                   |    return ${if isNegated then "!result" else "result"};
+                   |})""".stripMargin
 
             case braces: BasicMessageFilterBraces =>
                 val allOpsFns = "[" + braces.ops.map(_.genJsFnCode(target)).mkString(",") + "]"
+                val assignResult = braces.mode match
+                    case BasicMessageFilterBracesMode.All => s"const result = ${allOpsFns}.every(fn => fn());"
+                    case BasicMessageFilterBracesMode.Any => s"const result = ${allOpsFns}.some(fn => fn());"
 
                 s"""(() => {
-                   |    let result;
-                   |    
-                   |    if (${(braces.mode == BasicMessageFilterBracesMode.All).asJson}) {
-                   |        result = ${allOpsFns}.every(fn => fn());
-                   |    } else if (${(braces.mode == BasicMessageFilterBracesMode.Any).asJson}) {
-                   |        result = ${allOpsFns}.some(fn => fn());
-                   |    }
-                   |
-                   |    if (${isNegated.asJson}) {
-                   |        return !result;
-                   |    }
-                   |
-                   |    return result;
-                   |})
-                   |""".stripMargin
+                   |    ${assignResult}
+                   |    return ${if isNegated then "!result" else "result"};
+                   |})""".stripMargin

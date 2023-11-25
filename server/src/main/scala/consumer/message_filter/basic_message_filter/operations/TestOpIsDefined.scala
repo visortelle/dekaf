@@ -7,5 +7,4 @@ case class TestOpIsDefined() extends TestOpTrait:
         val varName = target.resolveVarName()
         s"""(() => {
                |    return typeof $varName !== 'undefined';
-               |    })();
-               |""".stripMargin
+               |})();""".stripMargin

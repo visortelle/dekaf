@@ -8,5 +8,4 @@ case class TestOpBoolEquals(equals: Boolean) extends TestOpTrait:
     override def genJsCode(target: BasicMessageFilterTargetTrait): String =
         s"""(() => {
            |    return ${target.resolveVarName()} === ${equals.asJson};
-           |})();
-           |""".stripMargin
+           |})();""".stripMargin

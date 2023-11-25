@@ -12,7 +12,6 @@ case class TestOpArrayAny(op: BasicMessageFilterOp) extends TestOpTrait:
            |    }
            |
            |    return ${varName}.some(v => {
-           |        return ${op.genJsFnCode(target = BasicMessageFilterVarTarget("v"))}()
+           |        return ${op.genJsFnCode(target = BasicMessageFilterVarTarget("v"))}();
            |    });
-           |    })();
-           |""".stripMargin
+           |})();""".stripMargin

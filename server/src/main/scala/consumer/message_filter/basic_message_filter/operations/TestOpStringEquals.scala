@@ -14,5 +14,4 @@ case class TestOpStringEquals(equals: String, isCaseInsensitive: Boolean = false
            |    }
            |
            |    return ${target.resolveVarName()} === "${escapedString}"
-           |})();
-           |""".stripMargin
+           |})();""".stripMargin
