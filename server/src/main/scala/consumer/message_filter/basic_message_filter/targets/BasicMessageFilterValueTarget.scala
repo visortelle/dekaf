@@ -8,6 +8,6 @@ case class BasicMessageFilterValueTarget(
     override def resolveVarName(): String =
         jsonFieldSelector match
             case Some(selector) =>
-                s"""$JsLibsVarName.lodash.get($CurrentMessageVarName.value, "$selector")"""
+                s"""$JsLibsVarName.lodash.get($CurrentMessageVarName.value, '$selector')"""
             case None =>
                 s"$CurrentMessageVarName.value"

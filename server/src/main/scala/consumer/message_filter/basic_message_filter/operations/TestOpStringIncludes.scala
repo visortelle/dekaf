@@ -14,5 +14,5 @@ case class TestOpStringIncludes(includes: String, isCaseInsensitive: Boolean = f
            |    }
            |
            |    return ${target.resolveVarName()}.includes("${escapedString}");
-           |})()
+           |})();
            |""".stripMargin

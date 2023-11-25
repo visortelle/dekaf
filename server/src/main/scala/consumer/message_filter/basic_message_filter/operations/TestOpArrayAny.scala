@@ -13,5 +13,5 @@ case class TestOpArrayAny(op: AnyTestOp) extends TestOpTrait:
            |    return ${varName}.some(v => {
            |        return ${op.op.genJsCode(target = BasicMessageFilterVarTarget("v"))}
            |    });
-           |    })()
+           |    })();
            |""".stripMargin

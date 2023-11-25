@@ -21,7 +21,7 @@ val config = Await.result(readConfigAsync, Duration(10, SECONDS))
 val jsLibsBundle = os.read(os.Path.expandUser(config.dataDir.get, os.pwd) / "js" / "dist" / "libs.js")
 
 case class ConsumerSessionContextConfig(
-    stdout: java.io.OutputStream | java.io.ByteArrayOutputStream
+    stdout: java.io.PrintStream | java.io.ByteArrayOutputStream
 )
 
 class ConsumerSessionContext(config: ConsumerSessionContextConfig):

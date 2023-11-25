@@ -19,9 +19,9 @@ case class BasicMessageFilter(
                |})();
                |""".stripMargin
 
-        println(s"EVAL CODE")
+        println(s"DEBUG EVAL CODE")
         println(evalCode)
-        
+
         val testResult =
             try
                 val isOk = polyglotContext.eval("js", evalCode).asBoolean

@@ -14,5 +14,5 @@ case class TestOpStringMatchesRegex(
         s"""(() => {
            |    const re = new RegExp("${escapedPattern}", "${flags}");
            |    return re.test(${target.resolveVarName()});
-           |})()
+           |})();
            |""".stripMargin

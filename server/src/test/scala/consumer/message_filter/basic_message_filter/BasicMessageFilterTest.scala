@@ -31,8 +31,10 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
         val result = sessionContext.testMessageFilter(
             filter = filter,
             messageAsJsonOmittingValue = spec.messageAsJsonOmittingValue,
-            messageValueAsJson = Right(spec.messageValueAsJson)
+            messageValueAsJson = Right(spec.messageValueAsJson.trim)
         ).isOk
+
+        println(sessionContext.getStdout)
 
         if spec.isShouldFail then !result else result
 
@@ -45,6 +47,58 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
     )
 
     def spec = suite(s"${this.getClass.toString}")(
+        /*
+        ==================
+         * TestOpIsDefined *
+        ==================
+         */
+        test(TestOpIsDefined.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
+                op = TestOpIsDefined(),
+                messageValueAsJson =
+                    """
+                      |{ "a": 7 }
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpIsDefined.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
+                op = TestOpIsDefined(),
+                messageValueAsJson =
+                    """
+                      |{ "b": 8 }
+                      |""".stripMargin
+            )))
+        },
+        /*
+        ==================
+         * TestOpIsNull *
+        ==================
+         */
+        test(TestOpIsNull.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
+                op = TestOpIsNull(),
+                messageValueAsJson =
+                    """
+                      |{ "a": null }
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpIsNull.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = Some("a")),
+                op = TestOpIsNull(),
+                messageValueAsJson =
+                    """
+                      |{ "b": null }
+                      |""".stripMargin
+            )))
+        },
         /*
          ==================
          * TestOpStringEquals *

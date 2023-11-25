@@ -14,5 +14,5 @@ case class TestOpStringStartsWith(startsWith: String, isCaseInsensitive: Boolean
            |    }
            |
            |    return ${target.resolveVarName()}.startsWith("${escapedString}");
-           |})()
+           |})();
            |""".stripMargin
