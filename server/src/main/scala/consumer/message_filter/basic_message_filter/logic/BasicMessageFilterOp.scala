@@ -24,15 +24,14 @@ case class BasicMessageFilterOp(
                    |""".stripMargin
 
             case braces: BasicMessageFilterBraces =>
-                val allOpsFns = "[" + braces.ops.map(_.genJsFnCode).mkString(",") + "]"
+                val allOpsFns = "[" + braces.ops.map(_.genJsFnCode(target)).mkString(",") + "]"
+
                 s"""(() => {
                    |    let result;
-                   |
-                   |    const opsCount = ${braces.ops.size.asJson}
-                   |
+                   |    
                    |    if (${(braces.mode == BasicMessageFilterBracesMode.All).asJson}) {
                    |        result = ${allOpsFns}.every(fn => fn());
-                   |    } else if (${(braces.mode == BasicMessageFilterBracesMode.All).asJson}) {
+                   |    } else if (${(braces.mode == BasicMessageFilterBracesMode.Any).asJson}) {
                    |        result = ${allOpsFns}.some(fn => fn());
                    |    }
                    |

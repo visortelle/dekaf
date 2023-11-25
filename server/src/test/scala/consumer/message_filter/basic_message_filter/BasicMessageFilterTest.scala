@@ -43,6 +43,303 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
 
     def spec = suite(s"${this.getClass.toString}")(
         /*
+        ========================
+         * BasicMessageFilter *
+        ========================
+         */
+        test(BasicMessageFilter.getClass.toString) {
+            assertTrue {
+                val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
+                val basicMessageFilter = BasicMessageFilter(
+                    target = BasicMessageFilterValueTarget(),
+                    op = BasicMessageFilterOp(
+                        op = AnyTestOp(
+                            op = TestOpBoolEquals(equals = true)
+                        )
+                    )
+                )
+                val filter = MessageFilter(
+                    isEnabled = true,
+                    isNegated = false,
+                    value = basicMessageFilter
+                )
+
+                val messageValueAsJson =
+                    """
+                      |true
+                      |""".stripMargin
+
+                sessionContext.testMessageFilter(
+                    filter = filter,
+                    messageAsJsonOmittingValue = "{}",
+                    messageValueAsJson = Right(messageValueAsJson)
+                ).isOk
+            }
+        },
+        test(BasicMessageFilter.getClass.toString) {
+            assertTrue {
+                val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
+                val basicMessageFilter = BasicMessageFilter(
+                    target = BasicMessageFilterValueTarget(),
+                    op = BasicMessageFilterOp(
+                        op = AnyTestOp(
+                            op = TestOpBoolEquals(equals = true)
+                        )
+                    )
+                )
+                val filter = MessageFilter(
+                    isEnabled = true,
+                    isNegated = true,
+                    value = basicMessageFilter
+                )
+
+                val messageValueAsJson =
+                    """
+                      |true
+                      |""".stripMargin
+
+                val isOk = sessionContext.testMessageFilter(
+                    filter = filter,
+                    messageAsJsonOmittingValue = "{}",
+                    messageValueAsJson = Right(messageValueAsJson)
+                ).isOk
+
+                !isOk
+            }
+        },
+        /*
+        ========================
+         * BasicMessageFilterOp *
+        ========================
+         */
+        test(BasicMessageFilterOp.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    isNegated = true,
+                    op = AnyTestOp(
+                        op = TestOpBoolEquals(equals = true)
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |true
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterOp.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op =
+                    AnyTestOp(
+                        op = TestOpBoolEquals(equals = true)
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |true
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterOp.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op =
+                    BasicMessageFilterBraces(
+                        mode = BasicMessageFilterBracesMode.All,
+                        ops = Vector(
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringStartsWith("hello")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringIncludes("WRONG")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEndsWith("world")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"hello world"
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterOp.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    isNegated = true,
+                    op = BasicMessageFilterBraces(
+                        mode = BasicMessageFilterBracesMode.All,
+                        ops = Vector(
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringStartsWith("hello")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringIncludes("WRONG")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEndsWith("world")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"hello world"
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterOp.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op =
+                    BasicMessageFilterBraces(
+                        mode = BasicMessageFilterBracesMode.All,
+                        ops = Vector(
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringStartsWith("hello")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringIncludes("ello w")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEndsWith("world")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"hello world"
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterOp.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    isNegated = true,
+                    op = BasicMessageFilterBraces(
+                        mode = BasicMessageFilterBracesMode.Any,
+                        ops = Vector(
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringStartsWith("hello")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringIncludes("WRONG")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEndsWith("42")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"hello world"
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterOp.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op =
+                    BasicMessageFilterBraces(
+                        mode = BasicMessageFilterBracesMode.Any,
+                        ops = Vector(
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringStartsWith("hello")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringIncludes("WRONG")
+                                )
+                            ),
+                            BasicMessageFilterOp(
+                                op = AnyTestOp(
+                                    op = TestOpStringEndsWith("42")
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |"hello world"
+                      |""".stripMargin
+            )))
+        },
+        test(BasicMessageFilterOp.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(
+                    op = AnyTestOp(
+                        op = TestOpArrayAll(
+                            op = BasicMessageFilterOp(
+                                op = BasicMessageFilterBraces(
+                                    mode = BasicMessageFilterBracesMode.Any,
+                                    ops = Vector(
+                                        BasicMessageFilterOp(
+                                            op = AnyTestOp(
+                                                op = TestOpStringEquals(equals = "i-am-not-an-array")
+                                            )
+                                        ),
+                                        BasicMessageFilterOp(
+                                            op = AnyTestOp(
+                                                op = TestOpArrayAny(
+                                                    op = BasicMessageFilterOp(
+                                                        op = AnyTestOp(
+                                                            op = TestOpStringIncludes(includes = "abc")
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |["i-am-not-an-array", ["abc"], ["abcWWW", "ha-ha"], ["DDDxyz", "FFabcTT", "ho-ho"]]
+                      |""".stripMargin
+            )))
+        },
+        /*
         ==================
          * TestOpIsDefined *
         ==================
@@ -109,16 +406,20 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
          * TestOpBoolEquals *
         =====================
          */
-//        test(TestOpBoolEquals.getClass.toString) {
-//            assertTrue(runTestSpec(TestSpec(
-//                target = BasicMessageFilterValueTarget(),
-//                op = TestOpBoolEquals(equals = true),
-//                messageValueAsJson =
-//                    """
-//                      |true
-//                      |""".stripMargin
-//            )))
-//        },
+        test(TestOpBoolEquals.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(),
+                op = BasicMessageFilterOp(op =
+                    AnyTestOp(
+                        op = TestOpBoolEquals(equals = true)
+                    )
+                ),
+                messageValueAsJson =
+                    """
+                      |true
+                      |""".stripMargin
+            )))
+        },
 //        test(TestOpBoolEquals.getClass.toString) {
 //            assertTrue(runTestSpec(TestSpec(
 //                isShouldFail = true,
@@ -905,5 +1206,5 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                       |[[], ["abc", "abc"], ["abc", "abc", "abc"]]
                       |""".stripMargin
             )))
-        },
+        }
     )
