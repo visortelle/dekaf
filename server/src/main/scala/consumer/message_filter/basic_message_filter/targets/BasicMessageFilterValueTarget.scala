@@ -3,7 +3,7 @@ package consumer.message_filter.basic_message_filter.targets
 import _root_.consumer.session_runner.{CurrentMessageVarName, JsLibsVarName}
 
 case class BasicMessageFilterValueTarget(
-    jsonFieldSelector: Option[String]
+    jsonFieldSelector: Option[String] = None
 ) extends BasicMessageFilterTargetTrait:
     override def resolveVarName(): String =
         jsonFieldSelector match
