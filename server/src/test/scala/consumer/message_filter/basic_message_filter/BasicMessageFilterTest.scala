@@ -231,7 +231,99 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                        |""".stripMargin
             )))
         },
-
+        /*
+        ==================
+         * TestOpStringEndsWith *
+        ==================
+         */
+        test(TestOpStringEndsWith.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringEndsWith(endsWith = "hello"),
+                messageValueAsJson =
+                    """
+                      |""
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringEndsWith.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringEndsWith(endsWith = "World"),
+                messageValueAsJson =
+                    """
+                      |"helloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringEndsWith.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringEndsWith(endsWith = "world"),
+                messageValueAsJson =
+                    """
+                      |"HelloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringEndsWith.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringEndsWith(endsWith = "world", isCaseInsensitive = true),
+                messageValueAsJson =
+                    """
+                      |"HelloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringEndsWith.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringEndsWith(endsWith = """e"lloWorld"""),
+                messageValueAsJson =
+                    """
+                      |"he\"lloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringEndsWith.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringEndsWith(endsWith = """e`lloWorld"""),
+                messageValueAsJson =
+                    """
+                      |"he`lloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringEndsWith.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringEndsWith(endsWith = """e'lloWorld"""),
+                messageValueAsJson =
+                    """
+                      |"he'lloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringEndsWith.getClass.toString) {
+            val str =
+                """${abc}""" ++
+                    """!#$%&'()*+,-.""" ++
+                    "\"" ++
+                    s"${'\\'}" ++
+                    """芸座八取ホवेबजालЛорем"""
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringEndsWith(endsWith = str),
+                messageValueAsJson =
+                    s"""
+                       |"${StringEscapeUtils.escapeJson(str)}"
+                       |""".stripMargin
+            )))
+        },
 
         /*
         ==================
@@ -343,6 +435,177 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 messageValueAsJson =
                     """
                       |[[], [1, 2, 3], [["abc"]], ["abc"], 4, 5, 6, null]
+                      |""".stripMargin
+            )))
+        },
+        /*
+        ==================
+         * TestOpStringIncludes *
+        ==================
+         */
+        test(TestOpStringIncludes.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringIncludes(includes = "hello"),
+                messageValueAsJson =
+                    """
+                      |""
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringIncludes.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringIncludes(includes = "oWorl"),
+                messageValueAsJson =
+                    """
+                      |"helloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringIncludes.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringIncludes(includes = "oworl"),
+                messageValueAsJson =
+                    """
+                      |"HelloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringIncludes.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringIncludes(includes = "oworl", isCaseInsensitive = true),
+                messageValueAsJson =
+                    """
+                      |"HelloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringIncludes.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringIncludes(includes = """e"lloWorl"""),
+                messageValueAsJson =
+                    """
+                      |"he\"lloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringIncludes.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringIncludes(includes = """e`lloWorl"""),
+                messageValueAsJson =
+                    """
+                      |"he`lloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringIncludes.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringIncludes(includes = """e'lloWorl"""),
+                messageValueAsJson =
+                    """
+                      |"he'lloWorld"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringIncludes.getClass.toString) {
+            val str =
+                """hello${abc}""" ++
+                    """!#$%&'()*+,-.""" ++
+                    "\"" ++
+                    s"${'\\'}" ++
+                    """芸座八取ホवेबजालЛорем"""
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringIncludes(includes = str.substring(1, str.length - 2)),
+                messageValueAsJson =
+                    s"""
+                       |"${StringEscapeUtils.escapeJson(str)}"
+                       |""".stripMargin
+            )))
+        },
+        /*
+        ==================
+         * TestOpStringMatchesRegex *
+        ==================
+         */
+        test(TestOpStringMatchesRegex.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringMatchesRegex(pattern = ""),
+                messageValueAsJson =
+                    """
+                      |""
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringMatchesRegex.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringMatchesRegex(pattern = "^.*-xyz-$"),
+                messageValueAsJson =
+                    """
+                      |"abc-xyz-0123"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringMatchesRegex.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringMatchesRegex(pattern = "^.*-xyz-\\d+$"),
+                messageValueAsJson =
+                    """
+                      |"abc-xyz-0123"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringMatchesRegex.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringMatchesRegex(pattern = "^second"),
+                messageValueAsJson =
+                    """
+                      |"first\nsecond\nthird"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringMatchesRegex.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringMatchesRegex(pattern = "^second", flags = "m"),
+                messageValueAsJson =
+                    """
+                      |"first\nsecond\nthird"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringMatchesRegex.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                isShouldFail = true,
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringMatchesRegex(pattern = "^secOnd"),
+                messageValueAsJson =
+                    """
+                      |"second"
+                      |""".stripMargin
+            )))
+        },
+        test(TestOpStringMatchesRegex.getClass.toString) {
+            assertTrue(runTestSpec(TestSpec(
+                target = BasicMessageFilterValueTarget(jsonFieldSelector = None),
+                op = TestOpStringMatchesRegex(pattern = "^secOnd", flags = "i"),
+                messageValueAsJson =
+                    """
+                      |"second"
                       |""".stripMargin
             )))
         },

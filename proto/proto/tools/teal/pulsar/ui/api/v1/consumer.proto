@@ -300,7 +300,8 @@ message TestOpStringEndsWith {
 }
 
 message TestOpStringMatchesRegex {
-  string regexp = 1;
+  string pattern = 1;
+  string flags = 2;
 }
 
 message TestOpArraySize {
@@ -320,22 +321,7 @@ message TestOpArrayAll {
   MessageFilterChain item_filter_chain = 1;
 }
 
-message TestOpObjectAnyKey {
-  AnyStringTestOp op = 1;
-}
-
-message TestOpObjectAllKeys {
-  AnyStringTestOp op = 1;
-}
-
-message TestOpObjectAnyValue {
-  AnyTestOp op = 1;
-}
-
-message TestOpObjectAllValues {
-}
-
-message TestOpObjectValueByKey {
+message TestOpObjectValue {
   string key = 1;
   AnyTestOp op = 2;
 }
@@ -361,13 +347,10 @@ message AnyArrayTestOp {
 
 message AnyObjectTestOp {
   oneof op {
-    TestOpObjectAnyKey op_object_any_key = 1;
-    TestOpObjectAllKeys op_object_all_keys = 2;
-    TestOpObjectAnyValue op_object_any_value = 3;
-    TestOpObjectAllValues op_object_all_values = 4;
-    TestOpObjectValueByKey op_object_value_by_key = 5;
-    TestOpObjectValueByKey op_object_has_value_at_key = 6;
-    TestOpObjectSize op_object_size = 7;
+    AnyArrayTestOp op_object_keys = 1;
+    AnyArrayTestOp op_object_values = 2;
+    TestOpObjectValue op_object_value_key = 3;
+    TestOpObjectSize op_object_size = 4;
   }
 }
 
