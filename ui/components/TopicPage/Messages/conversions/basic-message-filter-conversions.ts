@@ -1,5 +1,6 @@
+import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterOp, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpBoolEquals, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith } from "../basic-message-filter-types";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpBoolEquals, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter } from "../basic-message-filter-types";
 
 export function testOpAlwaysOkFromPb(v: pb.TestOpAlwaysOk): TestOpAlwaysOk {
   return {
@@ -274,3 +275,128 @@ export function basicMessageFilterOpToPb(v: BasicMessageFilterOp): pb.BasicMessa
   return resultPb;
 }
 
+export function basicMessageFilterKeyTargetFromPb(v: pb.BasicMessageFilterKeyTarget): BasicMessageFilterKeyTarget {
+  return {
+    type: "BasicMessageFilterKeyTarget",
+    jsonFieldSelector: v.getJsonFieldSelector()?.getValue()
+  }
+}
+
+export function basicMessageFilterKeyTargetToPb(v: BasicMessageFilterKeyTarget): pb.BasicMessageFilterKeyTarget {
+  const resultPb = new pb.BasicMessageFilterKeyTarget();
+  if (v.jsonFieldSelector !== undefined) {
+    resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
+  }
+
+  return resultPb;
+}
+
+export function basicMessageFilterValueTargetFromPb(v: pb.BasicMessageFilterValueTarget): BasicMessageFilterValueTarget {
+  return {
+    type: "BasicMessageFilterValueTarget",
+    jsonFieldSelector: v.getJsonFieldSelector()?.getValue()
+  }
+}
+
+export function basicMessageFilterValueTargetToPb(v: BasicMessageFilterValueTarget): pb.BasicMessageFilterValueTarget {
+  const resultPb = new pb.BasicMessageFilterValueTarget();
+  if (v.jsonFieldSelector !== undefined) {
+    resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
+  }
+
+  return resultPb;
+}
+
+export function basicMessageFilterPropertyTargetFromPb(v: pb.BasicMessageFilterPropertyTarget): BasicMessageFilterPropertyTarget {
+  return {
+    type: "BasicMessageFilterPropertyTarget",
+    propertyKey: v.getPropertyKey()
+  }
+}
+
+export function basicMessageFilterPropertyTargetToPb(v: BasicMessageFilterPropertyTarget): pb.BasicMessageFilterPropertyTarget {
+  const resultPb = new pb.BasicMessageFilterPropertyTarget();
+  resultPb.setPropertyKey(v.propertyKey);
+
+  return resultPb;
+}
+
+export function basicMessageFilterSessionContextStateTargetFromPb(v: pb.BasicMessageFilterSessionContextStateTarget): BasicMessageFilterSessionContextStateTarget {
+  return {
+    type: "BasicMessageFilterSessionContextStateTarget",
+    jsonFieldSelector: v.getJsonFieldSelector()?.getValue()
+  }
+}
+
+export function basicMessageFilterSessionContextStateTargetToPb(v: BasicMessageFilterSessionContextStateTarget): pb.BasicMessageFilterSessionContextStateTarget {
+  const resultPb = new pb.BasicMessageFilterSessionContextStateTarget();
+  if (v.jsonFieldSelector !== undefined) {
+    resultPb.setJsonFieldSelector(new StringValue().setValue(v.jsonFieldSelector));
+  }
+
+  return resultPb;
+}
+
+export function basicMessageFilterTargetFromPb(v: pb.BasicMessageFilterTarget): BasicMessageFilterTarget {
+  let target: BasicMessageFilterTarget['target'];
+
+  switch (v.getTargetCase()) {
+    case pb.BasicMessageFilterTarget.TargetCase.TARGET_KEY:
+      target = basicMessageFilterKeyTargetFromPb(v.getTargetKey()!);
+      break;
+    case pb.BasicMessageFilterTarget.TargetCase.TARGET_PROPERTY:
+      target = basicMessageFilterPropertyTargetFromPb(v.getTargetProperty()!);
+      break;
+    case pb.BasicMessageFilterTarget.TargetCase.TARGET_SESSION_CONTEXT_STATE:
+      target = basicMessageFilterSessionContextStateTargetFromPb(v.getTargetSessionContextState()!);
+      break;
+    case pb.BasicMessageFilterTarget.TargetCase.TARGET_VALUE:
+      target = basicMessageFilterValueTargetFromPb(v.getTargetValue()!);
+      break;
+    default: throw new Error("Unable to convert BasicMessageFilterTarget. Unknown type.");
+  }
+
+  return {
+    type: "BasicMessageFilterTarget",
+    target
+  }
+}
+
+export function basicMessageFilterTargetToPb(v: BasicMessageFilterTarget): pb.BasicMessageFilterTarget {
+  const resultPb = new pb.BasicMessageFilterTarget();
+
+  switch (v.target.type) {
+    case "BasicMessageFilterKeyTarget":
+      resultPb.setTargetKey(basicMessageFilterKeyTargetToPb(v.target))
+      break;
+    case "BasicMessageFilterValueTarget":
+      resultPb.setTargetValue(basicMessageFilterValueTargetToPb(v.target))
+      break;
+    case "BasicMessageFilterPropertyTarget":
+      resultPb.setTargetProperty(basicMessageFilterPropertyTargetToPb(v.target))
+      break;
+    case "BasicMessageFilterSessionContextStateTarget":
+      resultPb.setTargetSessionContextState(basicMessageFilterSessionContextStateTargetToPb(v.target))
+      break;
+
+    default: throw new Error("Unable to convert BasicMessageFilterTarget. Unknown type.");
+  }
+
+  return resultPb;
+}
+
+export function basicMessageFilterFromPb(v: pb.BasicMessageFilter): BasicMessageFilter {
+  return {
+    type: "BasicMessageFilter",
+    target: basicMessageFilterTargetFromPb(v.getTarget()!),
+    op: basicMessageFilterOpFromPb(v.getOp()!)
+  }
+}
+
+export function basicMessageFilterToPb(v: BasicMessageFilter): pb.BasicMessageFilter {
+  const resultPb = new pb.BasicMessageFilter();
+  resultPb.setTarget(basicMessageFilterTargetToPb(v.target));
+  resultPb.setOp(basicMessageFilterOpToPb(v.op));
+
+  return resultPb;
+}
