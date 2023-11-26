@@ -1,0 +1,276 @@
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
+import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterOp, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpBoolEquals, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith } from "../basic-message-filter-types";
+
+export function testOpAlwaysOkFromPb(v: pb.TestOpAlwaysOk): TestOpAlwaysOk {
+  return {
+    type: "TestOpAlwaysOk"
+  }
+}
+
+export function testOpAlwaysOkToPb(v: TestOpAlwaysOk): pb.TestOpAlwaysOk {
+  const resultPb = new pb.TestOpAlwaysOk();
+  return resultPb;
+}
+
+export function testOpIsDefinedFromPb(v: pb.TestOpIsDefined): TestOpIsDefined {
+  return {
+    type: "TestOpIsDefined",
+  }
+}
+
+export function testOpIsDefinedToPb(v: TestOpIsDefined): pb.TestOpIsDefined {
+  const resultPb = new pb.TestOpIsDefined();
+  return resultPb;
+}
+
+export function testOpIsNullFromPb(v: pb.TestOpIsNull): TestOpIsNull {
+  return {
+    type: "TestOpIsNull",
+  }
+}
+
+export function testOpIsNullToPb(v: TestOpIsNull): pb.TestOpIsNull {
+  const resultPb = new pb.TestOpIsNull();
+  return resultPb;
+}
+
+export function testOpBoolEqualsFromPb(v: pb.TestOpBoolEquals): TestOpBoolEquals {
+  return {
+    type: "TestOpBoolEquals",
+    equals: v.getEquals()
+  }
+}
+
+export function testOpBoolEqualsToPb(v: TestOpBoolEquals): pb.TestOpBoolEquals {
+  const resultPb = new pb.TestOpBoolEquals();
+  resultPb.setEquals(v.equals);
+
+  return resultPb;
+}
+
+export function testOpStringEqualsFromPb(v: pb.TestOpStringEquals): TestOpStringEquals {
+  return {
+    type: "TestOpStringEquals",
+    equals: v.getEquals(),
+    isCaseInsensitive: v.getIsCaseInsensitive()
+  }
+}
+
+export function testOpStringEqualsToPb(v: TestOpStringEquals): pb.TestOpStringEquals {
+  const resultPb = new pb.TestOpStringEquals();
+  resultPb.setEquals(v.equals);
+  resultPb.setIsCaseInsensitive(v.isCaseInsensitive);
+
+  return resultPb;
+}
+
+export function testOpStringIncludesFromPb(v: pb.TestOpStringIncludes): TestOpStringIncludes {
+  return {
+    type: "TestOpStringIncludes",
+    includes: v.getIncludes(),
+    isCaseInsensitive: v.getIsCaseInsensitive()
+  }
+}
+
+export function testOpStringIncludesToPb(v: TestOpStringIncludes): pb.TestOpStringIncludes {
+  const resultPb = new pb.TestOpStringIncludes();
+  resultPb.setIncludes(v.includes);
+  resultPb.setIsCaseInsensitive(v.isCaseInsensitive);
+
+  return resultPb;
+}
+
+export function testOpStringStartsWithFromPb(v: pb.TestOpStringStartsWith): TestOpStringStartsWith {
+  return {
+    type: "TestOpStringStartsWith",
+    startsWith: v.getStartsWith(),
+    isCaseInsensitive: v.getIsCaseInsensitive()
+  }
+}
+
+export function testOpStringStartsWithToPb(v: TestOpStringStartsWith): pb.TestOpStringStartsWith {
+  const resultPb = new pb.TestOpStringStartsWith();
+  resultPb.setStartsWith(v.startsWith);
+  resultPb.setIsCaseInsensitive(v.isCaseInsensitive);
+
+  return resultPb;
+}
+
+export function testOpStringEndsWithFromPb(v: pb.TestOpStringEndsWith): TestOpStringEndsWith {
+  return {
+    type: "TestOpStringEndsWith",
+    endsWith: v.getEndsWith(),
+    isCaseInsensitive: v.getIsCaseInsensitive()
+  }
+}
+
+export function testOpStringEndsWithToPb(v: TestOpStringEndsWith): pb.TestOpStringEndsWith {
+  const resultPb = new pb.TestOpStringEndsWith();
+  resultPb.setEndsWith(v.endsWith);
+  resultPb.setIsCaseInsensitive(v.isCaseInsensitive);
+
+  return resultPb;
+}
+
+export function testOpStringMatchesRegexFromPb(v: pb.TestOpStringMatchesRegex): TestOpStringMatchesRegex {
+  return {
+    type: "TestOpStringMatchesRegex",
+    pattern: v.getPattern(),
+    flags: v.getFlags()
+  }
+}
+
+export function testOpStringMatchesRegexToPb(v: TestOpStringMatchesRegex): pb.TestOpStringMatchesRegex {
+  const resultPb = new pb.TestOpStringMatchesRegex();
+  resultPb.setPattern(v.pattern);
+  resultPb.setFlags(v.flags);
+
+  return resultPb;
+}
+
+export function testOpArrayAnyFromPb(v: pb.TestOpArrayAny): TestOpArrayAny {
+  return {
+    type: "TestOpArrayAny",
+    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!)
+  }
+}
+
+export function testOpArrayAnyToPb(v: TestOpArrayAny): pb.TestOpArrayAny {
+  const resultPb = new pb.TestOpArrayAny();
+  resultPb.setTestItemOp(basicMessageFilterOpToPb(v.testItemOp));
+
+  return resultPb;
+}
+
+export function testOpArrayAllFromPb(v: pb.TestOpArrayAll): TestOpArrayAll {
+  return {
+    type: "TestOpArrayAll",
+    testItemOp: basicMessageFilterOpFromPb(v.getTestItemOp()!)
+  }
+}
+
+export function testOpArrayAllToPb(v: TestOpArrayAll): pb.TestOpArrayAll {
+  const resultPb = new pb.TestOpArrayAll();
+  resultPb.setTestItemOp(basicMessageFilterOpToPb(v.testItemOp));
+
+  return resultPb;
+}
+
+export function anyTestOpFromPb(v: pb.AnyTestOp): AnyTestOp {
+  let op: AnyTestOp['op'];
+
+  switch (v.getOpCase()) {
+    case pb.AnyTestOp.OpCase.OP_ALWAYS_OK: op = testOpAlwaysOkFromPb(v.getOpAlwaysOk()!); break;
+    case pb.AnyTestOp.OpCase.OP_IS_DEFINED: op = testOpIsDefinedFromPb(v.getOpIsDefined()!); break;
+    case pb.AnyTestOp.OpCase.OP_IS_NULL: op = testOpIsNullFromPb(v.getOpIsNull()!); break;
+    case pb.AnyTestOp.OpCase.OP_BOOL_EQUALS: op = testOpBoolEqualsFromPb(v.getOpBoolEquals()!); break;
+    case pb.AnyTestOp.OpCase.OP_STRING_EQUALS: op = testOpStringEqualsFromPb(v.getOpStringEquals()!); break;
+    case pb.AnyTestOp.OpCase.OP_STRING_INCLUDES: op = testOpStringIncludesFromPb(v.getOpStringIncludes()!); break;
+    case pb.AnyTestOp.OpCase.OP_STRING_STARTS_WITH: op = testOpStringStartsWithFromPb(v.getOpStringStartsWith()!); break;
+    case pb.AnyTestOp.OpCase.OP_STRING_ENDS_WITH: op = testOpStringEndsWithFromPb(v.getOpStringEndsWith()!); break;
+    case pb.AnyTestOp.OpCase.OP_STRING_MATCHES_REGEX: op = testOpStringMatchesRegexFromPb(v.getOpStringMatchesRegex()!); break;
+    case pb.AnyTestOp.OpCase.OP_ARRAY_ANY: op = testOpArrayAnyFromPb(v.getOpArrayAny()!); break;
+    case pb.AnyTestOp.OpCase.OP_ARRAY_ALL: op = testOpArrayAllFromPb(v.getOpArrayAll()!); break;
+    default: throw new Error("Failed to convert AnyTestOp. Unknown type.");
+  }
+
+  return {
+    type: "AnyTestOp",
+    op
+  }
+}
+
+export function anyTestOpToPb(v: AnyTestOp): pb.AnyTestOp {
+  const resultPb = new pb.AnyTestOp();
+
+  switch (v.op.type) {
+    case "TestOpAlwaysOk": resultPb.setOpAlwaysOk(testOpAlwaysOkToPb(v.op)); break;
+    case "TestOpIsDefined": resultPb.setOpIsDefined(testOpIsDefinedToPb(v.op)); break;
+    case "TestOpIsNull": resultPb.setOpIsNull(testOpIsNullToPb(v.op)); break;
+    case "TestOpBoolEquals": resultPb.setOpBoolEquals(testOpBoolEqualsToPb(v.op)); break;
+    case "TestOpStringEquals": resultPb.setOpStringEquals(testOpStringEqualsToPb(v.op)); break;
+    case "TestOpStringIncludes": resultPb.setOpStringIncludes(testOpStringIncludesToPb(v.op)); break;
+    case "TestOpStringStartsWith": resultPb.setOpStringStartsWith(testOpStringStartsWithToPb(v.op)); break;
+    case "TestOpStringEndsWith": resultPb.setOpStringEndsWith(testOpStringEndsWithToPb(v.op)); break;
+    case "TestOpStringMatchesRegex": resultPb.setOpStringMatchesRegex(testOpStringMatchesRegexToPb(v.op)); break;
+    case "TestOpArrayAny": resultPb.setOpArrayAny(testOpArrayAnyToPb(v.op)); break;
+    case "TestOpArrayAll": resultPb.setOpArrayAll(testOpArrayAllToPb(v.op)); break;
+    default: throw new Error("Failed to convert AnyTestOp. Unknown type.");
+  }
+
+  return resultPb;
+}
+
+export function basicMessageFilterBracesModeFromPb(v: pb.BasicMessageFilterBracesMode): BasicMessageFilterBracesMode {
+  switch (v) {
+    case pb.BasicMessageFilterBracesMode.BASIC_MESSAGE_FILTER_BRACES_MODE_ALL:
+      return "all";
+    case pb.BasicMessageFilterBracesMode.BASIC_MESSAGE_FILTER_BRACES_MODE_ANY:
+      return "any";
+    default: throw new Error("Failed to convert BasicMessageFilterBracesMode. Unknown type.");
+  }
+}
+
+export function basicMessageFilterBracesModeToPb(v: BasicMessageFilterBracesMode): pb.BasicMessageFilterBracesMode {
+  switch (v) {
+    case "all":
+      return pb.BasicMessageFilterBracesMode.BASIC_MESSAGE_FILTER_BRACES_MODE_ALL;
+    case "any":
+      return pb.BasicMessageFilterBracesMode.BASIC_MESSAGE_FILTER_BRACES_MODE_ANY;
+    default: throw new Error("Failed to convert BasicMessageFilterBracesMode. Unknown type.");
+  }
+}
+
+export function basicMessageFilterBracesFromPb(v: pb.BasicMessageFilterBraces): BasicMessageFilterBraces {
+  return {
+    type: "BasicMessageFilterBraces",
+    mode: basicMessageFilterBracesModeFromPb(v.getMode()),
+    ops: []
+    // ops: v.getOpsList().map((op) => // TODO)
+  }
+}
+
+export function basicMessageFilterBracesToPb(v: BasicMessageFilterBraces): pb.BasicMessageFilterBraces {
+  const resultPb = new pb.BasicMessageFilterBraces();
+  // TODO
+  return resultPb;
+}
+
+export function basicMessageFilterOpFromPb(v: pb.BasicMessageFilterOp): BasicMessageFilterOp {
+  let op: BasicMessageFilterOp['op'];
+
+  switch (v.getOpCase()) {
+    case pb.BasicMessageFilterOp.OpCase.OP_ANY_TEST_OP:
+      op = anyTestOpFromPb(v.getOpAnyTestOp()!); break;
+    case pb.BasicMessageFilterOp.OpCase.OP_BRACES:
+      op = basicMessageFilterBracesFromPb(v.getOpBraces()!); break;
+    default: throw new Error("Failed to convert BasicMessageFilterOp. Unknown type.");
+  }
+
+  return {
+    "type": "BasicMessageFilterOp",
+    isEnabled: v.getIsEnabled(),
+    isNegated: v.getIsNegated(),
+    op
+  }
+}
+
+export function basicMessageFilterOpToPb(v: BasicMessageFilterOp): pb.BasicMessageFilterOp {
+  const resultPb = new pb.BasicMessageFilterOp();
+
+  resultPb.setIsEnabled(v.isEnabled);
+  resultPb.setIsNegated(v.isNegated);
+
+  switch (v.op.type) {
+    case "AnyTestOp":
+      resultPb.setOpAnyTestOp(anyTestOpToPb(v.op));
+      break;
+    case "BasicMessageFilterBraces":
+      resultPb.setOpBraces(basicMessageFilterBracesToPb(v.op));
+      break;
+    default: throw new Error("Failed to convert BasicMessageFilterOp. Unknown type.");
+  }
+
+  return resultPb;
+}
+

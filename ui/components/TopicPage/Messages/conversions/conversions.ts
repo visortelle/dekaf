@@ -1,6 +1,6 @@
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
-import * as pb from "../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
-import { hexStringFromByteArray, hexStringToByteArray } from "../../conversions/conversions";
+import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
+import { hexStringFromByteArray, hexStringToByteArray } from "../../../conversions/conversions";
 import {
   MessageDescriptor,
   PartialMessageDescriptor,
@@ -28,14 +28,14 @@ import {
   ConsumerSessionTarget,
   TestResult,
   ChainTestResult
-} from "./types";
+} from "../types";
 
 import {
   TopicSelector,
   MultiTopicSelector,
   NamespacedRegexTopicSelector,
   RegexSubscriptionMode,
-} from './topic-selector/topic-selector';
+} from '../topic-selector/topic-selector';
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
@@ -347,6 +347,104 @@ export function coloringRuleChainToPb(v: ColoringRuleChain): pb.ColoringRuleChai
   return coloringRuleChainPb;
 }
 
+export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
+  switch (filter.type) {
+    case "js-message-filter": {
+      const jsMessageFilterPb = new pb.JsMessageFilter();
+      jsMessageFilterPb.setJsCode(filter.value.jsCode);
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setFilterJs(jsMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+    }
+
+    case "basic-message-filter": {
+      const basicMessageFilterPb = new pb.BasicMessageFilter();
+
+      const messageFilterPb = new pb.MessageFilter();
+      messageFilterPb.setFilterBasic(basicMessageFilterPb)
+
+      messageFilterPb.setIsEnabled(filter.isEnabled);
+      messageFilterPb.setIsNegated(filter.isNegated);
+
+      return messageFilterPb;
+
+    }
+  }
+}
+
+export function messageFilterChainModeFromPb(mode: pb.MessageFilterChainMode): MessageFilterChainMode {
+  switch (mode) {
+    case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL:
+      return 'all';
+    case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY:
+      return 'any';
+    default:
+      throw new Error(`Unknown MessageFilterChainMode: ${mode}`);
+  }
+}
+
+export function messageFilterChainModeToPb(mode: MessageFilterChainMode): pb.MessageFilterChainMode {
+  switch (mode) {
+    case 'all':
+      return pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL;
+    case 'any':
+      return pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY;
+    default:
+      throw new Error(`Unknown MessageFilterChainMode: ${mode}`);
+  }
+}
+
+export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
+  switch (filter.getFilterCase()) {
+    case pb.MessageFilter.FilterCase.FILTER_JS:
+      return {
+        type: 'js-message-filter',
+        value: { jsCode: filter.getFilterJs()?.getJsCode() ?? '' },
+        isEnabled: filter.getIsEnabled(),
+        isNegated: filter.getIsNegated(),
+      };
+    case pb.MessageFilter.FilterCase.FILTER_BASIC: {
+      return {
+        type: 'basic-message-filter',
+        value: {},
+        isEnabled: filter.getIsEnabled(),
+        isNegated: filter.getIsNegated(),
+      };
+    }
+    default:
+      throw new Error(`Unknown MessageFilter value case. ${filter.getFilterBasic()}`);
+  }
+}
+
+export function messageFilterChainFromPb(filterChain: pb.MessageFilterChain): MessageFilterChain {
+  return {
+    mode: messageFilterChainModeFromPb(filterChain.getMode()),
+    isEnabled: filterChain.getIsEnabled(),
+    isNegated: filterChain.getIsNegated(),
+    filters: filterChain.getFiltersList().map(messageFilterFromPb),
+  };
+}
+
+export function messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFilterChain {
+  const chainPb = new pb.MessageFilterChain();
+  chainPb.setMode(messageFilterChainModeToPb(chain.mode));
+
+  chainPb.setIsEnabled(chain.isEnabled);
+  chainPb.setIsNegated(chain.isNegated);
+
+  const messageFiltersPb = chain.filters.map(messageFilterToPb);
+  chainPb.setFiltersList(messageFiltersPb);
+
+  return chainPb;
+}
+
+
+
 export function messageIdFromPb(v: pb.MessageId): MessageId {
   return {
     messageId: v.getMessageId_asU8(),
@@ -650,102 +748,6 @@ export function consumerSessionConfigToPb(config: ConsumerSessionConfig): pb.Con
   configPb.setColoringRuleChain(coloringRuleChainPb);
 
   return configPb;
-}
-
-export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
-  switch (filter.type) {
-    case "js-message-filter": {
-      const jsMessageFilterPb = new pb.JsMessageFilter();
-      jsMessageFilterPb.setJsCode(filter.value.jsCode);
-
-      const messageFilterPb = new pb.MessageFilter();
-      messageFilterPb.setFilterJs(jsMessageFilterPb)
-
-      messageFilterPb.setIsEnabled(filter.isEnabled);
-      messageFilterPb.setIsNegated(filter.isNegated);
-
-      return messageFilterPb;
-    }
-
-    case "basic-message-filter": {
-      const basicMessageFilterPb = new pb.BasicMessageFilter();
-
-      const messageFilterPb = new pb.MessageFilter();
-      messageFilterPb.setFilterBasic(basicMessageFilterPb)
-
-      messageFilterPb.setIsEnabled(filter.isEnabled);
-      messageFilterPb.setIsNegated(filter.isNegated);
-
-      return messageFilterPb;
-
-    }
-  }
-}
-
-export function messageFilterChainModeFromPb(mode: pb.MessageFilterChainMode): MessageFilterChainMode {
-  switch (mode) {
-    case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL:
-      return 'all';
-    case pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY:
-      return 'any';
-    default:
-      throw new Error(`Unknown MessageFilterChainMode: ${mode}`);
-  }
-}
-
-export function messageFilterChainModeToPb(mode: MessageFilterChainMode): pb.MessageFilterChainMode {
-  switch (mode) {
-    case 'all':
-      return pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ALL;
-    case 'any':
-      return pb.MessageFilterChainMode.MESSAGE_FILTER_CHAIN_MODE_ANY;
-    default:
-      throw new Error(`Unknown MessageFilterChainMode: ${mode}`);
-  }
-}
-
-export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
-  switch (filter.getFilterCase()) {
-    case pb.MessageFilter.FilterCase.FILTER_JS:
-      return {
-        type: 'js-message-filter',
-        value: { jsCode: filter.getFilterJs()?.getJsCode() ?? '' },
-        isEnabled: filter.getIsEnabled(),
-        isNegated: filter.getIsNegated(),
-      };
-    case pb.MessageFilter.FilterCase.FILTER_BASIC: {
-      return {
-        type: 'basic-message-filter',
-        value: {},
-        isEnabled: filter.getIsEnabled(),
-        isNegated: filter.getIsNegated(),
-      };
-    }
-    default:
-      throw new Error(`Unknown MessageFilter value case. ${filter.getFilterBasic()}`);
-  }
-}
-
-export function messageFilterChainFromPb(filterChain: pb.MessageFilterChain): MessageFilterChain {
-  return {
-    mode: messageFilterChainModeFromPb(filterChain.getMode()),
-    isEnabled: filterChain.getIsEnabled(),
-    isNegated: filterChain.getIsNegated(),
-    filters: filterChain.getFiltersList().map(messageFilterFromPb),
-  };
-}
-
-export function messageFilterChainToPb(chain: MessageFilterChain): pb.MessageFilterChain {
-  const chainPb = new pb.MessageFilterChain();
-  chainPb.setMode(messageFilterChainModeToPb(chain.mode));
-
-  chainPb.setIsEnabled(chain.isEnabled);
-  chainPb.setIsNegated(chain.isNegated);
-
-  const messageFiltersPb = chain.filters.map(messageFilterToPb);
-  chainPb.setFiltersList(messageFiltersPb);
-
-  return chainPb;
 }
 
 export function testResultFromPb(v: pb.TestResult): TestResult {

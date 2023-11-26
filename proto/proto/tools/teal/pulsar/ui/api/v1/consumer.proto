@@ -317,24 +317,28 @@ message TestOpArrayItemsCount {
 }
 
 message TestOpArrayAny {
-  BasicMessageFilterOp op = 1;
+  BasicMessageFilterOp test_item_op = 1;
 }
 
 message TestOpArrayAll {
-  BasicMessageFilterOp op = 1;
+  BasicMessageFilterOp test_item_op = 1;
 }
 
 message TestOpObjectHasKey {
-  BasicMessageFilterOp key_compare_op = 1;
+  BasicMessageFilterOp test_key_op = 1;
 }
 
 message TestOpObjectHasValue {
+  BasicMessageFilterOp test_value_op = 1;
+}
+
+message TestOpObjectHasValueAtKey {
   string key = 1;
-  BasicMessageFilterOp value_compare_op = 2;
+  BasicMessageFilterOp test_value_op = 2;
 }
 
 message TestOpObjectSize {
-  BasicMessageFilterOp op = 1;
+  BasicMessageFilterOp test_size_op = 1;
 }
 
 
@@ -398,7 +402,7 @@ message BasicMessageFilterPropertyTarget {
 }
 
 message BasicMessageFilterSessionContextStateTarget {
-  string json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
+  google.protobuf.StringValue json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
 message BasicMessageFilterTarget {
@@ -408,10 +412,6 @@ message BasicMessageFilterTarget {
     BasicMessageFilterPropertyTarget target_property = 3;
     BasicMessageFilterSessionContextStateTarget target_session_context_state = 4;
   }
-}
-
-message JsonFieldSelector {
-  string json_field_selector = 1; // in a jq-like form: ".obj.nestedObj.field"
 }
 
 message BasicMessageFilter {

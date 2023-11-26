@@ -1,5 +1,5 @@
 import { partialMessageDescriptorToSerializable } from "./conversions";
-import { PartialMessageDescriptor } from "./types";
+import { PartialMessageDescriptor } from "../types";
 
 describe("partialMessageDescriptorToSerializable", () => {
   const testData: {

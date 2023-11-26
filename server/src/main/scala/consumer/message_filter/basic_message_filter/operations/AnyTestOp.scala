@@ -26,8 +26,7 @@ object AnyTestOp:
             case pb.AnyTestOp.Op.OpStringEquals(op) => AnyTestOp(op = TestOpStringEquals.fromPb(op))
             case pb.AnyTestOp.Op.OpStringIncludes(op) => AnyTestOp(op = TestOpStringIncludes.fromPb(op))
             case pb.AnyTestOp.Op.OpStringMatchesRegex(op) => AnyTestOp(op = TestOpStringMatchesRegex.fromPb(op))
-//            case _ => throw new Exception("Unsupported AnyTestOp")
-
+            case _ => throw new Exception("Unsupported AnyTestOp")
 
     def toPb(v: AnyTestOp): pb.AnyTestOp =
         v.op match

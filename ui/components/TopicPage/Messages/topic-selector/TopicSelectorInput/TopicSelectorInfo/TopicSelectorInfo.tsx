@@ -5,7 +5,7 @@ import * as GrpcClient from '../.../../../../../../app/contexts/GrpcClient/GrpcC
 import * as Notifications from '../.../../../../../../app/contexts/Notifications';
 import * as pb from '../../../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb';
 import { useDebounce } from 'use-debounce';
-import { topicSelectorToPb } from '../../../conversions';
+import { topicSelectorToPb } from '../../../conversions/conversions';
 import { Code } from '../../../../../../grpc-web/google/rpc/code_pb';
 import { tooltipId } from '../../../../../ui/Tooltip/Tooltip';
 import { renderToStaticMarkup } from 'react-dom/server';

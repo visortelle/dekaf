@@ -28,7 +28,7 @@ import { SessionState, MessageDescriptor, ConsumerSessionConfig } from './types'
 import SessionConfiguration from './SessionConfiguration/SessionConfiguration';
 import Console from './Console/Console';
 import SvgIcon from '../../ui/SvgIcon/SvgIcon';
-import { consumerSessionConfigToPb, messageDescriptorFromPb } from './conversions';
+import { consumerSessionConfigToPb, messageDescriptorFromPb } from './conversions/conversions';
 import { SortKey, Sort, sortMessages } from './sort';
 import { remToPx } from '../../ui/rem-to-px';
 import { help } from './Message/fields';
