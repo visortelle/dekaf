@@ -11,7 +11,7 @@ clean:
 
 .PHONY: build
 build: # Build
-	cd ./library/js && npm install && npm run build
+	cd ./data/js && npm install && npm run build
 	sbt universal:packageBin -DisBinaryBuild=true
 
 .PHONY: dev
