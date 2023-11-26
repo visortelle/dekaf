@@ -17,7 +17,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
     def runTestSpec(spec: TestSpec): Boolean =
         val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
         val basicMessageFilter = BasicMessageFilter(
-            target = spec.target,
+            target = BasicMessageFilterTarget(target = spec.target),
             op = spec.op
         )
         val filter = MessageFilter(
@@ -51,7 +51,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             assertTrue {
                 val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
                 val basicMessageFilter = BasicMessageFilter(
-                    target = BasicMessageFilterValueTarget(),
+                    target = BasicMessageFilterTarget(target = BasicMessageFilterValueTarget()),
                     op = BasicMessageFilterOp(
                         op = AnyTestOp(
                             op = TestOpBoolEquals(equals = true)
@@ -80,7 +80,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
             assertTrue {
                 val sessionContext: ConsumerSessionContext = ConsumerSessionContext(ConsumerSessionContextConfig(stdout = java.lang.System.out))
                 val basicMessageFilter = BasicMessageFilter(
-                    target = BasicMessageFilterValueTarget(),
+                    target = BasicMessageFilterTarget(target = BasicMessageFilterValueTarget()),
                     op = BasicMessageFilterOp(
                         op = AnyTestOp(
                             op = TestOpBoolEquals(equals = true)
