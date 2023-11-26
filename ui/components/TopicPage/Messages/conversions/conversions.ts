@@ -37,6 +37,7 @@ import {
   RegexSubscriptionMode,
 } from '../topic-selector/topic-selector';
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
+import { basicMessageFilterFromPb, basicMessageFilterToPb } from "./basic-message-filter-conversions";
 
 export function messageDescriptorFromPb(message: pb.Message): MessageDescriptor {
   const propertiesMap = Object.fromEntries(message.getPropertiesMap().toArray());
@@ -354,8 +355,8 @@ export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
       jsMessageFilterPb.setJsCode(filter.value.jsCode);
 
       const messageFilterPb = new pb.MessageFilter();
-      messageFilterPb.setFilterJs(jsMessageFilterPb)
 
+      messageFilterPb.setFilterJs(jsMessageFilterPb)
       messageFilterPb.setIsEnabled(filter.isEnabled);
       messageFilterPb.setIsNegated(filter.isNegated);
 
@@ -363,11 +364,11 @@ export function messageFilterToPb(filter: MessageFilter): pb.MessageFilter {
     }
 
     case "basic-message-filter": {
-      const basicMessageFilterPb = new pb.BasicMessageFilter();
+      const basicMessageFilterPb = basicMessageFilterToPb(filter.value);
 
       const messageFilterPb = new pb.MessageFilter();
-      messageFilterPb.setFilterBasic(basicMessageFilterPb)
 
+      messageFilterPb.setFilterBasic(basicMessageFilterPb)
       messageFilterPb.setIsEnabled(filter.isEnabled);
       messageFilterPb.setIsNegated(filter.isNegated);
 
@@ -411,7 +412,7 @@ export function messageFilterFromPb(filter: pb.MessageFilter): MessageFilter {
     case pb.MessageFilter.FilterCase.FILTER_BASIC: {
       return {
         type: 'basic-message-filter',
-        value: {},
+        value: basicMessageFilterFromPb(filter.getFilterBasic()!),
         isEnabled: filter.getIsEnabled(),
         isNegated: filter.getIsNegated(),
       };

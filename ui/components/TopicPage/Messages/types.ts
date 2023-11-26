@@ -1,3 +1,4 @@
+import { BasicMessageFilter } from "./basic-message-filter-types";
 import { TopicSelector } from "./topic-selector/topic-selector";
 
 export type SessionState =
@@ -119,10 +120,6 @@ export type PartialMessageDescriptor = Partial<MessageDescriptor>;
 
 export type JsMessageFilter = {
   jsCode: string;
-};
-
-export type BasicMessageFilter = {
-
 };
 
 export type MessageFilter = {
