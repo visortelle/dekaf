@@ -121,6 +121,7 @@ export type BasicMessageFilterOp = {
   isEnabled: boolean,
   isNegated: boolean,
   op: AnyTestOp | BasicMessageFilterBraces
+  reactKey: string
 }
 
 export type BasicMessageFilterKeyTarget = {

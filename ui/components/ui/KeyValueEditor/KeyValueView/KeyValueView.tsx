@@ -7,7 +7,7 @@ import s from './KeyValueView.module.css';
 import st from '../../SimpleTable/SimpleTable.module.css';
 import deleteIcon from './icons/delete.svg';
 import createIcon from './icons/create.svg';
-import { clone } from 'lodash';
+import { cloneDeep } from 'lodash';
 
 type Props = {
   onChange: (v: IndexedKv) => void,
@@ -39,7 +39,7 @@ const KeyValueView = (props: Props) => {
     const oldKv = props.value[index];
     const newKv = { ...oldKv, value };
 
-    const newKvs = clone(props.value);
+    const newKvs = cloneDeep(props.value);
     newKvs[index] = newKv;
 
     props.onChange(newKvs);
@@ -49,7 +49,7 @@ const KeyValueView = (props: Props) => {
     const oldKv = props.value[index];
     const newKv = { ...oldKv, key };
 
-    const newKvs = clone(props.value);
+    const newKvs = cloneDeep(props.value);
     newKvs[index] = newKv;
 
     props.onChange(newKvs);

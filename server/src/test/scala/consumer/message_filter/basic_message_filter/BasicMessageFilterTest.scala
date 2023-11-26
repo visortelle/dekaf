@@ -307,7 +307,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = BasicMessageFilterBraces(
                                     mode = BasicMessageFilterBracesMode.Any,
                                     ops = Vector(
@@ -319,7 +319,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                                         BasicMessageFilterOp(
                                             op = AnyTestOp(
                                                 op = TestOpArrayAny(
-                                                    op = BasicMessageFilterOp(
+                                                    testItemOp = BasicMessageFilterOp(
                                                         op = AnyTestOp(
                                                             op = TestOpStringIncludes(includes = "abc")
                                                         )
@@ -1069,7 +1069,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals(equals = "abc")
                                 )
@@ -1090,7 +1090,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals(equals = "abc")
                                 )
@@ -1110,7 +1110,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals(equals = "abc")
                                 )
@@ -1130,7 +1130,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals("abc")
                                 )
@@ -1151,10 +1151,10 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     TestOpArrayAny(
-                                        op = BasicMessageFilterOp(
+                                        testItemOp = BasicMessageFilterOp(
                                             op = AnyTestOp(
                                                 op = TestOpStringEquals("123")
                                             )
@@ -1177,10 +1177,10 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     TestOpArrayAny(
-                                        op = BasicMessageFilterOp(
+                                        testItemOp = BasicMessageFilterOp(
                                             op = AnyTestOp(
                                                 op = TestOpStringEquals("123")
                                             )
@@ -1203,10 +1203,10 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAny(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     TestOpArrayAny(
-                                        op = BasicMessageFilterOp(
+                                        testItemOp = BasicMessageFilterOp(
                                             op = AnyTestOp(
                                                 op = TestOpStringEquals("123")
                                             )
@@ -1235,7 +1235,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals(equals = "abc")
                                 )
@@ -1255,7 +1255,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals(equals = "abc")
                                 )
@@ -1275,7 +1275,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals(equals = "abc")
                                 )
@@ -1296,7 +1296,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals("abc")
                                 )
@@ -1316,7 +1316,7 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     op = TestOpStringEquals("abc")
                                 )
@@ -1337,10 +1337,10 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     TestOpArrayAll(
-                                        op = BasicMessageFilterOp(
+                                        testItemOp = BasicMessageFilterOp(
                                             op = AnyTestOp(
                                                 op = TestOpStringEquals("abc")
                                             )
@@ -1363,10 +1363,10 @@ object BasicMessageFilterTest extends ZIOSpecDefault:
                 op = BasicMessageFilterOp(
                     op = AnyTestOp(
                         op = TestOpArrayAll(
-                            op = BasicMessageFilterOp(
+                            testItemOp = BasicMessageFilterOp(
                                 op = AnyTestOp(
                                     TestOpArrayAll(
-                                        op = BasicMessageFilterOp(
+                                        testItemOp = BasicMessageFilterOp(
                                             op = AnyTestOp(
                                                 op = TestOpStringEquals("abc")
                                             )

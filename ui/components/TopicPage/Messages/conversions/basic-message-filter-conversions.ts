@@ -1,6 +1,7 @@
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import * as pb from "../../../../grpc-web/tools/teal/pulsar/ui/api/v1/consumer_pb";
 import { AnyTestOp, BasicMessageFilterBraces, BasicMessageFilterBracesMode, BasicMessageFilterKeyTarget, BasicMessageFilterOp, BasicMessageFilterPropertyTarget, BasicMessageFilterSessionContextStateTarget, BasicMessageFilterTarget, BasicMessageFilterValueTarget, TestOpAlwaysOk, TestOpArrayAll, TestOpArrayAny, TestOpBoolEquals, TestOpIsDefined, TestOpIsNull, TestOpStringEndsWith, TestOpStringEquals, TestOpStringIncludes, TestOpStringMatchesRegex, TestOpStringStartsWith, BasicMessageFilter } from "../basic-message-filter-types";
+import { v4 as uuid } from 'uuid';
 
 export function testOpAlwaysOkFromPb(v: pb.TestOpAlwaysOk): TestOpAlwaysOk {
   return {
@@ -226,14 +227,15 @@ export function basicMessageFilterBracesFromPb(v: pb.BasicMessageFilterBraces): 
   return {
     type: "BasicMessageFilterBraces",
     mode: basicMessageFilterBracesModeFromPb(v.getMode()),
-    ops: []
-    // ops: v.getOpsList().map((op) => // TODO)
+    ops: v.getOpsList().map((op) => basicMessageFilterOpFromPb(op))
   }
 }
 
 export function basicMessageFilterBracesToPb(v: BasicMessageFilterBraces): pb.BasicMessageFilterBraces {
   const resultPb = new pb.BasicMessageFilterBraces();
-  // TODO
+  resultPb.setMode(basicMessageFilterBracesModeToPb(v.mode));
+  resultPb.setOpsList(v.ops.map(basicMessageFilterOpToPb));
+
   return resultPb;
 }
 
@@ -252,7 +254,8 @@ export function basicMessageFilterOpFromPb(v: pb.BasicMessageFilterOp): BasicMes
     "type": "BasicMessageFilterOp",
     isEnabled: v.getIsEnabled(),
     isNegated: v.getIsNegated(),
-    op
+    op,
+    reactKey: uuid()
   }
 }
 

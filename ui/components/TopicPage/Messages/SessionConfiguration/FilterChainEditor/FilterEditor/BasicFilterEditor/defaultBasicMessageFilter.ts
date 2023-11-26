@@ -1,4 +1,5 @@
 import { BasicMessageFilter } from "../../../../basic-message-filter-types";
+import { v4 as uuid } from "uuid";
 
 export const defaultBasicMessageFilter: BasicMessageFilter = {
   type: "BasicMessageFilter",
@@ -17,6 +18,7 @@ export const defaultBasicMessageFilter: BasicMessageFilter = {
       op: {
         type: "TestOpIsDefined",
       }
-    }
+    },
+    reactKey: uuid()
   }
 }
