@@ -1,23 +1,21 @@
-import fs from 'fs/promises';
+import fs from 'fs';
+import fsAsync from 'fs/promises';
+import os from 'os';
 import path from 'path';
+import https from 'https';
 import { apiChannel } from '../../channels';
 import { getPaths } from '../fs/handlers';
-import { PulsarDistributionStatus, ListPulsarDistributionsResult, KnownPulsarVersion, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion } from './types';
+import { PulsarDistributionStatus, ListPulsarDistributionsResult, KnownPulsarVersion, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion, DownloadPulsarDistribution } from './types';
 import { ErrorHappened } from '../api/types';
+import { pulsarVersionInfos } from './versions';
 
-const downloadingState: Partial<Record<AnyPulsarVersion, PulsarDistributionStatus>> = {};
-
-export async function handleListPulsarDistributionsRequest(event: Electron.IpcMainEvent): Promise<void> {
+export async function handleListPulsarDistributions(event: Electron.IpcMainEvent): Promise<void> {
   async function getDistributionStatus(version: AnyPulsarVersion): Promise<PulsarDistributionStatus> {
-    if (downloadingState[version]) {
-      return downloadingState[version]!;
-    }
-
     const paths = getPaths();
 
     let isDownloaded = true;
     try {
-      await fs.readdir(path.join(paths.pulsarDistributionsDir, version))
+      await fsAsync.readdir(path.join(paths.pulsarDistributionsDir, version))
     } catch (_) {
       isDownloaded = false;
     };
@@ -37,7 +35,7 @@ export async function handleListPulsarDistributionsRequest(event: Electron.IpcMa
 
   try {
     const paths = getPaths();
-    const downloadedVersions = (await fs.readdir(paths.pulsarDistributionsDir))
+    const downloadedVersions = (await fsAsync.readdir(paths.pulsarDistributionsDir))
       .filter(p => !p.startsWith('.'))
 
     const versions = Array.from(new Set(downloadedVersions.concat(knownPulsarVersions)));
@@ -77,25 +75,52 @@ export async function handleListPulsarDistributionsRequest(event: Electron.IpcMa
   }
 }
 
-export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEvent): Promise<void> {
-  // try {
-  //   const paths = getPaths();
-  //   const versions = (await fs.readdir(path.join(paths.dataDir, ...distributionsDirPath)))
-  //     .filter(p => p.startsWith('.'));
+export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEvent, arg: DownloadPulsarDistribution): Promise<void> {
+  try {
+    // Downloading
+    const url = pulsarVersionInfos.find(v => v.version === arg.version)?.downloadUrl!;
+    const tempDir = await fsAsync.mkdtemp(path.join(os.tmpdir(), `dekaf-pulsar-${arg.version}`));
+    const out = path.join(tempDir, arg.version);
 
-  //   const res: ListPulsarDistributionsResult = {
-  //     type: "ListPulsarDistributionsResponse",
-  //     status: { code: "OK" },
-  //     versions
-  //   }
-  //   event.reply(apiChannel, res);
-  //   return;
-  // } catch (err) {
-  //   const res: ListPulsarDistributionsResponse = {
-  //     type: "ListPulsarDistributionsResponse",
-  //     status: { code: "Error", message: (err as Error).toString() }
-  //   }
-  //   event.reply(apiChannel, res);
-  //   return;
-  // }
+    let bytesTotal = 0;
+    let bytesReceived = 0;
+
+    const updateDownloadProgress = (receivedBytes: number) => {
+      bytesReceived = bytesReceived + receivedBytes;
+
+      const req: PulsarDistributionStatusChanged = {
+        type: "PulsarDistributionStatusChanged",
+        version: arg.version,
+        distributionStatus: {
+          type: "downloading",
+          version: arg.version,
+          bytesReceived,
+          bytesTotal
+        }
+      };
+      event.reply(apiChannel, req);
+    }
+
+    const req = https.get(url, res => {
+      res.pipe(fs.createWriteStream(out));
+
+      res.on('data', (res) => {
+        updateDownloadProgress(res.length);
+      });
+    });
+
+    req.on('response', (res) => {
+      bytesTotal = parseInt(res.headers['content-length'] || '0', 10);
+    });
+
+    // Unpacking
+    const paths = getPaths();
+    const unpackDest = path.join(paths.pulsarDistributionsDir, arg.version);
+  } catch (err) {
+    const res: ErrorHappened = {
+      type: "ErrorHappened",
+      message: `Unable to install the Pulsar distribution. ${err}`
+    };
+    event.reply(apiChannel, res);
+  }
 }

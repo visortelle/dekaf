@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import s from './PulsarDistributionsEditor.module.css'
+import s from './PulsarDistributionsPicker.module.css'
 
 import PulsarVersionInfoElement from './PulsarVersionInfoElement/PulsarVersionInfoElement';
 import { AnyPulsarVersion, ListPulsarDistributions } from '../../main/api/local-pulsar-distributions/types';
 import { apiChannel } from '../../main/channels';
 
-export type PulsarDistributionsEditorProps = {
+export type PulsarDistributionsPickerProps = {
 
 };
 
-const PulsarDistributionsEditor: React.FC<PulsarDistributionsEditorProps> = (props) => {
+const PulsarDistributionsPicker: React.FC<PulsarDistributionsPickerProps> = (props) => {
   const [versions, setVersions] = useState<AnyPulsarVersion[]>([]);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const PulsarDistributionsEditor: React.FC<PulsarDistributionsEditorProps> = (pro
 
     window.electron.ipcRenderer.on('api', (arg) => {
       if (arg.type === "ListPulsarDistributionsResult") {
-        setVersions(arg.versions || []);
+        setVersions(arg.versions?.sort((a, b) => b.localeCompare(a, 'en', { numeric: true })) || []);
       }
     });
   }, []);
@@ -33,4 +33,4 @@ const PulsarDistributionsEditor: React.FC<PulsarDistributionsEditorProps> = (pro
   );
 }
 
-export default PulsarDistributionsEditor;
+export default PulsarDistributionsPicker;

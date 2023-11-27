@@ -1,0 +1,52 @@
+import React, { useEffect, useState } from 'react';
+import s from './PulsarVersionInfoElement.module.css'
+import { AnyPulsarVersion, DownloadPulsarDistribution, KnownPulsarVersion, PulsarDistributionStatus, PulsarVersionInfo, knownPulsarVersions } from '../../../main/api/local-pulsar-distributions/types';
+import { apiChannel } from '../../../main/channels';
+import SmallButton from '../../ui/SmallButton/SmallButton';
+
+export type PulsarVersionInfoElementProps = {
+  version: AnyPulsarVersion
+};
+
+const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props) => {
+  const [distributionStatus, setDistributionStatus] = useState<PulsarDistributionStatus>({ type: "unknown", version: props.version });
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('api', (arg) => {
+      if (arg.type === "PulsarDistributionStatusChanged" && arg.version === props.version) {
+        setDistributionStatus(arg.distributionStatus);
+      }
+    });
+  }, []);
+
+  return (
+    <div className={s.PulsarVersionInfoElement}>
+      <div><strong>{props.version}</strong></div>
+      {distributionStatus.type === "downloading" && (
+        <div><strong>{distributionStatus.bytesReceived}</strong> of <strong>{distributionStatus.bytesTotal}</strong></div>
+      )}
+      {distributionStatus.type === "downloaded" && (
+        <SmallButton
+          text="Use this version"
+          type='primary'
+          onClick={() => {}}
+        />
+      )}
+      {distributionStatus.type === "not-downloaded" && knownPulsarVersions.includes(props.version as any) && (
+        <SmallButton
+          text="Install this version"
+          type='regular'
+          onClick={() => {
+            const req: DownloadPulsarDistribution = {
+              type: "DownloadPulsarDistribution",
+              version: props.version as KnownPulsarVersion
+            };
+            window.electron.ipcRenderer.sendMessage(apiChannel, req);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+export default PulsarVersionInfoElement;

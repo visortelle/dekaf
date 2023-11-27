@@ -1,7 +1,7 @@
 import { GetPaths, GetPathsResponse } from './fs/types'
 import { handleGetPaths } from "./fs/handlers";
-import { handleListPulsarDistributionsRequest } from "./local-pulsar-distributions/handlers";
-import { DownloadPulsarDistributionRequest, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions} from './local-pulsar-distributions/types';
+import { handleDownloadPulsarDistribution, handleListPulsarDistributions } from "./local-pulsar-distributions/handlers";
+import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions} from './local-pulsar-distributions/types';
 import { ErrorHappened } from './api/types';
 
 export type ApiEvent = ErrorHappened |
@@ -9,7 +9,7 @@ export type ApiEvent = ErrorHappened |
   GetPathsResponse |
   ListPulsarDistributions |
   ListPulsarDistributionsResult |
-  DownloadPulsarDistributionRequest |
+  DownloadPulsarDistribution |
   PulsarDistributionStatusChanged
 
 
@@ -26,7 +26,9 @@ export const apiService: ApiService = {
     switch(arg.type) {
       case "GetPaths": handleGetPaths(event);
         break;
-      case "ListPulsarDistributions": handleListPulsarDistributionsRequest(event);
+      case "ListPulsarDistributions": handleListPulsarDistributions(event);
+        break;
+      case "DownloadPulsarDistribution": handleDownloadPulsarDistribution(event, arg);
         break;
     }
   }

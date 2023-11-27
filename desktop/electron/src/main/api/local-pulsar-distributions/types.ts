@@ -17,7 +17,8 @@ export type PulsarDistributionStatus = {
 } | {
   type: "downloading",
   version: AnyPulsarVersion
-  percentage: number
+  bytesTotal: number
+  bytesReceived: number
 } | {
   type: "downloaded"
   version: AnyPulsarVersion,
@@ -36,9 +37,9 @@ export type ListPulsarDistributionsResult = {
   versions?: string[]
 }
 
-export type DownloadPulsarDistributionRequest = {
-  type: "DownloadPulsarDistributionRequest",
-  pulsarVersion: KnownPulsarVersion
+export type DownloadPulsarDistribution = {
+  type: "DownloadPulsarDistribution",
+  version: KnownPulsarVersion
 }
 
 export type GetPulsarDistributionStatus = {
@@ -58,15 +59,15 @@ export type CancelDownloadPulsarDistributionRequest = {
 
 export type CancelDownloadPulsarDistributionResponse = {
   type: "CancelDownloadPulsarDistributionResponse",
-  pulsarVersion: AnyPulsarVersion
+  version: AnyPulsarVersion
 }
 
 export type DeletePulsarDistributionRequest = {
   type: "DeletePulsarDistributionRequest",
-  pulsarVersion: AnyPulsarVersion
+  version: AnyPulsarVersion
 }
 
 export type DeletePulsarDistributionResponse = {
   type: "DeletePulsarDistributionResponse",
-  pulsarVersion: AnyPulsarVersion
+  version: AnyPulsarVersion
 }

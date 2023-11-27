@@ -8,7 +8,7 @@ import FormLabel from './ui/FormLabel/FormLabel';
 import Input from './ui/Input/Input';
 import useLocalStorage from "use-local-storage-state";
 import { ApiEvent } from '../main/api/service';
-import PulsarDistributionsEditor from './PulsarDistributionsEditor/PulsarDistributionsEditor';
+import PulsarDistributionsPicker from './PulsarDistributionPicker/PulsarDistributionPicker';
 
 // Debug
 if(process.env.NODE_ENV === "development") {
@@ -23,7 +23,7 @@ function InitialAppScreen() {
 
   return (
     <div>
-      <PulsarDistributionsEditor />
+      <PulsarDistributionsPicker />
       <FormItem>
         <FormLabel content="License ID" />
         <Input
