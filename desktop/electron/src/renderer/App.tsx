@@ -1,42 +1,91 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
 import './App.css';
+import path from 'path';
 import fs from 'fs';
+import { spawn } from 'child_process';
+import { getConfigDir, getDataDir } from '../api/get-paths';
+import Button from './ui/Button/Button';
+import '../../assets/globals.css';
+import '../../assets/fonts.css';
+import FormItem from './ui/FormItem/FormItem';
+import FormLabel from './ui/FormLabel/FormLabel';
+import { useState } from 'react';
+import Input from './ui/Input/Input';
+import useLocalStorage from "use-local-storage-state";
+import { ApiEvent } from '../api/api-service';
 
-function Hello() {
-  console.log('dIIIIIIIIIIIIIR', fs.readdirSync('/tmp'));
+window.electron.ipcRenderer.once('api', (arg) => {
+  // eslint-disable-next-line no-console
+  console.log('received event on client', arg);
+});
+
+function InitialAppScreen() {
+  const [licenseId, setLicenseId] = useLocalStorage<string>('DEKAF_LICENSE_ID', { defaultValue: '' });
+  const [licenseToken, setLicenseToken] = useLocalStorage<string>('DEKAF_LICENSE_TOKEN', { defaultValue: '' });
+
   return (
     <div>
-      <div className="Hello">
-        <img width="200" alt="icon" src={icon} />
-      </div>
-      <h1>electron-react-boilerplate</h1>
-      <div className="Hello">
-        <a
-          href="https://electron-react-boilerplate.js.org/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            Read our docs
-          </button>
-        </a>
-        <a
-          href="https://github.com/sponsors/electron-react-boilerplate"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="folded hands">
-              🙏
-            </span>
-            Donate
-          </button>
-        </a>
-      </div>
+      <FormItem>
+        <FormLabel content="License ID" />
+        <Input
+          value={licenseId}
+          onChange={setLicenseId}
+        />
+      </FormItem>
+
+      <FormItem>
+        <FormLabel content="License Token" />
+        <Input
+          value={licenseToken}
+          onChange={setLicenseToken}
+          inputProps={{ type: 'password' }}
+        />
+      </FormItem>
+
+      <Button
+        onClick={() => {
+          const event: ApiEvent = { type: "GetPathsRequest" };
+          window.electron.ipcRenderer.sendMessage('api', event);
+          // const pulsarProcess = spawn(
+          //   pulsarBin,
+          //   ["standalone"],
+          //   {
+          //     env: {'JAVA_HOME': javaHome },
+          //     stdio: "pipe"
+          //   }
+          // );
+          // pulsarProcess.stdout.on("data", data => console.log(`[LOG][pulsar] ${data}`));
+          // pulsarProcess.stderr.on("data", data => console.log(`[ERROR][pulsar] ${data}`));
+        }}
+        type='primary'
+        text='Start local Pulsar instance'
+      />
+      <Button
+        onClick={() => {
+          // const pulsarProcess = spawn(
+          //   dekafBin,
+          //   [],
+          //   {
+          //     env: {
+          //       'JAVA_HOME': javaHome,
+          //       'DEKAF_LICENSE_ID': licenseId,
+          //       'DEKAF_LICENSE_TOKEN': licenseToken,
+          //       'DEKAF_DATA_DIR': path.join(pulsarInstancesDir, 'instance-1', 'dekaf-data')
+          //     },
+          //     stdio: "pipe"
+          //   }
+          // );
+          // pulsarProcess.stdout.on("data", data => console.log(`[LOG][pulsar] ${data}`));
+          // pulsarProcess.stderr.on("data", data => console.log(`[ERROR][pulsar] ${data}`));
+
+
+          // setTimeout(() => {
+          //   window.location.href="http://localhost:8090/"
+          // }, 10_000);
+        }}
+        type='primary'
+        text='Connect'
+      />
     </div>
   );
 }
@@ -45,7 +94,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Hello />} />
+        <Route path="/" element={<InitialAppScreen />} />
       </Routes>
     </Router>
   );

@@ -1,0 +1,26 @@
+.H1,
+.H2,
+.H3 {
+  margin: 0;
+  font-weight: 500;
+  position: relative;
+  display: inline-flex;
+}
+
+.H1 {
+  font-size: 32rem;
+}
+
+.H2 {
+  font-size: 24rem;
+}
+
+.H3 {
+  font-size: 18rem;
+}
+
+.HelpIcon {
+  position: absolute;
+  top: -12rem;
+  right: -20rem;
+}
