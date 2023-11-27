@@ -1,4 +1,4 @@
-import HelpIcon from '../ConfigurationTable/HelpIcon/HelpIcon';
+import HelpIcon from '../HelpIcon/HelpIcon';
 import s from './H.module.css';
 
 export type HProps = {

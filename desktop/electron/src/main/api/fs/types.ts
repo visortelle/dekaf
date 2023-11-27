@@ -1,7 +1,5 @@
-import { Status } from "./response-status";
-
-export type GetPathsRequest = {
-  type: "GetPathsRequest"
+export type GetPaths = {
+  type: "GetPaths"
 };
 
 export type Paths = {
@@ -15,6 +13,5 @@ export type Paths = {
 
 export type GetPathsResponse = {
   type: "GetPathsResponse",
-  status: Status,
-  paths?: Paths
+  paths: Paths
 };

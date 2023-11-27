@@ -11,7 +11,7 @@
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import MenuBuilder from './menu';
-import { apiService } from '../api/service';
+import { apiService } from './api/service';
 import { resolveHtmlPath } from './util';
 
 let mainWindow: BrowserWindow | null = null;

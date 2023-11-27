@@ -1,23 +1,21 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import path from 'path';
-import fs from 'fs';
-import { spawn } from 'child_process';
-import { getConfigDir, getDataDir } from '../api/get-paths';
 import Button from './ui/Button/Button';
 import '../../assets/globals.css';
 import '../../assets/fonts.css';
 import FormItem from './ui/FormItem/FormItem';
 import FormLabel from './ui/FormLabel/FormLabel';
-import { useState } from 'react';
 import Input from './ui/Input/Input';
 import useLocalStorage from "use-local-storage-state";
-import { ApiEvent } from '../api/service';
+import { ApiEvent } from '../main/api/service';
+import PulsarDistributionsEditor from './PulsarDistributionsEditor/PulsarDistributionsEditor';
 
-window.electron.ipcRenderer.once('api', (arg) => {
-  // eslint-disable-next-line no-console
-  console.log('received event on client', arg);
-});
+// Debug
+if(process.env.NODE_ENV === "development") {
+  window.electron.ipcRenderer.once('api', (arg) => {
+    console.debug('Received API event:', arg);
+  });
+}
 
 function InitialAppScreen() {
   const [licenseId, setLicenseId] = useLocalStorage<string>('DEKAF_LICENSE_ID', { defaultValue: '' });
@@ -25,6 +23,7 @@ function InitialAppScreen() {
 
   return (
     <div>
+      <PulsarDistributionsEditor />
       <FormItem>
         <FormLabel content="License ID" />
         <Input
@@ -44,7 +43,7 @@ function InitialAppScreen() {
 
       <Button
         onClick={() => {
-          const event: ApiEvent = { type: "GetPathsRequest" };
+          const event: ApiEvent = { type: "GetPaths" };
           window.electron.ipcRenderer.sendMessage('api', event);
           // const pulsarProcess = spawn(
           //   pulsarBin,

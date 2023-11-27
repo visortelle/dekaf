@@ -1,7 +1,6 @@
 import s from './Icons.module.css';
-import pulsarLogo from './pular-logo.svg';
+import pulsarLogo from './pulsar-logo.svg';
 import SvgIcon from '../SvgIcon/SvgIcon';
-import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
 export type NodeIconsProps = {
   textColor: string;
@@ -40,62 +39,6 @@ export const NodeIcon: React.FC<NodeIconsProps> = (props) => {
       {props.addon ? <div className={s.NodeIconAddon}>{props.addon}</div> : null}
     </div>
   );
-}
-
-export type TopicIconProps = {
-  onClick?: () => void;
-  isExpanded?: boolean;
-  isExpandable?: boolean;
-  className?: string;
-  isGray?: boolean;
-  isPartitioned?: boolean;
-  topicPersistency?: PulsarTopicPersistency;
-}
-export const TopicIcon: React.FC<TopicIconProps> = (props) => {
-  let backgroundColor = 'initial';
-  let textColor = 'initial';
-  let title = "to";
-  let style = {};
-
-  switch (props.topicPersistency) {
-    case 'persistent': backgroundColor = 'var(--accent-color-green)'; textColor = '#fff'; title = "to"; break;
-    case 'non-persistent': backgroundColor = '#fff'; textColor = 'var(--accent-color-green)'; title = "np"; style = { backgroundColor: '#eee' }; break;
-  }
-
-  return (
-    <NodeIcon
-      title={title}
-      textColor={textColor}
-      backgroundColor={backgroundColor}
-      onClick={props.onClick}
-      isExpanded={props.isExpanded}
-      isExpandable={props.isExpandable}
-      className={props.className}
-      isGray={props.isGray}
-      style={style}
-      addon={props.isPartitioned ? 'P' : undefined}
-    />
-  );
-}
-
-export type NamespaceIconProps = {
-  onClick?: () => void;
-  isExpanded?: boolean;
-  isExpandable?: boolean;
-  className?: string;
-  isGray?: boolean;
-}
-export const NamespaceIcon: React.FC<NamespaceIconProps> = (props) => {
-  return <NodeIcon
-    title="ns"
-    textColor='#fff'
-    backgroundColor='var(--accent-color-light-blue)'
-    onClick={props.onClick}
-    isExpanded={props.isExpanded}
-    isExpandable={props.isExpandable}
-    className={props.className}
-    isGray={props.isGray}
-  />
 }
 
 export type TenantIconProps = {

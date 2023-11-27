@@ -1,7 +1,8 @@
 import electron from 'electron';
 import path from 'path';
-import { GetPathsResponse, Paths } from "../events/fs";
-import { apiChannel } from '../../main/preload';
+import { GetPathsResponse as GetPathsResult, Paths } from './types';
+import { apiChannel } from '../../channels';
+import { ErrorHappened } from '../api/types';
 
 export function handleGetPaths(event: Electron.IpcMainEvent): void {
   let paths: Paths;
@@ -9,17 +10,16 @@ export function handleGetPaths(event: Electron.IpcMainEvent): void {
   try {
     paths = getPaths();
   } catch (err) {
-    const res: GetPathsResponse = {
-      type: "GetPathsResponse",
-      status: { code: "Error", message: (err as Error).toString() }
+    const res: ErrorHappened = {
+      type: "ErrorHappened",
+      message: (err as Error).message
     }
     event.reply(apiChannel, res);
     return;
   }
 
-  const res: GetPathsResponse = {
+  const res: GetPathsResult = {
     type: "GetPathsResponse",
-    status: { code: "OK" },
     paths
   };
   event.reply(apiChannel, res);

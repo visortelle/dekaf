@@ -1,5 +1,5 @@
 import s from './Icons.module.css';
-import pulsarLogo from './pular-logo.svg';
+import pulsarLogo from './pulsar-logo.svg';
 import SvgIcon from '../SvgIcon/SvgIcon';
 import { PulsarTopicPersistency } from '../../pulsar/pulsar-resources';
 
