@@ -3,24 +3,27 @@ export type KnownPulsarVersion = typeof knownPulsarVersions[number];
 export type AnyPulsarVersion = string;
 
 export type PulsarVersionInfo = {
-  version: string,
+  version: KnownPulsarVersion,
   downloadUrl: string,
   sha512: string
 };
 
 export type PulsarDistributionStatus = {
+  type: "unknown",
+  version: AnyPulsarVersion
+} | {
   type: "not-downloaded",
-  version: string
+  version: AnyPulsarVersion
 } | {
   type: "downloading",
-  version: string
+  version: AnyPulsarVersion
   percentage: number
 } | {
   type: "downloaded"
-  version: string,
+  version: AnyPulsarVersion,
 } | {
   type: "error",
-  version: string
+  version: AnyPulsarVersion
   message: string
 };
 
@@ -44,26 +47,26 @@ export type GetPulsarDistributionStatus = {
 
 export type PulsarDistributionStatusChanged = {
   type: "PulsarDistributionStatusChanged",
-  pulsarVersion: string,
+  version: AnyPulsarVersion,
   distributionStatus: PulsarDistributionStatus
 }
 
 export type CancelDownloadPulsarDistributionRequest = {
   type: "CancelDownloadPulsarDistributionRequest",
-  pulsarVersion: string
+  version: AnyPulsarVersion
 }
 
 export type CancelDownloadPulsarDistributionResponse = {
   type: "CancelDownloadPulsarDistributionResponse",
-  pulsarVersion: string
+  pulsarVersion: AnyPulsarVersion
 }
 
 export type DeletePulsarDistributionRequest = {
   type: "DeletePulsarDistributionRequest",
-  pulsarVersion: string
+  pulsarVersion: AnyPulsarVersion
 }
 
 export type DeletePulsarDistributionResponse = {
   type: "DeletePulsarDistributionResponse",
-  pulsarVersion: string
+  pulsarVersion: AnyPulsarVersion
 }

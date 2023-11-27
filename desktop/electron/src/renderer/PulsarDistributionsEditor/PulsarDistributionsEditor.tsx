@@ -16,7 +16,7 @@ const PulsarDistributionsEditor: React.FC<PulsarDistributionsEditorProps> = (pro
     const listReq: ListPulsarDistributions = { type: "ListPulsarDistributions" };
     window.electron.ipcRenderer.sendMessage(apiChannel, listReq);
 
-    window.electron.ipcRenderer.once('api', (arg) => {
+    window.electron.ipcRenderer.on('api', (arg) => {
       if (arg.type === "ListPulsarDistributionsResult") {
         setVersions(arg.versions || []);
       }

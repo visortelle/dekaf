@@ -6,9 +6,10 @@ export type Paths = {
   dataDir: string,
   configDir: string,
   javaHome: string,
+  pulsarDistributionsDir: string
   pulsarInstancesDir: string,
   pulsarBin: string,
-  dekafBin: string
+  dekafBin: string,
 }
 
 export type GetPathsResponse = {

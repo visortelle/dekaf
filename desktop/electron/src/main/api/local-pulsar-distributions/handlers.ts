@@ -5,7 +5,6 @@ import { getPaths } from '../fs/handlers';
 import { PulsarDistributionStatus, ListPulsarDistributionsResult, KnownPulsarVersion, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion } from './types';
 import { ErrorHappened } from '../api/types';
 
-const distributionsDirPath = ["pulsar", "distributions"];
 const downloadingState: Partial<Record<AnyPulsarVersion, PulsarDistributionStatus>> = {};
 
 export async function handleListPulsarDistributionsRequest(event: Electron.IpcMainEvent): Promise<void> {
@@ -14,15 +13,31 @@ export async function handleListPulsarDistributionsRequest(event: Electron.IpcMa
       return downloadingState[version]!;
     }
 
+    const paths = getPaths();
+
+    let isDownloaded = true;
+    try {
+      await fs.readdir(path.join(paths.pulsarDistributionsDir, version))
+    } catch (_) {
+      isDownloaded = false;
+    };
+
+    if (isDownloaded) {
+      return {
+        type: "downloaded",
+        version
+      };
+    }
+
     return {
-      type: "downloaded",
-      version
+        type: "not-downloaded",
+        version
     };
   }
 
   try {
     const paths = getPaths();
-    const downloadedVersions = (await fs.readdir(path.join(paths.dataDir, ...distributionsDirPath)))
+    const downloadedVersions = (await fs.readdir(paths.pulsarDistributionsDir))
       .filter(p => !p.startsWith('.'))
 
     const versions = Array.from(new Set(downloadedVersions.concat(knownPulsarVersions)));
@@ -39,7 +54,7 @@ export async function handleListPulsarDistributionsRequest(event: Electron.IpcMa
         const res: PulsarDistributionStatusChanged = {
           type: "PulsarDistributionStatusChanged",
           distributionStatus,
-          pulsarVersion: version
+          version
         }
         event.reply(apiChannel, res);
       } catch (err) {

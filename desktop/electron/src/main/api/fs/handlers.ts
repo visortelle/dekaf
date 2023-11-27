@@ -61,8 +61,9 @@ export function getPaths(): Paths {
     dataDir: getDataDir(),
     configDir: getConfigDir(),
     javaHome: path.join(dataDir, `graalvm/graalvm-jdk-21.0.1+12.1/Contents/Home`),
+    pulsarDistributionsDir: path.join(dataDir, "pulsar", "distributions"),
     pulsarInstancesDir: path.join(dataDir, `pulsar/instances`),
     pulsarBin: path.join(dataDir, `pulsar/versions/3.1.1/bin/pulsar`),
-    dekafBin: path.join(dataDir, `dekaf/current/bin/dekaf`)
+    dekafBin: path.join(dataDir, `dekaf/current/bin/dekaf`),
   };
 };

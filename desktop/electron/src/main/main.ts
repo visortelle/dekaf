@@ -80,7 +80,10 @@ const createWindow = async () => {
     } else {
       mainWindow.show();
       mainWindow.maximize();
-      mainWindow.webContents.openDevTools();
+
+      if (process.env.NODE_ENV === "development") {
+        mainWindow.webContents.openDevTools();
+      }
     }
   });
 

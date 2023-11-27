@@ -2,8 +2,10 @@ import { GetPaths, GetPathsResponse } from './fs/types'
 import { handleGetPaths } from "./fs/handlers";
 import { handleListPulsarDistributionsRequest } from "./local-pulsar-distributions/handlers";
 import { DownloadPulsarDistributionRequest, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions} from './local-pulsar-distributions/types';
+import { ErrorHappened } from './api/types';
 
-export type ApiEvent = GetPaths |
+export type ApiEvent = ErrorHappened |
+  GetPaths |
   GetPathsResponse |
   ListPulsarDistributions |
   ListPulsarDistributionsResult |

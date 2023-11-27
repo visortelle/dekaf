@@ -12,7 +12,7 @@ import PulsarDistributionsEditor from './PulsarDistributionsEditor/PulsarDistrib
 
 // Debug
 if(process.env.NODE_ENV === "development") {
-  window.electron.ipcRenderer.once('api', (arg) => {
+  window.electron.ipcRenderer.on('api', (arg) => {
     console.debug('Received API event:', arg);
   });
 }

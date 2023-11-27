@@ -1,5 +1,3 @@
-import { Paths } from "../fs/types";
-
 export type LocalPulsar = {
   name: string,
   version: string,
