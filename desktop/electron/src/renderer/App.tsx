@@ -12,7 +12,7 @@ import FormLabel from './ui/FormLabel/FormLabel';
 import { useState } from 'react';
 import Input from './ui/Input/Input';
 import useLocalStorage from "use-local-storage-state";
-import { ApiEvent } from '../api/api-service';
+import { ApiEvent } from '../api/service';
 
 window.electron.ipcRenderer.once('api', (arg) => {
   // eslint-disable-next-line no-console
