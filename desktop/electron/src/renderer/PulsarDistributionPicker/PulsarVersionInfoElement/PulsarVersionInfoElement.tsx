@@ -3,6 +3,7 @@ import s from './PulsarVersionInfoElement.module.css'
 import { AnyPulsarVersion, DownloadPulsarDistribution, KnownPulsarVersion, PulsarDistributionStatus, PulsarVersionInfo, knownPulsarVersions } from '../../../main/api/local-pulsar-distributions/types';
 import { apiChannel } from '../../../main/channels';
 import SmallButton from '../../ui/SmallButton/SmallButton';
+import * as I18n from '../../app/I18n/I18n';
 
 export type PulsarVersionInfoElementProps = {
   version: AnyPulsarVersion
@@ -10,6 +11,7 @@ export type PulsarVersionInfoElementProps = {
 
 const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props) => {
   const [distributionStatus, setDistributionStatus] = useState<PulsarDistributionStatus>({ type: "unknown", version: props.version });
+  const i18n = I18n.useContext();
 
   useEffect(() => {
     window.electron.ipcRenderer.on('api', (arg) => {
@@ -23,7 +25,7 @@ const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props
     <div className={s.PulsarVersionInfoElement}>
       <div><strong>{props.version}</strong></div>
       {distributionStatus.type === "downloading" && (
-        <div><strong>{distributionStatus.bytesReceived}</strong> of <strong>{distributionStatus.bytesTotal}</strong></div>
+        <div>Downloaded <strong>{i18n.formatBytes(distributionStatus.bytesReceived)}</strong> of <strong>{i18n.formatBytes(distributionStatus.bytesTotal)}</strong></div>
       )}
       {distributionStatus.type === "downloaded" && (
         <SmallButton

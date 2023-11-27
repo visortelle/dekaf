@@ -20,7 +20,11 @@ export type PulsarDistributionStatus = {
   bytesTotal: number
   bytesReceived: number
 } | {
-  type: "downloaded"
+  type: "unpacking",
+  version: AnyPulsarVersion
+  percentage: number
+} | {
+  type: "installed"
   version: AnyPulsarVersion,
 } | {
   type: "error",

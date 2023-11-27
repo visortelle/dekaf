@@ -1,8 +1,9 @@
-import fs from 'fs';
+import fs, { fsync } from 'fs';
 import fsAsync from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import https from 'https';
+import crypto from 'crypto';
 import { apiChannel } from '../../channels';
 import { getPaths } from '../fs/handlers';
 import { PulsarDistributionStatus, ListPulsarDistributionsResult, KnownPulsarVersion, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion, DownloadPulsarDistribution } from './types';
@@ -76,14 +77,17 @@ export async function handleListPulsarDistributions(event: Electron.IpcMainEvent
 }
 
 export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEvent, arg: DownloadPulsarDistribution): Promise<void> {
+  const tempDir = await fsAsync.mkdtemp(path.join(os.tmpdir(), `dekaf-pulsar-${arg.version}`));
+
   try {
     // Downloading
-    const url = pulsarVersionInfos.find(v => v.version === arg.version)?.downloadUrl!;
-    const tempDir = await fsAsync.mkdtemp(path.join(os.tmpdir(), `dekaf-pulsar-${arg.version}`));
-    const out = path.join(tempDir, arg.version);
+    const versionInfo = pulsarVersionInfos.find(v => v.version === arg.version)!;
+    const url = versionInfo.downloadUrl;
+    const downloadedFile = path.join(tempDir, arg.version);
 
     let bytesTotal = 0;
     let bytesReceived = 0;
+    const shasum = crypto.createHash('sha512');
 
     const updateDownloadProgress = (receivedBytes: number) => {
       bytesReceived = bytesReceived + receivedBytes;
@@ -102,10 +106,29 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
     }
 
     const req = https.get(url, res => {
-      res.pipe(fs.createWriteStream(out));
+      res.pipe(fs.createWriteStream(downloadedFile));
 
-      res.on('data', (res) => {
-        updateDownloadProgress(res.length);
+      res.on('data', (data) => {
+        shasum.update(data);
+        updateDownloadProgress(data.length);
+      });
+
+      res.on('end', () => {
+        console.log('END!!!!!!!!!!!!!!');
+        const hash = shasum.digest('hex');
+
+        if (hash !== versionInfo.sha512) {
+          const req: PulsarDistributionStatusChanged = {
+            type: "PulsarDistributionStatusChanged",
+            version: arg.version,
+            distributionStatus: {
+              type: "error",
+              version: arg.version,
+              message: `Unable to install Pulsar ${arg.version} distribution. Checksum verification failed.`
+            }
+          }
+          event.reply(apiChannel, req);
+        }
       });
     });
 
