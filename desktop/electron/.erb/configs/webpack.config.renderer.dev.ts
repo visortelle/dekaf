@@ -93,37 +93,18 @@ const configuration: webpack.Configuration = {
         test: /\.(png|jpg|jpeg|gif)$/i,
         type: 'asset/resource',
       },
-      // SVG
-      {
-        test: /\.svg$/,
-        use: [
-          {
-            loader: '@svgr/webpack',
-            options: {
-              prettier: false,
-              svgo: false,
-              svgoConfig: {
-                plugins: [{ removeViewBox: false }],
-              },
-              titleProp: true,
-              ref: true,
-            },
-          },
-          'file-loader',
-        ],
-      },
     ],
   },
   plugins: [
     ...(skipDLLs
       ? []
       : [
-          new webpack.DllReferencePlugin({
-            context: webpackPaths.dllPath,
-            manifest: require(manifest),
-            sourceType: 'var',
-          }),
-        ]),
+        new webpack.DllReferencePlugin({
+          context: webpackPaths.dllPath,
+          manifest: require(manifest),
+          sourceType: 'var',
+        }),
+      ]),
 
     new webpack.NoEmitOnErrorsPlugin(),
 

@@ -1,5 +1,6 @@
-import fs, { fsync } from 'fs';
+import fs from 'fs';
 import fsAsync from 'fs/promises';
+import fsExtra from 'fs-extra';
 import os from 'os';
 import path from 'path';
 import https from 'https';
@@ -8,7 +9,7 @@ import tar from 'tar';
 import streamAsync from 'stream/promises';
 import { apiChannel } from '../../channels';
 import { getPaths } from '../fs/handlers';
-import { PulsarDistributionStatus, ListPulsarDistributionsResult, KnownPulsarVersion, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion, DownloadPulsarDistribution, CancelDownloadPulsarDistribution } from './types';
+import { PulsarDistributionStatus, ListPulsarDistributionsResult, KnownPulsarVersion, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion, DownloadPulsarDistribution, CancelDownloadPulsarDistribution, DeletePulsarDistribution } from './types';
 import { ErrorHappened } from '../api/types';
 import { pulsarVersionInfos } from './versions';
 import { sendError } from '../api/send-error';
@@ -235,6 +236,43 @@ export async function handleCancelDownloadPulsarDistribution(event: Electron.Ipc
     event.reply(apiChannel, req);
   } catch (err) {
     const errMessage = `Unable to cancel download Pulsar distribution. ${err}`;
+    const req: ErrorHappened = {
+      type: "ErrorHappened",
+      message: errMessage
+    };
+    event.reply(apiChannel, req);
+
+    sendError(event, errMessage);
+  }
+}
+
+
+export async function handleDeletePulsarDistribution(event: Electron.IpcMainEvent, arg: DeletePulsarDistribution): Promise<void> {
+  try {
+    const deletingReq: PulsarDistributionStatusChanged = {
+      type: "PulsarDistributionStatusChanged",
+      version: arg.version,
+      distributionStatus: {
+        type: "deleting",
+        version: arg.version
+      }
+    };
+    event.reply(apiChannel, deletingReq);
+
+    const paths = getPaths();
+    const distributionPath = path.join(paths.pulsarDistributionsDir, arg.version);
+    await fsExtra.remove(distributionPath);
+    const deletedReq: PulsarDistributionStatusChanged = {
+      type: "PulsarDistributionStatusChanged",
+      version: arg.version,
+      distributionStatus: {
+        type: "not-installed",
+        version: arg.version
+      }
+    };
+    event.reply(apiChannel, deletedReq);
+  } catch (err) {
+    const errMessage = `Unable to delete local Pulsar distribution. ${err}`;
     const req: ErrorHappened = {
       type: "ErrorHappened",
       message: errMessage

@@ -15,6 +15,10 @@ const configuration: webpack.Configuration = {
   module: {
     rules: [
       {
+        test: /\.svg$/,
+        type: 'asset/source',
+      },
+      {
         test: /\.[jt]sx?$/,
         exclude: /node_modules/,
         use: {

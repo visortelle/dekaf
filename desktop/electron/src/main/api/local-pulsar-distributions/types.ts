@@ -26,6 +26,9 @@ export type PulsarDistributionStatus = {
   type: "not-installed",
   version: AnyPulsarVersion
 } | {
+  type: "deleting",
+  version: AnyPulsarVersion
+} | {
   type: "error",
   version: AnyPulsarVersion
   message: string

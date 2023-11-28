@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import s from './PulsarVersionInfoElement.module.css'
-import { AnyPulsarVersion, CancelDownloadPulsarDistribution, DownloadPulsarDistribution, KnownPulsarVersion, PulsarDistributionStatus, PulsarVersionInfo, knownPulsarVersions } from '../../../main/api/local-pulsar-distributions/types';
+import { AnyPulsarVersion, CancelDownloadPulsarDistribution, DeletePulsarDistribution, DownloadPulsarDistribution, KnownPulsarVersion, PulsarDistributionStatus, PulsarVersionInfo, knownPulsarVersions } from '../../../main/api/local-pulsar-distributions/types';
 import { apiChannel } from '../../../main/channels';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import * as I18n from '../../app/I18n/I18n';
+import * as Modals from '../../app/Modals/Modals';
+import DeleteDialog from './DeleteDialog/DeleteDialog';
 
 export type PulsarVersionInfoElementProps = {
   version: AnyPulsarVersion
@@ -12,6 +14,7 @@ export type PulsarVersionInfoElementProps = {
 const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props) => {
   const [distributionStatus, setDistributionStatus] = useState<PulsarDistributionStatus>({ type: "unknown", version: props.version });
   const i18n = I18n.useContext();
+  const modals = Modals.useContext();
 
   useEffect(() => {
     window.electron.ipcRenderer.on('api', (arg) => {
@@ -27,7 +30,7 @@ const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props
       {distributionStatus.type === "downloading" && (
         <div>
           <SmallButton
-            type="regular"
+            type="danger"
             onClick={() => {
               const req: CancelDownloadPulsarDistribution = {
                 type: "CancelDownloadPulsarDistributionRequest",
@@ -41,15 +44,31 @@ const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props
           <strong>{i18n.formatBytes(distributionStatus.bytesReceived)}</strong> of <strong>{i18n.formatBytes(distributionStatus.bytesTotal)}</strong>
         </div>
       )}
-      {distributionStatus.type === "unpacking" && (
-        <div>Unpacking ...</div>
-      )}
+      {distributionStatus.type === "unpacking" && (<div>Unpacking ...</div>)}
+      {distributionStatus.type === "deleting" && (<div>Deleting ...</div>)}
       {distributionStatus.type === "installed" && (
-        <SmallButton
-          text="Use this version"
-          type='primary'
-          onClick={() => { }}
-        />
+        <div>
+          <SmallButton
+            text="Use this version"
+            type='primary'
+            onClick={() => { }}
+          />
+
+          <SmallButton
+            text="Delete this version"
+            type='danger'
+            onClick={() => {
+              modals.push({
+                id: "delete-pulsar-distribution",
+                title: `Delete Pulsar version`,
+                content: (
+                  <DeleteDialog version={props.version} />
+                ),
+                styleMode: "no-content-padding",
+              });
+            }}
+          />
+        </div>
       )}
       {distributionStatus.type === "not-installed" && knownPulsarVersions.includes(props.version as any) && (
         <SmallButton
