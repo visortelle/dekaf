@@ -1,8 +1,14 @@
-export type LocalPulsar = {
+export type LocalPulsarConfig = {
   name: string,
   version: string,
-  color: string,
-  brokerConfig: string
+  color?: string,
+  standaloneConf?: string,
+  env?: Record<string, string>,
+  numBookies?: number,
+  noFunctionsWorker?: boolean,
+  functionsWorkerConf?: string,
+  pulsarServicePort?: number,
+  httpServicePort?: number
 };
 
 export type LocalPulsarInfo = {

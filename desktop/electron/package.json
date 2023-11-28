@@ -8,7 +8,8 @@
     "build:renderer": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
     "check-ts": "tsc --noEmit",
     "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && npm run build:dll",
-    "package": "npm run check-ts && rimraf ./release/build && ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never && npm run build:dll",
+    "pre-package": "rimraf ./dependencies/build && ts-node ./dependencies/prepare.ts",
+    "package": "npm run check-ts && npm run pre-package && rimraf ./release/build && ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never && npm run build:dll",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && npm run start:renderer",
     "start:main": "cross-env NODE_ENV=development electronmon -r ts-node/register/transpile-only .",
@@ -70,7 +71,8 @@
     "react-tooltip": "^5.24.0",
     "semver": "^7.5.4",
     "tar": "^6.2.0",
-    "use-local-storage-state": "^19.1.0"
+    "use-local-storage-state": "^19.1.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@electron/notarize": "^2.1.0",
@@ -90,6 +92,7 @@
     "@types/react-test-renderer": "^18.0.1",
     "@types/tar": "^6.1.10",
     "@types/terser-webpack-plugin": "^5.0.4",
+    "@types/uuid": "^9.0.7",
     "@types/webpack-bundle-analyzer": "^4.6.0",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
@@ -144,8 +147,8 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "Dekaf",
+    "appId": "tools.teal.Dekaf",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -203,6 +206,13 @@
       {
         "from": "app/dist_assets",
         "to": "dist_assets",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "dependencies/build",
+        "to": "dependencies",
         "filter": [
           "**/*"
         ]

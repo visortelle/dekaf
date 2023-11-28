@@ -37,6 +37,8 @@ export const getDataDir = () => {
     dir = path.resolve(process.cwd(), path.join(dataDir));
   } else {
     dir = path.resolve(path.join(electron.app.getPath("appData"), dataDir));
+    console.log('getAppPath', electron.app.getAppPath());
+    console.log('appData', dir)
   }
 
   return dir;

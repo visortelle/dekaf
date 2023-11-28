@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import s from './PulsarVersionInfoElement.module.css'
-import { AnyPulsarVersion, CancelDownloadPulsarDistribution, DeletePulsarDistribution, DownloadPulsarDistribution, KnownPulsarVersion, PulsarDistributionStatus, PulsarVersionInfo, knownPulsarVersions } from '../../../main/api/local-pulsar-distributions/types';
-import { apiChannel } from '../../../main/channels';
-import SmallButton from '../../ui/SmallButton/SmallButton';
-import * as I18n from '../../app/I18n/I18n';
-import * as Modals from '../../app/Modals/Modals';
+import { AnyPulsarVersion, CancelDownloadPulsarDistribution, DeletePulsarDistribution, DownloadPulsarDistribution, KnownPulsarVersion, PulsarDistributionStatus, PulsarDistributionSource, knownPulsarVersions } from '../../../../main/api/local-pulsar-distributions/types';
+import { apiChannel } from '../../../../main/channels';
+import SmallButton from '../../../ui/SmallButton/SmallButton';
+import * as I18n from '../../../app/I18n/I18n';
+import * as Modals from '../../../app/Modals/Modals';
 import DeleteDialog from './DeleteDialog/DeleteDialog';
 
 export type PulsarVersionInfoElementProps = {

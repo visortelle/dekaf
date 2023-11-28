@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import s from './PulsarDistributionsPicker.module.css'
 
 import PulsarVersionInfoElement from './PulsarVersionInfoElement/PulsarVersionInfoElement';
-import { AnyPulsarVersion, ListPulsarDistributions } from '../../main/api/local-pulsar-distributions/types';
-import { apiChannel } from '../../main/channels';
+import { AnyPulsarVersion, ListPulsarDistributions } from '../../../main/api/local-pulsar-distributions/types';
+import { apiChannel } from '../../../main/channels';
 
 export type PulsarDistributionsPickerProps = {
 

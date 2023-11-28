@@ -1,8 +1,20 @@
-export const knownPulsarVersions = ["3.1.1", "3.1.0", "3.0.1", "2.11.2"] as const;
+export const knownPulsarVersions = [
+  "3.1.1",
+  "3.1.0",
+  "3.0.1",
+  "2.11.2",
+  "2.11.1",
+  "2.11.0",
+  "2.10.4",
+  "2.10.3",
+  "2.10.2",
+  "2.10.1",
+  "2.10.0"
+] as const;
 export type KnownPulsarVersion = typeof knownPulsarVersions[number];
 export type AnyPulsarVersion = string;
 
-export type PulsarVersionInfo = {
+export type PulsarDistributionSource = {
   version: KnownPulsarVersion,
   downloadUrl: string,
   sha512: string

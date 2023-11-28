@@ -8,12 +8,14 @@ import FormLabel from './ui/FormLabel/FormLabel';
 import Input from './ui/Input/Input';
 import useLocalStorage from "use-local-storage-state";
 import { ApiEvent } from '../main/api/service';
-import PulsarDistributionsPicker from './PulsarDistributionPicker/PulsarDistributionPicker';
+import PulsarDistributionsPicker from './LocalPulsarConfigInput/PulsarDistributionPicker/PulsarDistributionPicker';
 import * as I18n from './app/I18n/I18n';
 import * as Notifications from './app/Notifications/Notifications';
 import * as Modals from './app/Modals/Modals';
 import "react-toastify/dist/ReactToastify.css";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { LocalPulsarConfig } from '../main/api/local-pulsar/types';
+import LocalPulsarConfigInput from './LocalPulsarConfigInput/LocalPulsarConfigInput';
 
 // Debug
 if (process.env.NODE_ENV === "development") {
@@ -26,6 +28,11 @@ function InitialAppScreen() {
   const [licenseId, setLicenseId] = useLocalStorage<string>('DEKAF_LICENSE_ID', { defaultValue: '' });
   const [licenseToken, setLicenseToken] = useLocalStorage<string>('DEKAF_LICENSE_TOKEN', { defaultValue: '' });
   const { notifyError } = Notifications.useContext();
+
+  const [localPulsarConfig, setLocalPulsarConfig] = useState<LocalPulsarConfig>({
+    name: 'new',
+    version: '3.3.1'
+  });
 
   useEffect(() => {
     window.electron.ipcRenderer.on('api', (arg) => {
@@ -40,6 +47,10 @@ function InitialAppScreen() {
       <Notifications.DefaultProvider>
         <Modals.DefaultProvider>
           <div>
+            <LocalPulsarConfigInput
+              value={localPulsarConfig}
+              onChange={setLocalPulsarConfig}
+            />
             <PulsarDistributionsPicker />
             <FormItem>
               <FormLabel content="License ID" />
