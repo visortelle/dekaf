@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import s from './PulsarVersionInfoElement.module.css'
-import { AnyPulsarVersion, DownloadPulsarDistribution, KnownPulsarVersion, PulsarDistributionStatus, PulsarVersionInfo, knownPulsarVersions } from '../../../main/api/local-pulsar-distributions/types';
+import { AnyPulsarVersion, CancelDownloadPulsarDistribution, DownloadPulsarDistribution, KnownPulsarVersion, PulsarDistributionStatus, PulsarVersionInfo, knownPulsarVersions } from '../../../main/api/local-pulsar-distributions/types';
 import { apiChannel } from '../../../main/channels';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import * as I18n from '../../app/I18n/I18n';
-import { ErrorHappened } from '../../../main/api/api/types';
 
 export type PulsarVersionInfoElementProps = {
   version: AnyPulsarVersion
@@ -26,7 +25,21 @@ const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props
     <div className={s.PulsarVersionInfoElement}>
       <div><strong>{props.version}</strong></div>
       {distributionStatus.type === "downloading" && (
-        <div>Downloading <strong>{i18n.formatBytes(distributionStatus.bytesReceived)}</strong> of <strong>{i18n.formatBytes(distributionStatus.bytesTotal)}</strong></div>
+        <div>
+          <SmallButton
+            type="regular"
+            onClick={() => {
+              const req: CancelDownloadPulsarDistribution = {
+                type: "CancelDownloadPulsarDistributionRequest",
+                version: props.version
+              };
+
+              window.electron.ipcRenderer.sendMessage(apiChannel, req);
+            }}
+            text="Cancel download"
+          />
+          <strong>{i18n.formatBytes(distributionStatus.bytesReceived)}</strong> of <strong>{i18n.formatBytes(distributionStatus.bytesTotal)}</strong>
+        </div>
       )}
       {distributionStatus.type === "unpacking" && (
         <div>Unpacking ...</div>
@@ -35,7 +48,7 @@ const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props
         <SmallButton
           text="Use this version"
           type='primary'
-          onClick={() => {}}
+          onClick={() => { }}
         />
       )}
       {distributionStatus.type === "not-installed" && knownPulsarVersions.includes(props.version as any) && (

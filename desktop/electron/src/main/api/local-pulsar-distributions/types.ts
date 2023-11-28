@@ -55,22 +55,12 @@ export type PulsarDistributionStatusChanged = {
   distributionStatus: PulsarDistributionStatus
 }
 
-export type CancelDownloadPulsarDistributionRequest = {
+export type CancelDownloadPulsarDistribution = {
   type: "CancelDownloadPulsarDistributionRequest",
   version: AnyPulsarVersion
 }
 
-export type CancelDownloadPulsarDistributionResponse = {
-  type: "CancelDownloadPulsarDistributionResponse",
-  version: AnyPulsarVersion
-}
-
-export type DeletePulsarDistributionRequest = {
-  type: "DeletePulsarDistributionRequest",
-  version: AnyPulsarVersion
-}
-
-export type DeletePulsarDistributionResponse = {
-  type: "DeletePulsarDistributionResponse",
+export type DeletePulsarDistribution = {
+  type: "DeletePulsarDistribution",
   version: AnyPulsarVersion
 }

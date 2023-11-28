@@ -10,50 +10,50 @@ export function handleGetPaths(event: Electron.IpcMainEvent): void {
   try {
     paths = getPaths();
   } catch (err) {
-    const res: ErrorHappened = {
+    const req: ErrorHappened = {
       type: "ErrorHappened",
       message: (err as Error).message
     }
-    event.reply(apiChannel, res);
+    event.reply(apiChannel, req);
     return;
   }
 
-  const res: GetPathsResult = {
+  const req: GetPathsResult = {
     type: "GetPathsResponse",
     paths
   };
-  event.reply(apiChannel, res);
+  event.reply(apiChannel, req);
 }
 
 const dataDir = "data";
 const configDir = "config";
 
 export const getDataDir = () => {
-    let dir: null | string = null;
-    if (
-        process.env.NODE_ENV === 'development' ||
-        process.env.DEBUG_PROD === 'true'
-    ) {
-        dir = path.resolve(process.cwd(), path.join(dataDir));
-    } else {
-        dir = path.resolve(path.join(electron.app.getPath("appData"), dataDir));
-    }
+  let dir: null | string = null;
+  if (
+    process.env.NODE_ENV === 'development' ||
+    process.env.DEBUG_PROD === 'true'
+  ) {
+    dir = path.resolve(process.cwd(), path.join(dataDir));
+  } else {
+    dir = path.resolve(path.join(electron.app.getPath("appData"), dataDir));
+  }
 
-    return dir;
+  return dir;
 };
 
 export const getConfigDir = () => {
-    let dir: null | string = null;
-    if (
-        process.env.NODE_ENV === 'development' ||
-        process.env.DEBUG_PROD === 'true'
-    ) {
-        dir = path.resolve(process.cwd(), path.join(configDir));
-    } else {
-        dir = path.resolve(path.join(electron.app.getPath("userData"), configDir));
-    }
+  let dir: null | string = null;
+  if (
+    process.env.NODE_ENV === 'development' ||
+    process.env.DEBUG_PROD === 'true'
+  ) {
+    dir = path.resolve(process.cwd(), path.join(configDir));
+  } else {
+    dir = path.resolve(path.join(electron.app.getPath("userData"), configDir));
+  }
 
-    return dir;
+  return dir;
 };
 
 export function getPaths(): Paths {
