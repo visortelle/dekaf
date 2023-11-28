@@ -82,6 +82,25 @@ export const swrKeys = {
           ],
         }
       },
+      resourceFqnCheck: {
+        _: (props: {
+          tenant: string,
+          namespace: string,
+          topic: string,
+          topicPersistency: string,
+          schemaVersion: string,
+          subscription: string
+        }) => [
+          "customApi",
+          "resourceFqnCheck",
+          props.tenant,
+          props.namespace,
+          props.topic,
+          props.topicPersistency,
+          props.schemaVersion,
+          props.subscription
+        ]
+      }
     },
     batch: {
       getTenantsNamespacesCount: {

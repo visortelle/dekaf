@@ -4,10 +4,13 @@ import com.tools.teal.pulsar.ui.brokers.v1.brokers as pb
 import com.google.rpc.status.Status
 import com.google.rpc.code.Code
 import com.typesafe.scalalogging.Logger
-import com.tools.teal.pulsar.ui.brokers.v1.brokers.{BacklogQuotaCheckRequest, BacklogQuotaCheckResponse, CreateResourceGroupRequest, CreateResourceGroupResponse, DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, DeleteResourceGroupRequest, DeleteResourceGroupResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetResourceGroupRequest, GetResourceGroupResponse, GetResourceGroupsListRequest, GetResourceGroupsListResponse, GetResourceGroupsRequest, GetResourceGroupsResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, GetVersionRequest, GetVersionResponse, HealthCheckRequest, HealthCheckResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse, UpdateResourceGroupRequest, UpdateResourceGroupResponse}
+import com.tools.teal.pulsar.ui.brokers.v1.brokers.{BacklogQuotaCheckRequest, BacklogQuotaCheckResponse, CheckResourceExistsRequest, CheckResourceExistsResponse, CreateResourceGroupRequest, CreateResourceGroupResponse, DeleteDynamicConfigurationRequest, DeleteDynamicConfigurationResponse, DeleteResourceGroupRequest, DeleteResourceGroupResponse, GetAllDynamicConfigurationsRequest, GetAllDynamicConfigurationsResponse, GetDynamicConfigurationNamesRequest, GetDynamicConfigurationNamesResponse, GetInternalConfigurationDataRequest, GetInternalConfigurationDataResponse, GetResourceGroupRequest, GetResourceGroupResponse, GetResourceGroupsListRequest, GetResourceGroupsListResponse, GetResourceGroupsRequest, GetResourceGroupsResponse, GetRuntimeConfigurationsRequest, GetRuntimeConfigurationsResponse, GetVersionRequest, GetVersionResponse, HealthCheckRequest, HealthCheckResponse, UpdateDynamicConfigurationRequest, UpdateDynamicConfigurationResponse, UpdateResourceGroupRequest, UpdateResourceGroupResponse}
 import org.apache.pulsar.common.naming.TopicVersion
 import org.apache.pulsar.common.policies.data.ResourceGroup
 import _root_.pulsar_auth.RequestContext
+
+import scala.util.{Failure, Success, Try}
+import CheckResourceExistsRequest.Resource
 
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.*
@@ -135,12 +138,49 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                 Future.successful(HealthCheckResponse(status = Some(status), isOk = false))
         }
 
+    override def checkResourceExists(request: CheckResourceExistsRequest): Future[CheckResourceExistsResponse] =
+        logger.debug(s"Check resource exists: $request")
+        val adminClient = RequestContext.pulsarAdmin.get()
+        val resourceFqn = request.resourceFqn
+
+        def lookupPartitionedTopic(): Try[Unit] = Try(adminClient.lookups().lookupPartitionedTopic(resourceFqn))
+
+        def lookupNonPartitionedTopic(): Try[Unit] = Try(adminClient.lookups().lookupTopic(resourceFqn))
+
+        def failWithMessage(message: String): Future[CheckResourceExistsResponse] =
+            val status = Status(code = Code.FAILED_PRECONDITION.index, message = message)
+            Future.successful(CheckResourceExistsResponse(status = Some(status), isExists = false))
+
+        val isResourceExists = request.resource match
+            case Resource.TenantResource(_) =>
+                Try(adminClient.tenants.getTenantInfo(resourceFqn)).isSuccess
+            case Resource.NamespaceResource(_) =>
+                Try(adminClient.namespaces.getBundles(resourceFqn)).isSuccess
+            case Resource.TopicResource(_) =>
+                lookupPartitionedTopic() match
+                    case Success(_) => true
+                    case Failure(exception) =>
+                        lookupNonPartitionedTopic() match
+                            case Success(_) => true
+                            case Failure(err) => false
+            case Resource.SubscriptionResource(value) =>
+                Try(adminClient.topics.getSubscriptionProperties(resourceFqn, value.subscriptionName)).isSuccess
+            case Resource.SchemaResource(value) =>
+                Try(adminClient.schemas.getSchemaInfoWithVersion(resourceFqn).getVersion == value.schemaVersion)
+                    .getOrElse(false)
+            case Resource.Empty =>
+                return failWithMessage("Resource type should be specified")
+
+        Future.successful(
+            CheckResourceExistsResponse(status = Some(Status(code = Code.OK.index)), isExists = isResourceExists)
+        )
+
     override def backlogQuotaCheck(request: BacklogQuotaCheckRequest): Future[BacklogQuotaCheckResponse] =
         logger.debug(s"Backlog quota check: $request")
         val adminClient = RequestContext.pulsarAdmin.get()
 
         try {
-            adminClient.brokers.backlogQuotaCheck
+            adminClient.brokers.backlogQuotaCheck()
             Future.successful(
                 BacklogQuotaCheckResponse(status = Some(Status(code = Code.OK.index)), isOk = true)
             )
@@ -229,7 +269,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             request.resourceGroup match
                 case Some(rg) =>
-                    val resourceGroup = new ResourceGroup;
+                    val resourceGroup = new ResourceGroup
 
                     rg.dispatchRateInBytes.foreach(n => resourceGroup.setDispatchRateInBytes(n))
                     rg.dispatchRateInMsgs.foreach(n => resourceGroup.setDispatchRateInMsgs(n))
@@ -242,7 +282,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
                     val status = Status(code = Code.INVALID_ARGUMENT.index, message = "Resource group should be specified")
                     Future.successful(CreateResourceGroupResponse(status = Some(status)))
         } catch {
-            err =>
+            case err =>
                 val status = Status(code = Code.FAILED_PRECONDITION.index, message = err.getMessage)
                 Future.successful(CreateResourceGroupResponse(status = Some(status)))
         }
@@ -269,7 +309,7 @@ class BrokersServiceImpl extends pb.BrokersServiceGrpc.BrokersService {
         try {
             request.resourceGroup match
                 case Some(rg) =>
-                    val resourceGroup = new ResourceGroup;
+                    val resourceGroup = new ResourceGroup
 
                     rg.dispatchRateInBytes.foreach(n => resourceGroup.setDispatchRateInBytes(n))
                     rg.dispatchRateInMsgs.foreach(n => resourceGroup.setDispatchRateInMsgs(n))

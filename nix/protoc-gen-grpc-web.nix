@@ -8,7 +8,7 @@ let
 
   src_linux_x86_64 = {
     url = "https://github.com/grpc/grpc-web/releases/download/1.4.2/protoc-gen-grpc-web-1.4.2-linux-x86_64";
-    sha256 = "";
+    sha256 = "XoLD8fQ14XbJS5TelmmRGrO/uJFgi36Arf81j3d/+Fc=";
   };
 
   src_darwin_x86_64 = {
