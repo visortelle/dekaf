@@ -1,6 +1,10 @@
 import { PulsarDistributionSource } from "./types";
 
 export const pulsarVersionInfos: PulsarDistributionSource[] = [{
+  version: "0.0.1-test",
+  downloadUrl: "https://github.com/bufbuild/buf/releases/download/v1.28.1/buf-Darwin-x86_64.tar.gz",
+  sha512: "77d9cef2b3274c5d8e94a01f79382f06c2814ef5ea5dc1608a0fa7d0a3915b9714b7d79c0c9db5a10b981cf47ec71955ef6c6d836cce4ed7230f0f0b08cfdfb7"
+}, {
   version: "3.1.1",
   downloadUrl: "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=pulsar/pulsar-3.1.1/apache-pulsar-3.1.1-bin.tar.gz",
   sha512: "af79f970c8835320584faf58c85bfc5cd12261f5e366c2c16bce2f7628d769ef7374a3c0e383ff443519e484a35a23e86415e0156a0f35dd3bc1f606d2fa0421"

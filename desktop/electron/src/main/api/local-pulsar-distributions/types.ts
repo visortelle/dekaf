@@ -9,7 +9,8 @@ export const knownPulsarVersions = [
   "2.10.3",
   "2.10.2",
   "2.10.1",
-  "2.10.0"
+  "2.10.0",
+  "0.0.1-test"
 ] as const;
 export type KnownPulsarVersion = typeof knownPulsarVersions[number];
 export type AnyPulsarVersion = string;

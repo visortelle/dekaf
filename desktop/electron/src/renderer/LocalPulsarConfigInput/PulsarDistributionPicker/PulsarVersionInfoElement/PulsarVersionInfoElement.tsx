@@ -44,7 +44,7 @@ const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props
           <strong>{i18n.formatBytes(distributionStatus.bytesReceived)}</strong> of <strong>{i18n.formatBytes(distributionStatus.bytesTotal)}</strong>
         </div>
       )}
-      {distributionStatus.type === "error" && (<div style={{ color: "var(--accent-color-red)" }}>Error occurred. Try to restart the app. Details: ${distributionStatus.message}</div>)}
+      {distributionStatus.type === "error" && (<div style={{ color: "var(--accent-color-red)" }}>Error occurred. {distributionStatus.message} Try to restart the app.</div>)}
       {distributionStatus.type === "unpacking" && (<div>Unpacking ...</div>)}
       {distributionStatus.type === "deleting" && (<div>Deleting ...</div>)}
       {distributionStatus.type === "installed" && (

@@ -3,6 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
 import fsAsync from 'node:fs/promises';
+import fsExtra from 'fs-extra';
 import tar from 'tar';
 import crypto from 'node:crypto';
 import streamAsync from 'stream/promises';
@@ -48,29 +49,42 @@ export async function download(file: DownloaderTarget, props?: DownloadFileProps
     let bytesTotal = 0;
     let bytesReceived = 0;
 
-    const tempDir = await fsAsync.mkdtemp(path.join(os.tmpdir(), `ensurer`));
+    const tempDir = await fsAsync.mkdtemp(path.join(os.tmpdir(), `dekaf`));
+    console.info(`Created temporary directory: ${tempDir}`);
+
+    const cleanup = async () => {
+      console.info(`Removing temporary directory ${tempDir}`);
+      await fsExtra.remove(tempDir)
+    };
+
     const downloadedFile = path.join(tempDir, file.name);
 
     const unpack = async (archivePath: string, destDir: string, strip?: number) => {
+      console.info(`Unpacking ${archivePath} to ${destDir}`);
+
       if (!fs.existsSync(destDir)) {
         fs.mkdirSync(destDir);
       }
 
       props?.onUnpackStart === undefined ? {} : props.onUnpackStart();
 
-      const readStream = fs.createReadStream(downloadedFile).pipe(
+      const readStream = fs.createReadStream(archivePath).pipe(
         tar.x({
           strip,
-          C: archivePath
+          C: destDir
         })
       );
 
-      readStream.on('error', (err) => {
+      readStream.on('error', async (err) => {
+        console.info(`Unpacking ${archivePath} to ${destDir} failed`);
         props?.onUnpackError === undefined ? {} : props.onUnpackError(err);
+        await cleanup();
       });
 
-      readStream.on('finish', () => {
+      readStream.on('finish', async () => {
+        console.info(`Unpacking ${archivePath} to ${destDir} finished`);
         props?.onUnpackFinish === undefined ? {} : props.onUnpackFinish();
+        await cleanup();
       });
     }
 
@@ -90,8 +104,10 @@ export async function download(file: DownloaderTarget, props?: DownloadFileProps
     });
 
     const abortDownload = async () => {
+      console.info(`Aborting download ${file.name}`);
+
       req.destroy();
-      fs.rmSync(downloadedFile);
+      await cleanup();
     }
     props?.onDownloadAbortReady === undefined ? {} : props.onDownloadAbortReady(abortDownload);
 
@@ -102,19 +118,27 @@ export async function download(file: DownloaderTarget, props?: DownloadFileProps
     // Check checksum and unpack
     downloadStream.on('finish', async () => {
       if (file.checksum !== undefined) {
+        console.info(`Verifying checksum for ${downloadedFile}`);
         const hash = await computeFileHash(downloadedFile, file.checksum.algorithm);
 
         if (hash !== file.checksum.hash) {
+          console.error(`Checksum verification for ${downloadedFile} failed.`);
           props?.onChecksumError === undefined ? {} : props.onChecksumError(new Error(`Checksum doesn't match. File: ${file.name}`))
           return;
         }
       }
 
-      if (file.unpack !== undefined) {
-        unpack(downloadedFile, file.dest, file.unpack.strip);
+      if (file.unpack === undefined) {
+        console.info(`Copying ${downloadedFile} to ${file.dest}`);
+        await fsAsync.rename(downloadedFile, file.dest);
+        await cleanup();
+      } else {
+        await fsExtra.ensureDir(file.dest);
+        await unpack(downloadedFile, file.dest, file.unpack.strip);
       }
     });
   } catch (err) {
+    console.error(`Unknown error happened during downloading ${file.name}`);
     props?.onError === undefined ? {} : props?.onError(err as Error);
   }
 }

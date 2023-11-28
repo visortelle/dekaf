@@ -92,6 +92,9 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
       checksum: {
         hash: versionInfo.sha512,
         algorithm: 'sha512'
+      },
+      unpack: {
+        strip: 1
       }
     }, {
       onDownloadStart: () => {
