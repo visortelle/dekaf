@@ -4,6 +4,7 @@ import { AnyPulsarVersion, DownloadPulsarDistribution, KnownPulsarVersion, Pulsa
 import { apiChannel } from '../../../main/channels';
 import SmallButton from '../../ui/SmallButton/SmallButton';
 import * as I18n from '../../app/I18n/I18n';
+import { ErrorHappened } from '../../../main/api/api/types';
 
 export type PulsarVersionInfoElementProps = {
   version: AnyPulsarVersion
@@ -25,16 +26,19 @@ const PulsarVersionInfoElement: React.FC<PulsarVersionInfoElementProps> = (props
     <div className={s.PulsarVersionInfoElement}>
       <div><strong>{props.version}</strong></div>
       {distributionStatus.type === "downloading" && (
-        <div>Downloaded <strong>{i18n.formatBytes(distributionStatus.bytesReceived)}</strong> of <strong>{i18n.formatBytes(distributionStatus.bytesTotal)}</strong></div>
+        <div>Downloading <strong>{i18n.formatBytes(distributionStatus.bytesReceived)}</strong> of <strong>{i18n.formatBytes(distributionStatus.bytesTotal)}</strong></div>
       )}
-      {distributionStatus.type === "downloaded" && (
+      {distributionStatus.type === "unpacking" && (
+        <div>Unpacking ...</div>
+      )}
+      {distributionStatus.type === "installed" && (
         <SmallButton
           text="Use this version"
           type='primary'
           onClick={() => {}}
         />
       )}
-      {distributionStatus.type === "not-downloaded" && knownPulsarVersions.includes(props.version as any) && (
+      {distributionStatus.type === "not-installed" && knownPulsarVersions.includes(props.version as any) && (
         <SmallButton
           text="Install this version"
           type='regular'

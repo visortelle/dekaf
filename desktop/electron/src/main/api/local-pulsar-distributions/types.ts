@@ -1,4 +1,4 @@
-export const knownPulsarVersions = ["3.1.1", "3.1.0", "3.0.1", "2.11.2"] as const;
+export const knownPulsarVersions = ["3.3.3", "3.1.1", "3.1.0", "3.0.1", "2.11.2"] as const;
 export type KnownPulsarVersion = typeof knownPulsarVersions[number];
 export type AnyPulsarVersion = string;
 
@@ -12,9 +12,6 @@ export type PulsarDistributionStatus = {
   type: "unknown",
   version: AnyPulsarVersion
 } | {
-  type: "not-downloaded",
-  version: AnyPulsarVersion
-} | {
   type: "downloading",
   version: AnyPulsarVersion
   bytesTotal: number
@@ -22,10 +19,12 @@ export type PulsarDistributionStatus = {
 } | {
   type: "unpacking",
   version: AnyPulsarVersion
-  percentage: number
 } | {
   type: "installed"
   version: AnyPulsarVersion,
+} | {
+  type: "not-installed",
+  version: AnyPulsarVersion
 } | {
   type: "error",
   version: AnyPulsarVersion

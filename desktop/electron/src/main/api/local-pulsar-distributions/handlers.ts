@@ -3,33 +3,36 @@ import fsAsync from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import https from 'https';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
+import tar from 'tar';
+import streamAsync from 'stream/promises';
 import { apiChannel } from '../../channels';
 import { getPaths } from '../fs/handlers';
 import { PulsarDistributionStatus, ListPulsarDistributionsResult, KnownPulsarVersion, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion, DownloadPulsarDistribution } from './types';
 import { ErrorHappened } from '../api/types';
 import { pulsarVersionInfos } from './versions';
+import { sendError } from '../api/send-error';
 
 export async function handleListPulsarDistributions(event: Electron.IpcMainEvent): Promise<void> {
   async function getDistributionStatus(version: AnyPulsarVersion): Promise<PulsarDistributionStatus> {
     const paths = getPaths();
 
-    let isDownloaded = true;
+    let isInstalled = true;
     try {
       await fsAsync.readdir(path.join(paths.pulsarDistributionsDir, version))
     } catch (_) {
-      isDownloaded = false;
+      isInstalled = false;
     };
 
-    if (isDownloaded) {
+    if (isInstalled) {
       return {
-        type: "downloaded",
+        type: "installed",
         version
       };
     }
 
     return {
-        type: "not-downloaded",
+        type: "not-installed",
         version
     };
   }
@@ -57,21 +60,25 @@ export async function handleListPulsarDistributions(event: Electron.IpcMainEvent
         }
         event.reply(apiChannel, res);
       } catch (err) {
+        const errMessage = `Unable to list installed Pulsar distributions. ${err as Error}`
         const res: ErrorHappened = {
           type: "ErrorHappened",
-          message: `Unable to list installed Pulsar distributions. ${err as Error}`
+          message: errMessage
         }
         event.reply(apiChannel, res);
+        sendError(event, errMessage);
       }
     });
 
     return;
   } catch (err) {
+    const errMessage = `Unable to list installed Pulsar distributions. ${err as Error}`;
     const res: ErrorHappened = {
       type: "ErrorHappened",
-      message: `Unable to list installed Pulsar distributions. ${err as Error}`
+      message: errMessage
     }
     event.reply(apiChannel, res);
+    sendError(event, errMessage);
     return;
   }
 }
@@ -87,7 +94,6 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
 
     let bytesTotal = 0;
     let bytesReceived = 0;
-    const shasum = crypto.createHash('sha512');
 
     const updateDownloadProgress = (receivedBytes: number) => {
       bytesReceived = bytesReceived + receivedBytes;
@@ -105,30 +111,83 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
       event.reply(apiChannel, req);
     }
 
+    const uncompress = () => {
+      const req: PulsarDistributionStatusChanged = {
+        type: "PulsarDistributionStatusChanged",
+        version: arg.version,
+        distributionStatus: {
+          type: "unpacking",
+          version: arg.version
+        }
+      }
+      event.reply(apiChannel, req);
+
+      const readStream = fs.createReadStream(downloadedFile).pipe(
+        tar.x({
+          strip: 1,
+          C: path.join(paths.pulsarDistributionsDir, arg.version)
+        })
+      );
+
+      readStream.on('error', () => {
+        const errMessage = `Installing Pulsar ${arg.version} has failed during the unpacking phase.`;
+        const req: PulsarDistributionStatusChanged = {
+          type: "PulsarDistributionStatusChanged",
+          version: arg.version,
+          distributionStatus: {
+            type: "error",
+            version: arg.version,
+            message: errMessage
+          }
+        }
+        event.reply(apiChannel, req);
+        sendError(event, errMessage);
+      });
+
+      readStream.on('finish', () => {
+        const req: PulsarDistributionStatusChanged = {
+          type: "PulsarDistributionStatusChanged",
+          version: arg.version,
+          distributionStatus: {
+            type: "installed",
+            version: arg.version
+          }
+        }
+        event.reply(apiChannel, req);
+      });
+    }
+
     const req = https.get(url, res => {
       res.pipe(fs.createWriteStream(downloadedFile));
 
       res.on('data', (data) => {
-        shasum.update(data);
         updateDownloadProgress(data.length);
       });
 
-      res.on('end', () => {
-        console.log('END!!!!!!!!!!!!!!');
-        const hash = shasum.digest('hex');
+      res.on('end', async () => {
+        const hash = await computeFileHash(downloadedFile, 'sha256');
+
+        console.log('hash', hash);
+        console.log('sha5', versionInfo.sha512)
 
         if (hash !== versionInfo.sha512) {
+          const errMessage = `Unable to install Pulsar ${arg.version} distribution. Checksum verification failed.`;
           const req: PulsarDistributionStatusChanged = {
             type: "PulsarDistributionStatusChanged",
             version: arg.version,
             distributionStatus: {
               type: "error",
               version: arg.version,
-              message: `Unable to install Pulsar ${arg.version} distribution. Checksum verification failed.`
+              message: errMessage
             }
           }
           event.reply(apiChannel, req);
+          sendError(event, errMessage);
+
+          return;
         }
+
+        uncompress();
       });
     });
 
@@ -140,10 +199,21 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
     const paths = getPaths();
     const unpackDest = path.join(paths.pulsarDistributionsDir, arg.version);
   } catch (err) {
+    const errMessage = `Unable to install the Pulsar distribution. ${err}`;
     const res: ErrorHappened = {
       type: "ErrorHappened",
-      message: `Unable to install the Pulsar distribution. ${err}`
+      message: errMessage
     };
     event.reply(apiChannel, res);
+
+    sendError(event, errMessage);
   }
+}
+
+async function computeFileHash(filepath: string, algorithm: string): Promise<string> {
+  const input = fs.createReadStream(filepath);
+  const hash = crypto.createHash(algorithm);
+  await streamAsync.pipeline(input, hash);
+
+  return hash.digest('hex');
 }
