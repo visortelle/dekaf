@@ -1,7 +1,7 @@
 import { GetPaths, GetPathsResponse } from './fs/types'
 import { handleGetPaths } from "./fs/handlers";
 import { handleCancelDownloadPulsarDistribution, handleDeletePulsarDistribution, handleDownloadPulsarDistribution, handleListPulsarDistributions } from "./local-pulsar-distributions/handlers";
-import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions, CancelDownloadPulsarDistribution, DeletePulsarDistribution } from './local-pulsar-distributions/types';
+import { DownloadPulsarDistribution, PulsarDistributionStatusChanged, ListPulsarDistributionsResult, ListPulsarDistributions, CancelDownloadPulsarDistribution, DeletePulsarDistribution, PulsarDistributionDeleted } from './local-pulsar-distributions/types';
 import { ErrorHappened } from './api/types';
 
 export type ApiEvent = ErrorHappened |
@@ -12,6 +12,7 @@ export type ApiEvent = ErrorHappened |
   DownloadPulsarDistribution |
   CancelDownloadPulsarDistribution |
   DeletePulsarDistribution |
+  PulsarDistributionDeleted |
   PulsarDistributionStatusChanged
 
 

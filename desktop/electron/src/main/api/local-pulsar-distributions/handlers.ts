@@ -9,7 +9,7 @@ import tar from 'tar';
 import streamAsync from 'stream/promises';
 import { apiChannel } from '../../channels';
 import { getPaths } from '../fs/handlers';
-import { PulsarDistributionStatus, ListPulsarDistributionsResult, KnownPulsarVersion, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion, DownloadPulsarDistribution, CancelDownloadPulsarDistribution, DeletePulsarDistribution } from './types';
+import { PulsarDistributionStatus, ListPulsarDistributionsResult, PulsarDistributionStatusChanged, knownPulsarVersions, AnyPulsarVersion, DownloadPulsarDistribution, CancelDownloadPulsarDistribution, DeletePulsarDistribution, ListPulsarDistributions, PulsarDistributionDeleted } from './types';
 import { ErrorHappened } from '../api/types';
 import { pulsarVersionInfos } from './versions';
 import { sendError } from '../api/send-error';
@@ -274,14 +274,8 @@ export async function handleDeletePulsarDistribution(event: Electron.IpcMainEven
     const paths = getPaths();
     const distributionPath = path.join(paths.pulsarDistributionsDir, arg.version);
     await fsExtra.remove(distributionPath);
-    const deletedReq: PulsarDistributionStatusChanged = {
-      type: "PulsarDistributionStatusChanged",
-      version: arg.version,
-      distributionStatus: {
-        type: "not-installed",
-        version: arg.version
-      }
-    };
+
+    const deletedReq: PulsarDistributionDeleted = { type: "PulsarDistributionDeleted", version: arg.version };
     event.reply(apiChannel, deletedReq);
   } catch (err) {
     const errMessage = `Unable to delete local Pulsar distribution. ${err}`;

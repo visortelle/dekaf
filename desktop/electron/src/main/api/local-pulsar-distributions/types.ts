@@ -67,3 +67,8 @@ export type DeletePulsarDistribution = {
   type: "DeletePulsarDistribution",
   version: AnyPulsarVersion
 }
+
+export type PulsarDistributionDeleted = {
+  type: "PulsarDistributionDeleted",
+  version: string
+};

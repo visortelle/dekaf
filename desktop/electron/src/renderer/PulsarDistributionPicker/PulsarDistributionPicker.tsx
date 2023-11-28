@@ -13,14 +13,24 @@ const PulsarDistributionsPicker: React.FC<PulsarDistributionsPickerProps> = (pro
   const [versions, setVersions] = useState<AnyPulsarVersion[]>([]);
 
   useEffect(() => {
-    const listReq: ListPulsarDistributions = { type: "ListPulsarDistributions" };
-    window.electron.ipcRenderer.sendMessage(apiChannel, listReq);
+    const refreshPulsarDistributionsList = () => {
+      const req: ListPulsarDistributions = { type: "ListPulsarDistributions" };
+      window.electron.ipcRenderer.sendMessage(apiChannel, req);
+    }
 
     window.electron.ipcRenderer.on('api', (arg) => {
-      if (arg.type === "ListPulsarDistributionsResult") {
-        setVersions(arg.versions?.sort((a, b) => b.localeCompare(a, 'en', { numeric: true })) || []);
+      switch (arg.type) {
+        case "ListPulsarDistributionsResult": {
+          setVersions(arg.versions?.sort((a, b) => b.localeCompare(a, 'en', { numeric: true })) || []);
+          break;
+        }
+        case "PulsarDistributionDeleted": {
+          refreshPulsarDistributionsList();
+        }
       }
     });
+
+    refreshPulsarDistributionsList();
   }, []);
 
   return (
