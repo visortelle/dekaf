@@ -32,8 +32,8 @@ export async function handleListPulsarDistributions(event: Electron.IpcMainEvent
     }
 
     return {
-        type: "not-installed",
-        version
+      type: "not-installed",
+      version
     };
   }
 
