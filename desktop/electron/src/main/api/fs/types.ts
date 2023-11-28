@@ -7,6 +7,7 @@ export type Paths = {
   configDir: string,
   javaHome: string,
   pulsarDistributionsDir: string
+  getPulsarDistributionDir: (version: string) => string
   pulsarInstancesDir: string,
   pulsarBin: string,
   dekafBin: string,

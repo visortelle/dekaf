@@ -57,11 +57,13 @@ export const getConfigDir = () => {
 };
 
 export function getPaths(): Paths {
+  const pulsarDistributionsDir = path.join(dataDir, "pulsar", "distributions");
   return {
     dataDir: getDataDir(),
     configDir: getConfigDir(),
     javaHome: path.join(dataDir, `graalvm/graalvm-jdk-21.0.1+12.1/Contents/Home`),
-    pulsarDistributionsDir: path.join(dataDir, "pulsar", "distributions"),
+    pulsarDistributionsDir,
+    getPulsarDistributionDir: (version) => path.join(pulsarDistributionsDir, version),
     pulsarInstancesDir: path.join(dataDir, `pulsar/instances`),
     pulsarBin: path.join(dataDir, `pulsar/versions/3.1.1/bin/pulsar`),
     dekafBin: path.join(dataDir, `dekaf/current/bin/dekaf`),

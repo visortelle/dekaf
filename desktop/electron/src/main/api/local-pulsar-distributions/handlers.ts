@@ -22,7 +22,7 @@ export async function handleListPulsarDistributions(event: Electron.IpcMainEvent
 
     let isInstalled = true;
     try {
-      await fsAsync.readdir(path.join(paths.pulsarDistributionsDir, version))
+      await fsAsync.readdir(paths.getPulsarDistributionDir(version))
     } catch (_) {
       isInstalled = false;
     };
@@ -116,7 +116,7 @@ export async function handleDownloadPulsarDistribution(event: Electron.IpcMainEv
     const uncompress = async () => {
       const paths = getPaths();
 
-      const dest = path.join(paths.pulsarDistributionsDir, arg.version);
+      const dest = paths.getPulsarDistributionDir(arg.version);
       if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest);
       }
@@ -272,7 +272,7 @@ export async function handleDeletePulsarDistribution(event: Electron.IpcMainEven
     event.reply(apiChannel, deletingReq);
 
     const paths = getPaths();
-    const distributionPath = path.join(paths.pulsarDistributionsDir, arg.version);
+    const distributionPath = paths.getPulsarDistributionDir(arg.version);
     await fsExtra.remove(distributionPath);
 
     const deletedReq: PulsarDistributionDeleted = { type: "PulsarDistributionDeleted", version: arg.version };
